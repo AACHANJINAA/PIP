@@ -2,33 +2,15 @@
 
 constexpr short SERVER_PORT = 3000; // 내가 가지고 있어야함
 
-namespace chess::main
+namespace chess
 {
 	std::unordered_map<long long, chess::packet::PositionPacket> g_positions;
 	std::unordered_map<long long, chess::server::SESSION> g_users;
-	
-	void error_display(const char* msg, int err_no)
-	{
-		if (WSA_IO_PENDING == err_no)
-		{
-			return;
-		}
-		WCHAR* lpMsgBuf;
-		FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			FORMAT_MESSAGE_FROM_SYSTEM,
-			NULL, err_no,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR)&lpMsgBuf, 0, NULL);
-		std::cout << msg;
-		std::wcout << L" 에러 " << lpMsgBuf << std::endl;
-#ifdef _DEBUG
-		while (true); // 디버깅 용 그냥 죽으면 안되니까
-#endif
 
-		LocalFree(lpMsgBuf);
-	}
 }
+
+using namespace chess;
+
 int main()
 {
 	std::wcout.imbue(std::locale("korean"));
@@ -52,9 +34,9 @@ int main()
 	{
 		auto s_client = WSAAccept(s_socket, reinterpret_cast<sockaddr*>(&addr), &addr_size,NULL, NULL);
 		//SleepEx안해도됨
-		chess::main::g_users.try_emplace(client_id, client_id, s_client);
-		chess::main::g_users[client_id].send_id();
-		chess::main::g_positions.try_emplace(client_id, client_id);
+		g_users.try_emplace(client_id, client_id, s_client);
+		g_users[client_id].send_id();
+		g_positions.try_emplace(client_id, client_id);
 		
 		++client_id;
 	}

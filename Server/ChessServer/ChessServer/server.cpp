@@ -4,191 +4,278 @@
 
 namespace chess::server
 {
-	//exp_over
-	EXP_OVER::EXP_OVER(long long id, const std::vector<char>& data) : _id(id)
-	{
-		ZeroMemory(&_send_over, sizeof(_send_over));
+	EXP_OVER g_accept_over{ IO_ACCEPT };
 
-		auto packet_size = data.size();
-		if (packet_size > 1024)
+	void do_accept(SOCKET s_socket, EXP_OVER& accept_over)
+	{
+		SOCKET c_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
+		accept_over._accept_socket = c_socket;
+		AcceptEx(s_socket, c_socket, accept_over._buffer.data(), 0,
+				 sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16,
+				 NULL, &accept_over._over);
+	}
+
+	void worker()
+	{
+		while (true)
 		{
-			std::cout << "MESSAGE TOO LONG";
-			exit(-1);
+			DWORD io_size;
+			WSAOVERLAPPED* o;
+			ULONG_PTR key;
+			BOOL ret = GetQueuedCompletionStatus(g_iocp, &io_size, &key, &o, INFINITE);
+			EXP_OVER* eo = reinterpret_cast<EXP_OVER*>(o);
+
+			if (FALSE == ret)
+			{
+				auto err_no = WSAGetLastError();
+				print_error("GetQueuedCompletionStatus", err_no);
+				if (0 != g_users.count(key))
+				{
+					g_users.at(key) = nullptr; // 세션이 종료되었으므로 nullptr로 설정
+				}
+				continue;
+			}
+
+			if ((IO_RECV == eo->_io_op || IO_SEND == eo->_io_op) && 0 == io_size)
+			{
+				if (0 != g_users.count(key))
+				{
+					g_users.at(key) = nullptr; // 세션이 종료되었으므로 nullptr로 설정
+				}
+				continue;
+			}
+
+			switch (eo->_io_op)
+			{
+				case IO_ACCEPT:
+				{
+					int new_id = g_new_id++;
+					CreateIoCompletionPort(reinterpret_cast<HANDLE>(eo->_accept_socket), g_iocp, new_id, 0);
+
+					std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, eo->_accept_socket);
+
+					g_users.insert(std::make_pair(new_id, p));
+					p->do_recv(); // 새로운 세션에 대해 recv 시작
+					do_accept(g_s_socket, g_accept_over);
+				}
+				break;
+				case IO_SEND:
+					delete eo;	// 전송 완료 후 메모리 해제
+					break;
+				case IO_RECV:
+				{
+					std::shared_ptr<SESSION> user = g_users[key];
+					if (nullptr == user)
+					{
+						break;
+					}
+
+					unsigned char* p = eo->_buffer.data();
+					int data_size = io_size + user->_remained();
+
+					while (p < eo->_buffer.data() + data_size)
+					{
+						unsigned char packet_size = *p;
+						if (p + packet_size > eo->_buffer.data() + data_size)
+							break;
+
+						user->process_packet(p);
+
+						p = p + packet_size;
+					}
+					if (p < eo->_buffer.data() + data_size)
+					{
+						user->_remained = static_cast<unsigned char>(eo->_buffer.data() + data_size - p);
+						memcpy(p, eo->_buffer.data(), user->_remained);
+					}
+					else
+						user->_remained = 0;
+
+					user->do_recv();
+					break;
+				}
+			}
 		}
-		memcpy(_send_buffer.data(), data.data(), packet_size);
-		_send_wsabuf[0].buf = _send_buffer.data();
-		_send_wsabuf[0].len = static_cast<ULONG>(packet_size);
 	}
 
-	//session
-	SESSION::SESSION()
+	SESSION::SESSION() : _state{ SESSION_STATE::ST_FREE }
 	{
-		std::cout << "DEFAULT SESSION CONSTRUCTOR CALLED!!\n";
-		exit(-1);
+		std::cerr << "Default Constructor called, this should not happen!" << std::endl;
+		exit(1);
 	}
-
-	SESSION::SESSION(long long session_id, SOCKET s) : _id(session_id), _c_socket(s)
-	{
-		_recv_wsabuf[0].len = sizeof(_recv_buffer);
-		_recv_wsabuf[0].buf = _recv_buffer.data();
-
-		_recv_over.hEvent = reinterpret_cast<HANDLE>(session_id);
-
-		
-
-		// 클라이언트에게 ID 전송
-
-		do_recv();
-		
-	}
-
+	SESSION::SESSION(long long session_id, SOCKET s)
+			: _c_socket{ s }, _id{ session_id }, _remained{ 0 }
+	{}
 	SESSION::~SESSION()
 	{
-		closesocket(_c_socket);
+		packet::sc_packet_leave lp;
+		lp._size = sizeof(lp);
+		lp._type = packet::PACKET_TYPE::S2C_P_LEAVE;
+		lp._id = _id;
 
-		std::cout << "클라이언트 [" << _id << "] 연결 종료" << std::endl;
+		for (auto& [id, u] : g_users)
+		{
+			if (_id != id)
+			{
+				std::shared_ptr<SESSION> user = u;
+				if (user && user->_state == SESSION_STATE::ST_INGAME)
+				{
+					user->do_send(&lp);
+				}
+			}
+		}	// 다른 유저들에게 나간다고 알림
+		closesocket(_c_socket); // 소켓 닫기
 	}
-
 	void SESSION::do_recv()
 	{
 		DWORD recv_flag = 0;
-		ZeroMemory(&_recv_over, sizeof(_recv_over));
-		_recv_over.hEvent = reinterpret_cast<HANDLE>(_id);
-		auto ret = WSARecv(_c_socket, _recv_wsabuf.data(), 1, NULL, &recv_flag, &_recv_over, g_recv_callback);
+		ZeroMemory(&_recv_over._over, sizeof(_recv_over._over));
+		_recv_over._wsabuf[0].buf = reinterpret_cast<CHAR*>(_recv_over._buffer.data() + _remained);
+		_recv_over._wsabuf[0].len = static_cast<ULONG>(_recv_over._buffer.size() - _remained);
+
+		auto ret = WSARecv(_c_socket, _recv_over._wsabuf.data(), 1, NULL,
+						   &recv_flag, &_recv_over._over, NULL);
+
 		if (0 != ret)
 		{
 			auto err_no = WSAGetLastError();
-			main::error_display("WSARecv 에서", err_no);
-		}
-	}
-
-	void SESSION::process_command(packet::CommandType cmd)
-	{
-		auto& position = main::g_positions[_id];
-		switch (cmd)
-		{
-		case chess::packet::CommandType::MOVE_UP:
-			position.y = (position.y + 7) % 8;
-			break;
-		case chess::packet::CommandType::MOVE_DOWN:
-			position.y = (position.y + 1) % 8;
-			break;
-		case chess::packet::CommandType::MOVE_LEFT:
-			position.x = (position.x + 7) % 8;
-			break;
-		case chess::packet::CommandType::MOVE_RIGHT:
-			position.x = (position.x + 1) % 8;
-			break;
-		case chess::packet::CommandType::error:
-			std::cout << "에러?" << std::endl;
-			break;
-		case chess::packet::CommandType::CONNECT:
-			std::cout << "클라이언트 [" << _id << "] 연결" << std::endl;
-			break;
-		case chess::packet::CommandType::DISCONNECT:
-			std::cout << "클라이언트 [" << _id << "] 연결 종료 요청" << std::endl;
-			main::g_positions.erase(_id);
-			main::g_users.erase(_id);
-			break;
-		default:
-			std::cout << "Unknown command received" << std::endl;
-			break;
-		}
-		return;
-	}
-
-	void SESSION::recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED p_over, DWORD flag)
-	{
-		if (err != 0 || num_bytes == 0)
-		{
-			// 에러 발생
-			if (err == WSAECONNRESET)
+			if (WSA_IO_PENDING != err_no)
 			{
-				std::cout << "클라이언트 [" << _id << "] 비정상 종료" << std::endl;
-			}
-			else
-			{
-				std::cout << "에러 발생: " << err << std::endl;
-			}
-
-			// 클라이언트 연결 종료 처리
-			if (main::g_positions.contains(_id))
-			{
-				main::g_positions.erase(_id);
-			}
-			if (main::g_users.contains(_id))
-			{
-				main::g_users.erase(_id);
-			}
-
-			return;
-		}
-
-		auto command_packet = packet::CommandPacket::deserialize(_recv_buffer.data(), num_bytes);
-		process_command(command_packet.command);
-
-		spread_users();
-
-		if (packet::CommandType::DISCONNECT == command_packet.command)
-		{
-			return;
-		}
-		do_recv();
-	}
-
-	void SESSION::spread_users()
-	{
-		std::vector<char> all_positions_data;
-		//std::cout << "g_positions size: " << main::g_positions.size() << std::endl;
-		for (const auto& [id, position] : main::g_positions)
-		{
-			auto position_packet = chess::packet::PositionPacket{ id, position.x, position.y };
-			auto serialized_data = position_packet.serialize();
-			all_positions_data.insert(all_positions_data.end(), serialized_data.begin(), serialized_data.end());
-		}
-
-		// 현재 세션에게 자신의 위치를 포함한 모든 유저의 좌표를 전송
-		// 다른 모든 세션에게 데이터를 전송
-		for (auto& u : main::g_users | std::views::values)
-		{
-			u.do_send(_id, all_positions_data); // 모든 유저에게 모든 유저의 좌표를 보내줌
-		}
-	}
-
-	void SESSION::do_send(long long id, const std::vector<char>& data)
-	{
-		EXP_OVER* o = new EXP_OVER(id, data);
-		DWORD size_sent;
-		int ret = WSASend(_c_socket, o->_send_wsabuf.data(), 1, &size_sent, 0, &(o->_send_over), g_send_callback);
-		if (SOCKET_ERROR == ret)
-		{
-			auto err_no = WSAGetLastError();
-			main::error_display("WSASend 에서", err_no);
-		}
-	}
-
-	void SESSION::send_id() // 추가
-	{
-		packet::PositionPacket packet{ _id, 0, 0 };
-		
-		std::vector<char> all_positions_data = packet.serialize();
-		
-		for (const auto& [id, position] : main::g_positions)
-		{
-			auto position_packet = chess::packet::PositionPacket{ id, position.x, position.y };
-			auto serialized_data = position_packet.serialize();
-			all_positions_data.insert(all_positions_data.end(), serialized_data.begin(), serialized_data.end());
-		}
-
-		// 현재 세션에게 자신의 위치를 포함한 모든 유저의 좌표를 전송
-		// 다른 모든 세션에게 데이터를 전송
-		do_send(_id, all_positions_data);
-		for (auto& [id, u] : main::g_users )
-		{
-			if (id != _id )
-			{
-				u.do_send(_id, all_positions_data); // 모든 유저에게 모든 유저의 좌표를 보내줌
+				print_error("WSARecv", err_no);
+				exit(-1);
 			}
 		}
+	}
+	void SESSION::do_send(void* buff)
+	{
+		EXP_OVER* o = new EXP_OVER(IO_SEND); // 전송 작업을 위한 OVERLAPPED 구조체 생성
+		const unsigned char packet_size = static_cast<unsigned char*>(buff)[0]; // 패킷 크기 추출
+		memcpy(o->_buffer.data(), buff, packet_size); // 버퍼에 패킷 데이터 복사
+		o->_wsabuf[0].len = packet_size; // WSABUF의 길이 설정
+		DWORD size_sent; // 전송된 바이트 수를 저장할 변수
+		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL); // 비동기 전송 요청
+	}
+	void SESSION::send_player_info_packet()
+	{
+		packet::sc_packet_avatar_info p;
+		p._size = sizeof(p);
+		p._type = packet::PACKET_TYPE::S2C_P_AVATAR_INFO;
+		p._id = _id;
+		p._x = _x;
+		p._y = _y;
+		p._level = 1;
+		p._hp = 100;
+		p._exp = 200;
+		do_send(&p);
+	}
+	void SESSION::send_player_pos()
+	{
+		packet::sc_packet_move p;
+		p._size = sizeof(p);
+		p._type = packet::PACKET_TYPE::S2C_P_MOVE;
+		p._id = _id;
+		p._x = _x;
+		p._y = _y;
+		do_send(&p);
+	}
+	void SESSION::process_packet(unsigned char* p)
+	{
+		const unsigned char packet_type = p[1];
+		switch (packet_type)
+		{
+
+			case packet::PACKET_TYPE::C2S_P_LOGIN:
+			{
+				packet::cs_packet_login* packet = reinterpret_cast<packet::cs_packet_login*>(p);
+				_name = packet->_name;
+				_x = 4;
+				_y = 4;
+				_state = SESSION_STATE::ST_INGAME;
+
+				send_player_info_packet();
+
+
+				packet::sc_packet_enter ep;
+				ep._size = sizeof(ep);
+				ep._type = packet::PACKET_TYPE::S2C_P_ENTER;
+				ep._id = _id;
+				strcpy_s(ep._name, _name.c_str());
+				ep._o_type = 0;
+				ep._x = _x;
+				ep._y = _y;
+
+
+
+				for (auto& u : g_users)
+				{
+					if (u.first != _id)
+					{
+						std::shared_ptr<SESSION> p = u.second;
+
+						if ((nullptr != p) && (p->_state == SESSION_STATE::ST_INGAME))
+							p->do_send(&ep);
+
+					}
+
+				}
+
+
+
+				for (auto& u : g_users)
+				{
+					if (u.first != _id)
+					{
+						std::shared_ptr<SESSION> p = u.second;
+
+						if ((nullptr == p) || (p->_state != SESSION_STATE::ST_INGAME))
+							continue;
+
+						packet::sc_packet_enter ep;
+						ep._size = sizeof(ep);
+						ep._type = packet::PACKET_TYPE::S2C_P_ENTER;
+						ep._id = u.first;
+						strcpy_s(ep._name, p->_name.c_str());
+						ep._o_type = 0;
+						ep._x = p->_x;
+						ep._y = p->_y;
+						do_send(&ep);
+
+					}
+				}
+				break;
+			}
+			case packet::PACKET_TYPE::C2S_P_MOVE:
+			{
+				packet::cs_packet_move* packet = reinterpret_cast<packet::cs_packet_move*>(p);
+				switch (packet->_direction)
+				{
+					case packet::MOVE_TYPE::MOVE_UP: if (_y > 0) _y = _y - 1; break;
+					case packet::MOVE_TYPE::MOVE_DOWN: if (_y < (packet::MAP_HEIGHT - 1)) _y = _y + 1; break;
+					case packet::MOVE_TYPE::MOVE_LEFT: if (_x > 0) _x = _x - 1; break;
+					case packet::MOVE_TYPE::MOVE_RIGHT: if (_x < (packet::MAP_WIDTH - 1)) _x = _x + 1; break;
+				}
+
+
+				packet::sc_packet_move mp;
+				mp._size = sizeof(mp);
+				mp._type = packet::PACKET_TYPE::S2C_P_MOVE;
+				mp._id = _id;
+				mp._x = _x;
+				mp._y = _y;
+
+				for (auto& u : g_users)
+				{
+					std::shared_ptr<SESSION> p = u.second;
+
+					if ((nullptr != p) && (p->_state == SESSION_STATE::ST_INGAME))
+						p->do_send(&mp);
+				}
+				break;
+			}
+			default:
+				std::cout << "Error Invalid Packet Type\n";
+				exit(-1);
+		}
+	}
 	}
 }

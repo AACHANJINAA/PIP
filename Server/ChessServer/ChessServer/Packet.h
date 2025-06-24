@@ -2,26 +2,35 @@
 #include "CommonHeader.h"
 namespace chess::packet
 {
-    enum class CommandType : std::uint8_t
+    constexpr short SERVER_PORT = 3000;
+
+    enum class PACKET_TYPE : char
     {
+        error = 0,
+        S2C_P_AVATAR_INFO = 1,
+        S2C_P_MOVE = 2,
+        S2C_P_ENTER = 3,
+        S2C_P_LEAVE = 4,
+        C2S_P_LOGIN = 5,
+        C2S_P_MOVE = 6,
+	};
+
+    constexpr char MAX_ID_LENGTH = 20;
+
+    enum class MOVE_TYPE : char
+    {
+        error = 0,
         MOVE_UP,
         MOVE_DOWN,
         MOVE_RIGHT,
         MOVE_LEFT,
-        CONNECT,
-        DISCONNECT,
-        error
     };
-    enum OperationType : std::uint8_t
-    {
-        OPERATION_CONNECT,
-        OPERATION_DISCONNECT,
-        OPERATION_MOVE_UP,
-        OPERATION_MOVE_DOWN,
-        OPERATION_MOVE_LEFT,
-        OPERATION_MOVE_RIGHT,
-        OPERATION_ERROR
-	};
+
+    constexpr unsigned short MAP_HEIGHT = 8;
+    constexpr unsigned short MAP_WIDTH = 8;
+
+#pragma pack (push, 1)
+
     struct CommandPacket
     {
         CommandPacket() : command{ CommandType::MOVE_UP } {}
@@ -46,8 +55,8 @@ namespace chess::packet
             return packet;
         }
 
-		//debugging¿ë
-        friend std::ostream& operator<< (std::ostream& os, const CommandPacket& packet)
+        //debugging¿ë
+        /*friend std::ostream& operator<< (std::ostream& os, const CommandPacket& packet)
         {
             switch (packet.command)
             {
@@ -68,13 +77,13 @@ namespace chess::packet
                     break;
             }
             return os;
-        }
+        }*/
     };
 
     struct PositionPacket
     {
         char size;
-		long long id;
+        long long id;
         UINT x = 0;
         UINT y = 0;
 
@@ -98,4 +107,55 @@ namespace chess::packet
             return packet;
         }
     };
+
+    struct sc_packet_avatar_info
+    {
+        unsigned char   _size;
+        PACKET_TYPE     _type;
+        long long       _id;
+        short           _x, _y;
+        short           _hp;
+        short           _level;
+        int             _exp;
+    };
+
+    struct sc_packet_move
+    {
+        unsigned char   _size;
+        PACKET_TYPE     _type;
+        long long       _id;
+        short           _x, _y;
+    };
+
+    struct sc_packet_enter
+    {
+        unsigned char   _size;
+        PACKET_TYPE     _type;
+        long long       _id;
+        char            _name[MAX_ID_LENGTH];
+        char            _o_type;
+        short           _x, _y;
+    };
+
+    struct sc_packet_leave
+    {
+        unsigned char   _size;
+        PACKET_TYPE     _type;
+        long long       _id;
+    };
+
+    struct cs_packet_login
+    {
+        unsigned char   _size;
+        PACKET_TYPE     _type;
+        char            _name[MAX_ID_LENGTH];
+    };
+
+    struct cs_packet_move
+    {
+        unsigned char   _size;
+        PACKET_TYPE     _type;
+        char            _direction;
+    };
+
 }
