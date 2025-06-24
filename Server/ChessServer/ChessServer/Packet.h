@@ -12,6 +12,16 @@ namespace chess::packet
         DISCONNECT,
         error
     };
+    enum OperationType : std::uint8_t
+    {
+        OPERATION_CONNECT,
+        OPERATION_DISCONNECT,
+        OPERATION_MOVE_UP,
+        OPERATION_MOVE_DOWN,
+        OPERATION_MOVE_LEFT,
+        OPERATION_MOVE_RIGHT,
+        OPERATION_ERROR
+	};
     struct CommandPacket
     {
         CommandPacket() : command{ CommandType::MOVE_UP } {}
