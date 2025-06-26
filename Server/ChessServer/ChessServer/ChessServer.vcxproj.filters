@@ -15,23 +15,23 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Callback.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="server.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="PacketManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHandlers.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Callback.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Packet.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
@@ -39,6 +39,15 @@
       <Filter>소스 파일</Filter>
     </ClInclude>
     <ClInclude Include="CommonHeader.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketManager.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandlers.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>

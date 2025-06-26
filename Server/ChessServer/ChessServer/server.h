@@ -1,5 +1,5 @@
 #pragma once
-#include "Callback.h"
+#include "pch.h"
 #include "CommonHeader.h"
 #include "Packet.h"
 
@@ -40,14 +40,17 @@ namespace chess::server
 		ST_INGAME = 1,
 		ST_CLOSE = 2,
 	};
-	class SESSION
+
+	class SESSION : public std::enable_shared_from_this<SESSION>
 	{
 	public:
 		SOCKET						_c_socket;
 		long long					_id;
 
 		EXP_OVER					_recv_over { IO_RECV };
-		unsigned char				_remained;
+		//unsigned char				_remained;
+
+		std::vector<char>			_recv_buffer; // 세션별 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
 
 		std::atomic<SESSION_STATE>	_state;
 		short						_x, _y;
@@ -59,14 +62,16 @@ namespace chess::server
 		~SESSION();
 
 		void do_recv();
-		void do_send(void* buff);
+		void do_send(const char* data, size_t size);
+		void OnRecv(size_t len);
 
 		void send_player_info_packet();
-		void send_player_pos();
-		void process_packet(unsigned char* p);
+
+		/*void send_player_pos();
+		void process_packet(unsigned char* p);*/
 	};
 
-	/*void do_accept(SOCKET s_socket, EXP_OVER& accept_over);
-	void worker();*/
+	void do_accept(SOCKET s_socket, EXP_OVER& accept_over);
+	void worker();
 	
 }
