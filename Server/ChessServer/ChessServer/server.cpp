@@ -48,52 +48,53 @@ namespace chess::server
 			switch (eo->_io_op)
 			{
 				case IO_ACCEPT:
-				{
-					int new_id = g_new_id++;
-					CreateIoCompletionPort(reinterpret_cast<HANDLE>(eo->_accept_socket), g_iocp, new_id, 0);
+					{
+						int new_id = g_new_id++;
+						CreateIoCompletionPort(reinterpret_cast<HANDLE>(eo->_accept_socket), g_iocp, new_id, 0);
 
-					std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, eo->_accept_socket);
+						std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, eo->_accept_socket);
 
-					g_users.insert(std::make_pair(new_id, p));
-					p->do_recv(); // 새로운 세션에 대해 recv 시작
-					do_accept(g_s_socket, g_accept_over);
-				}
-				break;
+						g_users.insert(std::make_pair(new_id, p));
+						p->do_recv(); // 새로운 세션에 대해 recv 시작
+						do_accept(g_s_socket, g_accept_over);
+					}
+					break;
 				case IO_SEND:
 					delete eo;	// 전송 완료 후 메모리 해제
 					break;
 				case IO_RECV:
-				{
-					std::shared_ptr<SESSION> user = g_users[key];
-					if (nullptr == user)
 					{
-						break;
-					}
-
-					unsigned char* p = eo->_buffer.data();
-					int data_size = io_size + user->_remained();
-
-					while (p < eo->_buffer.data() + data_size)
-					{
-						unsigned char packet_size = *p;
-						if (p + packet_size > eo->_buffer.data() + data_size)
+						std::shared_ptr<SESSION> user = g_users[key];
+						if (nullptr == user)
+						{
 							break;
+						}
 
-						user->process_packet(p);
+						unsigned char* p = eo->_buffer.data();
+						int data_size = io_size + user->_remained();
 
-						p = p + packet_size;
+						while (p < eo->_buffer.data() + data_size)
+						{
+							unsigned char packet_size = *p;
+							if (p + packet_size > eo->_buffer.data() + data_size)
+								break;
+
+							user->process_packet(p);
+
+							p = p + packet_size;
+						}
+
+						if (p < eo->_buffer.data() + data_size)
+						{
+							user->_remained = static_cast<unsigned char>(eo->_buffer.data() + data_size - p);
+							memcpy(p, eo->_buffer.data(), user->_remained);
+						}
+						else
+							user->_remained = 0;
+
+						user->do_recv();
 					}
-					if (p < eo->_buffer.data() + data_size)
-					{
-						user->_remained = static_cast<unsigned char>(eo->_buffer.data() + data_size - p);
-						memcpy(p, eo->_buffer.data(), user->_remained);
-					}
-					else
-						user->_remained = 0;
-
-					user->do_recv();
-					break;
-				}
+						break;
 			}
 		}
 	}
@@ -110,7 +111,7 @@ namespace chess::server
 	{
 		packet::sc_packet_leave lp;
 		lp._size = sizeof(lp);
-		lp._type = packet::PACKET_TYPE::S2C_P_LEAVE;
+		lp._type = packet::PacketType::S2C_P_LEAVE;
 		lp._id = _id;
 
 		for (auto& [id, u] : g_users)
@@ -159,7 +160,7 @@ namespace chess::server
 	{
 		packet::sc_packet_avatar_info p;
 		p._size = sizeof(p);
-		p._type = packet::PACKET_TYPE::S2C_P_AVATAR_INFO;
+		p._type = packet::PacketType::S2C_P_AVATAR_INFO;
 		p._id = _id;
 		p._x = _x;
 		p._y = _y;
@@ -172,7 +173,7 @@ namespace chess::server
 	{
 		packet::sc_packet_move p;
 		p._size = sizeof(p);
-		p._type = packet::PACKET_TYPE::S2C_P_MOVE;
+		p._type = packet::PacketType::S2C_P_MOVE;
 		p._id = _id;
 		p._x = _x;
 		p._y = _y;
@@ -184,7 +185,7 @@ namespace chess::server
 		switch (packet_type)
 		{
 
-			case packet::PACKET_TYPE::C2S_P_LOGIN:
+			case packet::PacketType::C2S_P_LOGIN:
 			{
 				packet::cs_packet_login* packet = reinterpret_cast<packet::cs_packet_login*>(p);
 				_name = packet->_name;
@@ -194,17 +195,14 @@ namespace chess::server
 
 				send_player_info_packet();
 
-
 				packet::sc_packet_enter ep;
 				ep._size = sizeof(ep);
-				ep._type = packet::PACKET_TYPE::S2C_P_ENTER;
+				ep._type = packet::PacketType::S2C_P_ENTER;
 				ep._id = _id;
 				strcpy_s(ep._name, _name.c_str());
 				ep._o_type = 0;
 				ep._x = _x;
 				ep._y = _y;
-
-
 
 				for (auto& u : g_users)
 				{
@@ -214,12 +212,8 @@ namespace chess::server
 
 						if ((nullptr != p) && (p->_state == SESSION_STATE::ST_INGAME))
 							p->do_send(&ep);
-
 					}
-
 				}
-
-
 
 				for (auto& u : g_users)
 				{
@@ -232,7 +226,7 @@ namespace chess::server
 
 						packet::sc_packet_enter ep;
 						ep._size = sizeof(ep);
-						ep._type = packet::PACKET_TYPE::S2C_P_ENTER;
+						ep._type = packet::PacketType::S2C_P_ENTER;
 						ep._id = u.first;
 						strcpy_s(ep._name, p->_name.c_str());
 						ep._o_type = 0;
@@ -244,7 +238,7 @@ namespace chess::server
 				}
 				break;
 			}
-			case packet::PACKET_TYPE::C2S_P_MOVE:
+			case packet::PacketType::C2S_P_MOVE:
 			{
 				packet::cs_packet_move* packet = reinterpret_cast<packet::cs_packet_move*>(p);
 				switch (packet->_direction)
@@ -255,10 +249,9 @@ namespace chess::server
 					case packet::MOVE_TYPE::MOVE_RIGHT: if (_x < (packet::MAP_WIDTH - 1)) _x = _x + 1; break;
 				}
 
-
 				packet::sc_packet_move mp;
 				mp._size = sizeof(mp);
-				mp._type = packet::PACKET_TYPE::S2C_P_MOVE;
+				mp._type = packet::PacketType::S2C_P_MOVE;
 				mp._id = _id;
 				mp._x = _x;
 				mp._y = _y;
@@ -277,5 +270,5 @@ namespace chess::server
 				exit(-1);
 		}
 	}
-	}
 }
+

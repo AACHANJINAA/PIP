@@ -43,15 +43,15 @@ namespace chess::server
 	class SESSION
 	{
 	public:
-		SOCKET				_c_socket;
-		long long			_id;
+		SOCKET						_c_socket;
+		long long					_id;
 
-		EXP_OVER			_recv_over { IO_RECV };
-		unsigned char		_remained;
+		EXP_OVER					_recv_over { IO_RECV };
+		unsigned char				_remained;
 
 		std::atomic<SESSION_STATE>	_state;
-		short				_x, _y;
-		std::string			_name;
+		short						_x, _y;
+		std::string					_name;
 		
 	public:
 		SESSION();

@@ -4,7 +4,7 @@ namespace chess::packet
 {
     constexpr short SERVER_PORT = 3000;
 
-    enum class PACKET_TYPE : char
+	enum class PacketType : uint16_t
     {
         error = 0,
         S2C_P_AVATAR_INFO = 1,
@@ -31,87 +31,34 @@ namespace chess::packet
 
 #pragma pack (push, 1)
 
-    struct CommandPacket
+    struct PacketHeader
     {
-        CommandPacket() : command{ CommandType::MOVE_UP } {}
-        CommandPacket(int command) : command{ static_cast<CommandType>(command) } {}
-        CommandPacket(CommandType command) : command{ command } {}
-        CommandType command;
-
-        std::vector<char> serialize() const
-        {
-            std::vector<char> data(sizeof(command));
-            memcpy(data.data(), &command, sizeof(command));
-            return data;
-        }
-
-        static CommandPacket deserialize(const char* data, size_t size)
-        {
-            CommandPacket packet;
-            if (size >= sizeof(packet.command))
-            {
-                memcpy(&packet.command, data, sizeof(packet.command));
-            }
-            return packet;
-        }
-
-        //debugging용
-        /*friend std::ostream& operator<< (std::ostream& os, const CommandPacket& packet)
-        {
-            switch (packet.command)
-            {
-                case CommandType::MOVE_DOWN:
-                    os << "move down" << std::endl;
-                    break;
-                case CommandType::MOVE_UP:
-                    os << "move up" << std::endl;
-                    break;
-                case CommandType::MOVE_LEFT:
-                    os << "move left" << std::endl;
-                    break;
-                case CommandType::MOVE_RIGHT:
-                    os << "move right" << std::endl;
-                    break;
-                default:
-                    os << "패킷 에러?" << std::endl;
-                    break;
-            }
-            return os;
-        }*/
+        uint16_t size;
+        uint16_t type;
     };
 
-    struct PositionPacket
+    struct CS_LOGIN : public PacketHeader
     {
-        char size;
-        long long id;
-        UINT x = 0;
-        UINT y = 0;
-
-        std::vector<char> serialize() const
+        // 생성자에서 헤더 자동 설정
+        CS_LOGIN()
         {
-            std::vector<char> data(sizeof(id) + sizeof(x) + sizeof(y));
-            memcpy(data.data(), &id, sizeof(id)); // id를 data에 복사
-            memcpy(data.data() + sizeof(id), &x, sizeof(x)); // id 복사한 offset에 x를 복사
-            memcpy(data.data() + sizeof(id) + sizeof(x), &y, sizeof(y)); // x 복사한 offset에 y를 복사
-            return data;
+            size = sizeof(CS_LOGIN); // 가변길이가 있다면 동적으로 계산 필요
+            type = static_cast<uint16_t>(PacketType::C2S_P_LOGIN);
         }
-        static PositionPacket deserialize(const char* data, size_t size)
-        {
-            PositionPacket packet;
-            if (size >= sizeof(packet.id) + sizeof(packet.x) + sizeof(packet.y))
-            {
-                memcpy(&packet.id, data, sizeof(packet.id));
-                memcpy(&packet.x, data + sizeof(packet.id), sizeof(packet.x));
-                memcpy(&packet.y, data + sizeof(packet.id) + sizeof(packet.x), sizeof(packet.y));
-            }
-            return packet;
-        }
+        // 데이터 멤버
+        // char name[MAX_NAME_LEN]; 대신 std::string 사용을 위한 준비
     };
 
+    struct cs_packet_login
+    {
+        unsigned char   _size;
+        PacketType     _type;
+        char            _name[MAX_ID_LENGTH];
+    };
     struct sc_packet_avatar_info
     {
         unsigned char   _size;
-        PACKET_TYPE     _type;
+        PacketType     _type;
         long long       _id;
         short           _x, _y;
         short           _hp;
@@ -122,7 +69,7 @@ namespace chess::packet
     struct sc_packet_move
     {
         unsigned char   _size;
-        PACKET_TYPE     _type;
+        PacketType     _type;
         long long       _id;
         short           _x, _y;
     };
@@ -130,7 +77,7 @@ namespace chess::packet
     struct sc_packet_enter
     {
         unsigned char   _size;
-        PACKET_TYPE     _type;
+        PacketType     _type;
         long long       _id;
         char            _name[MAX_ID_LENGTH];
         char            _o_type;
@@ -140,21 +87,15 @@ namespace chess::packet
     struct sc_packet_leave
     {
         unsigned char   _size;
-        PACKET_TYPE     _type;
+        PacketType     _type;
         long long       _id;
     };
 
-    struct cs_packet_login
-    {
-        unsigned char   _size;
-        PACKET_TYPE     _type;
-        char            _name[MAX_ID_LENGTH];
-    };
 
     struct cs_packet_move
     {
         unsigned char   _size;
-        PACKET_TYPE     _type;
+        PacketType     _type;
         char            _direction;
     };
 
