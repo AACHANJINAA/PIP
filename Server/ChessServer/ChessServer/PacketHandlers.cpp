@@ -20,6 +20,8 @@ namespace chess::packet
 			finalEnterStream << enterHeader;
 			finalEnterStream.Write(enterDataStream.Data(), enterDataStream.Size());
 
+			std::cout << "[DEBUG] " << session->_name << " 님이 입장했습니다." << std::endl;
+
 			for (auto& user_pair : chess::g_users)
 			{
 				if (user_pair.first == session->_id) continue;
