@@ -4,6 +4,7 @@
 class CChess_Scene : public CScene
 {
 public:
+	CChess_Scene() {};
 	CChess_Scene(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual ~CChess_Scene();
 

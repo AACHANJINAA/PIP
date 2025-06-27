@@ -31,6 +31,9 @@
     <Filter Include="Object\Player">
       <UniqueIdentifier>{64c1a271-b4ad-47e5-87e5-226297550338}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\OtherPlayer">
+      <UniqueIdentifier>{fc9abf7d-d259-4984-b466-a6092cfee6e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -84,6 +87,9 @@
     <ClInclude Include="Chess_King.h">
       <Filter>Object\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Other_King.h">
+      <Filter>Object\OtherPlayer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chess_Client.cpp">
@@ -127,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="Chess_King.cpp">
       <Filter>Object\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Other_King.cpp">
+      <Filter>Object\OtherPlayer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

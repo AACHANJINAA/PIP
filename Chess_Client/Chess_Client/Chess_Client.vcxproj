@@ -136,6 +136,7 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="Other_King.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
@@ -154,6 +155,7 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="Other_King.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">

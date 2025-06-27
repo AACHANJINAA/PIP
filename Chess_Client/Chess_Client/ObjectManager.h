@@ -22,59 +22,48 @@ public:
 		}
 	}
 
-
 public:
 	// 모두 삭제
 	void DeleteAll();
-	void UpdateAll();
 	void DeleteVec(int WantVecNum);
 
 	void DeleteObject();
 
 	// 플레이어
-	void SetPlayer(CGameObject* player) { m_NewPlayer = player; }
+	void SetPlayer(CGameObject* player) { m_Player = player; }
 	CGameObject* GetPlayer() { return m_Player; }
 
 
 	// 오브젝트 넣기
-	void NewPushObject(CGameObject* Object) { m_AllNewObject[0]->push_back(Object); }
-	void NewPushEnemyBullet(CGameObject* Object) { m_AllNewObject[1]->push_back(Object); }
-	void NewPushPlayerBullet(CGameObject* Object) { m_AllNewObject[2]->push_back(Object); }
-	void NewPushEnemy(CGameObject* Object) { m_AllNewObject[3]->push_back(Object);}
-	void NewPushFloorObejct(CGameObject* Object) { m_AllNewObject[4]->push_back(Object); }
 
 
-	void PushObject(CGameObject* Object) { m_AllObject[0]->push_back(Object); }
-	void PushEnemyBullet(CGameObject* Object) { m_AllObject[1]->push_back(Object); }
-	void PushPlayerBullet(CGameObject* Object) { m_AllObject[2]->push_back(Object); }
-	void PushEnemy(CGameObject* Object) { m_AllObject[3]->push_back(Object); }
-	void PushFloorObejct(CGameObject* Object) { m_AllObject[4]->push_back(Object); }
+	void PushObject(std::unique_ptr<CGameObject> object);
+	void PushEnemyBullet(std::unique_ptr<CGameObject> object);
+	void PushPlayerBullet(std::unique_ptr<CGameObject> object);
+	void PushEnemy(std::unique_ptr<CGameObject> object);
+	void PushFloorObejct(std::unique_ptr<CGameObject> object);
 
 
 	// 오브젝트 얻기
-	std::vector<std::list<CGameObject*>*>& GetAllObject(){ return m_AllObject; }
+	std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& GetAllObject() { return m_AllObject; }
 
 
-	std::list<CGameObject*>& GetObjectVec() { return *m_AllObject[0];}
-	std::list<CGameObject*>& GetEnemyBulletVec() { return  *m_AllObject[1]; }
-	std::list<CGameObject*>& GetPlayerBulletVec() { return  *m_AllObject[2]; }
-	std::list<CGameObject*>& GetEnemy() { return  *m_AllObject[3]; }
-	std::list<CGameObject*>& GetFloor() { return  *m_AllObject[4]; }
+	std::list<std::unique_ptr<CGameObject>>& GetObjectVec() { return *m_AllObject[0]; }
+	std::list<std::unique_ptr<CGameObject>>& GetEnemyBulletVec() { return  *m_AllObject[1]; }
+	std::list<std::unique_ptr<CGameObject>>& GetPlayerBulletVec() { return  *m_AllObject[2]; }
+	std::list<std::unique_ptr<CGameObject>>& GetEnemy() { return  *m_AllObject[3]; }
+	std::list<std::unique_ptr<CGameObject>>& GetFloor() { return  *m_AllObject[4]; }
 
 	CGameObject* Terrain{};
 
+
 private:
+
 	static CObjectManager* m_ObjectManager;
 
 	CGameObject* m_Player{};
 
-	CGameObject* m_NewPlayer{};
-
-	std::vector<std::list<CGameObject*>*> m_AllObject{}; // 현재 씬 오브젝트
-
-	std::vector<std::list<CGameObject*>*> m_AllNewObject{}; // 새로운 씬 오브젝트
-
-	size_t m_vecSize{5}; // 벡터의 사이즈
+	std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE> m_AllObject{}; // 현재 씬 오브젝트
 
 };
 

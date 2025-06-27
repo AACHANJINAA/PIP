@@ -1,11 +1,12 @@
 #pragma once
 #include "GameObject.h"
 
-class CChess_King : public CGameObject
+
+class COther_King : public CGameObject
 {
 public:
-	CChess_King(int X = 0, int Y = 0);
-	~CChess_King();
+	COther_King(int X = 0, int Y = 0);
+	~COther_King();
 
 public:
 	// CGameObject을(를) 통해 상속됨

@@ -102,19 +102,21 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
     bool nIntersected = false;
     float fNearestHitDistance = FLT_MAX;
     CGameObject* pNearestObject = NULL;
-    std::vector<std::list<CGameObject*>*>& Vec = CObjectManager::GetManager()->GetAllObject();
 
-    if (Vec.size()) {
+
+    std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+
+    if (Arr.size()) {
         int i = 0;
-        for (std::list<CGameObject*>*& Objects : Vec) {
+        for (std::list<std::unique_ptr<CGameObject>>*& Objects : Arr) {
             if (Objects != nullptr) {
-                for (CGameObject*& Object : *Objects) {
+                for (std::unique_ptr<CGameObject>& Object : *Objects) {
                     float fHitDistance = FLT_MAX;
-                    nIntersected = Object->PickModelOBB(xmvPickPosition, xmmtxView, &fHitDistance);
+                    nIntersected = Object.get()->PickModelOBB(xmvPickPosition, xmmtxView, &fHitDistance);
                     if (nIntersected && (fHitDistance < fNearestHitDistance))
                     {
                         fNearestHitDistance = fHitDistance;
-                        pNearestObject = Object;
+                        pNearestObject = Object.get();
                     }
                 }
                 ++i;
@@ -124,21 +126,18 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
             }
         }
     }
+
     return(pNearestObject);
     return nullptr;
 }
 
 void CScene::ReleaseUploadBuffers()
 {
-    std::vector<std::list<CGameObject*>*>& Vec = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
-    if (Vec.size()) {
-        for (std::list<CGameObject*>*& Objects : Vec) {
-            if (Objects != nullptr) {
-                for (CGameObject*& Object : *Objects) {
-                    Object->ReleaseUploadBuffers();
-                }
-            }
+    for (std::list<std::unique_ptr<CGameObject>>*& Objects : Arr) {
+        for (std::unique_ptr<CGameObject>& Object : *Objects) {
+            Object.get()->ReleaseUploadBuffers();
         }
     }
 }

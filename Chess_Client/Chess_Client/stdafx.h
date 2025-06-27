@@ -37,6 +37,7 @@ using Microsoft::WRL::ComPtr;
 // 필요한 것들 추가
 #include <iostream>
 #include <vector>
+#include <array>
 #include <list>
 #include <fstream>
 #include <string>
@@ -55,12 +56,30 @@ using Microsoft::WRL::ComPtr;
 #define EPSILON					1.0e-6f
 
 
+// 이것은 오브젝트 매니저를 위한 변수입니다.
+#define ALLARRAYSIZE				5
+
+
 #define FRAME_BUFFER_WIDTH 1200
 #define FRAME_BUFFER_HEIGHT 800
 
 extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nBytes, 
 	D3D12_HEAP_TYPE d3dHeapType = D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 	ID3D12Resource** ppd3dUploadBuffer = NULL);
+
+
+
+enum class CommandType : std::uint8_t
+{
+	MOVE_UP,
+	MOVE_DOWN,
+	MOVE_RIGHT,
+	MOVE_LEFT,
+	CONNECT,
+	DISCONNECT,
+	error
+};
+
 
 //3차원 벡터의 연산 
 namespace Vector3
