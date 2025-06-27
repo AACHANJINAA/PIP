@@ -80,7 +80,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 				pRotatingObject->SetRotationAxis(XMFLOAT3(0.0f, 1.0f, 0.0f));
 				pRotatingObject->SetRotationSpeed(10.0f * (abs(x + y + z) % 10) + 3.0f);
 
-				m_vObjects.push_back(std::move(pRotatingObject)); 
+				m_vObjects.emplace_back(std::move(pRotatingObject));
 			}
 		}
 	}
