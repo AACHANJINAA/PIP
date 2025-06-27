@@ -24,10 +24,21 @@ namespace chess::packet
 
         void Dispatch(uint16_t packetId, const std::shared_ptr<chess::server::SESSION>& session, chess::packet::PacketStream& stream)
         {
+            std::cout << "[DISPATCHER] Dispatching packet type " << packetId << " for Session ID: " << session->_id << std::endl;
+
             auto it = _handlers.find(packetId);
             if (it != _handlers.end())
             {
+                // 더미 변수에 헤더를 읽어 스트림의 읽기 위치(_pos)를 안전하게 이동시킵니다.
+                PacketHeader dummyHeader;
+                stream >> dummyHeader;
+
+                // 이제 핸들러는 헤더 바로 다음부터 읽기 시작합니다.
                 it->second(session, stream);
+            }
+            else
+            {
+                std::cout << "[DISPATCHER] **ERROR**: No handler found for packet type " << packetId << std::endl;
             }
         }
     };

@@ -3,25 +3,54 @@
 
 namespace chess::packet
 {
-    // PacketHandlers.cpp 수정안
-    void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
-    {
-		// 3. 다른 모든 유저에게 '나의 입장'을 알림
+
+	// 중복 코드를 줄이기 위한 Helper 함수
+	PacketStream MakeEnterPacket(std::shared_ptr<chess::server::SESSION> session)
+	{
+		PacketStream dataStream;
+		dataStream << session->_id << (char)0 /*object_type*/ << session->_x << session->_y << session->_name;
+
+		PacketHeader header;
+		header._type = static_cast<uint16_t>(PacketType::S2C_P_ENTER);
+		header._size = sizeof(header) + dataStream.Size();
+
+		PacketStream finalStream;
+		finalStream << header;
+		finalStream.Write(dataStream.Data(), dataStream.Size());
+		return finalStream;
+	}
+	
+
+	void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
+	{
+		// 1. 클라이언트가 보낸 데이터(name)를 추출
+		std::string name;
+		try
 		{
-			// 입장 패킷 조립 (가변 길이 name 포함)
-			packet::PacketStream enterDataStream;
-			enterDataStream << session->_id << (char)0 /*object_type*/ << session->_x << session->_y << session->_name;
+			stream >> name;
+		}
+		catch (const std::runtime_error& e)
+		{
+			std::cerr << "[HANDLER C2S_LOGIN] **ERROR**: Failed to read name from stream for Session " << session->_id << ". " << e.what() << std::endl;
+			return;
+		}
 
-			packet::PacketHeader enterHeader;
-			enterHeader._type = static_cast<uint16_t>(packet::PacketType::S2C_P_ENTER);
-			enterHeader._size = sizeof(enterHeader) + enterDataStream.Size();
+		std::cout << "[HANDLER C2S_LOGIN] Session " << session->_id << " logged in with name: '" << name << "'" << std::endl;
 
-			packet::PacketStream finalEnterStream;
-			finalEnterStream << enterHeader;
-			finalEnterStream.Write(enterDataStream.Data(), enterDataStream.Size());
+		// 2. 서버에 세션 정보 채우기
+		session->_name = name;
+		session->_x = 4;
+		session->_y = 4;
+		session->_state = server::SESSION_STATE::ST_INGAME;
 
-			std::cout << "[DEBUG] " << session->_name << " 님이 입장했습니다." << std::endl;
+		// 3. '나 자신'에게 나의 상세 정보(아바타 정보)를 보냄
+		std::cout << "[HANDLER C2S_LOGIN] Sending AVATAR_INFO to " << session->_name << "." << std::endl;
+		session->send_player_info_packet();
 
+		// 4. '다른 모든 유저'에게 '나의 입장'을 알림
+		{
+			std::cout << "[HANDLER C2S_LOGIN] Broadcasting ENTER packet for " << session->_name << " to other players." << std::endl;
+			PacketStream myEnterPacket = MakeEnterPacket(session);
 			for (auto& user_pair : chess::g_users)
 			{
 				if (user_pair.first == session->_id) continue;
@@ -29,63 +58,51 @@ namespace chess::packet
 				auto other_session = user_pair.second;
 				if (other_session && other_session->_state == server::SESSION_STATE::ST_INGAME)
 				{
-					other_session->do_send(finalEnterStream.Data(), finalEnterStream.Size());
+					other_session->do_send(myEnterPacket.Data(), myEnterPacket.Size());
 				}
 			}
 		}
 
-		// 4. 나에게 '다른 유저들의 정보'를 전송
-		for (auto& user_pair : chess::g_users)
+		// 5. '나 자신'에게 '이미 접속해 있던 다른 유저들의 정보'를 전송
 		{
-			if (user_pair.first == session->_id) continue;
-
-			auto other_session = user_pair.second;
-			if (other_session && other_session->_state == server::SESSION_STATE::ST_INGAME)
+			std::cout << "[HANDLER C2S_LOGIN] Sending existing players' info to " << session->_name << "." << std::endl;
+			for (auto& user_pair : chess::g_users)
 			{
-				// 다른 유저의 입장 패킷 조립
-				packet::PacketStream otherEnterDataStream;
-				otherEnterDataStream << other_session->_id << (char)0 << other_session->_x << other_session->_y << other_session->_name;
+				if (user_pair.first == session->_id) continue;
 
-				packet::PacketHeader otherHeader;
-				otherHeader._type = static_cast<uint16_t>(packet::PacketType::S2C_P_ENTER);
-				otherHeader._size = sizeof(otherHeader) + otherEnterDataStream.Size();
-
-				packet::PacketStream finalOtherStream;
-				finalOtherStream << otherHeader;
-				finalOtherStream.Write(otherEnterDataStream.Data(), otherEnterDataStream.Size());
-
-				// '나'에게 전송
-				session->do_send(finalOtherStream.Data(), finalOtherStream.Size());
+				auto other_session = user_pair.second;
+				if (other_session && other_session->_state == server::SESSION_STATE::ST_INGAME)
+				{
+					PacketStream otherEnterPacket = MakeEnterPacket(other_session);
+					session->do_send(otherEnterPacket.Data(), otherEnterPacket.Size());
+				}
 			}
 		}
-    }
+	}
 
 	void Handle_C2S_MOVE(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
-    {
-		// 1. 역직렬화: 스트림에서 이동 방향을 읽어온다.
+	{
 		packet::MOVE_TYPE direction;
 		try
 		{
 			stream >> direction;
 		}
-		catch (...) 
-		{
-			__debugbreak();
-			return;
-		}
+		catch (...) { return; }
 
-		// 2. 세션의 좌표를 업데이트한다 (월드 경계 체크 포함)
+		std::cout << "[HANDLER C2S_MOVE] Session " << session->_id << " requests move in direction: " << static_cast<int>(direction) << std::endl;
+
 		switch (direction)
 		{
 			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y > 0) session->_y--; break;
 			case packet::MOVE_TYPE::MOVE_DOWN:  if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break;
 			case packet::MOVE_TYPE::MOVE_LEFT:  if (session->_x > 0) session->_x--; break;
 			case packet::MOVE_TYPE::MOVE_RIGHT: if (session->_x < packet::MAP_WIDTH - 1) session->_x++; break;
-			default: return; // 정의되지 않은 방향 값은 무시
+			default: return;
 		}
 
-		// 3. 이동 결과를 모든 클라이언트에게 브로드캐스팅한다.
-		packet::SC_PACKET_MOVE movePacket; 
+		std::cout << "[HANDLER C2S_MOVE] Session " << session->_id << " new position: (" << session->_x << ", " << session->_y << ")" << std::endl;
+
+		packet::SC_PACKET_MOVE movePacket;
 		movePacket._id = session->_id;
 		movePacket._x = session->_x;
 		movePacket._y = session->_y;
@@ -98,7 +115,6 @@ namespace chess::packet
 		finalMoveStream << header;
 		finalMoveStream << movePacket;
 
-		// 게임중인 모든 유저에게 전송
 		for (auto& user_pair : chess::g_users)
 		{
 			auto other_session = user_pair.second;
@@ -107,5 +123,5 @@ namespace chess::packet
 				other_session->do_send(finalMoveStream.Data(), finalMoveStream.Size());
 			}
 		}
-    }
+	}
 }

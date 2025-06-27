@@ -26,60 +26,47 @@ namespace chess::server
 			BOOL ret = GetQueuedCompletionStatus(g_iocp, &io_size, &key, &o, INFINITE);
 			EXP_OVER* eo = reinterpret_cast<EXP_OVER*>(o);
 
-			if (FALSE == ret)
-			{
-				auto err_no = WSAGetLastError();
-				print_error("GetQueuedCompletionStatus", err_no);
-				if (0 != g_users.count(key))
-				{
-					g_users.at(key) = nullptr; // 세션이 종료되었으므로 nullptr로 설정
-				}
-				continue;
-			}
-
-			if ((IO_RECV == eo->_io_op || IO_SEND == eo->_io_op) && 0 == io_size)
+			if (FALSE == ret || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
 			{
 				if (0 != g_users.count(key))
 				{
-					g_users.at(key) = nullptr; // 세션이 종료되었으므로 nullptr로 설정
+					std::cout << "[WORKER] Client disconnected. Removing Session ID: " << key << std::endl;
+					g_users.at(key) = nullptr; // 세션 제거
 				}
+				if (eo->_io_op == IO_SEND) delete eo;
 				continue;
 			}
 
 			switch (eo->_io_op)
 			{
 				case IO_ACCEPT:
-					{
-						int new_id = g_new_id++;
-						CreateIoCompletionPort(reinterpret_cast<HANDLE>(eo->_accept_socket), g_iocp, new_id, 0);
-
-						std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, eo->_accept_socket);
-
-						g_users.insert(std::make_pair(new_id, p));
-						p->do_recv(); // 새로운 세션에 대해 recv 시작
-						do_accept(g_s_socket, g_accept_over);
-					}
+				{
+					int new_id = g_new_id++;
+					std::cout << "[WORKER] New client connected. Session ID: " << new_id << std::endl;
+					CreateIoCompletionPort(reinterpret_cast<HANDLE>(eo->_accept_socket), g_iocp, new_id, 0);
+					std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, eo->_accept_socket);
+					g_users.insert(std::make_pair(new_id, p));
+					p->do_recv();
+					do_accept(g_s_socket, g_accept_over);
 					break;
+				}
 				case IO_SEND:
-					delete eo;	// 전송 완료 후 메모리 해제
+				{
+					std::cout << "[WORKER] " << io_size << " bytes sent from Session ID: " << key << std::endl;
+					delete eo;
 					break;
+				}
 				case IO_RECV:
-					{
-						auto user_iter = g_users.find(key);
-						if (user_iter == g_users.end())
-						{
-							break;
-						}
-						std::shared_ptr<SESSION> user = user_iter->second;
-						if (nullptr == user)
-						{
-							break;
-						}
-						user->OnRecv(io_size);
-
-						user->do_recv();
-					}
+				{
+					std::cout << "[WORKER] Received " << io_size << " bytes from Session ID: " << key << std::endl;
+					auto user_iter = g_users.find(key);
+					if (user_iter == g_users.end()) break;
+					std::shared_ptr<SESSION> user = user_iter->second;
+					if (nullptr == user) break;
+					user->OnRecv(io_size);
+					user->do_recv();
 					break;
+				}
 			}
 		}
 	}
@@ -93,11 +80,11 @@ namespace chess::server
 	SESSION::SESSION(long long session_id, SOCKET s)
 		: _c_socket{ s }, _id{ session_id }
 	{
-		// 생성자에서 상태 초기화
-		//_state = SESSION_STATE::ST_FREE; //??
+		_state = SESSION_STATE::ST_FREE;
 	}
 	SESSION::~SESSION()
 	{
+		std::cout << "[SESSION " << _id << "] Session destroyed. Name: " << _name << std::endl;
 		// 퇴장 패킷 생성
 		packet::SC_PACKET_LEAVE leavePacket;
 		leavePacket._id = _id;
@@ -154,35 +141,26 @@ namespace chess::server
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 		DWORD size_sent;
 		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL);
+
+		std::cout << "[SESSION " << _id << "] Sending " << size << " bytes. Type: " << reinterpret_cast<const packet::PacketHeader*>(data)->_type << std::endl;
 	}
 	void SESSION::OnRecv(size_t len)
 	{
-		// EXP_OVER의 버퍼에 있는 데이터를 세션의 개인 수신 버퍼로 복사
 		_recv_buffer.insert(_recv_buffer.end(), _recv_over._buffer.data(), _recv_over._buffer.data() + len);
-
 		size_t processed_bytes = 0;
 		while (true)
 		{
-			// 처리할 데이터가 헤더 크기보다 작은지 확인
 			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader))
 				break;
-
 			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
-
-			// 패킷 전체가 도착했는지 확인
 			if (_recv_buffer.size() - processed_bytes < header->_size)
 				break;
-
-			// 완전한 패킷 하나를 스트림으로 만들어서 Dispatcher에 전달
+			std::cout << "[SESSION " << _id << "] Processing packet. Type: " << header->_type << ", Size: " << header->_size << std::endl;
 			packet::PacketStream stream(reinterpret_cast<char*>(header), header->_size);
-
-			// PacketManager를 통해 올바른 핸들러 호출
 			packet::PacketManager::Instance()->Dispatch(header->_type, shared_from_this(), stream);
-
 			processed_bytes += header->_size;
 		}
 
-		// 처리한 만큼 버퍼에서 데이터 제거
 		if (processed_bytes > 0)
 		{
 			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
