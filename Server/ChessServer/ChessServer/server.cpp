@@ -42,7 +42,7 @@ namespace chess::server
 				case IO_ACCEPT:
 				{
 					int new_id = g_new_id++;
-					std::cout << "[WORKER] New client connected. Session ID: " << new_id << std::endl;
+					LOG("[WORKER] New client connected. Session ID: " << new_id);
 					CreateIoCompletionPort(reinterpret_cast<HANDLE>(eo->_accept_socket), g_iocp, new_id, 0);
 					std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, eo->_accept_socket);
 					g_users.insert(std::make_pair(new_id, p));
@@ -52,13 +52,13 @@ namespace chess::server
 				}
 				case IO_SEND:
 				{
-					std::cout << "[WORKER] " << io_size << " bytes sent from Session ID: " << key << std::endl;
+					LOG("[WORKER] " << io_size << " bytes sent from Session ID: " << key);
 					delete eo;
 					break;
 				}
 				case IO_RECV:
 				{
-					std::cout << "[WORKER] Received " << io_size << " bytes from Session ID: " << key << std::endl;
+					LOG("[WORKER] Received " << io_size << " bytes from Session ID: " << key);
 					auto user_iter = g_users.find(key);
 					if (user_iter == g_users.end()) break;
 					std::shared_ptr<SESSION> user = user_iter->second;
@@ -73,8 +73,7 @@ namespace chess::server
 
 	SESSION::SESSION() : _state{ SESSION_STATE::ST_FREE }
 	{
-		std::cerr << "Default Constructor called, this should not happen!" << std::endl;
-		exit(1);
+		ERROR("Default Constructor called, this should not happen!" << std::endl);
 	}
 	// server.cpp 수정안
 	SESSION::SESSION(long long session_id, SOCKET s)
@@ -84,7 +83,7 @@ namespace chess::server
 	}
 	SESSION::~SESSION()
 	{
-		std::cout << "[SESSION " << _id << "] Session destroyed. Name: " << _name << std::endl;
+		LOG("[SESSION " << _id << "] Session destroyed. Name: " << _name);
 		// 퇴장 패킷 생성
 		packet::SC_PACKET_LEAVE leavePacket;
 		leavePacket._id = _id;
@@ -140,9 +139,8 @@ namespace chess::server
 		memcpy(o->_buffer.data(), data, size);
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 		DWORD size_sent;
+		LOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << reinterpret_cast<const packet::PacketHeader*>(data)->_type);
 		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL);
-
-		std::cout << "[SESSION " << _id << "] Sending " << size << " bytes. Type: " << reinterpret_cast<const packet::PacketHeader*>(data)->_type << std::endl;
 	}
 	void SESSION::OnRecv(size_t len)
 	{
@@ -155,7 +153,7 @@ namespace chess::server
 			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
 			if (_recv_buffer.size() - processed_bytes < header->_size)
 				break;
-			std::cout << "[SESSION " << _id << "] Processing packet. Type: " << header->_type << ", Size: " << header->_size << std::endl;
+			LOG("[SESSION " << _id << "] Processing packet. Type: " << header->_type << ", Size: " << header->_size);
 			packet::PacketStream stream(reinterpret_cast<char*>(header), header->_size);
 			packet::PacketManager::Instance()->Dispatch(header->_type, shared_from_this(), stream);
 			processed_bytes += header->_size;

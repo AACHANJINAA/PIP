@@ -24,7 +24,7 @@ namespace chess::packet
 
         void Dispatch(uint16_t packetId, const std::shared_ptr<chess::server::SESSION>& session, chess::packet::PacketStream& stream)
         {
-            std::cout << "[DISPATCHER] Dispatching packet type " << packetId << " for Session ID: " << session->_id << std::endl;
+            LOG("[DISPATCHER] Dispatching packet type " << packetId << " for Session ID: " << session->_id);
 
             auto it = _handlers.find(packetId);
             if (it != _handlers.end())
@@ -38,7 +38,7 @@ namespace chess::packet
             }
             else
             {
-                std::cout << "[DISPATCHER] **ERROR**: No handler found for packet type " << packetId << std::endl;
+                LOG("[DISPATCHER] **ERROR**: No handler found for packet type " << packetId);
             }
         }
     };

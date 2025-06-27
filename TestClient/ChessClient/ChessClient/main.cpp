@@ -208,6 +208,8 @@ void recv_and_process_packets()
         PostQuitMessage(0);
         return;
     }
+    if (retval == 0) return; // 정상 종료
+
     // 새로 받은 데이터를 전역 수신 버퍼에 추가
     g_recvBuffer.insert(g_recvBuffer.end(), recvBuffer, recvBuffer + retval);
 
@@ -225,7 +227,7 @@ void recv_and_process_packets()
             break;
 
         // 3. 패킷 종류에 따라 처리
-        // 헤더 다음 위치부터 파싱 시작
+        // 헤더 다음 위치부터 파싱 시작. char* 포인터로 순차적으로 읽는다.
         char* payload_ptr = g_recvBuffer.data() + sizeof(chess::packet::PacketHeader);
         chess::packet::PacketType type = static_cast<chess::packet::PacketType>(header->_type);
 
@@ -237,21 +239,36 @@ void recv_and_process_packets()
                 g_myPlayer.id = pkt->_id;
                 g_myPlayer.x = pkt->_x;
                 g_myPlayer.y = pkt->_y;
-                // 이름은 LOGIN 패킷 보낼 때 이미 알고 있으므로 여기서는 생략
+                /*g_myPlayer.hp = pkt->_hp;
+                g_myPlayer.exp = pkt->_exp;
+                g_myPlayer.level = pkt->_level;*/ //아직은 안씀
                 break;
             }
             case chess::packet::PacketType::S2C_P_ENTER:
             {
-                chess::packet::SC_PACKET_ENTER* pkt = reinterpret_cast<chess::packet::SC_PACKET_ENTER*>(payload_ptr);
-                Player newPlayer;
-                newPlayer.id = pkt->_id;
-                newPlayer.x = pkt->_x;
-                newPlayer.y = pkt->_y;
+                // [수정] 서버가 보낸 순서대로 데이터를 하나씩 읽습니다.
+                char* p = payload_ptr;
 
-                // 가변 길이 이름 읽기
-                char* name_ptr = payload_ptr + sizeof(chess::packet::SC_PACKET_ENTER);
-                uint16_t name_len = *reinterpret_cast<uint16_t*>(name_ptr);
-                newPlayer.name.assign(name_ptr + sizeof(uint16_t), name_len);
+                int64_t new_id;
+                memcpy(&new_id, p, sizeof(new_id)); p += sizeof(new_id);
+
+                char obj_type;
+                memcpy(&obj_type, p, sizeof(obj_type)); p += sizeof(obj_type);
+
+                short x, y;
+                memcpy(&x, p, sizeof(x)); p += sizeof(x);
+                memcpy(&y, p, sizeof(y)); p += sizeof(y);
+
+                uint16_t name_len;
+                memcpy(&name_len, p, sizeof(name_len)); p += sizeof(name_len);
+
+                std::string name(p, name_len);
+
+                Player newPlayer;
+                newPlayer.id = new_id;
+                newPlayer.x = x;
+                newPlayer.y = y;
+                newPlayer.name = name;
 
                 g_otherPlayers[newPlayer.id] = newPlayer;
                 break;

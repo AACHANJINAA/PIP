@@ -31,25 +31,25 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			std::cerr << "[HANDLER C2S_LOGIN] **ERROR**: Failed to read name from stream for Session " << session->_id << ". " << e.what() << std::endl;
+			ERROR("[HANDLER C2S_LOGIN] **ERROR**: Failed to read name from stream for Session " << session->_id << ". " << e.what() << std::endl);
 			return;
 		}
 
-		std::cout << "[HANDLER C2S_LOGIN] Session " << session->_id << " logged in with name: '" << name << "'" << std::endl;
+		LOG("[HANDLER C2S_LOGIN] Session " << session->_id << " logged in with name: '" << name << "'");
 
-		// 2. 서버에 세션 정보 채우기
+		// 2. 서버에 세션 정보 채우기 (가장 중요한 부분!)
 		session->_name = name;
 		session->_x = 4;
 		session->_y = 4;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 
 		// 3. '나 자신'에게 나의 상세 정보(아바타 정보)를 보냄
-		std::cout << "[HANDLER C2S_LOGIN] Sending AVATAR_INFO to " << session->_name << "." << std::endl;
+		LOG("[HANDLER C2S_LOGIN] Sending AVATAR_INFO to " << session->_name << "." << std::endl);
 		session->send_player_info_packet();
 
 		// 4. '다른 모든 유저'에게 '나의 입장'을 알림
 		{
-			std::cout << "[HANDLER C2S_LOGIN] Broadcasting ENTER packet for " << session->_name << " to other players." << std::endl;
+			LOG("[HANDLER C2S_LOGIN] Broadcasting ENTER packet for " << session->_name << " to other players." << std::endl);
 			PacketStream myEnterPacket = MakeEnterPacket(session);
 			for (auto& user_pair : chess::g_users)
 			{
@@ -65,7 +65,7 @@ namespace chess::packet
 
 		// 5. '나 자신'에게 '이미 접속해 있던 다른 유저들의 정보'를 전송
 		{
-			std::cout << "[HANDLER C2S_LOGIN] Sending existing players' info to " << session->_name << "." << std::endl;
+			LOG("[HANDLER C2S_LOGIN] Sending existing players' info to " << session->_name << "." << std::endl);
 			for (auto& user_pair : chess::g_users)
 			{
 				if (user_pair.first == session->_id) continue;
@@ -89,7 +89,7 @@ namespace chess::packet
 		}
 		catch (...) { return; }
 
-		std::cout << "[HANDLER C2S_MOVE] Session " << session->_id << " requests move in direction: " << static_cast<int>(direction) << std::endl;
+		LOG("[HANDLER C2S_MOVE] Session " << session->_id << " requests move in direction: " << static_cast<int>(direction) << std::endl);
 
 		switch (direction)
 		{
@@ -100,7 +100,7 @@ namespace chess::packet
 			default: return;
 		}
 
-		std::cout << "[HANDLER C2S_MOVE] Session " << session->_id << " new position: (" << session->_x << ", " << session->_y << ")" << std::endl;
+		LOG("[HANDLER C2S_MOVE] Session " << session->_id << " new position: (" << session->_x << ", " << session->_y << ")" << std::endl);
 
 		packet::SC_PACKET_MOVE movePacket;
 		movePacket._id = session->_id;
