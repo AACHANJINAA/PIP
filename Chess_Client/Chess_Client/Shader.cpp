@@ -152,8 +152,7 @@ void CShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12RootSignature* pd3dGr
 		delete[] d3dPipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
-void CShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
-	* pd3dCommandList)
+void CShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
 }

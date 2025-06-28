@@ -103,30 +103,6 @@ public:
 
 };
 
-class CTriangleMesh : public CMesh
-{
-public:
-	CTriangleMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual ~CTriangleMesh() {}
-};
-
-class CCubeMeshDiffused : public CMesh
-{
-public:
-	//직육면체의 가로, 세로, 깊이의 길이를 지정하여 직육면체 메쉬를 생성한다. 
-	CCubeMeshDiffused(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, float fWidth = 2.0f, float fHeight = 2.0f, float fDepth = 2.0f);
-	virtual ~CCubeMeshDiffused();
-};
-
-class CAirplaneMeshDiffused : public CMesh
-{
-public:
-	CAirplaneMeshDiffused(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
-		* pd3dCommandList, float fWidth = 20.0f, float fHeight = 20.0f, float fDepth = 4.0f,
-		XMFLOAT4 xmf4Color = XMFLOAT4(1.0f, 1.0f, 0.0f, 0.0f));
-	virtual ~CAirplaneMeshDiffused();
-};
-
 class CReadObjMesh : public CMesh
 {
 public:
@@ -139,43 +115,4 @@ public:
 
 
 	virtual ~CReadObjMesh();
-};
-
-class CNameMesh : public CReadObjMesh
-{
-public:
-	CNameMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
-
-	virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
-
-	virtual ~CNameMesh();
-
-	bool m_bExplosion{ }; // 폭발 했는지?
-
-	std::vector<XMFLOAT3> Normal{};
-	std::vector<float> speed{};
-
-private:
-	std::default_random_engine dre{};
-	std::uniform_real_distribution<float> uid{ -1.f, 1.f };
-	std::uniform_real_distribution<float> RandomSpeed{ 0.f, 10.f };
-
-};
-
-
-class CDWTankMesh : public CReadObjMesh
-{
-public:
-	CDWTankMesh();
-	CDWTankMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
-	virtual ~CDWTankMesh() {}
-	virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
-
-	void SetNormal();
-
-	bool m_bExplosion{ }; // 폭발 했는지?
-
-	std::vector<XMFLOAT3> Normal{};
-	float m_speed{ 1.f }; // 폭발 스피드
-
 };
