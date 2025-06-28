@@ -5,27 +5,18 @@ CObjectManager* CObjectManager::m_ObjectManager = nullptr;
 
 CObjectManager::CObjectManager()
 {
-	for(int i = 0 ; i < ALLARRAYSIZE; ++i)
-	{
-		m_AllObject[i] = new std::list<std::unique_ptr<CGameObject>>{};
-	}
 }
 
 CObjectManager::~CObjectManager()
 {
 	DeleteAll();
-	for (std::list<std::unique_ptr<CGameObject>>* iter : m_AllObject)
-	{
-		delete iter;
-		iter = nullptr;
-	}
 }
 
 void CObjectManager::DeleteAll()
 {
-	for (auto& vec : m_AllObject)
+	for (auto& objectList : m_AllObject)
 	{
-		vec->clear();
+		objectList.clear();
 	}
 
 	m_Player = nullptr;
@@ -34,60 +25,47 @@ void CObjectManager::DeleteAll()
 
 void CObjectManager::DeleteVec(int WantVecNum)
 {
-	if ((int)ALLARRAYSIZE <= WantVecNum || WantVecNum < 0)
+	if (WantVecNum < 0 || WantVecNum >= ALLARRAYSIZE)
 	{
 		return;
 	}
 	
-	m_AllObject[WantVecNum]->clear();
-
-
-
+	m_AllObject[WantVecNum].clear();
 }
 
 void CObjectManager::DeleteObject()
 {
-	if (m_AllObject.size()) {
-		for (std::list<std::unique_ptr<CGameObject>>*& Objects : m_AllObject) {
-			if (Objects != nullptr) {
-				for (auto iter = Objects->begin(); iter != Objects->end();) {
-					if ((*iter).get()->m_Delete) {
-						(*iter).reset(nullptr);
-						iter = Objects->erase(iter);
-					}
-					else
-					{
-						++iter;
-					}
-				}
-			}
-		}
+	for (auto& objectList : m_AllObject)
+	{
+		objectList.remove_if([](const std::shared_ptr<CGameObject>& pObject) {
+			return pObject->m_Delete;
+		});
 	}
 }
 
-void CObjectManager::PushObject(std::unique_ptr<CGameObject> object)
+void CObjectManager::PushObject(std::shared_ptr<CGameObject> object)
 {
-	m_AllObject[0]->emplace_back(std::move(object));
+	m_AllObject[0].push_back(object);
 }
 
-void CObjectManager::PushEnemyBullet(std::unique_ptr<CGameObject> object)
+void CObjectManager::PushEnemyBullet(std::shared_ptr<CGameObject> object)
 {
-	m_AllObject[1]->emplace_back(std::move(object));
+	m_AllObject[1].push_back(object);
 }
 
-void CObjectManager::PushPlayerBullet(std::unique_ptr<CGameObject> object)
+void CObjectManager::PushPlayerBullet(std::shared_ptr<CGameObject> object)
 {
-	m_AllObject[2]->emplace_back(std::move(object));
+	m_AllObject[2].push_back(object);
 }
 
-void CObjectManager::PushEnemy(std::unique_ptr<CGameObject> object)
+void CObjectManager::PushEnemy(std::shared_ptr<CGameObject> object)
 {
-	m_AllObject[3]->emplace_back(std::move(object));
+	m_AllObject[3].push_back(object);
 }
 
-void CObjectManager::PushFloorObejct(std::unique_ptr<CGameObject> object)
+void CObjectManager::PushFloorObejct(std::shared_ptr<CGameObject> object)
 {
-	m_AllObject[4]->emplace_back(std::move(object));
+	m_AllObject[4].push_back(object);
 }
 
 
