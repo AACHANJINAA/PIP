@@ -63,6 +63,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 
 		break;
 	}
+	m_RequestObject = nullptr;
 }
 
 void CObjectManager::DeleteAll()

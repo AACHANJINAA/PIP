@@ -117,16 +117,16 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_AVATAR_INFO:
             {
                 chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
-                auto player = dynamic_cast<CChess_King*>(CObjectManager::GetManager()->GetPlayer());
+                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
                 if (player == nullptr)
                 {
-                    player = new CChess_King;
+                    player = std::make_shared<CChess_King>();
                 }
                 player->SetID(pkt->_id);
                 player->SetPos(pkt->_x, pkt->_y);
                 player->m_Mesh_Type = I_WANT_CHESS_PLAYER;
 
-                CObjectManager::GetManager()->RequestObject();
+                CObjectManager::GetManager()->RequestObject(player);
                 /*g_myPlayer.hp = pkt->_hp;
                 g_myPlayer.exp = pkt->_exp;
                 g_myPlayer.level = pkt->_level;*/ //아직은 안씀
@@ -153,23 +153,13 @@ void recv_and_process_packets()
                 std::string name(p, name_len);
 
                 {
-                    // 상대방 생성
-                    /*auto Other = std::make_unique<COther_King>(x, y);
+                    //상대방 생성
+                    auto Other = std::make_shared<COther_King>(x, y);
                     Other->SetID(new_id);
-					Other->SetName(name);*/
+					Other->SetName(name);
+					Other->m_Mesh_Type = I_WANT_CHESS_ENEMY; // 아오 대원시치
 
-                    //TODO: 다른 플레이어를 씬에다가 생성 요청
-                    
-                    //CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
-                    //Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
-                    //Other.get()->SetMesh(Chess_Mesh);
-
-                    //// 이동 거리 설정
-                    //static_cast<COther_King*>(Other.get())->SetDistance(MoveDistance);
-                    //Other.get()->SetScale(1.f, 1.f, 1.f);
-
-                    //// 매니저에 넣기
-                    //CObjectManager::GetManager()->PushObject(std::move(Other));
+                    CObjectManager::GetManager()->RequestObject(Other);
                 }
 
                 break;
@@ -177,7 +167,7 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_MOVE:
             {
                 chess::packet::SC_PACKET_MOVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_MOVE*>(payload_ptr);
-				auto player = dynamic_cast<CChess_King*>(CObjectManager::GetManager()->GetPlayer());
+				auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
                 if (pkt->_id == player->GetID())
                 {
                     player->SetPos(pkt->_x, pkt->_y);
