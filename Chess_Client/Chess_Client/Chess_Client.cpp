@@ -46,22 +46,17 @@ void error_display(const char* msg, int err_no)
 }
 void send_login_packet(const std::string& name)
 {
-    // Payload: [이름 길이(2바이트)] + [이름 데이터(N바이트)]
     uint16_t name_len = static_cast<uint16_t>(name.length());
-
-    // Header
+    
     uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_LOGIN);
     uint16_t total_size = sizeof(chess::packet::PacketHeader) + sizeof(name_len) + name_len;
 
-    // 최종 패킷 조립
     std::vector<char> buffer(total_size);
     char* p = buffer.data();
 
-    // 헤더 쓰기
     memcpy(p, &total_size, sizeof(total_size)); p += sizeof(total_size);
     memcpy(p, &packet_type, sizeof(packet_type)); p += sizeof(packet_type);
-
-    // 페이로드 쓰기
+    
     memcpy(p, &name_len, sizeof(name_len)); p += sizeof(name_len);
     memcpy(p, name.c_str(), name_len);
 
@@ -69,12 +64,9 @@ void send_login_packet(const std::string& name)
 }
 void send_move_packet(chess::packet::MOVE_TYPE direction)
 {
-    // Payload: [이동 방향(1바이트)]
-    // Header
     uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_MOVE);
     uint16_t total_size = sizeof(chess::packet::PacketHeader) + sizeof(direction);
 
-    // 최종 패킷 조립
     std::vector<char> buffer(total_size);
     char* p = buffer.data();
 
