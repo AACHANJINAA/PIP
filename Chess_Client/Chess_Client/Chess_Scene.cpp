@@ -70,7 +70,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 
     {
         // 플레이어 생성
-        std::unique_ptr<CGameObject> Player = std::make_unique<CChess_King>(0, 0);
+        std::shared_ptr<CGameObject> Player = std::make_shared<CChess_King>(0, 0);
         CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
         Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
         Player.get()->SetMesh(Chess_Mesh);
@@ -80,14 +80,14 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         Player.get()->SetScale(1.f, 1.f, 1.f);
 
         // 매니저에 넣기
-        CObjectManager::GetManager()->PushObject(std::move(Player));
+        CObjectManager::GetManager()->PushObject(Player);
     }
 
 
 
     {
         // 상대방 생성
-        std::unique_ptr<CGameObject> Other = std::make_unique<COther_King>(7, 7);
+        std::shared_ptr<CGameObject> Other = std::make_shared<COther_King>(7, 7);
         CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
         Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
         Other.get()->SetMesh(Chess_Mesh);
@@ -97,7 +97,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         Other.get()->SetScale(1.f, 1.f, 1.f);
 
         // 매니저에 넣기
-        CObjectManager::GetManager()->PushObject(std::move(Other));
+        CObjectManager::GetManager()->PushObject(Other);
     }
 }
 
@@ -126,18 +126,14 @@ void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, 
     m_ChessCamera->KeyInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
 
 
-    std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
-    if (Arr.size()) {
-        for (std::list<std::unique_ptr<CGameObject>>*& Objects : Arr) {
-            if (Objects != nullptr) {
-                for (std::unique_ptr<CGameObject>& Object : *Objects) {
-                    if (nullptr != Object)
-                    {
-                        Object.get()->ProcessInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
-                        Object.get()->UpdateBoundingBox();
-                    }
-                }
+    for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
+        for (std::shared_ptr<CGameObject>& Object : Objects) {
+            if (nullptr != Object)
+            {
+                Object->ProcessInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
+                Object->UpdateBoundingBox();
             }
         }
     }
@@ -147,18 +143,15 @@ void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, 
 void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
-    std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
-    if (Arr.size()) {
-        for (std::list<std::unique_ptr<CGameObject>>*& Objects : Arr) {
-            if (Objects != nullptr) {
-                for (std::unique_ptr<CGameObject>& Object : *Objects) {
-                    if (nullptr != Object)
-                    {
-                        Object.get()->Animate(fTimeElapsed, pd3dCommandList);
-                        Object.get()->UpdateBoundingBox();
-                    }
-                }
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+
+    for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
+        for (std::shared_ptr<CGameObject>& Object : Objects) {
+            if (nullptr != Object)
+            {
+                Object->Animate(fTimeElapsed, pd3dCommandList);
+                Object.get()->UpdateBoundingBox();
             }
         }
     }
@@ -182,37 +175,27 @@ void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         m_pShaders[i].Render(pd3dCommandList, m_pCamera);
     }
 
-    std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
-    if (Arr.size()) {
-        for (std::list<std::unique_ptr<CGameObject>>*& Objects : Arr) {
-            if (Objects != nullptr) {
-                for (std::unique_ptr<CGameObject>& Object : *Objects) {
-                    if (nullptr != Object)
-                    {
-                        Object.get()->Render(pd3dCommandList, m_pCamera);
-                    }
-                }
+    for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
+        for (std::shared_ptr<CGameObject>& Object : Objects) {
+            if (nullptr != Object)
+            {
+                Object->Render(pd3dCommandList, m_pCamera);
             }
         }
     }
-
-  
 }
 
 void CChess_Scene::Collision(float fElapsedTime)
 {
-    std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
-    if (Arr.size()) {
-        for (std::list<std::unique_ptr<CGameObject>>*& Objects : Arr) {
-            if (Objects != nullptr) {
-                for (std::unique_ptr<CGameObject>& Object : *Objects) {
-                    if (nullptr != Object)
-                    {
-                        Object.get()->Collision(fElapsedTime);
-                    }
-                }
+    for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
+        for (std::shared_ptr<CGameObject>& Object : Objects) {
+            if (nullptr != Object)
+            {
+                Object->Collision(fElapsedTime);
             }
         }
     }
