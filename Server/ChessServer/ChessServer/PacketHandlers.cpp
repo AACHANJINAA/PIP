@@ -93,8 +93,8 @@ namespace chess::packet
 
 		switch (direction)
 		{
-			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y > 0) session->_y--; break;
-			case packet::MOVE_TYPE::MOVE_DOWN:  if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break;
+			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break; 
+			case packet::MOVE_TYPE::MOVE_DOWN:  if (session->_y > 0) session->_y--; break;
 			case packet::MOVE_TYPE::MOVE_LEFT:  if (session->_x > 0) session->_x--; break;
 			case packet::MOVE_TYPE::MOVE_RIGHT: if (session->_x < packet::MAP_WIDTH - 1) session->_x++; break;
 			default: return;
