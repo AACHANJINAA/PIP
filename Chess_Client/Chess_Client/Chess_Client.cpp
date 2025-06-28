@@ -115,23 +115,24 @@ void recv_and_process_packets()
         switch (type)
         {
             case chess::packet::PacketType::S2C_P_AVATAR_INFO:
-            {
-                chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
-                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-                if (player == nullptr)
-                {
-                    player = std::make_shared<CChess_King>();
-                }
-                player->SetID(pkt->_id);
-                player->SetPos(pkt->_x, pkt->_y);
-                player->m_Mesh_Type = I_WANT_CHESS_PLAYER;
+	        {
+	            chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
+	            auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+	            if (player == nullptr)
+	            {
+	                player = std::make_shared<CChess_King>();
+	            }
+	            player->SetID(pkt->_id);
+	            player->SetPos(pkt->_x, pkt->_y);
+	            player->m_Mesh_Type = I_WANT_CHESS_PLAYER;
 
-                CObjectManager::GetManager()->RequestObject(player);
-                /*g_myPlayer.hp = pkt->_hp;
-                g_myPlayer.exp = pkt->_exp;
-                g_myPlayer.level = pkt->_level;*/ //아직은 안씀
-                break;
-            }
+	            CObjectManager::GetManager()->RequestObject(player);
+                CObjectManager::GetManager()->SetPlayer(player);
+	            /*g_myPlayer.hp = pkt->_hp;
+	            g_myPlayer.exp = pkt->_exp;
+	            g_myPlayer.level = pkt->_level;*/ //아직은 안씀
+	            break;
+	        }
             case chess::packet::PacketType::S2C_P_ENTER:
             {
                 // [수정] 서버가 보낸 순서대로 데이터를 하나씩 읽습니다.
