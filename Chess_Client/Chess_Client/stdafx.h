@@ -48,6 +48,7 @@ using Microsoft::WRL::ComPtr;
 #include <sstream>
 #include <numeric>
 #include <random>
+#include <queue>
 
 
 #define EXPLOSION_DEBRISES		240

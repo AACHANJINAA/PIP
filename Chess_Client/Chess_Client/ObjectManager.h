@@ -72,7 +72,7 @@ private:
 
 
 	// 요청 임시 변수
-	std::shared_ptr<CGameObject> m_RequestObject{};
-
+	std::queue<std::shared_ptr<CGameObject>> m_RequestObjects{};
+	
 };
 

@@ -16,54 +16,61 @@ CObjectManager::~CObjectManager()
 
 void CObjectManager::RequestObject(std::shared_ptr<CGameObject> WhatYouWant)
 {
-	m_RequestObject = WhatYouWant;
+	m_RequestObjects.push(WhatYouWant);
 }
 
 void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	if (nullptr == m_RequestObject)
+	if (m_RequestObjects.empty())
 	{
 		return;
 	}
-	switch (m_RequestObject->m_Mesh_Type)
+
+	while (!m_RequestObjects.empty())
 	{
-	case I_WANT_CHESS_PLAYER:
-	{
-		CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
+		auto RequestObject = m_RequestObjects.front();
+		switch (RequestObject->m_Mesh_Type)
+		{
+		case I_WANT_CHESS_PLAYER:
+		{
+			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
 
-		// 색 설정
-		Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
-		m_RequestObject->SetMesh(Chess_Mesh);
+			// 색 설정
+			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
+			RequestObject->SetMesh(Chess_Mesh);
 
-		// 이동 거리 설정
-		m_RequestObject->SetScale(1.f, 1.f, 1.f);
+			// 이동 거리 설정
+			RequestObject->SetScale(1.f, 1.f, 1.f);
 
-		// 매니저에 넣기
-		CObjectManager::GetManager()->PushObject(m_RequestObject);
-	}
+			// 매니저에 넣기
+			CObjectManager::GetManager()->PushObject(RequestObject);
+		}
 		break;
 
-	case I_WANT_CHESS_ENEMY:
-	{
-		CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
+		case I_WANT_CHESS_ENEMY:
+		{
+			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
 
-		// 색 설정
-		Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
-		m_RequestObject->SetMesh(Chess_Mesh);
+			// 색 설정
+			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
+			RequestObject->SetMesh(Chess_Mesh);
 
-		// 이동 거리 설정
-		m_RequestObject->SetScale(1.f, 1.f, 1.f);
+			// 이동 거리 설정
+			RequestObject->SetScale(1.f, 1.f, 1.f);
 
-		// 매니저에 넣기
-		CObjectManager::GetManager()->PushObject(m_RequestObject);
-	}
+			// 매니저에 넣기
+			CObjectManager::GetManager()->PushObject(RequestObject);
+		}
 		break;
 
-	default:
+		default:
 
-		break;
+			break;
+		}
+		m_RequestObjects.pop();
 	}
-	m_RequestObject = nullptr;
+	
+
 }
 
 void CObjectManager::DeleteAll()
