@@ -116,10 +116,10 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_AVATAR_INFO:
             {
                 chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
-                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+                auto player = dynamic_cast<CChess_King*>(CObjectManager::GetManager()->GetPlayer());
                 if (player == nullptr)
                 {
-                    player = std::make_shared<CChess_King>();
+                    player = new CChess_King;
                 }
                 player->SetID(pkt->_id);
                 player->SetPos(pkt->_x, pkt->_y);
@@ -173,7 +173,7 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_MOVE:
             {
                 chess::packet::SC_PACKET_MOVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_MOVE*>(payload_ptr);
-				auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+				auto player = dynamic_cast<CChess_King*>(CObjectManager::GetManager()->GetPlayer());
                 if (pkt->_id == player->GetID())
                 {
                     player->SetPos(pkt->_x, pkt->_y);

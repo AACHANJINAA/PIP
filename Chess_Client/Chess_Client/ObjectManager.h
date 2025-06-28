@@ -31,7 +31,7 @@ public:
 
 	// 플레이어
 	void SetPlayer(CGameObject* player) { m_Player = player; }
-	CGameObject* GetPlayer() { return m_Player; }
+	CGameObject* GetPlayer() const { return m_Player; }
 
 
 	// 오브젝트 넣기
