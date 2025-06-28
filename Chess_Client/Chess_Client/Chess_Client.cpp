@@ -32,6 +32,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 void error_display(const char* msg, int err_no)
 {
@@ -123,6 +124,7 @@ void recv_and_process_packets()
                 }
                 player->SetID(pkt->_id);
                 player->SetPos(pkt->_x, pkt->_y);
+                CObjectManager::GetManager()->SetPlayer(player);
                 /*g_myPlayer.hp = pkt->_hp;
                 g_myPlayer.exp = pkt->_exp;
                 g_myPlayer.level = pkt->_level;*/ //아직은 안씀
@@ -223,6 +225,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+
+	if (DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc, 0) != IDOK)
+    {
+        return 0; // 사용자가 취소를 누르면 프로그램 종료
+    }
 
 	WSAData wsadata;
     WSAStartup(MAKEWORD(2, 2), &wsadata);
@@ -406,7 +413,7 @@ INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         case WM_INITDIALOG:
             SetDlgItemText(hWnd, IDC_EDIT1, SERVER_ADDR_W.c_str());
-            SetDlgItemText(hWnd, IDC_EDIT2, PLAYER_NAME_W.c_str());
+            SetDlgItemText(hWnd, IDC_EDIT3, PLAYER_NAME_W.c_str());
             return (INT_PTR)TRUE;
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK)
@@ -414,7 +421,7 @@ INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 wchar_t buffer1[256];
                 wchar_t buffer2[256];
                 GetDlgItemText(hWnd, IDC_EDIT1, buffer1, 256);
-                GetDlgItemText(hWnd, IDC_EDIT2, buffer2, 256);
+                GetDlgItemText(hWnd, IDC_EDIT3, buffer2, 256);
                 SERVER_ADDR_W = buffer1;
                 PLAYER_NAME_W = buffer2;
                 EndDialog(hWnd, IDOK);
