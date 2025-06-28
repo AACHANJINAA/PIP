@@ -29,6 +29,6 @@ private:
 	int			_NowX{}; // 현재 X위치
 	int			_NowY{}; // 현재 Y위치
 
-	float _MoveDistance{}; // 움직일 거리
+	float _MoveDistance{2}; // 움직일 거리
 };
 

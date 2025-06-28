@@ -124,7 +124,9 @@ void recv_and_process_packets()
                 }
                 player->SetID(pkt->_id);
                 player->SetPos(pkt->_x, pkt->_y);
-                CObjectManager::GetManager()->SetPlayer(player);
+                player->m_Mesh_Type = I_WANT_CHESS_PLAYER;
+
+                CObjectManager::GetManager()->RequestObject();
                 /*g_myPlayer.hp = pkt->_hp;
                 g_myPlayer.exp = pkt->_exp;
                 g_myPlayer.level = pkt->_level;*/ //아직은 안씀

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "ObjectManager.h"
+#include "Chess_King.h"
+#include "Other_King.h"
 
 CObjectManager* CObjectManager::m_ObjectManager = nullptr;
 
@@ -10,6 +12,57 @@ CObjectManager::CObjectManager()
 CObjectManager::~CObjectManager()
 {
 	DeleteAll();
+}
+
+void CObjectManager::RequestObject(std::shared_ptr<CGameObject> WhatYouWant)
+{
+	m_RequestObject = WhatYouWant;
+}
+
+void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	if (nullptr == m_RequestObject)
+	{
+		return;
+	}
+	switch (m_RequestObject->m_Mesh_Type)
+	{
+	case I_WANT_CHESS_PLAYER:
+	{
+		CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
+
+		// 색 설정
+		Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
+		m_RequestObject->SetMesh(Chess_Mesh);
+
+		// 이동 거리 설정
+		m_RequestObject->SetScale(1.f, 1.f, 1.f);
+
+		// 매니저에 넣기
+		CObjectManager::GetManager()->PushObject(m_RequestObject);
+	}
+		break;
+
+	case I_WANT_CHESS_ENEMY:
+	{
+		CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
+
+		// 색 설정
+		Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
+		m_RequestObject->SetMesh(Chess_Mesh);
+
+		// 이동 거리 설정
+		m_RequestObject->SetScale(1.f, 1.f, 1.f);
+
+		// 매니저에 넣기
+		CObjectManager::GetManager()->PushObject(m_RequestObject);
+	}
+		break;
+
+	default:
+
+		break;
+	}
 }
 
 void CObjectManager::DeleteAll()

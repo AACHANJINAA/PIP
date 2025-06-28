@@ -383,6 +383,7 @@ void CGameFramework::FrameAdvance()
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
 
 	//오브젝트 생성가능
+	CObjectManager::GetManager()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
 
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));

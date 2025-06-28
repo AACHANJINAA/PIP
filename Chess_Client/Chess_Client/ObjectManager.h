@@ -23,6 +23,10 @@ public:
 	}
 
 public:
+	// 요청과 만들기
+	void RequestObject(std::shared_ptr<CGameObject> WhatYouWant);
+	void MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+
 	// 모두 삭제
 	void DeleteAll();
 	void DeleteVec(int WantVecNum);
@@ -30,8 +34,8 @@ public:
 	void DeleteObject();
 
 	// 플레이어
-	void SetPlayer(CGameObject* player) { m_Player = player; }
-	CGameObject* GetPlayer() const { return m_Player; }
+	void SetPlayer(std::shared_ptr <CGameObject> player) { m_Player = player; }
+	std::shared_ptr <CGameObject> GetPlayer() const { return m_Player; }
 
 
 	// 오브젝트 넣기
@@ -62,9 +66,13 @@ private:
 
 	static CObjectManager* m_ObjectManager;
 
-	CGameObject* m_Player{};
+	std::shared_ptr <CGameObject> m_Player{};
 
 	std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE> m_AllObject{}; // 현재 씬 오브젝트
+
+
+	// 요청 임시 변수
+	std::shared_ptr<CGameObject> m_RequestObject{};
 
 };
 

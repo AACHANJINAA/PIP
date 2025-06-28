@@ -36,7 +36,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     m_ChessCamera->SetPosition(0.f, 5.f, -5.f);
 
     // 보드판 생성
-    std::unique_ptr<CGameObject> Board{};
+    std::shared_ptr<CGameObject> Board{};
     CMesh* BoardMesh{};
     float MoveDistance{};
 
@@ -44,7 +44,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     {
         for (int j = 0; j < 8; ++j) // 가로
         {
-            Board = std::make_unique<CBoardCube>();
+            Board = std::make_shared<CBoardCube>();
             BoardMesh = new CReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube.obj" };
             if ((j + i) % 2)
             {
@@ -54,51 +54,48 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
             {
                 BoardMesh->ChangeColor(pd3dCommandList, 0.710, 0.533, 0.388, 1.f);
             }
-            Board.get()->SetMesh(BoardMesh);
-            Board.get()->SetPosition(((Board.get()->m_pMesh->m_Right - Board.get()->m_pMesh->m_Left) * Board.get()->GetSize().x * j),
-                -(Board.get()->m_pMesh->m_Top - Board.get()->m_pMesh->m_Bottom) * Board.get()->GetSize().y * 0.5f,
-                ((Board.get()->m_pMesh->m_Front - Board.get()->m_pMesh->m_Back) * Board.get()->GetSize().z * i));
-            Board.get()->m_PosX = j;
-            Board.get()->m_PosY = i;
-
-
-            MoveDistance = (Board.get()->m_pMesh->m_Right - Board.get()->m_pMesh->m_Left) * Board.get()->GetSize().x;
-            CObjectManager::GetManager()->PushObject(std::move(Board));
+            Board->SetMesh(BoardMesh);
+            Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x * j),
+                -(Board->m_pMesh->m_Top - Board->m_pMesh->m_Bottom) * Board->GetSize().y * 0.5f,
+                ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
+            Board->m_PosX = j;
+            Board->m_PosY = i;
+            CObjectManager::GetManager()->PushObject(Board);
         }
     }
 
 
-    {
-        // 플레이어 생성
-        std::shared_ptr<CGameObject> Player = std::make_shared<CChess_King>(0, 0);
-        CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
-        Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
-        Player.get()->SetMesh(Chess_Mesh);
+    //{
+    //    // 플레이어 생성
+    //    std::shared_ptr<CGameObject> Player = std::make_shared<CChess_King>(0, 0);
+    //    CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
+    //    Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
+    //    Player.get()->SetMesh(Chess_Mesh);
 
-        // 이동 거리 설정
-        static_cast<CChess_King*>(Player.get())->SetDistance(MoveDistance);
-        Player.get()->SetScale(1.f, 1.f, 1.f);
+    //    // 이동 거리 설정
+    //    static_cast<CChess_King*>(Player.get())->SetDistance(MoveDistance);
+    //    Player.get()->SetScale(1.f, 1.f, 1.f);
 
-        // 매니저에 넣기
-        CObjectManager::GetManager()->PushObject(Player);
-    }
+    //    // 매니저에 넣기
+    //    CObjectManager::GetManager()->PushObject(Player);
+    //}
 
 
 
-    {
-        // 상대방 생성
-        std::shared_ptr<CGameObject> Other = std::make_shared<COther_King>(7, 7);
-        CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
-        Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
-        Other.get()->SetMesh(Chess_Mesh);
+    //{
+    //    // 상대방 생성
+    //    std::shared_ptr<CGameObject> Other = std::make_shared<COther_King>(7, 7);
+    //    CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
+    //    Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
+    //    Other.get()->SetMesh(Chess_Mesh);
 
-        // 이동 거리 설정
-        static_cast<COther_King*>(Other.get())->SetDistance(MoveDistance);
-        Other.get()->SetScale(1.f, 1.f, 1.f);
+    //    // 이동 거리 설정
+    //    static_cast<COther_King*>(Other.get())->SetDistance(MoveDistance);
+    //    Other.get()->SetScale(1.f, 1.f, 1.f);
 
-        // 매니저에 넣기
-        CObjectManager::GetManager()->PushObject(Other);
-    }
+    //    // 매니저에 넣기
+    //    CObjectManager::GetManager()->PushObject(Other);
+    //}
 }
 
 void CChess_Scene::ReleaseObjects()
