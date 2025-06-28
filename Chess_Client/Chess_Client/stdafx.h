@@ -5,6 +5,10 @@
 //#define _WITH_SWAPCHAIN_FULLSCREEN_STATE
 
 #pragma once
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+
 #include <tchar.h>
 
 #include <string>
@@ -45,6 +49,7 @@ using Microsoft::WRL::ComPtr;
 #include <numeric>
 #include <random>
 
+
 #define EXPLOSION_DEBRISES		240
 
 #define RANDOM_COLOR			(0xFF000000 | ((rand() * 0xFFFFFF) / RAND_MAX))
@@ -68,18 +73,8 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 	ID3D12Resource** ppd3dUploadBuffer = NULL);
 
 
-
-enum class CommandType : std::uint8_t
-{
-	MOVE_UP,
-	MOVE_DOWN,
-	MOVE_RIGHT,
-	MOVE_LEFT,
-	CONNECT,
-	DISCONNECT,
-	error
-};
-
+#include "../../Server/ChessServer/ChessServer/Packet.h"
+extern void send_move_packet(chess::packet::MOVE_TYPE direction);
 
 //3차원 벡터의 연산 
 namespace Vector3

@@ -25,65 +25,38 @@ void CChess_King::Collision(float fElapsedTime)
 void CChess_King::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
 {
 	if (GetAsyncKeyState(VK_UP) & 0x0001) {
-		Move_Pos(CommandType::MOVE_UP);
+		Move_Pos(chess::packet::MOVE_TYPE::MOVE_UP);
 	}
 
 	if (GetAsyncKeyState(VK_DOWN) & 0x0001) {
-		Move_Pos(CommandType::MOVE_DOWN);
+		Move_Pos(chess::packet::MOVE_TYPE::MOVE_DOWN);
 	}
 
-	if (GetAsyncKeyState(VK_RIGHT) & 0x0001) {
-		Move_Pos(CommandType::MOVE_RIGHT);
+	if (GetAsyncKeyState(VK_RIGHT) & 0x0001)
+	{
+		Move_Pos(chess::packet::MOVE_TYPE::MOVE_RIGHT);
 	}
 
-	if (GetAsyncKeyState(VK_LEFT) & 0x0001) {
-		Move_Pos(CommandType::MOVE_LEFT);
+	if (GetAsyncKeyState(VK_LEFT) & 0x0001)
+	{
+		Move_Pos(chess::packet::MOVE_TYPE::MOVE_LEFT);
 	}
 }
 
-void CChess_King::Move_Pos(CommandType Cmd)
+void CChess_King::Move_Pos(chess::packet::MOVE_TYPE Cmd)
 {
 	switch (Cmd)
 	{
-	case CommandType::MOVE_UP:
-		if(_NowY < 7)
-		{
-			++_NowY;
-		}
-		break;
-
-
-	case CommandType::MOVE_DOWN:
-		if (_NowY > 0)
-		{
-			--_NowY;
-		}
-		break;
-
-
-	case CommandType::MOVE_RIGHT:
-		if (_NowX < 7)
-		{
-			++_NowX;
-		}
-		break;
-
-
-	case CommandType::MOVE_LEFT:
-		if (_NowX > 0)
-		{
-			--_NowX;
-		}
-		break;
-
-
-	case CommandType::CONNECT:
-		break;
-
-	case CommandType::DISCONNECT:
-		break;
-
-	case CommandType::error:
+		case chess::packet::MOVE_TYPE::MOVE_UP:
+		case chess::packet::MOVE_TYPE::MOVE_DOWN:
+		case chess::packet::MOVE_TYPE::MOVE_RIGHT:
+		case chess::packet::MOVE_TYPE::MOVE_LEFT:
+			// 서버로 나 위로 이동
+			// 서버는 위치값 계산
+			// 서버는 위치값을 클라이언트로 전송
+			send_move_packet(Cmd);
+			break;
+		case chess::packet::MOVE_TYPE::error:
 		break;
 
 	default:

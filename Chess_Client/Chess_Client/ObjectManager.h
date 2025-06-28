@@ -35,6 +35,8 @@ public:
 
 
 	// 오브젝트 넣기
+	// 플레이어 = 체력, 위치(x,y,z), name, id, size
+	// 다른 플레이어 = 체력, 위치(x,y,z), name, id, size
 
 
 	void PushObject(std::unique_ptr<CGameObject> object);
@@ -48,7 +50,7 @@ public:
 	std::array<std::list<std::unique_ptr<CGameObject>>*, ALLARRAYSIZE>& GetAllObject() { return m_AllObject; }
 
 
-	std::list<std::unique_ptr<CGameObject>>& GetObjectVec() { return *m_AllObject[0]; }
+	std::list<std::unique_ptr<CGameObject>>& GetObjectVec() { return *m_AllObject[0]; } 
 	std::list<std::unique_ptr<CGameObject>>& GetEnemyBulletVec() { return  *m_AllObject[1]; }
 	std::list<std::unique_ptr<CGameObject>>& GetPlayerBulletVec() { return  *m_AllObject[2]; }
 	std::list<std::unique_ptr<CGameObject>>& GetEnemy() { return  *m_AllObject[3]; }

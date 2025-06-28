@@ -16,14 +16,21 @@ public:
 
 public:
 	void SetDistance(float MoveDistance) { _MoveDistance = MoveDistance; }
+	void SetID(int64_t id) { _id = id; }
+	int64_t GetID() const { return _id; }
+	void SetName(const std::string& name) { _name = name; }
+	std::string GetName() const { return _name; }
+	void SetPos(int x = 0, int y = 0) { _NowX = x; _NowY = y; }
 
 private:
-	void Move_Pos(CommandType Cmd);
+	
 
 private:
+	int64_t		_id = -1;
+	std::string _name;
+	int			_NowX{}; // 현재 X위치
+	int			_NowY{}; // 현재 Y위치
+
 	float _MoveDistance{}; // 움직일 거리
-
-	int _NowX{}; // 현재 X위치
-	int _NowY{}; // 현재 Y위치
 };
 

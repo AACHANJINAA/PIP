@@ -26,6 +26,8 @@ public:
 	// 충돌함수
 	CGameObject* PickObjectPointedByCursor(int xClient, int yClient);
 
+	// 오브젝트 생성 요청 함수
+	// 오브젝트 생성 요청 실행함수
 
 protected:
 	//씬은 게임 객체들의 집합이다. 게임 객체는 셰이더를 포함한다. 
