@@ -116,10 +116,10 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_AVATAR_INFO:
             {
                 chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
-                auto player = dynamic_cast<CChess_King*>(CObjectManager::GetManager()->GetPlayer());
+                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
                 if (player == nullptr)
                 {
-					player = new CChess_King();
+                    player = std::make_shared<CChess_King>();
                 }
                 player->SetID(pkt->_id);
                 player->SetPos(pkt->_x, pkt->_y);
@@ -173,7 +173,7 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_MOVE:
             {
                 chess::packet::SC_PACKET_MOVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_MOVE*>(payload_ptr);
-				auto player = dynamic_cast<CChess_King*>(CObjectManager::GetManager()->GetPlayer());
+				auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
                 if (pkt->_id == player->GetID())
                 {
                     player->SetPos(pkt->_x, pkt->_y);
@@ -181,7 +181,7 @@ void recv_and_process_packets()
                 else
                 {
 					auto other_players = CObjectManager::GetManager()->GetEnemy();
-                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::unique_ptr<CGameObject>& other)
+                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other)
                     {
                     	return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
                     });
@@ -196,7 +196,7 @@ void recv_and_process_packets()
             {
                 chess::packet::SC_PACKET_LEAVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_LEAVE*>(payload_ptr);
                 auto other_players = CObjectManager::GetManager()->GetEnemy();
-                auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::unique_ptr<CGameObject>& other) 
+                auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) 
                 {
                     return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
                 });

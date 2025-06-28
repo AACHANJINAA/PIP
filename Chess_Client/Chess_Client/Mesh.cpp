@@ -185,20 +185,7 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	//std::vector<CDiffusedVertex> m_Vertexvec{};
 	//std::vector<UINT> AllIndex{};
 
-#ifdef max
-#undef max
-#endif
-	float max_x = std::numeric_limits<float>::lowest();
-	float max_y = std::numeric_limits<float>::lowest();
-	float max_z = std::numeric_limits<float>::lowest();
 
-	float min_x = std::numeric_limits<float>::max();
-	float min_y = std::numeric_limits<float>::max();
-	float min_z = std::numeric_limits<float>::max();
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
 	while (std::getline(in, Line))
 	{
 		std::istringstream iss(Line);
@@ -209,9 +196,7 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 			iss >> x >> y >> z;
 			m_Vertexvec.emplace_back(x, y, z, RANDOM_COLOR);
 
-			// 큰거 작은거 검사
-			max_x = max(max_x, x); max_y = max(max_y, y); max_z = max(max_z, z);
-			min_x = min(min_x, x); min_y = min(min_y, y); min_z = min(min_z, z);
+			
 		}
 		if (type == "s")
 		{
@@ -231,6 +216,21 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 		}
 	}
+	auto [min_x, max_x] = 
+		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),[](const CDiffusedVertex& a, const CDiffusedVertex& b)
+		{
+			return a.m_xmf3Position.x < b.m_xmf3Position.x;
+		});
+	auto [min_y, max_y] =
+		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), [](const CDiffusedVertex& a, const CDiffusedVertex& b)
+		{
+			return a.m_xmf3Position.y < b.m_xmf3Position.y;
+		});
+	auto [min_z, max_z] =
+		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), [](const CDiffusedVertex& a, const CDiffusedVertex& b)
+		{
+			return a.m_xmf3Position.z < b.m_xmf3Position.z;
+		});
 
 	m_nStride = sizeof(CDiffusedVertex);
 	m_nVertices = m_Vertexvec.size();
@@ -265,16 +265,17 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
 
-	m_Bottom = min_y;
-	m_Top = max_y;
+	m_Bottom = min_y->m_xmf3Position.y;
+	m_Top = max_y->m_xmf3Position.y;
 
-	m_Right = max_x;
-	m_Left = min_x;
+	m_Right = max_x->m_xmf3Position.x;
+	m_Left = min_x->m_xmf3Position.x;
 
-	m_Front = max_z;
-	m_Back = min_z;
+	m_Front = max_z->m_xmf3Position.z;
+	m_Back = min_z->m_xmf3Position.z;
 
-	m_xmOOBB = CreateOOBB(XMFLOAT3(min_x, min_y, min_z), XMFLOAT3(max_x, max_y, max_z));
+	m_xmOOBB = CreateOOBB(XMFLOAT3(min_x->m_xmf3Position.x, min_y->m_xmf3Position.y, min_z->m_xmf3Position.z),
+						  XMFLOAT3(max_x->m_xmf3Position.x, max_y->m_xmf3Position.y, max_z->m_xmf3Position.z));
 }
 
 
