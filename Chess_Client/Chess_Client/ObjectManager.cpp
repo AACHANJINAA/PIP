@@ -59,7 +59,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 			RequestObject->SetScale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
-			CObjectManager::GetManager()->PushObject(RequestObject);
+			CObjectManager::GetManager()->PushEnemy(RequestObject);
 		}
 		break;
 
