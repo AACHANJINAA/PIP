@@ -377,7 +377,7 @@ void CGameFramework::FrameAdvance()
 	MoveToNextFrame();
 
 	m_GameTimer.Tick(0.0f);
-
+	CObjectManager::GetManager()->DeleteObject();
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
@@ -433,7 +433,7 @@ void CGameFramework::FrameAdvance()
 	//WaitForGpuComplete();
 	m_pdxgiSwapChain->Present(0, 0);
 	//MoveToNextFrame();
-	CObjectManager::GetManager()->DeleteObject();
+	//CObjectManager::GetManager()->DeleteObject();
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }

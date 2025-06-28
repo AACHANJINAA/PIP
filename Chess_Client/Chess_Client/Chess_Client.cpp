@@ -197,7 +197,7 @@ void recv_and_process_packets()
                 });
                 if (it != other_players.end())
                 {
-					other_players.erase(it);
+                    (*it)->m_Delete = true;
                 }
                 break;
             }
