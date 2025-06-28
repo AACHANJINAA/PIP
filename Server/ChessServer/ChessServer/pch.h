@@ -15,7 +15,7 @@
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
 
-//#define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
+#define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
 
 #ifdef ENABLE_DEBUG_LOG
 
