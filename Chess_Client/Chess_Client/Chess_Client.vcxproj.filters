@@ -156,6 +156,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders.hlsl" />
-    <None Include="Shader_Pong.hlsl" />
   </ItemGroup>
 </Project>

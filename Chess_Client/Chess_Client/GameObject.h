@@ -9,6 +9,36 @@ enum WHAT_DO_YOU_WANT {
 	I_WANT_CHESS_ENEMY
 };
 
+// (추가) MATERIAL 구조체 [PONG]
+struct MATERIAL
+{
+	XMFLOAT4 m_xmf4Ambient;     // 환경광(Ambient) 
+	XMFLOAT4 m_xmf4Diffuse;     // 난반사(Diffuse) 
+	XMFLOAT4 m_xmf4Specular;    // 정반사(Specular)
+	XMFLOAT4 m_xmf4Emissive;    // 방출광(Emissive)
+};
+
+// (추가) CMaterial 클래스 [PONG]
+class CMaterial
+{
+public:
+	CMaterial();
+	virtual ~CMaterial();
+
+private:
+	int m_nReferences = 0;
+
+public:
+	void AddRef() { m_nReferences++; }
+	void Release() { if (--m_nReferences <= 0) delete this; }
+
+	// CMaterial은 재질 정보 + 셰이더
+	MATERIAL* m_pMaterial = NULL;
+	CShader* m_pShader = NULL;
+
+	void SetShader(CShader* pShader);
+};
+
 
 class CGameObject
 {
@@ -39,11 +69,13 @@ public:
 public:
 	XMFLOAT4X4 m_xmf4x4World;
 	CMesh* m_pMesh = NULL;
-	CShader* m_pShader = NULL;
+	//CShader* m_pShader = NULL; 
+	CMaterial* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
 public:
 	void ReleaseUploadBuffers(); 
 	virtual void SetMesh(CMesh* pMesh);
 	virtual void SetShader(CShader* pShader);
+	void SetMaterial(CMaterial* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
 	virtual void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Collision(float fElapsedTime) = 0;
 	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) = 0;

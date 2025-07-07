@@ -78,11 +78,20 @@ D3D12_BLEND_DESC CShader::CreateBlendState()
 	return(d3dBlendDesc);
 }
 
-//입력 조립기에게 정점 버퍼의 구조를 알려주기 위한 구조체를 반환한다. 
+//입력 조립기에게 정점 버퍼의 구조를 알려주기 위한 구조체를 반환한다. (수정) 위치, 법선, 색상 받음[PONG]
 D3D12_INPUT_LAYOUT_DESC CShader::CreateInputLayout()
 {
+	UINT nInputElementDescs = 3; // 3개로 변경 (위치, 법선, 색상)
+	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
+
+	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	pd3dInputElementDescs[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }; // NORMAL 추가
+	pd3dInputElementDescs[2] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }; // 오프셋 24로 변경
+
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
-	d3dInputLayoutDesc.pInputElementDescs = NULL; d3dInputLayoutDesc.NumElements = 0;
+	d3dInputLayoutDesc.pInputElementDescs = pd3dInputElementDescs;
+	d3dInputLayoutDesc.NumElements = nInputElementDescs;
+
 	return(d3dInputLayoutDesc);
 }
 
@@ -112,8 +121,21 @@ pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
 #if defined(_DEBUG)
 	nCompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
-	::D3DCompileFromFile(pszFileName, NULL, NULL, pszShaderName, pszShaderProfile,
-		nCompileFlags, 0, ppd3dShaderBlob, NULL);
+	ID3DBlob* pd3dErrorBlob = NULL;
+
+	HRESULT hResult = ::D3DCompileFromFile(pszFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, pszShaderName, pszShaderProfile, nCompileFlags, 0, ppd3dShaderBlob, &pd3dErrorBlob);
+
+	if (FAILED(hResult))
+	{
+		if (pd3dErrorBlob)
+		{
+			// 에러 메시지를 디버그 출력창에 표시합니다.
+			OutputDebugStringA((char*)pd3dErrorBlob->GetBufferPointer());
+			pd3dErrorBlob->Release();
+		}
+		return { 0, NULL }; // 실패했으므로 빈 셰이더 바이트코드를 반환
+	}
+
 	D3D12_SHADER_BYTECODE d3dShaderByteCode;
 	d3dShaderByteCode.BytecodeLength = (*ppd3dShaderBlob)->GetBufferSize();
 	d3dShaderByteCode.pShaderBytecode = (*ppd3dShaderBlob)->GetBufferPointer();
@@ -209,16 +231,17 @@ D3D12_INPUT_LAYOUT_DESC CPlayerShader::CreateInputLayout()
 	return(d3dInputLayoutDesc);
 }
 
+// (수정) 정점이랑 픽셀 받는거는 Diffused말고 Lighting으로 변경 [PONG]
 D3D12_SHADER_BYTECODE CPlayerShader::CreateVertexShader(ID3DBlob** ppd3dShaderBlob)
 {
 	wchar_t Shader[] = L"Shaders.hlsl"; // DW수정
-	return(CShader::CompileShaderFromFile(Shader, "VSDiffused", "vs_5_1",
+	return(CShader::CompileShaderFromFile(Shader, "VSLighting", "vs_5_1",
 		ppd3dShaderBlob));
 }
 D3D12_SHADER_BYTECODE CPlayerShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
 {
 	wchar_t Shader[] = L"Shaders.hlsl"; // DW수정
-	return(CShader::CompileShaderFromFile(Shader, "PSDiffused", "ps_5_1",
+	return(CShader::CompileShaderFromFile(Shader, "PSLighting", "ps_5_1",
 		ppd3dShaderBlob));
 }
 
@@ -241,23 +264,27 @@ CObjectsShader::~CObjectsShader()
 
 D3D12_INPUT_LAYOUT_DESC CObjectsShader::CreateInputLayout()
 {
-	UINT nInputElementDescs = 2;
+	UINT nInputElementDescs = 3; // 3개로 변경 (위치, 법선, 색상)
 	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
+
 	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	pd3dInputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	pd3dInputElementDescs[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }; // NORMAL 약속 추가
+	pd3dInputElementDescs[2] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }; // 오프셋 변경
+
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
 	d3dInputLayoutDesc.pInputElementDescs = pd3dInputElementDescs;
 	d3dInputLayoutDesc.NumElements = nInputElementDescs;
+
 	return(d3dInputLayoutDesc);
 }
 
 D3D12_SHADER_BYTECODE CObjectsShader::CreateVertexShader(ID3DBlob** ppd3dShaderBlob)
 {
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSDiffused", "vs_5_1", ppd3dShaderBlob));
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSLighting", "vs_5_1", ppd3dShaderBlob));
 }
 D3D12_SHADER_BYTECODE CObjectsShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
 {
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSDiffused", "ps_5_1", ppd3dShaderBlob));
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSLighting", "ps_5_1", ppd3dShaderBlob));
 }
 
 void CObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
@@ -290,73 +317,6 @@ void CObjectsShader::ReleaseUploadBuffers()
 }
 
 void CObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
-{
-	CShader::Render(pd3dCommandList, pCamera);
-}
-
-
-
-CPongShader::CPongShader()
-{
-
-}
-CPongShader::~CPongShader()
-{
-
-}
-
-D3D12_INPUT_LAYOUT_DESC CPongShader::CreateInputLayout()
-{
-	UINT nInputElementDescs = 3;
-	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
-	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	pd3dInputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	pd3dInputElementDescs[2] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
-	d3dInputLayoutDesc.pInputElementDescs = pd3dInputElementDescs;
-	d3dInputLayoutDesc.NumElements = nInputElementDescs;
-	return(d3dInputLayoutDesc);
-}
-
-D3D12_SHADER_BYTECODE CPongShader::CreateVertexShader(ID3DBlob** ppd3dShaderBlob)
-{
-	return(CShader::CompileShaderFromFile(L"Shader_Pong.hlsl", "VSDiffused", "vs_5_1", ppd3dShaderBlob));
-}
-D3D12_SHADER_BYTECODE CPongShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
-{
-	return(CShader::CompileShaderFromFile(L"Shader_Pong.hlsl", "PSDiffused", "ps_5_1", ppd3dShaderBlob));
-}
-
-void CPongShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature
-	* pd3dGraphicsRootSignature)
-{
-	m_nPipelineStates = 1;
-	m_ppd3dPipelineStates = new ID3D12PipelineState * [m_nPipelineStates];
-	CShader::CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-}
-
-void CPongShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
-	* pd3dCommandList)
-{
-	CreateShaderVariables(pd3dDevice, pd3dCommandList);
-}
-
-void CPongShader::ReleaseObjects()
-{
-
-}
-
-void CPongShader::AnimateObjects(float fTimeElapsed)
-{
-
-}
-
-void CPongShader::ReleaseUploadBuffers()
-{
-
-}
-
-void CPongShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
 	CShader::Render(pd3dCommandList, pCamera);
 }

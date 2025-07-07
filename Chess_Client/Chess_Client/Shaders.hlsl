@@ -1,4 +1,48 @@
 //게임 객체의 정보를 위한 상수 버퍼를 선언한다. 
+#define MAX_LIGHTS 8
+#define MAX_MATERIALS 8
+
+// C++의 MATERIAL 구조체와 일치해야함
+struct MATERIAL
+{
+    float4 m_xmf4Ambient;
+    float4 m_xmf4Diffuse;
+    float4 m_xmf4Specular; 
+    float4 m_xmf4Emissive;
+};
+
+// C++의 LIGHT 구조체와 일치해야함
+struct LIGHT
+{
+    float4 m_xmf4Ambient;
+    float4 m_xmf4Diffuse;
+    float4 m_xmf4Specular;
+    float3 m_xmf3Position;
+    float m_fFalloff;
+    float3 m_xmf3Direction;
+    float m_fTheta; //cos(m_fTheta)
+    float3 m_xmf3Attenuation;
+    float m_fPhi; //cos(m_fPhi)
+    bool m_bEnable;
+    int m_nType;
+    float m_fRange;
+    float padding;
+};
+
+// C++의 LIGHTS 구조체와 일치시켜야 합니다.
+struct LIGHTS
+{
+    LIGHT m_pLights[MAX_LIGHTS];
+    float4 m_xmf4GlobalAmbient;
+};
+
+// C++의 MATERIALS 구조체와 일치시켜야 합니다.
+struct MATERIALS
+{
+    MATERIAL m_pReflections[MAX_MATERIALS];
+};
+
+
 
 cbuffer cbGameObjectInfo : register(b0)
 {
@@ -12,32 +56,89 @@ cbuffer cbCameraInfo : register(b1)
     matrix gmtxProjection : packoffset(c4);
 };
 
-//정점 셰이더의 입력을 위한 구조체를 선언한다. 
-struct VS_INPUT
+// C++에서 SetGraphicsRootConstantBufferView로 전달하는 상수 버퍼
+cbuffer cbMaterials : register(b2)
+{
+    MATERIALS gMaterials;
+};
+
+cbuffer cbLights : register(b3)
+{
+    LIGHTS gLights;
+};
+
+// 정점 셰이더의 입력을 위한 구조체 (위치와 법선)
+struct VS_LIGHTING_INPUT
 {
     float3 position : POSITION;
-    float4 color : COLOR;
+    float3 normal : NORMAL;
+    float4 color : COLOR; // 기존 색상 정보도 그대로 가져오기
 };
 
-//정점 셰이더의 출력(픽셀 셰이더의 입력)을 위한 구조체를 선언한다. 
-struct VS_OUTPUT
+// 픽셀 셰이더의 입력을 위한 구조체
+struct PS_LIGHTING_INPUT
 {
-    float4 position : SV_POSITION;
-    float4 color : COLOR;
+    float4 positionH : SV_POSITION; // 최종 변환된 2D 화면 좌표
+    float4 color : COLOR; // 정점의 기본 색상
+    float3 positionW : POSITION; // 월드 좌표계에서의 위치
+    float3 normalW : NORMAL; // 월드 좌표계에서의 법선 벡터
 };
 
-//정점 셰이더를 정의한다. 
-VS_OUTPUT VSDiffused(VS_INPUT input)
+// --- 새로운 정점/픽셀 셰이더 함수 ---
+
+// 정점 셰이더: VSLighting
+PS_LIGHTING_INPUT VSLighting(VS_LIGHTING_INPUT input)
 {
-    VS_OUTPUT output;
-    //정점을 변환(월드 변환, 카메라 변환, 투영 변환)한다. 
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxWorld), gmtxView),gmtxProjection);
+    PS_LIGHTING_INPUT output;
+
+    // 정점의 위치를 월드 좌표계로 변환
+    output.positionW = (float3) mul(float4(input.position, 1.0f), gmtxWorld);
+    // 최종 화면 좌표로 변환
+    output.positionH = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+    // 법선 벡터를 월드 좌표계로 변환 (방향이므로 float3x3 사용)
+    output.normalW = mul(input.normal, (float3x3) gmtxWorld);
+    
+    // 정점의 고유 색상은 그대로 전달
     output.color = input.color;
-    return(output);
+
+    return output;
 }
 
-//픽셀 셰이더를 정의한다.
-float4 PSDiffused(VS_OUTPUT input) : SV_TARGET
+
+// 픽셀 셰이더: PSLighting (퐁 조명 계산의 핵심)
+float4 PSLighting(PS_LIGHTING_INPUT input) : SV_TARGET
 {
-    return(input.color);
+    // 최종적으로 계산될 픽셀의 색상 (초기값은 검은색)
+    float4 f4TotalColor = float4(0, 0, 0, 1);
+    
+    // 법선 벡터를 정규화 (크기를 1로 만듦)
+    float3 N = normalize(input.normalW);
+    
+    // 모든 조명(MAX_LIGHTS 개)에 대해 계산을 반복
+    for (int i = 0; i < MAX_LIGHTS; i++)
+    {
+        // 켜져 있는 조명만 계산
+        if (gLights.m_pLights[i].m_bEnable)
+        {
+            // 지금은 재질을 0번만 사용한다고 가정
+            MATERIAL material = gMaterials.m_pReflections[0];
+
+            // 1. 환경광(Ambient) 계산: 빛의 방향과 상관없이 은은하게 깔리는 빛
+            float4 f4Ambient = gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient;
+            f4TotalColor += f4Ambient;
+
+            // 2. 난반사(Diffuse) 계산: 빛의 방향과 표면의 방향에 따라 밝기가 결정되는 빛 (입체감)
+            float3 L = normalize(gLights.m_pLights[i].m_xmf3Direction); // 빛의 방향
+            float fDiffuseFactor = max(dot(N, -L), 0.0); // 빛과 법선 벡터의 내적
+            float4 f4Diffuse = fDiffuseFactor * gLights.m_pLights[i].m_xmf4Diffuse * material.m_xmf4Diffuse;
+            f4TotalColor += f4Diffuse;
+        }
+    }
+    
+    // 전역 환경광 추가
+    f4TotalColor += gLights.m_xmf4GlobalAmbient;
+    
+    // 오브젝트 고유의 색상과 빛 계산 결과를 곱하여 최종 색 결정
+    // input.color는 정점의 원래 색상 (예: 체스판의 밝은 칸, 어두운 칸)
+    return f4TotalColor * input.color;
 }

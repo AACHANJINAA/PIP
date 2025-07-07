@@ -159,6 +159,7 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
     Collision(fTimeElapsed);
 }
 
+// (수정) 조명, 머터리얼 데이터 연결 [PONG]
 void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     m_pCamera->Update();
@@ -166,6 +167,14 @@ void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
     m_pCamera->SetViewportsAndScissorRects(pd3dCommandList);
     pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
     m_pCamera->UpdateShaderVariables(pd3dCommandList);
+
+    UpdateShaderVariables(pd3dCommandList); // 조명/머터리얼 데이터 CPU -> GPU 복사
+
+    D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
+    pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress); // 재질 버퍼를 b2에 연결
+
+    d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
+    pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress); // 조명 버퍼를 b3에 연결
 
     for (int i = 0; i < m_nShaders; i++)
     {

@@ -42,6 +42,7 @@ using Microsoft::WRL::ComPtr;
 #include <iostream>
 #include <vector>
 #include <array>
+#include <map>
 #include <list>
 #include <fstream>
 #include <string>
@@ -68,6 +69,15 @@ using Microsoft::WRL::ComPtr;
 
 #define FRAME_BUFFER_WIDTH 1200
 #define FRAME_BUFFER_HEIGHT 800
+
+
+// 라이팅 및 PONG_SHADER 관련 상수 [PONG]
+#define MAX_LIGHTS			8 
+#define MAX_MATERIALS		8
+
+#define POINT_LIGHT			1
+#define SPOT_LIGHT			2
+#define DIRECTIONAL_LIGHT	3
 
 extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nBytes, 
 	D3D12_HEAP_TYPE d3dHeapType = D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,

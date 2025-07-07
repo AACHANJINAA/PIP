@@ -101,7 +101,7 @@ void CMesh::UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList)
 
 void CMesh::ChangeColor(ID3D12GraphicsCommandList* pd3dCommandList, float r, float g, float b, float a)
 {
-	for (CDiffusedVertex& vertex : m_Vertexvec)
+	for (CIlluminatedVertex& vertex : m_Vertexvec)
 	{
 		vertex.m_xmf4Diffuse.x = r;
 		vertex.m_xmf4Diffuse.y = g;
@@ -165,6 +165,7 @@ int CMesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRay
 	return(nIntersections);
 }
 
+// (수정) 위치뿐만 아니라 빛 계산 때 필요한 법선 벡터 추가 [PONG] 
 CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
 {
 	std::ifstream in{ str };
@@ -173,7 +174,6 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	}
 
 	std::string Line{};
-
 	std::string type{};
 
 	int FaceNum{}; // 1,2,3 반복
@@ -182,8 +182,10 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 	UINT a, b, c;
 
-	//std::vector<CDiffusedVertex> m_Vertexvec{};
-	//std::vector<UINT> AllIndex{};
+	// 원래는 바로 넣었던 걸 수정하여, 임시로 위치, 법선을 저장할 벡터를 사용합니다.
+	std::vector<XMFLOAT3> temp_positions; // 임시로 위치를 저장할 벡터
+	std::vector<XMFLOAT3> temp_normals; // 임시로 법선을 저장할 벡터
+	std::vector<UINT> position_indices, normal_indices; // 위치 인덱스 저장용 & 법선 인덱스 저장용
 
 
 	while (std::getline(in, Line))
@@ -193,46 +195,126 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 		iss >> type;
 
 		if (type == "v") {
-			iss >> x >> y >> z;
-			m_Vertexvec.emplace_back(x, y, z, RANDOM_COLOR);
-
+			// 수정 (위치벡터에 위치를 저장)
+			XMFLOAT3 pos;
+			iss >> pos.x >> pos.y >> pos.z;
+			temp_positions.emplace_back(pos);
 			
 		}
-		if (type == "s")
+		else if (type == "vn") {
+			// 수정 (법선벡터에 법선을 저장)
+			XMFLOAT3 normal;
+			iss >> normal.x >> normal.y >> normal.z;
+			temp_normals.emplace_back(normal);
+		}
+		/*else if (type == "s")
 		{
 			iss >> type;
 			if (type == "1")
 			{
 				//break;
 			}
-		}
-		if (type == "f")
+		}*/
+		else if (type == "f")
 		{
-			iss >> a >> b >> c;
+			std::string face_chunk;
+			// "f" 뒤에 나오는 세 개의 "v//vn" 덩어리를 각각 처리합니다.
+			for (int i = 0; i < 3; ++i)
+			{
+				iss >> face_chunk; // 예: "1//1"
 
-			m_Indexvec.emplace_back(a - 1);
-			m_Indexvec.emplace_back(b - 1);
-			m_Indexvec.emplace_back(c - 1);
+				std::stringstream face_ss(face_chunk);
+				std::string part;
 
+				// 첫 번째 '/' 전까지 읽어 위치 인덱스로 저장
+				std::getline(face_ss, part, '/');
+				position_indices.push_back(std::stoul(part));
+
+				// 두 번째 '/' 전까지 읽음 (vt 인덱스, 현재는 비어있음)
+				std::getline(face_ss, part, '/');
+
+				// 나머지를 읽어 법선 인덱스로 저장
+				std::getline(face_ss, part);
+				normal_indices.push_back(std::stoul(part));
+			}
 		}
 	}
-	auto [min_x, max_x] = 
-		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),[](const CDiffusedVertex& a, const CDiffusedVertex& b)
-		{
-			return a.m_xmf3Position.x < b.m_xmf3Position.x;
-		});
-	auto [min_y, max_y] =
-		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), [](const CDiffusedVertex& a, const CDiffusedVertex& b)
-		{
-			return a.m_xmf3Position.y < b.m_xmf3Position.y;
-		});
-	auto [min_z, max_z] =
-		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), [](const CDiffusedVertex& a, const CDiffusedVertex& b)
-		{
-			return a.m_xmf3Position.z < b.m_xmf3Position.z;
-		});
 
-	m_nStride = sizeof(CDiffusedVertex);
+	m_Vertexvec.clear();
+	m_Indexvec.clear();
+
+	// 이 코드는 (위치, 법선)의 고유한 조합을 찾아내어, 중복되는 정점 생성을 막고 메모리를 최적화
+	// 법선 벡터가 고유한 solid 객체를 받아올 때는 아래코드가 있으면 좋음
+	// 투명, 반투명, 구멍이 뚫려있는 물체 등을 사용할 때는 다른 형식으로 생각해봐야할듯 <- 왜냐하면 이거는 위치가 같더라도 서로다른 법선벡터가 필요할 거니까
+
+	// Key: (위치 인덱스, 법선 인덱스)의 한 쌍
+	// Value: 우리가 새로 만드는 최종 정점 목록에서의 인덱스 번호
+	std::map<std::pair<UINT, UINT>, UINT> vertex_map;
+
+	// .obj 파일의 f 라인에서 읽어온 모든 면(face)의 인덱스 정보(인덱스 3개 => 삼각형 1개)를 순회
+	for (size_t i = 0; i < position_indices.size(); ++i)
+	{
+		// .obj 파일의 인덱스는 1부터 시작하지만, C++ 벡터의 인덱스는 0부터 시작하므로 1을 빼서 실제 배열의 인덱스로 변환
+		UINT pos_idx = position_indices[i] - 1;
+		UINT norm_idx = normal_indices[i] - 1;
+
+		if (pos_idx >= temp_positions.size() || norm_idx >= temp_normals.size())
+		{
+			__debugbreak();
+		}
+
+		// 현재 처리 중인 정점의 '(위치 인덱스, 법선 인덱스)' 조합을 Key로
+		std::pair<UINT, UINT> vertex_key = { pos_idx, norm_idx };
+
+		// map에서 이 조합을 이전에 본 적이 있는지 찾기
+		auto it = vertex_map.find(vertex_key);
+
+		// 위 find에서 end가 나왔을 경우엔?(map안에 없다는 거)
+		if (it == vertex_map.end())
+		{
+			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성
+			CIlluminatedVertex new_vertex(temp_positions[pos_idx], temp_normals[norm_idx]);
+
+			// 이 새 정점을 최종 정점 목록에 추가
+			m_Vertexvec.emplace_back(new_vertex);
+
+			// 방금 추가한 정점의 인덱스 번호를 구하고
+			UINT new_index = static_cast<UINT>(m_Vertexvec.size() - 1);
+
+			// 새로 만든 정점의 인덱스를 최종 인덱스 목록에 추가
+			m_Indexvec.emplace_back(new_index);
+
+			// map에 (위치/법선 조합, 새로 부여된 인덱스)를 기록 <- 이러면 다음에 똑같은게 나오면 중복체크가 되서 넘어가겠지 
+			vertex_map[vertex_key] = new_index;
+		}
+		else
+		{
+			// 정점을 또 만들지 않고, map에서 찾은 기존 인덱스 번호를 최종 인덱스 목록에 추가하여 재사용
+			m_Indexvec.emplace_back(it->second);
+		}
+	}
+
+	// (수정) CIlluminatedVertex로 변경
+	auto [min_x, max_x] =
+		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), 
+			[](const CIlluminatedVertex& a, const CIlluminatedVertex& b)
+			{ 
+				return a.m_xmf3Position.x < b.m_xmf3Position.x; 
+			});
+	auto [min_y, max_y] =
+		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), 
+			[](const CIlluminatedVertex& a, const CIlluminatedVertex& b)
+			{ 
+				return a.m_xmf3Position.y < b.m_xmf3Position.y; 
+			});
+	auto [min_z, max_z] =
+		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), 
+			[](const CIlluminatedVertex& a, const CIlluminatedVertex& b)
+			{ 
+				return a.m_xmf3Position.z < b.m_xmf3Position.z; 
+			});
+
+	m_nStride = sizeof(CIlluminatedVertex);
 	m_nVertices = m_Vertexvec.size();
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 

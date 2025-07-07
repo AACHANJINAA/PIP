@@ -4,6 +4,25 @@
 #include "Shader.h"
 #include "BoardCube.h"
 
+// (추가) 머터리얼 생성자 & 소멸자 & SetShader [PONG]
+
+CMaterial::CMaterial()
+{
+	m_pMaterial = new MATERIAL();
+}
+CMaterial::~CMaterial()
+{
+	if (m_pMaterial) delete m_pMaterial;
+	if (m_pShader) m_pShader->Release();
+}
+
+void CMaterial::SetShader(CShader* pShader)
+{
+	if (m_pShader) m_pShader->Release();
+	m_pShader = pShader;
+	if (m_pShader) m_pShader->AddRef();
+}
+
 
 CGameObject::CGameObject()
 {
@@ -12,19 +31,28 @@ CGameObject::CGameObject()
 CGameObject::~CGameObject()
 {
 	if (m_pMesh) m_pMesh->Release();
-	if (m_pShader)
+	/*if (m_pShader)
 	{
 		m_pShader->ReleaseShaderVariables();
 		m_pShader->Release();
-	}
+	}*/
+	if (m_pMaterial) m_pMaterial->Release(); // (수정) 머터리얼로 바뀜 [PONG]
 }
 
+// (수정) [PONG]
 void CGameObject::SetShader(CShader* pShader)
 {
-	if (m_pShader) m_pShader->Release();
-	m_pShader = pShader;
-	if (m_pShader) m_pShader->AddRef();
+	if (!m_pMaterial) m_pMaterial = new CMaterial(); // 재질이 없으면 새로 생성
+	if (m_pMaterial) m_pMaterial->SetShader(pShader);
 }
+
+void CGameObject::SetMaterial(CMaterial* pMaterial)
+{
+	if (m_pMaterial) m_pMaterial->Release();
+	m_pMaterial = pMaterial;
+	if (m_pMaterial) m_pMaterial->AddRef();
+}
+
 void CGameObject::SetMesh(CMesh* pMesh)
 {
 	if (m_pMesh) 
@@ -51,12 +79,23 @@ void CGameObject::OnPrepareRender()
 {
 }
 
+// (수정) [PONG]
 void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
 	OnPrepareRender();
+
+	if (m_pMaterial) // 머터리얼이 있는지 확인
+	{
+		if (m_pMaterial->m_pShader) // 머터리얼에 셰이더가 있는지 확인
+		{
+			// 머터리얼의 셰이더를 사용하여 렌더링
+			m_pMaterial->m_pShader->Render(pd3dCommandList, pCamera);
+		}
+	}
+
 	//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다. 
 	UpdateShaderVariables(pd3dCommandList);
-	if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera);
+
 	if (m_pMesh) m_pMesh->Render(pd3dCommandList);
 }
 
