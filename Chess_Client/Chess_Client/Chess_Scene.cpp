@@ -45,7 +45,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         for (int j = 0; j < 8; ++j) // 가로
         {
             Board = std::make_shared<CBoardCube>();
-            BoardMesh = new CReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube.obj" };
+            BoardMesh = new CReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube_Normal.obj" };
             if ((j + i) % 2)
             {
                 BoardMesh->ChangeColor(pd3dCommandList, 0.941f, 0.851f, 0.710f, 1.f);
@@ -96,6 +96,9 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     //    // 매니저에 넣기
     //    CObjectManager::GetManager()->PushObject(Other);
     //}
+
+    BuildLightsAndMaterials();
+    CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void CChess_Scene::ReleaseObjects()
