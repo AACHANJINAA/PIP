@@ -121,7 +121,7 @@ pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
 #if defined(_DEBUG)
 	nCompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
-	ID3DBlob* pd3dErrorBlob = NULL;
+	ComPtr<ID3DBlob> pd3dErrorBlob;
 
 	HRESULT hResult = ::D3DCompileFromFile(pszFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, pszShaderName, pszShaderProfile, nCompileFlags, 0, ppd3dShaderBlob, &pd3dErrorBlob);
 
@@ -131,7 +131,6 @@ pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
 		{
 			// 에러 메시지를 디버그 출력창에 표시합니다.
 			OutputDebugStringA((char*)pd3dErrorBlob->GetBufferPointer());
-			pd3dErrorBlob->Release();
 		}
 		return { 0, NULL }; // 실패했으므로 빈 셰이더 바이트코드를 반환
 	}
@@ -145,7 +144,7 @@ pszShaderName, LPCSTR pszShaderProfile, ID3DBlob** ppd3dShaderBlob)
 //그래픽스 파이프라인 상태 객체를 생성한다. 
 void CShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
-	ID3DBlob* pd3dVertexShaderBlob = NULL, * pd3dPixelShaderBlob = NULL;
+	ComPtr<ID3DBlob> pd3dVertexShaderBlob, pd3dPixelShaderBlob;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dPipelineStateDesc;
 	::ZeroMemory(&d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
@@ -164,11 +163,6 @@ void CShader::CreateShader(ID3D12Device *pd3dDevice, ID3D12RootSignature* pd3dGr
 	d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	pd3dDevice->CreateGraphicsPipelineState(&d3dPipelineStateDesc,
 		__uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[0]);
-	if (pd3dVertexShaderBlob) 
-		pd3dVertexShaderBlob->Release();
-
-	if (pd3dPixelShaderBlob)
-		pd3dPixelShaderBlob->Release();
 
 	if (d3dPipelineStateDesc.InputLayout.pInputElementDescs) 
 		delete[] d3dPipelineStateDesc.InputLayout.pInputElementDescs;
@@ -219,8 +213,7 @@ CPlayerShader::~CPlayerShader()
 D3D12_INPUT_LAYOUT_DESC CPlayerShader::CreateInputLayout()
 {
 	UINT nInputElementDescs = 2;
-	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new
-		D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
+	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
 	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
 	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	pd3dInputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
@@ -235,14 +228,12 @@ D3D12_INPUT_LAYOUT_DESC CPlayerShader::CreateInputLayout()
 D3D12_SHADER_BYTECODE CPlayerShader::CreateVertexShader(ID3DBlob** ppd3dShaderBlob)
 {
 	wchar_t Shader[] = L"Shaders.hlsl"; // DW수정
-	return(CShader::CompileShaderFromFile(Shader, "VSLighting", "vs_5_1",
-		ppd3dShaderBlob));
+	return(CShader::CompileShaderFromFile(Shader, "VSLighting", "vs_5_1", ppd3dShaderBlob));
 }
 D3D12_SHADER_BYTECODE CPlayerShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
 {
 	wchar_t Shader[] = L"Shaders.hlsl"; // DW수정
-	return(CShader::CompileShaderFromFile(Shader, "PSLighting", "ps_5_1",
-		ppd3dShaderBlob));
+	return(CShader::CompileShaderFromFile(Shader, "PSLighting", "ps_5_1", ppd3dShaderBlob));
 }
 
 void CPlayerShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature

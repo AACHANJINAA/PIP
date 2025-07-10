@@ -13,7 +13,7 @@
 
 CGameFramework gGameFramework;
 SOCKET c_socket;
-std::wstring SERVER_ADDR_W = L"192.168.45.168";
+std::wstring SERVER_ADDR_W = L"127.0.0.1";
 std::wstring PLAYER_NAME_W = L"MyPlayer"; // 플레이어 이름 저장용
 
 std::vector<char> g_recvBuffer; // 서버로부터 받은 데이터를 쌓아두는 수신 버퍼
