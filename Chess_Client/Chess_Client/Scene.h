@@ -4,6 +4,37 @@
 #include "Shader.h"
 #include "Camera.h"
 
+// LIGHTS 구조체: 씬의 모든 조명 정보
+struct LIGHT
+{
+	XMFLOAT4 m_xmf4Ambient;
+	XMFLOAT4 m_xmf4Diffuse;
+	XMFLOAT4 m_xmf4Specular;
+	XMFLOAT3 m_xmf3Position;
+	float m_fFalloff;
+	XMFLOAT3 m_xmf3Direction;
+	float m_fTheta; //cos(m_fTheta)
+	XMFLOAT3 m_xmf3Attenuation;
+	float m_fPhi; //cos(m_fPhi)
+	bool m_bEnable;
+	int m_nType;
+	float m_fRange;
+	float padding;
+};
+
+struct LIGHTS
+{
+	LIGHT m_pLights[MAX_LIGHTS];
+	XMFLOAT4 m_xmf4GlobalAmbient;
+};
+
+// MATERIALS 구조체: 씬의 모든 재질 정보.
+struct MATERIALS
+{
+	MATERIAL m_pReflections[MAX_MATERIALS];
+};
+
+// (추가) 씬의 라이팅, 머터리얼 관련 변수 및 함수 선언
 class CScene
 {
 public:
@@ -48,6 +79,28 @@ protected:
 	BYTE OldKey[256]{};
 
 	POINT ptOldCursorPos{};
+
+protected:
+	// 씬의 조명과 재질 데이터
+	LIGHTS* m_pLights = NULL;
+	MATERIALS* m_pMaterials = NULL;
+
+	// 조명과 재질 정보를 GPU로 보낼 상수 버퍼
+	ComPtr<ID3D12Resource> m_pd3dcbLights;    
+	ComPtr<ID3D12Resource> m_pd3dcbMaterials;  
+
+	// 상수 버퍼와 매핑할 CPU 포인터
+	LIGHTS* m_pcbMappedLights = NULL;
+	MATERIALS* m_pcbMappedMaterials = NULL;
+
+public: 
+	// 씬의 모든 조명과 재질을 생성하는 함수
+	void BuildLightsAndMaterials();
+
+	// 조명/재질을 위한 상수 버퍼를 생성하고 갱신하는 함수들
+	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void ReleaseShaderVariables();
 
 };
 

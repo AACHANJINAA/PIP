@@ -45,7 +45,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         for (int j = 0; j < 8; ++j) // 가로
         {
             Board = std::make_shared<CBoardCube>();
-            BoardMesh = new CReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube.obj" };
+            BoardMesh = new CReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube_Normal.obj" };
             if ((j + i) % 2)
             {
                 BoardMesh->ChangeColor(pd3dCommandList, 0.941f, 0.851f, 0.710f, 1.f);
@@ -96,6 +96,9 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     //    // 매니저에 넣기
     //    CObjectManager::GetManager()->PushObject(Other);
     //}
+
+    BuildLightsAndMaterials();
+    CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void CChess_Scene::ReleaseObjects()
@@ -159,6 +162,7 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
     Collision(fTimeElapsed);
 }
 
+// (수정) 조명, 머터리얼 데이터 연결 [PONG]
 void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     m_pCamera->Update();
@@ -166,6 +170,14 @@ void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
     m_pCamera->SetViewportsAndScissorRects(pd3dCommandList);
     pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
     m_pCamera->UpdateShaderVariables(pd3dCommandList);
+
+    UpdateShaderVariables(pd3dCommandList); // 조명/머터리얼 데이터 CPU -> GPU 복사
+
+    D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
+    pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress); // 재질 버퍼를 b2에 연결
+
+    d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
+    pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress); // 조명 버퍼를 b3에 연결
 
     for (int i = 0; i < m_nShaders; i++)
     {

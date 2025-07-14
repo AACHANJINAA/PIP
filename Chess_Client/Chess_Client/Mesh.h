@@ -12,26 +12,47 @@ public:
 	~CVertex() {}
 };
 
-class CDiffusedVertex : public CVertex
+// (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
+class CIlluminatedVertex : public CVertex
 {
 public:
-	//정점의 색상이다. 
-	XMFLOAT4 m_xmf4Diffuse;
+	XMFLOAT3 m_xmf3Normal; // 법선 벡터
+	XMFLOAT4 m_xmf4Diffuse; // CDiffusedVertex꺼 가져오기
+
 public:
-	CDiffusedVertex() {
-		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); m_xmf4Diffuse =
-			XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	CIlluminatedVertex() { 
+		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
+		m_xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
+		m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
-	CDiffusedVertex(float x, float y, float z, XMFLOAT4 xmf4Diffuse) {
-		m_xmf3Position =
-			XMFLOAT3(x, y, z); m_xmf4Diffuse = xmf4Diffuse;
+	CIlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT4 c = RANDOM_COLOR) { 
+		m_xmf3Position = p;
+		m_xmf3Normal = n;
+		m_xmf4Diffuse = c;
 	}
-	CDiffusedVertex(XMFLOAT3 xmf3Position, XMFLOAT4 xmf4Diffuse) {
-		m_xmf3Position =
-			xmf3Position; m_xmf4Diffuse = xmf4Diffuse;
-	}
-	~CDiffusedVertex() {}
+	~CIlluminatedVertex() {}
 };
+
+//class CDiffusedVertex : public CVertex
+//{
+//public:
+//	//정점의 색상이다. 
+//	XMFLOAT4 m_xmf4Diffuse;
+//public:
+//	CDiffusedVertex() {
+//		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); m_xmf4Diffuse =
+//			XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+//	}
+//	CDiffusedVertex(float x, float y, float z, XMFLOAT4 xmf4Diffuse) {
+//		m_xmf3Position =
+//			XMFLOAT3(x, y, z); m_xmf4Diffuse = xmf4Diffuse;
+//	}
+//	CDiffusedVertex(XMFLOAT3 xmf3Position, XMFLOAT4 xmf4Diffuse) {
+//		m_xmf3Position =
+//			xmf3Position; m_xmf4Diffuse = xmf4Diffuse;
+//	}
+//	~CDiffusedVertex() {}
+//};
 
 class CMesh
 {
@@ -72,7 +93,7 @@ protected:
 
 	std::vector<UINT> m_Indexvec; // 인덱스 버퍼를 저장하기 위한 벡터(인덱스 버퍼는 변함이 없음)
 
-	std::vector<CDiffusedVertex> m_Vertexvec; // 버텍스 버퍼를 저장하기 위한 벡터
+	std::vector<CIlluminatedVertex> m_Vertexvec; // 버텍스 버퍼를 저장하기 위한 벡터 -> (수정) CIlluminatedVertex class로 변경 [PONG]
 
 	/*인덱스 버퍼(인덱스의 배열)와 인덱스 버퍼를 위한 업로드 버퍼에 대한 인터페이스 포인터이다. 인덱스 버퍼는 정점
 	버퍼(배열)에 대한 인덱스를 가진다.*/
@@ -116,3 +137,4 @@ public:
 
 	virtual ~CReadObjMesh();
 };
+
