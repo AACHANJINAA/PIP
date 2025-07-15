@@ -51,10 +51,10 @@ ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevic
     pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
     // 카메라 행렬용
     pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    pd3dRootParameters[1].Constants.Num32BitValues = 32;
+    pd3dRootParameters[1].Constants.Num32BitValues = 36;
     pd3dRootParameters[1].Constants.ShaderRegister = 1;
     pd3dRootParameters[1].Constants.RegisterSpace = 0;
-    pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     // 머터리얼 정보를 위한 상수 버퍼 뷰(CBV) 추가
     pd3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -161,7 +161,7 @@ void CScene::BuildLightsAndMaterials()
     m_pLights->m_pLights[0].m_nType = DIRECTIONAL_LIGHT; 
     m_pLights->m_pLights[0].m_xmf4Ambient = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
     m_pLights->m_pLights[0].m_xmf4Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
-    m_pLights->m_pLights[0].m_xmf4Specular = XMFLOAT4(0.4f, 0.4f, 0.4f, 0.0f);
+    m_pLights->m_pLights[0].m_xmf4Specular = XMFLOAT4(1.f, 1.f, 1.f, 0.0f);
     m_pLights->m_pLights[0].m_xmf3Direction = XMFLOAT3(0.0f, -1.0f, 1.0f);
 
     m_pMaterials = new MATERIALS;
@@ -170,7 +170,7 @@ void CScene::BuildLightsAndMaterials()
     // 흰색 플라스틱 느낌
     m_pMaterials->m_pReflections[0].m_xmf4Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
     m_pMaterials->m_pReflections[0].m_xmf4Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 16.0f);
+    m_pMaterials->m_pReflections[0].m_xmf4Specular = XMFLOAT4(1.f, 1.f, 1.f, 16.0f);
     m_pMaterials->m_pReflections[0].m_xmf4Emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 

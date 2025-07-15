@@ -4,6 +4,7 @@ struct VS_CB_CAMERA_INFO
 {
 	XMFLOAT4X4 m_xmf4x4View;
 	XMFLOAT4X4 m_xmf4x4Projection;
+	XMFLOAT4 m_f4Position;
 };
 
 
