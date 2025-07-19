@@ -125,7 +125,7 @@ float4 PSLighting(PS_LIGHTING_INPUT input) : SV_TARGET
             MATERIAL material = gMaterials.m_pReflections[0];
 
             // 1. 환경광(Ambient) 계산: 빛의 방향과 상관없이 은은하게 깔리는 빛
-            float4 f4Ambient = gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient;
+            float4 f4Ambient = gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient * input.color;
             f4TotalColor += f4Ambient;
             
             //f4TotalColor *= input.color;
