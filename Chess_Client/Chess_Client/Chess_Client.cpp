@@ -124,7 +124,7 @@ void recv_and_process_packets()
 	            }
 	            player->SetID(pkt->_id);
 	            player->SetPos(pkt->_x, pkt->_y);
-	            player->m_Mesh_Type = I_WANT_CHESS_PLAYER;
+	            player->m_Mesh_Type = PLAYER_CHESS;
 
 	            CObjectManager::GetManager()->RequestObject(player);
                 CObjectManager::GetManager()->SetPlayer(player);
@@ -158,7 +158,7 @@ void recv_and_process_packets()
                     auto Other = std::make_shared<COther_King>(x, y);
                     Other->SetID(new_id);
 					Other->SetName(name);
-					Other->m_Mesh_Type = I_WANT_CHESS_ENEMY; // 아오 대원시치
+					Other->m_Mesh_Type = ENEMY_CHESS; // 아오 대원시치
 
                     CObjectManager::GetManager()->RequestObject(Other);
                 }

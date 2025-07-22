@@ -31,7 +31,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 		auto RequestObject = m_RequestObjects.front();
 		switch (RequestObject->m_Mesh_Type)
 		{
-		case I_WANT_CHESS_PLAYER:
+		case PLAYER_CHESS:
 		{
 			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King_Normal.obj" };
 
@@ -47,7 +47,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 		}
 		break;
 
-		case I_WANT_CHESS_ENEMY:
+		case ENEMY_CHESS:
 		{
 			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King_Normal.obj" };
 

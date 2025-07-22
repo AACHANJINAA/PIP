@@ -207,14 +207,6 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 			iss >> normal.x >> normal.y >> normal.z;
 			temp_normals.emplace_back(normal);
 		}
-		/*else if (type == "s")
-		{
-			iss >> type;
-			if (type == "1")
-			{
-				//break;
-			}
-		}*/
 		else if (type == "f")
 		{
 			std::string face_chunk;

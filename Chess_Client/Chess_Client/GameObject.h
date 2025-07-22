@@ -4,9 +4,9 @@
 class CShader;
 
 
-enum WHAT_DO_YOU_WANT {
-	I_WANT_CHESS_PLAYER,
-	I_WANT_CHESS_ENEMY
+enum CHESS_TYPE {
+	PLAYER_CHESS,
+	ENEMY_CHESS
 };
 
 // (추가) MATERIAL 구조체 [PONG]
@@ -51,7 +51,7 @@ public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 
-	WHAT_DO_YOU_WANT m_Mesh_Type{}; // 메쉬 어떤걸 원하는지?
+	CHESS_TYPE m_Mesh_Type{}; // 메쉬 어떤걸 원하는지?
 
 	BoundingOrientedBox m_xmOOBB = BoundingOrientedBox();
 	bool m_Delete{}; // 객체를 삭제해야 하는지?
