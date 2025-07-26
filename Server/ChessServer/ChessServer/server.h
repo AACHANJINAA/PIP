@@ -55,6 +55,8 @@ namespace chess::server
 		std::atomic<SESSION_STATE>	_state;
 		short						_x, _y;
 		std::string					_name;
+		std::atomic<short>			_hp;
+		short						_max_hp;
 		
 	public:
 		SESSION();

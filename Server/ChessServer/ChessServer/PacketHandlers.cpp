@@ -124,4 +124,82 @@ namespace chess::packet
 			}
 		}
 	}
+
+	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
+	{
+		LOG("[HANDLER C2S_ATTACK] Session " << session->_id << " requests attack.");
+
+		// 4방향 좌표 (상, 하, 좌, 우)
+		int dx[] = { 0, 0, -1, 1 };
+		int dy[] = { 1, -1, 0, 0 };
+
+		for (int i = 0; i < 4; ++i)
+		{
+			int target_x = session->_x + dx[i];
+			int target_y = session->_y + dy[i];
+
+			// 맵 경계 체크
+			if (target_x < 0 || target_x >= MAP_WIDTH || target_y < 0 || target_y >= MAP_HEIGHT)
+			{
+				continue;
+			}
+
+			// 해당 위치에 다른 유저가 있는지 확인
+			std::shared_ptr<chess::server::SESSION> target_session = nullptr;
+			for (auto& user_pair : chess::g_users)
+			{
+				auto other_session = user_pair.second;
+				if (other_session && other_session->_state == server::SESSION_STATE::ST_INGAME &&
+					other_session->_id != session->_id &&
+					other_session->_x == target_x && other_session->_y == target_y)
+				{
+					target_session = other_session;
+					break;
+				}
+			}
+
+			if (target_session)
+			{
+				// 데미지 계산 (임시로 10)
+				int32_t damage = 10;
+
+				int32_t old_hp = target_session->_hp.fetch_sub(damage);
+				int32_t new_hp = old_hp - damage;
+
+				if (new_hp < 0)
+				{
+					target_session->_hp.store(0);
+					new_hp = 0;
+				}
+
+				LOG("[HANDLER C2S_ATTACK] " << session->_name << " attacks " << target_session->_name << " for "
+					<< damage << " damage. " << target_session->_name << "'s HP: " << target_session->_hp);
+
+				// 공격 결과 패킷 생성
+				SC_PACKET_ATTACK attackPacket;
+				attackPacket._attacker_id = session->_id;
+				attackPacket._target_id = target_session->_id;
+				attackPacket._damage = damage;
+				attackPacket._target_current_hp = target_session->_hp;
+
+				PacketHeader header;
+				header._type = static_cast<uint16_t>(PacketType::S2C_P_ATTACK);
+				header._size = sizeof(header) + sizeof(attackPacket);
+
+				PacketStream finalAttackStream;
+				finalAttackStream << header;
+				finalAttackStream << attackPacket;
+
+				// 모든 클라이언트에게 브로드캐스팅
+				for (auto& val : chess::g_users | std::views::values)
+				{
+					auto broadcast_session = val;
+					if (broadcast_session && broadcast_session->_state == server::SESSION_STATE::ST_INGAME)
+					{
+						broadcast_session->do_send(finalAttackStream.Data(), finalAttackStream.Size());
+					}
+				}
+			}
+		}
+	}
 }

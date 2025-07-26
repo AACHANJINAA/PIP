@@ -77,7 +77,7 @@ namespace chess::server
 	}
 	// server.cpp ¼öÁ¤¾È
 	SESSION::SESSION(long long session_id, SOCKET s)
-		: _c_socket{ s }, _id{ session_id }
+		: _c_socket{ s }, _id{ session_id }, _hp{ 100 }, _max_hp{ 100 }
 	{
 		_state = SESSION_STATE::ST_FREE;
 	}

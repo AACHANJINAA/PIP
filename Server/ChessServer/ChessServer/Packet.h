@@ -14,6 +14,8 @@ namespace chess::packet
         S2C_P_LEAVE = 4,
         C2S_P_LOGIN = 5,
         C2S_P_MOVE = 6,
+        C2S_P_ATTACK = 101,
+        S2C_P_ATTACK = 102,
 	};
 
     constexpr char MAX_ID_LENGTH = 20;
@@ -29,6 +31,14 @@ namespace chess::packet
 
     constexpr unsigned short MAP_HEIGHT = 8;
     constexpr unsigned short MAP_WIDTH = 8;
+
+    enum class AttackDirection : uint8_t
+    {
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT
+    };
 
     class PacketStream
     {
@@ -108,6 +118,20 @@ namespace chess::packet
         uint16_t _type;
     };
 
+    struct CS_PACKET_ATTACK : PacketHeader
+    {
+        //int64_t _id; // 이미 서버는 이 플레이어의 id는 알고 있다.
+        //AttackDirection _direction; // 지금은 4방향 공격할거임 -> 서버에서 결정
+	};
+
+    struct SC_PACKET_ATTACK : PacketHeader
+	{
+        uint32_t    _attacker_id;
+        uint32_t    _target_id;
+        int32_t     _damage;
+        int32_t     _target_current_hp;
+    };
+
     struct CS_PACKET_LOGIN : PacketHeader
     {
 		//name은 가변 길이로 , PacketStream에서 처리
@@ -149,54 +173,5 @@ namespace chess::packet
         MOVE_TYPE _direction;
     };
 
-    /*struct cs_packet_move
-    {
-        unsigned char   _size;
-        PacketType     _type;
-        char            _direction;
-    };*/
-
-    /*struct sc_packet_leave
-    {
-        unsigned char   _size;
-        PacketType      _type;
-        long long       _id;
-    };*/
-
-    /*struct sc_packet_move
-    {
-        unsigned char  _size;
-        PacketType     _type;
-        long long      _id;
-        short          _x, _y;
-    };*/
-
-    /*struct sc_packet_avatar_info
-    {
-        unsigned char   _size;
-        PacketType      _type;
-        long long       _id;
-        short           _x, _y;
-        short           _hp;
-        short           _level;
-        int             _exp;
-    };*/
-
-    /*struct cs_packet_login
-    {
-        unsigned char   _size;
-        PacketType     _type;
-        char            _name[MAX_ID_LENGTH];
-    };*/
-
-    /* struct sc_packet_enter
-    {
-        unsigned char   _size;
-        PacketType      _type;
-        long long       _id;
-        char            _name[MAX_ID_LENGTH];
-        char            _o_type;
-        short           _x, _y;
-    };*/
 #pragma pack (pop)
 }
