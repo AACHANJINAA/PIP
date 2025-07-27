@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
-class CChess_King : public CGameObject
+class CChess_King : public CGameObject, public HPObject
 {
 public:
 	CChess_King(int X = 0, int Y = 0);

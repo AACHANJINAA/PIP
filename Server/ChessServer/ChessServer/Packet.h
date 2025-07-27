@@ -126,8 +126,8 @@ namespace chess::packet
 
     struct SC_PACKET_ATTACK : PacketHeader
 	{
-        uint32_t    _attacker_id;
-        uint32_t    _target_id;
+        int64_t     _attacker_id;
+        int64_t     _target_id;
         int32_t     _damage;
         int32_t     _target_current_hp;
     };

@@ -2,7 +2,7 @@
 #include "GameObject.h"
 
 
-class COther_King : public CGameObject
+class COther_King : public CGameObject, public HPObject
 {
 public:
 	COther_King(int X = 0, int Y = 0);

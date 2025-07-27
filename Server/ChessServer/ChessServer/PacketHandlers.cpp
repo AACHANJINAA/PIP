@@ -163,7 +163,7 @@ namespace chess::packet
 				// 데미지 계산 (임시로 10)
 				int32_t damage = 10;
 
-				int32_t old_hp = target_session->_hp.fetch_sub(damage);
+				int32_t old_hp = target_session->_hp.fetch_sub(static_cast<short>(damage));
 				int32_t new_hp = old_hp - damage;
 
 				if (new_hp < 0)
@@ -180,7 +180,7 @@ namespace chess::packet
 				attackPacket._attacker_id = session->_id;
 				attackPacket._target_id = target_session->_id;
 				attackPacket._damage = damage;
-				attackPacket._target_current_hp = target_session->_hp;
+				attackPacket._target_current_hp = new_hp;
 
 				PacketHeader header;
 				header._type = static_cast<uint16_t>(PacketType::S2C_P_ATTACK);

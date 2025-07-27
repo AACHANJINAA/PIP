@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <utility>
-
 #include "CommonHeader.h"
 #include "Packet.h"
 #include "PacketHandlers.h"
@@ -12,12 +11,12 @@ namespace chess::packet
     class PacketManager : public Singleton<PacketManager>
     {
     private:
-        std::unordered_map<uint16_t, PacketHandler> _handlers; // '주소록' (패킷 ID와 핸들러 함수를 연결)
+        std::unordered_map<uint16_t, PacketHandler> _handlers; // '주소록'
 
     public:
         void Initialize();
-        // 서버 시작 시, 주소록에 "이 ID는 이 함수가 처리해" 라고 등록
-        void RegisterHandler(uint16_t packetId, PacketHandler handler)
+       
+        void RegisterHandler(uint16_t packetId, PacketHandler handler)  // 서버 시작 시, 주소록에 "이 ID는 이 함수가 처리해" 라고 등록
         {
             _handlers[packetId] = std::move(handler);
         }

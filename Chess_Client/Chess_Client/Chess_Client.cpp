@@ -115,24 +115,24 @@ void recv_and_process_packets()
         switch (type)
         {
             case chess::packet::PacketType::S2C_P_AVATAR_INFO:
-	        {
-	            chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
-	            auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-	            if (player == nullptr)
-	            {
-	                player = std::make_shared<CChess_King>();
-	            }
-	            player->SetID(pkt->_id);
-	            player->SetPos(pkt->_x, pkt->_y);
-	            player->m_Mesh_Type = PLAYER_CHESS;
+            {
+                chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
+                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+                if (player == nullptr)
+                {
+                    player = std::make_shared<CChess_King>();
+                }
+                player->SetID(pkt->_id);
+                player->SetPos(pkt->_x, pkt->_y);
+                player->m_Mesh_Type = PLAYER_CHESS;
 
-	            CObjectManager::GetManager()->RequestObject(player);
+                CObjectManager::GetManager()->RequestObject(player);
                 CObjectManager::GetManager()->SetPlayer(player);
-	            /*g_myPlayer.hp = pkt->_hp;
-	            g_myPlayer.exp = pkt->_exp;
-	            g_myPlayer.level = pkt->_level;*/ //아직은 안씀
-	            break;
-	        }
+                /*g_myPlayer.hp = pkt->_hp;
+                g_myPlayer.exp = pkt->_exp;
+                g_myPlayer.level = pkt->_level;*/ //아직은 안씀
+                break;
+            }
             case chess::packet::PacketType::S2C_P_ENTER:
             {
                 // [수정] 서버가 보낸 순서대로 데이터를 하나씩 읽습니다.
@@ -157,8 +157,8 @@ void recv_and_process_packets()
                     //상대방 생성
                     auto Other = std::make_shared<COther_King>(x, y);
                     Other->SetID(new_id);
-					Other->SetName(name);
-					Other->m_Mesh_Type = ENEMY_CHESS; // 아오 대원시치
+                    Other->SetName(name);
+                    Other->m_Mesh_Type = ENEMY_CHESS; // 아오 대원시치
 
                     CObjectManager::GetManager()->RequestObject(Other);
                 }
@@ -168,21 +168,20 @@ void recv_and_process_packets()
             case chess::packet::PacketType::S2C_P_MOVE:
             {
                 chess::packet::SC_PACKET_MOVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_MOVE*>(payload_ptr);
-				auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
                 if (pkt->_id == player->GetID())
                 {
                     player->SetPos(pkt->_x, pkt->_y);
                 }
                 else
                 {
-					auto other_players = CObjectManager::GetManager()->GetEnemy();
-                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other)
-                    {
-                    	return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
-                    });
+                    auto other_players = CObjectManager::GetManager()->GetEnemy();
+                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
+                        return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
+                                           });
                     if (it != other_players.end())
                     {
-						dynamic_cast<COther_King*>(it->get())->SetPos(pkt->_x, pkt->_y);
+                        dynamic_cast<COther_King*>(it->get())->SetPos(pkt->_x, pkt->_y);
                     }
                 }
                 break;
@@ -191,23 +190,54 @@ void recv_and_process_packets()
             {
                 chess::packet::SC_PACKET_LEAVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_LEAVE*>(payload_ptr);
                 auto other_players = CObjectManager::GetManager()->GetEnemy();
-                auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) 
-                {
+                auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
                     return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
-                });
+                                       });
                 if (it != other_players.end())
                 {
                     (*it)->m_Delete = true;
                 }
                 break;
             }
+            case chess::packet::PacketType::S2C_P_ATTACK:
+            {
+                chess::packet::SC_PACKET_ATTACK* pkt = reinterpret_cast
+                    <chess::packet::SC_PACKET_ATTACK*>(payload_ptr);
+                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager
+                ()->GetPlayer());
+
+                if (pkt->_target_id == player->GetID())
+                {
+                    // 클라이언트 자신의 HP 업데이트
+                    player->SetHP(pkt->_target_current_hp);
+                    // TODO: UI에 HP 변화 표시 로직 추가
+                }
+                else
+                {
+                    // 다른 플레이어(적)의 HP 업데이트
+                    auto other_players = CObjectManager::GetManager()->GetEnemy();
+                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](
+                        const std::shared_ptr<CGameObject>& other) {
+                            return pkt->_target_id == static_cast<COther_King*>(other.get())->GetID
+                            ();
+                        });
+                    if (it != other_players.end())
+                    {
+                        dynamic_cast<COther_King*>(it->get())->SetHP(pkt->_target_current_hp);
+                        // TODO: 다른 플레이어의 UI에 HP 변화 표시 로직 추가
+                    }
+                }
+                break;
+            }
+
+           
         }
 
         // 4. 처리한 패킷만큼 버퍼에서 제거
         g_recvBuffer.erase(g_recvBuffer.begin(), g_recvBuffer.begin() + header->_size);
     }
-
 }
+
 
 
 

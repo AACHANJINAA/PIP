@@ -39,6 +39,22 @@ public:
 	void SetShader(CShader* pShader);
 };
 
+class HPObject // HPObject 클래스는 HP와 MaxHP를 관리하는 기본 클래스
+{
+	short _hp;
+	short _max_hp;
+public:
+	HPObject(short hp = 100, short max_hp = 100) : _hp(hp), _max_hp(max_hp) {}
+	virtual ~HPObject() = default; // 가상 소멸자 => 파생 클래스에서 소멸자 호출 가능 = 무조건 가상테이블 생성됨(8바이트)
+
+	void SetHP(short hp) { _hp = hp; }
+	short GetHP() const { return _hp; }
+
+	void SetMaxHP(short max_hp) { _max_hp = max_hp; }
+	short GetMaxHP() const { return _max_hp; }
+
+	bool IsDead() const { return _hp <= 0; }
+};
 
 class CGameObject
 {
