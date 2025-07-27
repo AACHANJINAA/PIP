@@ -279,15 +279,10 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	case WM_KEYUP:
 		switch (wParam)
 		{
-		
 		case VK_F1:
-
 		case VK_F2:
-
 		case VK_F3:
-			
 			break;
-
 		case VK_ESCAPE:
 			::PostQuitMessage(0);
 			break;
