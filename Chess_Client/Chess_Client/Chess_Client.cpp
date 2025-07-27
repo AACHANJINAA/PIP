@@ -3,11 +3,8 @@
 
 #include "stdafx.h"
 #include "Chess_Client.h"
-
-#include "Other_King.h"
-#include "Chess_King.h"
+#include "ClientPacketManager.h"
 #include "GameFramework.h"
-#include "ObjectManager.h"
 #include "resource1.h"
 
 
@@ -16,7 +13,9 @@ SOCKET c_socket;
 std::wstring SERVER_ADDR_W = L"127.0.0.1";
 std::wstring PLAYER_NAME_W = L"MyPlayer"; // 플레이어 이름 저장용
 
-std::vector<char> g_recvBuffer; // 서버로부터 받은 데이터를 쌓아두는 수신 버퍼
+// std::vector<char> g_recvBuffer; // 서버로부터 받은 데이터를 쌓아두는 수신 버퍼 (ClientPacketManager 내부로 이동)
+
+//TODO: 창에서 포커스가 벗어났을때 키입력 받지않도록 설정 요망
 
 
 #define MAX_LOADSTRING 100
@@ -45,38 +44,7 @@ void error_display(const char* msg, int err_no)
     MessageBox(g_hwnd, lpMsgBuf, (LPCWSTR)msg, MB_OK);
     LocalFree(lpMsgBuf);
 }
-void send_login_packet(const std::string& name)
-{
-    uint16_t name_len = static_cast<uint16_t>(name.length());
-    
-    uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_LOGIN);
-    uint16_t total_size = sizeof(chess::packet::PacketHeader) + sizeof(name_len) + name_len;
 
-    std::vector<char> buffer(total_size);
-    char* p = buffer.data();
-
-    memcpy(p, &total_size, sizeof(total_size)); p += sizeof(total_size);
-    memcpy(p, &packet_type, sizeof(packet_type)); p += sizeof(packet_type);
-    
-    memcpy(p, &name_len, sizeof(name_len)); p += sizeof(name_len);
-    memcpy(p, name.c_str(), name_len);
-
-    send(c_socket, buffer.data(), total_size, 0);
-}
-void send_move_packet(chess::packet::MOVE_TYPE direction)
-{
-    uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_MOVE);
-    uint16_t total_size = sizeof(chess::packet::PacketHeader) + sizeof(direction);
-
-    std::vector<char> buffer(total_size);
-    char* p = buffer.data();
-
-    memcpy(p, &total_size, sizeof(total_size)); p += sizeof(total_size);
-    memcpy(p, &packet_type, sizeof(packet_type)); p += sizeof(packet_type);
-    memcpy(p, &direction, sizeof(direction));
-
-    send(c_socket, buffer.data(), total_size, 0);
-}
 void recv_and_process_packets()
 {
     char recvBuffer[4096];
@@ -91,155 +59,9 @@ void recv_and_process_packets()
     }
     if (retval == 0) return; // 정상 종료
 
-    // 새로 받은 데이터를 전역 수신 버퍼에 추가
-    g_recvBuffer.insert(g_recvBuffer.end(), recvBuffer, recvBuffer + retval);
-
-    // 처리 루프
-    while (true)
-    {
-        // 1. 헤더를 읽을 만큼 데이터가 충분한가?
-        if (g_recvBuffer.size() < sizeof(chess::packet::PacketHeader))
-            break;
-
-        chess::packet::PacketHeader* header = reinterpret_cast<chess::packet::PacketHeader*>(g_recvBuffer.data());
-
-        // 2. 패킷 전체를 받을 만큼 데이터가 충분한가?
-        if (g_recvBuffer.size() < header->_size)
-            break;
-
-        // 3. 패킷 종류에 따라 처리
-        // 헤더 다음 위치부터 파싱 시작. char* 포인터로 순차적으로 읽는다.
-        char* payload_ptr = g_recvBuffer.data() + sizeof(chess::packet::PacketHeader);
-        chess::packet::PacketType type = static_cast<chess::packet::PacketType>(header->_type);
-
-        switch (type)
-        {
-            case chess::packet::PacketType::S2C_P_AVATAR_INFO:
-            {
-                chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
-                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-                if (player == nullptr)
-                {
-                    player = std::make_shared<CChess_King>();
-                }
-                player->SetID(pkt->_id);
-                player->SetPos(pkt->_x, pkt->_y);
-                player->m_Mesh_Type = PLAYER_CHESS;
-
-                CObjectManager::GetManager()->RequestObject(player);
-                CObjectManager::GetManager()->SetPlayer(player);
-                /*g_myPlayer.hp = pkt->_hp;
-                g_myPlayer.exp = pkt->_exp;
-                g_myPlayer.level = pkt->_level;*/ //아직은 안씀
-                break;
-            }
-            case chess::packet::PacketType::S2C_P_ENTER:
-            {
-                // [수정] 서버가 보낸 순서대로 데이터를 하나씩 읽습니다.
-                char* p = payload_ptr;
-
-                int64_t new_id;
-                memcpy(&new_id, p, sizeof(new_id)); p += sizeof(new_id);
-
-                char obj_type;
-                memcpy(&obj_type, p, sizeof(obj_type)); p += sizeof(obj_type);
-
-                short x, y;
-                memcpy(&x, p, sizeof(x)); p += sizeof(x);
-                memcpy(&y, p, sizeof(y)); p += sizeof(y);
-
-                uint16_t name_len;
-                memcpy(&name_len, p, sizeof(name_len)); p += sizeof(name_len);
-
-                std::string name(p, name_len);
-
-                {
-                    //상대방 생성
-                    auto Other = std::make_shared<COther_King>(x, y);
-                    Other->SetID(new_id);
-                    Other->SetName(name);
-                    Other->m_Mesh_Type = ENEMY_CHESS; // 아오 대원시치
-
-                    CObjectManager::GetManager()->RequestObject(Other);
-                }
-
-                break;
-            }
-            case chess::packet::PacketType::S2C_P_MOVE:
-            {
-                chess::packet::SC_PACKET_MOVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_MOVE*>(payload_ptr);
-                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-                if (pkt->_id == player->GetID())
-                {
-                    player->SetPos(pkt->_x, pkt->_y);
-                }
-                else
-                {
-                    auto other_players = CObjectManager::GetManager()->GetEnemy();
-                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
-                        return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
-                                           });
-                    if (it != other_players.end())
-                    {
-                        dynamic_cast<COther_King*>(it->get())->SetPos(pkt->_x, pkt->_y);
-                    }
-                }
-                break;
-            }
-            case chess::packet::PacketType::S2C_P_LEAVE:
-            {
-                chess::packet::SC_PACKET_LEAVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_LEAVE*>(payload_ptr);
-                auto other_players = CObjectManager::GetManager()->GetEnemy();
-                auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
-                    return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
-                                       });
-                if (it != other_players.end())
-                {
-                    (*it)->m_Delete = true;
-                }
-                break;
-            }
-            case chess::packet::PacketType::S2C_P_ATTACK:
-            {
-                chess::packet::SC_PACKET_ATTACK* pkt = reinterpret_cast
-                    <chess::packet::SC_PACKET_ATTACK*>(payload_ptr);
-                auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager
-                ()->GetPlayer());
-
-                if (pkt->_target_id == player->GetID())
-                {
-                    // 클라이언트 자신의 HP 업데이트
-                    player->SetHP(pkt->_target_current_hp);
-                    // TODO: UI에 HP 변화 표시 로직 추가
-                }
-                else
-                {
-                    // 다른 플레이어(적)의 HP 업데이트
-                    auto other_players = CObjectManager::GetManager()->GetEnemy();
-                    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](
-                        const std::shared_ptr<CGameObject>& other) {
-                            return pkt->_target_id == static_cast<COther_King*>(other.get())->GetID
-                            ();
-                        });
-                    if (it != other_players.end())
-                    {
-                        dynamic_cast<COther_King*>(it->get())->SetHP(pkt->_target_current_hp);
-                        // TODO: 다른 플레이어의 UI에 HP 변화 표시 로직 추가
-                    }
-                }
-                break;
-            }
-
-           
-        }
-
-        // 4. 처리한 패킷만큼 버퍼에서 제거
-        g_recvBuffer.erase(g_recvBuffer.begin(), g_recvBuffer.begin() + header->_size);
-    }
+    // ClientPacketManager를 통해 데이터 처리
+    ClientPacketManager::Instance()->ProcessReceivedData(recvBuffer, retval);
 }
-
-
-
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -286,6 +108,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 0;
     }
 
+    // ClientPacketManager 초기화
+    ClientPacketManager::Instance()->Initialize(c_socket);
+
+
     WSAEVENT hEvent = WSACreateEvent();
     if (hEvent == WSA_INVALID_EVENT)
     {
@@ -300,7 +126,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
     // 최초 로그인 패킷 전송 (플레이어 이름 사용)
     std::string player_name_mb(PLAYER_NAME_W.begin(), PLAYER_NAME_W.end());
-    send_login_packet(player_name_mb);
+    ClientPacketManager::Instance()->SendLoginPacket(player_name_mb); // 호출 변경
     
 
     // 기본 메시지 루프입니다:
@@ -355,7 +181,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     WSACleanup();
     return (int)msg.wParam;
 }
-
 
 
 //

@@ -39,6 +39,7 @@ using Microsoft::WRL::ComPtr;
 #pragma comment(lib, "winmm.lib")
 
 // 필요한 것들 추가
+// C++ 표준 라이브러리 헤더
 #include <iostream>
 #include <vector>
 #include <array>
@@ -50,6 +51,8 @@ using Microsoft::WRL::ComPtr;
 #include <numeric>
 #include <random>
 #include <queue>
+#include <unordered_map>
+#include <functional>
 
 
 #define EXPLOSION_DEBRISES		240
@@ -83,9 +86,26 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 	D3D12_HEAP_TYPE d3dHeapType = D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 	ID3D12Resource** ppd3dUploadBuffer = NULL);
 
+// 싱글톤 클래스 템플릿
+template <typename T>
+class Singleton
+{
+protected:
+	Singleton() = default;
+	virtual ~Singleton() = default;
+
+public:
+	Singleton(const Singleton&) = delete;
+	Singleton& operator=(const Singleton&) = delete;
+
+	static T* Instance()
+	{
+		static T instance; //정적 로컬 변수로 싱글톤 인스턴스 생성 -> 안전
+		return &instance;
+	}
+};
 
 #include "../../Server/ChessServer/ChessServer/Packet.h"
-extern void send_move_packet(chess::packet::MOVE_TYPE direction);
 
 //3차원 벡터의 연산 
 namespace Vector3

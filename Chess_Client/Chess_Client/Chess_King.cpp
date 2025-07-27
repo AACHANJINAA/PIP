@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Chess_King.h"
+#include "ClientPacketManager.h"
 
 CChess_King::CChess_King(int X, int Y)
 {
@@ -55,7 +56,7 @@ void CChess_King::Move_Pos(chess::packet::MOVE_TYPE Cmd)
 			// 서버로 나 위로 이동
 			// 서버는 위치값 계산
 			// 서버는 위치값을 클라이언트로 전송
-			send_move_packet(Cmd);
+			ClientPacketManager::Instance()->SendMovePacket(Cmd);
 			break;
 		case chess::packet::MOVE_TYPE::error:
 		break;

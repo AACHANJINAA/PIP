@@ -1,6 +1,4 @@
 #pragma once
-#include "pch.h"
-#include "CommonHeader.h"
 namespace chess::packet
 {
     constexpr short SERVER_PORT = 3000;

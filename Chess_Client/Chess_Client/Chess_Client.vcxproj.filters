@@ -43,6 +43,12 @@
     <Filter Include="Time">
       <UniqueIdentifier>{d256a012-db7a-43f7-9fc7-8b2c45e9fbfe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{f83e51a8-331c-4271-b348-e1da86009054}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server\PacketManager">
+      <UniqueIdentifier>{825abd1e-e651-4dbd-bcbb-9421d0b755fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -99,6 +105,9 @@
     <ClInclude Include="Timer.h">
       <Filter>Time</Filter>
     </ClInclude>
+    <ClInclude Include="ClientPacketManager.h">
+      <Filter>Server\PacketManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chess_Client.cpp">
@@ -145,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Time</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketManager.cpp">
+      <Filter>Server\PacketManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
