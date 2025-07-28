@@ -42,6 +42,8 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 			// 이동 거리 설정
 			RequestObject->SetScale(1.f, 1.f, 1.f);
 
+
+
 			// 매니저에 넣기
 			CObjectManager::GetManager()->PushObject(RequestObject);
 		}
@@ -52,7 +54,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" };
 
 			// 색 설정
-			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
+			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 1.0f, 0.0f, 1.f);
 			RequestObject->SetMesh(Chess_Mesh);
 
 			// 이동 거리 설정
