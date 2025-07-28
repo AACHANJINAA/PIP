@@ -17,42 +17,24 @@ class CIlluminatedVertex : public CVertex
 {
 public:
 	XMFLOAT3 m_xmf3Normal; // 법선 벡터
+	XMFLOAT2 m_xmf2Texcoord; // 텍스처 좌표 (추가)
 	XMFLOAT4 m_xmf4Diffuse; // CDiffusedVertex꺼 가져오기
 
 public:
 	CIlluminatedVertex() { 
 		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
 		m_xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
+		m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f); // 추가
 		m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
-	CIlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT4 c = RANDOM_COLOR) { 
+	CIlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT4 c = RANDOM_COLOR) {
 		m_xmf3Position = p;
 		m_xmf3Normal = n;
+		m_xmf2Texcoord = t;
 		m_xmf4Diffuse = c;
 	}
 	~CIlluminatedVertex() {}
 };
-
-//class CDiffusedVertex : public CVertex
-//{
-//public:
-//	//정점의 색상이다. 
-//	XMFLOAT4 m_xmf4Diffuse;
-//public:
-//	CDiffusedVertex() {
-//		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); m_xmf4Diffuse =
-//			XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-//	}
-//	CDiffusedVertex(float x, float y, float z, XMFLOAT4 xmf4Diffuse) {
-//		m_xmf3Position =
-//			XMFLOAT3(x, y, z); m_xmf4Diffuse = xmf4Diffuse;
-//	}
-//	CDiffusedVertex(XMFLOAT3 xmf3Position, XMFLOAT4 xmf4Diffuse) {
-//		m_xmf3Position =
-//			xmf3Position; m_xmf4Diffuse = xmf4Diffuse;
-//	}
-//	~CDiffusedVertex() {}
-//};
 
 class CMesh
 {

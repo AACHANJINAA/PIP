@@ -73,6 +73,7 @@ struct VS_LIGHTING_INPUT
 {
     float3 position : POSITION;
     float3 normal : NORMAL;
+    float2 texcoord : TEXCOORD0; // 텍스쳐 좌표 (추가된 부분)
     float4 color : COLOR; // 기존 색상 정보도 그대로 가져오기
 };
 
@@ -83,6 +84,7 @@ struct PS_LIGHTING_INPUT
     float4 color : COLOR; // 정점의 기본 색상
     float3 positionW : POSITION; // 월드 좌표계에서의 위치
     float3 normalW : NORMAL; // 월드 좌표계에서의 법선 벡터
+    float2 texcoord : TEXCOORD0; // 텍스쳐 좌표 (추가된 부분)
 };
 
 // --- 새로운 정점/픽셀 셰이더 함수 ---
@@ -101,6 +103,7 @@ PS_LIGHTING_INPUT VSLighting(VS_LIGHTING_INPUT input)
     
     // 정점의 고유 색상은 그대로 전달
     output.color = input.color;
+    output.texcoord = input.texcoord;
 
     return output;
 }

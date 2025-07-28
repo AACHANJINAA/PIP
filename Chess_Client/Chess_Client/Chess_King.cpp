@@ -15,7 +15,7 @@ CChess_King::~CChess_King()
 
 void CChess_King::Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	SetPosition(_NowX * _MoveDistance, 0.f, _NowY * _MoveDistance);
+	SetPosition(_NowX * _MoveDistance, 1.0f, _NowY * _MoveDistance);
 }
 
 void CChess_King::Collision(float fElapsedTime)

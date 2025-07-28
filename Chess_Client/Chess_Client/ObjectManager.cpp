@@ -33,7 +33,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 		{
 		case PLAYER_CHESS:
 		{
-			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King_Normal.obj" };
+			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" };
 
 			// »ö ¼³Á¤
 			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);

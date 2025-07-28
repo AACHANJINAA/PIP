@@ -178,14 +178,12 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 	int FaceNum{}; // 1,2,3 반복
 
-	float x, y, z;
-
-	UINT a, b, c;
-
 	// 원래는 바로 넣었던 걸 수정하여, 임시로 위치, 법선을 저장할 벡터를 사용합니다.
 	std::vector<XMFLOAT3> temp_positions; // 임시로 위치를 저장할 벡터
 	std::vector<XMFLOAT3> temp_normals; // 임시로 법선을 저장할 벡터
-	std::vector<UINT> position_indices, normal_indices; // 위치 인덱스 저장용 & 법선 인덱스 저장용
+	std::vector<XMFLOAT2> temp_texcoords; // 임시로 텍스처 좌표를 저장할 벡터
+	std::vector<UINT> position_indices, normal_indices, texcoord_indices; // 위치 인덱스 저장용 & 법선 인덱스 저장용 & 텍스처 인덱스 저장용
+	std::vector<std::string> object_names; // 오브젝트 이름 저장용
 
 
 	while (std::getline(in, Line))
@@ -207,10 +205,20 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 			iss >> normal.x >> normal.y >> normal.z;
 			temp_normals.emplace_back(normal);
 		}
+		else if (type == "vt") {
+			XMFLOAT2 tex;
+			iss >> tex.x >> tex.y;
+			temp_texcoords.emplace_back(tex);
+		}
+		else if (type == "o") {
+			std::string objName;
+			iss >> objName;
+			object_names.push_back(objName);
+		}
 		else if (type == "f")
 		{
 			std::string face_chunk;
-			// "f" 뒤에 나오는 세 개의 "v//vn" 덩어리를 각각 처리합니다.
+			// "f" 뒤에 나오는 세 개의 "v//vn" 덩어리를 각각 처리
 			for (int i = 0; i < 3; ++i)
 			{
 				iss >> face_chunk; // 예: "1//1"
@@ -218,16 +226,19 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 				std::stringstream face_ss(face_chunk);
 				std::string part;
 
-				// 첫 번째 '/' 전까지 읽어 위치 인덱스로 저장
+				// 위치 인덱스 '/' 전까지 읽어 위치 인덱스로 저장
 				std::getline(face_ss, part, '/');
 				position_indices.push_back(std::stoul(part));
 
-				// 두 번째 '/' 전까지 읽음 (vt 인덱스, 현재는 비어있음)
+				// 텍스처 인덱스'/' 전까지 읽음 (비어 있을 수 있음)
 				std::getline(face_ss, part, '/');
+				texcoord_indices.push_back(part.empty() ? 0 : std::stoul(part));
 
-				// 나머지를 읽어 법선 인덱스로 저장
-				std::getline(face_ss, part);
-				normal_indices.push_back(std::stoul(part));
+				// 법선 인덱스 (비어있을 수 있음)
+				if (std::getline(face_ss, part))
+					normal_indices.push_back(part.empty() ? 0 : std::stoul(part));
+				else
+					normal_indices.push_back(0); // 없으면 0
 			}
 		}
 	}
@@ -249,11 +260,19 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 		// .obj 파일의 인덱스는 1부터 시작하지만, C++ 벡터의 인덱스는 0부터 시작하므로 1을 빼서 실제 배열의 인덱스로 변환
 		UINT pos_idx = position_indices[i] - 1;
 		UINT norm_idx = normal_indices[i] - 1;
+		UINT tex_idx = texcoord_indices[i] - 1;
+		if (tex_idx >= temp_texcoords.size() || tex_idx < 0)
+			tex_idx = 0; // 또는 XMFLOAT2(0,0) 등 기본값 사용
 
 		if (pos_idx >= temp_positions.size() || norm_idx >= temp_normals.size())
 		{
 			__debugbreak();
 		}
+
+		// 위치/법선/텍스처 좌표가 없을 때 기본값 처리
+		XMFLOAT3 position = (pos_idx < temp_positions.size() && pos_idx >= 0) ? temp_positions[pos_idx] : XMFLOAT3(0, 0, 0);
+		XMFLOAT3 normal = (norm_idx < temp_normals.size() && norm_idx >= 0) ? temp_normals[norm_idx] : XMFLOAT3(0, 0, 1);
+		XMFLOAT2 texcoord = (tex_idx < temp_texcoords.size() && tex_idx >= 0) ? temp_texcoords[tex_idx] : XMFLOAT2(0, 0);
 
 		// 현재 처리 중인 정점의 '(위치 인덱스, 법선 인덱스)' 조합을 Key로
 		std::pair<UINT, UINT> vertex_key = { pos_idx, norm_idx };
@@ -265,7 +284,7 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 		if (it == vertex_map.end())
 		{
 			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성
-			CIlluminatedVertex new_vertex(temp_positions[pos_idx], temp_normals[norm_idx]);
+			CIlluminatedVertex new_vertex(position, normal, texcoord);
 
 			// 이 새 정점을 최종 정점 목록에 추가
 			m_Vertexvec.emplace_back(new_vertex);
