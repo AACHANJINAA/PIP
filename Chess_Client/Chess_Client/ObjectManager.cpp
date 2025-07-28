@@ -46,6 +46,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 
 			// 매니저에 넣기
 			CObjectManager::GetManager()->PushObject(RequestObject);
+			CObjectManager::GetManager()->SetPlayer(RequestObject);
 		}
 		break;
 

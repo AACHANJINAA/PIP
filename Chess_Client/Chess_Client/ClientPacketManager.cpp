@@ -126,7 +126,7 @@ void ClientPacketManager::Handle_S2C_AVATAR_INFO(char* payload_ptr)
     player->m_Mesh_Type = PLAYER_CHESS;
 
     CObjectManager::GetManager()->RequestObject(player);
-    CObjectManager::GetManager()->SetPlayer(player);
+    
     // g_myPlayer.hp = pkt->_hp;
     // g_myPlayer.exp = pkt->_exp;
     // g_myPlayer.level = pkt->_level; //아직은 안씀
