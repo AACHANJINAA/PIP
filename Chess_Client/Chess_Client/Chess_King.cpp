@@ -43,6 +43,10 @@ void CChess_King::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, P
 		Move_Pos(chess::packet::MOVE_TYPE::MOVE_LEFT);
 	}
 	
+	if (GetAsyncKeyState('F') & 0x0001)
+	{
+		ClientPacketManager::Instance()->SendAttackPacket();
+	}
 }
 
 void CChess_King::Move_Pos(chess::packet::MOVE_TYPE Cmd)
