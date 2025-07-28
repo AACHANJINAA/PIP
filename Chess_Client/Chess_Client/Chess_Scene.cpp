@@ -60,7 +60,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
                 ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
             Board->m_PosX = j;
             Board->m_PosY = i;
-            CObjectManager::GetManager()->PushObject(Board);
+            CObjectManager::GetManager()->PushFloorObejct(Board);
         }
     }
 
@@ -155,6 +155,24 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
             }
         }
     }
+
+    std::shared_ptr<CGameObject>& Player = CObjectManager::GetManager()->GetPlayer();
+    Player->m_pMesh->ChangeColor(pd3dCommandList, 1.0f,
+        std::dynamic_pointer_cast<COther_King>(Player)->GetHP() / 100.f,
+        std::dynamic_pointer_cast<COther_King>(Player)->GetHP() / 100.f,
+        1.f);
+
+    std::list<std::shared_ptr<CGameObject>>& ObjectList = CObjectManager::GetManager()->GetEnemy();
+    for (std::shared_ptr<CGameObject>& Object : ObjectList) {
+        if (nullptr != Object)
+        {
+            Object->m_pMesh->ChangeColor(pd3dCommandList, 1.0f, 
+                std::dynamic_pointer_cast<COther_King>(Object)->GetHP()/100.f,
+                std::dynamic_pointer_cast<COther_King>(Object)->GetHP() / 100.f,
+                1.f);
+        }
+    }
+
 
     m_ChessCamera->UpdateAnimateCamera(fTimeElapsed);
     m_pCamera->Update();
