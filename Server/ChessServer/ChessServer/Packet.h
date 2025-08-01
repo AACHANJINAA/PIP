@@ -1,4 +1,6 @@
 #pragma once
+#include "Room.h"
+
 namespace chess::packet
 {
     constexpr short SERVER_PORT = 3000;
@@ -14,6 +16,10 @@ namespace chess::packet
         C2S_P_MOVE = 6,
         C2S_P_ATTACK = 101,
         S2C_P_ATTACK = 102,
+        C2S_P_ENTER_ROOM = 201,
+		S2C_P_ENTER_ROOM_ACK = 202,
+        C2S_P_ROOM_LIST = 203,
+        S2C_P_ROOM_LIST_ACK = 204,
 	};
 
     constexpr char MAX_ID_LENGTH = 20;
@@ -73,7 +79,7 @@ namespace chess::packet
             _buffer.insert(_buffer.end(), data, data + size);
         }
 
-		// Deserialization (ÀĞ±â) ¿¬»êÀÚ
+		// Deserialization ì—­ì§ë ¬í™”
         template <typename T>
             requires (std::is_trivially_copyable_v<T> && !std::is_same_v<T, std::string>)
         PacketStream& operator>>(T& data)
@@ -106,20 +112,20 @@ namespace chess::packet
         size_t Size() const { return _buffer.size(); }
     private:
         std::vector<char> _buffer;
-        size_t _pos; // ÀĞ±â À§Ä¡
+        size_t _pos; // ï¿½Ğ±ï¿½ ï¿½ï¿½Ä¡
     };
 #pragma pack (push, 1)
 
     struct PacketHeader
     {
         uint16_t _size;
-        uint16_t _type;
+        PacketType _type;
     };
 
     struct CS_PACKET_ATTACK : PacketHeader
     {
-        //int64_t _id; // ÀÌ¹Ì ¼­¹ö´Â ÀÌ ÇÃ·¹ÀÌ¾îÀÇ id´Â ¾Ë°í ÀÖ´Ù.
-        //AttackDirection _direction; // Áö±İÀº 4¹æÇâ °ø°İÇÒ°ÅÀÓ -> ¼­¹ö¿¡¼­ °áÁ¤
+        //int64_t _id; // ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ idï¿½ï¿½ ï¿½Ë°ï¿½ ï¿½Ö´ï¿½.
+        //AttackDirection _direction; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 4ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ò°ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	};
 
     struct SC_PACKET_ATTACK : PacketHeader
@@ -132,16 +138,38 @@ namespace chess::packet
 
     struct CS_PACKET_LOGIN : PacketHeader
     {
-		//nameÀº °¡º¯ ±æÀÌ·Î , PacketStream¿¡¼­ Ã³¸®
+		//nameï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì·ï¿½ , PacketStreamï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
 	};
 
+    struct CS_PACKET_ENTER_ROOM : PacketHeader
+    {
+        int _room_id;
+    };
+
+    struct SC_PACKET_ENTER_ROOM_ACK : PacketHeader
+    {
+        bool _success; // ë°© ë“¤ì–´ê°ˆìˆ˜ ìˆëŠ” ì§€ ì—†ëŠ”ì§€ (true: ê°€ëŠ¥, false: ë¶ˆê°€ëŠ¥)
+		int _room_id;  // ë“¤ì–´ê°ˆ ë°© ì•„ì´ë”” ( falseë©´ ì˜ë¯¸ ì—†ìŒ)
+    };
+	
+    struct CS_PACKET_ROOM_LIST : PacketHeader
+    {
+        // ì‹¤ì œë¡œëŠ” ì•„ë¬´ê²ƒë„ í•„ìš”í•˜ì§€ì•ŠëŠ” í´ë¼ì—ì„œ ë¦¬ìŠ¤íŠ¸ ë³´ì—¬ì¤˜ ìš”ì²­
+    };
+
+	/// <summary>
+	/// ì‹¤ì œ ë©”ëª¨ë¦¬ êµ¬ì¡°: 
+	/// [ SC_PACKET_ROOM_LIST_ACK ë£¸ ê°¯ìˆ˜ ] [ RoomInfo ë£¸ ì •ë³´ êµ¬ì¡°ì²´ ]
+    struct SC_PACKET_ROOM_LIST_ACK : PacketHeader
+    {
+		uint16_t _room_count; // ë°©ì˜ ê°¯ìˆ˜ ( ì´ ë’¤ì— RoomInfo êµ¬ì¡°ì²´ê°€ _room_count ë§Œí¼ ë°˜ë³µë¨ )
+    };
     struct SC_PACKET_ENTER : PacketHeader
     {
-        int64_t _id; // long long
-        char    _type;
+		int64_t _id; // long long
         short   _x;
         short   _y;
-		// nameÀº °¡º¯ ±æÀÌ·Î, PacketStream¿¡¼­ Ã³¸®
+		// ë’¤ì— _nameì´ ë”°ë¼ì˜´ ê°€ë³€ í¬ê¸°
     };
 
     struct SC_PACKET_AVATAR_INFO : PacketHeader

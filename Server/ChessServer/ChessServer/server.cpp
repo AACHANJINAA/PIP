@@ -11,29 +11,29 @@ namespace chess::server
 	{
 		ERROR("Default Constructor called, this should not happen!" << std::endl);
 	}
-	// server.cpp ¼öÁ¤¾È
+	// server.cpp ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	SESSION::SESSION(long long session_id, SOCKET s, int logic_index)
 		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }, _hp{ 100 }, _max_hp{ 100 }
 	{
-		_state = SESSION_STATE::ST_INGAME;
+		_state = SESSION_STATE::ST_LOBBY;
 	}
 	SESSION::~SESSION()
 	{
 		LOG("[SESSION " << _id << "] Session destroyed. Name: " << _name);
-		// ÅğÀå ÆĞÅ¶ »ı¼º
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ ï¿½ï¿½ï¿½ï¿½
 		packet::SC_PACKET_LEAVE leavePacket;
 		leavePacket._id = _id;
 
 		packet::PacketHeader header;
-		header._type = static_cast<uint16_t>(packet::PacketType::S2C_P_LEAVE);
+		header._type = packet::PacketType::S2C_P_LEAVE;
 		header._size = sizeof(header) + sizeof(leavePacket);
 
 		packet::PacketStream finalStream;
 		finalStream << header;
 		finalStream << leavePacket;
 
-		// ´Ù¸¥ À¯Àúµé¿¡°Ô ³ª°£´Ù°í ¾Ë¸²
-		for (auto& [id, u] : g_users) // ³×ÀÓ½ºÆäÀÌ½º ¸í½Ã
+		// ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½é¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½Ë¸ï¿½
+		for (auto& [id, u] : g_users) // ï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		{
 			if (_id != id)
 			{
@@ -51,7 +51,7 @@ namespace chess::server
 		DWORD recv_flag = 0;
 		ZeroMemory(&_recv_over._over, sizeof(_recv_over._over));
 
-		// Ç×»ó _recv_overÀÇ ³»ºÎ ¹öÆÛ Ã³À½ºÎÅÍ, ÀüÃ¼ Å©±â¸¸Å­ ¼ö½ÅÀ» ÁØºñÇÕ´Ï´Ù.
+		// ï¿½×»ï¿½ _recv_overï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Ã¼ Å©ï¿½â¸¸Å­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ï¿½Õ´Ï´ï¿½.
 		_recv_over._wsabuf[0].buf = reinterpret_cast<CHAR*>(_recv_over._buffer.data());
 		_recv_over._wsabuf[0].len = static_cast<ULONG>(_recv_over._buffer.size());
 
@@ -64,7 +64,7 @@ namespace chess::server
 			if (WSA_IO_PENDING != err_no)
 			{
 				print_error("WSARecv", err_no);
-				// exit(-1); // Á÷Á¢ Á¾·áº¸´Ù´Â ¼¼¼Ç Á¤¸® ·ÎÁ÷ È£ÃâÀÌ ´õ ÁÁ½À´Ï´Ù.
+				// exit(-1); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½áº¸ï¿½Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
 			}
 		}
 	}
@@ -75,7 +75,7 @@ namespace chess::server
 		memcpy(o->_buffer.data(), data, size);
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 		DWORD size_sent;
-		LOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << reinterpret_cast<const packet::PacketHeader*>(data)->_type);
+		LOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << static_cast<uint16_t>(reinterpret_cast<const packet::PacketHeader*>(data)->_type));
 		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL);
 	}
 	void SESSION::OnRecv(size_t len, Server* server_ptr)
@@ -90,7 +90,7 @@ namespace chess::server
 			if (_recv_buffer.size() - processed_bytes < header->_size)
 				break;
 		
-			// LogicPacketÀ» ¸¸µé¾î ´ã´ç ·ÎÁ÷ Å¥¿¡ ³Ö´Â´Ù.
+			// LogicPacketï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½Ö´Â´ï¿½.
 			LogicPacket logic_packet;
 			logic_packet.session = shared_from_this();
 			logic_packet.packet_data.assign(&_recv_buffer[processed_bytes],&_recv_buffer[processed_bytes + header->_size]);
@@ -108,7 +108,7 @@ namespace chess::server
 
 	void SESSION::send_player_info_packet()
 	{
-		// 1. ÆĞÅ¶ µ¥ÀÌÅÍ ±¸Á¶Ã¼¿¡ °ª Ã¤¿ì±â
+		// 1. íŒ¨í‚· ë°ì´í„° êµ¬ì¡°ì²´ì— ê°’ ì±„ìš°ê¸°
 		packet::SC_PACKET_AVATAR_INFO avatarInfoPacket;
 		avatarInfoPacket._id = _id;
 		avatarInfoPacket._x = _x;
@@ -117,17 +117,17 @@ namespace chess::server
 		avatarInfoPacket._hp = 100;
 		avatarInfoPacket._exp = 200;
 
-		// 2. Çì´õ »ı¼º
+		// 2. í—¤ë” ìƒì„±
 		packet::PacketHeader header;
-		header._type = static_cast<uint16_t>(packet::PacketType::S2C_P_AVATAR_INFO);
+		header._type = packet::PacketType::S2C_P_AVATAR_INFO;
 		header._size = sizeof(header) + sizeof(avatarInfoPacket);
 
-		// 3. PacketStreamÀ¸·Î ÃÖÁ¾ ÆĞÅ¶ Á¶¸³
+		// 3. PacketStreamìœ¼ë¡œ ìµœì¢… íŒ¨í‚· ì¡°ë¦½
 		packet::PacketStream finalStream;
 		finalStream << header;
-		finalStream << avatarInfoPacket; // SC_PACKET_AVATAR_INFO´Â °íÁ¤ Å©±âÀÌ¹Ç·Î ¹Ù·Î ½ºÆ®¸²¿¡ ³ÖÀ½
+		finalStream << avatarInfoPacket; // SC_PACKET_AVATAR_INFOëŠ” ê³ ì • í¬ê¸°ì´ë¯€ë¡œ ë°”ë¡œ ìŠ¤íŠ¸ë¦¼ì— ë„£ìŒ
 
-		// 4. ¿Ï¼ºµÈ ÆĞÅ¶ Àü¼Û
+		// 4. ì™„ì„±ëœ íŒ¨í‚· ì „ì†¡
 		do_send(finalStream.Data(), finalStream.Size());
 	}
 
@@ -144,14 +144,22 @@ namespace chess::server
 	{
 		_is_running = true;
 		
-		// ·ÎÁ÷ Å¥¿Í ·ÎÁ÷ ½º·¹µå »ı¼º
+		// ë¡œì§ íì™€ ë¡œì§ ìŠ¤ë ˆë“œ ìƒì„±
 		for (int i = 0; i < logic_threads; ++i)
 		{
 		    _logic_queues.push_back(std::make_unique<ConcurrentQueue<LogicPacket>>());
 		    _logic_threads.emplace_back(&Server::Logic_worker, this, i);
 		}
 		
-		// I/O ½º·¹µå »ı¼º
+		for (int i = 0; i < 100; ++i)
+		{
+			int logic_idx = i % logic_threads;
+			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
+		}
+        LOG("[SERVER] Logic threads: " << logic_threads << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
+
+
+		// I/O ìŠ¤ë ˆë“œ ìƒì„±
 		for (int i = 0; i < io_threads; ++i)
 		{
 		    _io_threads.emplace_back(&Server::IO_worker, this);
@@ -159,14 +167,14 @@ namespace chess::server
 		
 		LOG("Server started with " << io_threads << " I/O threads and " << logic_threads << " logic threads.");
 
-		// ¸®½¼ ¼ÒÄÏ ¼³Á¤ ¹× Accept ÁØºñ
+		// ë¦¬ìŠ¨ ì†Œì¼“ ì„¤ì • ë° Accept ì¤€ë¹„
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(_listen_socket), g_iocp, 0, 0);
 
 		SOCKADDR_IN server_addr;
 		ZeroMemory(&server_addr, sizeof(server_addr));
 		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(3000); // Æ÷Æ® ¹øÈ£, ÇÊ¿ä½Ã ¼öÁ¤
+		server_addr.sin_port = htons(3000); // í¬íŠ¸ ë²ˆí˜¸, í•„ìš”ì‹œ ìˆ˜ì •
 		server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		
 		bind(_listen_socket, reinterpret_cast<SOCKADDR*>(&server_addr), sizeof(server_addr));
@@ -178,7 +186,7 @@ namespace chess::server
 	{
 		_is_running = false;
 
-		// TODO: ½º·¹µå¸¦ ¾ÈÀüÇÏ°Ô Á¾·áÇÏ´Â ·ÎÁ÷ Ãß°¡ ÇÊ¿ä
+		// TODO: ìŠ¤ë ˆë“œë¥¼ ì•ˆì „í•˜ê²Œ ì¢…ë£Œí•˜ëŠ” ë¡œì§ ì¶”ê°€ í•„ìš”
 
 		for (auto& th : _io_threads)
 		    if (th.joinable()) th.join();
@@ -190,10 +198,20 @@ namespace chess::server
 	{
 		return _logic_queues[queue_idx].get();
 	}
+
+	auto Server::GetRoom(int room_id) -> Room*
+	{
+		if (room_id < 0 || room_id >= _rooms.size())
+		{
+			return nullptr;
+		}
+		return _rooms[room_id].get();
+	}
+
 	void Server::do_accept()
 	{
 		SOCKET c_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
-		_accept_over._accept_socket = c_socket; // EXP_OVER ±¸Á¶Ã¼¿¡ Å¬¶óÀÌ¾ğÆ® ¼ÒÄÏ ÀúÀå
+		_accept_over._accept_socket = c_socket; // EXP_OVER êµ¬ì¡°ì²´ì— í´ë¼ì´ì–¸íŠ¸ ì†Œì¼“ ì €ì¥
 
 		AcceptEx(_listen_socket, c_socket, _accept_over._buffer.data(), 0,
 				 sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, NULL, &_accept_over._over);
@@ -204,18 +222,18 @@ namespace chess::server
 		{
 			DWORD io_size;
 			WSAOVERLAPPED* o;
-			ULONG_PTR key; // AcceptÀÇ °æ¿ì 0, Recv/SendÀÇ °æ¿ì Session ID
+			ULONG_PTR key; // Acceptì˜ ê²½ìš° 0, Recv/Sendì˜ ê²½ìš° Session ID
 			
 			BOOL ret = GetQueuedCompletionStatus(g_iocp, &io_size, &key, &o, INFINITE);
 			EXP_OVER* eo = reinterpret_cast<EXP_OVER*>(o);
 			
-			// Å¬¶óÀÌ¾ğÆ® ¿¬°á Á¾·á ¶Ç´Â ¿¡·¯ Ã³¸®
+			// í´ë¼ì´ì–¸íŠ¸ ì—°ê²° ì¢…ë£Œ ë˜ëŠ” ì—ëŸ¬ ì²˜ë¦¬
 			if (FALSE == ret || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
 			{
 				if (g_users.count(key))
 				{
 					LOG("[IO_WORKER] Client disconnected. Removing Session ID: " << key);
-					g_users.unsafe_erase(key); // À¯Àú ¸ñ·Ï¿¡¼­ Á¦°Å
+					g_users.unsafe_erase(key); // ìœ ì € ëª©ë¡ì—ì„œ ì œê±°
 				}
 				if (eo->_io_op == IO_SEND) 
 					delete eo;
@@ -225,23 +243,23 @@ namespace chess::server
 			switch (eo->_io_op)
 			{
 			case IO_ACCEPT:
-				// »õ Å¬¶óÀÌ¾ğÆ® Á¢¼Ó Ã³¸®
+				// ìƒˆ í´ë¼ì´ì–¸íŠ¸ ì ‘ì† ì²˜ë¦¬
 				register_new_session(eo->_accept_socket);
-				do_accept(); // ´ÙÀ½ Å¬¶óÀÌ¾ğÆ®¸¦ ¹Ş±â À§ÇØ ´Ù½Ã Accept ¿äÃ»
+				do_accept(); // ë‹¤ìŒ í´ë¼ì´ì–¸íŠ¸ë¥¼ ë°›ê¸° ìœ„í•´ ë‹¤ì‹œ Accept ìš”ì²­
 				break;
 						
 			case IO_SEND:
-				// Send ¿Ï·á Ã³¸®
+				// Send ì™„ë£Œ ì²˜ë¦¬
 				delete eo;
 				break;
 			case IO_RECV:
 				{
-					// Recv ¿Ï·á Ã³¸®: ¹ŞÀº µ¥ÀÌÅÍ¸¦ ÇØ´ç ·ÎÁ÷ ½º·¹µåÀÇ Å¥·Î Àü´Ş
+					// Recv ì™„ë£Œ ì²˜ë¦¬: ë°›ì€ ë°ì´í„°ë¥¼ í•´ë‹¹ ë¡œì§ ìŠ¤ë ˆë“œì˜ íë¡œ ì „ë‹¬
 					auto user_iter = g_users.find(key);
 					if (user_iter != g_users.end() && user_iter->second != nullptr)
 					{
 						user_iter->second->OnRecv(io_size, this);
-						user_iter->second->do_recv(); // ´ÙÀ½ Recv ¿äÃ»
+						user_iter->second->do_recv(); // ë‹¤ìŒ Recv ìš”ì²­
 					}
 					break;
 				}
@@ -253,7 +271,7 @@ namespace chess::server
 		LogicPacket packet_to_process;
 		while (_is_running)
 		{
-			// ÀÚ½ÅÀÇ Å¥¿¡¼­ ÆĞÅ¶ÀÌ ¿Ã ¶§±îÁö ´ë±â
+			// ìì‹ ì˜ íì—ì„œ íŒ¨í‚·ì´ ì˜¬ ë•Œê¹Œì§€ ëŒ€ê¸°
 			_logic_queues[thread_idx]->WaitPop(packet_to_process);
 			
 			if (packet_to_process.session && packet_to_process.session->_state == SESSION_STATE::ST_INGAME)
@@ -261,29 +279,29 @@ namespace chess::server
 				packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(packet_to_process.packet_data.data());
 				packet::PacketStream stream(packet_to_process.packet_data.data(), header->_size);
 
-				// ÆĞÅ¶ ¸Å´ÏÀú¸¦ ÅëÇØ ½ÇÁ¦ ·ÎÁ÷ Ã³¸®
-				packet::PacketManager::Instance()->Dispatch(header->_type, packet_to_process.session, stream);
+				// íŒ¨í‚· ë§¤ë‹ˆì €ë¥¼ í†µí•´ ì‹¤ì œ ë¡œì§ ì²˜ë¦¬
+				packet::PacketManager::Instance()->Dispatch(static_cast<uint16_t>(header->_type), packet_to_process.session, stream);
 			}
 		}
 	}
 	void Server::register_new_session(SOCKET client_socket)
 	{
-		//¼¼¼Ç¿¡ ÇÒ´çÇÒ ·ÎÁ÷ ½º·¹µå¸¦ ¶ó¿îµå-·Îºó ¹æ½ÄÀ¸·Î ¼±ÅÃ
+		//ì„¸ì…˜ì— í• ë‹¹í•  ë¡œì§ ìŠ¤ë ˆë“œë¥¼ ë¼ìš´ë“œ-ë¡œë¹ˆ ë°©ì‹ìœ¼ë¡œ ì„ íƒ
 		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_threads.size();
 		
-		// 2. ¼¼¼Ç ID ¹ß±Ş
+		// 2. ì„¸ì…˜ ID ë°œê¸‰
 		long long new_id = g_new_id++;
 		
-		// 3. »õ ¼¼¼Ç °´Ã¼ »ı¼º
+		// 3. ìƒˆ ì„¸ì…˜ ê°ì²´ ìƒì„±
 		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
 		
-		// 4. »õ Å¬¶óÀÌ¾ğÆ® ¼ÒÄÏÀ» IOCP¿¡ ¿¬°áÇÏ°í, ¼¼¼Ç ID(new_id)¸¦ Completion Key·Î »ç¿ë
+		// 4. ìƒˆ í´ë¼ì´ì–¸íŠ¸ ì†Œì¼“ì„ IOCPì— ì—°ê²°í•˜ê³ , ì„¸ì…˜ ID(new_id)ë¥¼ Completion Keyë¡œ ì‚¬ìš©
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), g_iocp, new_id, 0);
 		
-		// 5. ÀüÃ¼ À¯Àú ¸ñ·Ï¿¡ »õ ¼¼¼Ç Ãß°¡
+		// 5. ì „ì²´ ìœ ì € ëª©ë¡ì— ìƒˆ ì„¸ì…˜ ì¶”ê°€
 		g_users.insert({ new_id, p });
 		
-		// 6. Ã¹ Recv ¿äÃ»
+		// 6. ì²« Recv ìš”ì²­
 		p->do_recv();
 		
 		LOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);

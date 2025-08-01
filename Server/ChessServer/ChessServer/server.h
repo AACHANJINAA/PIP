@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "CommonHeader.h"
 #include "Packet.h"
+#include "Room.h"
 
 namespace chess::server
 {
@@ -37,8 +38,9 @@ namespace chess::server
 	enum class SESSION_STATE : char
 	{
 		ST_FREE = 0,
-		ST_INGAME = 1,
-		ST_CLOSE = 2,
+		ST_LOBBY = 1,
+		ST_INGAME = 2,
+		ST_CLOSE = 3,
 	};
 
 	class Server;
@@ -47,7 +49,8 @@ namespace chess::server
 	public:
 		SOCKET						_c_socket;
 		long long					_id;
-		int                         _logic_thread;// [추가] 담당 로직 스레드의 인덱스
+		int                         _logic_thread_idx; // 담당 로직 스레드의 인덱스
+		int							_room_id = -1;
 
 		EXP_OVER					_recv_over { IO_RECV };
 		//unsigned char				_remained;
@@ -70,9 +73,6 @@ namespace chess::server
 		void OnRecv(size_t len, Server* server_ptr);
 
 		void send_player_info_packet();
-
-		/*void send_player_pos();
-		void process_packet(unsigned char* p);*/
 	};
 
 	struct LogicPacket //[추가] 로직 스레드에 전달될 패킷 구조체
@@ -81,18 +81,21 @@ namespace chess::server
 		std::vector<char> packet_data;
 	};
 
-	class Server
+	class Room; // [추가] 방 클래스 전방 선언
+	class Server : public Singleton<Server>
 	{
-	public:
+		friend class Singleton<Server>;
+	private:
 		Server();
 		~Server();
+	public:
 
 		void Start(int io_threads, int logic_threads);
 		void Stop();
 
 		// 로직 큐에 접근하기 위한 public 메서드
 		auto get_logic_queue(int queue_idx) -> ConcurrentQueue<LogicPacket>*;
-
+		auto GetRoom(int room_id) -> Room*; // [추가] 특정 방에 접근하기 위한 메서드
 	private:
 		// 기존 전역 함수들을 클래스 멤버로 가져옴
 		void do_accept();
@@ -112,8 +115,10 @@ namespace chess::server
 
 		std::atomic<bool> _is_running;
 		std::atomic<int> _logic_thread_balancer; // 새 세션을 분배하기 위한 카운터
+
+		// [추가] 서버가 관리할 방 목록
+		std::vector<std::unique_ptr<Room>> _rooms;
 	};
-	/*void do_accept(SOCKET s_socket, EXP_OVER& accept_over);
-	void worker();*/
+	
 	
 }

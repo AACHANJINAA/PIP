@@ -27,7 +27,7 @@ int main()
     chess::packet::PacketManager::Instance()->Initialize();
 	std::cout << "PacketManager Initialized." << std::endl;
 
-	server::Server server;
+	
 
 
     // I/O 스레드는 2개, 로직 스레드는 나머지 CPU 코어 수만큼 할당합니다.
@@ -37,14 +37,14 @@ int main()
 	int io_thread_count = 2;
 
     // 서버 스탈트!
-    server.Start(io_thread_count, logic_thread_count);
+    server::Server::Instance()->Start(io_thread_count, logic_thread_count);
 
 
     // 서버가 종료될 때까지 대기 (콘솔에서 Enter 키를 누르면 종료)
 	std::cout << "Press Enter to stop the server..." << std::endl;
     std::cin.get();
 
-    server.Stop();
+    server::Server::Instance()->Stop();
     WSACleanup();
     
     return 0;

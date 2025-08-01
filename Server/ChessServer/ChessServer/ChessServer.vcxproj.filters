@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Packet">
+      <UniqueIdentifier>{fe5bd637-c753-4132-95d9-35a1507618f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,34 +24,40 @@
     <ClCompile Include="server.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="PacketManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketHandlers.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHandlers.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketManager.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Packet.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="server.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
     <ClInclude Include="CommonHeader.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="PacketManager.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketHandlers.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet.h">
+      <Filter>소스 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandlers.h">
+      <Filter>소스 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketManager.h">
+      <Filter>소스 파일\Packet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

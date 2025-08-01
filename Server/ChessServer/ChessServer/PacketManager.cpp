@@ -9,6 +9,8 @@ namespace chess::packet
         RegisterHandler(static_cast<uint16_t>(PacketType::C2S_P_LOGIN), Handle_C2S_LOGIN);
         RegisterHandler(static_cast<uint16_t>(PacketType::C2S_P_MOVE), Handle_C2S_MOVE);
 		RegisterHandler(static_cast<uint16_t>(PacketType::C2S_P_ATTACK), Handle_C2S_ATTACK);
+		RegisterHandler(static_cast<uint16_t>(PacketType::C2S_P_ENTER_ROOM), handle_C2S_ENTER_ROOM);
+		RegisterHandler(static_cast<uint16_t>(PacketType::C2S_P_ROOM_LIST), handle_C2S_ROOM_LIST);
     }
 }
 
