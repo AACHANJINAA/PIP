@@ -30,19 +30,25 @@ namespace chess::packet
 
 	void Handle_C2S_MOVE(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
 	{
-		// ... (내용은 거의 동일, 패킷 생성 부분만 수정)
+		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
+		server::Room * room = server::Server::Instance()->GetRoom(session->_room_id);
+		if (room == nullptr) return;
+
+		// 3. 이동 처리 (기존 로직 동일)
 		packet::MOVE_TYPE direction;
-		try { stream >> direction; } catch (...) { return; }
+		try { stream >> direction; }
+		catch (...) { return; }
 
 		switch (direction)
 		{
-			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break; 
+			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break;
 			case packet::MOVE_TYPE::MOVE_DOWN:  if (session->_y > 0) session->_y--; break;
 			case packet::MOVE_TYPE::MOVE_LEFT:  if (session->_x > 0) session->_x--; break;
 			case packet::MOVE_TYPE::MOVE_RIGHT: if (session->_x < packet::MAP_WIDTH - 1) session->_x++; break;
 			default: return;
 		}
 
+		// 4. 이동 패킷 생성 (기존 로직 동일)
 		packet::SC_PACKET_MOVE movePacket;
 		movePacket._type = PacketType::S2C_P_MOVE;
 		movePacket._size = sizeof(movePacket);
@@ -50,76 +56,22 @@ namespace chess::packet
 		movePacket._x = session->_x;
 		movePacket._y = session->_y;
 
-		packet::PacketStream finalMoveStream;
-		finalMoveStream << movePacket;
-
-		for (auto& user_pair : chess::g_users)
-		{
-			auto other_session = user_pair.second;
-			if (other_session && other_session->_state == server::SESSION_STATE::ST_INGAME)
-			{
-				other_session->do_send(finalMoveStream.Data(), finalMoveStream.Size());
-			}
-		}
+		// 5. [수정] 방에 있는 모든 플레이어에게 브로드캐스팅
+		room->Broadcast(reinterpret_cast<const char*>(&movePacket), sizeof(movePacket));
 	}
 
 	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
 	{
-		// ... (내용은 거의 동일, 패킷 생성 부분만 수정)
-		int dx[] = { 0, 0, -1, 1 };
-		int dy[] = { 1, -1, 0, 0 };
+		// 1. 세션과 방의 유효성 검사
+		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
+		server::Room* room = server::Server::Instance()->GetRoom(session->_room_id);
+		if (room == nullptr) return;
 
-		for (int i = 0; i < 4; ++i)
-		{
-			int target_x = session->_x + dx[i];
-			int target_y = session->_y + dy[i];
-
-			if (target_x < 0 || target_x >= MAP_WIDTH || target_y < 0 || target_y >= MAP_HEIGHT) continue;
-
-			std::shared_ptr<chess::server::SESSION> target_session = nullptr;
-			for (auto& user_pair : chess::g_users)
-			{
-				auto other_session = user_pair.second;
-				if (other_session && other_session->_state == server::SESSION_STATE::ST_INGAME &&
-					other_session->_id != session->_id &&
-					other_session->_x == target_x && other_session->_y == target_y)
-				{
-					target_session = other_session;
-					break;
-				}
-			}
-
-			if (target_session)
-			{
-				int32_t damage = 10;
-				int32_t old_hp = target_session->_hp.fetch_sub(static_cast<short>(damage));
-				int32_t new_hp = old_hp - damage;
-				if (new_hp < 0) { new_hp = 0; target_session->_hp.store(0); }
-
-				SC_PACKET_ATTACK attackPacket;
-				attackPacket._type = PacketType::S2C_P_ATTACK;
-				attackPacket._size = sizeof(attackPacket);
-				attackPacket._attacker_id = session->_id;
-				attackPacket._target_id = target_session->_id;
-				attackPacket._damage = damage;
-				attackPacket._target_current_hp = new_hp;
-
-				PacketStream finalAttackStream;
-				finalAttackStream << attackPacket;
-
-				for (auto& val : chess::g_users | std::views::values)
-				{
-					auto broadcast_session = val;
-					if (broadcast_session && broadcast_session->_state == server::SESSION_STATE::ST_INGAME)
-					{
-						broadcast_session->do_send(finalAttackStream.Data(), finalAttackStream.Size());
-					}
-				}
-			}
-		}
+		// 2. 실제 공격 처리는 Room 객체에 위임
+		room->HandleAttack(session);
 	}
 
-	void handle_C2S_ENTER_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
+	void Handle_C2S_ENTER_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
 	{
 		CS_PACKET_ENTER_ROOM enter_packet;
 		stream >> enter_packet;
@@ -133,7 +85,14 @@ namespace chess::packet
 
 		if (room == nullptr) {
 			ack_packet._success = false;
-		} else {
+		}
+		else if (room->IsFull() || room->GetRoomState() == server::RoomState::PLAYING) // [수정]
+		{
+		    ack_packet._success = false;
+		    LOG("[EnterRoom] Room " << room->GetRoomId() << " is full or already playing.");
+		}
+		else 
+		{
 			if (session->_room_id != -1) {
 				server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
 				if (old_room) old_room->RemovePlayer(session->_id);
@@ -149,7 +108,7 @@ namespace chess::packet
 		session->do_send(ack_stream.Data(), ack_stream.Size());
 	}
 
-	void handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)
+	void Handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)
 	{
 		std::vector<server::RoomInfo> room_infos;
 		for (int i = 0; i < 100; ++i)
@@ -175,5 +134,49 @@ namespace chess::packet
 
 		session->do_send(ack_stream.Data(), ack_stream.Size());
 		LOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);
+	}
+
+	void Handle_C2S_CHAT_IN_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
+	{
+		// 1. 채팅 메시지 읽기
+		// PacketStream의 >> 연산자는 먼저 길이를 읽고, 그 길이만큼 문자열을 읽어옵니다.
+		std::string message;
+		try
+		{
+			stream >> message;
+		}
+		catch (const std::runtime_error& e)
+		{
+			LOG("[CHAT] **ERROR**: Failed to read chat message from stream. " << e.what());
+			return;
+		}
+
+		// 2. 세션이 방에 있는지 확인
+		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1)
+		{
+			LOG("[CHAT] Session " << session->_id << " sent chat message from outside a room.");
+			return;
+		}
+
+		// 3. 방 객체 가져오기
+		server::Room* room = server::Server::Instance()->GetRoom(session->_room_id);
+		if (room == nullptr) return;
+
+		// 4. 방에 있는 모든 사람에게 채팅 메시지 브로드캐스팅
+		packet::SC_PACKET_CHAT_IN_ROOM chat_packet;
+		chat_packet._type = packet::PacketType::S2C_P_CHAT_IN_ROOM;
+		chat_packet._sender_id = session->_id;
+
+		packet::PacketStream broadcast_stream;
+		broadcast_stream << chat_packet;
+		broadcast_stream << message; // string을 스트림에 쓰면 길이(uint16_t)가 먼저 쓰이고 내용이 쓰임
+
+		// 최종 패킷 크기를 헤더에 다시 설정
+		// broadcast_stream의 맨 앞을 PacketHeader*로 캐스팅하여 size 멤버를 수정
+		packet::PacketHeader* header_ptr = reinterpret_cast<packet::PacketHeader*>(broadcast_stream.mutable_data());
+		header_ptr->_size = broadcast_stream.Size();
+
+		room->Broadcast(broadcast_stream.Data(), broadcast_stream.Size());
+		LOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);
 	}
 }
