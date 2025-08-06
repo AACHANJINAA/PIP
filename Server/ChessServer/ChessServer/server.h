@@ -91,8 +91,6 @@ namespace chess::server
 		std::thread thread;
 		ConcurrentQueue<LogicPacket> queue;
 
-		// std::thread는 복사할 수 없으므로, 이동 생성자를 명시적으로 정의해주는 것이 좋습니다.
-		// 이를 통해 std::vector가 내부적으로 리사이징될 때 안전하게 요소를 이동시킬 수 있습니다.
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
 			: thread(std::move(other.thread)), queue(std::move(other.queue)) {}
