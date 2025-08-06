@@ -49,13 +49,13 @@ namespace chess::server
 	public:
 		SOCKET						_c_socket;
 		long long					_id;
-		int                         _logic_thread_idx; // ´ã´ç ·ÎÁ÷ ½º·¹µåÀÇ ÀÎµ¦½º
+		int                         _logic_thread_idx; // ë‹´ë‹¹ ë¡œì§ ìŠ¤ë ˆë“œì˜ ì¸ë±ìŠ¤
 		int							_room_id = -1;
 
 		EXP_OVER					_recv_over { IO_RECV };
 		//unsigned char				_remained;
 
-		std::vector<char>			_recv_buffer; // ¼¼¼Çº° ¼ö½Å ¹öÆÛ: Å¬¶óÀÌ¾ğÆ®·ÎºÎÅÍ ¹ŞÀº µ¥ÀÌÅÍ¸¦ ÀÓ½Ã ÀúÀå
+		std::vector<char>			_recv_buffer; // ìˆ˜ì‹  ë²„í¼: í´ë¼ì´ì–¸íŠ¸ë¡œë¶€í„° ë°›ì€ ë°ì´í„°ë¥¼ ì„ì‹œ ì €ì¥
 
 		std::atomic<SESSION_STATE>	_state;
 		short						_x, _y;
@@ -75,13 +75,44 @@ namespace chess::server
 		void send_player_info_packet();
 	};
 
-	struct LogicPacket //[Ãß°¡] ·ÎÁ÷ ½º·¹µå¿¡ Àü´ŞµÉ ÆĞÅ¶ ±¸Á¶Ã¼
+	struct LogicPacket //[ì¶”ê°€] ë¡œì§ ìŠ¤ë ˆë“œì— ì „ë‹¬ë  íŒ¨í‚· êµ¬ì¡°ì²´
 	{
 		std::shared_ptr<SESSION> session;
 		std::vector<char> packet_data;
 	};
 
-	class Room; // [Ãß°¡] ¹æ Å¬·¡½º Àü¹æ ¼±¾ğ
+	// [ì¶”ê°€] ë¡œì§ ìŠ¤ë ˆë“œì™€ ê·¸ì— í•´ë‹¹í•˜ëŠ” ì‘ì—… íë¥¼ ë¬¶ëŠ” êµ¬ì¡°ì²´
+	struct LogicWorker
+	{
+		std::vector<std::thread> _logic_threads;
+
+		// ê° ë¡œì§ ìŠ¤ë ˆë“œì— í• ë‹¹ë  ConcurrentQueue
+		std::vector<std::unique_ptr<ConcurrentQueue<LogicPacket>>> _logic_queues;
+		std::thread thread;
+		ConcurrentQueue<LogicPacket> queue;
+
+		// std::threadëŠ” ë³µì‚¬í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, ì´ë™ ìƒì„±ìë¥¼ ëª…ì‹œì ìœ¼ë¡œ ì •ì˜í•´ì£¼ëŠ” ê²ƒì´ ì¢‹ìŠµë‹ˆë‹¤.
+		// ì´ë¥¼ í†µí•´ std::vectorê°€ ë‚´ë¶€ì ìœ¼ë¡œ ë¦¬ì‚¬ì´ì§•ë  ë•Œ ì•ˆì „í•˜ê²Œ ìš”ì†Œë¥¼ ì´ë™ì‹œí‚¬ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+		LogicWorker(std::thread t) : thread(std::move(t)) {}
+		LogicWorker(LogicWorker&& other) noexcept
+			: thread(std::move(other.thread)), queue(std::move(other.queue)) {}
+		LogicWorker& operator=(LogicWorker&& other) noexcept
+		{
+			if (this != &other)
+			{
+				thread = std::move(other.thread);
+				queue = std::move(other.queue);
+			}
+			return *this;
+		}
+
+		// ë³µì‚¬ ìƒì„±/í• ë‹¹ì€ ëª…ì‹œì ìœ¼ë¡œ ë§‰ìŠµë‹ˆë‹¤.
+		LogicWorker(const LogicWorker&) = delete;
+		LogicWorker& operator=(const LogicWorker&) = delete;
+	};
+
+
+	class Room; // [ì¶”ê°€] ì „ë°© í´ë˜ìŠ¤ ì„ ì–¸
 	class Server : public Singleton<Server>
 	{
 		friend class Singleton<Server>;
@@ -93,11 +124,11 @@ namespace chess::server
 		void Start(int io_threads, int logic_threads);
 		void Stop();
 
-		// ·ÎÁ÷ Å¥¿¡ Á¢±ÙÇÏ±â À§ÇÑ public ¸Ş¼­µå
-		auto get_logic_queue(int queue_idx) -> ConcurrentQueue<LogicPacket>*;
-		auto GetRoom(int room_id) -> Room*; // [Ãß°¡] Æ¯Á¤ ¹æ¿¡ Á¢±ÙÇÏ±â À§ÇÑ ¸Ş¼­µå
+		// ë¡œì§ íë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•œ public ë©”ì†Œë“œ
+		auto get_logic_queue(int worker_idx) -> ConcurrentQueue<LogicPacket>*;
+		auto GetRoom(int room_id) -> Room*; // [ì¶”ê°€] íŠ¹ì • ë£¸ì„ ì–»ì–´ì˜¤ê¸° ìœ„í•œ ë©”ì†Œë“œ
 	private:
-		// ±âÁ¸ Àü¿ª ÇÔ¼öµéÀ» Å¬·¡½º ¸â¹ö·Î °¡Á®¿È
+		// ì„œë²„ ë‚´ë¶€ ë™ì‘ í•¨ìˆ˜ë“¤ (í´ë˜ìŠ¤ ì™¸ë¶€ì—ì„œ í˜¸ì¶œë  í•„ìš” ì—†ìŒ)
 		void do_accept();
 		void IO_worker();
 		void Logic_worker(int thread_idx);
@@ -108,15 +139,12 @@ namespace chess::server
 		EXP_OVER _accept_over;
 
 		std::vector<std::thread> _io_threads;
-		std::vector<std::thread> _logic_threads;
-
-		// °¢ ·ÎÁ÷ ½º·¹µå¿¡ ÇÒ´çµÉ ConcurrentQueue
-		std::vector<std::unique_ptr<ConcurrentQueue<LogicPacket>>> _logic_queues;
+		std::vector<LogicWorker> _logic_workers;
 
 		std::atomic<bool> _is_running;
-		std::atomic<int> _logic_thread_balancer; // »õ ¼¼¼ÇÀ» ºĞ¹èÇÏ±â À§ÇÑ Ä«¿îÅÍ
+		std::atomic<int> _logic_thread_balancer; // ìƒˆ ì„¸ì…˜ì„ ë¶„ë°°í•˜ê¸° ìœ„í•œ ì¹´ìš´í„°
 
-		// [Ãß°¡] ¼­¹ö°¡ °ü¸®ÇÒ ¹æ ¸ñ·Ï
+		// [ì¶”ê°€] ì„œë²„ê°€ ê´€ë¦¬í•˜ëŠ” ë£¸ ëª©ë¡
 		std::vector<std::unique_ptr<Room>> _rooms;
 	};
 	

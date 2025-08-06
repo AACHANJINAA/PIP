@@ -142,19 +142,20 @@ namespace chess::server
 	{
 		_is_running = true;
 		
-		// 로직 큐와 로직 스레드 생성
+		// 로직 워커 생성
+		_logic_workers.reserve(logic_threads); // 미리 공간을 할당하여 불필요한 재할당 방지
 		for (int i = 0; i < logic_threads; ++i)
 		{
-			_logic_queues.push_back(std::make_unique<ConcurrentQueue<LogicPacket>>());
-			_logic_threads.emplace_back(&Server::Logic_worker, this, i);
+			// LogicWorker 생성자에 std::thread 객체를 이동시켜 전달합니다.
+			_logic_workers.emplace_back(std::thread(&Server::Logic_worker, this, i));
 		}
 		
 		for (int i = 0; i < 100; ++i)
 		{
-			int logic_idx = i % logic_threads;
+			int logic_idx = i % _logic_workers.size();
 			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
 		}
-		LOG("[SERVER] Logic threads: " << logic_threads << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
+		LOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
 
 		// I/O 스레드 생성
@@ -163,7 +164,7 @@ namespace chess::server
 			_io_threads.emplace_back(&Server::IO_worker, this);
 		}
 		
-		LOG("Server started with " << io_threads << " I/O threads and " << logic_threads << " logic threads.");
+		LOG("Server started with " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
 
 		// 리슨 소켓 설정 및 Accept 준비
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -188,11 +189,11 @@ namespace chess::server
 		}
 
 		// 1. 모든 로직 스레드의 큐에 종료 신호(더미 패킷)를 보냄
-		for (auto& queue : _logic_queues)
+		for (auto& worker : _logic_workers)
 		{
 			LogicPacket dummy_packet;
 			dummy_packet.session = nullptr; // 종료 신호로 nullptr 사용
-			queue->Push(dummy_packet);
+			worker.queue.Push(dummy_packet);
 		}
 
 		for (size_t i = 0; i < _io_threads.size(); ++i)
@@ -211,19 +212,23 @@ namespace chess::server
 		}
 
 		// 3. 모든 로직 스레드가 종료될 때까지 대기
-		for (auto& th : _logic_threads)
+		for (auto& worker : _logic_workers)
 		{
-			if (th.joinable())
+			if (worker.thread.joinable())
 			{
-				th.join();
+				worker.thread.join();
 			}
 		}
 
 		LOG("Server stopped.");
 	}
-	auto Server::get_logic_queue(int queue_idx) -> ConcurrentQueue<LogicPacket>*
+	auto Server::get_logic_queue(int worker_idx) -> ConcurrentQueue<LogicPacket>*
 	{
-		return _logic_queues[queue_idx].get();
+		if (worker_idx < 0 || worker_idx >= _logic_workers.size())
+		{
+			return nullptr; // 안전장치
+		}
+		return &(_logic_workers[worker_idx].queue);
 	}
 
 	auto Server::GetRoom(int room_id) -> Room*
@@ -309,7 +314,7 @@ namespace chess::server
 		LogicPacket packet_to_process;
 		while (_is_running)
 		{
-			_logic_queues[thread_idx]->WaitPop(packet_to_process);
+			_logic_workers[thread_idx].queue.WaitPop(packet_to_process);
 
 			auto& session = packet_to_process.session;
 			if (session == nullptr) continue;
@@ -355,7 +360,7 @@ namespace chess::server
 					// 인게임 상태에서 처리할 수 있는 패킷들
 					// 담당 로직 스레드가 일치하는지 한번 더 확인 (안전장치)
 					Room* room = GetRoom(session->_room_id);
-					if (room == nullptr || _logic_threads[thread_idx].get_id() != _logic_threads[room->GetLogicThreadIndex()].get_id())
+					if (room == nullptr || _logic_workers[thread_idx].thread.get_id() != _logic_workers[room->GetLogicThreadIndex()].thread.get_id())
 					{
 						// 세션 정보와 실제 방의 담당 스레드가 일치하지 않는 심각한 오류
 						// 혹은 방이 없는 경우
@@ -391,7 +396,7 @@ namespace chess::server
 	void Server::register_new_session(SOCKET client_socket)
 	{
 		//세션에 할당할 로직 스레드를 라운드-로빈 방식으로 선택
-		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_threads.size();
+		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_workers.size();
 		
 		// 2. 세션 ID 발급
 		long long new_id = g_new_id++;
@@ -411,4 +416,3 @@ namespace chess::server
 		LOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
 	}
 }
-
