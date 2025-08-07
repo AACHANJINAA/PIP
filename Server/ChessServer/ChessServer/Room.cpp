@@ -5,8 +5,10 @@
 
 namespace chess::server
 {
+	constexpr int MAX_ROOM_PLAYERS = 4; // 최대 플레이어 수
+
 	Room::Room(int room_id, int logic_thread_idx)
-		: _room_id{ room_id }, _logic_thread_idx{ logic_thread_idx }, _max_players{ 100 }, _room_state{ RoomState::WAITING }
+		: _room_id{ room_id }, _logic_thread_idx{ logic_thread_idx }, _max_players{ MAX_ROOM_PLAYERS }, _room_state{ RoomState::WAITING }
 	{
 		LOG("Room " << _room_id << " created. Assigned to Logic Thread " << _logic_thread_idx << " Max Players: " << static_cast<int>(_max_players));
 	}

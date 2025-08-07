@@ -30,9 +30,6 @@ namespace chess::server
 
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
-
-
-
 		int GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }

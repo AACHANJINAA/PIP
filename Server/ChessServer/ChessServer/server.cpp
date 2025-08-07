@@ -20,27 +20,7 @@ namespace chess::server
 	SESSION::~SESSION()
 	{
 		LOG("[SESSION " << _id << "] Session destroyed. Name: " << _name);
-		
-		// server.cpp의 SESSION::~SESSION() 내부
-		packet::SC_PACKET_LEAVE leavePacket;
-		leavePacket._type = packet::PacketType::S2C_P_LEAVE;
-		leavePacket._size = sizeof(leavePacket); // SC_PACKET_LEAVE는 고정 크기
-		leavePacket._id = _id;
-
-		packet::PacketStream finalStream;
-		finalStream << leavePacket; // leavePacket에 헤더 정보가 이미 포함되어 있음
-
-		for (auto& [id, u] : g_users) 
-		{
-			if (_id != id)
-			{
-				std::shared_ptr<SESSION> user = u;
-				if (user && user->_state == SESSION_STATE::ST_INGAME)
-				{
-					user->do_send(finalStream.Data(), finalStream.Size());
-				}
-			}
-		}
+		// TODO: Logic_Worker 에서 세션 종료 패킷을 보내는 로직 추가 필요
 		closesocket(_c_socket);
 	}
 	void SESSION::do_recv()
@@ -85,7 +65,7 @@ namespace chess::server
 		{
 			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader))
 				break;
-			packet::PacketHeader * header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
+			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
 			if (_recv_buffer.size() - processed_bytes < header->_size)
 				break;
 		
@@ -240,6 +220,28 @@ namespace chess::server
 		return _rooms[room_id].get();
 	}
 
+	void Server::AddSession(long long session_id, std::shared_ptr<SESSION> session)
+	{
+		_sessions.insert({ session_id, session });
+	}
+	std::shared_ptr<SESSION> Server::GetSession(long long session_id)
+	{
+		auto it = _sessions.find(session_id);
+		if (it == _sessions.end())
+		{
+			return nullptr;
+		}
+		return it->second;
+	}
+	void Server::RemoveSession(long long session_id)
+	{
+		// TODO: [성능 최적화] 잦은 메모리 할당/해제를 피하기 위해
+		//		 세션 객체를 삭제(erase)하는 대신, 상태를 초기화하고
+		//		 별도의 free_list (객체 풀)에 넣어 재사용하는 방식을 고려 필요.
+		//		 (Object Pooling 패턴)
+		_sessions.unsafe_erase(session_id);
+	}
+
 	void Server::do_accept()
 	{
 		SOCKET c_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -262,27 +264,23 @@ namespace chess::server
 			// 클라이언트 연결 종료 또는 에러 처리
 			if (FALSE == ret || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
 			{
-				auto user_iter = g_users.find(key);
-				if (user_iter != g_users.end())
+				std::shared_ptr<SESSION> session = GetSession(key);
+				if (session)
 				{
-					std::shared_ptr<SESSION> session = user_iter->second;
 					LOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
-					
-					// LogicPacket에 세션 정보만 담고 데이터는 비워서 "연결 끊김" 이벤트로 사용
+
 					LogicPacket disconnect_packet;
 					disconnect_packet.session = session;
-					
-					// 해당 세션을 담당하는 로직 스레드의 큐에 이벤트를 넣는다.
+
 					get_logic_queue(session->_logic_thread_idx)->Push(disconnect_packet);
-					
-					// 이제 g_users에서 제거해도 로직 스레드는 shared_ptr로 안전하게 객체를 참조함
-					g_users.unsafe_erase(user_iter);
+
+					RemoveSession(key); // 이제 g_users에서 제거하는 것이 아니라 Server의 멤버에서 제거
 				}
-				if (eo->_io_op == IO_SEND) 
+				if (eo->_io_op == IO_SEND)
 					delete eo;
 				continue;
 			}
-			
+
 			switch (eo->_io_op)
 			{
 			case IO_ACCEPT:
@@ -295,14 +293,14 @@ namespace chess::server
 				// Send 완료 처리
 				delete eo;
 				break;
+			
 			case IO_RECV:
 				{
-					// Recv 완료 처리: 받은 데이터를 해당 로직 스레드의 큐로 전달
-					auto user_iter = g_users.find(key);
-					if (user_iter != g_users.end() && user_iter->second != nullptr)
+					std::shared_ptr<SESSION> session = GetSession(key);
+					if (session)
 					{
-						user_iter->second->OnRecv(io_size, this);
-						user_iter->second->do_recv(); // 다음 Recv 요청
+						session->OnRecv(io_size, this); //수신
+						session->do_recv(); // 수신 예약
 					}
 					break;
 				}
@@ -324,7 +322,7 @@ namespace chess::server
 			{
 				if (session->_state == SESSION_STATE::ST_INGAME && session->_room_id != -1)
 				{
-					Room * room = GetRoom(session->_room_id);
+					Room* room = GetRoom(session->_room_id);
 					if (room)
 					{
 						room->RemovePlayer(session->_id);
@@ -408,7 +406,7 @@ namespace chess::server
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), g_iocp, new_id, 0);
 		
 		// 5. 전체 유저 목록에 새 세션 추가
-		g_users.insert({ new_id, p });
+		AddSession(new_id, p);
 		
 		// 6. 첫 Recv 요청
 		p->do_recv();

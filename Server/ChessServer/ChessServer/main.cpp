@@ -9,7 +9,6 @@ constexpr short SERVER_PORT = 3000; // 내가 가지고 있어야함
 namespace chess
 {
     HANDLE g_iocp = nullptr;
-    concurrency::concurrent_unordered_map< long long, std::shared_ptr<server::SESSION>> g_users;
     std::atomic<int> g_new_id = 0;
 }
 

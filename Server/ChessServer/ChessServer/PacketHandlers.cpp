@@ -93,13 +93,19 @@ namespace chess::packet
 		}
 		else 
 		{
-			if (session->_room_id != -1) {
+			if (session->_room_id != -1)
+			{
 				server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
 				if (old_room) old_room->RemovePlayer(session->_id);
 			}
 			room->AddPlayer(session);
 			session->_room_id = enter_packet._room_id;
 			session->_state = server::SESSION_STATE::ST_INGAME;
+
+			// [추가] 세션의 담당 로직 스레드 인덱스를 방의 인덱스와 동기화
+			session->_logic_thread_idx = room->GetLogicThreadIndex();
+			LOG("[EnterRoom] Session " << session->_id << " logic thread index updated to " << session->_logic_thread_idx);
+
 			ack_packet._success = true;
 		}
 
