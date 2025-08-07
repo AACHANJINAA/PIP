@@ -83,6 +83,13 @@ namespace chess::packet
         // 실제로는 아무것도 필요하지않는 클라에서 리스트 보여줘 요청
     };
 
+    struct RoomInfo //
+    {
+        int _room_id;
+        uint8_t _player_count; // 방의 현재 인원 수
+        // 필요하다면 방 제목, 게임 상태 등 추가 정보 포함 가능
+    };
+
 	/// <summary>
 	/// 실제 메모리 구조: 
 	/// [ SC_PACKET_ROOM_LIST_ACK 룸 갯수 ] [ RoomInfo 룸 정보 구조체 ]

@@ -47,6 +47,7 @@ private:
 
 	std::unique_ptr<CScene> m_pScene;
 
+	
 public:
 	CGameFramework();
 	~CGameFramework();
@@ -76,6 +77,7 @@ public:
 	// 렌더링할 메쉬와 게임 객체를 생성하고 소멸하는 함수
 
 	//프레임워크의 핵심(사용자 입력, 애니메이션, 렌더링)을 구성하는 함수
+	void ProcessNetwork();
 	void ProcessInput();
 	void AnimateObjects();
 	void FrameAdvance();
@@ -95,6 +97,12 @@ public:
 
 	UINT m_nMessageID; // 어떤 키를 입력받은것인지에 대한 확인용이다.
 
+	enum class ClientState // 클라이언트의 상태를 나타내는 열거형
+	{
+		Lobby,
+		InGame
+	};
+	ClientState m_eClientState = ClientState::Lobby; // 기본 상태는 로비
 public:
 	void MoveToNextFrame();
 

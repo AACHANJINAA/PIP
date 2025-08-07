@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "ClientPacketManager.h"
 #include "Chess_King.h"
+#include "GameFramework.h"
 #include "ObjectManager.h"
 #include "Other_King.h"
 
@@ -24,6 +25,10 @@ void ClientPacketManager::Initialize(SOCKET client_socket)
         std::bind(&ClientPacketManager::Handle_S2C_LEAVE, this, std::placeholders::_1);
     _handlers[chess::packet::PacketType::S2C_P_ATTACK] =
         std::bind(&ClientPacketManager::Handle_S2C_ATTACK, this, std::placeholders::_1);
+    _handlers[chess::packet::PacketType::S2C_P_ROOM_LIST_ACK] =
+        std::bind(&ClientPacketManager::Handle_S2C_ROOM_LIST_ACK, this, std::placeholders::_1);
+    _handlers[chess::packet::PacketType::S2C_P_ENTER_ROOM_ACK] =
+        std::bind(&ClientPacketManager::Handle_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1);
 }
 
 void ClientPacketManager::SendPacket(const char* data, size_t size)
@@ -34,159 +39,153 @@ void ClientPacketManager::SendPacket(const char* data, size_t size)
 void ClientPacketManager::ProcessReceivedData(char* data, int size)
 {
     _recvBuffer.insert(_recvBuffer.end(), data, data + size);
-
-    while (true)
-    {
+    
+	while (true)
+	{
         if (_recvBuffer.size() < sizeof(chess::packet::PacketHeader))
-            break;
-
-        chess::packet::PacketHeader* header = reinterpret_cast<chess::packet::PacketHeader*>(_recvBuffer.data());
-
-        if (_recvBuffer.size() < header->_size)
-            break;
-
-        char* payload_ptr = _recvBuffer.data() + sizeof(chess::packet::PacketHeader);
-        chess::packet::PacketType type = static_cast<chess::packet::PacketType>(header->_type);
-
-        auto it = _handlers.find(header->_type);
-        if (it != _handlers.end())
-        {
-            it->second(payload_ptr);
-        }
-        else
-        {
-            // 알 수 없는 패킷 타입 처리 (선택 사항)
-            // MessageBox(g_hwnd, L"Unknown Packet Type", L"Error", MB_OK);
-        }
-
-        _recvBuffer.erase(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
-    }
+             break;
+		chess::packet::PacketHeader * header = reinterpret_cast<chess::packet::PacketHeader*>(_recvBuffer.data());
+        
+		if (_recvBuffer.size() < header->_size)
+			break;
+        
+		// [수정] PacketStream으로 감싸서 핸들러에 전달
+		chess::packet::PacketStream stream(_recvBuffer.data(), header->_size);
+        
+		auto it = _handlers.find(header->_type);
+		if (it != _handlers.end())
+		{
+			it->second(stream); // stream을 그대로 전달
+		}
+        
+		_recvBuffer.erase(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
+	}
 }
 
 void ClientPacketManager::SendLoginPacket(const std::string& name)
 {
-    uint16_t name_len = static_cast<uint16_t>(name.length());
-    
-    uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_LOGIN);
-    uint16_t total_size = sizeof(chess::packet::PacketHeader) + sizeof(name_len) + name_len;
+    chess::packet::PacketStream stream;
+    chess::packet::PacketHeader header;
+    header._type = chess::packet::PacketType::C2S_P_LOGIN;
+    header._size = 0; // 최종 크기를 모르므로 임시로 0으로 설정
 
-    std::vector<char> buffer(total_size);
-    char* p = buffer.data();
+    stream << header;
+    stream << name;   // PacketStream이 알아서 [길이][내용]을 써 줌
 
-    memcpy(p, &total_size, sizeof(total_size)); p += sizeof(total_size);
-    memcpy(p, &packet_type, sizeof(packet_type)); p += sizeof(packet_type);
-    
-    memcpy(p, &name_len, sizeof(name_len)); p += sizeof(name_len);
-    memcpy(p, name.c_str(), name_len);
+    // 스트림에 모든 데이터를 쓴 후, 실제 크기를 계산하여 헤더에 덮어쓴다.
+    auto* final_header = reinterpret_cast<chess::packet::PacketHeader*>(stream.mutable_data());
+    final_header->_size = static_cast<uint16_t>(stream.Size());
 
-    SendPacket(buffer.data(), total_size);
+    SendPacket(stream.Data(), stream.Size());
 }
 
 void ClientPacketManager::SendMovePacket(chess::packet::MOVE_TYPE direction)
 {
-    uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_MOVE);
-    uint16_t total_size = sizeof(chess::packet::PacketHeader) + sizeof(direction);
+    // 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
+    chess::packet::CS_PACKET_MOVE packet;
+    packet._type = chess::packet::PacketType::C2S_P_MOVE;
+    packet._size = sizeof(packet);
+    packet._direction = direction;
 
-    std::vector<char> buffer(total_size);
-    char* p = buffer.data();
-
-    memcpy(p, &total_size, sizeof(total_size)); p += sizeof(total_size);
-    memcpy(p, &packet_type, sizeof(packet_type)); p += sizeof(packet_type);
-    memcpy(p, &direction, sizeof(direction));
-
-    SendPacket(buffer.data(), total_size);
+    // 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
+    // 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
+    SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 void ClientPacketManager::SendAttackPacket()
 {
-    uint16_t packet_type = static_cast<uint16_t>(chess::packet::PacketType::C2S_P_ATTACK);
-    uint16_t total_size = sizeof(chess::packet::PacketHeader); // 공격 패킷은 추가 페이로드가 없음
+    chess::packet::CS_PACKET_ATTACK packet;
+    packet._type = chess::packet::PacketType::C2S_P_ATTACK;
+    packet._size = sizeof(packet);
 
-    std::vector<char> buffer(total_size);
-    char* p = buffer.data();
+    SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
 
-    memcpy(p, &total_size, sizeof(total_size)); p += sizeof(total_size);
-    memcpy(p, &packet_type, sizeof(packet_type));
-
-    SendPacket(buffer.data(), total_size);
+void ClientPacketManager::SendRoomListPacket()
+{
+    chess::packet::CS_PACKET_ROOM_LIST packet;
+    packet._type = chess::packet::PacketType::C2S_P_ROOM_LIST;
+    packet._size = sizeof(packet);
+    SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+void ClientPacketManager::SendEnterRoomPacket(int room_id_to_enter)
+{
+    chess::packet::CS_PACKET_ENTER_ROOM packet;
+    packet._type = chess::packet::PacketType::C2S_P_ENTER_ROOM;
+    packet._size = sizeof(packet);
+    packet._room_id = room_id_to_enter;
+    SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 
 // 개별 패킷 처리 함수 구현
-void ClientPacketManager::Handle_S2C_AVATAR_INFO(char* payload_ptr)
+void ClientPacketManager::Handle_S2C_AVATAR_INFO(chess::packet::PacketStream& stream)
 {
-    chess::packet::SC_PACKET_AVATAR_INFO* pkt = reinterpret_cast<chess::packet::SC_PACKET_AVATAR_INFO*>(payload_ptr);
+    chess::packet::SC_PACKET_AVATAR_INFO pkt;
+    stream >> pkt; // 스트림에서 구조체로 데이터를 한번에 읽어옵니다.
+
     auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
     if (player == nullptr)
     {
         player = std::make_shared<CChess_King>();
     }
-    player->SetID(pkt->_id);
-    player->SetPos(pkt->_x, pkt->_y);
+    player->SetID(pkt._id);
+    player->SetPos(pkt._x, pkt._y);
+    player->SetHP(pkt._hp);
     player->m_Mesh_Type = PLAYER_CHESS;
-
     CObjectManager::GetManager()->RequestObject(player);
-    
-    // g_myPlayer.hp = pkt->_hp;
-    // g_myPlayer.exp = pkt->_exp;
-    // g_myPlayer.level = pkt->_level; //아직은 안씀
 }
 
-void ClientPacketManager::Handle_S2C_ENTER(char* payload_ptr)
+void ClientPacketManager::Handle_S2C_ENTER(chess::packet::PacketStream& stream)
 {
-    char* p = payload_ptr;
+    chess::packet::SC_PACKET_ENTER header;
+    stream >> header; // 먼저 고정 크기인 헤더 부분을 읽습니다.
 
-    int64_t new_id;
-    memcpy(&new_id, p, sizeof(new_id)); p += sizeof(new_id);
+    // 헤더 뒤에 따라오는 가변 길이 이름 데이터를 읽습니다.
+    std::string name;
+    stream >> name;
 
-    char obj_type;
-    memcpy(&obj_type, p, sizeof(obj_type)); p += sizeof(obj_type);
-
-    short x, y;
-    memcpy(&x, p, sizeof(x)); p += sizeof(x);
-    memcpy(&y, p, sizeof(y)); p += sizeof(y);
-
-    uint16_t name_len;
-    memcpy(&name_len, p, sizeof(name_len)); p += sizeof(name_len);
-
-    {
-	    std::string name(p, name_len);
-	    auto Other = std::make_shared<COther_King>(x, y);
-        Other->SetID(new_id);
-        Other->SetName(name);
-        Other->m_Mesh_Type = ENEMY_CHESS;
-
-		CObjectManager::GetManager()->RequestObject(Other); // lazy loading
-    }
+    // 읽어온 데이터로 객체를 생성합니다.
+    auto Other = std::make_shared<COther_King>(header._x, header._y);
+    Other->SetID(header._id);
+    Other->SetName(name);
+    Other->m_Mesh_Type = ENEMY_CHESS;
+    CObjectManager::GetManager()->RequestObject(Other);
 }
 
-void ClientPacketManager::Handle_S2C_MOVE(char* payload_ptr)
+void ClientPacketManager::Handle_S2C_MOVE(chess::packet::PacketStream& stream)
 {
-    chess::packet::SC_PACKET_MOVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_MOVE*>(payload_ptr);
+    chess::packet::SC_PACKET_MOVE pkt;
+    stream >> pkt;
+
     auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-    if (pkt->_id == player->GetID())
+    if (player && pkt._id == player->GetID())
     {
-        player->SetPos(pkt->_x, pkt->_y);
+        player->SetPos(pkt._x, pkt._y);
     }
     else
     {
         auto other_players = CObjectManager::GetManager()->GetEnemy();
-        auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
-            return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
+        auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
+        {
+        	return pkt._id == static_cast<COther_King*>(other.get())->GetID();
         });
         if (it != other_players.end())
         {
-            dynamic_cast<COther_King*>(it->get())->SetPos(pkt->_x, pkt->_y);
+            dynamic_cast<COther_King*>(it->get())->SetPos(pkt._x, pkt._y);
         }
     }
 }
 
-void ClientPacketManager::Handle_S2C_LEAVE(char* payload_ptr)
+void ClientPacketManager::Handle_S2C_LEAVE(chess::packet::PacketStream& stream)
 {
-    chess::packet::SC_PACKET_LEAVE* pkt = reinterpret_cast<chess::packet::SC_PACKET_LEAVE*>(payload_ptr);
+    chess::packet::SC_PACKET_LEAVE pkt;
+    stream >> pkt;
+
     auto other_players = CObjectManager::GetManager()->GetEnemy();
-    auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
-        return pkt->_id == static_cast<COther_King*>(other.get())->GetID();
+    auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other)
+    {
+	    return pkt._id == static_cast<COther_King*>(other.get())->GetID();
     });
     if (it != other_players.end())
     {
@@ -194,26 +193,64 @@ void ClientPacketManager::Handle_S2C_LEAVE(char* payload_ptr)
     }
 }
 
-void ClientPacketManager::Handle_S2C_ATTACK(char* payload_ptr)
+void ClientPacketManager::Handle_S2C_ATTACK(chess::packet::PacketStream& stream)
 {
-    chess::packet::SC_PACKET_ATTACK* pkt = reinterpret_cast<chess::packet::SC_PACKET_ATTACK*>(payload_ptr);
-    auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+    chess::packet::SC_PACKET_ATTACK pkt;
+    stream >> pkt;
 
-    if (pkt->_target_id == player->GetID())
+    auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+    if (player && pkt._target_id == player->GetID())
     {
-        player->SetHP(pkt->_target_current_hp);
-        // TODO: UI에 HP 변화 표시 로직 추가
+        player->SetHP(pkt._target_current_hp);
     }
     else
     {
         auto other_players = CObjectManager::GetManager()->GetEnemy();
-        auto it = std::find_if(other_players.begin(), other_players.end(), [pkt](const std::shared_ptr<CGameObject>& other) {
-            return pkt->_target_id == static_cast<COther_King*>(other.get())->GetID();
+        auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other)
+        {
+        	return pkt._target_id == static_cast<COther_King*>(other.get())->GetID();
         });
         if (it != other_players.end())
         {
-            dynamic_cast<COther_King*>(it->get())->SetHP(pkt->_target_current_hp);
-            // TODO: 다른 플레이어의 UI에 HP 변화 표시 로직 추가
+            dynamic_cast<COther_King*>(it->get())->SetHP(pkt._target_current_hp);
         }
+    }
+}
+
+void ClientPacketManager::Handle_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& stream)
+{
+    chess::packet::SC_PACKET_ROOM_LIST_ACK ack_packet;
+    stream >> ack_packet; // 먼저 고정 크기인 헤더 부분을 읽습니다.
+
+    OutputDebugStringW((L"[S->C] Received room list! Room count: " + std::to_wstring(ack_packet._room_count) + L"\n").c_str());
+
+    // 헤더 뒤에 따라오는 RoomInfo 배열을 루프를 돌며 읽습니다.
+    for (int i = 0; i < ack_packet._room_count; ++i)
+    {
+        chess::server::RoomInfo room_info;
+        stream >> room_info; // 스트림에서 RoomInfo 하나를 읽습니다.
+        OutputDebugStringW((L"  - Room ID: " + std::to_wstring(room_info._room_id) +
+                            L", Players: " + std::to_wstring(static_cast<int>(room_info._player_count)) + L"\n").c_str());
+    }
+}
+void ClientPacketManager::Handle_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream)
+{
+    extern CGameFramework gGameFramework; // 전역 gGameFramework 참조
+    extern HWND g_hwnd; // 전역 윈도우 핸들 참조
+
+    chess::packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
+    stream >> ack_packet;
+
+    if (ack_packet._success)
+    {
+        std::wcout << L"[S->C] Successfully entered room " << ack_packet._room_id << L"!\n";
+
+        // 이전에 논의한 '씬 분기 전환' 로직을 호출합니다.
+        // (아직 해당 로직이 없다면, 상태 변수만 우선 변경합니다.)
+        gGameFramework.ChangeScene(CGameFramework::SceneType::InGame); //TODO
+    }
+    else
+    {
+        MessageBox(g_hwnd, L"Failed to enter room.", L"Room Entry Error", MB_OK);
     }
 }

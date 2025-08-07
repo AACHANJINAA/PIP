@@ -93,8 +93,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CHESSCLIENT));
 
-    MSG msg;
-
     SOCKADDR_IN addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(chess::packet::SERVER_PORT);
@@ -108,11 +106,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 0;
     }
 
+    u_long on = 1;
+    if (ioctlsocket(c_socket, FIONBIO, &on) == SOCKET_ERROR)
+    {
+        error_display("ioctlsocket", WSAGetLastError());
+        closesocket(c_socket);
+        return 0;
+    }
+
     // ClientPacketManager 초기화
     ClientPacketManager::Instance()->Initialize(c_socket);
 
 
-    WSAEVENT hEvent = WSACreateEvent();
+    /*WSAEVENT hEvent = WSACreateEvent();
     if (hEvent == WSA_INVALID_EVENT)
     {
         error_display("WSACreateEvent", WSAGetLastError());
@@ -123,59 +129,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         error_display("WSAEventSelect", WSAGetLastError());
         WSACloseEvent(hEvent);
         return 0;
-    }
+    }*/
     // 최초 로그인 패킷 전송 (플레이어 이름 사용)
     std::string player_name_mb(PLAYER_NAME_W.begin(), PLAYER_NAME_W.end());
     ClientPacketManager::Instance()->SendLoginPacket(player_name_mb); // 호출 변경
     
 
     // 기본 메시지 루프입니다:
-    while (true)
-    {
-        DWORD result = MsgWaitForMultipleObjects(1, &hEvent, FALSE, INFINITE, QS_ALLINPUT);
-        if (result == WAIT_OBJECT_0)
+    MSG msg;
+	ZeroMemory(&msg, sizeof(MSG));
+
+	while (msg.message != WM_QUIT)
+	{// PeekMessage는 메시지 큐를 확인하되, 없으면 바로 리턴합니다. (블로킹되지 않음)
+		if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            // 소켓 이벤트 발생
-            WSANETWORKEVENTS ne;
-            if (WSAEnumNetworkEvents(c_socket, hEvent, &ne) == SOCKET_ERROR)
-            {
-                error_display("WSAEnumNetworkEvents", WSAGetLastError());
-                break;
-            }
-            if (ne.lNetworkEvents & FD_READ)
-            {
-                recv_and_process_packets();
-            }
-            if (ne.lNetworkEvents & FD_CLOSE)
-            {
-                closesocket(c_socket);
-                PostQuitMessage(0);
-                break;
-            }
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
         }
-        else if (result == WAIT_OBJECT_0 + 1)
+        else
         {
-            if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // 메세지 큐에 메세지가 있으면 TRUE를 반환하고 기존방식으로 한다, 없으면 FALSE를 반환하고 내 gameFramework의 FrameAdvance함수를 실행한다.
-            {
-                if (msg.message == WM_QUIT)
-                    break;
-                if (!::TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-                {
-                    ::TranslateMessage(&msg);
-                    ::DispatchMessage(&msg);
-                }
-            }
-            else
-            {
-                gGameFramework.FrameAdvance();
-            }
+            // 메시지 큐가 비어있을 때, 우리의 게임 로직을 실행합니다.
+        	gGameFramework.FrameAdvance();
         }
-        
-    }
+	}
     gGameFramework.OnDestroy();
 
-
-    WSACloseEvent(hEvent);
 
     closesocket(c_socket);
     WSACleanup();

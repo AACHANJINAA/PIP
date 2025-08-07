@@ -2,6 +2,7 @@
 #include "GameFramework.h"
 #include "ObjectManager.h"
 #include "Chess_Scene.h"
+#include "ClientPacketManager.h"
 
 CGameFramework::CGameFramework()
 	: m_nWndClientWidth(FRAME_BUFFER_WIDTH)
@@ -253,6 +254,20 @@ void CGameFramework::ReleaseObjects()
 	m_pScene.reset();
 }
 
+void CGameFramework::ProcessNetwork()
+{
+	// 이 함수는 외부 전역 변수/함수에 의존합니다.
+	// Chess_Client.cpp 에 있는 c_socket, recv_and_process_packets()를
+	// CGameFramework의 멤버로 가져오는 것이 더 좋은 설계일 수 있습니다.
+	// 여기서는 일단 기존 구조를 활용합니다.
+	extern SOCKET c_socket;
+	extern void recv_and_process_packets();
+
+	// recv_and_process_packets() 함수를 직접 호출합니다.
+	// 논블로킹 소켓이므로, 받을 데이터가 없으면 즉시 리턴됩니다.
+	recv_and_process_packets();
+}
+
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	switch (nMessageID)
@@ -280,7 +295,20 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		switch (wParam)
 		{
 		case VK_F1:
+			if (m_eClientState == ClientState::Lobby)
+			{
+				std::cout << "[C->S] Requesting room list (F1 pressed)\n";
+				ClientPacketManager::Instance()->SendRoomListPacket();
+			}
+			break;
 		case VK_F2:
+			if (m_eClientState == ClientState::Lobby)
+			{
+				int room_id_to_enter = 0;
+				std::cout << "[C->S] Requesting to enter room " << room_id_to_enter << " (F2pressed)\n";
+				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
+			}
+			break;
 		case VK_F3:
 			break;
 		case VK_ESCAPE:
@@ -368,17 +396,25 @@ void CGameFramework::MoveToNextFrame()
 //#define _WITH_PLAYER_TOP
 void CGameFramework::FrameAdvance()
 {
+	
+
+	m_GameTimer.Tick(0.0f);
+
+	ProcessNetwork();
+	ProcessInput();
+
+	AnimateObjects();
+
 	WaitForGpuComplete();
 	MoveToNextFrame();
 
-	m_GameTimer.Tick(0.0f);
-	CObjectManager::GetManager()->DeleteObject();
+	CObjectManager::GetManager()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
 
 	//오브젝트 생성가능
-	CObjectManager::GetManager()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
+	CObjectManager::GetManager()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
@@ -401,8 +437,8 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle,	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
 		1.0f, 0, 0, NULL); m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
-	ProcessInput();
-	AnimateObjects();
+	
+	
 	m_pScene.get()->Render(m_pd3dCommandList.Get());
 
 	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.

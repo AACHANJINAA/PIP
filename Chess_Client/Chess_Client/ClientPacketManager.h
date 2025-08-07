@@ -10,15 +10,18 @@ private:
     std::vector<char> _recvBuffer; // 수신 버퍼
 
     // 패킷 핸들러 함수 포인터 타입 정의
-    using PacketHandler = std::function<void(char* payload_ptr)>;
+    using PacketHandler = std::function<void(chess::packet::PacketStream& stream)>;
     std::unordered_map<chess::packet::PacketType, PacketHandler> _handlers;
 
     // 개별 패킷 처리 함수들 (private)
-    void Handle_S2C_AVATAR_INFO(char* payload_ptr);
-    void Handle_S2C_ENTER(char* payload_ptr);
-    void Handle_S2C_MOVE(char* payload_ptr);
-    void Handle_S2C_LEAVE(char* payload_ptr);
-    void Handle_S2C_ATTACK(char* payload_ptr);
+    void Handle_S2C_AVATAR_INFO(chess::packet::PacketStream& stream);
+    void Handle_S2C_ENTER(chess::packet::PacketStream& stream);
+    void Handle_S2C_MOVE(chess::packet::PacketStream& stream);
+    void Handle_S2C_LEAVE(chess::packet::PacketStream& stream);
+    void Handle_S2C_ATTACK(chess::packet::PacketStream& stream);
+    void Handle_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& stream);
+    void Handle_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream);
+    //TODO: void Handle_S2C_ERROR(chess::packet::PacketStream& stream); // 에러 패킷 처리 함수
 
 public:
     void Initialize(SOCKET client_socket);
@@ -29,4 +32,6 @@ public:
     void SendLoginPacket(const std::string& name);
     void SendMovePacket(chess::packet::MOVE_TYPE direction);
     void SendAttackPacket(); // 공격 패킷 전송 함수 추가
+    void SendRoomListPacket();
+    void SendEnterRoomPacket(int room_id_to_enter);
 };
