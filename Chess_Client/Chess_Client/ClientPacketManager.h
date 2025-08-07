@@ -11,7 +11,7 @@ private:
 
     // 패킷 핸들러 함수 포인터 타입 정의
     using PacketHandler = std::function<void(char* payload_ptr)>;
-    std::unordered_map<uint16_t, PacketHandler> _handlers;
+    std::unordered_map<chess::packet::PacketType, PacketHandler> _handlers;
 
     // 개별 패킷 처리 함수들 (private)
     void Handle_S2C_AVATAR_INFO(char* payload_ptr);

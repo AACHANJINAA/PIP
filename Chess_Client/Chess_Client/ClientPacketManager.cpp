@@ -14,15 +14,15 @@ void ClientPacketManager::Initialize(SOCKET client_socket)
     _socket = client_socket;
 
     // 패킷 핸들러 등록
-    _handlers[static_cast<uint16_t>(chess::packet::PacketType::S2C_P_AVATAR_INFO)] =
+    _handlers[chess::packet::PacketType::S2C_P_AVATAR_INFO] =
         std::bind(&ClientPacketManager::Handle_S2C_AVATAR_INFO, this, std::placeholders::_1);
-    _handlers[static_cast<uint16_t>(chess::packet::PacketType::S2C_P_ENTER)] =
+    _handlers[chess::packet::PacketType::S2C_P_ENTER] =
         std::bind(&ClientPacketManager::Handle_S2C_ENTER, this, std::placeholders::_1);
-    _handlers[static_cast<uint16_t>(chess::packet::PacketType::S2C_P_MOVE)] =
+    _handlers[chess::packet::PacketType::S2C_P_MOVE] =
         std::bind(&ClientPacketManager::Handle_S2C_MOVE, this, std::placeholders::_1);
-    _handlers[static_cast<uint16_t>(chess::packet::PacketType::S2C_P_LEAVE)] =
+    _handlers[chess::packet::PacketType::S2C_P_LEAVE] =
         std::bind(&ClientPacketManager::Handle_S2C_LEAVE, this, std::placeholders::_1);
-    _handlers[static_cast<uint16_t>(chess::packet::PacketType::S2C_P_ATTACK)] =
+    _handlers[chess::packet::PacketType::S2C_P_ATTACK] =
         std::bind(&ClientPacketManager::Handle_S2C_ATTACK, this, std::placeholders::_1);
 }
 
