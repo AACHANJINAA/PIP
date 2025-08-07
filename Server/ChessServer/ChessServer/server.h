@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "CommonHeader.h"
-#include "Packet.h"
+#include "PacketStream.h"
 #include "Room.h"
 
 namespace chess::server
@@ -46,7 +46,7 @@ namespace chess::server
 	struct LogicPacket //[추가] 로직 스레드에 전달될 패킷 구조체
 	{
 		std::shared_ptr<SESSION> session; // 이 세션이
-		std::vector<char> packet_data; // 이 직렬화된 패킷 데이터를 보냈다.
+		packet::PacketStream packet_stream; // 그냥 스트림을 가져오도록 변경
 	};
 
 	// [추가] 로직 스레드와 그에 해당하는 작업 큐를 묶는 구조체

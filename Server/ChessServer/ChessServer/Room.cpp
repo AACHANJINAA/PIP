@@ -23,20 +23,20 @@ namespace chess::server
 			{
 				// MakeEnterPacket 헬퍼 함수를 사용하여 이름까지 포함된 완전한 패킷을 생성
 				packet::PacketStream enter_packet_stream = packet::MakeEnterPacket(existing_player);
-				new_player->do_send(enter_packet_stream.Data(), enter_packet_stream.Size());
+				new_player->do_send(enter_packet_stream.constable_data(), enter_packet_stream.Size());
 			}
 		}
 
 		// 2. 방에 있던 기존 플레이어들에게 새로운 플레이어의 입장을 알림
 		packet::PacketStream new_enter_packet_stream = packet::MakeEnterPacket(new_player);
-		Broadcast(new_enter_packet_stream.Data(), new_enter_packet_stream.Size());
+		Broadcast(new_enter_packet_stream.constable_data(), new_enter_packet_stream.Size());
 
 		// 3. 플레이어 목록에 추가
 		_players.insert({ new_player->_id, new_player });
 		LOG("Player " << new_player->_id << " added to Room " << _room_id << ". Total: " << _players.size());
 
 		// 4. 게임 시작 조건 확인
-		if (_room_state == RoomState::WAITING && GetPlayerCount() == _max_players)
+		if (_room_state == RoomState::WAITING /*&& GetPlayerCount() == _max_players*/)
 		{
 			StartGame();
 		}

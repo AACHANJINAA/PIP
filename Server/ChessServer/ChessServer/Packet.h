@@ -1,6 +1,6 @@
 #pragma once
-#include "Room.h"
-#include "PacketStream.h"
+#include "pch.h"
+
 
 namespace chess::packet
 {
@@ -122,7 +122,7 @@ namespace chess::packet
 
     struct CS_PACKET_LOGIN : PacketHeader
     {
-		//name�� ���� ���̷� , PacketStream���� ó��
+		// 로그인 한다~
 	};
 
     struct SC_PACKET_AVATAR_INFO : PacketHeader

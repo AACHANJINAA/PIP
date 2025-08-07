@@ -59,20 +59,38 @@ namespace chess::server
 	}
 	void SESSION::OnRecv(size_t len, Server* server_ptr)
 	{
+		LOG("[OnRecv] Session " << _id << " received " << len << " bytes. Current buffer size: " << _recv_buffer.size());
 		_recv_buffer.insert(_recv_buffer.end(), _recv_over._buffer.data(), _recv_over._buffer.data() + len);
+		LOG("[OnRecv] Buffer size after insert: " << _recv_buffer.size());
 		size_t processed_bytes = 0;
 		while (true)
 		{
 			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader))
+			{
+				LOG("[OnRecv] Not enough data for a header. Breaking loop.");
 				break;
+			}
 			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
-			if (_recv_buffer.size() - processed_bytes < header->_size)
+			LOG("[OnRecv] Parsing header at offset " << processed_bytes << ". Header size: " << header->_size << ", type: " << static_cast<int>(header->_type));
+
+			constexpr int MAX_PACKET_SIZE = 4096;
+			if (header->_size < sizeof(packet::PacketHeader) || header->_size > MAX_PACKET_SIZE)
+			{
+				LOG("[Hacking] Session " << _id << " sent an invalid packet size: " << header->_size << ". Closing session.");
+				_recv_buffer.clear();
 				break;
+			}
+
+			if (_recv_buffer.size() - processed_bytes < header->_size)
+			{
+				LOG("[OnRecv] Incomplete packet. Need " << header->_size << " bytes, have " << (_recv_buffer.size() - processed_bytes) << ". Breaking loop.");
+				break;
+			}
 		
 			// LogicPacket
 			LogicPacket logic_packet;
 			logic_packet.session = shared_from_this();
-			logic_packet.packet_data.assign(&_recv_buffer[processed_bytes],&_recv_buffer[processed_bytes + header->_size]);
+			logic_packet.packet_stream = packet::PacketStream(_recv_buffer.data() + processed_bytes,header->_size);
 
 			LOG("[Packet] Received from Session " << _id << ". Size: " << header->_size 
 				<< ", Type: " << static_cast<int>(header->_type) << ". Pushing to logic queue #" << _logic_thread_idx);
@@ -84,6 +102,7 @@ namespace chess::server
 		if (processed_bytes > 0)
 		{
 			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
+			LOG("[OnRecv] Erased " << processed_bytes << " bytes from buffer. Remaining size: " << _recv_buffer.size());
 		}
 	}
 
@@ -103,7 +122,7 @@ namespace chess::server
 		finalStream << avatarInfoPacket; // avatarInfoPacket에 헤더 정보가 이미 포함되어 있음
 
 		// 4. 완성된 패킷 전송
-		do_send(finalStream.Data(), finalStream.Size());
+		do_send(finalStream.constable_data(), finalStream.Size());
 	}
 
 	// --------- server class implementation ---------
@@ -327,8 +346,8 @@ namespace chess::server
 			auto& session = packet_to_process.session;
 			if (session == nullptr) continue;
 
-			// 패킷 데이터 없으면 연결 끊김 처리
-			if (packet_to_process.packet_data.empty())
+			// 연결 끊김 처리
+			if (packet_to_process.packet_stream.Size() == 0)
 			{
 				if (session->_state == SESSION_STATE::ST_INGAME && session->_room_id != -1)
 				{
@@ -336,69 +355,15 @@ namespace chess::server
 					if (room)
 					{
 						room->RemovePlayer(session->_id);
-						LOG("[Logic_worker] Processed disconnect for session " << session->_id << " from room " << room->GetRoomId());
+						LOG("[Logic_worker] Processed disconnect for session " << session->_id 
+							<< " from room " << room->GetRoomId());
 					}
 				}
-				continue; // 연결 끊김 처리가 끝났으므로 루프의 처음으로 돌아감
+				continue;
 			}
 
-			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(packet_to_process.packet_data.data());
-			packet::PacketStream stream(packet_to_process.packet_data.data(), header->_size);
-
-			switch (session->_state)
-			{
-				case SESSION_STATE::ST_LOBBY:
-				{
-					// 로비 상태에서 처리할 수 있는 패킷들
-					switch (header->_type)
-					{
-						case packet::PacketType::C2S_P_ROOM_LIST:
-						case packet::PacketType::C2S_P_ENTER_ROOM:
-							packet::PacketManager::Instance()->Dispatch(header->_type, session, stream);
-							break;
-						default:
-							// 로비에서 처리할 수 없는 패킷은 무시하거나 에러 처리
-							LOG("[Logic_worker] Invalid packet " << static_cast<int>(header->_type) << " from session " << session->_id << " in LOBBY state.");
-								break;
-					}
-					break;
-				}
-				case SESSION_STATE::ST_INGAME:
-				{
-					// 인게임 상태에서 처리할 수 있는 패킷들
-					// 담당 로직 스레드가 일치하는지 한번 더 확인 (안전장치)
-					Room* room = GetRoom(session->_room_id);
-					if (room == nullptr || _logic_workers[thread_idx].thread.get_id() != _logic_workers[room->GetLogicThreadIndex()].thread.get_id())
-					{
-						// 세션 정보와 실제 방의 담당 스레드가 일치하지 않는 심각한 오류
-						// 혹은 방이 없는 경우
-						LOG("[Logic_worker] **ERROR** Session " << session->_id << " has invalid room info.");
-						// 접속 종료 등의 예외 처리 필요
-						continue;
-					}
-
-					switch (header->_type)
-					{
-						case packet::PacketType::C2S_P_MOVE:
-						case packet::PacketType::C2S_P_ATTACK:
-						case packet::PacketType::C2S_P_CHAT_IN_ROOM:
-							// TODO: 채팅, 스킬 사용 등 인게임 관련 패킷들 추가
-							packet::PacketManager::Instance()->Dispatch(header->_type, session, stream);
-							break;
-
-						case packet::PacketType::C2S_P_ENTER_ROOM: // 방 안에서 다른 방으로 이동하는 경우
-						case packet::PacketType::C2S_P_ROOM_LIST:  // 방 안에서 방 목록을 다시 요청하는 경우
-							packet::PacketManager::Instance()->Dispatch(header->_type, session, stream);
-							break;
-
-						default:
-							// 인게임에서 처리할 수 없는 패킷은 무시
-							LOG("[Logic_worker] Invalid packet " << static_cast<int>(header->_type) << " from session " << session->_id << " in INGAME state.");
-						break;
-					}
-					break;
-				}
-			}
+			// [수정] 이제 Logic_worker는 상태 검사 없이 Dispatcher에게 모든 것을 위임합니다.
+			packet::PacketManager::Instance()->Dispatch(session, packet_to_process.packet_stream);
 		}
 	}
 	void Server::register_new_session(SOCKET client_socket)

@@ -1,9 +1,6 @@
 #pragma once
-#include <vector>
-#include <string>
-#include <stdexcept>
-#include <cstdint> // for uint16_t
-#include <type_traits> // for std::is_trivially_copyable_v
+#include "Packet.h"
+
 
 namespace chess::packet
 {
@@ -69,11 +66,18 @@ namespace chess::packet
             _pos += len;
             return *this;
         }
-
-        const char* Data() const { return _buffer.data(); }
+        PacketHeader PeekHeader() const
+        {
+            if (_buffer.size() < sizeof(chess::packet::PacketHeader))
+            {
+                return { 0, chess::packet::PacketType::error };
+            }
+            return *reinterpret_cast<const chess::packet::PacketHeader*>(_buffer.data());
+        }
+        const char* constable_data() const { return _buffer.data(); }
         char* mutable_data() { return _buffer.data(); }
         size_t Size() const { return _buffer.size(); }
-
+        size_t Pos() const { return _pos; }
     private:
         std::vector<char> _buffer;
         size_t _pos;

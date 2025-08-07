@@ -12,7 +12,11 @@
 #include <vector>
 #include <concurrent_unordered_map.h>
 #include <mutex>
-
+#include <string>
+#include <stdexcept>
+#include <cstdint>
+#include <type_traits>
+#include <filesystem>
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
 
@@ -20,7 +24,11 @@
 
 #ifdef ENABLE_DEBUG_LOG
 
-#define LOG_HELPER(file, line, message) std::cout << "[" << file << ":" << line << "] " << message << std::endl
+// 파일명만 추출하는 헬퍼 (C++17 이상 필요)
+#include <filesystem>
+#define __FILENAME__ (std::filesystem::path(__FILE__).filename().string())
+
+#define LOG_HELPER(file, line, message) std::cout << "[" << std::filesystem::path(file).filename().string() << ":" << line << "] " << message << std::endl
 #define LOG(message) LOG_HELPER(__FILE__, __LINE__, message)
 #define ERROR(message) do { LOG_HELPER(__FILE__, __LINE__, message); __debugbreak(); } while(0)
 

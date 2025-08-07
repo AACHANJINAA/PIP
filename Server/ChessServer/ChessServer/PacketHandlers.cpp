@@ -18,14 +18,48 @@ namespace chess::packet
 
 		PacketStream finalStream;
 		finalStream << enterPacket;
-		finalStream.Write(dataStream.Data(), dataStream.Size());
+		finalStream.Write(dataStream.constable_data(), dataStream.Size());
 		return finalStream;
 	}
 	
 
 	void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
 	{
-		// ... (내용 수정 없음)
+		std::string player_name;
+		try
+		{
+			stream >> player_name;
+		}
+		catch (const std::runtime_error& e)
+		{
+			LOG("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
+			// 여기서 세션 접속을 끊는 등의 처리를 할 수 있습니다.
+			return;
+		}
+		// 2. 세션 객체에 이름을 저장합니다.
+		session->_name = player_name;
+		
+		LOG("[Login] Session " << session->_id << " logged in as '" << session->_name << "'.");
+		
+		// 3. 클라이언트에게 아바타(캐릭터) 정보를 보내줍니다.
+		//    이를 통해 클라이언트는 자신의 플레이어 객체를 생성할 수 있습니다.
+		packet::SC_PACKET_AVATAR_INFO avatar_info_packet;
+		avatar_info_packet._type = PacketType::S2C_P_AVATAR_INFO;
+		avatar_info_packet._size = sizeof(avatar_info_packet);
+		avatar_info_packet._id = session->_id;
+		avatar_info_packet._x = session->_x; // 세션 생성 시의 기본 위치
+		avatar_info_packet._y = session->_y;
+		avatar_info_packet._hp = session->_hp;
+		avatar_info_packet._level = 1; // 임시 레벨
+		avatar_info_packet._exp = 0;   // 임시 경험치
+		
+		// 4. 생성된 패킷을 전송합니다.
+		session->do_send(reinterpret_cast<const char*>(&avatar_info_packet), sizeof(avatar_info_packet));
+		
+		LOG("[Login] Sent AVATAR_INFO to session " << session->_id);
+		
+		// MO 서버에서는 로비에서 다른 플레이어 정보를 보내줄 필요는 없습니다.
+		// 방에 입장했을 때, 해당 방의 플레이어 정보만 받으면 됩니다.
 	}
 
 	void Handle_C2S_MOVE(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
@@ -65,7 +99,8 @@ namespace chess::packet
 	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
 	{
 		// 1. 세션과 방의 유효성 검사
-		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
+		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) 
+			return;
 		server::Room* room = server::Server::Instance()->GetRoom(session->_room_id);
 		if (room == nullptr) return;
 
@@ -75,15 +110,26 @@ namespace chess::packet
 
 	void Handle_C2S_ENTER_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
 	{
-		CS_PACKET_ENTER_ROOM enter_packet;
-		stream >> enter_packet;
+		LOG("[EnterRoomHandler] Stream received. Buffer size: " << stream.Size() << ", Pos: " << stream.Pos());
+		int room_id;
+		try
+		{
+			stream >> room_id;
+		}
+		catch (const std::runtime_error& e)
+		{
+			LOG("[EnterRoomHandler] **EXCEPTION CAUGHT**: " << e.what());
+			// 예외가 발생했을 때, 스트림의 내부 상태를 다시 한번 확인합니다.
+			// 이 로그는 throw 이후라 출력되지 않을 수 있으므로, try 블록 전에 확인하는 것이 더좋습니다.
+			return;
+		}
 
-		server::Room* room = server::Server::Instance()->GetRoom(enter_packet._room_id);
+		server::Room* room = server::Server::Instance()->GetRoom(room_id);
 
 		SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
 		ack_packet._size = sizeof(ack_packet);
-		ack_packet._room_id = enter_packet._room_id;
+		ack_packet._room_id = room_id;
 
 		if (room == nullptr) {
 			ack_packet._success = false;
@@ -101,8 +147,8 @@ namespace chess::packet
 				if (old_room) old_room->RemovePlayer(session->_id);
 			}
 			room->AddPlayer(session);
-			LOG("[EnterRoom] Session " << session->_id << " successfully entered Room " << enter_packet._room_id);
-			session->_room_id = enter_packet._room_id;
+			LOG("[EnterRoom] Session " << session->_id << " successfully entered Room " << room_id);
+			session->_room_id = room_id;
 			session->_state = server::SESSION_STATE::ST_INGAME;
 
 			// [추가] 세션의 담당 로직 스레드 인덱스를 방의 인덱스와 동기화
@@ -114,7 +160,7 @@ namespace chess::packet
 
 		PacketStream ack_stream;
 		ack_stream << ack_packet;
-		session->do_send(ack_stream.Data(), ack_stream.Size());
+		session->do_send(ack_stream.constable_data(), ack_stream.Size());
 	}
 
 	void Handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)
@@ -141,7 +187,7 @@ namespace chess::packet
 		ack_stream << ack_packet;
 		ack_stream.Write(reinterpret_cast<const char*>(room_infos.data()), sizeof(RoomInfo) * ack_packet._room_count);
 
-		session->do_send(ack_stream.Data(), ack_stream.Size());
+		session->do_send(ack_stream.constable_data(), ack_stream.Size());
 		LOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);
 	}
 
@@ -185,7 +231,7 @@ namespace chess::packet
 		packet::PacketHeader* header_ptr = reinterpret_cast<packet::PacketHeader*>(broadcast_stream.mutable_data());
 		header_ptr->_size = broadcast_stream.Size();
 
-		room->Broadcast(broadcast_stream.Data(), broadcast_stream.Size());
+		room->Broadcast(broadcast_stream.constable_data(), broadcast_stream.Size());
 		LOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);
 	}
 }
