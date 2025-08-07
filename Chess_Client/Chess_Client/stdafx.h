@@ -86,7 +86,34 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 	D3D12_HEAP_TYPE d3dHeapType = D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 	ID3D12Resource** ppd3dUploadBuffer = NULL);
 
+// ==================================================
+// 디버그 로그 매크로
+// ==================================================
+#if defined(_DEBUG)
+#include <string>
+#include <vector>
 
+// 사용법: CLOG(L"포맷 문자열", 인자1, 인자2, ...);
+// 예시: CLOG(L"Player HP: %d, Pos: (%d, %d)", hp, x, y);
+// 필요한 곳에 추가해서 사용 할 것, 비주얼 스튜디오의 출력 창에 로그가 출력됩니다.
+inline void DebugLog(const wchar_t* format, ...)
+{
+	wchar_t buffer[4096];
+	va_list args;
+	va_start(args, format);
+	vswprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t), format, args);
+	va_end(args);
+
+	wcscat_s(buffer, L"\n"); // 줄바꿈 추가
+	OutputDebugStringW(buffer);
+}
+#define CLOG(format, ...) DebugLog(format, __VA_ARGS__)
+
+#else
+	#define CLOG(format, ...)
+#endif
+
+#include "../../Server/ChessServer/ChessServer/PacketStream.h"
 #include "../../Server/ChessServer/ChessServer/Packet.h"
 
 //3차원 벡터의 연산 

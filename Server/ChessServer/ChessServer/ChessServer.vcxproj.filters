@@ -36,9 +36,6 @@
     <ClCompile Include="PacketManager.cpp">
       <Filter>소스 파일\Packet</Filter>
     </ClCompile>
-    <ClCompile Include="PacketStream.cpp">
-      <Filter>소스 파일\Packet</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="server.h">

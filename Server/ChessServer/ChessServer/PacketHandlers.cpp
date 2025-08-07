@@ -48,6 +48,8 @@ namespace chess::packet
 			default: return;
 		}
 
+		LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
+
 		// 4. 이동 패킷 생성 (기존 로직 동일)
 		packet::SC_PACKET_MOVE movePacket;
 		movePacket._type = PacketType::S2C_P_MOVE;
@@ -89,7 +91,7 @@ namespace chess::packet
 		else if (room->IsFull() || room->GetRoomState() == server::RoomState::PLAYING) // [수정]
 		{
 		    ack_packet._success = false;
-		    LOG("[EnterRoom] Room " << room->GetRoomId() << " is full or already playing.");
+			LOG("[EnterRoom] Session " << session->_id << " failed to enter Room " << room->GetRoomId() << ". Reason: Full or Already Playing.");
 		}
 		else 
 		{
@@ -99,6 +101,7 @@ namespace chess::packet
 				if (old_room) old_room->RemovePlayer(session->_id);
 			}
 			room->AddPlayer(session);
+			LOG("[EnterRoom] Session " << session->_id << " successfully entered Room " << enter_packet._room_id);
 			session->_room_id = enter_packet._room_id;
 			session->_state = server::SESSION_STATE::ST_INGAME;
 
@@ -116,13 +119,13 @@ namespace chess::packet
 
 	void Handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)
 	{
-		std::vector<server::RoomInfo> room_infos;
+		std::vector<RoomInfo> room_infos;
 		for (int i = 0; i < 100; ++i)
 		{
 			server::Room* room = server::Server::Instance()->GetRoom(i);
 			if (room)
 			{
-				server::RoomInfo info;
+				RoomInfo info;
 				info._room_id = room->GetRoomId();
 				info._player_count = room->GetPlayerCount();
 				room_infos.push_back(info);
@@ -132,11 +135,11 @@ namespace chess::packet
 		SC_PACKET_ROOM_LIST_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ROOM_LIST_ACK;
 		ack_packet._room_count = room_infos.size();
-		ack_packet._size = sizeof(ack_packet) + (sizeof(server::RoomInfo) * ack_packet._room_count);
+		ack_packet._size = sizeof(ack_packet) + (sizeof(RoomInfo) * ack_packet._room_count);
 
 		PacketStream ack_stream;
 		ack_stream << ack_packet;
-		ack_stream.Write(reinterpret_cast<const char*>(room_infos.data()), sizeof(server::RoomInfo) * ack_packet._room_count);
+		ack_stream.Write(reinterpret_cast<const char*>(room_infos.data()), sizeof(RoomInfo) * ack_packet._room_count);
 
 		session->do_send(ack_stream.Data(), ack_stream.Size());
 		LOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);

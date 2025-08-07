@@ -108,8 +108,8 @@ namespace chess::packet
 
     struct CS_PACKET_ATTACK : PacketHeader
     {
-        //int64_t _id; // �̹� ������ �� �÷��̾��� id�� �˰� �ִ�.
-        //AttackDirection _direction; // ������ 4���� �����Ұ��� -> �������� ����
+        //int64_t _id; 
+        //AttackDirection _direction;
 	};
 
     struct SC_PACKET_ATTACK : PacketHeader

@@ -73,7 +73,9 @@ namespace chess::server
 			LogicPacket logic_packet;
 			logic_packet.session = shared_from_this();
 			logic_packet.packet_data.assign(&_recv_buffer[processed_bytes],&_recv_buffer[processed_bytes + header->_size]);
-		
+
+			LOG("[Packet] Received from Session " << _id << ". Size: " << header->_size 
+				<< ", Type: " << static_cast<int>(header->_type) << ". Pushing to logic queue #" << _logic_thread_idx);
 			server_ptr->get_logic_queue(_logic_thread_idx)->Push(logic_packet);
 		
 			processed_bytes += header->_size;
@@ -120,6 +122,10 @@ namespace chess::server
 	}
 	void Server::Start(int io_threads, int logic_threads)
 	{
+		LOG("=========================================");
+		LOG("          Server Initializing...         ");
+		LOG("=========================================");
+
 		_is_running = true;
 		
 		// 로직 워커 생성
@@ -129,7 +135,8 @@ namespace chess::server
 			// LogicWorker 생성자에 std::thread 객체를 이동시켜 전달합니다.
 			_logic_workers.emplace_back(std::thread(&Server::Logic_worker, this, i));
 		}
-		
+		LOG("Created " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
+
 		for (int i = 0; i < 100; ++i)
 		{
 			int logic_idx = i % _logic_workers.size();
@@ -158,7 +165,8 @@ namespace chess::server
 		
 		bind(_listen_socket, reinterpret_cast<SOCKADDR*>(&server_addr), sizeof(server_addr));
 		listen(_listen_socket, SOMAXCONN);
-		
+		LOG("Server listening on port " << 3000 << "...");
+
 		do_accept();
 	}
 	void Server::Stop()
@@ -252,6 +260,7 @@ namespace chess::server
 	}
 	void Server::IO_worker()
 	{
+		LOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
 		while (_is_running)
 		{
 			DWORD io_size;
@@ -309,6 +318,7 @@ namespace chess::server
 	}
 	void Server::Logic_worker(int thread_idx)
 	{
+		LOG("[Thread] Logic worker thread #" << thread_idx << " started. ID: " << std::this_thread::get_id());
 		LogicPacket packet_to_process;
 		while (_is_running)
 		{

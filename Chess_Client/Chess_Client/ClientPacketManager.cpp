@@ -222,15 +222,14 @@ void ClientPacketManager::Handle_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& 
     chess::packet::SC_PACKET_ROOM_LIST_ACK ack_packet;
     stream >> ack_packet; // 먼저 고정 크기인 헤더 부분을 읽습니다.
 
-    OutputDebugStringW((L"[S->C] Received room list! Room count: " + std::to_wstring(ack_packet._room_count) + L"\n").c_str());
+    CLOG(L"[S->C] Received room list! Room count: ", ack_packet._room_count);
 
     // 헤더 뒤에 따라오는 RoomInfo 배열을 루프를 돌며 읽습니다.
     for (int i = 0; i < ack_packet._room_count; ++i)
     {
-        chess::server::RoomInfo room_info;
+	    chess::packet::RoomInfo room_info;
         stream >> room_info; // 스트림에서 RoomInfo 하나를 읽습니다.
-        OutputDebugStringW((L"  - Room ID: " + std::to_wstring(room_info._room_id) +
-                            L", Players: " + std::to_wstring(static_cast<int>(room_info._player_count)) + L"\n").c_str());
+        CLOG(L"  - Room ID: %d, Players: %u", room_info._room_id, static_cast<unsigned int>(room_info._player_count));
     }
 }
 void ClientPacketManager::Handle_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream)
@@ -243,11 +242,8 @@ void ClientPacketManager::Handle_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream&
 
     if (ack_packet._success)
     {
-        std::wcout << L"[S->C] Successfully entered room " << ack_packet._room_id << L"!\n";
-
-        // 이전에 논의한 '씬 분기 전환' 로직을 호출합니다.
-        // (아직 해당 로직이 없다면, 상태 변수만 우선 변경합니다.)
-        gGameFramework.ChangeScene(CGameFramework::SceneType::InGame); //TODO
+        CLOG(L"[S->C] Successfully entered room %d!", ack_packet._room_id);
+		//gGameFramework.ChangeScene(CGameFramework::SceneType::InGame); //TODO: 씬 전환 로직 구현 필요
     }
     else
     {

@@ -4,12 +4,7 @@
 
 namespace chess::server
 {
-	struct RoomInfo //
-	{
-		int _room_id;
-		uint8_t _player_count; // 방의 현재 인원 수
-		// 필요하다면 방 제목, 게임 상태 등 추가 정보 포함 가능
-	};
+	
 	enum class RoomState : uint8_t
 	{
 		WAITING,
