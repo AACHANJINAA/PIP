@@ -455,12 +455,12 @@ void CGameFramework::FrameAdvance()
 	hResult = m_pd3dCommandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList.Get()};
 	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
-	//WaitForGpuComplete();
+	
 	m_pdxgiSwapChain->Present(0, 0);
 	WaitForGpuComplete();
 	MoveToNextFrame();
-	//MoveToNextFrame();
-	//CObjectManager::GetManager()->DeleteObject();
+	
+	
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }

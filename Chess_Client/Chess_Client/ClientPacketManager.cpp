@@ -207,24 +207,23 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 void ClientPacketManager::HANDLE_S2C_MOVE(chess::packet::PacketStream& stream)
 {
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
-	int64_t id;
-	short x, y;
-	stream >> id >> x >> y; // 순서대로 읽습니다.
+	chess::packet::SC_PACKET_MOVE move_packet;
+	stream >> move_packet; // 구조체 전체를 읽습니다.
 	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-	if (player && id == player->GetID()) // 읽어온 id 사용
+	if (player && move_packet._id == player->GetID()) // 읽어온 id 사용
 	{
-		player->SetPos(x, y); // 읽어온 x, y 사용
+		player->SetPos(move_packet._x, move_packet._y); // 읽어온 x, y 사용
 	}
 	else
 	{
 		auto other_players = CObjectManager::GetManager()->GetEnemy();
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
 		{
-			return id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
+			return move_packet._id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
 		});
 		if (it != other_players.end())
 		{
-			dynamic_cast<COther_King*>(it->get())->SetPos(x, y); // 읽어온 x, y 사용
+			dynamic_cast<COther_King*>(it->get())->SetPos(move_packet._x, move_packet._y); // 읽어온 x, y 사용
 		}
 	}
 }
