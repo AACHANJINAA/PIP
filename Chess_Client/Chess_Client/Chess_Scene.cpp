@@ -156,13 +156,7 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
         }
     }
 
-    if (std::shared_ptr<CGameObject> Player = CObjectManager::GetManager()->GetPlayer())
-    {
-        Player->m_pMesh->ChangeColor(pd3dCommandList, 1.0f,
-                                     std::dynamic_pointer_cast<CChess_King>(Player)->GetHP() / 100.f,
-                                     std::dynamic_pointer_cast<CChess_King>(Player)->GetHP() / 100.f,
-                                     1.f);
-    }
+    
     
 
     std::list<std::shared_ptr<CGameObject>>& ObjectList = CObjectManager::GetManager()->GetEnemy();
