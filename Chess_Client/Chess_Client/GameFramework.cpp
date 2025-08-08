@@ -360,7 +360,10 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 
 void CGameFramework::ProcessInput()
 {
-	m_pScene.get()->ProcessInput(m_GameTimer.GetTimeElapsed(), m_hWnd, m_nMessageID, m_ptOldCursorPos);
+	if(m_bIsWindowActive)
+	{
+		m_pScene.get()->ProcessInput(m_GameTimer.GetTimeElapsed(), m_hWnd, m_nMessageID, m_ptOldCursorPos);
+	}
 }
 
 void CGameFramework::AnimateObjects()

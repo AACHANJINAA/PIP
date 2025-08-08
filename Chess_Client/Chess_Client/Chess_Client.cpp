@@ -278,6 +278,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_ACTIVATE:
+    {
+        // wParam의 하위 워드를 확인하여 활성화 상태를 판단합니다.
+        switch (LOWORD(wParam))
+        {
+        case WA_ACTIVE:      // 창이 활성화됨 (다른 창을 클릭했다가 다시 우리 창을 클릭)
+        case WA_CLICKACTIVE: // 마우스 클릭으로 창이 활성화됨
+            CGameFramework::Instance()->m_bIsWindowActive = true;
+            break;
+        case WA_INACTIVE:    // 창이 비활성화됨 (다른 창을 클릭)
+            CGameFramework::Instance()->m_bIsWindowActive = false;
+            // 여기에 게임 일시정지, 사운드 음소거 등의 로직을 넣을 수도 있습니다.
+            break;
+        }
+        break;
+    }
     case WM_SIZE:
     case WM_LBUTTONDOWN:
     case WM_LBUTTONUP:
