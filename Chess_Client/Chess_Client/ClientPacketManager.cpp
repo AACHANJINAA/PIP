@@ -38,7 +38,7 @@ void ClientPacketManager::ProcessReceivedData(char* data, int size)
 	{
 		if (_recvBuffer.size() < sizeof(chess::packet::PacketHeader))
 			 break;
-		chess::packet::PacketHeader * header = reinterpret_cast<chess::packet::PacketHeader*>(_recvBuffer.data());
+		chess::packet::PacketHeader* header = reinterpret_cast<chess::packet::PacketHeader*>(_recvBuffer.data());
 		
 		if (_recvBuffer.size() < header->_size)
 			break;
@@ -59,11 +59,10 @@ void ClientPacketManager::ProcessReceivedData(char* data, int size)
 void ClientPacketManager::SendLoginPacket(const std::string& name)
 {
 	chess::packet::PacketStream stream;
-	chess::packet::PacketHeader header;
-	header._type = chess::packet::PacketType::C2S_P_LOGIN;
-	header._size = 0; // 최종 크기를 모르므로 임시로 0으로 설정
+	chess::packet::CS_PACKET_LOGIN login_packet;
+	login_packet._type = chess::packet::PacketType::C2S_P_LOGIN;
 
-	stream << header;
+	stream << login_packet;
 	stream << name;   // PacketStream이 알아서 [길이][내용]을 써 줌
 
 	// 스트림에 모든 데이터를 쓴 후, 실제 크기를 계산하여 헤더에 덮어쓴다.
@@ -230,13 +229,13 @@ void ClientPacketManager::HANDLE_S2C_MOVE(chess::packet::PacketStream& stream)
 
 void ClientPacketManager::HANDLE_S2C_LEAVE(chess::packet::PacketStream& stream)
 {
-	int64_t id;
-	stream >> id; // id만 읽습니다.
-
+	chess::packet::SC_PACKET_LEAVE leave_packet;
+	stream >> leave_packet; // id만 읽습니다.
+	
 	auto other_players = CObjectManager::GetManager()->GetEnemy();
 	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other)
 	{
-		return id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
+		return leave_packet._id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
 	});
 	if (it != other_players.end())
 	{
@@ -247,48 +246,45 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(chess::packet::PacketStream& stream)
 void ClientPacketManager::HANDLE_S2C_ATTACK(chess::packet::PacketStream& stream)
 {
 	// SC_PACKET_ATTACK은 헤더 외에 여러 멤버를 가집니다.
-	int64_t attacker_id, target_id;
-	int32_t damage, target_current_hp;
+	chess::packet::SC_PACKET_ATTACK attack_packet;
+	stream >> attack_packet; // 구조체 전체를 읽습니다.
 
-	stream >> attacker_id >> target_id >> damage >> target_current_hp; // 순서대로 읽습니다.
 
 	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
-	if (player && target_id == player->GetID()) // 읽어온 target_id 사용
+	if (player && attack_packet._target_id == player->GetID()) // 읽어온 target_id 사용
 	{
-		player->SetHP(target_current_hp); // 읽어온 target_current_hp 사용
+		player->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 	}
 	else
 	{
 		auto other_players = CObjectManager::GetManager()->GetEnemy();
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
 		{
-			return target_id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 target_id 사용
+			return attack_packet._target_id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 target_id 사용
 		});
 		if (it != other_players.end())
 		{
-			dynamic_cast<COther_King*>(it->get())->SetHP(target_current_hp); // 읽어온 target_current_hp 사용
+			dynamic_cast<COther_King*>(it->get())->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 		}
 	}
 }
 
 void ClientPacketManager::HANDLE_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& stream)
 {
-	uint16_t room_count;
-	stream >> room_count; // room_count만 읽습니다.
+	chess::packet::SC_PACKET_ROOM_LIST_ACK room_list_ack;
+	stream >> room_list_ack; // room_count만 읽습니다.
 
-	CLOG(L"[S->C] Received room list! Room count: %hu", room_count);
+	CLOG(L"[S->C] Received room list! Room count: %hu", room_list_ack._room_count);
 
-	for (int i = 0; i < room_count; ++i) // 읽어온 room_count 사용
+	for (int i = 0; i < room_list_ack._room_count; ++i) // 읽어온 room_count 사용
 	{
 		chess::packet::RoomInfo room_info;
 		stream >> room_info; // RoomInfo 구조체 하나를 읽습니다.
-		CLOG(L"  - Room ID: %d, Players: %u", room_info._room_id, static_cast<unsigned int
-		>(room_info._player_count));
+		CLOG(L"  - Room ID: %d, Players: %u", room_info._room_id, static_cast<unsigned int>(room_info._player_count));
 	}
 }
 void ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream)
 {
-	extern CGameFramework gGameFramework;
 	extern HWND g_hwnd;
 
 	chess::packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
