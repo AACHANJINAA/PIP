@@ -322,6 +322,14 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F9:
 			ChangeSwapChainState();
 			break;
+			// [추가] 숫자 키 1~6으로 방 입장 요청
+		case '1': case '2': case '3': case '4': case '5': case '6':
+			{
+				int room_id_to_enter = wParam - '1' + 1; // '1' -> 1, '2' -> 2 ...
+				CLOG(L"[C->S] Requesting to enter room %d (Key %c pressed)", room_id_to_enter, (wchar_t)wParam);
+				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
+				break;
+			}
 		default:
 			break;
 		}
