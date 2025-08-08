@@ -27,8 +27,10 @@ namespace chess::packet
         // 세션 상태에 따라 처리 가능한 패킷인지 검증합니다.
         switch (sessionState)
         {
-            case server::SESSION_STATE::ST_LOBBY:
-                if (header._type == packet::PacketType::C2S_P_ROOM_LIST || header._type == packet::PacketType::C2S_P_ENTER_ROOM)
+        case server::SESSION_STATE::ST_LOBBY:
+                if (header._type == packet::PacketType::C2S_P_ROOM_LIST 
+                    || header._type == packet::PacketType::C2S_P_ENTER_ROOM
+                    || header._type == packet::PacketType::C2S_P_LOGIN)
                 {
                     bIsValidPacket = true;
                 }
@@ -66,6 +68,7 @@ namespace chess::packet
         {
             // 핸들러는 스트림의 헤더를 건너뛰고 내용부터 읽어야 하므로,
             // 더미 변수에 헤더를 읽어 스트림의 읽기 위치(_pos)를 안전하게 이동시킵니다.
+            LOG("[DISPATCHER] Handler found for type " << static_cast<int>(header._type) << "Calling handler function.");
             packet::PacketHeader dummyHeader;
             stream >> dummyHeader;
 
