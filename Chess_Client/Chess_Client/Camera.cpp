@@ -14,7 +14,7 @@ CCamera::CCamera()
 	m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
-	GenerateProjectionMatrix(1.01f, 5000.0f, m_fFOVAngle);
+	GenerateProjectionMatrix(0.1f, 5000.0f, m_fFOVAngle);
 }
 
 CCamera::~CCamera()
