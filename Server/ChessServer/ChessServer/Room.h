@@ -31,6 +31,7 @@ namespace chess::server
 		RoomState GetRoomState() const { return _room_state; }
 
 		bool IsFull() const { return _players.size() >= _max_players; }
+		//const std::unordered_map<long long, std::shared_ptr<SESSION>>& GetPlayers() const { return _players; }
 	private:
 		int _room_id;
 		int _logic_thread_idx; // 이 방을 담당하는 로직 스레드의 인덱스

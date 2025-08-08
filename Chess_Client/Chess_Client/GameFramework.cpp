@@ -393,12 +393,18 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
-//#define _WITH_PLAYER_TOP
 void CGameFramework::FrameAdvance()
 {
 	
 
 	m_GameTimer.Tick(0.0f);
+	HRESULT hResult = m_pd3dCommandAllocator->Reset();
+	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
+
+	CObjectManager::GetManager()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
+
+	//오브젝트 생성가능
+	//CObjectManager::GetManager()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	ProcessNetwork();
 	ProcessInput();
@@ -408,13 +414,7 @@ void CGameFramework::FrameAdvance()
 	WaitForGpuComplete();
 	MoveToNextFrame();
 
-	CObjectManager::GetManager()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
-
-	HRESULT hResult = m_pd3dCommandAllocator->Reset();
-	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
-
-	//오브젝트 생성가능
-	CObjectManager::GetManager()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
+	
 
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));

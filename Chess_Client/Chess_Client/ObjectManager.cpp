@@ -38,11 +38,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
 			RequestObject->SetMesh(Chess_Mesh);
-
-			// 이동 거리 설정
 			RequestObject->SetScale(1.f, 1.f, 1.f);
-
-
 
 			// 매니저에 넣기
 			CObjectManager::GetManager()->PushObject(RequestObject);

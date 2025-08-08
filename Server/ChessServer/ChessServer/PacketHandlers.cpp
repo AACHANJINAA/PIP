@@ -7,27 +7,41 @@ namespace chess::packet
 {
 
 	// 중복 코드를 줄이기 위한 Helper 함수
-	PacketStream MakeEnterPacket(std::shared_ptr<chess::server::SESSION> session)
+	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<chess::server::SESSION> session)
 	{
-		PacketStream dataStream;
-		dataStream << session->_id << (char)0 /*object_type*/ << session->_x << session->_y << session->_name;
+		// [수정] SC_PACKET_SPAWN_PLAYER 구조체 변수를 선언하고 멤버를 채웁니다.
+		packet::SC_PACKET_SPAWN_PLAYER spawn_packet_data;
+		spawn_packet_data._type = PacketType::S2C_P_SPAWN_PLAYER; // 타입 설정
+		spawn_packet_data._size = 0; // 임시 크기 (나중에 다시 계산)
 
-		SC_PACKET_ENTER enterPacket;
-		enterPacket._type = PacketType::S2C_P_ENTER;
-		enterPacket._size = sizeof(enterPacket) + dataStream.Size();
+		spawn_packet_data._id = session->_id;
+		spawn_packet_data._x = session->_x;
+		spawn_packet_data._y = session->_y;
+		spawn_packet_data._hp = session->_hp;
+		spawn_packet_data._level = session->_level;
+		spawn_packet_data._exp = session->_exp;
 
-		PacketStream finalStream;
-		finalStream << enterPacket;
-		finalStream.Write(dataStream.constable_data(), dataStream.Size());
-		return finalStream;
+		packet::PacketStream finalStream;
+		// [수정] 구조체 자체를 스트림에 씁니다.
+		finalStream << spawn_packet_data;
+		// [추가] 이름(가변 길이)을 스트림에 씁니다.
+		finalStream << session->_name;
+
+		// [수정] 최종 크기를 계산하여 패킷 헤더에 덮어씁니다.
+		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
+		final_header->_size = static_cast<uint16_t>(finalStream.Size());
+
+		return finalStream; // finalStream을 반환
 	}
 	
 
 	void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
 	{
+		packet::CS_PACKET_LOGIN login_packet;
 		std::string player_name;
 		try
 		{
+			stream >> login_packet;
 			stream >> player_name;
 		}
 		catch (const std::runtime_error& e)
@@ -40,26 +54,17 @@ namespace chess::packet
 		session->_name = player_name;
 		
 		LOG("[Login] Session " << session->_id << " logged in as '" << session->_name << "'.");
-		
-		// 3. 클라이언트에게 아바타(캐릭터) 정보를 보내줍니다.
-		//    이를 통해 클라이언트는 자신의 플레이어 객체를 생성할 수 있습니다.
-		packet::SC_PACKET_AVATAR_INFO avatar_info_packet;
-		avatar_info_packet._type = PacketType::S2C_P_AVATAR_INFO;
-		avatar_info_packet._size = sizeof(avatar_info_packet);
-		avatar_info_packet._id = session->_id;
-		avatar_info_packet._x = session->_x; // 세션 생성 시의 기본 위치
-		avatar_info_packet._y = session->_y;
-		avatar_info_packet._hp = session->_hp;
-		avatar_info_packet._level = 1; // 임시 레벨
-		avatar_info_packet._exp = 0;   // 임시 경험치
-		
-		// 4. 생성된 패킷을 전송합니다.
-		session->do_send(reinterpret_cast<const char*>(&avatar_info_packet), sizeof(avatar_info_packet));
-		
-		LOG("[Login] Sent AVATAR_INFO to session " << session->_id);
-		
-		// MO 서버에서는 로비에서 다른 플레이어 정보를 보내줄 필요는 없습니다.
-		// 방에 입장했을 때, 해당 방의 플레이어 정보만 받으면 됩니다.
+
+		// 아바타 정보 전송 로직 제거
+
+		packet::S2C_P_LOGIN_ACK login_ack_packet;
+		login_ack_packet._type = PacketType::S2C_P_LOGIN_ACK;
+		login_ack_packet._size = sizeof(login_ack_packet);
+		login_ack_packet._my_session_id = session->_id; // 클라이언트 자신의 ID를 알려줍니다.
+		login_ack_packet._success = true;
+
+		session->do_send(reinterpret_cast<const char*>(&login_ack_packet), sizeof(login_ack_packet));
+		LOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
 	}
 
 	void Handle_C2S_MOVE(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
@@ -69,11 +74,14 @@ namespace chess::packet
 		if (room == nullptr) return;
 
 		// 3. 이동 처리 (기존 로직 동일)
-		packet::MOVE_TYPE direction;
-		try { stream >> direction; }
+		packet::CS_PACKET_MOVE move_packet;
+		try
+		{
+			stream >> move_packet;
+		}
 		catch (...) { return; }
 
-		switch (direction)
+		switch (move_packet._direction)
 		{
 			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break;
 			case packet::MOVE_TYPE::MOVE_DOWN:  if (session->_y > 0) session->_y--; break;
@@ -104,6 +112,17 @@ namespace chess::packet
 		server::Room* room = server::Server::Instance()->GetRoom(session->_room_id);
 		if (room == nullptr) return;
 
+		packet::CS_PACKET_ATTACK attack_packet;
+		try
+		{
+			stream >> attack_packet;
+		}
+		catch (const std::runtime_error& e)
+		{
+			ERROR("[Attack] **ERROR**: Failed to read attack packet from stream. " << e.what());
+			return;
+		}
+
 		// 2. 실제 공격 처리는 Room 객체에 위임
 		room->HandleAttack(session);
 	}
@@ -111,30 +130,29 @@ namespace chess::packet
 	void Handle_C2S_ENTER_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
 	{
 		LOG("[EnterRoomHandler] Stream received. Buffer size: " << stream.Size() << ", Pos: " << stream.Pos());
-		int room_id;
+
+		packet::CS_PACKET_ENTER_ROOM enter_packet;
 		try
 		{
-			stream >> room_id;
+			stream >> enter_packet;
 		}
 		catch (const std::runtime_error& e)
 		{
-			LOG("[EnterRoomHandler] **EXCEPTION CAUGHT**: " << e.what());
-			// 예외가 발생했을 때, 스트림의 내부 상태를 다시 한번 확인합니다.
-			// 이 로그는 throw 이후라 출력되지 않을 수 있으므로, try 블록 전에 확인하는 것이 더좋습니다.
-			return;
+			ERROR("[EnterRoomHandler] **ERROR**: Failed to read enter room packet from stream. " << e.what());
 		}
+		
 
-		server::Room* room = server::Server::Instance()->GetRoom(room_id);
+		server::Room* room = server::Server::Instance()->GetRoom(enter_packet._room_id);
 
 		SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
 		ack_packet._size = sizeof(ack_packet);
-		ack_packet._room_id = room_id;
+		ack_packet._room_id = enter_packet._room_id;
 
 		if (room == nullptr) {
 			ack_packet._success = false;
 		}
-		else if (room->IsFull() || room->GetRoomState() == server::RoomState::PLAYING) // [수정]
+		else if (room->IsFull())
 		{
 		    ack_packet._success = false;
 			LOG("[EnterRoom] Session " << session->_id << " failed to enter Room " << room->GetRoomId() << ". Reason: Full or Already Playing.");
@@ -146,11 +164,20 @@ namespace chess::packet
 				server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
 				if (old_room) old_room->RemovePlayer(session->_id);
 			}
-			room->AddPlayer(session);
-			LOG("[EnterRoom] Session " << session->_id << " successfully entered Room " << room_id);
-			session->_room_id = room_id;
+			// TODO: 플레이어 초기 상태 설정 하는 곳
+			session->_x = 4;
+			session->_y = 4;
+			session->_level = 1;
+			session->_hp = 100;
+			session->_exp = 0;
+			LOG("[EnterRoom] Session " << session->_id << " spawned at (" << session->_x << ", " << session->_y << ") in Room "<< enter_packet._room_id);
+			
+			room->AddPlayer(session); // Room::AddPlayer가 스폰 패킷 전송을 담당합니다.
+			
+			LOG("[EnterRoom] Session " << session->_id << " successfully entered Room " << enter_packet._room_id);
+			session->_room_id = enter_packet._room_id;
 			session->_state = server::SESSION_STATE::ST_INGAME;
-
+			
 			// [추가] 세션의 담당 로직 스레드 인덱스를 방의 인덱스와 동기화
 			session->_logic_thread_idx = room->GetLogicThreadIndex();
 			LOG("[EnterRoom] Session " << session->_id << " logic thread index updated to " << session->_logic_thread_idx);
@@ -165,6 +192,17 @@ namespace chess::packet
 
 	void Handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)
 	{
+		packet::CS_PACKET_ROOM_LIST recv_packet;
+		try
+		{
+			stream >> recv_packet;
+		}
+		catch (const std::runtime_error& e)
+		{
+			ERROR("[RoomList] **ERROR**: Failed to read room list packet from stream. " << e.what());
+			return;
+		}
+
 		std::vector<RoomInfo> room_infos;
 		for (int i = 0; i < 100; ++i)
 		{
@@ -195,6 +233,16 @@ namespace chess::packet
 	{
 		// 1. 채팅 메시지 읽기
 		// PacketStream의 >> 연산자는 먼저 길이를 읽고, 그 길이만큼 문자열을 읽어옵니다.
+		packet::CS_PACKET_CHAT_IN_ROOM recv_chat_packet;
+		try
+		{
+			stream >> recv_chat_packet;
+		}
+		catch (const std::runtime_error& e)
+		{
+			ERROR("[CHAT] **ERROR**: Failed to read chat packet from stream. " << e.what());
+		}
+
 		std::string message;
 		try
 		{
@@ -202,8 +250,7 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			LOG("[CHAT] **ERROR**: Failed to read chat message from stream. " << e.what());
-			return;
+			ERROR("[CHAT] **ERROR**: Failed to read chat message from stream. " << e.what());
 		}
 
 		// 2. 세션이 방에 있는지 확인
@@ -218,12 +265,12 @@ namespace chess::packet
 		if (room == nullptr) return;
 
 		// 4. 방에 있는 모든 사람에게 채팅 메시지 브로드캐스팅
-		packet::SC_PACKET_CHAT_IN_ROOM chat_packet;
-		chat_packet._type = packet::PacketType::S2C_P_CHAT_IN_ROOM;
-		chat_packet._sender_id = session->_id;
+		packet::SC_PACKET_CHAT_IN_ROOM send_chat_packet;
+		send_chat_packet._type = packet::PacketType::S2C_P_CHAT_IN_ROOM;
+		send_chat_packet._sender_id = session->_id;
 
 		packet::PacketStream broadcast_stream;
-		broadcast_stream << chat_packet;
+		broadcast_stream << send_chat_packet;
 		broadcast_stream << message; // string을 스트림에 쓰면 길이(uint16_t)가 먼저 쓰이고 내용이 쓰임
 
 		// 최종 패킷 크기를 헤더에 다시 설정

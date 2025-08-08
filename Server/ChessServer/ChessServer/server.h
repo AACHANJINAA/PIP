@@ -136,9 +136,10 @@ namespace chess::server
 		// 플레이어 정보
 		short						_x, _y;
 		std::string					_name;
-		std::atomic<short>			_hp;
+		short						_hp;
 		short						_max_hp;
-		
+		short						_level;
+		uint32_t					_exp;
 	public:
 		SESSION();
 		SESSION(long long session_id, SOCKET s, int logic_index);
@@ -147,8 +148,6 @@ namespace chess::server
 		void do_recv();
 		void do_send(const char* data, size_t size);
 		void OnRecv(size_t len, Server* server_ptr);
-
-		void send_player_info_packet();
 	};
 
 }

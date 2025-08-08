@@ -8,19 +8,22 @@ class ClientPacketManager : public Singleton<ClientPacketManager>
 private:
     SOCKET _socket; // 클라이언트 소켓
     std::vector<char> _recvBuffer; // 수신 버퍼
+	long long _my_session_id = -1; // 자신의 세션 ID (로그인 후 서버로부터 받음) [TODO: 임시로 여기에 저장하긴 했음]
 
     // 패킷 핸들러 함수 포인터 타입 정의
     using PacketHandler = std::function<void(chess::packet::PacketStream& stream)>;
     std::unordered_map<chess::packet::PacketType, PacketHandler> _handlers;
 
+    void RegisterHandler(chess::packet::PacketType packet_type, PacketHandler packet_handler);
+
     // 개별 패킷 처리 함수들 (private)
-    void Handle_S2C_AVATAR_INFO(chess::packet::PacketStream& stream);
-    void Handle_S2C_ENTER(chess::packet::PacketStream& stream);
-    void Handle_S2C_MOVE(chess::packet::PacketStream& stream);
-    void Handle_S2C_LEAVE(chess::packet::PacketStream& stream);
-    void Handle_S2C_ATTACK(chess::packet::PacketStream& stream);
-    void Handle_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& stream);
-    void Handle_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream);
+	void HANDLE_S2C_LOGIN_ACK(chess::packet::PacketStream& stream);
+	void HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& stream);
+    void HANDLE_S2C_MOVE(chess::packet::PacketStream& stream);
+    void HANDLE_S2C_LEAVE(chess::packet::PacketStream& stream);
+    void HANDLE_S2C_ATTACK(chess::packet::PacketStream& stream);
+    void HANDLE_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& stream);
+    void HANDLE_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream);
     //TODO: void Handle_S2C_ERROR(chess::packet::PacketStream& stream); // 에러 패킷 처리 함수
 
 public:

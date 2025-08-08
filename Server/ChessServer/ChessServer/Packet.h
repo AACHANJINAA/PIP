@@ -9,18 +9,23 @@ namespace chess::packet
 	enum class PacketType : uint16_t
     {
         error = 0,
-        S2C_P_AVATAR_INFO = 1,
-        S2C_P_MOVE = 2,
-        S2C_P_ENTER = 3,
-        S2C_P_LEAVE = 4,
-        C2S_P_LOGIN = 5,
-        C2S_P_MOVE = 6,
+        
+        C2S_P_LOGIN = 11,
+		S2C_P_LOGIN_ACK = 14,
+        S2C_P_LEAVE = 12,
+        S2C_P_SPAWN_PLAYER = 13,
+
+        S2C_P_MOVE = 91,
+        C2S_P_MOVE = 92,
+
         C2S_P_ATTACK = 101,
         S2C_P_ATTACK = 102,
+
         C2S_P_ENTER_ROOM = 201,
 		S2C_P_ENTER_ROOM_ACK = 202,
         C2S_P_ROOM_LIST = 203,
         S2C_P_ROOM_LIST_ACK = 204,
+
         C2S_P_CHAT_IN_ROOM = 301,    // 클라 -> 서버: 방 내부 채팅 메시지
         S2C_P_CHAT_IN_ROOM = 302,    // 서버 -> 클라: 방 내부 채팅 메시지 전달
 	};
@@ -97,13 +102,10 @@ namespace chess::packet
     {
 		uint16_t _room_count; // 방의 갯수 ( 이 뒤에 RoomInfo 구조체가 _room_count 만큼 반복됨 )
     };
-
-    struct SC_PACKET_ENTER : PacketHeader
+    struct S2C_P_LOGIN_ACK : PacketHeader
     {
-		int64_t _id; // long long
-        short   _x;
-        short   _y;
-		// 뒤에 _name이 따라옴 가변 크기
+        long long _my_session_id; // 클라이언트 자신의 세션 ID
+        bool      _success;       // 로그인 성공 여부
     };
 
     struct CS_PACKET_ATTACK : PacketHeader
@@ -125,7 +127,10 @@ namespace chess::packet
 		// 로그인 한다~
 	};
 
-    struct SC_PACKET_AVATAR_INFO : PacketHeader
+    /// <summary>
+	/// Enter 패킷 + AVATAR 정보 패킷 결합
+    /// </summary>
+    struct SC_PACKET_SPAWN_PLAYER : PacketHeader 
     {
         int64_t _id; // long long
         short   _x;
@@ -133,6 +138,7 @@ namespace chess::packet
         short   _hp;
         short   _level;
         int     _exp;
+        //뒤에 가변크기 name
 	};
 
     struct SC_PACKET_MOVE : PacketHeader

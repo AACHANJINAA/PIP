@@ -8,7 +8,6 @@
 #include "resource1.h"
 
 
-CGameFramework gGameFramework;
 SOCKET c_socket;
 std::wstring SERVER_ADDR_W = L"127.0.0.1";
 std::wstring PLAYER_NAME_W = L"MyPlayer"; // 플레이어 이름 저장용
@@ -152,10 +151,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         else
         {
             // 메시지 큐가 비어있을 때, 우리의 게임 로직을 실행합니다.
-        	gGameFramework.FrameAdvance();
+        	CGameFramework::Instance()->FrameAdvance();
         }
 	}
-    gGameFramework.OnDestroy();
+    CGameFramework::Instance()->OnDestroy();
 
 
     closesocket(c_socket);
@@ -224,7 +223,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
-    gGameFramework.OnCreate(hInstance, hMainWnd);
+    CGameFramework::Instance()->OnCreate(hInstance, hMainWnd);
 
 
     ShowWindow(hMainWnd, nCmdShow);
@@ -287,7 +286,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
     case WM_KEYDOWN:
     case WM_KEYUP:
-        gGameFramework.OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+        CGameFramework::Instance()->OnProcessingWindowMessage(hWnd, message, wParam, lParam);
         break;
     case WM_DESTROY:
         ::PostQuitMessage(0);

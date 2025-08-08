@@ -66,12 +66,7 @@ namespace chess::packet
         auto it = _handlers.find(header._type);
         if (it != _handlers.end())
         {
-            // 핸들러는 스트림의 헤더를 건너뛰고 내용부터 읽어야 하므로,
-            // 더미 변수에 헤더를 읽어 스트림의 읽기 위치(_pos)를 안전하게 이동시킵니다.
             LOG("[DISPATCHER] Handler found for type " << static_cast<int>(header._type) << "Calling handler function.");
-            packet::PacketHeader dummyHeader;
-            stream >> dummyHeader;
-
             it->second(session, stream);
         }
         else

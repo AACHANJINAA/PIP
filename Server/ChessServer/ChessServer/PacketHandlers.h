@@ -5,7 +5,7 @@
 
 namespace chess::packet
 {
-	PacketStream MakeEnterPacket(std::shared_ptr<chess::server::SESSION> session);
+	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<chess::server::SESSION> session);
 
 
 	void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream);

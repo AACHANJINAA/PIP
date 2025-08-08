@@ -14,6 +14,7 @@ namespace chess::server
 	// server.cpp
 	SESSION::SESSION(long long session_id, SOCKET s, int logic_index)
 		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }, _hp{ 100 }, _max_hp{ 100 }
+		, _level{ 1 }, _exp{ 0 }
 	{
 		_state = SESSION_STATE::ST_LOBBY;
 	}
@@ -106,24 +107,6 @@ namespace chess::server
 		}
 	}
 
-	void SESSION::send_player_info_packet()
-	{
-		packet::SC_PACKET_AVATAR_INFO avatarInfoPacket;
-		avatarInfoPacket._type = packet::PacketType::S2C_P_AVATAR_INFO;
-		avatarInfoPacket._size = sizeof(avatarInfoPacket); // 고정 크기
-		avatarInfoPacket._id = _id;
-		avatarInfoPacket._x = _x;
-		avatarInfoPacket._y = _y;
-		avatarInfoPacket._level = 1;
-		avatarInfoPacket._hp = 100;
-		avatarInfoPacket._exp = 200;
-		
-		packet::PacketStream finalStream;
-		finalStream << avatarInfoPacket; // avatarInfoPacket에 헤더 정보가 이미 포함되어 있음
-
-		// 4. 완성된 패킷 전송
-		do_send(finalStream.constable_data(), finalStream.Size());
-	}
 
 	// --------- server class implementation ---------
 
