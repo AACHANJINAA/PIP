@@ -52,7 +52,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
             }
             else
             {
-                BoardMesh->ChangeColor(pd3dCommandList, 0.710, 0.533, 0.388, 1.f);
+                BoardMesh->ChangeColor(pd3dCommandList, 0.710f, 0.533f, 0.388f, 1.f);
             }
             Board->SetMesh(BoardMesh);
             Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x * j),

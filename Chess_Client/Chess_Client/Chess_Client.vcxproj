@@ -136,12 +136,14 @@
     <ClInclude Include="FreeCamera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="Other_King.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -161,6 +163,7 @@
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="Other_King.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

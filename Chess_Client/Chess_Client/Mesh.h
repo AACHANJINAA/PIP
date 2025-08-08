@@ -1,5 +1,9 @@
 #pragma once
 #include "stdafx.h"
+#include "json.hpp"
+// nlohmann/json 헤더 // json 파싱 위해 추가
+using json = nlohmann::json;
+
 //정점을 표현하기 위한 클래스를 선언한다.
 class CVertex
 {
@@ -11,6 +15,35 @@ public:
 	CVertex(XMFLOAT3 xmf3Position) { m_xmf3Position = xmf3Position; }
 	~CVertex() {}
 };
+
+// Node 구조체 정의 DW : GLTF/GLB 파일에서 노드 정보를 표현하기 위해 추가
+struct Node
+{
+	std::string name;
+	int parentIndex = -1; // 부모가 없으면 -1
+	std::vector<int> childrenIndices;
+
+	// 변환 정보
+	XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // 쿼터니언
+	XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f };
+
+	int meshIndex = -1;
+	int skinIndex = -1;
+};
+
+// 스키닝 정보를 포함하는 새로운 정점 구조체 -> CVertex 대신에 사용할 것임
+struct SkinnedVertex
+{
+	XMFLOAT3 m_xmf3Position;
+	XMFLOAT3 m_xmf3Normal;
+	XMFLOAT2 m_xmf2TexCoord;
+
+	// 추가된 스키닝 데이터
+	XMFLOAT4 m_xmf4BoneIndices; // 영향을 주는 뼈의 인덱스 (최대 4개)
+	XMFLOAT4 m_xmf4BoneWeights; // 각 뼈로부터 받는 영향(가중치)
+};
+
 
 // (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
 class CIlluminatedVertex : public CVertex
@@ -120,3 +153,32 @@ public:
 	virtual ~CReadObjMesh();
 };
 
+class CReadGlbMesh : public CMesh
+{
+public:
+	CReadGlbMesh() {};
+	virtual ~CReadGlbMesh();
+
+	CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+
+	// Accessor 정보를 바탕으로 데이터의 시작 포인터와 개수를 가져오는 함수
+	template<typename T> // 템플릿으로 만든는 이유는 추후에 위치 인덱스 뼈 등 다양한 정보를 불러오는데 자료형만 다르기 때문이다.
+	std::pair<T*, size_t> getData(const json& j, const std::vector<char>& binaryData, int accessorIndex)
+	{
+		const auto& accessor = j["accessors"][accessorIndex];
+		const auto& bufferView = j["bufferViews"][accessor["bufferView"]];
+
+		// 데이터 시작 위치 계산
+		const char* dataStart = binaryData.data() + bufferView["byteOffset"].get<size_t>();
+
+		// accessor에 byteOffset이 있을 경우 추가로 더해줌
+		if (accessor.contains("byteOffset")) {
+			dataStart += accessor["byteOffset"].get<size_t>();
+		}
+
+		// 데이터 개수
+		size_t count = accessor["count"];
+
+		return { reinterpret_cast<T*>(const_cast<char*>(dataStart)), count };
+	}
+};
