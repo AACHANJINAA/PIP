@@ -100,6 +100,8 @@ public:
 
 	UINT m_nMessageID; // 어떤 키를 입력받은것인지에 대한 확인용이다.
 
+	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
+
 	enum class ClientState // 클라이언트의 상태를 나타내는 열거형
 	{
 		Lobby,
