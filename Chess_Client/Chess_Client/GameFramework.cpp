@@ -396,7 +396,6 @@ void CGameFramework::MoveToNextFrame()
 void CGameFramework::FrameAdvance()
 {
 	
-
 	m_GameTimer.Tick(0.0f);
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
@@ -410,11 +409,6 @@ void CGameFramework::FrameAdvance()
 	ProcessInput();
 
 	AnimateObjects();
-
-	WaitForGpuComplete();
-	MoveToNextFrame();
-
-	
 
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
@@ -463,6 +457,8 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	//WaitForGpuComplete();
 	m_pdxgiSwapChain->Present(0, 0);
+	WaitForGpuComplete();
+	MoveToNextFrame();
 	//MoveToNextFrame();
 	//CObjectManager::GetManager()->DeleteObject();
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
