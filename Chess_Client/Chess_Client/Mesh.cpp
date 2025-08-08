@@ -376,3 +376,185 @@ CReadObjMesh::~CReadObjMesh()
 {
 
 }
+
+
+
+
+CReadGlbMesh::CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+{
+	// 파일 전체를 읽어올 벡터
+	std::vector<char> fileData;
+
+	std::ifstream file("brute_jump.glb", std::ios::binary | std::ios::ate);
+	if (!file.is_open()) {
+		std::cerr << "Error: Failed to open brute_jump.glb" << std::endl;
+		return; // 또는 다른 에러 처리
+	}
+
+	// 파일 크기를 알아내고 그만큼 벡터 크기 조절
+	std::streamsize size = file.tellg();
+	file.seekg(0, std::ios::beg);
+	fileData.resize(size);
+
+	// 파일 내용을 벡터에 한번에 읽기
+	if (!file.read(fileData.data(), size)) {
+		std::cerr << "Error: Failed to read file content." << std::endl;
+		return;
+	}
+
+	file.close();
+
+	std::cout << "Successfully read " << fileData.size() << " bytes from GLB file." << std::endl;
+
+
+	// GLB 파일 구조에 따라 JSON과 BIN 청크를 읽어오는 과정=========================================
+
+	// JSON과 BIN 데이터를 저장할 변수
+	std::string jsonString;
+	std::vector<char> binaryData;
+
+	// 포인터처럼 사용할 현재 위치 변수
+	char* pData = fileData.data();
+
+	// 1. GLB 헤더 읽기 (12바이트)
+	uint32_t magic = *reinterpret_cast<uint32_t*>(pData);
+	pData += 4;
+	uint32_t version = *reinterpret_cast<uint32_t*>(pData);
+	pData += 4;
+	uint32_t length = *reinterpret_cast<uint32_t*>(pData);
+	pData += 4;
+
+	if (magic != 0x46546C67) { // "glTF"
+		std::cerr << "Error: Not a valid GLB file." << std::endl;
+		return;
+	}
+
+	// 2. 청크 순회 (JSON -> BIN)
+	while (pData < fileData.data() + length) {
+		// 각 청크의 길이와 타입 읽기
+		uint32_t chunkLength = *reinterpret_cast<uint32_t*>(pData);
+		pData += 4;
+		uint32_t chunkType = *reinterpret_cast<uint32_t*>(pData);
+		pData += 4;
+
+		if (chunkType == 0x4E4F534A) { // "JSON"
+			// JSON 데이터를 문자열로 복사
+			jsonString.assign(pData, chunkLength);
+			std::cout << "Found JSON chunk: " << chunkLength << " bytes." << std::endl;
+		}
+		else if (chunkType == 0x004E4942) { // "BIN"
+			// BIN 데이터를 벡터로 복사
+			binaryData.assign(pData, pData + chunkLength);
+			std::cout << "Found BIN chunk: " << chunkLength << " bytes." << std::endl;
+		}
+
+		// 다음 청크로 이동
+		pData += chunkLength;
+	}
+
+	// 최종 확인
+	std::cout << "\nJSON Data:\n" << jsonString.substr(0, 200) << "...\n" << std::endl;
+	std::cout << "Binary data size: " << binaryData.size() << " bytes." << std::endl;
+
+
+
+	// --- JSON 파싱 시작 ---
+	try
+	{
+		// 한 줄 코드로 JSON 문자열 전체를 파싱!
+		auto j = json::parse(jsonString);
+
+		// 이제부터 j 변수를 통해 JSON 데이터에 쉽게 접근할 수 있습니다.
+		std::string version = j["asset"]["version"];
+		std::cout << "JSON Parsed! glTF Version: " << version << std::endl;
+
+		// "scene" 키의 값을 정수로 읽기
+		int scene_id = j["scene"];
+		std::cout << "Default Scene Index: " << scene_id << std::endl;
+
+		// "nodes" 배열 가져오기
+		const auto& nodes = j["nodes"];
+		std::cout << "Number of nodes: " << nodes.size() << std::endl;
+
+		// TODO: 여기서 nodes 배열을 순회하며 데이터를 읽어야 합니다.
+		// 1. 모든 노드 정보를 담을 벡터를 선언합니다.
+		std::vector<Node> nodeVec;
+		nodeVec.resize(nodes.size());
+
+		// 2. nodes 배열을 순회하며 각 노드의 정보를 읽어옵니다.
+		for (size_t i = 0; i < nodes.size(); ++i)
+		{
+			const auto& nodeJson = nodes[i];
+			Node& currentNode = nodeVec[i];
+
+			// 이름 (있을 수도 있고 없을 수도 있음)
+			if (nodeJson.contains("name")) {
+				currentNode.name = nodeJson["name"];
+			}
+
+			// 변환 정보 (있을 경우에만 읽기)
+			if (nodeJson.contains("translation")) {
+				currentNode.translation.x = nodeJson["translation"][0];
+				currentNode.translation.y = nodeJson["translation"][1];
+				currentNode.translation.z = nodeJson["translation"][2];
+			}
+			if (nodeJson.contains("rotation")) {
+				currentNode.rotation.x = nodeJson["rotation"][0];
+				currentNode.rotation.y = nodeJson["rotation"][1];
+				currentNode.rotation.z = nodeJson["rotation"][2];
+				currentNode.rotation.w = nodeJson["rotation"][3];
+			}
+			if (nodeJson.contains("scale")) {
+				currentNode.scale.x = nodeJson["scale"][0];
+				currentNode.scale.y = nodeJson["scale"][1];
+				currentNode.scale.z = nodeJson["scale"][2];
+			}
+
+			// 자식 노드 인덱스 목록
+			if (nodeJson.contains("children")) {
+				for (const auto& childIndex : nodeJson["children"]) {
+					currentNode.childrenIndices.push_back(childIndex);
+				}
+			}
+
+			// 메시 및 스킨 인덱스
+			if (nodeJson.contains("mesh")) {
+				currentNode.meshIndex = nodeJson["mesh"];
+			}
+			if (nodeJson.contains("skin")) {
+				currentNode.skinIndex = nodeJson["skin"];
+			}
+		}
+
+		// 3. 부모-자식 관계 설정 (부모 인덱스 채우기)
+		for (size_t i = 0; i < nodeVec.size(); ++i)
+		{
+			for (int childIndex : nodeVec[i].childrenIndices)
+			{
+				if (childIndex >= 0 && childIndex < nodeVec.size()) {
+					nodeVec[childIndex].parentIndex = i;
+				}
+			}
+		}
+
+		// 이제 nodeVec 안에 모든 노드의 정보와 계층 구조가 완성되었습니다!
+		// 테스트: 루트 노드 중 하나의 이름을 출력해봅시다.
+		// brute_jump.glb 파일의 경우 scene[0].nodes[0] 은 0번 노드입니다.
+		int rootNodeIndex = j["scenes"][0]["nodes"][0];
+		std::cout << "Root Node Name: " << nodeVec[rootNodeIndex].name << std::endl;
+
+		// m_Nodes 멤버 변수에 최종 결과 저장 (클래스 멤버 변수로 선언 필요)
+		// m_Nodes = std::move(nodeVec);
+	}
+	catch (json::parse_error& e)
+	{
+		std::cerr << "JSON parse error: " << e.what() << std::endl;
+		return;
+	}
+
+}
+
+CReadGlbMesh::~CReadGlbMesh()
+{
+
+}

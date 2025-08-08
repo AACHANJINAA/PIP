@@ -49,6 +49,12 @@
     <Filter Include="Server\PacketManager">
       <UniqueIdentifier>{825abd1e-e651-4dbd-bcbb-9421d0b755fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Manager\ObjectManager">
+      <UniqueIdentifier>{0db53fe6-163a-461a-a322-9a198b5eaafa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager\SceneManager">
+      <UniqueIdentifier>{2fe3ac17-8f03-410d-bb43-80766b303528}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -65,9 +71,6 @@
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectManager.h">
-      <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Camera</Filter>
@@ -108,6 +111,15 @@
     <ClInclude Include="ClientPacketManager.h">
       <Filter>Server\PacketManager</Filter>
     </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>Manager\ObjectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>Manager\SceneManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chess_Client.cpp">
@@ -118,9 +130,6 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectManager.cpp">
-      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Camera</Filter>
@@ -157,6 +166,12 @@
     </ClCompile>
     <ClCompile Include="ClientPacketManager.cpp">
       <Filter>Server\PacketManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>Manager\ObjectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>Manager\SceneManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
