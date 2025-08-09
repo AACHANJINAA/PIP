@@ -175,6 +175,7 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 	std::string Line{};
 	std::string type{};
+	std::string currentMtlName = ""; // mtl 파일 이름 추가
 
 	int FaceNum{}; // 1,2,3 반복
 
@@ -214,6 +215,17 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 			std::string objName;
 			iss >> objName;
 			object_names.push_back(objName);
+		}
+		// .mtl 파일을 로드하라는 지시어(mtllib) 처리
+		else if (type == "mtllib") {
+		    std::string mtlFileName;
+			iss >> mtlFileName; // .obj 파일 경로를 기준으로 .mtl 파일 로드 함수 호출
+			LoadMtlFile(str, mtlFileName);
+		} 
+		// 사용할 재질을 지정하는 지시어(usemtl) 처리
+			else if (type == "usemtl") {
+			// 현재 사용할 재질의 이름을 저장
+			 iss >> currentMtlName;
 		}
 		else if (type == "f")
 		{
@@ -283,8 +295,17 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 		// 위 find에서 end가 나왔을 경우엔?(map안에 없다는 거)
 		if (it == vertex_map.end())
 		{
-			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성
-			CIlluminatedVertex new_vertex(position, normal, texcoord);
+			// 사용할 색상을 저장할 변수 (기본값은 랜덤 색상)
+			XMFLOAT4 color = RANDOM_COLOR;
+			// 현재 재질 이름(currentMtlName)이 재질 맵(m_mapMaterials)에 있는지 확인
+			if (m_mapMaterials.count(currentMtlName))
+			{
+				// 재질 맵에 있다면 해당 재질의 Kd(확산광) 값을 색상으로 사용
+				color = m_mapMaterials[currentMtlName].Kd;
+			}
+
+			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성 + color 추가
+			CIlluminatedVertex new_vertex(position, normal, texcoord, color);
 
 			// 이 새 정점을 최종 정점 목록에 추가
 			m_Vertexvec.emplace_back(new_vertex);
@@ -375,6 +396,71 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 CReadObjMesh::~CReadObjMesh()
 {
 
+}
+
+// .mtl 파일을 읽어 재질 정보를 파싱하고 m_mapMaterials 맵에 저장하는 함수
+void CReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName)
+{
+	// .obj 파일의 경로를 기준으로 .mtl 파일의 전체 경로를 생성
+	std::string mtlFilePath = objFilePath.substr(0, objFilePath.find_last_of("/\\")) + "/" + mtlFileName;
+	std::ifstream in(mtlFilePath);
+	if (!in) {
+		return; // 파일 열기 실패
+	}
+
+	std::string line;
+	std::string currentMtlName = ""; // 현재 파싱 중인 재질의 이름
+
+	// .mtl 파일을 한 줄씩 읽기
+	while (std::getline(in, line))
+	{
+		std::istringstream iss(line);
+		std::string type;
+		iss >> type;
+
+		// 새로운 재질 정의 시작
+		if (type == "newmtl")
+		{
+			iss >> currentMtlName;
+			m_mapMaterials[currentMtlName] = Material();
+			m_mapMaterials[currentMtlName].name = currentMtlName;
+		}
+		// 확산광(diffuse) 색상 값 (r, g, b)
+		else if (type == "Kd")
+		{
+			if (!currentMtlName.empty())
+			{
+				iss >> m_mapMaterials[currentMtlName].Kd.x >> m_mapMaterials[currentMtlName].Kd.y >> m_mapMaterials[currentMtlName].Kd.z;
+				m_mapMaterials[currentMtlName].Kd.w = 1.0f; // Alpha는 1.0으로 설정
+			}
+		}
+		// 주변광(ambient) 색상 값
+		else if (type == "Ka")
+		{
+			if (!currentMtlName.empty())
+			{
+				iss >> m_mapMaterials[currentMtlName].Ka.x >> m_mapMaterials[currentMtlName].Ka.y >> m_mapMaterials[currentMtlName].Ka.z;
+				m_mapMaterials[currentMtlName].Ka.w = 1.0f;
+			}
+		}
+		// 반사광(specular) 색상 값
+		else if (type == "Ks")
+		{
+			if (!currentMtlName.empty())
+			{
+				iss >> m_mapMaterials[currentMtlName].Ks.x >> m_mapMaterials[currentMtlName].Ks.y >> m_mapMaterials[currentMtlName].Ks.z;
+				m_mapMaterials[currentMtlName].Ks.w = 1.0f;
+			}
+		}
+		// 반사광 지수(shininess)
+		else if (type == "Ns")
+		{
+			if (!currentMtlName.empty())
+			{
+				iss >> m_mapMaterials[currentMtlName].Ns;
+			}
+		}
+	}
 }
 
 
