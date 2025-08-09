@@ -64,6 +64,17 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         }
     }
 
+    Board = std::make_shared<CBoardCube>();
+    BoardMesh = new CReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb" };
+
+    Board->SetMesh(BoardMesh);
+    Board->SetScale(0.01f, 0.01f, 0.01f);
+    Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
+        0.f,
+        ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
+    Board->m_PosX = 0;
+    Board->m_PosY = 0;
+    CObjectManager::GetManager()->PushFloorObejct(Board);
 
     //{
     //    // 플레이어 생성

@@ -48,6 +48,35 @@ struct SkinnedVertex
 	XMFLOAT4 m_xmf4BoneWeights; // 각 뼈로부터 받는 영향(가중치)
 };
 
+struct MeshPrimitive
+{
+	ID3D12Resource* m_pd3dVertexBuffer = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView{};
+
+	ID3D12Resource* m_pd3dIndexBuffer = nullptr;
+	D3D12_INDEX_BUFFER_VIEW m_d3dIndexBufferView{};
+
+	UINT m_nIndices = 0;
+
+	// 나중에 재질(Material) 인덱스도 여기에 저장할 수 있습니다.
+	int m_nMaterialIndex = -1;
+
+	ID3D12Resource* m_pTexture = nullptr; // 텍스처 리소스를 저장할 포인터
+	D3D12_GPU_DESCRIPTOR_HANDLE m_d3dGpuSrvHandle{}; // SRV 핸들을 저장할 변수
+
+	// 소멸자에서 리소스 해제
+	~MeshPrimitive() {
+		if (m_pd3dVertexBuffer)
+			m_pd3dVertexBuffer->Release();
+
+		if (m_pd3dIndexBuffer)
+			m_pd3dIndexBuffer->Release();
+
+		if (m_pTexture)
+			m_pTexture->Release();
+	}
+};
+
 
 // (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
 class CIlluminatedVertex : public CVertex
@@ -86,7 +115,7 @@ private:
 public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
-	void ReleaseUploadBuffers();
+	virtual void ReleaseUploadBuffers();
 
 	virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
 
@@ -173,29 +202,69 @@ private:
 class CReadGlbMesh : public CMesh
 {
 public:
-	CReadGlbMesh() {};
+	CReadGlbMesh() {}
 	virtual ~CReadGlbMesh();
 
 	CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
 
-	// Accessor 정보를 바탕으로 데이터의 시작 포인터와 개수를 가져오는 함수
-	template<typename T> // 템플릿으로 만든는 이유는 추후에 위치 인덱스 뼈 등 다양한 정보를 불러오는데 자료형만 다르기 때문이다.
+	// CMesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
+	// 업로드 버퍼 해제도 오버라이드
+	void ReleaseUploadBuffers() override;
+
+private:
+	// 렌더링에 필요한 데이터는 CReadGlbMesh가 직접 관리
+	std::vector<std::unique_ptr<MeshPrimitive>> m_primitives;
+
+	// 로딩 과정에서만 사용할 멤버 변수들
+	std::vector<Node> m_Nodes;
+	std::vector<ID3D12Resource*> m_vUploadBuffers;
+
+	// 반환값: {픽셀 데이터, 가로 크기, 세로 크기}
+	std::tuple<std::vector<unsigned char>, UINT, UINT> LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex);
+
+	template<typename T>
 	std::pair<T*, size_t> getData(const json& j, const std::vector<char>& binaryData, int accessorIndex)
 	{
+		// --- 방어 코드 1: accessorIndex가 유효한 범위 내에 있는지 확인 ---
+		if (accessorIndex < 0 || !j.contains("accessors") || accessorIndex >= j["accessors"].size()) {
+			std::cerr << "Error: Invalid accessorIndex provided: " << accessorIndex << std::endl;
+			return { nullptr, 0 };
+		}
 		const auto& accessor = j["accessors"][accessorIndex];
-		const auto& bufferView = j["bufferViews"][accessor["bufferView"]];
 
-		// 데이터 시작 위치 계산
-		const char* dataStart = binaryData.data() + bufferView["byteOffset"].get<size_t>();
+		// --- 방어 코드 2: accessor가 "bufferView" 키를 가지고 있는지 확인 ---
+		if (!accessor.contains("bufferView")) {
+			std::cerr << "Error: Accessor " << accessorIndex << " does not contain a bufferView." << std::endl;
+			return { nullptr, 0 };
+		}
+		int bufferViewIndex = accessor["bufferView"];
 
-		// accessor에 byteOffset이 있을 경우 추가로 더해줌
+		// --- 방어 코드 3: bufferViewIndex가 유효한 범위 내에 있는지 확인 ---
+		if (bufferViewIndex < 0 || !j.contains("bufferViews") || bufferViewIndex >= j["bufferViews"].size()) {
+			std::cerr << "Error: Invalid bufferViewIndex found in accessor " << accessorIndex << ": " << bufferViewIndex << std::endl;
+			return { nullptr, 0 };
+		}
+		const auto& bufferView = j["bufferViews"][bufferViewIndex];
+
+		// 기존 방어 코드 (byteOffset 처리)
+		size_t totalOffset = 0;
+		if (bufferView.contains("byteOffset")) {
+			totalOffset += bufferView["byteOffset"].get<size_t>();
+		}
 		if (accessor.contains("byteOffset")) {
-			dataStart += accessor["byteOffset"].get<size_t>();
+			totalOffset += accessor["byteOffset"].get<size_t>();
 		}
 
-		// 데이터 개수
+		const char* dataStart = binaryData.data() + totalOffset;
 		size_t count = accessor["count"];
 
+		// 기존 방어 코드 (메모리 범위 초과 방지)
+		size_t dataSizeInBytes = count * sizeof(T);
+		if ((totalOffset + dataSizeInBytes) > binaryData.size()) {
+			std::cerr << "Error: Data access is out of bounds for the binary buffer." << std::endl;
+			return { nullptr, 0 };
+		}
 		return { reinterpret_cast<T*>(const_cast<char*>(dataStart)), count };
 	}
 };

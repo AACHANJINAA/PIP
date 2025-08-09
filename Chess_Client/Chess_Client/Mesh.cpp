@@ -466,183 +466,368 @@ void CReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string
 
 
 
+// CReadGlbMesh 소멸자: 생성된 모든 Primitive와 업로드 버퍼를 정리합니다.
+CReadGlbMesh::~CReadGlbMesh()
+{
+	m_primitives.clear(); // unique_ptr 벡터가 자동으로 각 Primitive 소멸자 호출
+	for (auto& buffer : m_vUploadBuffers) {
+		if (buffer) buffer->Release();
+	}
+	m_vUploadBuffers.clear();
+}
+
+// 오버라이드된 ReleaseUploadBuffers 함수
+void CReadGlbMesh::ReleaseUploadBuffers()
+{
+	// CReadGlbMesh는 로딩이 끝나면 업로드 버퍼를 모두 해제합니다.
+	for (auto& buffer : m_vUploadBuffers) {
+		if (buffer) buffer->Release();
+	}
+	m_vUploadBuffers.clear();
+
+	// 베이스 클래스의 업로드 버퍼도 혹시 모르니 호출해줄 수 있습니다.
+	CMesh::ReleaseUploadBuffers();
+}
+
+std::tuple<std::vector<unsigned char>, UINT, UINT> CReadGlbMesh::LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex)
+{
+	if (!j.contains("textures") || textureIndex >= j["textures"].size()) return {};
+	const auto& tex = j["textures"][textureIndex];
+
+	if (!tex.contains("source")) return {};
+	int imageIndex = tex["source"];
+
+	if (!j.contains("images") || imageIndex >= j["images"].size()) return {};
+	const auto& img = j["images"][imageIndex];
+
+	if (!img.contains("bufferView")) return {};
+	int bufferViewIndex = img["bufferView"];
+
+	if (!j.contains("bufferViews") || bufferViewIndex >= j["bufferViews"].size()) return {};
+	const auto& bv = j["bufferViews"][bufferViewIndex];
+
+	size_t byteOffset = bv["byteOffset"];
+	size_t byteLength = bv["byteLength"];
+
+	const unsigned char* pImageData = reinterpret_cast<const unsigned char*>(binaryData.data() + byteOffset);
+
+	// WIC를 사용하여 메모리상의 이미지 데이터 디코딩
+	HRESULT hr;
+	IWICImagingFactory* pFactory = nullptr;
+	IWICStream* pStream = nullptr;
+	IWICBitmapDecoder* pDecoder = nullptr;
+	IWICBitmapFrameDecode* pFrame = nullptr;
+	IWICFormatConverter* pConverter = nullptr;
+
+	CoInitialize(NULL);
+	hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFactory));
+	if (FAILED(hr)) { CoUninitialize(); return {}; }
+
+	hr = pFactory->CreateStream(&pStream);
+	if (SUCCEEDED(hr)) hr = pStream->InitializeFromMemory(const_cast<unsigned char*>(pImageData), byteLength);
+	if (SUCCEEDED(hr)) hr = pFactory->CreateDecoderFromStream(pStream, NULL, WICDecodeMetadataCacheOnDemand, &pDecoder);
+	if (SUCCEEDED(hr)) hr = pDecoder->GetFrame(0, &pFrame);
+
+	UINT width, height;
+	if (SUCCEEDED(hr)) hr = pFrame->GetSize(&width, &height);
+
+	if (SUCCEEDED(hr)) hr = pFactory->CreateFormatConverter(&pConverter);
+	if (SUCCEEDED(hr)) hr = pConverter->Initialize(pFrame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, NULL, 0.f, WICBitmapPaletteTypeMedianCut);
+
+	std::vector<unsigned char> pixels(width * height * 4);
+	if (SUCCEEDED(hr)) hr = pConverter->CopyPixels(NULL, width * 4, pixels.size(), pixels.data());
+
+	if (pConverter) pConverter->Release();
+	if (pFrame) pFrame->Release();
+	if (pDecoder) pDecoder->Release();
+	if (pStream) pStream->Release();
+	if (pFactory) pFactory->Release();
+	CoUninitialize();
+
+	if (FAILED(hr)) return {};
+
+	return { std::move(pixels), width, height };
+}
+
+// 오버라이드된 Render 함수: CReadGlbMesh만의 렌더링 로직
+void CReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	for (const auto& primitive : m_primitives)
+	{
+		pd3dCommandList->IASetVertexBuffers(0, 1, &primitive->m_d3dVertexBufferView);
+		pd3dCommandList->IASetIndexBuffer(&primitive->m_d3dIndexBufferView);
+		pd3dCommandList->DrawIndexedInstanced(primitive->m_nIndices, 1, 0, 0, 0);
+	}
+}
+
 CReadGlbMesh::CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
 {
-	// 파일 전체를 읽어올 벡터
+	// --- 1단계: 파일 읽기 및 청크 분리 ---
 	std::vector<char> fileData;
-
-	std::ifstream file("brute_jump.glb", std::ios::binary | std::ios::ate);
+	std::ifstream file(str, std::ios::binary | std::ios::ate);
 	if (!file.is_open()) {
-		std::cerr << "Error: Failed to open brute_jump.glb" << std::endl;
-		return; // 또는 다른 에러 처리
+		std::cerr << "Error: Failed to open " << str << std::endl;
+		return;
 	}
-
-	// 파일 크기를 알아내고 그만큼 벡터 크기 조절
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
 	fileData.resize(size);
-
-	// 파일 내용을 벡터에 한번에 읽기
 	if (!file.read(fileData.data(), size)) {
 		std::cerr << "Error: Failed to read file content." << std::endl;
 		return;
 	}
-
 	file.close();
 
-	std::cout << "Successfully read " << fileData.size() << " bytes from GLB file." << std::endl;
-
-
-	// GLB 파일 구조에 따라 JSON과 BIN 청크를 읽어오는 과정=========================================
-
-	// JSON과 BIN 데이터를 저장할 변수
 	std::string jsonString;
 	std::vector<char> binaryData;
-
-	// 포인터처럼 사용할 현재 위치 변수
 	char* pData = fileData.data();
 
-	// 1. GLB 헤더 읽기 (12바이트)
-	uint32_t magic = *reinterpret_cast<uint32_t*>(pData);
-	pData += 4;
-	uint32_t version = *reinterpret_cast<uint32_t*>(pData);
-	pData += 4;
-	uint32_t length = *reinterpret_cast<uint32_t*>(pData);
-	pData += 4;
+	uint32_t magic = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+	uint32_t version = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+	uint32_t length = *reinterpret_cast<uint32_t*>(pData); pData += 4;
 
 	if (magic != 0x46546C67) { // "glTF"
 		std::cerr << "Error: Not a valid GLB file." << std::endl;
 		return;
 	}
 
-	// 2. 청크 순회 (JSON -> BIN)
 	while (pData < fileData.data() + length) {
-		// 각 청크의 길이와 타입 읽기
-		uint32_t chunkLength = *reinterpret_cast<uint32_t*>(pData);
-		pData += 4;
-		uint32_t chunkType = *reinterpret_cast<uint32_t*>(pData);
-		pData += 4;
-
+		uint32_t chunkLength = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+		uint32_t chunkType = *reinterpret_cast<uint32_t*>(pData); pData += 4;
 		if (chunkType == 0x4E4F534A) { // "JSON"
-			// JSON 데이터를 문자열로 복사
 			jsonString.assign(pData, chunkLength);
-			std::cout << "Found JSON chunk: " << chunkLength << " bytes." << std::endl;
 		}
 		else if (chunkType == 0x004E4942) { // "BIN"
-			// BIN 데이터를 벡터로 복사
 			binaryData.assign(pData, pData + chunkLength);
-			std::cout << "Found BIN chunk: " << chunkLength << " bytes." << std::endl;
 		}
-
-		// 다음 청크로 이동
 		pData += chunkLength;
 	}
 
-	// 최종 확인
-	std::cout << "\nJSON Data:\n" << jsonString.substr(0, 200) << "...\n" << std::endl;
-	std::cout << "Binary data size: " << binaryData.size() << " bytes." << std::endl;
-
-
-
-	// --- JSON 파싱 시작 ---
 	try
 	{
-		// 한 줄 코드로 JSON 문자열 전체를 파싱!
 		auto j = json::parse(jsonString);
 
-		// 이제부터 j 변수를 통해 JSON 데이터에 쉽게 접근할 수 있습니다.
-		std::string version = j["asset"]["version"];
-		std::cout << "JSON Parsed! glTF Version: " << version << std::endl;
-
-		// "scene" 키의 값을 정수로 읽기
-		int scene_id = j["scene"];
-		std::cout << "Default Scene Index: " << scene_id << std::endl;
-
-		// "nodes" 배열 가져오기
-		const auto& nodes = j["nodes"];
-		std::cout << "Number of nodes: " << nodes.size() << std::endl;
-
-		// TODO: 여기서 nodes 배열을 순회하며 데이터를 읽어야 합니다.
-		// 1. 모든 노드 정보를 담을 벡터를 선언합니다.
-		std::vector<Node> nodeVec;
-		nodeVec.resize(nodes.size());
-
-		// 2. nodes 배열을 순회하며 각 노드의 정보를 읽어옵니다.
-		for (size_t i = 0; i < nodes.size(); ++i)
-		{
-			const auto& nodeJson = nodes[i];
-			Node& currentNode = nodeVec[i];
-
-			// 이름 (있을 수도 있고 없을 수도 있음)
-			if (nodeJson.contains("name")) {
-				currentNode.name = nodeJson["name"];
-			}
-
-			// 변환 정보 (있을 경우에만 읽기)
-			if (nodeJson.contains("translation")) {
-				currentNode.translation.x = nodeJson["translation"][0];
-				currentNode.translation.y = nodeJson["translation"][1];
-				currentNode.translation.z = nodeJson["translation"][2];
-			}
-			if (nodeJson.contains("rotation")) {
-				currentNode.rotation.x = nodeJson["rotation"][0];
-				currentNode.rotation.y = nodeJson["rotation"][1];
-				currentNode.rotation.z = nodeJson["rotation"][2];
-				currentNode.rotation.w = nodeJson["rotation"][3];
-			}
-			if (nodeJson.contains("scale")) {
-				currentNode.scale.x = nodeJson["scale"][0];
-				currentNode.scale.y = nodeJson["scale"][1];
-				currentNode.scale.z = nodeJson["scale"][2];
-			}
-
-			// 자식 노드 인덱스 목록
-			if (nodeJson.contains("children")) {
-				for (const auto& childIndex : nodeJson["children"]) {
-					currentNode.childrenIndices.push_back(childIndex);
+		// --- 2단계: 노드 계층 구조 파싱 ---
+		if (j.contains("nodes")) {
+			const auto& nodes = j["nodes"];
+			m_Nodes.resize(nodes.size());
+			for (size_t i = 0; i < nodes.size(); ++i) {
+				const auto& nodeJson = nodes[i];
+				Node& currentNode = m_Nodes[i];
+				if (nodeJson.contains("name")) currentNode.name = nodeJson["name"];
+				if (nodeJson.contains("translation")) {
+					currentNode.translation.x = nodeJson["translation"][0];
+					currentNode.translation.y = nodeJson["translation"][1];
+					currentNode.translation.z = nodeJson["translation"][2];
 				}
+				if (nodeJson.contains("rotation")) {
+					currentNode.rotation.x = nodeJson["rotation"][0];
+					currentNode.rotation.y = nodeJson["rotation"][1];
+					currentNode.rotation.z = nodeJson["rotation"][2];
+					currentNode.rotation.w = nodeJson["rotation"][3];
+				}
+				if (nodeJson.contains("scale")) {
+					currentNode.scale.x = nodeJson["scale"][0];
+					currentNode.scale.y = nodeJson["scale"][1];
+					currentNode.scale.z = nodeJson["scale"][2];
+				}
+				if (nodeJson.contains("children")) {
+					for (const auto& childIndex : nodeJson["children"]) {
+						currentNode.childrenIndices.push_back(childIndex);
+					}
+				}
+				if (nodeJson.contains("mesh")) currentNode.meshIndex = nodeJson["mesh"];
+				if (nodeJson.contains("skin")) currentNode.skinIndex = nodeJson["skin"];
 			}
-
-			// 메시 및 스킨 인덱스
-			if (nodeJson.contains("mesh")) {
-				currentNode.meshIndex = nodeJson["mesh"];
-			}
-			if (nodeJson.contains("skin")) {
-				currentNode.skinIndex = nodeJson["skin"];
+			for (size_t i = 0; i < m_Nodes.size(); ++i) {
+				for (int childIndex : m_Nodes[i].childrenIndices) {
+					if (childIndex >= 0 && childIndex < m_Nodes.size()) {
+						m_Nodes[childIndex].parentIndex = i;
+					}
+				}
 			}
 		}
 
-		// 3. 부모-자식 관계 설정 (부모 인덱스 채우기)
-		for (size_t i = 0; i < nodeVec.size(); ++i)
+		// --- 3단계: 모든 메시 및 텍스처 파싱 ---
+		if (!j.contains("meshes") || j["meshes"].empty()) {
+			std::cout << "Warning: No meshes found in the glTF file." << std::endl;
+			return;
+		}
+
+		XMFLOAT3 modelMin(FLT_MAX, FLT_MAX, FLT_MAX);
+		XMFLOAT3 modelMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+		for (const auto& mesh : j["meshes"])
 		{
-			for (int childIndex : nodeVec[i].childrenIndices)
+			for (const auto& primitiveJson : mesh["primitives"])
 			{
-				if (childIndex >= 0 && childIndex < nodeVec.size()) {
-					nodeVec[childIndex].parentIndex = i;
+				std::vector<SkinnedVertex> vertices;
+				std::vector<UINT> indices;
+
+				int posAccessorIndex = primitiveJson["attributes"]["POSITION"];
+				int indicesAccessorIndex = primitiveJson["indices"];
+				int normalAccessorIndex = primitiveJson.value("/attributes/NORMAL"_json_pointer, -1);
+				int texCoordAccessorIndex = primitiveJson.value("/attributes/TEXCOORD_0"_json_pointer, -1);
+				int jointAccessorIndex = primitiveJson.value("/attributes/JOINTS_0"_json_pointer, -1);
+				int weightAccessorIndex = primitiveJson.value("/attributes/WEIGHTS_0"_json_pointer, -1);
+
+				if (posAccessorIndex == -1 || indicesAccessorIndex == -1) continue;
+
+				auto [positions, posCount] = getData<XMFLOAT3>(j, binaryData, posAccessorIndex);
+				auto [normals, normCount] = (normalAccessorIndex != -1) ? getData<XMFLOAT3>(j, binaryData, normalAccessorIndex) : std::pair<XMFLOAT3*, size_t>(nullptr, 0);
+				auto [texCoords, texCount] = (texCoordAccessorIndex != -1) ? getData<XMFLOAT2>(j, binaryData, texCoordAccessorIndex) : std::pair<XMFLOAT2*, size_t>(nullptr, 0);
+				auto [weights, weightCount] = (weightAccessorIndex != -1) ? getData<XMFLOAT4>(j, binaryData, weightAccessorIndex) : std::pair<XMFLOAT4*, size_t>(nullptr, 0);
+				struct JointType { uint16_t j[4]; };
+				auto [joints, jointCount] = (jointAccessorIndex != -1) ? getData<JointType>(j, binaryData, jointAccessorIndex) : std::pair<JointType*, size_t>(nullptr, 0);
+
+				vertices.resize(posCount);
+				for (size_t i = 0; i < posCount; ++i) {
+					vertices[i].m_xmf3Position = positions[i];
+					if (normals) vertices[i].m_xmf3Normal = normals[i];
+					if (texCoords) vertices[i].m_xmf2TexCoord = texCoords[i];
+					if (joints) vertices[i].m_xmf4BoneIndices = XMFLOAT4((float)joints[i].j[0], (float)joints[i].j[1], (float)joints[i].j[2], (float)joints[i].j[3]);
+					if (weights) vertices[i].m_xmf4BoneWeights = weights[i];
+
+					modelMin.x = min(modelMin.x, positions[i].x);
+					modelMin.y = min(modelMin.y, positions[i].y);
+					modelMin.z = min(modelMin.z, positions[i].z);
+					modelMax.x = max(modelMax.x, positions[i].x);
+					modelMax.y = max(modelMax.y, positions[i].y);
+					modelMax.z = max(modelMax.z, positions[i].z);
 				}
+
+				const auto& indexAccessor = j["accessors"][indicesAccessorIndex];
+				size_t indicesCount = indexAccessor["count"];
+				indices.resize(indicesCount);
+				if (indexAccessor["componentType"] == 5123) {
+					auto [indices_u16, count] = getData<uint16_t>(j, binaryData, indicesAccessorIndex);
+					for (size_t i = 0; i < count; ++i) indices[i] = indices_u16[i];
+				}
+				else if (indexAccessor["componentType"] == 5125) {
+					auto [indices_u32, count] = getData<uint32_t>(j, binaryData, indicesAccessorIndex);
+					indices.assign(indices_u32, indices_u32 + count);
+				}
+
+				auto newPrimitive = std::make_unique<MeshPrimitive>();
+				ID3D12Resource* pVertexUploadBuffer = nullptr;
+				ID3D12Resource* pIndexUploadBuffer = nullptr;
+
+				newPrimitive->m_nIndices = indices.size();
+
+				newPrimitive->m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, vertices.data(), sizeof(SkinnedVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &pVertexUploadBuffer);
+				newPrimitive->m_d3dVertexBufferView.BufferLocation = newPrimitive->m_pd3dVertexBuffer->GetGPUVirtualAddress();
+				newPrimitive->m_d3dVertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
+				newPrimitive->m_d3dVertexBufferView.SizeInBytes = sizeof(SkinnedVertex) * vertices.size();
+
+				newPrimitive->m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, indices.data(), sizeof(UINT) * indices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &pIndexUploadBuffer);
+				newPrimitive->m_d3dIndexBufferView.BufferLocation = newPrimitive->m_pd3dIndexBuffer->GetGPUVirtualAddress();
+				newPrimitive->m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+				newPrimitive->m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
+
+				m_vUploadBuffers.push_back(pVertexUploadBuffer);
+				m_vUploadBuffers.push_back(pIndexUploadBuffer);
+
+				if (primitiveJson.contains("material")) {
+					newPrimitive->m_nMaterialIndex = primitiveJson["material"];
+					const auto& mat = j["materials"][newPrimitive->m_nMaterialIndex];
+					if (mat.contains("pbrMetallicRoughness") && mat["pbrMetallicRoughness"].contains("baseColorTexture")) {
+						int textureIndex = mat["pbrMetallicRoughness"]["baseColorTexture"]["index"];
+						auto [pixels, width, height] = LoadImageFromGLB(j, binaryData, textureIndex);
+
+						if (!pixels.empty()) {
+							D3D12_RESOURCE_DESC textureDesc = {};
+							textureDesc.MipLevels = 1;
+							textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+							textureDesc.Width = width;
+							textureDesc.Height = height;
+							textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+							textureDesc.DepthOrArraySize = 1;
+							textureDesc.SampleDesc.Count = 1;
+							textureDesc.SampleDesc.Quality = 0;
+							textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
+
+							D3D12_HEAP_PROPERTIES d3dHeapProperties = {};
+							d3dHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+							d3dHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+							d3dHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+							d3dHeapProperties.CreationNodeMask = 1;
+							d3dHeapProperties.VisibleNodeMask = 1;
+
+							pd3dDevice->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &textureDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&newPrimitive->m_pTexture));
+
+							UINT64 uploadBufferSize;
+							D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout;
+							pd3dDevice->GetCopyableFootprints(&textureDesc, 0, 1, 0, &layout, nullptr, nullptr, &uploadBufferSize);
+
+							ID3D12Resource* pTextureUploadHeap = nullptr;
+							pTextureUploadHeap = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, uploadBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+							D3D12_SUBRESOURCE_DATA textureData = {};
+							textureData.pData = pixels.data();
+							textureData.RowPitch = width * 4;
+							textureData.SlicePitch = textureData.RowPitch * height;
+
+
+							// 1. 업로드 힙을 매핑하여 CPU가 쓸 수 있는 포인터를 얻습니다.
+							void* pMappedData = nullptr;
+							pTextureUploadHeap->Map(0, nullptr, &pMappedData);
+
+							// 2. 픽셀 데이터를 한 줄씩 복사합니다. (GPU 메모리 정렬을 위해 단순 memcpy가 아님)
+							//    layout.Footprint.RowPitch는 GPU가 요구하는 한 줄의 실제 바이트 크기입니다.
+							//    textureData.RowPitch는 우리 이미지 데이터의 한 줄 크기입니다.
+							BYTE* pDest = (BYTE*)pMappedData;
+							BYTE* pSrc = (BYTE*)textureData.pData;
+							for (UINT i = 0; i < height; ++i)
+							{
+								memcpy(pDest, pSrc, textureData.RowPitch);
+								pDest += layout.Footprint.RowPitch; // GPU 메모리 레이아웃에 맞춰 포인터 이동
+								pSrc += textureData.RowPitch;      // 소스 데이터 포인터 이동
+							}
+
+							// 3. 매핑을 해제합니다.
+							pTextureUploadHeap->Unmap(0, nullptr);
+
+							// 4. 업로드 힙 -> 디폴트 힙으로의 복사 명령을 커맨드 리스트에 기록합니다.
+							D3D12_TEXTURE_COPY_LOCATION destLocation = {};
+							destLocation.pResource = newPrimitive->m_pTexture;
+							destLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+							destLocation.SubresourceIndex = 0;
+
+							D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
+							srcLocation.pResource = pTextureUploadHeap;
+							srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+							srcLocation.PlacedFootprint = layout; // GetCopyableFootprints로 얻은 레이아웃 정보 사용
+
+							pd3dCommandList->CopyTextureRegion(&destLocation, 0, 0, 0, &srcLocation, nullptr);
+
+
+							D3D12_RESOURCE_BARRIER d3dResourceBarrier = {};
+							d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+							d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+							d3dResourceBarrier.Transition.pResource = newPrimitive->m_pTexture;
+							d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+							d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+							d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+							pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
+
+							m_vUploadBuffers.push_back(pTextureUploadHeap);
+
+							// TODO: SRV 생성 및 newPrimitive->m_d3dGpuSrvHandle에 핸들 저장
+						}
+					}
+				}
+				m_primitives.push_back(std::move(newPrimitive));
 			}
 		}
-
-		// 이제 nodeVec 안에 모든 노드의 정보와 계층 구조가 완성되었습니다!
-		// 테스트: 루트 노드 중 하나의 이름을 출력해봅시다.
-		// brute_jump.glb 파일의 경우 scene[0].nodes[0] 은 0번 노드입니다.
-		int rootNodeIndex = j["scenes"][0]["nodes"][0];
-		std::cout << "Root Node Name: " << nodeVec[rootNodeIndex].name << std::endl;
-
-		// m_Nodes 멤버 변수에 최종 결과 저장 (클래스 멤버 변수로 선언 필요)
-		// m_Nodes = std::move(nodeVec);
+		m_xmOOBB = CreateOOBB(modelMin, modelMax);
 	}
-	catch (json::parse_error& e)
-	{
+	catch (json::parse_error& e) {
 		std::cerr << "JSON parse error: " << e.what() << std::endl;
 		return;
 	}
-
-}
-
-CReadGlbMesh::~CReadGlbMesh()
-{
-
 }
 
 CReadFbxMesh::CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
