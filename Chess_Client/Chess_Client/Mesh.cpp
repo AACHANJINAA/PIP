@@ -952,12 +952,19 @@ void CReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device*
 		}
 
 		// 확산 텍스처 경로 가져오기 (첫 번째 텍스처 채널)
-		// GetTexture 함수는 aiTextureType_DIFFUSE와 같은 aiTextureType 값을 첫 번째 인자로 받습니다.
-		if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath)) // 두 번째 인자는 텍스처 인덱스(보통 0)
+		if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
 		{
-			// 텍스처 경로를 클래스 멤버 변수에 저장 (단순화를 위해 첫 번째 메쉬의 텍스처만 저장)
-			// 실제 프로젝트에서는 여러 메쉬가 다른 텍스처를 가질 수 있으므로 더 복잡한 구조가 필요합니다.
-			m_texturePath = texturePath.C_Str();
+			// 텍스처 경로가 내장 텍스처를 가리키는지 확인 (예: "*0", "*1" 등)
+			if (texturePath.C_Str()[0] == '*')
+			{
+				// 내장 텍스처인 경우: m_texturePath에 내장 텍스처 인덱스/이름 저장
+				m_texturePath = texturePath.C_Str();
+			}
+			else
+			{
+				// 외부 텍스처인 경우: m_texturePath에 외부 파일 경로 저장
+				m_texturePath = texturePath.C_Str();
+			}
 		}
 
 		vertices.push_back(vertex);

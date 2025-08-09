@@ -165,12 +165,12 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 		CMesh* Chess_Mesh = new CReadFbxMesh{
 			CGameFramework::Instance()->GetDevice().Get(),
 			CGameFramework::Instance()->GetCommandList().Get(),
-			"Resource/Character/test_mesh.obj" };
+			"Resource/Test/testfbx_texture_included.fbx" };
 
 		// 색 설정
 		//Chess_Mesh->ChangeColor(CGameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
 		my_king->SetMesh(Chess_Mesh);
-		my_king->SetScale(1.f, 1.f, 1.f);
+		my_king->SetScale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
 		CObjectManager::GetManager()->PushObject(my_king);
