@@ -6,29 +6,32 @@ namespace chess::packet
 {
     constexpr short SERVER_PORT = 3000;
 
-	enum class PacketType : uint16_t
-    {
-        error = 0,
-        
-        C2S_P_LOGIN = 11,
+	enum class PacketType : uint16_t {
+		error = 0,
+
+		C2S_P_LOGIN = 11,
 		S2C_P_LOGIN_ACK = 14,
-        S2C_P_LEAVE = 12,
-        S2C_P_SPAWN_PLAYER = 13,
+		S2C_P_LEAVE = 12,
+		S2C_P_SPAWN_PLAYER = 13,
 
-        S2C_P_MOVE = 91,
-        C2S_P_MOVE = 92,
+		S2C_P_MOVE = 91,
+		C2S_P_MOVE = 92,
 
-        C2S_P_ATTACK = 101,
-        S2C_P_ATTACK = 102,
+		C2S_P_ATTACK = 101,
+		S2C_P_ATTACK = 102,
 
-        C2S_P_ENTER_ROOM = 201,
+		C2S_P_ENTER_ROOM = 201,
 		S2C_P_ENTER_ROOM_ACK = 202,
-        C2S_P_ROOM_LIST = 203,
-        S2C_P_ROOM_LIST_ACK = 204,
+		C2S_P_ROOM_LIST = 203,
+		S2C_P_ROOM_LIST_ACK = 204,
 
-        C2S_P_CHAT_IN_ROOM = 301,    // 클라 -> 서버: 방 내부 채팅 메시지
-        S2C_P_CHAT_IN_ROOM = 302,    // 서버 -> 클라: 방 내부 채팅 메시지 전달
+		C2S_P_CHAT_IN_ROOM = 301, // 클라 -> 서버: 방 내부 채팅 메시지
+		S2C_P_CHAT_IN_ROOM = 302, // 서버 -> 클라: 방 내부 채팅 메시지 전달
+
 	};
+
+    
+
 
     constexpr char MAX_ID_LENGTH = 20;
 

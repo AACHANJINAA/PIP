@@ -22,18 +22,23 @@
 
 #define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
 
-#ifdef ENABLE_DEBUG_LOG
 
-#define __FILENAME__ (std::filesystem::path(__FILE__).filename().string())
+#ifdef _DEBUG
+	#ifdef ENABLE_DEBUG_LOG
+		#define __FILENAME__ (std::filesystem::path(__FILE__).filename().string())
 
-#define LOG_HELPER(file, line, message) std::cout << "[" << std::filesystem::path(file).filename().string() << ":" << line << "] " << message << std::endl
-#define LOG(message) LOG_HELPER(__FILE__, __LINE__, message)
-#define ERROR(message) do { LOG_HELPER(__FILE__, __LINE__, message); __debugbreak(); } while(0)
-
+		#define LOG_HELPER(file, line, message) std::cout << "[" << std::filesystem::path(file).filename().string() << ":" << line << "] " << message << std::endl
+		#define LOG(message) LOG_HELPER(__FILE__, __LINE__, message)
+		#define ERROR(message) do { LOG_HELPER(__FILE__, __LINE__, message); __debugbreak(); } while(0)
+	#else
+		#define LOG(message)
+		#define ERROR(message)
+	#endif // ENABLE_DEBUG_LOG
 #else 
-#define LOG(message)
-#define ERROR(message)
-#endif
+	#define LOG(message)
+	#define ERROR(message)
+#endif // DEBUG
+
 template <typename T>
 class Singleton
 {

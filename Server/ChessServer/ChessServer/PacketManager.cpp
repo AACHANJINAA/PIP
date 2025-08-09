@@ -19,8 +19,8 @@ namespace chess::packet
         packet::PacketHeader header = stream.PeekHeader();
 
 		server::SESSION_STATE sessionState = session->_state;
-        LOG("[DISPATCHER] Dispatching packet type " << static_cast<int>(header._type) << " for Session ID : " 
-            << session->_id << " in state " << static_cast<int>(sessionState));
+       // LOG("[DISPATCHER] Dispatching packet type " << static_cast<int>(header._type) << " for Session ID : " 
+       //     << session->_id << " in state " << static_cast<int>(sessionState));
 
 		bool bIsValidPacket = false;
 
@@ -50,14 +50,14 @@ namespace chess::packet
                 }
                 break;
 			default:
-                LOG("[DISPATCHER] **ERROR**: Invalid session state " << static_cast<int>(sessionState) 
+                ERROR("[DISPATCHER] **ERROR**: Invalid session state " << static_cast<int>(sessionState) 
 					<< " for packet type " << static_cast<int>(header._type) << " from session " << session->_id);
                 break;
         }
 
         if (!bIsValidPacket)
         {
-            LOG("[DISPATCHER] **ERROR**: Invalid packet " << static_cast<int>(header._type) << "from session " 
+            ERROR("[DISPATCHER] **ERROR**: Invalid packet " << static_cast<int>(header._type) << "from session " 
                 << session->_id << " in state " << static_cast<int>(sessionState));
                 return;
         }
@@ -66,13 +66,12 @@ namespace chess::packet
         auto it = _handlers.find(header._type);
         if (it != _handlers.end())
         {
-            LOG("[DISPATCHER] Handler found for type " << static_cast<int>(header._type) << "Calling handler function.");
+            //LOG("[DISPATCHER] Handler found for type " << static_cast<int>(header._type) << "Calling handler function.");
             it->second(session, stream);
         }
         else
         {
-            LOG("[DISPATCHER] **ERROR**: No handler found for packet type " << static_cast<int
-            >(header._type));
+            ERROR("[DISPATCHER] **ERROR**: No handler found for packet type " << static_cast<int>(header._type));
         }
     }
 }

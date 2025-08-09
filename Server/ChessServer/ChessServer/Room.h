@@ -23,6 +23,8 @@ namespace chess::server
 		// 방에 있는 모든 플레이어에게 패킷을 전송 (브로드캐스팅)
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
 
+		void SendAllPlayersInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
+
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
 		int GetPlayerCount() const { return _players.size(); }

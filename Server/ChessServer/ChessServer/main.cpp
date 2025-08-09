@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "CommonHeader.h"
-#include "Packet.h"
 #include "PacketManager.h"
 #include "server.h"
 
@@ -26,9 +25,6 @@ int main()
     chess::packet::PacketManager::Instance()->Initialize();
 	std::cout << "PacketManager Initialized." << std::endl;
 
-	
-
-
     // I/O 스레드는 2개, 로직 스레드는 나머지 CPU 코어 수만큼 할당합니다.
 	// (최소 1개의 로직 스레드는 보장)
 	int total_cores = std::thread::hardware_concurrency();
@@ -37,7 +33,6 @@ int main()
 
     // 서버 스탈트!
     server::Server::Instance()->Start(io_thread_count, logic_thread_count);
-
 
     // 서버가 종료될 때까지 대기 (콘솔에서 Enter 키를 누르면 종료)
 	std::cout << "Press Enter to stop the server..." << std::endl;
