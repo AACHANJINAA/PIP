@@ -57,9 +57,9 @@ public:
 	std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& GetAllObject() { return m_AllObject; }
 
 	std::list<std::shared_ptr<CGameObject>>& GetObjectVec() { return m_AllObject[0]; } 
-	std::list<std::shared_ptr<CGameObject>>& GetEnemyBulletVec() { return  m_AllObject[1]; }
+	std::list<std::shared_ptr<CGameObject>>& GetEnemy() { return  m_AllObject[1]; }
 	std::list<std::shared_ptr<CGameObject>>& GetPlayerBulletVec() { return  m_AllObject[2]; }
-	std::list<std::shared_ptr<CGameObject>>& GetEnemy() { return  m_AllObject[3]; }
+	std::list<std::shared_ptr<CGameObject>>& GetEnemyBulletVec() { return  m_AllObject[3]; }
 	std::list<std::shared_ptr<CGameObject>>& GetFloor() { return  m_AllObject[4]; }
 
 	CGameObject* Terrain{};

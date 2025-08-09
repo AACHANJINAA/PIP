@@ -108,8 +108,8 @@ void CObjectManager::ChangeRoom()
 	m_Player = nullptr; 
 	DeleteVec(0);
 	DeleteVec(1);
-	DeleteVec(2);
-	DeleteVec(3);
+	//DeleteVec(2);
+	//DeleteVec(3);
 }
 
 void CObjectManager::PushObject(std::shared_ptr<CGameObject> object)
@@ -117,7 +117,7 @@ void CObjectManager::PushObject(std::shared_ptr<CGameObject> object)
 	m_AllObject[0].push_back(object);
 }
 
-void CObjectManager::PushEnemyBullet(std::shared_ptr<CGameObject> object)
+void CObjectManager::PushEnemy(std::shared_ptr<CGameObject> object)
 {
 	m_AllObject[1].push_back(object);
 }
@@ -127,7 +127,7 @@ void CObjectManager::PushPlayerBullet(std::shared_ptr<CGameObject> object)
 	m_AllObject[2].push_back(object);
 }
 
-void CObjectManager::PushEnemy(std::shared_ptr<CGameObject> object)
+void CObjectManager::PushEnemyBullet(std::shared_ptr<CGameObject> object)
 {
 	m_AllObject[3].push_back(object);
 }
