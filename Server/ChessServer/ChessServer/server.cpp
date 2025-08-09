@@ -60,24 +60,24 @@ namespace chess::server
 	}
 	void SESSION::OnRecv(size_t len, Server* server_ptr)
 	{
-		LOG("[OnRecv] Session " << _id << " received " << len << " bytes. Current buffer size: " << _recv_buffer.size());
+		//LOG("[OnRecv] Session " << _id << " received " << len << " bytes. Current buffer size: " << _recv_buffer.size());
 		_recv_buffer.insert(_recv_buffer.end(), _recv_over._buffer.data(), _recv_over._buffer.data() + len);
-		LOG("[OnRecv] Buffer size after insert: " << _recv_buffer.size());
+		//LOG("[OnRecv] Buffer size after insert: " << _recv_buffer.size());
 		size_t processed_bytes = 0;
 		while (true)
 		{
 			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader))
 			{
-				LOG("[OnRecv] Not enough data for a header. Breaking loop.");
+				//LOG("[OnRecv] Not enough data for a header. Breaking loop.");
 				break;
 			}
 			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
-			LOG("[OnRecv] Parsing header at offset " << processed_bytes << ". Header size: " << header->_size << ", type: " << static_cast<int>(header->_type));
+			//LOG("[OnRecv] Parsing header at offset " << processed_bytes << ". Header size: " << header->_size << ", type: " << static_cast<int>(header->_type));
 
 			constexpr int MAX_PACKET_SIZE = 4096;
 			if (header->_size < sizeof(packet::PacketHeader) || header->_size > MAX_PACKET_SIZE)
 			{
-				LOG("[Hacking] Session " << _id << " sent an invalid packet size: " << header->_size << ". Closing session.");
+				//LOG("[Hacking] Session " << _id << " sent an invalid packet size: " << header->_size << ". Closing session.");
 				_recv_buffer.clear();
 				break;
 			}
@@ -103,7 +103,7 @@ namespace chess::server
 		if (processed_bytes > 0)
 		{
 			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
-			LOG("[OnRecv] Erased " << processed_bytes << " bytes from buffer. Remaining size: " << _recv_buffer.size());
+			//LOG("[OnRecv] Erased " << processed_bytes << " bytes from buffer. Remaining size: " << _recv_buffer.size());
 		}
 	}
 

@@ -15,33 +15,10 @@ namespace chess::server
 	void Room::AddPlayer(std::shared_ptr<SESSION> new_player)
 	{
 		if (new_player == nullptr) return;
-
-		// 1. 새로 들어온 플레이어에게 방에 있던 기존 플레이어들의 정보를 전송
-		//    (new_player가 방에 추가되기 전의 _players 목록을 사용)
-		for (auto const& [player_id, existing_player] : _players)
-		{
-			if (existing_player)
-			{
-				packet::PacketStream spawn_stream = packet::MakeSpawnPlayerPacket(existing_player);
-				new_player->do_send(spawn_stream.mutable_data(), spawn_stream.Size());
-			}
-		}
-		packet::PacketStream new_spawn_stream = packet::MakeSpawnPlayerPacket(new_player);
-
-		// 2. 플레이어 목록에 추가 (이 시점에서 new_player는 이제 방의 멤버가 됩니다)
 		_players.insert({ new_player->_id, new_player });
 		LOG("Player " << new_player->_id << " added to Room " << _room_id << ". Total: " << _players.size());
-
-
-		new_player->do_send(new_spawn_stream.mutable_data(), new_spawn_stream.Size()); // 자기 자신에게 스폰 패킷 전송
-
-		// 3. 방에 있던 기존 플레이어들에게 새로운 플레이어의 입장을 알림
-		//    (new_player가 포함된 _players 목록을 사용)
-		// 자신을 제외하고 브로드캐스트 (new_player는 이미 위에서 기존 플레이어 정보를 받았으므로)
-		Broadcast(new_spawn_stream.constable_data(), new_spawn_stream.Size(), new_player->_id);
-
-		// 4. 게임 시작 조건 확인
-		if (_room_state == RoomState::WAITING /*&& GetPlayerCount() == _max_players*/)
+		
+		if (_room_state == RoomState::WAITING)
 		{
 			StartGame();
 		}
@@ -51,14 +28,6 @@ namespace chess::server
 		auto it = _players.find(player_id);
 		if (it != _players.end())
 		{
-			// 1. 방에 남은 플레이어들에게 나간 유저의 정보를 알림
-			packet::SC_PACKET_LEAVE leave_packet;
-			leave_packet._type = packet::PacketType::S2C_P_LEAVE;
-			leave_packet._size = sizeof(packet::SC_PACKET_LEAVE);
-			leave_packet._id = player_id;
-			Broadcast(reinterpret_cast<const char*>(&leave_packet), leave_packet._size);
-
-			// 2. 플레이어 목록에서 제거
 			_players.erase(it);
 			LOG("Player " << player_id << " removed from Room " << _room_id << ". Total: " << _players.size());
 		}
@@ -80,13 +49,32 @@ namespace chess::server
 
 	void Room::Broadcast(const char* data, size_t size, long long except_id)
 	{
+		packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(const_cast<char*>(data));
+
+		LOG("[Room::Broadcast] Room " << _room_id << " broadcasting packet type " << static_cast<int
+		>(header->_type) << ". Except ID: " << except_id);
+
 		for (auto const& [player_id, player_session] : _players)
 		{
 			if (player_session && player_id != except_id)
 			{
 				player_session->do_send(data, size);
+				LOG("[Room::Broadcast]   -> Sent to player ID: " << player_id);
 			}
 		}
+	}
+
+	void Room::SendAllPlayersInfoToNewPlayer(std::shared_ptr<SESSION> new_player)
+	{
+		for (auto const& [player_id, existing_player] : _players)
+		{
+		    if (existing_player)
+		    {
+		    	packet::PacketStream spawn_stream = packet::MakeSpawnPlayerPacket(existing_player);
+		    	new_player->do_send(spawn_stream.mutable_data(), spawn_stream.Size());
+		    	LOG("[Room] Sent SPAWN_PLAYER of " << player_id << " to new session " << new_player->_id);
+		    }
+		 }
 	}
 
 	void Room::HandleAttack(std::shared_ptr<SESSION> attacker)

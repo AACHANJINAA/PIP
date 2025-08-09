@@ -125,8 +125,7 @@ void ClientPacketManager::HANDLE_S2C_LOGIN_ACK(chess::packet::PacketStream& stre
 	if (ack_packet._success)
 	{
 		_my_session_id = ack_packet._my_session_id; // [핵심] 자신의 ID 저장
-		CLOG(L"[S->C] Login successful! My Session ID: %lld", _my_session_id);
-		// 이제 클라이언트는 자신의 ID를 알게 됩니다.
+		CLOG(L"[S->C] Login successful! My Session ID is now: %lld", _my_session_id);
 	}
 	else
 	{
@@ -152,6 +151,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 	// 패킷의 ID가 내 플레이어 ID와 같은지 확인합니다.
 	if (spawn_data._id == _my_session_id)
 	{
+		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (CChess_King).");
 		// 내 플레이어 정보 업데이트
 		std::shared_ptr<CChess_King> my_king = std::make_shared<CChess_King>();
 		my_king->SetPos(spawn_data._x, spawn_data._y);
@@ -177,6 +177,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 	}
 	else
 	{
+		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (COther_King).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		std::shared_ptr<COther_King> other_king = std::make_shared<COther_King>(spawn_data._x, spawn_data._y);
 		other_king->SetID(spawn_data._id);
@@ -274,13 +275,13 @@ void ClientPacketManager::HANDLE_S2C_ROOM_LIST_ACK(chess::packet::PacketStream& 
 	chess::packet::SC_PACKET_ROOM_LIST_ACK room_list_ack;
 	stream >> room_list_ack; // room_count만 읽습니다.
 
-	CLOG(L"[S->C] Received room list! Room count: %hu", room_list_ack._room_count);
+	//CLOG(L"[S->C] Received room list! Room count: %hu", room_list_ack._room_count);
 
 	for (int i = 0; i < room_list_ack._room_count; ++i) // 읽어온 room_count 사용
 	{
 		chess::packet::RoomInfo room_info;
 		stream >> room_info; // RoomInfo 구조체 하나를 읽습니다.
-		CLOG(L"  - Room ID: %d, Players: %u", room_info._room_id, static_cast<unsigned int>(room_info._player_count));
+		//CLOG(L"  - Room ID: %d, Players: %u", room_info._room_id, static_cast<unsigned int>(room_info._player_count));
 	}
 }
 void ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream& stream)
@@ -293,7 +294,7 @@ void ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream&
 
 	if (ack_packet._success) // 읽어온 success 사용
 	{
-		CLOG(L"[S->C] Successfully entered room %d!", ack_packet._room_id); // 읽어온 room_id 사용
+		//CLOG(L"[S->C] Successfully entered room %d!", ack_packet._room_id); // 읽어온 room_id 사용
 		//gGameFramework.ChangeScene(CGameFramework::SceneType::InGame); // 게임 씬으로 전환
 	}
 	else
