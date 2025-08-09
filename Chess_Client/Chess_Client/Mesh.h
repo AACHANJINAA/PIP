@@ -139,6 +139,15 @@ public:
 
 };
 
+struct Material                                                                                                                                          
+{                                                                                                                                              
+	std::string name;
+	XMFLOAT4 Ka; // Ambient
+	XMFLOAT4 Kd; // Diffuse
+	XMFLOAT4 Ks; // Specular
+	float Ns;    // Specular Exponent 
+};
+
 class CReadObjMesh : public CMesh
 {
 public:
@@ -151,6 +160,10 @@ public:
 
 
 	virtual ~CReadObjMesh();
+
+private:
+	std::map<std::string, Material> m_mapMaterials;
+	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
 };
 
 class CReadGlbMesh : public CMesh
