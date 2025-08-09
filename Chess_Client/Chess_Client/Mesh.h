@@ -1,6 +1,10 @@
 #pragma once
 #include "stdafx.h"
 #include "json.hpp"
+#include <assimp/Importer.hpp>      // Assimp 로더
+#include <assimp/scene.h>           // Assimp scene 객체
+#include <assimp/postprocess.h>     // Assimp 후처리 옵션
+#include <assimp/material.h> // AI_MATKEY_TEXTURE_DIFFUSE, AI_MATKEY_COLOR_DIFFUSE 정의 포함
 // nlohmann/json 헤더 // json 파싱 위해 추가
 using json = nlohmann::json;
 
@@ -194,4 +198,21 @@ public:
 
 		return { reinterpret_cast<T*>(const_cast<char*>(dataStart)), count };
 	}
+};
+
+class CReadFbxMesh : public CMesh
+{
+public:
+	CReadFbxMesh() {};
+	CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+	virtual ~CReadFbxMesh();
+
+private:
+	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
+	void ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	// Assimp Mesh를 처리하여 정점/인덱스 데이터를 추출하는 함수
+	void ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+
+private:
+	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
 };

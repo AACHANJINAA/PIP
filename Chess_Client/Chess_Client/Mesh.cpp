@@ -644,3 +644,153 @@ CReadGlbMesh::~CReadGlbMesh()
 {
 
 }
+
+CReadFbxMesh::CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+{
+	// Assimp Importer 객체 생성
+	Assimp::Importer importer;
+
+	// 파일을 읽어 Assimp의 scene 객체로 변환
+	// aiProcess_Triangulate: 모든 면을 삼각형으로 분할
+	// aiProcess_FlipUVs: UV(텍스처 좌표)의 y축을 뒤집기
+	// aiProcess_CalcTangentSpace: 탄젠트와 바이탄젠트 계산
+	const aiScene* pScene = importer.ReadFile(str, aiProcess_Triangulate | aiProcess_FlipUVs |
+		aiProcess_CalcTangentSpace);
+
+	// 파일 읽기 실패 시 처리
+	if (!pScene || pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !pScene->mRootNode)
+	{
+		// 에러 로그 출력
+		OutputDebugStringA(importer.GetErrorString());
+		return;
+	}
+
+	// 루트 노드부터 시작하여 모든 노드를 재귀적으로 처리
+	ProcessNode(pScene->mRootNode, pScene, pd3dDevice, pd3dCommandList);
+
+	// --- 모든 메쉬 데이터 처리가 끝난 후, 최종 버퍼 생성 ---
+
+	m_nStride = sizeof(CIlluminatedVertex);
+	m_nVertices = m_Vertexvec.size();
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	// 정점 버퍼 생성
+	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(),
+		m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+		&m_pd3dVertexUploadBuffer);
+
+	// 인덱스 버퍼 생성
+	m_nIndices = m_Indexvec.size();
+	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(),
+		sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
+		&m_pd3dIndexUploadBuffer);
+
+	// 정점 버퍼 뷰 설정
+	m_d3dVertexBufferView.BufferLocation = m_pd3dVertexBuffer->GetGPUVirtualAddress();
+	m_d3dVertexBufferView.StrideInBytes = m_nStride;
+	m_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
+
+	// 인덱스 버퍼 뷰 설정
+	m_d3dIndexBufferView.BufferLocation = m_pd3dIndexBuffer->GetGPUVirtualAddress();
+	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+}
+
+CReadFbxMesh::~CReadFbxMesh()
+{
+	// 소멸자
+}
+
+void CReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	// 현재 노드에 포함된 모든 메쉬를 처리
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		ProcessMesh(mesh, scene, pd3dDevice, pd3dCommandList);
+	}
+
+	// 현재 노드의 모든 자식 노드에 대해 재귀적으로 이 함수를 호출
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		ProcessNode(node->mChildren[i], scene, pd3dDevice, pd3dCommandList);
+	}
+}
+
+void CReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice,
+	ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	// 현재 메쉬의 정점 정보를 임시로 담을 벡터
+	std::vector<CIlluminatedVertex> vertices;
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+	{
+		CIlluminatedVertex vertex;
+
+		// 위치 (Position)
+		vertex.m_xmf3Position.x = mesh->mVertices[i].x;
+		vertex.m_xmf3Position.y = mesh->mVertices[i].y;
+		vertex.m_xmf3Position.z = mesh->mVertices[i].z;
+
+		// 법선 (Normal)
+		if (mesh->HasNormals())
+		{
+			vertex.m_xmf3Normal.x = mesh->mNormals[i].x;
+			vertex.m_xmf3Normal.y = mesh->mNormals[i].y;
+			vertex.m_xmf3Normal.z = mesh->mNormals[i].z;
+		}
+
+		// 텍스처 좌표 (Texture Coordinate)
+		if (mesh->mTextureCoords[0]) // 텍스처 좌표 채널이 존재하는지 확인
+		{
+			vertex.m_xmf2Texcoord.x = mesh->mTextureCoords[0][i].x;
+			vertex.m_xmf2Texcoord.y = mesh->mTextureCoords[0][i].y;
+		}
+		else
+		{
+			vertex.m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f);
+		}
+
+		// 재질 정보 처리
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		aiColor4D diffuseColor;
+		aiString texturePath;
+
+		// 확산 색상 가져오기 (없으면 흰색 기본값)
+		if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
+		{
+			vertex.m_xmf4Diffuse = XMFLOAT4(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+		}
+		else
+		{
+			vertex.m_xmf4Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 기본 흰색
+		}
+
+		// 확산 텍스처 경로 가져오기 (첫 번째 텍스처 채널)
+		// GetTexture 함수는 aiTextureType_DIFFUSE와 같은 aiTextureType 값을 첫 번째 인자로 받습니다.
+		if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath)) // 두 번째 인자는 텍스처 인덱스(보통 0)
+		{
+			// 텍스처 경로를 클래스 멤버 변수에 저장 (단순화를 위해 첫 번째 메쉬의 텍스처만 저장)
+			// 실제 프로젝트에서는 여러 메쉬가 다른 텍스처를 가질 수 있으므로 더 복잡한 구조가 필요합니다.
+			m_texturePath = texturePath.C_Str();
+		}
+
+		vertices.push_back(vertex);
+	}
+
+	// 현재 메쉬의 인덱스 정보를 임시로 담을 벡터
+	// FBX의 모든 면(face)을 순회하며 인덱스를 가져옴
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	{
+		aiFace face = mesh->mFaces[i];
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+		{
+			// 전체 인덱스 벡터에 현재 메쉬의 인덱스를 추가
+			// 이 때, 이미 추가된 정점 수를 더해줘서 전체 정점 배열에 맞는 인덱스가 되도록 함
+			m_Indexvec.push_back(face.mIndices[j] + m_Vertexvec.size());
+		}
+	}
+
+	// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
+	m_Vertexvec.insert(m_Vertexvec.end(), vertices.begin(), vertices.end());
+}

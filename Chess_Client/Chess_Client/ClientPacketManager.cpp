@@ -158,13 +158,17 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
 		my_king->SetID(_my_session_id); // 내 플레이어 ID 설정
-		CMesh* Chess_Mesh = new CReadObjMesh{
+		/*CMesh* Chess_Mesh = new CReadObjMesh{
+			CGameFramework::Instance()->GetDevice().Get(),
+			CGameFramework::Instance()->GetCommandList().Get(),
+			"Resource/Character/test_mesh.obj" };*/
+		CMesh* Chess_Mesh = new CReadFbxMesh{
 			CGameFramework::Instance()->GetDevice().Get(),
 			CGameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Character/test_mesh.obj" };
 
 		// 색 설정
-		Chess_Mesh->ChangeColor(CGameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
+		//Chess_Mesh->ChangeColor(CGameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
 		my_king->SetMesh(Chess_Mesh);
 		my_king->SetScale(1.f, 1.f, 1.f);
 
