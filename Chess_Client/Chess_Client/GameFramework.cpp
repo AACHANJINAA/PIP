@@ -327,6 +327,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			{
 				int room_id_to_enter = wParam - '1' + 1; // '1' -> 1, '2' -> 2 ...
 				CLOG(L"[C->S] Requesting to enter room %d (Key %c pressed)", room_id_to_enter, (wchar_t)wParam);
+				CObjectManager::GetManager()->ChangeRoom();
 				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
 				break;
 			}

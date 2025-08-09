@@ -33,6 +33,9 @@ public:
 
 	void DeleteObject();
 
+	// 방 바꾸기 -> 임시방편으로 바닥 빼고 다 지우는 걸로 해놨쪙
+	void ChangeRoom();
+
 	// 플레이어
 	void SetPlayer(std::shared_ptr <CGameObject> player) { m_Player = player; }
 	std::shared_ptr <CGameObject> GetPlayer() const { return m_Player; }

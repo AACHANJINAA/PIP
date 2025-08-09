@@ -903,8 +903,7 @@ void CReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device*
 	}
 }
 
-void CReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice,
-	ID3D12GraphicsCommandList* pd3dCommandList)
+void CReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	// 현재 메쉬의 정점 정보를 임시로 담을 벡터
 	std::vector<CIlluminatedVertex> vertices;

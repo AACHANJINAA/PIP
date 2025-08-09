@@ -103,6 +103,15 @@ void CObjectManager::DeleteObject()
 	}
 }
 
+void CObjectManager::ChangeRoom()
+{
+	m_Player = nullptr; 
+	DeleteVec(0);
+	DeleteVec(1);
+	DeleteVec(2);
+	DeleteVec(3);
+}
+
 void CObjectManager::PushObject(std::shared_ptr<CGameObject> object)
 {
 	m_AllObject[0].push_back(object);
