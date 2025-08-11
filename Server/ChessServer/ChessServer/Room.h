@@ -27,12 +27,12 @@ namespace chess::server
 
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
-		int GetPlayerCount() const { return _players.size(); }
+		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
 		RoomState GetRoomState() const { return _room_state; }
 
-		bool IsFull() const { return _players.size() >= _max_players; }
+		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
 		//const std::unordered_map<long long, std::shared_ptr<SESSION>>& GetPlayers() const { return _players; }
 	private:
 		int _room_id;

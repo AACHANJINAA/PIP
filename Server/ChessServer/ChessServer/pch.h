@@ -11,6 +11,7 @@
 #include <ranges>
 #include <vector>
 #include <concurrent_unordered_map.h>
+#include <concurrent_queue.h>
 #include <mutex>
 #include <string>
 #include <stdexcept>

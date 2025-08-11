@@ -53,21 +53,13 @@ namespace chess::server
 	struct LogicWorker
 	{
 		std::thread thread;
-		ConcurrentQueue<LogicPacket> queue;
+		concurrency::concurrent_queue<LogicPacket> queue;
 
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
 			: thread(std::move(other.thread)), queue(std::move(other.queue))
 		{}
-		LogicWorker& operator=(LogicWorker&& other) noexcept
-		{
-			if (this != &other)
-			{
-				thread = std::move(other.thread);
-				queue = std::move(other.queue);
-			}
-			return *this;
-		}
+
 
 		// 복사 생성/할당 = delete
 		LogicWorker(const LogicWorker&) = delete;
@@ -88,7 +80,7 @@ namespace chess::server
 		void Stop();
 
 		// 로직 큐를 얻어오기 위한 public 메소드
-		auto get_logic_queue(int worker_idx) -> ConcurrentQueue<LogicPacket>*;
+		auto get_logic_queue(int worker_idx) -> concurrency::concurrent_queue<LogicPacket>*;
 		auto GetRoom(int room_id) -> Room*; // [추가] 특정 룸을 얻어오기 위한 메소드
 
 		// [추가] 세션 관리를 위한 함수들

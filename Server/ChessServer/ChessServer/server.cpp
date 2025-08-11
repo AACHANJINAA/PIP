@@ -95,7 +95,7 @@ namespace chess::server
 
 			LOG("[Packet] Received from Session " << _id << ". Size: " << header->_size 
 				<< ", Type: " << static_cast<int>(header->_type) << ". Pushing to logic queue #" << _logic_thread_idx);
-			server_ptr->get_logic_queue(_logic_thread_idx)->Push(logic_packet);
+			server_ptr->get_logic_queue(_logic_thread_idx)->push(logic_packet);
 		
 			processed_bytes += header->_size;
 		}
@@ -183,7 +183,7 @@ namespace chess::server
 		{
 			LogicPacket dummy_packet;
 			dummy_packet.session = nullptr; // 종료 신호로 nullptr 사용
-			worker.queue.Push(dummy_packet);
+			worker.queue.push(dummy_packet);
 		}
 
 		for (size_t i = 0; i < _io_threads.size(); ++i)
@@ -212,7 +212,7 @@ namespace chess::server
 
 		LOG("Server stopped.");
 	}
-	auto Server::get_logic_queue(int worker_idx) -> ConcurrentQueue<LogicPacket>*
+	auto Server::get_logic_queue(int worker_idx) -> concurrency::concurrent_queue<LogicPacket>*
 	{
 		if (worker_idx < 0 || worker_idx >= _logic_workers.size())
 		{
@@ -283,7 +283,7 @@ namespace chess::server
 					LogicPacket disconnect_packet;
 					disconnect_packet.session = session;
 
-					get_logic_queue(session->_logic_thread_idx)->Push(disconnect_packet);
+					get_logic_queue(session->_logic_thread_idx)->push(disconnect_packet);
 
 					RemoveSession(key); // 이제 g_users에서 제거하는 것이 아니라 Server의 멤버에서 제거
 				}
@@ -324,7 +324,11 @@ namespace chess::server
 		LogicPacket packet_to_process;
 		while (_is_running)
 		{
-			_logic_workers[thread_idx].queue.WaitPop(packet_to_process);
+			while (true) {
+				if (true == _logic_workers[thread_idx].queue.try_pop(packet_to_process))
+					break;
+				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 큐가 비어있으면 잠시 대기	
+			}
 
 			auto& session = packet_to_process.session;
 			if (session == nullptr) continue;
