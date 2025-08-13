@@ -27,6 +27,9 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     // 카메라 생성
     m_ChessCamera = new CFreeCamera{};
     m_pCamera = m_ChessCamera;
+    m_ChessCamera->SetCameraMode(CAMERAMODE::CAMERA_3PERSON);
+    m_ChessCamera->SetOffset(5.f);
+    m_ChessCamera->Rotate(30.f,0.f,0.f);
 
     if (m_pCamera)
     {
@@ -153,8 +156,7 @@ void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, 
 
 void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-
-
+ 
     std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
@@ -168,8 +170,6 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
     }
 
     
-    
-
     std::list<std::shared_ptr<CGameObject>>& ObjectList = CObjectManager::GetManager()->GetEnemy();
     for (std::shared_ptr<CGameObject>& Object : ObjectList) {
         if (nullptr != Object)
@@ -181,11 +181,10 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
         }
     }
 
+    Collision(fTimeElapsed);
 
     m_ChessCamera->UpdateAnimateCamera(fTimeElapsed);
     m_pCamera->Update();
-
-    Collision(fTimeElapsed);
 }
 
 // (수정) 조명, 머터리얼 데이터 연결 [PONG]

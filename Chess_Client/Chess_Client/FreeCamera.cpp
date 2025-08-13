@@ -1,34 +1,38 @@
 #include "stdafx.h"
 #include "FreeCamera.h"
+#include "ObjectManager.h"
 
 void CFreeCamera::UpdateAnimateCamera(float fElapsedTime)
 {
 	GetElapsedTime(fElapsedTime);
-	if (m_NowMode != 2)
-	{
-		m_NowOffset = 0;
-	}
 
+	switch (m_NowMode)
+	{
+	case CAMERAMODE::CAMERA_FREE:
 
-	if (m_NowMode == 0)
+		break;
+	case CAMERAMODE::CAMERA_3PERSON:
 	{
-		//KeyInput(fElapsedTime,hWnd,nMessageID);
-	}
-	if (m_NowMode == 1)
-	{
-		SetPosition(XMFLOAT3(m_Player->GetPosition().x, m_Player->GetPosition().y + 5.f, m_Player->GetPosition().z)); // 카메라를 플레이어한테 붙이기
-	}
-	if (m_NowMode == 2)
-	{
-		if(m_NowOffset < m_Offset)
+		std::shared_ptr<CGameObject>Player = CObjectManager::GetManager()->GetPlayer();
+		if(Player.get())
 		{
-			m_NowOffset += 20.f * fElapsedTime;
+			if (m_NowOffset < m_Offset)
+			{
+				m_NowOffset += m_Move_Offset_Time * fElapsedTime;
+			}
+			else
+			{
+				int i = 0; // DW디버깅
+			}
+			SetPosition(XMFLOAT3(Player.get()->GetPosition().x - (GetLookVec().x) * m_NowOffset, Player.get()->GetPosition().y - (GetLookVec().y) * m_NowOffset, Player.get()->GetPosition().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
 		}
-		else
-		{
-			int i = 0; // DW디버깅
-		}
-		SetPosition(XMFLOAT3(m_Player->GetPosition().x - (GetLookVec().x) * m_NowOffset, m_Player->GetPosition().y - (GetLookVec().y) * m_NowOffset, m_Player->GetPosition().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
+	}
+		break;
+	case CAMERAMODE::CAMERA_END:
+
+		break;
+	default:
+		break;
 	}
 }
 
@@ -77,25 +81,36 @@ void CFreeCamera::KeyInput(float fElapsedTime, HWND hwnd, UINT nMessageID, POINT
 		::SetCursorPos(ptOldCursorPos.x, ptOldCursorPos.y);
 	}
 
-	if (GetAsyncKeyState('W') & 0x8000) {
-		MoveForwardBack(1);
+	if (GetAsyncKeyState('V') & 0x8000) {
+		m_NowMode = CAMERAMODE::CAMERA_FREE;
 	}
-	if (GetAsyncKeyState('S') & 0x8000) {
-		MoveForwardBack(-1);
-	}
-	if (GetAsyncKeyState('D') & 0x8000) {
-		MoveRightLeft(1);
-	}
-	if (GetAsyncKeyState('A') & 0x8000) {
-		MoveRightLeft(-1);
+	if (GetAsyncKeyState('B') & 0x8000) {
+		m_NowMode = CAMERAMODE::CAMERA_3PERSON;
 	}
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-		MoveUPDown(1);
-	}
 
-	if (GetAsyncKeyState(VK_LCONTROL) & 0x8000) {
-		MoveUPDown(-1);
+	if(m_NowMode == CAMERAMODE::CAMERA_FREE)
+	{
+		if (GetAsyncKeyState('W') & 0x8000) {
+			MoveForwardBack(1);
+		}
+		if (GetAsyncKeyState('S') & 0x8000) {
+			MoveForwardBack(-1);
+		}
+		if (GetAsyncKeyState('D') & 0x8000) {
+			MoveRightLeft(1);
+		}
+		if (GetAsyncKeyState('A') & 0x8000) {
+			MoveRightLeft(-1);
+		}
+
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
+			MoveUPDown(1);
+		}
+
+		if (GetAsyncKeyState(VK_LCONTROL) & 0x8000) {
+			MoveUPDown(-1);
+		}
 	}
 }
 
