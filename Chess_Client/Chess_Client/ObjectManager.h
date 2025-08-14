@@ -37,7 +37,7 @@ public:
 	void PushEnemyBullet(std::shared_ptr<CGameObject> object);
 	void PushPlayerBullet(std::shared_ptr<CGameObject> object);
 	void PushEnemy(std::shared_ptr<CGameObject> object);
-	void PushFloorObejct(std::shared_ptr<CGameObject> object);
+	void PushFloorObject(std::shared_ptr<CGameObject> object);
 
 
 	// 오브젝트 얻기

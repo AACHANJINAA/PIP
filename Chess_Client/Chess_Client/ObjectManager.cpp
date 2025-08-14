@@ -130,7 +130,7 @@ void CObjectManager::PushEnemyBullet(std::shared_ptr<CGameObject> object)
 	m_AllObject[3].push_back(object);
 }
 
-void CObjectManager::PushFloorObejct(std::shared_ptr<CGameObject> object)
+void CObjectManager::PushFloorObject(std::shared_ptr<CGameObject> object)
 {
 	m_AllObject[4].push_back(object);
 }
