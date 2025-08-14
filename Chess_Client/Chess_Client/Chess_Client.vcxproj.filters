@@ -118,7 +118,7 @@
       <Filter>Manager\ObjectManager</Filter>
     </ClInclude>
     <ClInclude Include="SceneManager.h">
-      <Filter>Manager\SceneManager</Filter>
+      <Filter>Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
