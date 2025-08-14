@@ -10,26 +10,12 @@ enum class SCENE_NUM
 };
 
 
-class CSceneManager
+class CSceneManager : public Singleton<CSceneManager>
 {
+	friend Singleton<CSceneManager>;
 public:
 	CSceneManager();
 	~CSceneManager();
-
-	static CSceneManager* GetManager() {
-		if (m_SceneManager == nullptr)
-		{
-			m_SceneManager = new CSceneManager{};
-		}
-		return m_SceneManager;
-	}
-
-	static void DeleteManager() {
-		if (m_SceneManager != nullptr)
-		{
-			delete m_SceneManager;
-		}
-	}
 
 	void ChangeScene();
 
@@ -58,7 +44,6 @@ public:
 	}
 
 private:
-	static CSceneManager* m_SceneManager;
 	std::unique_ptr<CScene> m_pCurrentScene = nullptr; // ÇöÀç ¾À
 	std::unique_ptr<CScene> m_pNextScene = nullptr; // ´ÙÀ½ ¾À
 

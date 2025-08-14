@@ -173,8 +173,8 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 		my_king->SetScale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
-		CObjectManager::GetManager()->PushObject(my_king);
-		CObjectManager::GetManager()->SetPlayer(my_king);
+		CObjectManager::Instance()->PushObject(my_king);
+		CObjectManager::Instance()->SetPlayer(my_king);
 		// level, exp 등 추가 정보도 업데이트 가능
 		CLOG(L"[S->C] My player spawned/updated: ID=%lld, Pos=(%d,%d), HP=%d, Level=%d, Exp=%d, Name=%s",
 			spawn_data._id, spawn_data._x, spawn_data._y, spawn_data._hp, spawn_data._level, spawn_data._exp, name.c_str());
@@ -202,7 +202,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 		other_king->SetScale(1.f, 1.f, 1.f);
 
 		// 매니저에 넣기
-		CObjectManager::GetManager()->PushEnemy(other_king);
+		CObjectManager::Instance()->PushEnemy(other_king);
 		CLOG(L"[S->C] Other player spawned: ID=%lld, Pos=(%d,%d), HP=%d, Level=%d, Exp=%d, Name=%s",
 			 spawn_data._id, spawn_data._x, spawn_data._y, spawn_data._hp, spawn_data._level, spawn_data._exp, name.c_str());
 	}
@@ -213,14 +213,14 @@ void ClientPacketManager::HANDLE_S2C_MOVE(chess::packet::PacketStream& stream)
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
 	chess::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
-	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::Instance()->GetPlayer());
 	if (player && move_packet._id == player->GetID()) // 읽어온 id 사용
 	{
 		player->SetPos(move_packet._x, move_packet._y); // 읽어온 x, y 사용
 	}
 	else
 	{
-		auto other_players = CObjectManager::GetManager()->GetEnemy();
+		auto other_players = CObjectManager::Instance()->GetEnemy();
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
 		{
 			return move_packet._id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
@@ -237,7 +237,7 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(chess::packet::PacketStream& stream)
 	chess::packet::SC_PACKET_LEAVE leave_packet;
 	stream >> leave_packet; // id만 읽습니다.
 	
-	auto other_players = CObjectManager::GetManager()->GetEnemy();
+	auto other_players = CObjectManager::Instance()->GetEnemy();
 	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other)
 	{
 		return leave_packet._id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
@@ -255,14 +255,14 @@ void ClientPacketManager::HANDLE_S2C_ATTACK(chess::packet::PacketStream& stream)
 	stream >> attack_packet; // 구조체 전체를 읽습니다.
 
 
-	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::GetManager()->GetPlayer());
+	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::Instance()->GetPlayer());
 	if (player && attack_packet._target_id == player->GetID()) // 읽어온 target_id 사용
 	{
 		player->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 	}
 	else
 	{
-		auto other_players = CObjectManager::GetManager()->GetEnemy();
+		auto other_players = CObjectManager::Instance()->GetEnemy();
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
 		{
 			return attack_packet._target_id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 target_id 사용

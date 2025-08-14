@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "SceneManager.h"
 
-CSceneManager* CSceneManager::m_SceneManager = nullptr;
-
 CSceneManager::CSceneManager()
 {
 

@@ -38,7 +38,7 @@ void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 		XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4Projection)));
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4Projection, 16);
 
-	XMFLOAT4 xmf4Position(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z, 1.f);
+	//XMFLOAT4 xmf4Position(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z, 1.f);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &xmf4x4Projection, 32);
 }
 

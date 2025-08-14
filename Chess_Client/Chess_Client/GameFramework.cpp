@@ -32,7 +32,7 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	m_hWnd = hMainWnd;
 
 	// 매니저 생성
-	CObjectManager::GetManager();
+	CObjectManager::Instance();
 
 	//Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다. 
 	CreateDirect3DDevice();
@@ -59,7 +59,6 @@ void CGameFramework::OnDestroy()
 	if (pdxgiDebug) pdxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
 #endif
 
-	CObjectManager::GetManager()->DeleteManager();
 }
 
 void CGameFramework::CreateSwapChain()
@@ -327,7 +326,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			{
 				int room_id_to_enter = wParam - '1' + 1; // '1' -> 1, '2' -> 2 ...
 				CLOG(L"[C->S] Requesting to enter room %d (Key %c pressed)", room_id_to_enter, (wchar_t)wParam);
-				CObjectManager::GetManager()->ChangeRoom();
+				CObjectManager::Instance()->ChangeRoom();
 				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
 				break;
 			}
@@ -412,10 +411,10 @@ void CGameFramework::FrameAdvance()
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
 
-	CObjectManager::GetManager()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
+	CObjectManager::Instance()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	//오브젝트 생성가능
-	//CObjectManager::GetManager()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
+	//CObjectManager::Instance()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	ProcessNetwork();
 	ProcessInput();

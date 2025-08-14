@@ -2,10 +2,11 @@
 #include "Camera.h"
 #include "GameObject.h"
 
-enum class CAMERAMODE {
-	CAMERA_FREE,
-	CAMERA_3PERSON,
-	CAMERA_END // 끝 번호임 의미X
+enum class CAMERAMODE : uint8_t
+{
+	CAMERA_FREE = 1 ,
+	CAMERA_3PERSON = 2 ,
+	CAMERA_END = 3 // 끝 번호임 의미X
 };
 
 inline CAMERAMODE& operator++(CAMERAMODE& mod)
@@ -25,8 +26,8 @@ inline CAMERAMODE& operator++(CAMERAMODE& mod)
 class CFreeCamera : public CCamera
 {
 public:
-	CFreeCamera() {};
-	~CFreeCamera() {};
+	CFreeCamera() = default;
+	~CFreeCamera() = default;
 
 	void SetPlayer(CGameObject* pPlayer) { m_Player = pPlayer; }
 	void SetCameraMode(CAMERAMODE Mode) { m_NowMode = Mode; }
@@ -37,7 +38,7 @@ public:
 
 	void KeyInput(float fElapsedTime, HWND hwnd, UINT nMessageID,POINT ptOldCursorPos);
 
-	void GetElapsedTime(float fElapsedTime) { m_ElapsTime = fElapsedTime; }
+	void GetElapsedTime(float fElapsedTime) { m_ElapseTime = fElapsedTime; }
 
 	void RotateMouseCamera(float X, float Y);
 
