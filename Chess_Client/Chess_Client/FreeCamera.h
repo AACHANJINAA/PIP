@@ -50,7 +50,6 @@ private:
 	// 플레이어를 가지고 있기
 	CGameObject* m_Player{};
 
-
 	float m_BeforeX{-500.f};
 	float m_BeforeY{ -500.f };
 	float m_MoveSpeed{10.f};

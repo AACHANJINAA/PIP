@@ -68,7 +68,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     }
 
     Board = std::make_shared<CBoardCube>();
-    BoardMesh = new CReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb" };
+    BoardMesh = new CReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/old_cannon.glb" };
 
     Board->SetMesh(BoardMesh);
     Board->SetScale(0.01f, 0.01f, 0.01f);
