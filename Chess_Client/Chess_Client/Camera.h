@@ -71,9 +71,8 @@ public:
 		return m_xmf3Right;
 	}
 
-
-private:
 	void Rotate();
+	
 
 protected:
 	BoundingFrustum				m_xmFrustumView = BoundingFrustum();

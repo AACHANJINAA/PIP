@@ -171,6 +171,7 @@ void CCamera::Update()
 	m_xmFrustumView.Transform(m_xmFrustumWorld, XMLoadFloat4x4(&m_xmf4x4World));
 }
 
+
 void CCamera::Rotate()
 {
 	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
