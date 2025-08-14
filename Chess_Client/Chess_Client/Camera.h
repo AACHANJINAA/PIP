@@ -60,9 +60,8 @@ public:
 	XMFLOAT3 GetPosVec() const { return m_xmf3Position; }
 	XMFLOAT3 GetRightVec() const { return m_xmf3Right; }
 
-
-private:
 	void Rotate();
+	
 
 protected:
 	BoundingFrustum				m_xmFrustumView = BoundingFrustum();
