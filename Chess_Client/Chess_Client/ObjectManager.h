@@ -1,26 +1,13 @@
 #pragma once
 #include "GameObject.h"
 
-class CObjectManager
+class CObjectManager : public Singleton<CObjectManager>
 {
+	friend Singleton<CObjectManager>;
 public:
+
 	CObjectManager();
 	~CObjectManager();
-
-	static CObjectManager* GetManager() {
-		if (m_ObjectManager == nullptr)
-		{
-			m_ObjectManager = new CObjectManager{};
-		}
-		return m_ObjectManager;
-	}
-
-	static void DeleteManager() {
-		if (m_ObjectManager != nullptr)
-		{
-			delete m_ObjectManager;
-		}
-	}
 
 public:
 	// 요청과 만들기
@@ -38,7 +25,7 @@ public:
 
 	// 플레이어
 	void SetPlayer(std::shared_ptr <CGameObject> player) { m_Player = player; }
-	std::shared_ptr <CGameObject> GetPlayer() const { return m_Player; }
+	std::shared_ptr<CGameObject> GetPlayer() const { return m_Player; }
 
 
 	// 오브젝트 넣기
@@ -67,7 +54,6 @@ public:
 
 private:
 
-	static CObjectManager* m_ObjectManager;
 
 	std::shared_ptr <CGameObject> m_Player{};
 

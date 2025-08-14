@@ -13,7 +13,7 @@ void CFreeCamera::UpdateAnimateCamera(float fElapsedTime)
 		break;
 	case CAMERAMODE::CAMERA_3PERSON:
 	{
-		std::shared_ptr<CGameObject>Player = CObjectManager::GetManager()->GetPlayer();
+		std::shared_ptr<CGameObject>Player = CObjectManager::Instance()->GetPlayer();
 		if(Player.get())
 		{
 			if (m_NowOffset < m_Offset)
@@ -132,15 +132,15 @@ void CFreeCamera::RotateMouseCamera(float NowX, float NowY)
 
 void CFreeCamera::MoveForwardBack(float Sign)
 {
-	Move(m_xmf3Look.x * Sign * m_ElapsTime * m_MoveSpeed, m_xmf3Look.y * Sign * m_ElapsTime * m_MoveSpeed, m_xmf3Look.z * Sign * m_ElapsTime * m_MoveSpeed);
+	Move(m_xmf3Look.x * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Look.y * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Look.z * Sign * m_ElapseTime * m_MoveSpeed);
 }
 
 void CFreeCamera::MoveRightLeft(float Sign)
 {
-	Move(m_xmf3Right.x * Sign * m_ElapsTime * m_MoveSpeed, m_xmf3Right.y * Sign * m_ElapsTime * m_MoveSpeed, m_xmf3Right.z * Sign * m_ElapsTime * m_MoveSpeed);
+	Move(m_xmf3Right.x * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Right.y * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Right.z * Sign * m_ElapseTime * m_MoveSpeed);
 }
 
 void CFreeCamera::MoveUPDown(float Sign)
 {
-	Move(0.f, Sign * m_ElapsTime * m_MoveSpeed,0.f);
+	Move(0.f, Sign * m_ElapseTime * m_MoveSpeed,0.f);
 }

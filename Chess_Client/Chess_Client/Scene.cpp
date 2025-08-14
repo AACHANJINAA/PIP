@@ -113,7 +113,7 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
     CGameObject* pNearestObject = NULL;
 
 
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
 
     if (Arr.size()) {
         int i = 0;
@@ -141,7 +141,7 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
 
 void CScene::ReleaseUploadBuffers()
 {
-    auto& Arr = CObjectManager::GetManager()->GetAllObject();
+    auto& Arr = CObjectManager::Instance()->GetAllObject();
 
     for (auto& Objects : Arr) {
         for (auto& Object : Objects) {

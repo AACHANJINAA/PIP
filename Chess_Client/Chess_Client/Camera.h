@@ -55,21 +55,10 @@ public:
 
 
 
-	XMFLOAT3 GetLookVec() {
-		return m_xmf3Look;
-	}
-
-	XMFLOAT3 GetUpVec() {
-		return m_xmf3Up;
-	}
-
-	XMFLOAT3 GetPosVec() {
-		return m_xmf3Position;
-	}
-
-	XMFLOAT3 GetRightVec() {
-		return m_xmf3Right;
-	}
+	XMFLOAT3 GetLookVec() const { return m_xmf3Look; }
+	XMFLOAT3 GetUpVec() const { return m_xmf3Up; }
+	XMFLOAT3 GetPosVec() const { return m_xmf3Position; }
+	XMFLOAT3 GetRightVec() const { return m_xmf3Right; }
 
 
 private:
@@ -92,7 +81,7 @@ protected:
 	float						m_fRotate_Y{};
 	float						m_fRotate_Z{};
 
-	float						m_ElapsTime{};
+	float						m_ElapseTime{};
 
 public:
 	XMFLOAT4X4					m_xmf4x4World = Matrix4x4::Identity(); // 카메라 월드행렬

@@ -63,7 +63,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
                 ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
             Board->m_PosX = j;
             Board->m_PosY = i;
-            CObjectManager::GetManager()->PushFloorObejct(Board);
+            CObjectManager::Instance()->PushFloorObejct(Board);
         }
     }
 
@@ -77,7 +77,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
     Board->m_PosX = 0;
     Board->m_PosY = 0;
-    CObjectManager::GetManager()->PushFloorObejct(Board);
+    CObjectManager::Instance()->PushFloorObejct(Board);
 
     //{
     //    // 플레이어 생성
@@ -91,7 +91,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     //    Player.get()->SetScale(1.f, 1.f, 1.f);
 
     //    // 매니저에 넣기
-    //    CObjectManager::GetManager()->PushObject(Player);
+    //    CObjectManager::Instance()->PushObject(Player);
     //}
 
 
@@ -108,7 +108,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
     //    Other.get()->SetScale(1.f, 1.f, 1.f);
 
     //    // 매니저에 넣기
-    //    CObjectManager::GetManager()->PushObject(Other);
+    //    CObjectManager::Instance()->PushObject(Other);
     //}
 
     BuildLightsAndMaterials();
@@ -117,7 +117,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 
 void CChess_Scene::ReleaseObjects()
 {
-	CObjectManager::GetManager()->DeleteAll();
+	CObjectManager::Instance()->DeleteAll();
 
     for (int i = 0; i < m_nShaders; i++)
     {
@@ -140,7 +140,7 @@ void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, 
     m_ChessCamera->KeyInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
 
 
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
         for (std::shared_ptr<CGameObject>& Object : Objects) {
@@ -157,7 +157,7 @@ void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, 
 void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
  
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
         for (std::shared_ptr<CGameObject>& Object : Objects) {
@@ -170,7 +170,7 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
     }
 
     
-    std::list<std::shared_ptr<CGameObject>>& ObjectList = CObjectManager::GetManager()->GetEnemy();
+    std::list<std::shared_ptr<CGameObject>>& ObjectList = CObjectManager::Instance()->GetEnemy();
     for (std::shared_ptr<CGameObject>& Object : ObjectList) {
         if (nullptr != Object)
         {
@@ -209,7 +209,7 @@ void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         m_pShaders[i].Render(pd3dCommandList, m_pCamera);
     }
 
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
         for (std::shared_ptr<CGameObject>& Object : Objects) {
@@ -223,7 +223,7 @@ void CChess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
 void CChess_Scene::Collision(float fElapsedTime)
 {
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
         for (std::shared_ptr<CGameObject>& Object : Objects) {
