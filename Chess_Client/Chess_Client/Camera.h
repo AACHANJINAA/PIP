@@ -38,7 +38,7 @@ public:
 
 	void SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up);
 
-	void Move(XMFLOAT3& xmf3Shift);
+	void Move(const XMFLOAT3& xmf3Shift);
 
 	void Move(float x, float y, float z);
 
