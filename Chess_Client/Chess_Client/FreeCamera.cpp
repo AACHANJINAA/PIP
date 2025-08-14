@@ -92,24 +92,24 @@ void CFreeCamera::KeyInput(float fElapsedTime, HWND hwnd, UINT nMessageID, POINT
 	if(m_NowMode == CAMERAMODE::CAMERA_FREE)
 	{
 		if (GetAsyncKeyState('W') & 0x8000) {
-			MoveForwardBack(1);
+			MoveForward(1);
 		}
 		if (GetAsyncKeyState('S') & 0x8000) {
-			MoveForwardBack(-1);
+			MoveForward(-1);
 		}
 		if (GetAsyncKeyState('D') & 0x8000) {
-			MoveRightLeft(1);
+			MoveRight(1);
 		}
 		if (GetAsyncKeyState('A') & 0x8000) {
-			MoveRightLeft(-1);
+			MoveRight(-1);
 		}
 
 		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-			MoveUPDown(1);
+			MoveUP(1);
 		}
 
 		if (GetAsyncKeyState(VK_LCONTROL) & 0x8000) {
-			MoveUPDown(-1);
+			MoveUP(-1);
 		}
 	}
 }
