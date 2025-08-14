@@ -137,9 +137,7 @@ void CChess_Scene::ReleaseObjects()
 
 void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
 {
-    m_ChessCamera->KeyInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
-
-
+  
     std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
@@ -151,12 +149,15 @@ void CChess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, 
             }
         }
     }
-  
+
+    m_ChessCamera->KeyInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
+ 
 }
 
 void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
- 
+    m_pCamera->Rotate();
+
     std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
@@ -184,7 +185,6 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
     Collision(fTimeElapsed);
 
     m_ChessCamera->UpdateAnimateCamera(fTimeElapsed);
-    m_pCamera->Update();
 }
 
 // (수정) 조명, 머터리얼 데이터 연결 [PONG]
