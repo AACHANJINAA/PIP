@@ -130,17 +130,17 @@ void CFreeCamera::RotateMouseCamera(float NowX, float NowY)
 	
 }
 
-void CFreeCamera::MoveForwardBack(float Sign)
+void CFreeCamera::MoveForward(float Sign)
 {
 	Move(m_xmf3Look.x * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Look.y * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Look.z * Sign * m_ElapseTime * m_MoveSpeed);
 }
 
-void CFreeCamera::MoveRightLeft(float Sign)
+void CFreeCamera::MoveRight(float Sign)
 {
 	Move(m_xmf3Right.x * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Right.y * Sign * m_ElapseTime * m_MoveSpeed, m_xmf3Right.z * Sign * m_ElapseTime * m_MoveSpeed);
 }
 
-void CFreeCamera::MoveUPDown(float Sign)
+void CFreeCamera::MoveUP(float Sign)
 {
 	Move(0.f, Sign * m_ElapseTime * m_MoveSpeed,0.f);
 }
