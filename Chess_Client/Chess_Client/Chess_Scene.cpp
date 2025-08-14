@@ -160,7 +160,7 @@ void CChess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList*
 {
     m_pCamera->Rotate();
 
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::GetManager()->GetAllObject();
+    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
 
     for (std::list<std::shared_ptr<CGameObject>>& Objects : Arr) {
         for (std::shared_ptr<CGameObject>& Object : Objects) {

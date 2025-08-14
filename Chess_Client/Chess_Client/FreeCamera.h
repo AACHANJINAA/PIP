@@ -42,9 +42,9 @@ public:
 
 	void RotateMouseCamera(float X, float Y);
 
-	void MoveForwardBack(float Sign); // 부호넣기
-	void MoveRightLeft(float Sign); // 부호넣기
-	void MoveUPDown(float Sign); // 부호넣기
+	void MoveForward(float Sign); // 부호넣기
+	void MoveRight(float Sign); // 부호넣기
+	void MoveUP(float Sign); // 부호넣기
 
 private:
 	// 플레이어를 가지고 있기
