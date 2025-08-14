@@ -96,7 +96,7 @@ void CCamera::SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 }
 
 
-void CCamera::Move(XMFLOAT3& xmf3Shift)
+void CCamera::Move(const XMFLOAT3& xmf3Shift)
 {
  	m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
 }
