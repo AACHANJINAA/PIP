@@ -63,7 +63,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
                 ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
             Board->m_PosX = j;
             Board->m_PosY = i;
-            CObjectManager::Instance()->PushFloorObejct(Board);
+            CObjectManager::Instance()->PushFloorObject(Board);
         }
     }
 
@@ -77,7 +77,7 @@ void CChess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
         ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
     Board->m_PosX = 0;
     Board->m_PosY = 0;
-    CObjectManager::Instance()->PushFloorObejct(Board);
+    CObjectManager::Instance()->PushFloorObject(Board);
 
     //{
     //    // 플레이어 생성
