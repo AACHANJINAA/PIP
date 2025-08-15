@@ -2,14 +2,14 @@
 #include "GameObject.h"
 
 
-class COther_King : public CGameObject, public HPObject
+class OtherPlayer : public GameObject, public HPObject
 {
 public:
-	COther_King(int X = 0, int Y = 0);
-	~COther_King();
+	OtherPlayer(int X = 0, int Y = 0);
+	~OtherPlayer();
 
 public:
-	// CGameObject을(를) 통해 상속됨
+	// GameObject을(를) 통해 상속됨
 	void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) override;
 	void Collision(float fElapsedTime) override;
 	void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) override;

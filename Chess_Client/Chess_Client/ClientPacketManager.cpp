@@ -1,9 +1,9 @@
 ﻿#include "stdafx.h"
 #include "ClientPacketManager.h"
-#include "Chess_King.h"
+#include "MainPlayer.h"
+#include "OtherPlayer.h"
 #include "GameFramework.h"
 #include "ObjectManager.h"
-#include "Other_King.h"
 #include "../../Server/ChessServer/ChessServer/CommonHeader.h"
 
 // 외부 전역 변수 (Chess_Client.cpp에 정의된 g_hwnd)
@@ -151,58 +151,58 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 	// 패킷의 ID가 내 플레이어 ID와 같은지 확인합니다.
 	if (spawn_data._id == _my_session_id)
 	{
-		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (CChess_King).");
+		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
-		std::shared_ptr<CChess_King> my_king = std::make_shared<CChess_King>();
+		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
 		my_king->SetPos(spawn_data._x, spawn_data._y);
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
 		my_king->SetID(_my_session_id); // 내 플레이어 ID 설정
 		/*CMesh* Chess_Mesh = new CReadObjMesh{
-			CGameFramework::Instance()->GetDevice().Get(),
-			CGameFramework::Instance()->GetCommandList().Get(),
+			GameFramework::Instance()->GetDevice().Get(),
+			GameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Character/test_mesh.obj" };*/
-		CMesh* Chess_Mesh = new CReadFbxMesh{
-			CGameFramework::Instance()->GetDevice().Get(),
-			CGameFramework::Instance()->GetCommandList().Get(),
+		Mesh* Chess_Mesh = new ReadFbxMesh{
+			GameFramework::Instance()->GetDevice().Get(),
+			GameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Test/testfbx_texture_included.fbx" };
 
 		// 색 설정
-		//Chess_Mesh->ChangeColor(CGameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
+		//Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
 		my_king->SetMesh(Chess_Mesh);
 		my_king->SetScale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
-		CObjectManager::Instance()->PushObject(my_king);
-		CObjectManager::Instance()->SetPlayer(my_king);
+		ObjectManager::Instance()->PushObject(my_king);
+		ObjectManager::Instance()->SetPlayer(my_king);
 		// level, exp 등 추가 정보도 업데이트 가능
 		CLOG(L"[S->C] My player spawned/updated: ID=%lld, Pos=(%d,%d), HP=%d, Level=%d, Exp=%d, Name=%s",
 			spawn_data._id, spawn_data._x, spawn_data._y, spawn_data._hp, spawn_data._level, spawn_data._exp, name.c_str());
 	}
 	else
 	{
-		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (COther_King).");
+		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
-		std::shared_ptr<COther_King> other_king = std::make_shared<COther_King>(spawn_data._x, spawn_data._y);
+		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._x, spawn_data._y);
 		other_king->SetID(spawn_data._id);
 		other_king->SetPos(spawn_data._x, spawn_data._y); // 위치 설정
 		other_king->SetHP(spawn_data._hp); // HP 설정
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
 		other_king->m_Mesh_Type = ENEMY_CHESS; // 적 타입으로 설정
-		CMesh* Chess_Mesh = new CReadObjMesh{ CGameFramework::Instance()->GetDevice().Get(),
-			CGameFramework::Instance()->GetCommandList().Get(),
+		Mesh* Chess_Mesh = new ReadObjMesh{ GameFramework::Instance()->GetDevice().Get(),
+			GameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Monster/test_monster.obj" };
 
 		// 색 설정
-		Chess_Mesh->ChangeColor(CGameFramework::Instance()->GetCommandList().Get(), 0.0f, 1.0f, 0.0f, 1.f);
+		Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 0.0f, 1.0f, 0.0f, 1.f);
 		other_king->SetMesh(Chess_Mesh);
 
 		// 이동 거리 설정
 		other_king->SetScale(1.f, 1.f, 1.f);
 
 		// 매니저에 넣기
-		CObjectManager::Instance()->PushEnemy(other_king);
+		ObjectManager::Instance()->PushEnemy(other_king);
 		CLOG(L"[S->C] Other player spawned: ID=%lld, Pos=(%d,%d), HP=%d, Level=%d, Exp=%d, Name=%s",
 			 spawn_data._id, spawn_data._x, spawn_data._y, spawn_data._hp, spawn_data._level, spawn_data._exp, name.c_str());
 	}
@@ -213,21 +213,21 @@ void ClientPacketManager::HANDLE_S2C_MOVE(chess::packet::PacketStream& stream)
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
 	chess::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
-	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::Instance()->GetPlayer());
+	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
 	if (player && move_packet._id == player->GetID()) // 읽어온 id 사용
 	{
 		player->SetPos(move_packet._x, move_packet._y); // 읽어온 x, y 사용
 	}
 	else
 	{
-		auto other_players = CObjectManager::Instance()->GetEnemy();
-		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
+		auto other_players = ObjectManager::Instance()->GetEnemy();
+		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) 
 		{
-			return move_packet._id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
+			return move_packet._id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 id 사용
 		});
 		if (it != other_players.end())
 		{
-			dynamic_cast<COther_King*>(it->get())->SetPos(move_packet._x, move_packet._y); // 읽어온 x, y 사용
+			dynamic_cast<OtherPlayer*>(it->get())->SetPos(move_packet._x, move_packet._y); // 읽어온 x, y 사용
 		}
 	}
 }
@@ -237,10 +237,10 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(chess::packet::PacketStream& stream)
 	chess::packet::SC_PACKET_LEAVE leave_packet;
 	stream >> leave_packet; // id만 읽습니다.
 	
-	auto other_players = CObjectManager::Instance()->GetEnemy();
-	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other)
+	auto other_players = ObjectManager::Instance()->GetEnemy();
+	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other)
 	{
-		return leave_packet._id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 id 사용
+		return leave_packet._id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 id 사용
 	});
 	if (it != other_players.end())
 	{
@@ -255,21 +255,21 @@ void ClientPacketManager::HANDLE_S2C_ATTACK(chess::packet::PacketStream& stream)
 	stream >> attack_packet; // 구조체 전체를 읽습니다.
 
 
-	auto player = std::dynamic_pointer_cast<CChess_King>(CObjectManager::Instance()->GetPlayer());
+	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
 	if (player && attack_packet._target_id == player->GetID()) // 읽어온 target_id 사용
 	{
 		player->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 	}
 	else
 	{
-		auto other_players = CObjectManager::Instance()->GetEnemy();
-		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<CGameObject>& other) 
+		auto other_players = ObjectManager::Instance()->GetEnemy();
+		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) 
 		{
-			return attack_packet._target_id == static_cast<COther_King*>(other.get())->GetID(); // 읽어온 target_id 사용
+			return attack_packet._target_id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 target_id 사용
 		});
 		if (it != other_players.end())
 		{
-			dynamic_cast<COther_King*>(it->get())->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
+			dynamic_cast<OtherPlayer*>(it->get())->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 		}
 	}
 }
@@ -299,7 +299,7 @@ void ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK(chess::packet::PacketStream&
 	if (ack_packet._success) // 읽어온 success 사용
 	{
 		//CLOG(L"[S->C] Successfully entered room %d!", ack_packet._room_id); // 읽어온 room_id 사용
-		//gGameFramework.ChangeScene(CGameFramework::SceneType::InGame); // 게임 씬으로 전환
+		//gGameFramework.ChangeScene(GameFramework::SceneType::InGame); // 게임 씬으로 전환
 	}
 	else
 	{

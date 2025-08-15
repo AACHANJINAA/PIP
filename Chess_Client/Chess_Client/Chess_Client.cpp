@@ -151,10 +151,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         else
         {
             // 메시지 큐가 비어있을 때, 우리의 게임 로직을 실행합니다.
-        	CGameFramework::Instance()->FrameAdvance();
+        	GameFramework::Instance()->FrameAdvance();
         }
 	}
-    CGameFramework::Instance()->OnDestroy();
+    GameFramework::Instance()->OnDestroy();
 
 
     closesocket(c_socket);
@@ -223,7 +223,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
-    CGameFramework::Instance()->OnCreate(hInstance, hMainWnd);
+    GameFramework::Instance()->OnCreate(hInstance, hMainWnd);
 
 
     ShowWindow(hMainWnd, nCmdShow);
@@ -285,10 +285,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
         case WA_ACTIVE:      // 창이 활성화됨 (다른 창을 클릭했다가 다시 우리 창을 클릭)
         case WA_CLICKACTIVE: // 마우스 클릭으로 창이 활성화됨
-            CGameFramework::Instance()->m_bIsWindowActive = true;
+            GameFramework::Instance()->m_bIsWindowActive = true;
             break;
         case WA_INACTIVE:    // 창이 비활성화됨 (다른 창을 클릭)
-            CGameFramework::Instance()->m_bIsWindowActive = false;
+            GameFramework::Instance()->m_bIsWindowActive = false;
             // 여기에 게임 일시정지, 사운드 음소거 등의 로직을 넣을 수도 있습니다.
             break;
         }
@@ -302,7 +302,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
     case WM_KEYDOWN:
     case WM_KEYUP:
-        CGameFramework::Instance()->OnProcessingWindowMessage(hWnd, message, wParam, lParam);
+        GameFramework::Instance()->OnProcessingWindowMessage(hWnd, message, wParam, lParam);
         break;
     case WM_DESTROY:
         ::PostQuitMessage(0);

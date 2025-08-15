@@ -1,17 +1,17 @@
 #include "stdafx.h"
 #include "SceneManager.h"
 
-CSceneManager::CSceneManager()
+SceneManager::SceneManager()
 {
 
 }
 
-CSceneManager::~CSceneManager()
+SceneManager::~SceneManager()
 {
 
 }
 
-void CSceneManager::ChangeScene()
+void SceneManager::ChangeScene()
 {
 	if (m_WantScene != SCENE_NUM::SCENE_NONE)
 	{

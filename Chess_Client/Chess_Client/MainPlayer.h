@@ -1,14 +1,14 @@
 #pragma once
 #include "GameObject.h"
 
-class CChess_King : public CGameObject, public HPObject
+class MainPlayer : public GameObject, public HPObject
 {
 public:
-	CChess_King(int X = 0, int Y = 0);
-	~CChess_King();
+	MainPlayer(int X = 0, int Y = 0);
+	~MainPlayer();
 
 public:
-	// CGameObject을(를) 통해 상속됨
+	// GameObject을(를) 통해 상속됨
 	void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) override;
 	void Collision(float fElapsedTime) override;
 	void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) override;

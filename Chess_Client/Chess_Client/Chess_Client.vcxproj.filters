@@ -84,10 +84,10 @@
     <ClInclude Include="BoardCube.h">
       <Filter>Object\Board</Filter>
     </ClInclude>
-    <ClInclude Include="Chess_King.h">
+    <ClInclude Include="MainPlayer.h">
       <Filter>Object\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Other_King.h">
+    <ClInclude Include="OtherPlayer.h">
       <Filter>Object\OtherPlayer</Filter>
     </ClInclude>
     <ClInclude Include="resource1.h">
@@ -118,7 +118,7 @@
       <Filter>Manager\ObjectManager</Filter>
     </ClInclude>
     <ClInclude Include="SceneManager.h">
-      <Filter>Camera</Filter>
+      <Filter>Manager\SceneManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -143,10 +143,10 @@
     <ClCompile Include="BoardCube.cpp">
       <Filter>Object\Board</Filter>
     </ClCompile>
-    <ClCompile Include="Chess_King.cpp">
+    <ClCompile Include="MainPlayer.cpp">
       <Filter>Object\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Other_King.cpp">
+    <ClCompile Include="OtherPlayer.cpp">
       <Filter>Object\OtherPlayer</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">

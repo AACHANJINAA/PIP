@@ -1,29 +1,29 @@
 #include "stdafx.h"
-#include "Chess_King.h"
+#include "MainPlayer.h"
 #include "ClientPacketManager.h"
 
-CChess_King::CChess_King(int X, int Y)
+MainPlayer::MainPlayer(int X, int Y)
 {
 	_NowX = X;
 	_NowY = Y;
 }
 
-CChess_King::~CChess_King()
+MainPlayer::~MainPlayer()
 {
 
 }
 
-void CChess_King::Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
+void MainPlayer::Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	SetPosition(_NowX * _MoveDistance, 0.f, _NowY * _MoveDistance);
 }
 
-void CChess_King::Collision(float fElapsedTime)
+void MainPlayer::Collision(float fElapsedTime)
 {
 
 }
 
-void CChess_King::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
+void MainPlayer::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
 {
 	if (GetAsyncKeyState(VK_UP) & 0x0001) {
 		Move_Pos(chess::packet::MOVE_TYPE::MOVE_UP);
@@ -49,7 +49,7 @@ void CChess_King::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, P
 	}
 }
 
-void CChess_King::Move_Pos(chess::packet::MOVE_TYPE Cmd)
+void MainPlayer::Move_Pos(chess::packet::MOVE_TYPE Cmd)
 {
 	switch (Cmd)
 	{

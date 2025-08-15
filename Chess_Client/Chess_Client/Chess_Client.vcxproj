@@ -132,7 +132,7 @@
   <ItemGroup>
     <ClInclude Include="BoardCube.h" />
     <ClInclude Include="Chess_Client.h" />
-    <ClInclude Include="Chess_King.h" />
+    <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ClientPacketManager.h" />
@@ -142,7 +142,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="Other_King.h" />
+    <ClInclude Include="OtherPlayer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="Scene.h" />
@@ -155,7 +155,7 @@
   <ItemGroup>
     <ClCompile Include="BoardCube.cpp" />
     <ClCompile Include="Chess_Client.cpp" />
-    <ClCompile Include="Chess_King.cpp" />
+    <ClCompile Include="MainPlayer.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ClientPacketManager.cpp" />
@@ -164,7 +164,7 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="Other_King.cpp" />
+    <ClCompile Include="OtherPlayer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />

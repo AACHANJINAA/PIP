@@ -35,11 +35,11 @@ struct MATERIALS
 };
 
 // (추가) 씬의 라이팅, 머터리얼 관련 변수 및 함수 선언
-class CScene
+class Scene
 {
 public:
-	CScene();
-	virtual ~CScene();
+	Scene();
+	virtual ~Scene();
 	//씬에서 마우스와 키보드 메시지를 처리한다. 
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
@@ -55,7 +55,7 @@ public:
 	ID3D12RootSignature* GetGraphicsRootSignature();
 
 	// 충돌함수
-	CGameObject* PickObjectPointedByCursor(int xClient, int yClient);
+	GameObject* PickObjectPointedByCursor(int xClient, int yClient);
 
 	// 오브젝트 생성 요청 함수
 	// 오브젝트 생성 요청 실행함수
@@ -70,8 +70,8 @@ protected:
 	CObjectsShader* m_pShaders = NULL;
 	int m_nShaders = 0;
 
-	// Cscene의 카메라
-	CCamera* m_pCamera;
+	// Scene의 카메라
+	Camera* m_pCamera;
 
 protected:
 	// 키 입력을 위해 존재하는 것들
