@@ -29,7 +29,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 		auto RequestObject = m_RequestObjects.front();
 		switch (RequestObject->m_Mesh_Type)
 		{
-		case PLAYER_CHESS:
+		case PLAYER:
 		{
 			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" };
 
@@ -44,7 +44,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 		}
 		break;
 
-		case ENEMY_CHESS:
+		case ENEMY:
 		{
 			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" };
 

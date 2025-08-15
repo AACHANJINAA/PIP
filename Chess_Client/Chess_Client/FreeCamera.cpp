@@ -8,10 +8,10 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 
 	switch (m_NowMode)
 	{
-	case CAMERAMODE::CAMERA_FREE:
+	case CAMERA_MODE::CAMERA_FREE:
 
 		break;
-	case CAMERAMODE::CAMERA_3PERSON:
+	case CAMERA_MODE::CAMERA_THIRD_PERSON:
 	{
 		std::shared_ptr<GameObject>Player = ObjectManager::Instance()->GetPlayer();
 		if(Player.get())
@@ -28,7 +28,7 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 		}
 	}
 		break;
-	case CAMERAMODE::CAMERA_END:
+	case CAMERA_MODE::CAMERA_END:
 
 		break;
 	default:
@@ -82,14 +82,14 @@ void FreeCamera::KeyInput(float fElapsedTime, HWND hwnd, UINT nMessageID, POINT 
 	}
 
 	if (GetAsyncKeyState('V') & 0x8000) {
-		m_NowMode = CAMERAMODE::CAMERA_FREE;
+		m_NowMode = CAMERA_MODE::CAMERA_FREE;
 	}
 	if (GetAsyncKeyState('B') & 0x8000) {
-		m_NowMode = CAMERAMODE::CAMERA_3PERSON;
+		m_NowMode = CAMERA_MODE::CAMERA_THIRD_PERSON;
 	}
 
 
-	if(m_NowMode == CAMERAMODE::CAMERA_FREE)
+	if(m_NowMode == CAMERA_MODE::CAMERA_FREE)
 	{
 		if (GetAsyncKeyState('W') & 0x8000) {
 			MoveForward(1);

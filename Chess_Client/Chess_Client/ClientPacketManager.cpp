@@ -189,7 +189,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(chess::packet::PacketStream& s
 		other_king->SetHP(spawn_data._hp); // HP 설정
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
-		other_king->m_Mesh_Type = ENEMY_CHESS; // 적 타입으로 설정
+		other_king->m_Mesh_Type = ENEMY; // 적 타입으로 설정
 		Mesh* Chess_Mesh = new ReadObjMesh{ GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Monster/test_monster.obj" };

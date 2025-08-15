@@ -2,22 +2,22 @@
 #include "Camera.h"
 #include "GameObject.h"
 
-enum class CAMERAMODE : uint8_t
+enum class CAMERA_MODE : uint8_t
 {
 	CAMERA_FREE = 1 ,
-	CAMERA_3PERSON = 2 ,
+	CAMERA_THIRD_PERSON = 2 ,
 	CAMERA_END = 3 // 끝 번호임 의미X
 };
 
-inline CAMERAMODE& operator++(CAMERAMODE& mod)
+inline CAMERA_MODE& operator++(CAMERA_MODE& mod)
 {
-	if (mod == CAMERAMODE::CAMERA_END)
+	if (mod == CAMERA_MODE::CAMERA_END)
 	{
-		mod = CAMERAMODE::CAMERA_FREE;
+		mod = CAMERA_MODE::CAMERA_FREE;
 	}
 	else
 	{
-		mod = static_cast<CAMERAMODE>(static_cast<int>(mod) + 1);
+		mod = static_cast<CAMERA_MODE>(static_cast<int>(mod) + 1);
 	}
 	return mod;
 }
@@ -30,8 +30,8 @@ public:
 	~FreeCamera() = default;
 
 	void SetPlayer(GameObject* pPlayer) { m_Player = pPlayer; }
-	void SetCameraMode(CAMERAMODE Mode) { m_NowMode = Mode; }
-	CAMERAMODE GetCameraMode() { return m_NowMode; }
+	void SetCameraMode(CAMERA_MODE Mode) { m_NowMode = Mode; }
+	CAMERA_MODE GetCameraMode() { return m_NowMode; }
 	void SetOffset(float Offset) { m_Offset = Offset; }
 
 	void UpdateAnimateCamera(float fElapsedTime); // 카메라 애니메이션
@@ -60,7 +60,7 @@ private:
 	float m_Move_Offset_Time{3.f}; // 목표 거리까지 가는 시간
 
 
-	CAMERAMODE m_NowMode{}; // 현재 플레이어 카메라 모드
+	CAMERA_MODE m_NowMode{}; // 현재 플레이어 카메라 모드
 	// 0번 : 자유, 1번 : 1플레이어, 2번 : 2플레이어
 };
 

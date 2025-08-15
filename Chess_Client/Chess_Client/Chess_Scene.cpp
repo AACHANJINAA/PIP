@@ -27,7 +27,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     // 朝五虞 持失
     m_ChessCamera = new FreeCamera{};
     m_pCamera = m_ChessCamera;
-    m_ChessCamera->SetCameraMode(CAMERAMODE::CAMERA_3PERSON);
+    m_ChessCamera->SetCameraMode(CAMERA_MODE::CAMERA_THIRD_PERSON);
     m_ChessCamera->SetOffset(5.f);
     m_ChessCamera->Rotate(30.f,0.f,0.f);
 
@@ -68,7 +68,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     }
 
     Board = std::make_shared<BoardCube>();
-    BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/old_cannon.glb" };
+    BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb" };
 
     Board->SetMesh(BoardMesh);
     Board->SetScale(0.01f, 0.01f, 0.01f);
