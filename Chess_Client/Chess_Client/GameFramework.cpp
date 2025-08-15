@@ -4,7 +4,7 @@
 #include "Chess_Scene.h"
 #include "ClientPacketManager.h"
 
-CGameFramework::CGameFramework()
+GameFramework::GameFramework()
 	: m_nWndClientWidth(FRAME_BUFFER_WIDTH)
 	, m_nWndClientHeight(FRAME_BUFFER_HEIGHT)
 	, m_bMsaa4xEnable(false)
@@ -20,19 +20,19 @@ CGameFramework::CGameFramework()
 
 
 
-CGameFramework::~CGameFramework()
+GameFramework::~GameFramework()
 {
 
 }
 
 //다음 함수는 응용 프로그램이 실행되어 주 윈도우가 생성되면 호출된다는 것에 유의하라. 
-bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
+bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
 	// 매니저 생성
-	CObjectManager::Instance();
+	ObjectManager::Instance();
 
 	//Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다. 
 	CreateDirect3DDevice();
@@ -46,7 +46,7 @@ bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	return(true);
 }
 
-void CGameFramework::OnDestroy()
+void GameFramework::OnDestroy()
 {
 	WaitForGpuComplete();
 	ReleaseObjects();
@@ -61,7 +61,7 @@ void CGameFramework::OnDestroy()
 
 }
 
-void CGameFramework::CreateSwapChain()
+void GameFramework::CreateSwapChain()
 {
 	RECT rcClient;
 	::GetClientRect(m_hWnd, &rcClient);
@@ -98,7 +98,7 @@ void CGameFramework::CreateSwapChain()
 #endif
 }
 
-void CGameFramework::CreateDirect3DDevice() {
+void GameFramework::CreateDirect3DDevice() {
 	HRESULT hResult;
 	UINT nDXGIFactoryFlags = 0;
 #if defined(_DEBUG)
@@ -143,7 +143,7 @@ void CGameFramework::CreateDirect3DDevice() {
 	m_hFenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 }
 
-void CGameFramework::CreateCommandQueueAndList()
+void GameFramework::CreateCommandQueueAndList()
 {
 	D3D12_COMMAND_QUEUE_DESC d3dCommandQueueDesc;
 	::ZeroMemory(&d3dCommandQueueDesc, sizeof(D3D12_COMMAND_QUEUE_DESC));
@@ -162,7 +162,7 @@ void CGameFramework::CreateCommandQueueAndList()
 	_ASSERTE(SUCCEEDED(hResult));
 }
 
-void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
+void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC d3dDescriptorHeapDesc;
 	::ZeroMemory(&d3dDescriptorHeapDesc, sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
@@ -184,7 +184,7 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 }
 
 //스왑체인의 각 후면 버퍼에 대한 렌더 타겟 뷰를 생성한다. 
-void CGameFramework::CreateRenderTargetViews()
+void GameFramework::CreateRenderTargetViews()
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	for (UINT i = 0; i < m_nSwapChainBuffers; i++)
@@ -195,7 +195,7 @@ void CGameFramework::CreateRenderTargetViews()
 	}
 }
 
-void CGameFramework::CreateDepthStencilView()
+void GameFramework::CreateDepthStencilView()
 {
 	D3D12_RESOURCE_DESC d3dResourceDesc;
 	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -231,10 +231,10 @@ void CGameFramework::CreateDepthStencilView()
 
 
 
-void CGameFramework::BuildObjects()
+void GameFramework::BuildObjects()
 {
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
-	m_pScene = std::make_unique<CChess_Scene>();
+	m_pScene = std::make_unique<Chess_Scene>();
 	m_pScene.get()->BuildObjects(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
 
 	m_pd3dCommandList->Close();
@@ -248,16 +248,16 @@ void CGameFramework::BuildObjects()
 	m_GameTimer.Reset();
 }
 
-void CGameFramework::ReleaseObjects()
+void GameFramework::ReleaseObjects()
 {
 	m_pScene.reset();
 }
 
-void CGameFramework::ProcessNetwork()
+void GameFramework::ProcessNetwork()
 {
 	// 이 함수는 외부 전역 변수/함수에 의존합니다.
 	// Chess_Client.cpp 에 있는 c_socket, recv_and_process_packets()를
-	// CGameFramework의 멤버로 가져오는 것이 더 좋은 설계일 수 있습니다.
+	// GameFramework의 멤버로 가져오는 것이 더 좋은 설계일 수 있습니다.
 	// 여기서는 일단 기존 구조를 활용합니다.
 	extern SOCKET c_socket;
 	extern void recv_and_process_packets();
@@ -267,7 +267,7 @@ void CGameFramework::ProcessNetwork()
 	recv_and_process_packets();
 }
 
-void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+void GameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	switch (nMessageID)
 	{
@@ -286,7 +286,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	}
 }
 
-void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM	wParam, LPARAM lParam) 
+void GameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM	wParam, LPARAM lParam) 
 {
 	switch (nMessageID)
 	{
@@ -324,9 +324,9 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			// [추가] 숫자 키 1~6으로 방 입장 요청
 		case '1': case '2': case '3': case '4': case '5': case '6':
 			{
-				int room_id_to_enter = wParam - '1' + 1; // '1' -> 1, '2' -> 2 ...
+				int room_id_to_enter = static_cast<int>(wParam - '1') + 1; // '1' -> 1, '2' -> 2 ...
 				CLOG(L"[C->S] Requesting to enter room %d (Key %c pressed)", room_id_to_enter, (wchar_t)wParam);
-				CObjectManager::Instance()->ChangeRoom();
+				ObjectManager::Instance()->ChangeRoom();
 				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
 				break;
 			}
@@ -339,7 +339,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	}
 }
 
-LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID,
+LRESULT CALLBACK GameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID,
 	WPARAM wParam, LPARAM lParam)
 {
 	switch (nMessageID)
@@ -366,7 +366,7 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 }
 
 
-void CGameFramework::ProcessInput()
+void GameFramework::ProcessInput()
 {
 	if(m_bIsWindowActive)
 	{
@@ -374,12 +374,12 @@ void CGameFramework::ProcessInput()
 	}
 }
 
-void CGameFramework::AnimateObjects()
+void GameFramework::AnimateObjects()
 {
 	m_pScene.get()->AnimateObjects(m_GameTimer.GetTimeElapsed(), m_pd3dCommandList.Get());
 }
 
-void CGameFramework::WaitForGpuComplete()
+void GameFramework::WaitForGpuComplete()
 {
 	UINT64 nFenceValue = ++m_nFenceValues[m_nSwapChainBufferIndex];
 	HRESULT hResult = m_pd3dCommandQueue->Signal(m_pd3dFence.Get(), nFenceValue);
@@ -390,7 +390,7 @@ void CGameFramework::WaitForGpuComplete()
 	}
 }
 
-void CGameFramework::MoveToNextFrame()
+void GameFramework::MoveToNextFrame()
 {
 	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
 
@@ -404,17 +404,17 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
-void CGameFramework::FrameAdvance()
+void GameFramework::FrameAdvance()
 {
 	
 	m_GameTimer.Tick(0.0f);
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
 
-	CObjectManager::Instance()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
+	ObjectManager::Instance()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	//오브젝트 생성가능
-	//CObjectManager::Instance()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
+	//ObjectManager::Instance()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
 	ProcessNetwork();
 	ProcessInput();
@@ -435,7 +435,7 @@ void CGameFramework::FrameAdvance()
 	//float pfClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 	
 	// 내가 한 색상
-	float pfClearColor[4] = { 0.894, 0.651, 0.475, 1.0f };
+	float pfClearColor[4] = { 0.894f, 0.651f, 0.475f, 1.0f };
 	m_pd3dCommandList->ClearRenderTargetView(d3dRtvCPUDescriptorHandle,	pfClearColor/*Colors::Azure*/, 0, NULL);
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle =	m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
@@ -476,7 +476,7 @@ void CGameFramework::FrameAdvance()
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
-void CGameFramework::ChangeSwapChainState()
+void GameFramework::ChangeSwapChainState()
 {
 	WaitForGpuComplete();
 

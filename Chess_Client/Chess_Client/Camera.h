@@ -8,11 +8,11 @@ struct VS_CB_CAMERA_INFO
 };
 
 
-class CCamera
+class Camera
 {
 public:
-	CCamera();
-	virtual ~CCamera();
+	Camera();
+	virtual ~Camera();
 
 
 public:

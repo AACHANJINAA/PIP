@@ -23,13 +23,13 @@ inline CAMERAMODE& operator++(CAMERAMODE& mod)
 }
 
 
-class CFreeCamera : public CCamera
+class FreeCamera : public Camera
 {
 public:
-	CFreeCamera() = default;
-	~CFreeCamera() = default;
+	FreeCamera() = default;
+	~FreeCamera() = default;
 
-	void SetPlayer(CGameObject* pPlayer) { m_Player = pPlayer; }
+	void SetPlayer(GameObject* pPlayer) { m_Player = pPlayer; }
 	void SetCameraMode(CAMERAMODE Mode) { m_NowMode = Mode; }
 	CAMERAMODE GetCameraMode() { return m_NowMode; }
 	void SetOffset(float Offset) { m_Offset = Offset; }
@@ -48,7 +48,7 @@ public:
 
 private:
 	// 플레이어를 가지고 있기
-	CGameObject* m_Player{};
+	GameObject* m_Player{};
 
 	float m_BeforeX{-500.f};
 	float m_BeforeY{ -500.f };

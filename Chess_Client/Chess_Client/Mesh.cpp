@@ -24,11 +24,11 @@ BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max) {
 	return oobb;
 }
 
-CMesh::CMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+Mesh::Mesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
 }
-CMesh::~CMesh()
+Mesh::~Mesh()
 {
 	if (m_pd3dVertexBuffer) m_pd3dVertexBuffer->Release();
 	if (m_pd3dVertexUploadBuffer) m_pd3dVertexUploadBuffer->Release();
@@ -37,7 +37,7 @@ CMesh::~CMesh()
 	if (m_pd3dIndexUploadBuffer) m_pd3dIndexUploadBuffer->Release();
 }
 
-void CMesh::ReleaseUploadBuffers()
+void Mesh::ReleaseUploadBuffers()
 {
 	//정점 버퍼를 위한 업로드 버퍼를 소멸시킨다. 
 	if (m_pd3dVertexUploadBuffer) m_pd3dVertexUploadBuffer->Release();
@@ -50,7 +50,7 @@ void CMesh::ReleaseUploadBuffers()
 
 
 
-void CMesh::UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList)
+void Mesh::UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
 	// 1. m_pd3dVertexUploadBufferForUpdate (UPLOAD 힙)에 새로운 정점 데이터 매핑 및 복사
@@ -99,9 +99,9 @@ void CMesh::UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList)
 	pd3dCommandList->ResourceBarrier(1, &barrierToVertexAndConstantBuffer); // 명령 리스트에 추가
 }
 
-void CMesh::ChangeColor(ID3D12GraphicsCommandList* pd3dCommandList, float r, float g, float b, float a)
+void Mesh::ChangeColor(ID3D12GraphicsCommandList* pd3dCommandList, float r, float g, float b, float a)
 {
-	for (CIlluminatedVertex& vertex : m_Vertexvec)
+	for (IlluminatedVertex& vertex : m_Vertexvec)
 	{
 		vertex.m_xmf4Diffuse.x = r;
 		vertex.m_xmf4Diffuse.y = g;
@@ -112,7 +112,7 @@ void CMesh::ChangeColor(ID3D12GraphicsCommandList* pd3dCommandList, float r, flo
 }
 
 
-void CMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+void Mesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 1, &m_d3dVertexBufferView);
@@ -128,7 +128,7 @@ void CMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 	}
 }
 
-BOOL CMesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance)
+BOOL Mesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance)
 {
 	float fHitDistance;
 	BOOL bIntersected = TriangleTests::Intersects(xmRayOrigin, xmRayDirection, v0, v1, v2, fHitDistance);
@@ -137,7 +137,7 @@ BOOL CMesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDire
 	return(bIntersected);
 }
 
-int CMesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance)
+int Mesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance)
 {
 	int nIntersections = 0;
 	bool bIntersected = m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *pfNearHitDistance);
@@ -166,7 +166,7 @@ int CMesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRay
 }
 
 // (수정) 위치뿐만 아니라 빛 계산 때 필요한 법선 벡터 추가 [PONG] 
-CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+ReadObjMesh::ReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
 {
 	std::ifstream in{ str };
 	if (!in) {
@@ -305,7 +305,7 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 			}
 
 			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성 + color 추가
-			CIlluminatedVertex new_vertex(position, normal, texcoord, color);
+			IlluminatedVertex new_vertex(position, normal, texcoord, color);
 
 			// 이 새 정점을 최종 정점 목록에 추가
 			m_Vertexvec.emplace_back(new_vertex);
@@ -326,27 +326,27 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 		}
 	}
 
-	// (수정) CIlluminatedVertex로 변경
+	// (수정) IlluminatedVertex로 변경
 	auto [min_x, max_x] =
 		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), 
-			[](const CIlluminatedVertex& a, const CIlluminatedVertex& b)
+			[](const IlluminatedVertex& a, const IlluminatedVertex& b)
 			{ 
 				return a.m_xmf3Position.x < b.m_xmf3Position.x; 
 			});
 	auto [min_y, max_y] =
 		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), 
-			[](const CIlluminatedVertex& a, const CIlluminatedVertex& b)
+			[](const IlluminatedVertex& a, const IlluminatedVertex& b)
 			{ 
 				return a.m_xmf3Position.y < b.m_xmf3Position.y; 
 			});
 	auto [min_z, max_z] =
 		std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(), 
-			[](const CIlluminatedVertex& a, const CIlluminatedVertex& b)
+			[](const IlluminatedVertex& a, const IlluminatedVertex& b)
 			{ 
 				return a.m_xmf3Position.z < b.m_xmf3Position.z; 
 			});
 
-	m_nStride = sizeof(CIlluminatedVertex);
+	m_nStride = sizeof(IlluminatedVertex);
 	m_nVertices = m_Vertexvec.size();
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
@@ -393,13 +393,13 @@ CReadObjMesh::CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 }
 
 
-CReadObjMesh::~CReadObjMesh()
+ReadObjMesh::~ReadObjMesh()
 {
 
 }
 
 // .mtl 파일을 읽어 재질 정보를 파싱하고 m_mapMaterials 맵에 저장하는 함수
-void CReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName)
+void ReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName)
 {
 	// .obj 파일의 경로를 기준으로 .mtl 파일의 전체 경로를 생성
 	std::string mtlFilePath = objFilePath.substr(0, objFilePath.find_last_of("/\\")) + "/" + mtlFileName;
@@ -466,8 +466,8 @@ void CReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string
 
 
 
-// CReadGlbMesh 소멸자: 생성된 모든 Primitive와 업로드 버퍼를 정리합니다.
-CReadGlbMesh::~CReadGlbMesh()
+// ReadGlbMesh 소멸자: 생성된 모든 Primitive와 업로드 버퍼를 정리합니다.
+ReadGlbMesh::~ReadGlbMesh()
 {
 	m_primitives.clear(); // unique_ptr 벡터가 자동으로 각 Primitive 소멸자 호출
 	for (auto& buffer : m_vUploadBuffers) {
@@ -477,19 +477,19 @@ CReadGlbMesh::~CReadGlbMesh()
 }
 
 // 오버라이드된 ReleaseUploadBuffers 함수
-void CReadGlbMesh::ReleaseUploadBuffers()
+void ReadGlbMesh::ReleaseUploadBuffers()
 {
-	// CReadGlbMesh는 로딩이 끝나면 업로드 버퍼를 모두 해제합니다.
+	// ReadGlbMesh는 로딩이 끝나면 업로드 버퍼를 모두 해제합니다.
 	for (auto& buffer : m_vUploadBuffers) {
 		if (buffer) buffer->Release();
 	}
 	m_vUploadBuffers.clear();
 
 	// 베이스 클래스의 업로드 버퍼도 혹시 모르니 호출해줄 수 있습니다.
-	CMesh::ReleaseUploadBuffers();
+	Mesh::ReleaseUploadBuffers();
 }
 
-std::tuple<std::vector<unsigned char>, UINT, UINT> CReadGlbMesh::LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex)
+std::tuple<std::vector<unsigned char>, UINT, UINT> ReadGlbMesh::LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex)
 {
 	if (!j.contains("textures") || textureIndex >= j["textures"].size()) return {};
 	const auto& tex = j["textures"][textureIndex];
@@ -549,8 +549,8 @@ std::tuple<std::vector<unsigned char>, UINT, UINT> CReadGlbMesh::LoadImageFromGL
 	return { std::move(pixels), width, height };
 }
 
-// 오버라이드된 Render 함수: CReadGlbMesh만의 렌더링 로직
-void CReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+// 오버라이드된 Render 함수: ReadGlbMesh만의 렌더링 로직
+void ReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -562,7 +562,7 @@ void CReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 	}
 }
 
-CReadGlbMesh::CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
 {
 	// --- 1단계: 파일 읽기 및 청크 분리 ---
 	std::vector<char> fileData;
@@ -830,7 +830,7 @@ CReadGlbMesh::CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	}
 }
 
-CReadFbxMesh::CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+ReadFbxMesh::ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
 {
 	// Assimp Importer 객체 생성
 	Assimp::Importer importer;
@@ -855,7 +855,7 @@ CReadFbxMesh::CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 	// --- 모든 메쉬 데이터 처리가 끝난 후, 최종 버퍼 생성 ---
 
-	m_nStride = sizeof(CIlluminatedVertex);
+	m_nStride = sizeof(IlluminatedVertex);
 	m_nVertices = m_Vertexvec.size();
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
@@ -882,12 +882,12 @@ CReadFbxMesh::CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
 }
 
-CReadFbxMesh::~CReadFbxMesh()
+ReadFbxMesh::~ReadFbxMesh()
 {
 	// 소멸자
 }
 
-void CReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void ReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	// 현재 노드에 포함된 모든 메쉬를 처리
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -903,13 +903,13 @@ void CReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device*
 	}
 }
 
-void CReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	// 현재 메쉬의 정점 정보를 임시로 담을 벡터
-	std::vector<CIlluminatedVertex> vertices;
+	std::vector<IlluminatedVertex> vertices;
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
-		CIlluminatedVertex vertex;
+		IlluminatedVertex vertex;
 
 		// 위치 (Position)
 		vertex.m_xmf3Position.x = mesh->mVertices[i].x;

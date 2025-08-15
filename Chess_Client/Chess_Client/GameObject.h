@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include "Camera.h"
-class CShader;
+class Shader;
 
 
 enum CHESS_TYPE {
@@ -18,12 +18,12 @@ struct MATERIAL
 	XMFLOAT4 m_xmf4Emissive;    // 방출광(Emissive)
 };
 
-// (추가) CMaterial 클래스 [PONG]
-class CMaterial
+// (추가) Material_Shader 클래스 [PONG]
+class Material_Shader
 {
 public:
-	CMaterial();
-	virtual ~CMaterial();
+	Material_Shader();
+	virtual ~Material_Shader();
 
 private:
 	int m_nReferences = 0;
@@ -32,11 +32,11 @@ public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 
-	// CMaterial은 재질 정보 + 셰이더
+	// Material_Shader은 재질 정보 + 셰이더
 	MATERIAL* m_pMaterial = NULL;
-	CShader* m_pShader = NULL;
+	Shader* m_pShader = NULL;
 
-	void SetShader(CShader* pShader);
+	void SetShader(Shader* pShader);
 };
 
 class HPObject // HPObject 클래스는 HP와 MaxHP를 관리하는 기본 클래스
@@ -56,11 +56,11 @@ public:
 	bool IsDead() const { return _hp <= 0; }
 };
 
-class CGameObject
+class GameObject
 {
 public:
-	CGameObject();
-	virtual ~CGameObject();
+	GameObject();
+	virtual ~GameObject();
 private:
 	int m_nReferences = 0;
 public:
@@ -73,7 +73,7 @@ public:
 	bool m_Delete{}; // 객체를 삭제해야 하는지?
 	bool m_bCollision{}; // 충돌하였는지?
 
-	CGameObject* m_pObjectCollided = NULL; // 누구랑 박은건지?
+	GameObject* m_pObjectCollided = NULL; // 누구랑 박은건지?
 	XMFLOAT4	m_dwColor = { 0.f,0.f,0.f,0.f };
 
 	XMFLOAT3 m_xmf3Gravity; // 중력
@@ -84,19 +84,19 @@ public:
 
 public:
 	XMFLOAT4X4 m_xmf4x4World;
-	CMesh* m_pMesh = NULL;
-	//CShader* m_pShader = NULL; 
-	CMaterial* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
+	Mesh* m_pMesh = NULL;
+	//Shader* m_pShader = NULL; 
+	Material_Shader* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
 public:
 	void ReleaseUploadBuffers(); 
-	virtual void SetMesh(CMesh* pMesh);
-	virtual void SetShader(CShader* pShader);
-	void SetMaterial(CMaterial* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
+	virtual void SetMesh(Mesh* pMesh);
+	virtual void SetShader(Shader* pShader);
+	void SetMaterial(Material_Shader* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
 	virtual void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Collision(float fElapsedTime) = 0;
 	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) = 0;
 	virtual void OnPrepareRender();
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
 public:
 	//상수 버퍼를 생성한다. 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);

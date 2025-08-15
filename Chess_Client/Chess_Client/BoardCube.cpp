@@ -1,26 +1,26 @@
 #include "stdafx.h"
 #include "BoardCube.h"
 
-CBoardCube::CBoardCube()
+BoardCube::BoardCube()
 {
 
 }
 
-CBoardCube::~CBoardCube()
+BoardCube::~BoardCube()
 {
 }
 
-void CBoardCube::Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
-{
-
-}
-
-void CBoardCube::Collision(float fElapsedTime)
+void BoardCube::Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
 }
 
-void CBoardCube::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
+void BoardCube::Collision(float fElapsedTime)
+{
+
+}
+
+void BoardCube::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
 {
 
 }

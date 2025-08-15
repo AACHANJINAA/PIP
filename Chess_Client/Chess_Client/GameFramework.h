@@ -2,9 +2,9 @@
 #include "Timer.h"
 #include "Scene.h"
 
-class CGameFramework : public Singleton<CGameFramework>
+class GameFramework : public Singleton<GameFramework>
 {
-	friend Singleton<CGameFramework>; // ½Ì±ÛÅæ Á¢±Ù Çã¿ë
+	friend Singleton<GameFramework>; // ½Ì±ÛÅæ Á¢±Ù Çã¿ë
 private:
 	
 	HINSTANCE m_hInstance = NULL;
@@ -43,15 +43,15 @@ private:
 	std::array<UINT64, m_nSwapChainBuffers> m_nFenceValues;
 	HANDLE m_hFenceEvent;
 
-	CGameTimer m_GameTimer;
+	GameTimer m_GameTimer;
 	_TCHAR m_pszFrameRate[50];
 
-	std::unique_ptr<CScene> m_pScene;
+	std::unique_ptr<Scene> m_pScene;
 
 	
 public:
-	CGameFramework();
-	~CGameFramework();
+	GameFramework();
+	~GameFramework();
 
 
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);

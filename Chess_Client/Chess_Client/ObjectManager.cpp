@@ -1,23 +1,23 @@
 #include "stdafx.h"
 #include "ObjectManager.h"
-#include "Chess_King.h"
-#include "Other_King.h"
+#include "MainPlayer.h"
+#include "OtherPlayer.h"
 
-CObjectManager::CObjectManager()
+ObjectManager::ObjectManager()
 {
 }
 
-CObjectManager::~CObjectManager()
+ObjectManager::~ObjectManager()
 {
 	DeleteAll();
 }
 
-void CObjectManager::RequestObject(std::shared_ptr<CGameObject> WhatYouWant)
+void ObjectManager::RequestObject(std::shared_ptr<GameObject> WhatYouWant)
 {
 	m_RequestObjects.push(WhatYouWant);
 }
 
-void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	if (m_RequestObjects.empty())
 	{
@@ -31,7 +31,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 		{
 		case PLAYER_CHESS:
 		{
-			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" };
+			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" };
 
 			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
@@ -39,14 +39,14 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 			RequestObject->SetScale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
-			CObjectManager::Instance()->PushObject(RequestObject);
-			CObjectManager::Instance()->SetPlayer(RequestObject);
+			ObjectManager::Instance()->PushObject(RequestObject);
+			ObjectManager::Instance()->SetPlayer(RequestObject);
 		}
 		break;
 
 		case ENEMY_CHESS:
 		{
-			CMesh* Chess_Mesh = new CReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" };
+			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" };
 
 			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 1.0f, 0.0f, 1.f);
@@ -56,7 +56,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 			RequestObject->SetScale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
-			CObjectManager::Instance()->PushEnemy(RequestObject);
+			ObjectManager::Instance()->PushEnemy(RequestObject);
 		}
 		break;
 
@@ -70,7 +70,7 @@ void CObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 
 }
 
-void CObjectManager::DeleteAll()
+void ObjectManager::DeleteAll()
 {
 	for (auto& objectList : m_AllObject)
 	{
@@ -81,7 +81,7 @@ void CObjectManager::DeleteAll()
 }
 
 
-void CObjectManager::DeleteVec(int WantVecNum)
+void ObjectManager::DeleteVec(int WantVecNum)
 {
 	if (WantVecNum < 0 || WantVecNum >= ALLARRAYSIZE)
 	{
@@ -91,17 +91,17 @@ void CObjectManager::DeleteVec(int WantVecNum)
 	m_AllObject[WantVecNum].clear();
 }
 
-void CObjectManager::DeleteObject()
+void ObjectManager::DeleteObject()
 {
 	for (auto& objectList : m_AllObject)
 	{
-		objectList.remove_if([](const std::shared_ptr<CGameObject>& pObject) {
+		objectList.remove_if([](const std::shared_ptr<GameObject>& pObject) {
 			return pObject->m_Delete;
 		});
 	}
 }
 
-void CObjectManager::ChangeRoom()
+void ObjectManager::ChangeRoom()
 {
 	m_Player = nullptr; 
 	DeleteVec(0);
@@ -110,27 +110,27 @@ void CObjectManager::ChangeRoom()
 	//DeleteVec(3);
 }
 
-void CObjectManager::PushObject(std::shared_ptr<CGameObject> object)
+void ObjectManager::PushObject(std::shared_ptr<GameObject> object)
 {
 	m_AllObject[0].push_back(object);
 }
 
-void CObjectManager::PushEnemy(std::shared_ptr<CGameObject> object)
+void ObjectManager::PushEnemy(std::shared_ptr<GameObject> object)
 {
 	m_AllObject[1].push_back(object);
 }
 
-void CObjectManager::PushPlayerBullet(std::shared_ptr<CGameObject> object)
+void ObjectManager::PushPlayerBullet(std::shared_ptr<GameObject> object)
 {
 	m_AllObject[2].push_back(object);
 }
 
-void CObjectManager::PushEnemyBullet(std::shared_ptr<CGameObject> object)
+void ObjectManager::PushEnemyBullet(std::shared_ptr<GameObject> object)
 {
 	m_AllObject[3].push_back(object);
 }
 
-void CObjectManager::PushFloorObject(std::shared_ptr<CGameObject> object)
+void ObjectManager::PushFloorObject(std::shared_ptr<GameObject> object)
 {
 	m_AllObject[4].push_back(object);
 }

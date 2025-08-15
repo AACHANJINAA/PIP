@@ -2,7 +2,7 @@
 #include "Timer.h"
 
 
-CGameTimer::CGameTimer()
+GameTimer::GameTimer()
 {
 	if (::QueryPerformanceFrequency((LARGE_INTEGER*)&m_nPerformanceFrequency))
 	{
@@ -22,11 +22,11 @@ CGameTimer::CGameTimer()
 	m_fFPSTimeElapsed = 0.0f;
 }
 
-CGameTimer::~CGameTimer()
+GameTimer::~GameTimer()
 {
 }
 
-void CGameTimer::Tick(float fLockFPS)
+void GameTimer::Tick(float fLockFPS)
 {
 	if (m_bHardwareHasPerformanceCounter)
 	{
@@ -82,7 +82,7 @@ void CGameTimer::Tick(float fLockFPS)
 
 }
 
-unsigned long CGameTimer::GetFrameRate(LPTSTR lpszString, int nCharacters)
+unsigned long GameTimer::GetFrameRate(LPTSTR lpszString, int nCharacters)
 {
 	//현재 프레임 레이트를 문자열로 변환하여 lpszString 버퍼에 쓰고 “ FPS”와 결합한다.
 
@@ -95,12 +95,12 @@ unsigned long CGameTimer::GetFrameRate(LPTSTR lpszString, int nCharacters)
 }
 
 
-float CGameTimer::GetTimeElapsed()
+float GameTimer::GetTimeElapsed()
 {
 	return(m_fTimeElapsed);
 }
 
-void CGameTimer::Reset()
+void GameTimer::Reset()
 {
 	__int64 nPerformanceCounter;
 	::QueryPerformanceCounter((LARGE_INTEGER*)&nPerformanceCounter);

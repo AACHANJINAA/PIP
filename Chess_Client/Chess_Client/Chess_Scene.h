@@ -1,12 +1,12 @@
 #pragma once
 #include "Scene.h"
 #include "FreeCamera.h"
-class CChess_Scene : public CScene
+class Chess_Scene : public Scene
 {
 public:
-	CChess_Scene() {};
-	CChess_Scene(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual ~CChess_Scene();
+	Chess_Scene() {};
+	Chess_Scene(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual ~Chess_Scene();
 
 public:
 	// CScene을(를) 통해 상속됨
@@ -19,6 +19,6 @@ public:
 
 
 private:
-	CFreeCamera* m_ChessCamera{};
+	FreeCamera* m_ChessCamera{};
 };
 

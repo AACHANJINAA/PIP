@@ -3,7 +3,7 @@
 #include "Shader.h"
 #include <iostream>
 
-CCamera::CCamera()
+Camera::Camera()
 {
 	m_xmf4x4View = Matrix4x4::Identity();
 	m_xmf4x4Projection = Matrix4x4::Identity();
@@ -17,17 +17,17 @@ CCamera::CCamera()
 	GenerateProjectionMatrix(0.1f, 5000.0f, m_fFOVAngle);
 }
 
-CCamera::~CCamera()
+Camera::~Camera()
 {
 }
 
 
-void CCamera::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void Camera::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
 }
 
-void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
+void Camera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	XMFLOAT4X4 xmf4x4View;
 	XMStoreFloat4x4(&xmf4x4View, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4View)));
@@ -42,12 +42,12 @@ void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &xmf4x4Projection, 32);
 }
 
-void CCamera::ReleaseShaderVariables()
+void Camera::ReleaseShaderVariables()
 {
 
 }
 
-void CCamera::SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, float
+void Camera::SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, float
 	fMinZ, float fMaxZ)
 {
 	m_d3dViewport.TopLeftX = float(xTopLeft);
@@ -57,7 +57,7 @@ void CCamera::SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, f
 	m_d3dViewport.MaxDepth = fMaxZ;
 }
 
-void CCamera::SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom)
+void Camera::SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom)
 {
 	m_d3dScissorRect.left = xLeft;
 	m_d3dScissorRect.top = yTop;
@@ -65,58 +65,58 @@ void CCamera::SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom)
 	m_d3dScissorRect.bottom = yBottom;
 }
 
-void CCamera::SetViewportsAndScissorRects(ID3D12GraphicsCommandList* pd3dCommandList)
+void Camera::SetViewportsAndScissorRects(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	pd3dCommandList->RSSetViewports(1, &m_d3dViewport);
 	pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
 }
 
 
-void CCamera::SetFOVAngle(float fFOVAngle)
+void Camera::SetFOVAngle(float fFOVAngle)
 {
 	m_fFOVAngle = fFOVAngle;
 	m_fProjectRectDistance = float(1.0f / tan(DegreeToRadian(fFOVAngle * 0.5f)));
 }
 
-void CCamera::GenerateProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fFOVAngle)
+void Camera::GenerateProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fFOVAngle)
 {
 	m_xmf4x4Projection = Matrix4x4::PerspectiveFovLH(XMConvertToRadians(fFOVAngle),
 		m_fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
 }
 
 
-bool CCamera::IsInFrustum(BoundingOrientedBox& xmBoundingBox)
+bool Camera::IsInFrustum(BoundingOrientedBox& xmBoundingBox)
 {
 	return(m_xmFrustumWorld.Intersects(xmBoundingBox));
 }
 
-void CCamera::SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
+void Camera::SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(m_xmf3Position, xmf3LookAt, xmf3Up);
 }
 
 
-void CCamera::Move(const XMFLOAT3& xmf3Shift)
+void Camera::Move(const XMFLOAT3& xmf3Shift)
 {
  	m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
 }
 
-void CCamera::Move(float x, float y, float z)
+void Camera::Move(float x, float y, float z)
 {
 	Move(XMFLOAT3(x, y, z));
 }
 
-void CCamera::SetPosition(XMFLOAT3 Position)
+void Camera::SetPosition(XMFLOAT3 Position)
 {
 	m_xmf3Position = Position;
 }
 
-void CCamera::SetPosition(float x, float y, float z)
+void Camera::SetPosition(float x, float y, float z)
 {
 	m_xmf3Position = XMFLOAT3(x,y,z);;
 }
 
-void CCamera::Rotate(float fPitchX, float fYawY, float fRollZ)
+void Camera::Rotate(float fPitchX, float fYawY, float fRollZ)
 {
 	m_fRotate_X += fPitchX;
 	m_fRotate_Y += fYawY;
@@ -127,7 +127,7 @@ void CCamera::Rotate(float fPitchX, float fYawY, float fRollZ)
 }
 
 
-void CCamera::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
+void Camera::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosVec(), xmf3LookTo, xmf3Up);
 	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
@@ -135,7 +135,7 @@ void CCamera::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
 	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
 }
 
-void CCamera::LookTo(XMFLOAT3& xmf3LookTo)
+void Camera::LookTo(XMFLOAT3& xmf3LookTo)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosVec(), xmf3LookTo, GetUpVec());
 	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
@@ -144,7 +144,7 @@ void CCamera::LookTo(XMFLOAT3& xmf3LookTo)
 }
 
 
-void CCamera::Update()
+void Camera::Update()
 {
 	Rotate();
 
@@ -172,7 +172,7 @@ void CCamera::Update()
 }
 
 
-void CCamera::Rotate()
+void Camera::Rotate()
 {
 	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);

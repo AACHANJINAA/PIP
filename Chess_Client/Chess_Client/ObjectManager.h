@@ -1,17 +1,17 @@
 #pragma once
 #include "GameObject.h"
 
-class CObjectManager : public Singleton<CObjectManager>
+class ObjectManager : public Singleton<ObjectManager>
 {
-	friend Singleton<CObjectManager>;
+	friend Singleton<ObjectManager>;
 public:
 
-	CObjectManager();
-	~CObjectManager();
+	ObjectManager();
+	~ObjectManager();
 
 public:
 	// 요청과 만들기
-	void RequestObject(std::shared_ptr<CGameObject> WhatYouWant);
+	void RequestObject(std::shared_ptr<GameObject> WhatYouWant);
 	void MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 
 	// 모두 삭제
@@ -24,8 +24,8 @@ public:
 	void ChangeRoom();
 
 	// 플레이어
-	void SetPlayer(std::shared_ptr <CGameObject> player) { m_Player = player; }
-	std::shared_ptr<CGameObject> GetPlayer() const { return m_Player; }
+	void SetPlayer(std::shared_ptr <GameObject> player) { m_Player = player; }
+	std::shared_ptr<GameObject> GetPlayer() const { return m_Player; }
 
 
 	// 오브젝트 넣기
@@ -33,35 +33,35 @@ public:
 	// 다른 플레이어 = 체력, 위치(x,y,z), name, id, size
 
 
-	void PushObject(std::shared_ptr<CGameObject> object);
-	void PushEnemyBullet(std::shared_ptr<CGameObject> object);
-	void PushPlayerBullet(std::shared_ptr<CGameObject> object);
-	void PushEnemy(std::shared_ptr<CGameObject> object);
-	void PushFloorObject(std::shared_ptr<CGameObject> object);
+	void PushObject(std::shared_ptr<GameObject> object);
+	void PushEnemyBullet(std::shared_ptr<GameObject> object);
+	void PushPlayerBullet(std::shared_ptr<GameObject> object);
+	void PushEnemy(std::shared_ptr<GameObject> object);
+	void PushFloorObject(std::shared_ptr<GameObject> object);
 
 
 	// 오브젝트 얻기
-	std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& GetAllObject() { return m_AllObject; }
+	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& GetAllObject() { return m_AllObject; }
 
-	std::list<std::shared_ptr<CGameObject>>& GetObjectVec() { return m_AllObject[0]; } 
-	std::list<std::shared_ptr<CGameObject>>& GetEnemy() { return  m_AllObject[1]; }
-	std::list<std::shared_ptr<CGameObject>>& GetPlayerBulletVec() { return  m_AllObject[2]; }
-	std::list<std::shared_ptr<CGameObject>>& GetEnemyBulletVec() { return  m_AllObject[3]; }
-	std::list<std::shared_ptr<CGameObject>>& GetFloor() { return  m_AllObject[4]; }
+	std::list<std::shared_ptr<GameObject>>& GetObjectVec() { return m_AllObject[0]; } 
+	std::list<std::shared_ptr<GameObject>>& GetEnemy() { return  m_AllObject[1]; }
+	std::list<std::shared_ptr<GameObject>>& GetPlayerBulletVec() { return  m_AllObject[2]; }
+	std::list<std::shared_ptr<GameObject>>& GetEnemyBulletVec() { return  m_AllObject[3]; }
+	std::list<std::shared_ptr<GameObject>>& GetFloor() { return  m_AllObject[4]; }
 
-	CGameObject* Terrain{};
+	GameObject* Terrain{};
 
 
 private:
 
 
-	std::shared_ptr <CGameObject> m_Player{};
+	std::shared_ptr <GameObject> m_Player{};
 
-	std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE> m_AllObject{}; // 현재 씬 오브젝트
+	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE> m_AllObject{}; // 현재 씬 오브젝트
 
 
 	// 요청 임시 변수
-	std::queue<std::shared_ptr<CGameObject>> m_RequestObjects{};
+	std::queue<std::shared_ptr<GameObject>> m_RequestObjects{};
 	
 };
 

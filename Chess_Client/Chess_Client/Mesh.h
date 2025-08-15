@@ -9,15 +9,15 @@
 using json = nlohmann::json;
 
 //정점을 표현하기 위한 클래스를 선언한다.
-class CVertex
+class Vertex
 {
 public:
 	//정점의 위치 벡터이다(모든 정점은 최소한 위치 벡터를 가져야 한다).
 	XMFLOAT3 m_xmf3Position;
 public:
-	CVertex() { m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
-	CVertex(XMFLOAT3 xmf3Position) { m_xmf3Position = xmf3Position; }
-	~CVertex() {}
+	Vertex() { m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
+	Vertex(XMFLOAT3 xmf3Position) { m_xmf3Position = xmf3Position; }
+	~Vertex() {}
 };
 
 // Node 구조체 정의 DW : GLTF/GLB 파일에서 노드 정보를 표현하기 위해 추가
@@ -36,7 +36,7 @@ struct Node
 	int skinIndex = -1;
 };
 
-// 스키닝 정보를 포함하는 새로운 정점 구조체 -> CVertex 대신에 사용할 것임
+// 스키닝 정보를 포함하는 새로운 정점 구조체 -> Vertex 대신에 사용할 것임
 struct SkinnedVertex
 {
 	XMFLOAT3 m_xmf3Position;
@@ -79,7 +79,7 @@ struct MeshPrimitive
 
 
 // (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
-class CIlluminatedVertex : public CVertex
+class IlluminatedVertex : public Vertex
 {
 public:
 	XMFLOAT3 m_xmf3Normal; // 법선 벡터
@@ -87,27 +87,27 @@ public:
 	XMFLOAT4 m_xmf4Diffuse; // CDiffusedVertex꺼 가져오기
 
 public:
-	CIlluminatedVertex() { 
+	IlluminatedVertex() { 
 		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
 		m_xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
 		m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f); // 추가
 		m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
-	CIlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT4 c = RANDOM_COLOR) {
+	IlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT4 c = RANDOM_COLOR) {
 		m_xmf3Position = p;
 		m_xmf3Normal = n;
 		m_xmf2Texcoord = t;
 		m_xmf4Diffuse = c;
 	}
-	~CIlluminatedVertex() {}
+	~IlluminatedVertex() {}
 };
 
-class CMesh
+class Mesh
 {
 public:
-	CMesh() {}
-	CMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual ~CMesh();
+	Mesh() {}
+	Mesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual ~Mesh();
 
 private:
 	int m_nReferences = 0;
@@ -141,7 +141,7 @@ protected:
 
 	std::vector<UINT> m_Indexvec; // 인덱스 버퍼를 저장하기 위한 벡터(인덱스 버퍼는 변함이 없음)
 
-	std::vector<CIlluminatedVertex> m_Vertexvec; // 버텍스 버퍼를 저장하기 위한 벡터 -> (수정) CIlluminatedVertex class로 변경 [PONG]
+	std::vector<IlluminatedVertex> m_Vertexvec; // 버텍스 버퍼를 저장하기 위한 벡터 -> (수정) IlluminatedVertex class로 변경 [PONG]
 
 	/*인덱스 버퍼(인덱스의 배열)와 인덱스 버퍼를 위한 업로드 버퍼에 대한 인터페이스 포인터이다. 인덱스 버퍼는 정점
 	버퍼(배열)에 대한 인덱스를 가진다.*/
@@ -181,39 +181,39 @@ struct Material
 	float Ns;    // Specular Exponent 
 };
 
-class CReadObjMesh : public CMesh
+class ReadObjMesh : public Mesh
 {
 public:
-	CReadObjMesh() {};
-	CReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+	ReadObjMesh() {};
+	ReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
 
 	//void ChangeColor(float r, float g, float b, float a);
 
 	//virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
 
 
-	virtual ~CReadObjMesh();
+	virtual ~ReadObjMesh();
 
 private:
 	std::map<std::string, Material> m_mapMaterials;
 	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
 };
 
-class CReadGlbMesh : public CMesh
+class ReadGlbMesh : public Mesh
 {
 public:
-	CReadGlbMesh() {}
-	virtual ~CReadGlbMesh();
+	ReadGlbMesh() {}
+	virtual ~ReadGlbMesh();
 
-	CReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+	ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
 
-	// CMesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
+	// Mesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
 	// 업로드 버퍼 해제도 오버라이드
 	void ReleaseUploadBuffers() override;
 
 private:
-	// 렌더링에 필요한 데이터는 CReadGlbMesh가 직접 관리
+	// 렌더링에 필요한 데이터는 ReadGlbMesh가 직접 관리
 	std::vector<std::unique_ptr<MeshPrimitive>> m_primitives;
 
 	// 로딩 과정에서만 사용할 멤버 변수들
@@ -269,12 +269,12 @@ private:
 	}
 };
 
-class CReadFbxMesh : public CMesh
+class ReadFbxMesh : public Mesh
 {
 public:
-	CReadFbxMesh() {};
-	CReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
-	virtual ~CReadFbxMesh();
+	ReadFbxMesh() {};
+	ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+	virtual ~ReadFbxMesh();
 
 private:
 	// Assimp Scene의 노드를 재귀적으로 처리하는 함수

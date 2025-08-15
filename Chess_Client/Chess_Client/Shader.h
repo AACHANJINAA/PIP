@@ -9,11 +9,11 @@ struct CB_GAMEOBJECT_INFO
 };
 
 //셰이더 소스 코드를 컴파일하고 그래픽스 상태 객체를 생성한다. 
-class CShader
+class Shader
 {
 public:
-	CShader();
-	virtual ~CShader();
+	Shader();
+	virtual ~Shader();
 
 private:
 	int m_nReferences = 0;
@@ -42,7 +42,7 @@ public:
 	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World);
 
 	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
 
 protected:
 	ID3D12PipelineState** m_ppd3dPipelineStates = NULL;
@@ -50,7 +50,7 @@ protected:
 };
 
 
-class CPlayerShader : public CShader
+class CPlayerShader : public Shader
 {
 public:
 	CPlayerShader();
@@ -63,7 +63,7 @@ public:
 
 
 //“CObjectsShader” 클래스는 게임 객체들을 포함하는 셰이더 객체이다. 
-class CObjectsShader : public CShader
+class CObjectsShader : public Shader
 {
 public:
 	CObjectsShader();
@@ -76,7 +76,7 @@ public:
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** ppd3dShaderBlob);
 	virtual void CreateShader(ID3D12Device * pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature);
 	virtual void ReleaseUploadBuffers();
-	virtual void Render(ID3D12GraphicsCommandList * pd3dCommandList, CCamera * pCamera);
+	virtual void Render(ID3D12GraphicsCommandList * pd3dCommandList, Camera * pCamera);
 protected:
 	int m_nObjects = 0;
 };

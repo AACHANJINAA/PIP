@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "Scene.h"
 #include "ObjectManager.h"
-CScene::CScene()
+Scene::Scene()
 {
 
 }
 
-CScene::~CScene()
+Scene::~Scene()
 {
 }
 
-bool CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 
     // 이 함수는 마우스를 입력하면 바로 실행됨
@@ -18,7 +18,7 @@ bool CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam,
     switch (nMessageID)
     {
     case WM_LBUTTONDOWN: // 왼쪽 마우스 입력
-        CGameObject* m_pLockedObject;
+        GameObject* m_pLockedObject;
 
         m_pLockedObject = PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam));
 
@@ -33,13 +33,13 @@ bool CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam,
     return(false);
 }
 
-bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
+bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
     return(false);
 }
 
 // (수정) 머터리얼 + 조명 파라미터추가
-ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
+ID3D12RootSignature* Scene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
 {
     ID3D12RootSignature* pd3dGraphicsRootSignature = NULL;
     D3D12_ROOT_PARAMETER pd3dRootParameters[4];
@@ -93,12 +93,12 @@ ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevic
     return(pd3dGraphicsRootSignature);
 }
 
-ID3D12RootSignature* CScene::GetGraphicsRootSignature()
+ID3D12RootSignature* Scene::GetGraphicsRootSignature()
 {
     return(m_pd3dGraphicsRootSignature);
 }
 
-CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
+GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
 {
     XMFLOAT3 xmf3PickPosition;
     xmf3PickPosition.x = (((2.0f * xClient) / (float)m_pCamera->m_d3dViewport.Width) - 1) / m_pCamera->m_xmf4x4Projection._11;
@@ -110,10 +110,10 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
 
     bool nIntersected = false;
     float fNearestHitDistance = FLT_MAX;
-    CGameObject* pNearestObject = NULL;
+    GameObject* pNearestObject = NULL;
 
 
-    std::array<std::list<std::shared_ptr<CGameObject>>, ALLARRAYSIZE>& Arr = CObjectManager::Instance()->GetAllObject();
+    std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
 
     if (Arr.size()) {
         int i = 0;
@@ -139,9 +139,9 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient)
     return nullptr;
 }
 
-void CScene::ReleaseUploadBuffers()
+void Scene::ReleaseUploadBuffers()
 {
-    auto& Arr = CObjectManager::Instance()->GetAllObject();
+    auto& Arr = ObjectManager::Instance()->GetAllObject();
 
     for (auto& Objects : Arr) {
         for (auto& Object : Objects) {
@@ -150,7 +150,7 @@ void CScene::ReleaseUploadBuffers()
     }
 }
 
-void CScene::BuildLightsAndMaterials()
+void Scene::BuildLightsAndMaterials()
 {
     m_pLights = new LIGHTS;
     ::ZeroMemory(m_pLights, sizeof(LIGHTS));
@@ -174,7 +174,7 @@ void CScene::BuildLightsAndMaterials()
     m_pMaterials->m_pReflections[0].m_xmf4Emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-void CScene::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void Scene::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
     UINT ncbElementBytes = ((sizeof(LIGHTS) + 255) & ~255); // 256의 배수
     m_pd3dcbLights = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, 
@@ -187,13 +187,13 @@ void CScene::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsComma
     m_pd3dcbMaterials->Map(0, NULL, (void**)&m_pcbMappedMaterials);
 }
 
-void CScene::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
+void Scene::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     ::memcpy(m_pcbMappedLights, m_pLights, sizeof(LIGHTS));
     ::memcpy(m_pcbMappedMaterials, m_pMaterials, sizeof(MATERIALS));
 }
 
-void CScene::ReleaseShaderVariables()
+void Scene::ReleaseShaderVariables()
 {
     if (m_pd3dcbLights) m_pd3dcbLights->Unmap(0, NULL);
     if (m_pd3dcbMaterials) m_pd3dcbMaterials->Unmap(0, NULL);

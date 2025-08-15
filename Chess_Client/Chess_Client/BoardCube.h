@@ -1,10 +1,10 @@
 #pragma once
 #include "GameObject.h"
-class CBoardCube : public CGameObject
+class BoardCube : public GameObject
 {
 public:
-	CBoardCube();
-	virtual ~CBoardCube();
+	BoardCube();
+	virtual ~BoardCube();
 
 public:
 	virtual void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList);
