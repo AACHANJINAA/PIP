@@ -67,8 +67,6 @@ public:
 
 	void ChangeSwapChainState(); // 따라하기 5
 
-
-
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
 	// 렌더 타겟 뷰와 깊이-스텐실 뷰를 생성하는 함수

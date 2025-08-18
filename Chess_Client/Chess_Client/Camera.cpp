@@ -80,10 +80,17 @@ void Camera::SetFOVAngle(float fFOVAngle)
 
 void Camera::GenerateProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fFOVAngle)
 {
-	m_xmf4x4Projection = Matrix4x4::PerspectiveFovLH(XMConvertToRadians(fFOVAngle),
-		m_fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
+	m_xmf4x4Projection = Matrix4x4::PerspectiveFovLH(XMConvertToRadians(fFOVAngle), m_fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
+
+	GenerateFrustum();
 }
 
+void Camera::GenerateFrustum() 
+{
+	m_xmFrustumWorld.CreateFromMatrix(m_xmFrustumWorld, XMLoadFloat4x4(&m_xmf4x4Projection));
+	XMMATRIX InversView = XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_xmf4x4View));
+	m_xmFrustumWorld.Transform(m_xmFrustumWorld, InversView);
+}
 
 bool Camera::IsInFrustum(BoundingOrientedBox& xmBoundingBox)
 {
@@ -94,7 +101,6 @@ void Camera::SetLookAt(XMFLOAT3& xmf3LookAt, XMFLOAT3& xmf3Up)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookAtLH(m_xmf3Position, xmf3LookAt, xmf3Up);
 }
-
 
 void Camera::Move(const XMFLOAT3& xmf3Shift)
 {
@@ -121,11 +127,7 @@ void Camera::Rotate(float fPitchX, float fYawY, float fRollZ)
 	m_fRotate_X += fPitchX;
 	m_fRotate_Y += fYawY;
 	m_fRotate_Z += fRollZ;
-
-//	std::cout << m_fRotate_Y << std::endl;
-
 }
-
 
 void Camera::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
 {
@@ -169,6 +171,8 @@ void Camera::Update()
 	m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
 
 	m_xmFrustumView.Transform(m_xmFrustumWorld, XMLoadFloat4x4(&m_xmf4x4World));
+
+	GenerateFrustum();
 }
 
 
@@ -200,7 +204,6 @@ void Camera::Rotate()
 		m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, mtxRotate);
 		m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, mtxRotate);
 	}
-
 
 }
 
