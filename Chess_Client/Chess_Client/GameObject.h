@@ -141,6 +141,8 @@ public:
 	bool PickModelOBB(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance);// 모델좌표계의 OBB와 충돌했는지 알려주는 함수 삼각형 검사는 안함
 	void UpdateBoundingBox(); // DW설명 : OOBB바운딩 박스를 업데이트 한다. 즉 회전같은 것들을 업데이트함
 
+	bool IsVisible(Camera* pCamera = NULL);
+
 public:
 	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
 

@@ -26,7 +26,12 @@ BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max) {
 
 Mesh::Mesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-
+	m_Left = 0.0f;
+	m_Top = 0.0f;
+	m_Right = 0.0f;
+	m_Bottom = 0.0f;
+	m_Front = 0.0f;
+	m_Back = 0.0f;
 }
 Mesh::~Mesh()
 {
@@ -852,6 +857,26 @@ ReadFbxMesh::ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 	// 루트 노드부터 시작하여 모든 노드를 재귀적으로 처리
 	ProcessNode(pScene->mRootNode, pScene, pd3dDevice, pd3dCommandList);
+
+	auto [min_x, max_x] = std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),
+		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
+			return a.m_xmf3Position.x < b.m_xmf3Position.x;
+		});
+
+	auto [min_y, max_y] = std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),
+		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
+			return a.m_xmf3Position.y < b.m_xmf3Position.y;
+		});
+	
+	auto [min_z, max_z] = std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),
+		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
+			return a.m_xmf3Position.z < b.m_xmf3Position.z;
+		});
+
+	XMFLOAT3 Min(min_x->m_xmf3Position.x, min_y->m_xmf3Position.y, min_z->m_xmf3Position.z);
+	XMFLOAT3 Max(max_x->m_xmf3Position.x, max_y->m_xmf3Position.y, max_z->m_xmf3Position.z);
+
+	m_xmOOBB = CreateOOBB(Min, Max);
 
 	// --- 모든 메쉬 데이터 처리가 끝난 후, 최종 버퍼 생성 ---
 

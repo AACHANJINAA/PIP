@@ -83,19 +83,21 @@ void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCam
 {
 	OnPrepareRender();
 
-	if (m_pMaterial) // 머터리얼이 있는지 확인
-	{
-		if (m_pMaterial->m_pShader) // 머터리얼에 셰이더가 있는지 확인
+	if (IsVisible(pCamera)) {
+		if (m_pMaterial) // 머터리얼이 있는지 확인
 		{
-			// 머터리얼의 셰이더를 사용하여 렌더링
-			m_pMaterial->m_pShader->Render(pd3dCommandList, pCamera);
+			if (m_pMaterial->m_pShader) // 머터리얼에 셰이더가 있는지 확인
+			{
+				// 머터리얼의 셰이더를 사용하여 렌더링
+				m_pMaterial->m_pShader->Render(pd3dCommandList, pCamera);
+			}
 		}
+
+		//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다. 
+		UpdateShaderVariables(pd3dCommandList);
+
+		if (m_pMesh) m_pMesh->Render(pd3dCommandList);
 	}
-
-	//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다. 
-	UpdateShaderVariables(pd3dCommandList);
-
-	if (m_pMesh) m_pMesh->Render(pd3dCommandList);
 }
 
 void GameObject::CreateShaderVariables(ID3D12Device* pd3dDevice,
@@ -273,4 +275,15 @@ void GameObject::UpdateBoundingBox()
 		m_pMesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&m_xmf4x4World));
 		XMStoreFloat4(&m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
 	}
+}
+
+bool GameObject::IsVisible(Camera* pCamera)
+{
+	OnPrepareRender(); 
+	bool bIsVisible = false;
+	BoundingOrientedBox xmBoundingBox = m_pMesh->GetBoundingBox();
+	xmBoundingBox.Transform(xmBoundingBox, XMLoadFloat4x4(&m_xmf4x4World)); 
+	if (pCamera) bIsVisible = pCamera->IsInFrustum(xmBoundingBox); 
+	
+	return(bIsVisible);
 }
