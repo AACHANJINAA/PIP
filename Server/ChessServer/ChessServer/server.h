@@ -126,7 +126,7 @@ namespace chess::server
 		std::atomic<SESSION_STATE>	_state;
 
 		// 플레이어 정보
-		short						_x, _y;
+		Vector3						_position;
 		std::string					_name;
 		short						_hp;
 		short						_max_hp;

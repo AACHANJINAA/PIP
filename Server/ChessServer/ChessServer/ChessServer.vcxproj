@@ -140,7 +140,8 @@
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CommonHeader.h" />
+    <ClInclude Include="ServerClientShare.h" />
+    <ClInclude Include="ServerCore.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketHandlers.h" />
     <ClInclude Include="PacketManager.h" />

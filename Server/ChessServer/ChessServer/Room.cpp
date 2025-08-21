@@ -87,8 +87,8 @@ namespace chess::server
 
 		for (int i = 0; i < 4; ++i)
 		{
-			int target_x = attacker->_x + dx[i];
-			int target_y = attacker->_y + dy[i];
+			int target_x = attacker->_position.x + dx[i];
+			int target_y = attacker->_position.y + dy[i];
 
 			// 맵 경계 체크는 핸들러에서 이미 했을 수 있지만, 여기서도 한번 더 하는 것이 안전합니다.
 			// (지금은 생략)
@@ -98,7 +98,7 @@ namespace chess::server
 			for (auto const& [player_id, session] : _players)
 			{
 				if (session && session->_id != attacker->_id &&
-					session->_x == target_x && session->_y == target_y)
+					session->_position.x == target_x && session->_position.y == target_y)
 				{
 					target_session = session;
 					break;
@@ -128,6 +128,11 @@ namespace chess::server
 				Broadcast(reinterpret_cast<const char*>(&attackPacket), sizeof(attackPacket));
 			}
 		}
+	}
+
+	bool Room::CheckForCollision(Vector3 target_pos, Vector3 player_extents)
+	{
+		
 	}
 }
 

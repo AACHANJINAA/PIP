@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "pch.h"
 
 namespace chess
 {
@@ -18,7 +17,5 @@ namespace chess
 		class SESSION;
 	}
 
-
-	
-	
+	using Vector3 = DirectX::XMFLOAT3;
 }
