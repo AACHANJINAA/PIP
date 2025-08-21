@@ -1,5 +1,5 @@
 #pragma once
-#include "pch.h"
+#include "ServerCore.h"
 
 
 namespace chess::packet
@@ -147,8 +147,7 @@ namespace chess::packet
     struct SC_PACKET_MOVE : PacketHeader
     {
         int64_t _id; // long long
-        short   _x;
-        short   _y;
+        Vector3 _position;
 	};
 
     struct SC_PACKET_LEAVE : PacketHeader
@@ -158,7 +157,7 @@ namespace chess::packet
 
     struct CS_PACKET_MOVE : PacketHeader
     {
-        MOVE_TYPE _direction;
+        Vector3 _direction;
     };
 
 #pragma pack (pop)

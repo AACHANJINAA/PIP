@@ -18,6 +18,10 @@
 #include <cstdint>
 #include <type_traits>
 #include <filesystem>
+#include <DirectXMath.h>
+#include <DirectXCollision.h>
+
+using namespace DirectX;
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
 

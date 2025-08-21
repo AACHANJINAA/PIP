@@ -41,7 +41,7 @@
     <ClInclude Include="server.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="CommonHeader.h">
+    <ClInclude Include="ServerCore.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -61,6 +61,9 @@
     </ClInclude>
     <ClInclude Include="PacketStream.h">
       <Filter>소스 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerClientShare.h">
+      <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

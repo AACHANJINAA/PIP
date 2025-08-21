@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "CommonHeader.h"
 #include "Server.h"
 
 namespace chess::server
@@ -33,6 +32,7 @@ namespace chess::server
 		RoomState GetRoomState() const { return _room_state; }
 
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
+		bool CheckForCollision(Vector3 target_pos, Vector3 player_extents);
 		//const std::unordered_map<long long, std::shared_ptr<SESSION>>& GetPlayers() const { return _players; }
 	private:
 		int _room_id;

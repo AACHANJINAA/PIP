@@ -73,35 +73,44 @@ namespace chess::packet
 		server::Room * room = server::Server::Instance()->GetRoom(session->_room_id);
 		if (room == nullptr) return;
 
-		// 3. 이동 처리 (기존 로직 동일)
 		packet::CS_PACKET_MOVE move_packet;
 		try
 		{
 			stream >> move_packet;
 		}
-		catch (...) { return; }
-
-		switch (move_packet._direction)
+		catch (PacketStream& e_stream)
 		{
-			case packet::MOVE_TYPE::MOVE_UP:    if (session->_y < packet::MAP_HEIGHT - 1) session->_y++; break;
-			case packet::MOVE_TYPE::MOVE_DOWN:  if (session->_y > 0) session->_y--; break;
-			case packet::MOVE_TYPE::MOVE_LEFT:  if (session->_x > 0) session->_x--; break;
-			case packet::MOVE_TYPE::MOVE_RIGHT: if (session->_x < packet::MAP_WIDTH - 1) session->_x++; break;
-			default: return;
+			MYERROR("이동 패킷 읽는중 오류남 (패킷에러)");
 		}
+
+		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
+		Vector3 currentPos = session->_position;
+		Vector3 targetPos;
+		targetPos._x = currentPos._x + move_packet._direction._x * MOVE_SPEED;
+		targetPos._y = currentPos._y + move_packet._direction._y * MOVE_SPEED;
+		targetPos._z = currentPos._z + move_packet._direction._z * MOVE_SPEED;
+		//TODO: deltaTime를 고려한 이동 로직 추가 필요
 
 		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
 
+		Vector3 playerExtents = { 0.5f, 0.5f, 1.0f }; // 플레이어 크기 (예시)
+		if (room->CheckForCollision(targetPos, playerExtents))//TODO: 충돌 체크 로직 수정 필요
+		{
+			// 충돌 발생 시 이동하지 않음
+			return;
+		}
+
+		session->_position = targetPos; // 이동 위치 업데이트
+
 		// 4. 이동 패킷 생성 (기존 로직 동일)
-		packet::SC_PACKET_MOVE movePacket;
-		movePacket._type = PacketType::S2C_P_MOVE;
-		movePacket._size = sizeof(movePacket);
-		movePacket._id = session->_id;
-		movePacket._x = session->_x;
-		movePacket._y = session->_y;
+		packet::SC_PACKET_MOVE sync_packet;
+		sync_packet._type = PacketType::S2C_P_MOVE;
+		sync_packet._size = sizeof(sync_packet);
+		sync_packet._id = session->_id;
+		sync_packet._position = session->_position;
 
 		// 5. [수정] 방에 있는 모든 플레이어에게 브로드캐스팅
-		room->Broadcast(reinterpret_cast<const char*>(&movePacket), sizeof(movePacket));
+		room->Broadcast(reinterpret_cast<const char*>(&sync_packet), sizeof(sync_packet));
 	}
 
 	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
