@@ -38,6 +38,53 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
     return(false);
 }
 
+void Scene::LoadSceneFromFile(const std::string& filename)
+{
+    // 1. 파일 스트림 열기
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Fatal Error: Failed to open scene file: " << filename << std::endl;
+        return;
+    }
+
+    try
+    {
+        // 2. JSON 파싱
+        json sceneJson;
+        file >> sceneJson; // 이 부분에서 JSON 형식이 아니면 예외 발생
+        file.close();
+
+        // 3. JSON 배열 순회
+        for (const auto& objectData : sceneJson)
+        {
+            // .at() 함수를 사용하면 키가 없을 때 예외가 발생하여 catch에서 처리 가능
+            std::string name = objectData.at("Name");
+            std::string meshName = objectData.at("Mesh");
+
+            // Transform 정보 파싱
+            const auto& transformData = objectData.at("Transform");
+            XMFLOAT3 location = JsonHelper::ParseLocationString(transformData.at("Location"));
+            XMFLOAT3 rotation = JsonHelper::ParseRotationString(transformData.at("Rotation"));
+            XMFLOAT3 scale = JsonHelper::ParseScaleString(transformData.at("Scale"));
+
+            // 텍스처 정보 파싱 (선택적일 수 있으므로 .contains로 확인)
+            if (objectData.contains("Textures")) {
+                for (const auto& texturePath : objectData["Textures"]) {
+                    // TODO: 텍스처 경로 처리 로직
+                }
+            }
+            // TODO: 게임 오브젝트 생성 및 배치 로직
+
+        }
+    }
+    catch (const json::exception& e)
+    {
+        // JSON 파싱 또는 데이터 접근 중 발생하는 모든 종류의 에러를 여기서 처리
+        std::cerr << "Scene file load error: " << e.what() << std::endl;
+        return;
+    }
+}
+
 // (수정) 머터리얼 + 조명 파라미터추가
 ID3D12RootSignature* Scene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
 {
