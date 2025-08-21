@@ -306,6 +306,33 @@ namespace Matrix4x4
 	}
 }
 
+namespace JsonHelper
+{
+	inline XMFLOAT3 ParseLocationString(const std::string& locStr)
+	{
+		XMFLOAT3 location;
+		// "X=... Y=... Z=..." 형태를 파싱, 단위는 미터
+		sscanf_s(locStr.c_str(), "X=%f Y=%f Z=%f", &location.x, &location.y, &location.z);
+		return location;
+	}
+
+	inline XMFLOAT3 ParseRotationString(const std::string& rotStr)
+	{
+		XMFLOAT3 rotation;
+		// "P=... Y=... R=..." 형태를 파싱 (Pitch, Yaw, Roll)
+		sscanf_s(rotStr.c_str(), "P=%f Y=%f R=%f", &rotation.x, &rotation.y, &rotation.z);
+		return rotation;
+	}
+
+	inline XMFLOAT3 ParseScaleString(const std::string& scaleStr)
+	{
+		XMFLOAT3 scale;
+		// "X=... Y=... Z=..." 형태를 파싱
+		sscanf_s(scaleStr.c_str(), "X=%f Y=%f Z=%f", &scale.x, &scale.y, &scale.z);
+		return scale;
+	}
+}
+
 /*정점의 색상을 무작위로(Random) 설정하기 위해 사용한다. 각 정점의 색상은 난수(Random Number)를 생성하여
 지정한다.*/
 #define RANDOM_COLOR XMFLOAT4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX))
