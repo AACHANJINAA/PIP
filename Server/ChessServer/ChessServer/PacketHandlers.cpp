@@ -46,14 +46,14 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			LOG("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
+			MYLOG("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
 			// 여기서 세션 접속을 끊는 등의 처리를 할 수 있습니다.
 			return;
 		}
 		// 2. 세션 객체에 이름을 저장합니다.
 		session->_name = player_name;
 		
-		LOG("[Login] Session " << session->_id << " logged in as '" << session->_name << "'.");
+		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_name << "'.");
 
 		// 아바타 정보 전송 로직 제거
 
@@ -64,7 +64,7 @@ namespace chess::packet
 		login_ack_packet._success = true;
 
 		session->do_send(reinterpret_cast<const char*>(&login_ack_packet), sizeof(login_ack_packet));
-		LOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
+		MYLOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
 	}
 
 	void Handle_C2S_MOVE(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
@@ -119,7 +119,7 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			ERROR("[Attack] **ERROR**: Failed to read attack packet from stream. " << e.what());
+			MYERROR("[Attack] **ERROR**: Failed to read attack packet from stream. " << e.what());
 			return;
 		}
 
@@ -138,7 +138,7 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			ERROR("[EnterRoomHandler] **ERROR**: Failed to read enter room packet from stream. " << e.what());
+			MYERROR("[EnterRoomHandler] **ERROR**: Failed to read enter room packet from stream. " << e.what());
 			return;
 		}
 
@@ -147,7 +147,7 @@ namespace chess::packet
 		// --- 1. 방 입장 유효성 검사 ---
 		if (room == nullptr || room->IsFull())
 		{
-			LOG("[EnterRoom] Session " << session->_id << " failed to enter Room " <<
+			MYLOG("[EnterRoom] Session " << session->_id << " failed to enter Room " <<
 				enter_packet._room_id << ". Reason: Invalid, Full");
 
 			// 실패 ACK 전송
@@ -187,7 +187,7 @@ namespace chess::packet
 		session->_level = 1;
 		session->_hp = 100;
 		session->_exp = 0;
-		LOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (4,4)");
+		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (4,4)");
 
 		SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
@@ -197,7 +197,7 @@ namespace chess::packet
 		PacketStream ack_stream;
 		ack_stream << ack_packet;
 		session->do_send(ack_stream.constable_data(), ack_stream.Size());
-		LOG("[EnterRoom] Sent ENTER_ROOM_ACK(success) to session " << session->_id);
+		MYLOG("[EnterRoom] Sent ENTER_ROOM_ACK(success) to session " << session->_id);
 
 		room->SendAllPlayersInfoToNewPlayer(session);
 
@@ -205,7 +205,7 @@ namespace chess::packet
 		session->do_send(self_spawn_stream.mutable_data(), self_spawn_stream.Size());
 
 		room->Broadcast(self_spawn_stream.constable_data(), self_spawn_stream.Size(), session->_id);
-		LOG("[EnterRoom] Broadcasted SPAWN_PLAYER of new session " << session->_id << " to other players in room " << room->GetRoomId());
+		MYLOG("[EnterRoom] Broadcasted SPAWN_PLAYER of new session " << session->_id << " to other players in room " << room->GetRoomId());
 
 		room->AddPlayer(session);
 	}
@@ -219,7 +219,7 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			ERROR("[RoomList] **ERROR**: Failed to read room list packet from stream. " << e.what());
+			MYERROR("[RoomList] **ERROR**: Failed to read room list packet from stream. " << e.what());
 			return;
 		}
 
@@ -246,7 +246,7 @@ namespace chess::packet
 		ack_stream.Write(reinterpret_cast<const char*>(room_infos.data()), sizeof(RoomInfo) * ack_packet._room_count);
 
 		session->do_send(ack_stream.constable_data(), ack_stream.Size());
-		LOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);
+		MYLOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);
 	}
 
 	void Handle_C2S_CHAT_IN_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
@@ -260,7 +260,7 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			ERROR("[CHAT] **ERROR**: Failed to read chat packet from stream. " << e.what());
+			MYERROR("[CHAT] **ERROR**: Failed to read chat packet from stream. " << e.what());
 		}
 
 		std::string message;
@@ -270,13 +270,13 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			ERROR("[CHAT] **ERROR**: Failed to read chat message from stream. " << e.what());
+			MYERROR("[CHAT] **ERROR**: Failed to read chat message from stream. " << e.what());
 		}
 
 		// 2. 세션이 방에 있는지 확인
 		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1)
 		{
-			LOG("[CHAT] Session " << session->_id << " sent chat message from outside a room.");
+			MYLOG("[CHAT] Session " << session->_id << " sent chat message from outside a room.");
 			return;
 		}
 
@@ -299,6 +299,6 @@ namespace chess::packet
 		header_ptr->_size = broadcast_stream.Size();
 
 		room->Broadcast(broadcast_stream.constable_data(), broadcast_stream.Size());
-		LOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);
+		MYLOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);
 	}
 }

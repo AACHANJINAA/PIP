@@ -50,14 +50,14 @@ namespace chess::packet
                 }
                 break;
 			default:
-                ERROR("[DISPATCHER] **ERROR**: Invalid session state " << static_cast<int>(sessionState) 
+                MYERROR("[DISPATCHER] **ERROR**: Invalid session state " << static_cast<int>(sessionState) 
 					<< " for packet type " << static_cast<int>(header._type) << " from session " << session->_id);
                 break;
         }
 
         if (!bIsValidPacket)
         {
-            ERROR("[DISPATCHER] **ERROR**: Invalid packet " << static_cast<int>(header._type) << "from session " 
+            MYERROR("[DISPATCHER] **ERROR**: Invalid packet " << static_cast<int>(header._type) << "from session " 
                 << session->_id << " in state " << static_cast<int>(sessionState));
                 return;
         }
@@ -71,7 +71,7 @@ namespace chess::packet
         }
         else
         {
-            ERROR("[DISPATCHER] **ERROR**: No handler found for packet type " << static_cast<int>(header._type));
+            MYERROR("[DISPATCHER] **ERROR**: No handler found for packet type " << static_cast<int>(header._type));
         }
     }
 }
