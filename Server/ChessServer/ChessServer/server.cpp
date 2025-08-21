@@ -9,7 +9,7 @@ namespace chess::server
 
 	SESSION::SESSION() : _state{ SESSION_STATE::ST_FREE }
 	{
-		ERROR("Default Constructor called, this should not happen!" << std::endl);
+		MYERROR("Default Constructor called, this should not happen!" << std::endl);
 	}
 	// server.cpp
 	SESSION::SESSION(long long session_id, SOCKET s, int logic_index)
@@ -20,7 +20,7 @@ namespace chess::server
 	}
 	SESSION::~SESSION()
 	{
-		LOG("[SESSION " << _id << "] Session destroyed. Name: " << _name);
+		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _name);
 		// TODO: Logic_Worker 에서 세션 종료 패킷을 보내는 로직 추가 필요
 		closesocket(_c_socket);
 	}
@@ -53,7 +53,7 @@ namespace chess::server
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 		DWORD size_sent;
 
-		LOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << static_cast<int>(reinterpret_cast<const packet::PacketHeader*>(data)->_type));
+		MYLOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << static_cast<int>(reinterpret_cast<const packet::PacketHeader*>(data)->_type));
 		//(enum을 바로 출력하기 위해 int로 캐스팅)
 
 		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL);
@@ -84,7 +84,7 @@ namespace chess::server
 
 			if (_recv_buffer.size() - processed_bytes < header->_size)
 			{
-				LOG("[OnRecv] Incomplete packet. Need " << header->_size << " bytes, have " << (_recv_buffer.size() - processed_bytes) << ". Breaking loop.");
+				MYLOG("[OnRecv] Incomplete packet. Need " << header->_size << " bytes, have " << (_recv_buffer.size() - processed_bytes) << ". Breaking loop.");
 				break;
 			}
 		
@@ -93,7 +93,7 @@ namespace chess::server
 			logic_packet.session = shared_from_this();
 			logic_packet.packet_stream = packet::PacketStream(_recv_buffer.data() + processed_bytes,header->_size);
 
-			LOG("[Packet] Received from Session " << _id << ". Size: " << header->_size 
+			MYLOG("[Packet] Received from Session " << _id << ". Size: " << header->_size
 				<< ", Type: " << static_cast<int>(header->_type) << ". Pushing to logic queue #" << _logic_thread_idx);
 			server_ptr->get_logic_queue(_logic_thread_idx)->push(logic_packet);
 		
@@ -124,9 +124,9 @@ namespace chess::server
 	}
 	void Server::Start(int io_threads, int logic_threads)
 	{
-		LOG("=========================================");
-		LOG("          Server Initializing...         ");
-		LOG("=========================================");
+		MYLOG("=========================================");
+		MYLOG("          Server Initializing...         ");
+		MYLOG("=========================================");
 
 		_is_running = true;
 		
@@ -137,14 +137,14 @@ namespace chess::server
 			// LogicWorker 생성자에 std::thread 객체를 이동시켜 전달합니다.
 			_logic_workers.emplace_back(std::thread(&Server::Logic_worker, this, i));
 		}
-		LOG("Created " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
+		MYLOG("Created " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
 
 		for (int i = 0; i < 100; ++i)
 		{
 			int logic_idx = i % _logic_workers.size();
 			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
 		}
-		LOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
+		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
 
 		// I/O 스레드 생성
@@ -153,7 +153,7 @@ namespace chess::server
 			_io_threads.emplace_back(&Server::IO_worker, this);
 		}
 		
-		LOG("Server started with " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
+		MYLOG("Server started with " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
 
 		// 리슨 소켓 설정 및 Accept 준비
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -167,7 +167,7 @@ namespace chess::server
 		
 		bind(_listen_socket, reinterpret_cast<SOCKADDR*>(&server_addr), sizeof(server_addr));
 		listen(_listen_socket, SOMAXCONN);
-		LOG("Server listening on port " << 3000 << "...");
+		MYLOG("Server listening on port " << 3000 << "...");
 
 		do_accept();
 	}
@@ -210,7 +210,7 @@ namespace chess::server
 			}
 		}
 
-		LOG("Server stopped.");
+		MYLOG("Server stopped.");
 	}
 	auto Server::get_logic_queue(int worker_idx) -> concurrency::concurrent_queue<LogicPacket>*
 	{
@@ -262,7 +262,7 @@ namespace chess::server
 	}
 	void Server::IO_worker()
 	{
-		LOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
+		MYLOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
 		while (_is_running)
 		{
 			DWORD io_size;
@@ -278,7 +278,7 @@ namespace chess::server
 				std::shared_ptr<SESSION> session = GetSession(key);
 				if (session)
 				{
-					LOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
+					MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
 
 					LogicPacket disconnect_packet;
 					disconnect_packet.session = session;
@@ -320,7 +320,7 @@ namespace chess::server
 	}
 	void Server::Logic_worker(int thread_idx)
 	{
-		LOG("[Thread] Logic worker thread #" << thread_idx << " started. ID: " << std::this_thread::get_id());
+		MYLOG("[Thread] Logic worker thread #" << thread_idx << " started. ID: " << std::this_thread::get_id());
 		LogicPacket packet_to_process;
 		while (_is_running)
 		{
@@ -342,7 +342,7 @@ namespace chess::server
 					if (room)
 					{
 						room->RemovePlayer(session->_id);
-						LOG("[Logic_worker] Processed disconnect for session " << session->_id 
+						MYLOG("[Logic_worker] Processed disconnect for session " << session->_id
 							<< " from room " << room->GetRoomId());
 					}
 				}
@@ -373,6 +373,6 @@ namespace chess::server
 		// 6. 첫 Recv 요청
 		p->do_recv();
 		
-		LOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
+		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
 	}
 }

@@ -10,13 +10,13 @@ namespace chess::server
 	Room::Room(int room_id, int logic_thread_idx)
 		: _room_id{ room_id }, _logic_thread_idx{ logic_thread_idx }, _max_players{ MAX_ROOM_PLAYERS }, _room_state{ RoomState::WAITING }
 	{
-		LOG("Room " << _room_id << " created. Assigned to Logic Thread " << _logic_thread_idx << " Max Players: " << static_cast<int>(_max_players));
+		MYLOG("Room " << _room_id << " created. Assigned to Logic Thread " << _logic_thread_idx << " Max Players: " << static_cast<int>(_max_players));
 	}
 	void Room::AddPlayer(std::shared_ptr<SESSION> new_player)
 	{
 		if (new_player == nullptr) return;
 		_players.insert({ new_player->_id, new_player });
-		LOG("Player " << new_player->_id << " added to Room " << _room_id << ". Total: " << _players.size());
+		MYLOG("Player " << new_player->_id << " added to Room " << _room_id << ". Total: " << _players.size());
 		
 		if (_room_state == RoomState::WAITING)
 		{
@@ -29,14 +29,14 @@ namespace chess::server
 		if (it != _players.end())
 		{
 			_players.erase(it);
-			LOG("Player " << player_id << " removed from Room " << _room_id << ". Total: " << _players.size());
+			MYLOG("Player " << player_id << " removed from Room " << _room_id << ". Total: " << _players.size());
 		}
 	}
 
 	void Room::StartGame()
 	{
 		_room_state = RoomState::PLAYING;
-		LOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
+		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
 
 		// TODO: 게임 시작 패킷을 방에 있는 모든 플레이어에게 전송
 		// 예: packet::SC_PACKET_GAME_START packet;
@@ -51,7 +51,7 @@ namespace chess::server
 	{
 		packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(const_cast<char*>(data));
 
-		LOG("[Room::Broadcast] Room " << _room_id << " broadcasting packet type " << static_cast<int
+		MYLOG("[Room::Broadcast] Room " << _room_id << " broadcasting packet type " << static_cast<int
 		>(header->_type) << ". Except ID: " << except_id);
 
 		for (auto const& [player_id, player_session] : _players)
@@ -59,7 +59,7 @@ namespace chess::server
 			if (player_session && player_id != except_id)
 			{
 				player_session->do_send(data, size);
-				LOG("[Room::Broadcast]   -> Sent to player ID: " << player_id);
+				MYLOG("[Room::Broadcast]   -> Sent to player ID: " << player_id);
 			}
 		}
 	}
@@ -72,7 +72,7 @@ namespace chess::server
 		    {
 		    	packet::PacketStream spawn_stream = packet::MakeSpawnPlayerPacket(existing_player);
 		    	new_player->do_send(spawn_stream.mutable_data(), spawn_stream.Size());
-		    	LOG("[Room] Sent SPAWN_PLAYER of " << player_id << " to new session " << new_player->_id);
+				MYLOG("[Room] Sent SPAWN_PLAYER of " << player_id << " to new session " << new_player->_id);
 		    }
 		 }
 	}
@@ -113,7 +113,7 @@ namespace chess::server
 				int32_t new_hp = target_session->_hp;
 				if (new_hp < 0) { new_hp = 0; }
 
-				LOG("[ROOM ATTACK] " << attacker->_id << " attacks " << target_session->_id << ". HP: " << new_hp);
+				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks " << target_session->_id << ". HP: " << new_hp);
 
 				// 공격 결과 패킷 생성
 				packet::SC_PACKET_ATTACK attackPacket;

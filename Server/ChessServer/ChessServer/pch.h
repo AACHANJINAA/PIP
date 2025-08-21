@@ -28,16 +28,16 @@
 	#ifdef ENABLE_DEBUG_LOG
 		#define __FILENAME__ (std::filesystem::path(__FILE__).filename().string())
 
-		#define LOG_HELPER(file, line, message) std::cout << "[" << std::filesystem::path(file).filename().string() << ":" << line << "] " << message << std::endl
-		#define LOG(message) LOG_HELPER(__FILE__, __LINE__, message)
-		#define ERROR(message) do { LOG_HELPER(__FILE__, __LINE__, message); __debugbreak(); } while(0)
+		#define MYLOG_HELPER(file, line, message) std::cout << "[" << std::filesystem::path(file).filename().string() << ":" << line << "] " << message << std::endl
+		#define MYLOG(message) MYLOG_HELPER(__FILE__, __LINE__, message)
+		#define MYERROR(message) do { MYLOG_HELPER(__FILE__, __LINE__, message); __debugbreak(); } while(0)
 	#else
-		#define LOG(message)
-		#define ERROR(message)
+		#define MYLOG(message)
+		#define MYERROR(message)
 	#endif // ENABLE_DEBUG_LOG
 #else 
-	#define LOG(message)
-	#define ERROR(message)
+	#define MYLOG(message)
+	#define MYERROR(message)
 #endif // DEBUG
 
 template <typename T>
