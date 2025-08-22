@@ -17,7 +17,6 @@ public:
 	void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
 	void Collision(float fElapsedTime) override;
 
-
 private:
 	FreeCamera* m_ChessCamera{};
 };
