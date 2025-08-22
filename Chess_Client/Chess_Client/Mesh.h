@@ -275,7 +275,7 @@ public:
 	ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
 	virtual ~ReadFbxMesh();
 
-	const std::vector <BoundingOrientedBox>& GetBoundingBoxes() const { return m_collisionBoxes; }
+	const std::vector<BoundingOrientedBox>& GetCollisionBoxes() const { return m_collisionBoxes; }
 
 private:
 	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
@@ -285,5 +285,12 @@ private:
 
 private:
 	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
-	std::vector<BoundingOrientedBox> m_collisionBoxes; // 충돌체 박스들을 저장하는 벡터
+	std::vector<BoundingOrientedBox> m_collisionBoxes;
+};
+
+class DebugCubeMesh : public Mesh
+{
+public:
+	DebugCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color);
+	virtual ~DebugCubeMesh();
 };

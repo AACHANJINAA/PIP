@@ -17,7 +17,12 @@ public:
 	void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
 	void Collision(float fElapsedTime) override;
 
+	void ToggleBoundingBoxView() { isRenderFbxFileBoundingBoxes = !isRenderFbxFileBoundingBoxes; }
+
 private:
 	FreeCamera* m_ChessCamera{};
+
+	bool isRenderFbxFileBoundingBoxes = false;
+	std::vector<std::shared_ptr<GameObject>> debugObjects;
 };
 

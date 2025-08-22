@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Mesh.h"
+#include <algorithm>
 
 BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max) {
 	// 중심점 계산 (min과 max의 중간값)
@@ -930,8 +931,21 @@ void ReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* 
 
 void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	std::string meshName = mesh->mName.C_Str();
-	if (meshName.rfind("UCX_", 0) == 0)
+	const char* meshNameCStr = mesh->mName.C_Str();
+	std::string meshNameStr(meshNameCStr); // 로깅/편의를 위해 std::string 생성
+	std::wstring wMeshName(meshNameStr.begin(), meshNameStr.end());
+	
+	bool isCollisionMesh = false;
+	
+	if (strlen(meshNameCStr) >= 4 && meshNameCStr[0] == 'U' 
+		&& meshNameCStr[1] == 'C' 
+		&& meshNameCStr[2] == 'X' 
+		&& meshNameCStr[3] == '_')
+	{
+		isCollisionMesh = true;
+	}
+
+	if (isCollisionMesh)
 	{
 		// collision Mesh
 		XMFLOAT3 minPos(FLT_MAX, FLT_MAX, FLT_MAX);	
@@ -1031,4 +1045,61 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 		// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
 		m_Vertexvec.insert(m_Vertexvec.end(), vertices.begin(), vertices.end());
 	}
+}
+
+DebugCubeMesh::DebugCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
+{
+	m_Vertexvec.resize(8);
+
+	m_Vertexvec[0] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f,0.0f), color);
+	m_Vertexvec[1] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f,1.0f), color);
+	m_Vertexvec[2] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f,1.0f), color);
+	m_Vertexvec[3] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f,0.0f), color);
+	m_Vertexvec[4] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f,0.0f), color);
+	m_Vertexvec[5] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f,1.0f), color);
+	m_Vertexvec[6] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f,1.0f), color);
+	m_Vertexvec[7] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f,0.0f), color);
+
+	m_Indexvec.resize(24);
+	// 앞면
+	m_Indexvec[0] = 0; m_Indexvec[1] = 1;
+	m_Indexvec[2] = 1; m_Indexvec[3] = 2;
+	m_Indexvec[4] = 2; m_Indexvec[5] = 3;
+	m_Indexvec[6] = 3; m_Indexvec[7] = 0;
+	// 뒷면
+	m_Indexvec[8] = 4; m_Indexvec[9] = 5;
+	m_Indexvec[10] = 5; m_Indexvec[11] = 6;
+	m_Indexvec[12] = 6; m_Indexvec[13] = 7;
+	m_Indexvec[14] = 7; m_Indexvec[15] = 4;
+	// 옆면
+	m_Indexvec[16] = 0; m_Indexvec[17] = 4;
+	m_Indexvec[18] = 1; m_Indexvec[19] = 5;
+	m_Indexvec[20] = 2; m_Indexvec[21] = 6;
+	m_Indexvec[22] = 3; m_Indexvec[23] = 7;
+
+	m_nStride = sizeof(IlluminatedVertex);
+	m_nVertices = m_Vertexvec.size();
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 와이어프레임으로 렌더링
+
+	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(),
+		m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT,
+		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+		&m_pd3dVertexUploadBuffer);
+
+	m_d3dVertexBufferView.BufferLocation = m_pd3dVertexBuffer->GetGPUVirtualAddress();
+	m_d3dVertexBufferView.StrideInBytes = m_nStride;
+	m_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
+
+	m_nIndices = m_Indexvec.size();
+	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(),
+		sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
+		&m_pd3dIndexUploadBuffer);
+
+	m_d3dIndexBufferView.BufferLocation = m_pd3dIndexBuffer->GetGPUVirtualAddress();
+	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+}
+
+DebugCubeMesh::~DebugCubeMesh()
+{
 }

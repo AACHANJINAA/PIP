@@ -57,6 +57,7 @@ using Microsoft::WRL::ComPtr;
 #include <functional>
 
 
+
 #define EXPLOSION_DEBRISES		240
 
 #define RANDOM_COLOR			(0xFF000000 | ((rand() * 0xFFFFFF) / RAND_MAX))

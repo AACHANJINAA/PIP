@@ -330,6 +330,15 @@ void GameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPAR
 				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
 				break;
 			}
+		case 'B': case 'b':
+			if (m_pScene) {
+				Chess_Scene* pChessScene = dynamic_cast<Chess_Scene*>(m_pScene.get());
+				if (pChessScene) 
+				{
+					pChessScene->ToggleBoundingBoxView();
+				}
+			}
+			break;
 		default:
 			break;
 		}

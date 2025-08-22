@@ -80,17 +80,63 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     ObjectManager::Instance()->PushFloorObject(Board);
 
     // 언리얼에서 뽑은 FBX 테스트
-    Board = std::make_shared<BoardCube>();
-    BoardMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/medieval_church2.fbx" };
+    std::shared_ptr<GameObject> churchObject = std::make_shared<BoardCube>();
+    Mesh* churchMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/medieval_church.fbx" };
 
-    Board->SetMesh(BoardMesh);
-    Board->SetScale(0.001f, 0.001f, 0.001f);
-    Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
+    churchObject->SetMesh(churchMesh);
+    XMFLOAT3 churchScale = XMFLOAT3(0.001f, 0.001f, 0.001f);
+    churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
+    churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x), 
         0.f,
-        ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z) + 1);
+        ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 1);
     Board->m_PosX = 0;
     Board->m_PosY = 0;
-    ObjectManager::Instance()->PushFloorObject(Board);
+    ObjectManager::Instance()->PushFloorObject(churchObject);
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------
+    // collision 디버깅 코드
+
+    ReadFbxMesh* churchFbxMesh = dynamic_cast<ReadFbxMesh*>(churchMesh);
+
+    if (churchFbxMesh)
+    {
+        const auto& collisionBoxes = churchFbxMesh->GetCollisionBoxes();
+        OutputDebugStringA(("CollisionBox count: " + std::to_string(collisionBoxes.size()) + "\n").c_str());
+        XMFLOAT4 debugColor = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+
+        for (const auto& box : collisionBoxes)
+        {
+            std::shared_ptr<GameObject> debugBoxObject = std::make_shared<BoardCube>();
+
+            DebugCubeMesh* debugCubeMesh = new DebugCubeMesh(pd3dDevice, pd3dCommandList, debugColor);
+            debugBoxObject->SetMesh(debugCubeMesh);
+
+            XMFLOAT3 churchWorldPos = churchObject->GetPosition();
+
+            XMMATRIX churchWorld = XMMatrixIdentity();
+            churchWorld = XMMatrixMultiply(XMMatrixScaling(churchScale.x, churchScale.y, churchScale.z), churchWorld);
+            churchWorld = XMMatrixMultiply(XMMatrixTranslation(churchWorldPos.x, churchWorldPos.y, churchWorldPos.z), churchWorld);
+
+            XMVECTOR transformedCenter = XMVector3TransformCoord(XMLoadFloat3(&box.Center), churchWorld);
+            XMFLOAT3 finalCenter;
+            XMStoreFloat3(&finalCenter, transformedCenter);
+            debugBoxObject->SetPosition(finalCenter.x, finalCenter.y, finalCenter.z);
+
+            debugBoxObject->SetScale(box.Extents.x * 2.0f * churchScale.x,
+                                     box.Extents.y * 2.0f * churchScale.y,
+                                     box.Extents.z * 2.0f * churchScale.z);
+            debugObjects.push_back(debugBoxObject);
+            OutputDebugStringA(("DebugCube count: " + std::to_string(debugObjects.size()) + "\n").c_str());
+            OutputDebugStringA(("Box Center: " + std::to_string(box.Center.x) + ", " + std::to_string(box.Center.y) + ", " + std::to_string(box.Center.z) + "\n").c_str());
+            OutputDebugStringA(("Box Extents: " + std::to_string(box.Extents.x) + ", " + std::to_string(box.Extents.y) + ", " + std::to_string(box.Extents.z) + "\n").c_str());
+        }
+    }
+
+
+
+
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------
 
     //{
     //    // 플레이어 생성
@@ -232,6 +278,18 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
             {
                 Object->Render(pd3dCommandList, m_pCamera);
             }
+        }
+    }
+
+    // 디버그 객체를 렌더링하는 블록을 추가합니다.
+    if (isRenderFbxFileBoundingBoxes) // 올바른 플래그 이름을 사용합니다.
+    {
+        for (std::shared_ptr<GameObject>& debugObject : debugObjects) // 올바른 벡터 이름을 사용합니다.
+        {
+          if (nullptr != debugObject)
+          {
+              debugObject->Render(pd3dCommandList, m_pCamera);
+          }
         }
     }
 }
