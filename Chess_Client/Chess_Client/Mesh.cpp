@@ -930,83 +930,105 @@ void ReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* 
 
 void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	// 현재 메쉬의 정점 정보를 임시로 담을 벡터
-	std::vector<IlluminatedVertex> vertices;
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+	std::string meshName = mesh->mName.C_Str();
+	if (meshName.rfind("UCX_", 0) == 0)
 	{
-		IlluminatedVertex vertex;
+		// collision Mesh
+		XMFLOAT3 minPos(FLT_MAX, FLT_MAX, FLT_MAX);	
+		XMFLOAT3 maxPos(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-		// 위치 (Position)
-		vertex.m_xmf3Position.x = mesh->mVertices[i].x;
-		vertex.m_xmf3Position.y = mesh->mVertices[i].y;
-		vertex.m_xmf3Position.z = mesh->mVertices[i].z;
-
-		// 법선 (Normal)
-		if (mesh->HasNormals())
+		for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
 		{
-			vertex.m_xmf3Normal.x = mesh->mNormals[i].x;
-			vertex.m_xmf3Normal.y = mesh->mNormals[i].y;
-			vertex.m_xmf3Normal.z = mesh->mNormals[i].z;
+			minPos.x = min(minPos.x, mesh->mVertices[i].x);
+			minPos.y = min(minPos.y, mesh->mVertices[i].y);
+			minPos.z = min(minPos.z, mesh->mVertices[i].z);
+
+			maxPos.x = max(maxPos.x, mesh->mVertices[i].x);
+			maxPos.y = max(maxPos.y, mesh->mVertices[i].y);
+			maxPos.z = max(maxPos.z, mesh->mVertices[i].z);
 		}
+		m_collisionBoxes.push_back(CreateOOBB(minPos, maxPos));
+	}
+	else {
+		// 현재 메쉬의 정점 정보를 임시로 담을 벡터
+		std::vector<IlluminatedVertex> vertices;
+		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+		{
+			// Render Mesh
+			IlluminatedVertex vertex;
 
-		// 텍스처 좌표 (Texture Coordinate)
-		if (mesh->mTextureCoords[0]) // 텍스처 좌표 채널이 존재하는지 확인
-		{
-			vertex.m_xmf2Texcoord.x = mesh->mTextureCoords[0][i].x;
-			vertex.m_xmf2Texcoord.y = mesh->mTextureCoords[0][i].y;
-		}
-		else
-		{
-			vertex.m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f);
-		}
+			// 위치 (Position)
+			vertex.m_xmf3Position.x = mesh->mVertices[i].x;
+			vertex.m_xmf3Position.y = mesh->mVertices[i].y;
+			vertex.m_xmf3Position.z = mesh->mVertices[i].z;
 
-		// 재질 정보 처리
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		aiColor4D diffuseColor;
-		aiString texturePath;
-
-		// 확산 색상 가져오기 (없으면 흰색 기본값)
-		if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
-		{
-			vertex.m_xmf4Diffuse = XMFLOAT4(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
-		}
-		else
-		{
-			vertex.m_xmf4Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 기본 흰색
-		}
-
-		// 확산 텍스처 경로 가져오기 (첫 번째 텍스처 채널)
-		if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
-		{
-			// 텍스처 경로가 내장 텍스처를 가리키는지 확인 (예: "*0", "*1" 등)
-			if (texturePath.C_Str()[0] == '*')
+			// 법선 (Normal)
+			if (mesh->HasNormals())
 			{
-				// 내장 텍스처인 경우: m_texturePath에 내장 텍스처 인덱스/이름 저장
-				m_texturePath = texturePath.C_Str();
+				vertex.m_xmf3Normal.x = mesh->mNormals[i].x;
+				vertex.m_xmf3Normal.y = mesh->mNormals[i].y;
+				vertex.m_xmf3Normal.z = mesh->mNormals[i].z;
+			}
+
+			// 텍스처 좌표 (Texture Coordinate)
+			if (mesh->mTextureCoords[0]) // 텍스처 좌표 채널이 존재하는지 확인
+			{
+				vertex.m_xmf2Texcoord.x = mesh->mTextureCoords[0][i].x;
+				vertex.m_xmf2Texcoord.y = mesh->mTextureCoords[0][i].y;
 			}
 			else
 			{
-				// 외부 텍스처인 경우: m_texturePath에 외부 파일 경로 저장
-				m_texturePath = texturePath.C_Str();
+				vertex.m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f);
+			}
+
+			// 재질 정보 처리
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			aiColor4D diffuseColor;
+			aiString texturePath;
+
+			// 확산 색상 가져오기 (없으면 흰색 기본값)
+			if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
+			{
+				vertex.m_xmf4Diffuse = XMFLOAT4(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+			}
+			else
+			{
+				vertex.m_xmf4Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 기본 흰색
+			}
+
+			// 확산 텍스처 경로 가져오기 (첫 번째 텍스처 채널)
+			if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
+			{
+				// 텍스처 경로가 내장 텍스처를 가리키는지 확인 (예: "*0", "*1" 등)
+				if (texturePath.C_Str()[0] == '*')
+				{
+					// 내장 텍스처인 경우: m_texturePath에 내장 텍스처 인덱스/이름 저장
+					m_texturePath = texturePath.C_Str();
+				}
+				else
+				{
+					// 외부 텍스처인 경우: m_texturePath에 외부 파일 경로 저장
+					m_texturePath = texturePath.C_Str();
+				}
+			}
+
+			vertices.push_back(vertex);
+		}
+
+		// 현재 메쉬의 인덱스 정보를 임시로 담을 벡터
+		// FBX의 모든 면(face)을 순회하며 인덱스를 가져옴
+		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+		{
+			aiFace face = mesh->mFaces[i];
+			for (unsigned int j = 0; j < face.mNumIndices; j++)
+			{
+				// 전체 인덱스 벡터에 현재 메쉬의 인덱스를 추가
+				// 이 때, 이미 추가된 정점 수를 더해줘서 전체 정점 배열에 맞는 인덱스가 되도록 함
+				m_Indexvec.push_back(face.mIndices[j] + m_Vertexvec.size());
 			}
 		}
 
-		vertices.push_back(vertex);
+		// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
+		m_Vertexvec.insert(m_Vertexvec.end(), vertices.begin(), vertices.end());
 	}
-
-	// 현재 메쉬의 인덱스 정보를 임시로 담을 벡터
-	// FBX의 모든 면(face)을 순회하며 인덱스를 가져옴
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-	{
-		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++)
-		{
-			// 전체 인덱스 벡터에 현재 메쉬의 인덱스를 추가
-			// 이 때, 이미 추가된 정점 수를 더해줘서 전체 정점 배열에 맞는 인덱스가 되도록 함
-			m_Indexvec.push_back(face.mIndices[j] + m_Vertexvec.size());
-		}
-	}
-
-	// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
-	m_Vertexvec.insert(m_Vertexvec.end(), vertices.begin(), vertices.end());
 }
