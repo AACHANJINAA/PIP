@@ -16,6 +16,9 @@
     <Filter Include="소스 파일\Packet">
       <UniqueIdentifier>{fe5bd637-c753-4132-95d9-35a1507618f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Common">
+      <UniqueIdentifier>{221db55e-c0d0-4ad9-995d-1f030209a926}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -50,20 +53,20 @@
     <ClInclude Include="Room.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Packet.h">
-      <Filter>소스 파일\Packet</Filter>
-    </ClInclude>
     <ClInclude Include="PacketHandlers.h">
       <Filter>소스 파일\Packet</Filter>
     </ClInclude>
     <ClInclude Include="PacketManager.h">
       <Filter>소스 파일\Packet</Filter>
     </ClInclude>
-    <ClInclude Include="PacketStream.h">
-      <Filter>소스 파일\Packet</Filter>
+    <ClInclude Include="..\..\..\Common\Vector3.h">
+      <Filter>소스 파일\Common</Filter>
     </ClInclude>
-    <ClInclude Include="ServerClientShare.h">
-      <Filter>소스 파일</Filter>
+    <ClInclude Include="..\..\..\Common\Packet.h">
+      <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Common\PacketStream.h">
+      <Filter>소스 파일\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

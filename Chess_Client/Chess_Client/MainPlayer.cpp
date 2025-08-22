@@ -26,21 +26,21 @@ void MainPlayer::Collision(float fElapsedTime)
 void MainPlayer::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
 {
 	if (GetAsyncKeyState(VK_UP) & 0x0001) {
-		Move_Pos(chess::packet::MOVE_TYPE::MOVE_UP);
+		Move_Pos(common::packet::MOVE_TYPE::MOVE_UP);
 	}
 
 	if (GetAsyncKeyState(VK_DOWN) & 0x0001) {
-		Move_Pos(chess::packet::MOVE_TYPE::MOVE_DOWN);
+		Move_Pos(common::packet::MOVE_TYPE::MOVE_DOWN);
 	}
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x0001)
 	{
-		Move_Pos(chess::packet::MOVE_TYPE::MOVE_RIGHT);
+		Move_Pos(common::packet::MOVE_TYPE::MOVE_RIGHT);
 	}
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x0001)
 	{
-		Move_Pos(chess::packet::MOVE_TYPE::MOVE_LEFT);
+		Move_Pos(common::packet::MOVE_TYPE::MOVE_LEFT);
 	}
 	
 	if (GetAsyncKeyState('F') & 0x0001)
@@ -49,20 +49,20 @@ void MainPlayer::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, PO
 	}
 }
 
-void MainPlayer::Move_Pos(chess::packet::MOVE_TYPE Cmd)
+void MainPlayer::Move_Pos(common::packet::MOVE_TYPE Cmd)
 {
 	switch (Cmd)
 	{
-		case chess::packet::MOVE_TYPE::MOVE_UP:
-		case chess::packet::MOVE_TYPE::MOVE_DOWN:
-		case chess::packet::MOVE_TYPE::MOVE_RIGHT:
-		case chess::packet::MOVE_TYPE::MOVE_LEFT:
+		case common::packet::MOVE_TYPE::MOVE_UP:
+		case common::packet::MOVE_TYPE::MOVE_DOWN:
+		case common::packet::MOVE_TYPE::MOVE_RIGHT:
+		case common::packet::MOVE_TYPE::MOVE_LEFT:
 			// 서버로 나 위로 이동
 			// 서버는 위치값 계산
 			// 서버는 위치값을 클라이언트로 전송
-			ClientPacketManager::Instance()->SendMovePacket(Cmd);
+			//ClientPacketManager::Instance()->SendMovePacket(/*여기에*/); //TODO: common::Vector3 타입(XMFLOAT3임)으로 방향보내기 필요(Normalize 필요)
 			break;
-		case chess::packet::MOVE_TYPE::error:
+		case common::packet::MOVE_TYPE::error:
 		break;
 
 	default:

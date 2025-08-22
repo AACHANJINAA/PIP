@@ -1,11 +1,11 @@
-#pragma once
-#include "pch.h"
-#include "CommonHeader.h"
+﻿#pragma once
 #include "PacketStream.h"
 #include "Room.h"
 
 namespace chess::server
 {
+	class Server;
+
 	enum IO_OP : std::uint8_t
 	{
 		IO_RECV = 0,
@@ -17,7 +17,7 @@ namespace chess::server
 	class EXP_OVER
 	{
 	public:
-		EXP_OVER(IO_OP io_op) : _io_op(io_op)
+		EXP_OVER(IO_OP io_op) : _io_op(io_op), _accept_socket(-1)
 		{
 			ZeroMemory(&_over, sizeof(_over));
 
@@ -25,7 +25,7 @@ namespace chess::server
 			_wsabuf[0].len = static_cast<ULONG>(_buffer.size());
 		}
 
-		WSAOVERLAPPED			_over;
+		WSAOVERLAPPED _over;
 		IO_OP					_io_op;
 		SOCKET					_accept_socket;
 		std::array<UCHAR,1024>	_buffer;
@@ -41,6 +41,38 @@ namespace chess::server
 		ST_LOBBY = 1,
 		ST_INGAME = 2,
 		ST_CLOSE = 3,
+	};
+
+	class SESSION : public std::enable_shared_from_this<SESSION>
+	{
+	public:
+		SOCKET						_c_socket;
+		long long					_id;
+		int                         _logic_thread_idx; // 담당 로직 스레드의 인덱스
+		int							_room_id = -1;
+
+		EXP_OVER					_recv_over{ IO_RECV };
+		//unsigned char				_remained;
+
+		std::vector<char>			_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
+
+		std::atomic<SESSION_STATE>	_state;
+
+		// 플레이어 정보
+		Vector3						_position;
+		std::string					_name;
+		short						_hp;
+		short						_max_hp;
+		short						_level;
+		uint32_t					_exp;
+	public:
+		SESSION();
+		SESSION(long long session_id, SOCKET s, int logic_index);
+		~SESSION();
+
+		void do_recv();
+		void do_send(const char* data, size_t size);
+		void OnRecv(size_t len, Server* server_ptr);
 	};
 
 	struct LogicPacket //[추가] 로직 스레드에 전달될 패킷 구조체
@@ -67,7 +99,6 @@ namespace chess::server
 	};
 
 	class Room;
-	class SESSION; // [추가] 전방 클래스 선언
 	class Server : public Singleton<Server>
 	{
 		friend class Singleton<Server>;
@@ -80,8 +111,8 @@ namespace chess::server
 		void Stop();
 
 		// 로직 큐를 얻어오기 위한 public 메소드
-		auto get_logic_queue(int worker_idx) -> concurrency::concurrent_queue<LogicPacket>*;
-		auto GetRoom(int room_id) -> Room*; // [추가] 특정 룸을 얻어오기 위한 메소드
+		concurrency::concurrent_queue<LogicPacket>* get_logic_queue(int worker_idx);
+		Room* GetRoom(int room_id); // [추가] 특정 룸을 얻어오기 위한 메소드
 
 		// [추가] 세션 관리를 위한 함수들
 		void AddSession(long long session_id, std::shared_ptr<SESSION> session);
@@ -110,36 +141,5 @@ namespace chess::server
 		concurrency::concurrent_unordered_map<long long, std::shared_ptr<SESSION>> _sessions;
 	};
 
-	class SESSION : public std::enable_shared_from_this<SESSION>
-	{
-	public:
-		SOCKET						_c_socket;
-		long long					_id;
-		int                         _logic_thread_idx; // 담당 로직 스레드의 인덱스
-		int							_room_id = -1;
-
-		EXP_OVER					_recv_over { IO_RECV };
-		//unsigned char				_remained;
-
-		std::vector<char>			_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
-
-		std::atomic<SESSION_STATE>	_state;
-
-		// 플레이어 정보
-		Vector3						_position;
-		std::string					_name;
-		short						_hp;
-		short						_max_hp;
-		short						_level;
-		uint32_t					_exp;
-	public:
-		SESSION();
-		SESSION(long long session_id, SOCKET s, int logic_index);
-		~SESSION();
-
-		void do_recv();
-		void do_send(const char* data, size_t size);
-		void OnRecv(size_t len, Server* server_ptr);
-	};
 
 }

@@ -21,7 +21,7 @@ public:
 	std::string GetName() const { return _name; }
 	void SetPos(int x = 0, int y = 0) { _NowX = x; _NowY = y; }
 private:
-	void Move_Pos(chess::packet::MOVE_TYPE Cmd);
+	void Move_Pos(common::packet::MOVE_TYPE Cmd);
 
 private:
 	int64_t		_id = -1;

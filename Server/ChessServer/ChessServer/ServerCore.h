@@ -16,6 +16,5 @@ namespace chess
 	{
 		class SESSION;
 	}
-
-	using Vector3 = DirectX::XMFLOAT3;
+	
 }

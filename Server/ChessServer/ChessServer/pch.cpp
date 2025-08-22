@@ -16,7 +16,7 @@ void chess::print_error(const char* msg, int err_no)
 	std::cout << msg;
 	std::wcout << L" 에러 " << lpMsgBuf << std::endl;
 #ifdef _DEBUG
-	while (true); // 디버깅 용 그냥 죽으면 안되니까
+	while (true){}; // 디버깅 용 그냥 죽으면 안되니까
 #endif
 
 	LocalFree(lpMsgBuf);

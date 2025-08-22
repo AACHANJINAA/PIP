@@ -5,18 +5,18 @@
 
 namespace chess::packet
 {
-
+	
 	// 중복 코드를 줄이기 위한 Helper 함수
 	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<chess::server::SESSION> session)
 	{
 		// [수정] SC_PACKET_SPAWN_PLAYER 구조체 변수를 선언하고 멤버를 채웁니다.
 		packet::SC_PACKET_SPAWN_PLAYER spawn_packet_data;
-		spawn_packet_data._type = PacketType::S2C_P_SPAWN_PLAYER; // 타입 설정
+		spawn_packet_data._type = common::packet::PacketType::S2C_P_SPAWN_PLAYER; // 타입 설정
 		spawn_packet_data._size = 0; // 임시 크기 (나중에 다시 계산)
 
 		spawn_packet_data._id = session->_id;
-		spawn_packet_data._x = session->_x;
-		spawn_packet_data._y = session->_y;
+		spawn_packet_data._position.x = session->_position.x;
+		spawn_packet_data._position.y = session->_position.y;
 		spawn_packet_data._hp = session->_hp;
 		spawn_packet_data._level = session->_level;
 		spawn_packet_data._exp = session->_exp;
@@ -78,7 +78,7 @@ namespace chess::packet
 		{
 			stream >> move_packet;
 		}
-		catch (PacketStream& e_stream)
+		catch (...)
 		{
 			MYERROR("이동 패킷 읽는중 오류남 (패킷에러)");
 		}
@@ -86,9 +86,9 @@ namespace chess::packet
 		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
 		Vector3 currentPos = session->_position;
 		Vector3 targetPos;
-		targetPos._x = currentPos._x + move_packet._direction._x * MOVE_SPEED;
-		targetPos._y = currentPos._y + move_packet._direction._y * MOVE_SPEED;
-		targetPos._z = currentPos._z + move_packet._direction._z * MOVE_SPEED;
+		targetPos.x = currentPos.x + move_packet._direction.x * MOVE_SPEED;
+		targetPos.y = currentPos.y + move_packet._direction.y * MOVE_SPEED;
+		targetPos.z = currentPos.z + move_packet._direction.z * MOVE_SPEED;
 		//TODO: deltaTime를 고려한 이동 로직 추가 필요
 
 		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
@@ -104,7 +104,7 @@ namespace chess::packet
 
 		// 4. 이동 패킷 생성 (기존 로직 동일)
 		packet::SC_PACKET_MOVE sync_packet;
-		sync_packet._type = PacketType::S2C_P_MOVE;
+		sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
 		sync_packet._size = sizeof(sync_packet);
 		sync_packet._id = session->_id;
 		sync_packet._position = session->_position;
@@ -191,8 +191,8 @@ namespace chess::packet
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = room->GetLogicThreadIndex();
-		session->_x = 4;
-		session->_y = 4;
+		session->_position.x = 4;
+		session->_position.y = 4;
 		session->_level = 1;
 		session->_hp = 100;
 		session->_exp = 0;
@@ -240,14 +240,14 @@ namespace chess::packet
 			{
 				RoomInfo info;
 				info._room_id = room->GetRoomId();
-				info._player_count = room->GetPlayerCount();
+				info._player_count = static_cast<uint8_t>(room->GetPlayerCount());
 				room_infos.push_back(info);
 			}
 		}
 
 		SC_PACKET_ROOM_LIST_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ROOM_LIST_ACK;
-		ack_packet._room_count = room_infos.size();
+		ack_packet._room_count = static_cast<uint16_t>(room_infos.size());
 		ack_packet._size = sizeof(ack_packet) + (sizeof(RoomInfo) * ack_packet._room_count);
 
 		PacketStream ack_stream;
@@ -305,7 +305,7 @@ namespace chess::packet
 		// 최종 패킷 크기를 헤더에 다시 설정
 		// broadcast_stream의 맨 앞을 PacketHeader*로 캐스팅하여 size 멤버를 수정
 		packet::PacketHeader* header_ptr = reinterpret_cast<packet::PacketHeader*>(broadcast_stream.mutable_data());
-		header_ptr->_size = broadcast_stream.Size();
+		header_ptr->_size = static_cast<uint16_t>(broadcast_stream.Size());
 
 		room->Broadcast(broadcast_stream.constable_data(), broadcast_stream.Size());
 		MYLOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);

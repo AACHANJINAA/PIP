@@ -92,8 +92,6 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 // 디버그 로그 매크로
 // ==================================================
 #if defined(_DEBUG)
-#include <string>
-#include <vector>
 
 // 사용법: CLOG(L"포맷 문자열", 인자1, 인자2, ...);
 // 예시: CLOG(L"Player HP: %d, Pos: (%d, %d)", hp, x, y);
@@ -114,9 +112,29 @@ inline void DebugLog(const wchar_t* format, ...)
 #else
 	#define CLOG(format, ...)
 #endif
+#include "Packet.h"
+#include "PacketStream.h"
 
-#include "../../Server/ChessServer/ChessServer/PacketStream.h"
-#include "../../Server/ChessServer/ChessServer/Packet.h"
+
+
+// ==================================================
+template <typename T>
+class Singleton
+{
+protected:
+	Singleton() = default;
+	virtual ~Singleton() = default;
+
+public:
+	Singleton(const Singleton&) = delete;
+	Singleton& operator=(const Singleton&) = delete;
+
+	static T* Instance()
+	{
+		static T instance;
+		return &instance;
+	}
+};
 
 //3차원 벡터의 연산 
 namespace Vector3

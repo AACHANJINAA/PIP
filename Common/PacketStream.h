@@ -2,7 +2,7 @@
 #include "Packet.h"
 
 
-namespace chess::packet
+namespace common::packet
 {
     class PacketStream
     {
@@ -68,11 +68,11 @@ namespace chess::packet
         }
         PacketHeader PeekHeader() const
         {
-            if (_buffer.size() < sizeof(chess::packet::PacketHeader))
+            if (_buffer.size() < sizeof(PacketHeader))
             {
-                return { 0, chess::packet::PacketType::error };
+                return { 0, PacketType::error };
             }
-            return *reinterpret_cast<const chess::packet::PacketHeader*>(_buffer.data());
+            return *reinterpret_cast<const PacketHeader*>(_buffer.data());
         }
         const char* constable_data() const { return _buffer.data(); }
         char* mutable_data() { return _buffer.data(); }
