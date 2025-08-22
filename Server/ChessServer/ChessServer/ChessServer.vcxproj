@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)..\..\Common</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)..\..\Common</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -140,12 +146,12 @@
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ServerClientShare.h" />
+    <ClInclude Include="..\..\..\Common\Packet.h" />
+    <ClInclude Include="..\..\..\Common\PacketStream.h" />
+    <ClInclude Include="..\..\..\Common\Vector3.h" />
     <ClInclude Include="ServerCore.h" />
-    <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketHandlers.h" />
     <ClInclude Include="PacketManager.h" />
-    <ClInclude Include="PacketStream.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />

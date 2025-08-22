@@ -20,8 +20,11 @@
 #include <filesystem>
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
-
 using namespace DirectX;
+
+#include "Packet.h"
+#include "Vector3.h"
+using namespace common;
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
 

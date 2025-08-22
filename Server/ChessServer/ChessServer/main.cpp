@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "CommonHeader.h"
 #include "PacketManager.h"
 #include "server.h"
 
@@ -27,7 +26,7 @@ int main()
 
     // I/O 스레드는 2개, 로직 스레드는 나머지 CPU 코어 수만큼 할당합니다.
 	// (최소 1개의 로직 스레드는 보장)
-	int total_cores = std::thread::hardware_concurrency();
+	int total_cores = static_cast<int>(std::thread::hardware_concurrency());
 	int logic_thread_count = std::max(1, total_cores - 2);
 	int io_thread_count = 2;
 

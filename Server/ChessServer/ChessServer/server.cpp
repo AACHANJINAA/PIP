@@ -1,7 +1,7 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "server.h"
-
 #include "PacketManager.h"
+#include "ServerCore.h"
 
 namespace chess::server
 {
@@ -271,7 +271,13 @@ namespace chess::server
 			
 			BOOL ret = GetQueuedCompletionStatus(g_iocp, &io_size, &key, &o, INFINITE);
 			EXP_OVER* eo = reinterpret_cast<EXP_OVER*>(o);
-			
+
+			if (o == nullptr)
+			{
+				// 서버 종료 신호 등 특별 상황 처리
+				continue;
+			}
+
 			// 클라이언트 연결 종료 또는 에러 처리
 			if (FALSE == ret || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
 			{

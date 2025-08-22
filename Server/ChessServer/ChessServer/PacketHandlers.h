@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "CommonHeader.h"
 #include "Packet.h"
 #include "server.h"
 
 namespace chess::packet
 {
+	using namespace common::packet;
 	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<chess::server::SESSION> session);
 
 

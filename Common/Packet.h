@@ -1,8 +1,8 @@
-#pragma once
-#include "ServerCore.h"
+﻿#pragma once
+#include "Vector3.h"
 
 
-namespace chess::packet
+namespace common::packet
 {
     constexpr short SERVER_PORT = 3000;
 
@@ -136,8 +136,7 @@ namespace chess::packet
     struct SC_PACKET_SPAWN_PLAYER : PacketHeader 
     {
         int64_t _id; // long long
-        short   _x;
-        short   _y;
+        Vec3 _position; // 플레이어의 위치
         short   _hp;
         short   _level;
         int     _exp;
@@ -147,7 +146,7 @@ namespace chess::packet
     struct SC_PACKET_MOVE : PacketHeader
     {
         int64_t _id; // long long
-        Vector3 _position;
+        Vec3 _position;
 	};
 
     struct SC_PACKET_LEAVE : PacketHeader
@@ -157,7 +156,7 @@ namespace chess::packet
 
     struct CS_PACKET_MOVE : PacketHeader
     {
-        Vector3 _direction;
+        Vec3 _direction;
     };
 
 #pragma pack (pop)

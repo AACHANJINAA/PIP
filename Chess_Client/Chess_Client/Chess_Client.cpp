@@ -94,7 +94,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     SOCKADDR_IN addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(chess::packet::SERVER_PORT);
+    addr.sin_port = htons(common::packet::SERVER_PORT);
     std::string server_addr_mb;
     server_addr_mb.assign(SERVER_ADDR_W.begin(), SERVER_ADDR_W.end());
     inet_pton(AF_INET, server_addr_mb.c_str(), &addr.sin_addr);

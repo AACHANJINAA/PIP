@@ -20,7 +20,7 @@ public:
 	int64_t GetID() const { return _id; }
 	void SetName(const std::string& name) { _name = name; }
 	std::string GetName() const { return _name; }
-	void SetPos(int x = 0, int y = 0) { _NowX = x; _NowY = y; }
+	void SetPos(float x = 0, float y = 0) { _NowX = x; _NowY = y; }
 
 private:
 	

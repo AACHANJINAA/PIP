@@ -9,6 +9,7 @@ namespace chess::server
 		WAITING,
 		PLAYING
 	};
+	class SESSION;
 	class Room
 	{
 	public:
