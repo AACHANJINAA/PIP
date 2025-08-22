@@ -84,8 +84,8 @@ namespace chess::packet
 		}
 
 		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
-		Vector3 currentPos = session->_position;
-		Vector3 targetPos;
+		Vec3 currentPos = session->_position;
+		Vec3 targetPos;
 		targetPos.x = currentPos.x + move_packet._direction.x * MOVE_SPEED;
 		targetPos.y = currentPos.y + move_packet._direction.y * MOVE_SPEED;
 		targetPos.z = currentPos.z + move_packet._direction.z * MOVE_SPEED;
@@ -93,7 +93,7 @@ namespace chess::packet
 
 		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
 
-		Vector3 playerExtents = { 0.5f, 0.5f, 1.0f }; // 플레이어 크기 (예시)
+		Vec3 playerExtents = { 0.5f, 0.5f, 1.0f }; // 플레이어 크기 (예시)
 		if (room->CheckForCollision(targetPos, playerExtents))//TODO: 충돌 체크 로직 수정 필요
 		{
 			// 충돌 발생 시 이동하지 않음
