@@ -130,7 +130,7 @@ namespace chess::server
 		}
 	}
 
-	bool Room::CheckForCollision(Vector3 target_pos, Vector3 player_extents)
+	bool Room::CheckForCollision(Vec3 target_pos, Vec3 player_extents)
 	{
 		return true;
 	}
