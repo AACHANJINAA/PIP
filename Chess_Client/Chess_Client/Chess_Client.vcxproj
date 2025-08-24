@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClInclude Include="BoardCube.h" />
     <ClInclude Include="Chess_Client.h" />
+    <ClInclude Include="GlbShader.h" />
     <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
@@ -162,6 +163,7 @@
   <ItemGroup>
     <ClCompile Include="BoardCube.cpp" />
     <ClCompile Include="Chess_Client.cpp" />
+    <ClCompile Include="GlbShader.cpp" />
     <ClCompile Include="MainPlayer.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -203,6 +205,7 @@
     <None Include="GLB_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
