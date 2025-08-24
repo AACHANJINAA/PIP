@@ -4,6 +4,7 @@
 #include "BoardCube.h"
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
+#include "GlbShader.h"
 
 Chess_Scene::Chess_Scene(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
@@ -21,8 +22,15 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     // 셰이더 생성
     m_nShaders = 1;
-    m_pShaders = new CObjectsShader[m_nShaders];
-    m_pShaders[0].CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+    m_pShaders = new Shader * [m_nShaders]; // Shader 포인터 2개를 담을 배열 생성
+
+    // 기존 오브젝트 셰이더
+    m_pShaders[0] = new CObjectsShader();
+    m_pShaders[0]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+
+    // 새로운 Glb셰이더 (아직 지우지 말 것 추후에 작업해야 함)
+    //m_pShaders[1] = new GlbShader();
+    //m_pShaders[1]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
 
     // 카메라 생성
     m_ChessCamera = new FreeCamera{};
@@ -178,13 +186,19 @@ void Chess_Scene::ReleaseObjects()
 {
 	ObjectManager::Instance()->DeleteAll();
 
-    for (int i = 0; i < m_nShaders; i++)
+  if (m_pShaders)
     {
-        m_pShaders[i].ReleaseShaderVariables();
-    }
-    if (m_pShaders)
-    {
+        for (int i = 0; i < m_nShaders; i++)
+        {
+            if (m_pShaders[i])
+            {
+                m_pShaders[i]->ReleaseShaderVariables();
+                delete m_pShaders[i];
+                m_pShaders[i] = nullptr;
+            }
+        }
         delete[] m_pShaders;
+        m_pShaders = nullptr;
     }
 
 	if (m_pCamera)
@@ -267,7 +281,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
     for (int i = 0; i < m_nShaders; i++)
     {
-        m_pShaders[i].Render(pd3dCommandList, m_pCamera);
+        m_pShaders[i]->Render(pd3dCommandList, m_pCamera);
     }
 
     std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
