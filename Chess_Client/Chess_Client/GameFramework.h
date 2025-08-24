@@ -37,7 +37,9 @@ private:
 	ComPtr<ID3D12CommandAllocator> m_pd3dCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> m_pd3dCommandList;
 
-	ComPtr<ID3D12PipelineState> m_pd3dPipelineState;
+	ComPtr<ID3D12PipelineState> m_pd3dPipelineState; // 기존 PSO
+
+	ComPtr<ID3D12PipelineState> _d3dGlbPipelineState; // GLB 스키닝/텍스쳐용 PSO
 
 	ComPtr<ID3D12Fence> m_pd3dFence;
 	std::array<UINT64, m_nSwapChainBuffers> m_nFenceValues;
