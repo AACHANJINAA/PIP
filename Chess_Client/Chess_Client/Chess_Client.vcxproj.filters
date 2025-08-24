@@ -55,6 +55,9 @@
     <Filter Include="Manager\SceneManager">
       <UniqueIdentifier>{2fe3ac17-8f03-410d-bb43-80766b303528}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\GlbShader">
+      <UniqueIdentifier>{cea0cf3f-f716-446f-9ab0-7b9e5ff7272b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -120,6 +123,9 @@
     <ClInclude Include="SceneManager.h">
       <Filter>Manager\SceneManager</Filter>
     </ClInclude>
+    <ClInclude Include="GlbShader.h">
+      <Filter>Shader\GlbShader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chess_Client.cpp">
@@ -172,6 +178,9 @@
     </ClCompile>
     <ClCompile Include="SceneManager.cpp">
       <Filter>Manager\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="GlbShader.cpp">
+      <Filter>Shader\GlbShader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
