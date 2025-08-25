@@ -136,12 +136,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapDataManager.cpp" />
     <ClCompile Include="PacketHandlers.cpp" />
     <ClCompile Include="PacketManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
   </ItemGroup>
@@ -149,6 +151,12 @@
     <ClInclude Include="..\..\..\Common\Packet.h" />
     <ClInclude Include="..\..\..\Common\PacketStream.h" />
     <ClInclude Include="..\..\..\Common\Vector3.h" />
+    <ClInclude Include="json.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="MapDataManager.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ServerCore.h" />
     <ClInclude Include="PacketHandlers.h" />
     <ClInclude Include="PacketManager.h" />

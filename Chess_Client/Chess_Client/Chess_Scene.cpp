@@ -130,20 +130,17 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
             debugBoxObject->SetMesh(debugCubeMesh);
            
 
-            XMFLOAT3 churchWorldPos = churchObject->GetPosition();
+            XMMATRIX parentWorld = XMLoadFloat4x4(&churchObject->m_xmf4x4World);
 
-            XMMATRIX churchWorld = XMMatrixIdentity();
-            churchWorld = XMMatrixMultiply(XMMatrixScaling(churchScale.x, churchScale.y, churchScale.z), churchWorld);
-            churchWorld = XMMatrixMultiply(XMMatrixTranslation(churchWorldPos.x, churchWorldPos.y, churchWorldPos.z), churchWorld);
+            XMMATRIX S = XMMatrixScaling(box.Extents.x * 2.0f, box.Extents.y * 2.0f, box.Extents.z * 2.0f);
+            XMMATRIX R = XMMatrixRotationQuaternion(XMLoadFloat4(&box.Orientation));
+            XMMATRIX T = XMMatrixTranslation(box.Center.x, box.Center.y, box.Center.z);
+            XMMATRIX localBoxMatrix = S * R * T;
 
-            XMVECTOR transformedCenter = XMVector3TransformCoord(XMLoadFloat3(&box.Center), churchWorld);
-            XMFLOAT3 finalCenter;
-            XMStoreFloat3(&finalCenter, transformedCenter);
-            debugBoxObject->SetPosition(finalCenter.x, finalCenter.y, finalCenter.z);
+            XMMATRIX finalWorldMatrix = localBoxMatrix * parentWorld;
 
-            debugBoxObject->SetScale(box.Extents.x * 2.0f * churchScale.x,
-                                     box.Extents.y * 2.0f * churchScale.y,
-                                     box.Extents.z * 2.0f * churchScale.z);
+            XMStoreFloat4x4(&debugBoxObject->m_xmf4x4World, finalWorldMatrix);
+
             debugObjects.push_back(debugBoxObject);
             OutputDebugStringA(("DebugCube count: " + std::to_string(debugObjects.size()) + "\n").c_str());
             OutputDebugStringA(("Box Center: " + std::to_string(box.Center.x) + ", " + std::to_string(box.Center.y) + ", " + std::to_string(box.Center.z) + "\n").c_str());

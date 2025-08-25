@@ -1,5 +1,8 @@
 ﻿#include "pch.h"
 #include "PacketHandlers.h"
+
+#include "MapDataManager.h"
+#include "Player.h"
 #include "server.h"
 #include "Room.h"
 
@@ -15,17 +18,17 @@ namespace chess::packet
 		spawn_packet_data._size = 0; // 임시 크기 (나중에 다시 계산)
 
 		spawn_packet_data._id = session->_id;
-		spawn_packet_data._position.x = session->_position.x;
-		spawn_packet_data._position.y = session->_position.y;
-		spawn_packet_data._hp = session->_hp;
-		spawn_packet_data._level = session->_level;
-		spawn_packet_data._exp = session->_exp;
+		spawn_packet_data._position.x = session->GetPlayer()->_position.x;
+		spawn_packet_data._position.y = session->GetPlayer()->_position.y;
+		spawn_packet_data._hp = session->GetPlayer()->_hp;
+		spawn_packet_data._level = session->GetPlayer()->_level;
+		spawn_packet_data._exp = session->GetPlayer()->_exp;
 
 		packet::PacketStream finalStream;
 		// [수정] 구조체 자체를 스트림에 씁니다.
 		finalStream << spawn_packet_data;
 		// [추가] 이름(가변 길이)을 스트림에 씁니다.
-		finalStream << session->_name;
+		finalStream << session->GetPlayer()->_name;
 
 		// [수정] 최종 크기를 계산하여 패킷 헤더에 덮어씁니다.
 		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
@@ -33,7 +36,7 @@ namespace chess::packet
 
 		return finalStream; // finalStream을 반환
 	}
-	
+
 
 	void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
 	{
@@ -46,14 +49,14 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			MYLOG("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
+			MYERROR("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
 			// 여기서 세션 접속을 끊는 등의 처리를 할 수 있습니다.
 			return;
 		}
 		// 2. 세션 객체에 이름을 저장합니다.
-		session->_name = player_name;
+		session->GetPlayer()->_name = player_name;
 		
-		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_name << "'.");
+		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->GetPlayer()->_name << "'.");
 
 		// 아바타 정보 전송 로직 제거
 
@@ -84,33 +87,31 @@ namespace chess::packet
 		}
 
 		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
-		Vec3 currentPos = session->_position;
+
 		Vec3 targetPos;
-		targetPos.x = currentPos.x + move_packet._direction.x * MOVE_SPEED;
-		targetPos.y = currentPos.y + move_packet._direction.y * MOVE_SPEED;
-		targetPos.z = currentPos.z + move_packet._direction.z * MOVE_SPEED;
+		targetPos.x = session->GetPlayer()->_position.x + move_packet._direction.x * MOVE_SPEED;
+		targetPos.y = session->GetPlayer()->_position.y + move_packet._direction.y * MOVE_SPEED;
+		targetPos.z = session->GetPlayer()->_position.z + move_packet._direction.z * MOVE_SPEED;
 		//TODO: deltaTime를 고려한 이동 로직 추가 필요
 
 		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
 
-		Vec3 playerExtents = { 0.5f, 0.5f, 1.0f }; // 플레이어 크기 (예시)
-		if (room->CheckForCollision(targetPos, playerExtents))//TODO: 충돌 체크 로직 수정 필요
+		Vec3 player_extents = { 1.f, 1.8f, 1.f };
+
+		// 충돌 검사
+		if (false == MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
 		{
-			// 충돌 발생 시 이동하지 않음
-			return;
+			// 충돌이 없으면 위치 업데이트 및 브로드캐스팅
+			session->GetPlayer()->_position = targetPos;
+
+			packet::SC_PACKET_MOVE sync_packet;
+			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			sync_packet._size = sizeof(sync_packet);
+			sync_packet._id = session->_id;
+			sync_packet._position = session->GetPlayer()->_position;
+
+			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
 		}
-
-		session->_position = targetPos; // 이동 위치 업데이트
-
-		// 4. 이동 패킷 생성 (기존 로직 동일)
-		packet::SC_PACKET_MOVE sync_packet;
-		sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
-		sync_packet._size = sizeof(sync_packet);
-		sync_packet._id = session->_id;
-		sync_packet._position = session->_position;
-
-		// 5. [수정] 방에 있는 모든 플레이어에게 브로드캐스팅
-		room->Broadcast(reinterpret_cast<const char*>(&sync_packet), sizeof(sync_packet));
 	}
 
 	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
@@ -191,11 +192,11 @@ namespace chess::packet
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = room->GetLogicThreadIndex();
-		session->_position.x = 4;
-		session->_position.y = 4;
-		session->_level = 1;
-		session->_hp = 100;
-		session->_exp = 0;
+		session->GetPlayer()->_position.x = 4;
+		session->GetPlayer()->_position.y = 4;
+		session->GetPlayer()->_level = 1;
+		session->GetPlayer()->_hp = 100;
+		session->GetPlayer()->_exp = 0;
 		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (4,4)");
 
 		SC_PACKET_ENTER_ROOM_ACK ack_packet;

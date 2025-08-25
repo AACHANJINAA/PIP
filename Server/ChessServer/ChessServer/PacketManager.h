@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "PacketHandlers.h"
+#include "server.h"
 
 namespace chess::packet
 {
