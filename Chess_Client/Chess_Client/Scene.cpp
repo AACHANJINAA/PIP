@@ -140,9 +140,103 @@ ID3D12RootSignature* Scene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice
     return(pd3dGraphicsRootSignature);
 }
 
+ID3D12RootSignature* Scene::CreateSkinnedGraphicsRootSignature(ID3D12Device* pd3dDevice)
+{
+    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
+    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    // 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
+    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
+    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    d3dDescriptorRanges[0].NumDescriptors = 1; // 텍스처는 1개
+    d3dDescriptorRanges[0].BaseShaderRegister = 0; // 셰이더의 t0 레지스터에 연결
+    d3dDescriptorRanges[0].RegisterSpace = 0;
+    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 (총 6개)
+    D3D12_ROOT_PARAMETER d3dRootParameters[6];
+
+    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+    d3dRootParameters[0].Constants.Num32BitValues = 16;
+    d3dRootParameters[0].Constants.ShaderRegister = 0; // b0: 월드 행렬
+    d3dRootParameters[0].Constants.RegisterSpace = 0;
+    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+    d3dRootParameters[1].Constants.Num32BitValues = 36;
+    d3dRootParameters[1].Constants.ShaderRegister = 1;
+    d3dRootParameters[1].Constants.RegisterSpace = 0;
+    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: 재질
+    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: 조명
+    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [새로운 파라미터] 스키닝 상수 버퍼
+    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: 스키닝 뼈 행렬
+    d3dRootParameters[4].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 버텍스 셰이더에서만 필요
+
+    // [새로운 파라미터] 텍스처 디스크립터 테이블
+    d3dRootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    d3dRootParameters[5].DescriptorTable.NumDescriptorRanges = 1;
+    d3dRootParameters[5].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[0];
+    d3dRootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
+
+    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
+    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+
+    // 3. 텍스처 샘플러 설정
+    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.MipLODBias = 0;
+    d3dStaticSamplerDesc.MaxAnisotropy = 1;
+    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    d3dStaticSamplerDesc.MinLOD = 0;
+    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+    d3dStaticSamplerDesc.ShaderRegister = 0; // 셰이더의 s0 레지스터에 연결
+    d3dStaticSamplerDesc.RegisterSpace = 0;
+    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    d3dRootSignatureDesc.NumStaticSamplers = 1;
+    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
+
+    // 4. 루트 서명 생성
+    ID3D12RootSignature* pd3dGraphicsRootSignature = nullptr;
+    ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
+    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
+    pd3dDevice->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), pd3dSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&pd3dGraphicsRootSignature));
+
+    return pd3dGraphicsRootSignature;
+}
+
 ID3D12RootSignature* Scene::GetGraphicsRootSignature()
 {
-    return(m_pd3dGraphicsRootSignature);
+    //return(m_pd3dGraphicsRootSignature);
+    return (nullptr);
+}
+
+// 핸들 할당 함수 구현
+void Scene::AllocateNextSrvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle)
+{
+    outCpuHandle = _SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    outCpuHandle.ptr += (_SrvDescriptorIncrementSize * _AllocatedSrvCount);
+
+    outGpuHandle = _SrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+    outGpuHandle.ptr += (_SrvDescriptorIncrementSize * _AllocatedSrvCount);
+
+    _AllocatedSrvCount++; // 카운터 증가
 }
 
 GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
@@ -184,6 +278,27 @@ GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
 
     return(pNearestObject);
     return nullptr;
+}
+
+void Scene::MakeSrv(ID3D12Device* pd3dDevice)
+{
+    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ SRV 디스크립터 힙 생성 ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+    // 텍스처와 같은 셰이더 리소스 뷰(SRV)들을 담을 디스크립터 힙을 생성합니다.
+    D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+    srvHeapDesc.NumDescriptors = 128; // 이 씬에서 사용할 최대 텍스처 개수 (임의로 128로 설정, 필요시 조절)
+    srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // **매우 중요**: 셰이더가 접근 가능해야 함
+    srvHeapDesc.NodeMask = 0;
+
+    // 디스크립터 힙 생성
+    pd3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_SrvDescriptorHeap));
+
+    // SRV 디스크립터의 크기를 저장해 둡니다. 핸들 주소를 계산할 때 필요합니다.
+    _SrvDescriptorIncrementSize = pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    // 할당된 디스크립터 개수 카운터를 0으로 초기화합니다.
+    _AllocatedSrvCount = 0;
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 }
 
 void Scene::ReleaseUploadBuffers()
