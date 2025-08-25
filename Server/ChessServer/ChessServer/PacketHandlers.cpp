@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "PacketHandlers.h"
+
+#include "MapDataManager.h"
 #include "server.h"
 #include "Room.h"
 
@@ -84,33 +86,31 @@ namespace chess::packet
 		}
 
 		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
-		Vec3 currentPos = session->_position;
+
 		Vec3 targetPos;
-		targetPos.x = currentPos.x + move_packet._direction.x * MOVE_SPEED;
-		targetPos.y = currentPos.y + move_packet._direction.y * MOVE_SPEED;
-		targetPos.z = currentPos.z + move_packet._direction.z * MOVE_SPEED;
+		targetPos.x = session->_position.x + move_packet._direction.x * MOVE_SPEED;
+		targetPos.y = session->_position.y + move_packet._direction.y * MOVE_SPEED;
+		targetPos.z = session->_position.z + move_packet._direction.z * MOVE_SPEED;
 		//TODO: deltaTime를 고려한 이동 로직 추가 필요
 
 		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
 
-		Vec3 playerExtents = { 0.5f, 0.5f, 1.0f }; // 플레이어 크기 (예시)
-		if (room->CheckForCollision(targetPos, playerExtents))//TODO: 충돌 체크 로직 수정 필요
+		Vec3 player_extents = { 1.f, 1.8f, 1.f };
+
+		// 충돌 검사
+		if (false == MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
 		{
-			// 충돌 발생 시 이동하지 않음
-			return;
+			// 충돌이 없으면 위치 업데이트 및 브로드캐스팅
+			session->_position = targetPos;
+
+			packet::SC_PACKET_MOVE sync_packet;
+			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			sync_packet._size = sizeof(sync_packet);
+			sync_packet._id = session->_id;
+			sync_packet._position = session->_position;
+
+			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
 		}
-
-		session->_position = targetPos; // 이동 위치 업데이트
-
-		// 4. 이동 패킷 생성 (기존 로직 동일)
-		packet::SC_PACKET_MOVE sync_packet;
-		sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
-		sync_packet._size = sizeof(sync_packet);
-		sync_packet._id = session->_id;
-		sync_packet._position = session->_position;
-
-		// 5. [수정] 방에 있는 모든 플레이어에게 브로드캐스팅
-		room->Broadcast(reinterpret_cast<const char*>(&sync_packet), sizeof(sync_packet));
 	}
 
 	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
