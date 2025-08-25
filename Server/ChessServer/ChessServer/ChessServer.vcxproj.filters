@@ -25,20 +25,17 @@
     <Filter Include="소스 파일\MapDataManager">
       <UniqueIdentifier>{8b6bc8f8-6074-4542-ab85-ccb5baed8929}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Server">
+      <UniqueIdentifier>{4b20dcfe-da3f-4689-8997-8f10c1de7032}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Player">
+      <UniqueIdentifier>{e7e528a4-e5ee-420f-a9cc-14d759729153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Core">
+      <UniqueIdentifier>{4a53db0e-1d2b-4a0a-b56e-15df98d1f979}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="server.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Room.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="PacketHandlers.cpp">
       <Filter>소스 파일\Packet</Filter>
     </ClCompile>
@@ -48,20 +45,23 @@
     <ClCompile Include="MapDataManager.cpp">
       <Filter>소스 파일\MapDataManager</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>소스 파일\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="server.cpp">
+      <Filter>소스 파일\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>소스 파일\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="server.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerCore.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Room.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="PacketHandlers.h">
       <Filter>소스 파일\Packet</Filter>
     </ClInclude>
@@ -82,6 +82,21 @@
     </ClInclude>
     <ClInclude Include="MapDataManager.h">
       <Filter>소스 파일\MapDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>소스 파일\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="server.h">
+      <Filter>소스 파일\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>소스 파일\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerCore.h">
+      <Filter>소스 파일\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

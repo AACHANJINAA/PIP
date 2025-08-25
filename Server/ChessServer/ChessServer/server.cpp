@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "server.h"
-
+#include "Player.h"
 #include "MapDataManager.h"
 #include "PacketManager.h"
 #include "ServerCore.h"
@@ -15,14 +15,14 @@ namespace chess::server
 	}
 	// server.cpp
 	SESSION::SESSION(long long session_id, SOCKET s, int logic_index)
-		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }, _hp{ 100 }, _max_hp{ 100 }
-		, _level{ 1 }, _exp{ 0 }
+		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }
 	{
 		_state = SESSION_STATE::ST_LOBBY;
+		_player = std::make_shared<chess::Player>(session_id);
 	}
 	SESSION::~SESSION()
 	{
-		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _name);
+		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player->_name);
 		// TODO: Logic_Worker 에서 세션 종료 패킷을 보내는 로직 추가 필요
 		closesocket(_c_socket);
 	}
@@ -149,7 +149,7 @@ namespace chess::server
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
 		MYLOG("[SERVER] Loading Map...");
-		MapDataManager::Instance()->LoadMapData("..\\..\\..\\\PIPMap250821\\PIPMap\\MapData\\MyExportedData.json");
+		MapDataManager::Instance()->LoadMapData("..\\..\\..\\PIPMap250821\\PIPMap\\MapData\\MyExportedData.json");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)
