@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "server.h"
+
+#include "MapDataManager.h"
 #include "PacketManager.h"
 #include "ServerCore.h"
 
@@ -146,7 +148,9 @@ namespace chess::server
 		}
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
-
+		MYLOG("[SERVER] Loading Map...");
+		MapDataManager::Instance()->LoadMapData("..\\..\\..\\\PIPMap250821\\PIPMap\\MapData\\MyExportedData.json");
+		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)
 		{

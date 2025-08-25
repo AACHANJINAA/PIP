@@ -19,6 +19,12 @@
     <Filter Include="소스 파일\Common">
       <UniqueIdentifier>{221db55e-c0d0-4ad9-995d-1f030209a926}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\JSON">
+      <UniqueIdentifier>{6cd71e3b-475b-42bf-9877-81d2ab8acdfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\MapDataManager">
+      <UniqueIdentifier>{8b6bc8f8-6074-4542-ab85-ccb5baed8929}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -38,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="PacketManager.cpp">
       <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="MapDataManager.cpp">
+      <Filter>소스 파일\MapDataManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +76,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Common\PacketStream.h">
       <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>소스 파일\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="MapDataManager.h">
+      <Filter>소스 파일\MapDataManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

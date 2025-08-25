@@ -18,6 +18,8 @@
 #include <cstdint>
 #include <type_traits>
 #include <filesystem>
+#include <fstream>
+
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
 using namespace DirectX;
@@ -27,6 +29,8 @@ using namespace DirectX;
 using namespace common;
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
+
+#include "json.hpp"
 
 #define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
 
