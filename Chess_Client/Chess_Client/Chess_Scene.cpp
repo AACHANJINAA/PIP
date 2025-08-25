@@ -89,14 +89,14 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     // 언리얼에서 뽑은 FBX 테스트
     std::shared_ptr<GameObject> churchObject = std::make_shared<BoardCube>();
-    Mesh* churchMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/medieval_church.fbx" };
+    Mesh* churchMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCube.fbx" };
 
     churchObject->SetMesh(churchMesh);
-    XMFLOAT3 churchScale = XMFLOAT3(0.001f, 0.001f, 0.001f);
+    XMFLOAT3 churchScale = XMFLOAT3(0.05f, 0.05f, 0.05f);
     churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
-    churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x), 
-        0.f,
-        ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 1);
+    churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x + 3), 
+        0.8f,
+        ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 5);
     Board->m_PosX = 0;
     Board->m_PosY = 0;
     ObjectManager::Instance()->PushFloorObject(churchObject);
@@ -108,32 +108,48 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     if (churchFbxMesh)
     {
-        const auto& collisionBoxes = churchFbxMesh->GetCollisionBoxes();
-        OutputDebugStringA(("CollisionBox count: " + std::to_string(collisionBoxes.size()) + "\n").c_str());
-        XMFLOAT4 debugColor = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+        // GetCollisionPrimitives() 함수로 CollisionPrimitive 벡터를 가져옵니다.
+        const auto& collisionPrimitives = churchFbxMesh->GetCollisionPrimitives();
 
-        for (const auto& box : collisionBoxes)
+        // 부모 객체(churchObject)의 월드 행렬을 미리 로드합니다.
+        XMMATRIX parentWorld = XMLoadFloat4x4(&churchObject->m_xmf4x4World);
+
+        for (const auto& primitive : collisionPrimitives)
         {
-            std::shared_ptr<GameObject> debugBoxObject = std::make_shared<BoardCube>();
+            // --- 1. OBB 시각화 (노란색) ---
+            {
+                XMFLOAT4 oobbColor = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 노란색
+                auto debugOOBBObject = std::make_shared<BoardCube>();
+                debugOOBBObject->SetMesh(new DebugWireframe(pd3dDevice, pd3dCommandList, oobbColor));
 
-            DebugCubeMesh* debugCubeMesh = new DebugCubeMesh(pd3dDevice, pd3dCommandList, debugColor);
-            debugBoxObject->SetMesh(debugCubeMesh);
+                // OBB의 크기, 회전, 위치로 로컬 변환 행렬 생성
+                XMMATRIX S = XMMatrixScaling(primitive.oobb.Extents.x * 2.0f, primitive.oobb.Extents.y * 2.0f, primitive.oobb.Extents.z * 2.0f);
+                XMVECTOR orientationQuat = XMLoadFloat4(&primitive.oobb.Orientation);
+                orientationQuat = XMQuaternionNormalize(orientationQuat);
+                XMMATRIX R = XMMatrixRotationQuaternion(orientationQuat);
+                XMMATRIX T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
+                XMMATRIX localBoxMatrix = S * R * T;
 
-            XMMATRIX parentWorld = XMLoadFloat4x4(&churchObject->m_xmf4x4World);
+                // 최종 월드 행렬 계산 및 저장
+                XMStoreFloat4x4(&debugOOBBObject->m_xmf4x4World, localBoxMatrix * parentWorld);
+                debugObjects.push_back(debugOOBBObject);
+            }
 
-            XMMATRIX S = XMMatrixScaling(box.Extents.x * 2.0f, box.Extents.y * 2.0f, box.Extents.z * 2.0f);
-            XMMATRIX R = XMMatrixRotationQuaternion(XMLoadFloat4(&box.Orientation));
-            XMMATRIX T = XMMatrixTranslation(box.Center.x, box.Center.y, box.Center.z);
-            XMMATRIX localBoxMatrix = S * R * T;
+            // --- 2. AABB 시각화 (빨간색) ---
+            {
+                XMFLOAT4 aabbColor = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 빨간색
+                auto debugAABBObject = std::make_shared<BoardCube>();
+                debugAABBObject->SetMesh(new DebugWireframe(pd3dDevice, pd3dCommandList, aabbColor));
 
-            XMMATRIX finalWorldMatrix = localBoxMatrix * parentWorld;
+                // AABB의 크기, 위치로 로컬 변환 행렬 생성 (회전 없음)
+                XMMATRIX S = XMMatrixScaling(primitive.aabb.Extents.x * 2.0f, primitive.aabb.Extents.y * 2.0f, primitive.aabb.Extents.z * 2.0f);
+                XMMATRIX T = XMMatrixTranslation(primitive.aabb.Center.x, primitive.aabb.Center.y, primitive.aabb.Center.z);
+                XMMATRIX localBoxMatrix = S * T;
 
-            XMStoreFloat4x4(&debugBoxObject->m_xmf4x4World, finalWorldMatrix);
-
-            debugObjects.push_back(debugBoxObject);
-            OutputDebugStringA(("DebugCube count: " + std::to_string(debugObjects.size()) + "\n").c_str());
-            OutputDebugStringA(("Box Center: " + std::to_string(box.Center.x) + ", " + std::to_string(box.Center.y) + ", " + std::to_string(box.Center.z) + "\n").c_str());
-            OutputDebugStringA(("Box Extents: " + std::to_string(box.Extents.x) + ", " + std::to_string(box.Extents.y) + ", " + std::to_string(box.Extents.z) + "\n").c_str());
+                // 최종 월드 행렬 계산 및 저장
+                XMStoreFloat4x4(&debugAABBObject->m_xmf4x4World, localBoxMatrix * parentWorld);
+                debugObjects.push_back(debugAABBObject);
+            }
         }
     }
 

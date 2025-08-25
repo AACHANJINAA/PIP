@@ -931,37 +931,57 @@ void ReadFbxMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* 
 
 void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	const char* meshNameCStr = mesh->mName.C_Str();
-	std::string meshNameStr(meshNameCStr); // 로깅/편의를 위해 std::string 생성
-	std::wstring wMeshName(meshNameStr.begin(), meshNameStr.end());
-	
-	bool isCollisionMesh = false;
-	
-	if (strlen(meshNameCStr) >= 4 && meshNameCStr[0] == 'U' 
-		&& meshNameCStr[1] == 'C' 
-		&& meshNameCStr[2] == 'X' 
-		&& meshNameCStr[3] == '_')
-	{
-		isCollisionMesh = true;
-	}
+	std::string meshNameStr = mesh->mName.C_Str();
 
-	if (isCollisionMesh)
+	if (meshNameStr.rfind("UCX_", 0) == 0)
 	{
-		// collision Mesh
-		XMFLOAT3 minPos(FLT_MAX, FLT_MAX, FLT_MAX);	
-		XMFLOAT3 maxPos(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		// --- Collision Mesh 처리 ---
+		CollisionPrimitive primitive;
 
+		// 제안 2: UCX_ 메시의 정점/인덱스 데이터 저장
 		for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
 		{
-			minPos.x = min(minPos.x, mesh->mVertices[i].x);
-			minPos.y = min(minPos.y, mesh->mVertices[i].y);
-			minPos.z = min(minPos.z, mesh->mVertices[i].z);
+			// Assimp로부터 데이터를 읽은 직후, 값이 유효한지 확인합니다.
+			const aiVector3D& vtx = mesh->mVertices[i];
+			if (std::isnan(vtx.x) || std::isnan(vtx.y) || std::isnan(vtx.z) ||
+				std::isinf(vtx.x) || std::isinf(vtx.y) || std::isinf(vtx.z))
+			{
+				char buffer[256];
+				sprintf_s(buffer, "!!! CRITICAL ERROR: Invalid vertex data loaded from mesh: %s at index %u\n", meshNameStr.c_str(), i);
+				OutputDebugStringA(buffer);
+				continue; // 이 비정상적인 정점은 건너뜁니다.
+			}
 
-			maxPos.x = max(maxPos.x, mesh->mVertices[i].x);
-			maxPos.y = max(maxPos.y, mesh->mVertices[i].y);
-			maxPos.z = max(maxPos.z, mesh->mVertices[i].z);
+			Vertex v;
+			v.m_xmf3Position.x = mesh->mVertices[i].x;
+			v.m_xmf3Position.y = mesh->mVertices[i].y;
+			v.m_xmf3Position.z = mesh->mVertices[i].z;
+			primitive.vertices.push_back(v);
 		}
-		m_collisionBoxes.push_back(CreateOOBB(minPos, maxPos));
+
+		for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
+		{
+			aiFace face = mesh->mFaces[i];
+
+			for (unsigned int j = 0; j < face.mNumIndices; ++j)
+			{
+				primitive.indices.push_back(face.mIndices[j]);
+			}
+		}
+
+		// AABB 계산 
+		DirectX::BoundingBox::CreateFromPoints(primitive.aabb, primitive.vertices.size(), &primitive.vertices[0].m_xmf3Position, sizeof(Vertex));
+		// OBB 계산
+		DirectX::BoundingOrientedBox::CreateFromPoints(primitive.oobb, primitive.vertices.size(), &primitive.vertices[0].m_xmf3Position, sizeof(Vertex));
+
+		XMVECTOR quat = XMLoadFloat4(&primitive.oobb.Orientation);
+
+		XMVECTOR lengthSq = XMVector4LengthSq(quat);
+
+		float fLengthSq;
+		XMStoreFloat(&fLengthSq, lengthSq);
+
+		m_collisionPrimitives.push_back(primitive);
 	}
 	else {
 		// 현재 메쉬의 정점 정보를 임시로 담을 벡터
@@ -1047,7 +1067,7 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 	}
 }
 
-DebugCubeMesh::DebugCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
+DebugWireframe::DebugWireframe(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
 {
 	m_Vertexvec.resize(8);
 
@@ -1100,6 +1120,6 @@ DebugCubeMesh::DebugCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
 }
 
-DebugCubeMesh::~DebugCubeMesh()
+DebugWireframe::~DebugWireframe()
 {
 }

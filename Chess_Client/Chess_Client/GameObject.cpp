@@ -78,7 +78,6 @@ void GameObject::OnPrepareRender()
 {
 }
 
-// (¼öÁ¤) [PONG]
 void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera)
 {
 	OnPrepareRender();
@@ -279,11 +278,15 @@ void GameObject::UpdateBoundingBox()
 
 bool GameObject::IsVisible(Camera* pCamera)
 {
-	OnPrepareRender(); 
-	bool bIsVisible = false;
-	BoundingOrientedBox xmBoundingBox = m_pMesh->GetBoundingBox();
-	xmBoundingBox.Transform(xmBoundingBox, XMLoadFloat4x4(&m_xmf4x4World)); 
-	if (pCamera) bIsVisible = pCamera->IsInFrustum(xmBoundingBox); 
-	
-	return(bIsVisible);
+	OnPrepareRender();
+	if (!pCamera) return false; 
+
+	BoundingOrientedBox worldOOBB = m_pMesh->GetBoundingBox();
+	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+
+	XMVECTOR orientationQuat = XMLoadFloat4(&worldOOBB.Orientation);
+	orientationQuat = XMQuaternionNormalize(orientationQuat);
+	XMStoreFloat4(&worldOOBB.Orientation, orientationQuat);
+
+	return pCamera->IsInFrustum(worldOOBB);
 }
