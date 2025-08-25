@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <filesystem>
 #include <fstream>
+#include <sstream> // std::ostringstream 추가
 
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
@@ -32,16 +33,62 @@ using namespace common;
 
 #include "json.hpp"
 
-#define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
 
+// 1. 로그용 전역 뮤텍스는 그대로 사용합니다.
+inline std::mutex g_log_mutex;
+
+// 디버그 빌드에서만 로그가 동작하도록 설정
+#ifdef _DEBUG
+#define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
+#endif
+
+// 2. 로그 레벨을 나타내는 열거형
+enum class LogLevel { Info, Error };
+
+// 3. 핵심 로거 클래스 정의
+class Logger
+{
+public:
+    Logger(LogLevel level, const char* file, int line)
+        : _level(level), _file(file), _line(line)
+    {}
+
+    // 소멸자에서 잠금을 걸고 전체 로그 메시지를 출력
+    ~Logger()
+    {
+        std::lock_guard<std::mutex> lock(g_log_mutex);
+        if (_level == LogLevel::Error)
+        {
+            std::cout << "[ERROR in ";
+        }
+        else
+        {
+            std::cout << "[";
+        }
+        std::cout << std::filesystem::path(_file).filename().string() << ":" << _line << "] "
+            << _buffer.str() << std::endl;
+
+        // 에러 레벨이면 디버거를 멈춤
+        if (_level == LogLevel::Error)
+        {
+            __debugbreak();
+        }
+    }
+
+    // `MYLOG << ...` 와 같은 스트림 연산을 가능하게 해주는 함수
+    std::ostringstream& stream() { return _buffer; }
+
+private:
+    std::ostringstream _buffer;
+    LogLevel _level;
+    const char* _file;
+    int _line;
+};
 
 #ifdef _DEBUG
 	#ifdef ENABLE_DEBUG_LOG
-		#define __FILENAME__ (std::filesystem::path(__FILE__).filename().string())
-
-		#define MYLOG_HELPER(file, line, message) std::cout << "[" << std::filesystem::path(file).filename().string() << ":" << line << "] " << message << std::endl
-		#define MYLOG(message) MYLOG_HELPER(__FILE__, __LINE__, message)
-		#define MYERROR(message) do { MYLOG_HELPER(__FILE__, __LINE__, message); __debugbreak(); } while(0)
+		#define MYLOG(msg) Logger(LogLevel::Info, __FILE__, __LINE__).stream() << msg
+		#define MYERROR(msg) Logger(LogLevel::Error, __FILE__, __LINE__).stream() << msg
 	#else
 		#define MYLOG(message)
 		#define MYERROR(message)
