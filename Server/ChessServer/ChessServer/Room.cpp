@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "Room.h"
-
+#include "Player.h"
 #include "PacketHandlers.h"
 
 namespace chess::server
@@ -87,8 +87,8 @@ namespace chess::server
 
 		for (int i = 0; i < 4; ++i)
 		{
-			int target_x = static_cast<int>(attacker->_position.x + dx[i]);
-			int target_y = static_cast<int>(attacker->_position.y + dy[i]);
+			int target_x = static_cast<int>(attacker->GetPlayer()->_position.x + dx[i]);
+			int target_y = static_cast<int>(attacker->GetPlayer()->_position.y + dy[i]);
 
 			// 맵 경계 체크는 핸들러에서 이미 했을 수 있지만, 여기서도 한번 더 하는 것이 안전합니다.
 			// (지금은 생략)
@@ -98,7 +98,7 @@ namespace chess::server
 			for (auto const& [player_id, session] : _players)
 			{
 				if (session && session->_id != attacker->_id &&
-					session->_position.x == target_x && session->_position.y == target_y)
+					session->GetPlayer()->_position.x == target_x && session->GetPlayer()->_position.y == target_y)
 				{
 					target_session = session;
 					break;
@@ -109,8 +109,8 @@ namespace chess::server
 			{
 				// 데미지 계산 (임시로 10)
 				int16_t damage = 10;
-				target_session->_hp -= damage;
-				int32_t new_hp = target_session->_hp;
+				target_session->GetPlayer()->_hp -= damage;
+				int32_t new_hp = target_session->GetPlayer()->_hp;
 				if (new_hp < 0) { new_hp = 0; }
 
 				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks " << target_session->_id << ". HP: " << new_hp);

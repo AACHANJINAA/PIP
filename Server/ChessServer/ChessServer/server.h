@@ -1,10 +1,12 @@
 ﻿#pragma once
 #include "PacketStream.h"
 #include "Room.h"
+#include "Player.h"
 
 namespace chess::server
 {
 	class Server;
+
 
 	enum IO_OP : std::uint8_t
 	{
@@ -25,7 +27,7 @@ namespace chess::server
 			_wsabuf[0].len = static_cast<ULONG>(_buffer.size());
 		}
 
-		WSAOVERLAPPED _over;
+		WSAOVERLAPPED			_over;
 		IO_OP					_io_op;
 		SOCKET					_accept_socket;
 		std::array<UCHAR,1024>	_buffer;
@@ -34,7 +36,7 @@ namespace chess::server
 
 	extern EXP_OVER g_accept_over;
 
-
+	
 	enum class SESSION_STATE : char
 	{
 		ST_FREE = 0,
@@ -46,25 +48,18 @@ namespace chess::server
 	class SESSION : public std::enable_shared_from_this<SESSION>
 	{
 	public:
-		SOCKET						_c_socket;
-		long long					_id;
-		int                         _logic_thread_idx; // 담당 로직 스레드의 인덱스
-		int							_room_id = -1;
+		SOCKET								_c_socket;
+		long long							_id;
+		int									_logic_thread_idx; // 담당 로직 스레드의 인덱스
+		int									_room_id = -1;
 
-		EXP_OVER					_recv_over{ IO_RECV };
-		//unsigned char				_remained;
+		EXP_OVER							_recv_over{ IO_RECV };
 
-		std::vector<char>			_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
+		std::vector<char>					_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
 
-		std::atomic<SESSION_STATE>	_state;
-
-		// 플레이어 정보
-		Vec3						_position;
-		std::string					_name;
-		short						_hp;
-		short						_max_hp;
-		short						_level;
-		uint32_t					_exp;
+		std::atomic<SESSION_STATE>			_state;
+	private:
+		std::shared_ptr<chess::Player>		_player;
 	public:
 		SESSION();
 		SESSION(long long session_id, SOCKET s, int logic_index);
@@ -73,15 +68,16 @@ namespace chess::server
 		void do_recv();
 		void do_send(const char* data, size_t size);
 		void OnRecv(size_t len, Server* server_ptr);
+
+		std::shared_ptr<chess::Player> GetPlayer() const { return _player; }
 	};
 
-	struct LogicPacket //[추가] 로직 스레드에 전달될 패킷 구조체
+	struct LogicPacket // 로직 스레드에 전달될 패킷 구조체
 	{
 		std::shared_ptr<SESSION> session; // 이 세션이
 		packet::PacketStream packet_stream; // 그냥 스트림을 가져오도록 변경
 	};
 
-	// [추가] 로직 스레드와 그에 해당하는 작업 큐를 묶는 구조체
 	struct LogicWorker
 	{
 		std::thread thread;
@@ -90,10 +86,8 @@ namespace chess::server
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
 			: thread(std::move(other.thread)), queue(std::move(other.queue))
-		{}
+		{} // emplace_back에서 이동 생성자 호출하기 위함
 
-
-		// 복사 생성/할당 = delete
 		LogicWorker(const LogicWorker&) = delete;
 		LogicWorker& operator=(const LogicWorker&) = delete;
 	};
