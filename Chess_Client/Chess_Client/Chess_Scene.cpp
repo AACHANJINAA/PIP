@@ -100,20 +100,11 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     Mesh* churchMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCube.fbx" };
 
     churchObject->SetMesh(churchMesh);
-<<<<<<< HEAD
     XMFLOAT3 churchScale = XMFLOAT3(0.05f, 0.05f, 0.05f);
     churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
     churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x + 3), 
         0.8f,
         ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 5);
-=======
-   
-
-    XMFLOAT3 churchScale = XMFLOAT3(0.001f, 0.001f, 0.001f);
-    churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
-    churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x), 0.f,
-        ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 1);
->>>>>>> 93be1fdbcbc0e6cdc1b5c5f476a5238b3fe45279
     Board->m_PosX = 0;
     Board->m_PosY = 0;
     ObjectManager::Instance()->PushFloorObject(churchObject);
@@ -139,7 +130,6 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
                 auto debugOOBBObject = std::make_shared<BoardCube>();
                 debugOOBBObject->SetMesh(new DebugWireframe(pd3dDevice, pd3dCommandList, oobbColor));
 
-<<<<<<< HEAD
                 // OBB의 크기, 회전, 위치로 로컬 변환 행렬 생성
                 XMMATRIX S = XMMatrixScaling(primitive.oobb.Extents.x * 2.0f, primitive.oobb.Extents.y * 2.0f, primitive.oobb.Extents.z * 2.0f);
                 XMVECTOR orientationQuat = XMLoadFloat4(&primitive.oobb.Orientation);
@@ -147,12 +137,6 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
                 XMMATRIX R = XMMatrixRotationQuaternion(orientationQuat);
                 XMMATRIX T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
                 XMMATRIX localBoxMatrix = S * R * T;
-=======
-            DebugCubeMesh* debugCubeMesh = new DebugCubeMesh(pd3dDevice, pd3dCommandList, debugColor);
-        
-            debugBoxObject->SetMesh(debugCubeMesh);
-           
->>>>>>> 93be1fdbcbc0e6cdc1b5c5f476a5238b3fe45279
 
                 // 최종 월드 행렬 계산 및 저장
                 XMStoreFloat4x4(&debugOOBBObject->m_xmf4x4World, localBoxMatrix * parentWorld);

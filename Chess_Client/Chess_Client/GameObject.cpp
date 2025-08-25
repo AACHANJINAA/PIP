@@ -106,6 +106,7 @@ void GameObject::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
 	}
 }
 
+// (¼öÁ¤) [PONG]
 void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera)
 {
 	if (IsVisible(pCamera))
@@ -301,8 +302,7 @@ void GameObject::UpdateBoundingBox()
 
 bool GameObject::IsVisible(Camera* pCamera)
 {
-<<<<<<< HEAD
-	OnPrepareRender();
+	//OnPrepareRender();
 	if (!pCamera) return false; 
 
 	BoundingOrientedBox worldOOBB = m_pMesh->GetBoundingBox();
@@ -313,13 +313,4 @@ bool GameObject::IsVisible(Camera* pCamera)
 	XMStoreFloat4(&worldOOBB.Orientation, orientationQuat);
 
 	return pCamera->IsInFrustum(worldOOBB);
-=======
-	//OnPrepareRender();
-	bool bIsVisible = false;
-	BoundingOrientedBox xmBoundingBox = m_pMesh->GetBoundingBox();
-	xmBoundingBox.Transform(xmBoundingBox, XMLoadFloat4x4(&m_xmf4x4World)); 
-	if (pCamera) bIsVisible = pCamera->IsInFrustum(xmBoundingBox); 
-	
-	return(bIsVisible);
->>>>>>> 93be1fdbcbc0e6cdc1b5c5f476a5238b3fe45279
 }
