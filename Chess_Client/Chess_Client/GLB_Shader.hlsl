@@ -49,6 +49,8 @@ cbuffer cbGameObjectInfo : register(b0)
     matrix gmtxWorld : packoffset(c0);
 };
 
+
+
 //카메라의 정보를 위한 상수 버퍼를 선언한다. 
 cbuffer cbCameraInfo : register(b1)
 {
@@ -103,13 +105,19 @@ PS_SKINNED_INPUT VSSkinning(VS_SKINNED_INPUT input)
     float4 initialPos = float4(input.position, 1.0f);
     float4 skinnedPos = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-    // 4개의 뼈에 대한 가중치 합산
-    for (int i = 0; i < 4; i++)
+   // 뼈 가중치가 0보다 클 때만 계산 (정적 메시 호환)
+    if (input.boneWeights.x > 0)
     {
-        // 각 뼈의 변환 행렬을 가져와 가중치를 곱한 후 더함
-        skinnedPos += mul(initialPos, gBoneTransforms[input.boneIndices[i]]) * input.boneWeights[i];
+        for (int i = 0; i < 4; i++)
+        {
+            skinnedPos += mul(initialPos, gBoneTransforms[(int) input.boneIndices[i]]) * input.boneWeights[i];
+        }
+        skinnedPos.w = 1.0f;
     }
-    skinnedPos.w = 1.0f;
+    else // 스키닝 정보가 없는 정적 GLB 모델의 경우
+    {
+        skinnedPos = initialPos;
+    }
     // --- 스키닝 계산 끝 ---
 
     // 정점의 위치를 월드 좌표계로 변환 (skinnedPos 사용)

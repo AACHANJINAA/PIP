@@ -204,14 +204,19 @@ public:
 	ReadGlbMesh() {}
 	virtual ~ReadGlbMesh();
 
-	ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+	ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, class Scene* pScene);
+
 
 	// Mesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
 	// 업로드 버퍼 해제도 오버라이드
 	void ReleaseUploadBuffers() override;
 
+	UINT GetTextureCount() { return _Textures; } // 로드된 텍스처 개수를 반환하는 함수
+
 private:
+	UINT _Textures = 0; // 로드된 텍스처 개수를 저장할 변수
+
 	// 렌더링에 필요한 데이터는 ReadGlbMesh가 직접 관리
 	std::vector<std::unique_ptr<MeshPrimitive>> m_primitives;
 

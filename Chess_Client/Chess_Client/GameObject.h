@@ -27,16 +27,21 @@ public:
 
 private:
 	int m_nReferences = 0;
-
+	ID3D12RootSignature* _RootSignature = nullptr;
 public:
 	void AddRef() { m_nReferences++; }
-	void Release() { if (--m_nReferences <= 0) delete this; }
+	void Release() { 
+		if (--m_nReferences <= 0) 
+			delete this;
+	}
 
 	// Material_Shader은 재질 정보 + 셰이더
 	MATERIAL* m_pMaterial = NULL;
-	Shader* m_pShader = NULL;
+	std::shared_ptr<Shader> _Shader = NULL;
 
-	void SetShader(Shader* pShader);
+	void SetShader(std::shared_ptr<Shader> pShader);
+	void SetShaderRootSignature(ID3D12RootSignature* RootSignature);
+	void SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandList);
 };
 
 class HPObject // HPObject 클래스는 HP와 MaxHP를 관리하는 기본 클래스
@@ -88,12 +93,12 @@ public:
 public:
 	void ReleaseUploadBuffers(); 
 	virtual void SetMesh(Mesh* pMesh);
-	virtual void SetShader(Shader* pShader);
+	virtual void SetShader(std::shared_ptr<Shader> pShader);
 	void SetMaterial(Material_Shader* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
 	virtual void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Collision(float fElapsedTime) = 0;
 	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) = 0;
-	virtual void OnPrepareRender();
+	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
 
 	//상수 버퍼를 생성한다. 
