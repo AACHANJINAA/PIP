@@ -162,3 +162,24 @@ https://mice-pull-v54.craft.me/8LUs2WD2EmMIOe
 3. 다음미팅
  - 9월 3일 수요일 오후 2시 30분 (2주마다 미팅 예정)
  - 작업일지 작성 (샘플 참조) => 일주일 단위 작성
+
+
+GIT IGNORE
+
+# Unreal Engine
+# ==========================================
+
+# Build results
+Build/
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Script/
+
+# Per-developer content folder
+Content/Developers/
+
+# Ignore Binaries and Intermediate folders within plugins
+/Plugins/*/Binaries/
+/Plugins/*/Intermediate/
