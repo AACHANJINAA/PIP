@@ -46,6 +46,7 @@ using Microsoft::WRL::ComPtr;
 #include <vector>
 #include <array>
 #include <map>
+#include <typeindex>
 #include <list>
 #include <fstream>
 #include <string>

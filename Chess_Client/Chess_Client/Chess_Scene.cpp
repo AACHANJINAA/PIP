@@ -18,20 +18,23 @@ Chess_Scene::~Chess_Scene()
 
 void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-    m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
+    _SignatureNum = 2;
+    _AllRootSignature.resize(_SignatureNum);
+   
+    _AllRootSignature[0] = CreateGraphicsRootSignature(pd3dDevice); // 일반
+    _AllRootSignature[1] = CreateSkinnedGraphicsRootSignature(pd3dDevice); // GLB
+
+    MakeSrv(pd3dDevice); // Srv 디스크립터 생성
 
     // 셰이더 생성
-    m_nShaders = 1;
-    m_pShaders = new Shader * [m_nShaders]; // Shader 포인터 2개를 담을 배열 생성
 
     // 기존 오브젝트 셰이더
-    m_pShaders[0] = new CObjectsShader();
-    m_pShaders[0]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+    _AllShaders.push_back(std::make_shared<CObjectsShader>());
+    _AllShaders.back()->CreateShader(pd3dDevice, _AllRootSignature[0].Get());
 
-    // 새로운 Glb셰이더 (아직 지우지 말 것 추후에 작업해야 함)
-    //m_pShaders[1] = new GlbShader();
-    //m_pShaders[1]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
-
+    _AllShaders.push_back(std::make_shared<GlbShader>());
+    _AllShaders.back()->CreateShader(pd3dDevice, _AllRootSignature[1].Get());
+ 
     // 카메라 생성
     m_ChessCamera = new FreeCamera{};
     m_pCamera = m_ChessCamera;
@@ -66,6 +69,8 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
                 BoardMesh->ChangeColor(pd3dCommandList, 0.710f, 0.533f, 0.388f, 1.f);
             }
             Board->SetMesh(BoardMesh);
+           
+        
             Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x * j),
                 -(Board->m_pMesh->m_Top - Board->m_pMesh->m_Bottom) * Board->GetSize().y * 0.5f,
                 ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
@@ -76,9 +81,12 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     }
 
     Board = std::make_shared<BoardCube>();
-    BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb" };
+
+    BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb", (Scene*)this};
 
     Board->SetMesh(BoardMesh);
+    Board->SetShader(_AllShaders[1]); // GLB
+    Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
     Board->SetScale(0.01f, 0.01f, 0.01f);
     Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
         0.f,
@@ -92,11 +100,20 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     Mesh* churchMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCube.fbx" };
 
     churchObject->SetMesh(churchMesh);
+<<<<<<< HEAD
     XMFLOAT3 churchScale = XMFLOAT3(0.05f, 0.05f, 0.05f);
     churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
     churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x + 3), 
         0.8f,
         ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 5);
+=======
+   
+
+    XMFLOAT3 churchScale = XMFLOAT3(0.001f, 0.001f, 0.001f);
+    churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
+    churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x), 0.f,
+        ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 1);
+>>>>>>> 93be1fdbcbc0e6cdc1b5c5f476a5238b3fe45279
     Board->m_PosX = 0;
     Board->m_PosY = 0;
     ObjectManager::Instance()->PushFloorObject(churchObject);
@@ -122,6 +139,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
                 auto debugOOBBObject = std::make_shared<BoardCube>();
                 debugOOBBObject->SetMesh(new DebugWireframe(pd3dDevice, pd3dCommandList, oobbColor));
 
+<<<<<<< HEAD
                 // OBB의 크기, 회전, 위치로 로컬 변환 행렬 생성
                 XMMATRIX S = XMMatrixScaling(primitive.oobb.Extents.x * 2.0f, primitive.oobb.Extents.y * 2.0f, primitive.oobb.Extents.z * 2.0f);
                 XMVECTOR orientationQuat = XMLoadFloat4(&primitive.oobb.Orientation);
@@ -129,6 +147,12 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
                 XMMATRIX R = XMMatrixRotationQuaternion(orientationQuat);
                 XMMATRIX T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
                 XMMATRIX localBoxMatrix = S * R * T;
+=======
+            DebugCubeMesh* debugCubeMesh = new DebugCubeMesh(pd3dDevice, pd3dCommandList, debugColor);
+        
+            debugBoxObject->SetMesh(debugCubeMesh);
+           
+>>>>>>> 93be1fdbcbc0e6cdc1b5c5f476a5238b3fe45279
 
                 // 최종 월드 행렬 계산 및 저장
                 XMStoreFloat4x4(&debugOOBBObject->m_xmf4x4World, localBoxMatrix * parentWorld);
@@ -199,20 +223,11 @@ void Chess_Scene::ReleaseObjects()
 {
 	ObjectManager::Instance()->DeleteAll();
 
-  if (m_pShaders)
+    for (auto& iter : _AllShaders)
     {
-        for (int i = 0; i < m_nShaders; i++)
-        {
-            if (m_pShaders[i])
-            {
-                m_pShaders[i]->ReleaseShaderVariables();
-                delete m_pShaders[i];
-                m_pShaders[i] = nullptr;
-            }
-        }
-        delete[] m_pShaders;
-        m_pShaders = nullptr;
+        iter->ReleaseShaderVariables();
     }
+    _AllShaders.clear();
 
 	if (m_pCamera)
 	{
@@ -279,25 +294,45 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
 void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     m_pCamera->Update();
-
     m_pCamera->SetViewportsAndScissorRects(pd3dCommandList);
-    pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
-    m_pCamera->UpdateShaderVariables(pd3dCommandList);
 
-    UpdateShaderVariables(pd3dCommandList); // 조명/머터리얼 데이터 CPU -> GPU 복사
+    ObjectManager::Instance()->MakeRenderMap(m_pCamera);
 
-    D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
-    pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress); // 재질 버퍼를 b2에 연결
-
-    d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
-    pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress); // 조명 버퍼를 b3에 연결
-
-    for (int i = 0; i < m_nShaders; i++)
+    // 기본 루트 시그니처 설정 (텍스처 없는 일반 객체용)
     {
-        m_pShaders[i]->Render(pd3dCommandList, m_pCamera);
+        pd3dCommandList->SetGraphicsRootSignature(_AllRootSignature[0].Get());
+        // 기본 셰이더 PSO
+        _AllShaders[0]->OnPrepareRender(pd3dCommandList);
+
+        // 전역 데이터 설정 (모든 객체가 이 조명과 재질 정보를 공유)
+        UpdateShaderVariables(pd3dCommandList); // 조명/머터리얼 데이터 CPU->GPU 복사
+        D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
+        pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress);
+        d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
+        pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress);
+
+        // SRV 디스크립터 힙 설정 (모든 객체가 이 힙을 공유)
+        if (_SrvDescriptorHeap)
+        {
+            ID3D12DescriptorHeap* ppd3dDescriptorHeaps[] = { _SrvDescriptorHeap.Get() };
+            pd3dCommandList->SetDescriptorHeaps(_countof(ppd3dDescriptorHeaps), ppd3dDescriptorHeaps);
+        }
     }
 
-    std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
+    for (auto const& [shader, objectGroup] : ObjectManager::Instance()->GetRenderMap())
+    {
+        // 셰이더 그룹이 바뀔 때 한 번만 상태를 설정
+        // 같은 그룹의 첫번째 원소를 기준으로 설정
+        objectGroup[0]->OnPrepareRender(pd3dCommandList); // PSO와 루트 시그니처를 여기서 설정
+
+        // 현재 그룹(같은 셰이더 사용 하는 그룹)의 모든 오브젝트를 렌더링
+        for (const std::shared_ptr<GameObject>& Object : objectGroup)
+        {
+            Object->Render(pd3dCommandList,m_pCamera);
+        }
+    }
+
+    /*std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
 
     for (std::list<std::shared_ptr<GameObject>>& Objects : Arr) {
         for (std::shared_ptr<GameObject>& Object : Objects) {
@@ -306,7 +341,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
                 Object->Render(pd3dCommandList, m_pCamera);
             }
         }
-    }
+    }*/
 
     // 디버그 객체를 렌더링하는 블록을 추가합니다.
     if (isRenderFbxFileBoundingBoxes) // 올바른 플래그 이름을 사용합니다.
@@ -334,3 +369,5 @@ void Chess_Scene::Collision(float fElapsedTime)
         }
     }
 }
+
+

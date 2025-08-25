@@ -2,6 +2,7 @@
 #include "ObjectManager.h"
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
+#include "Shader.h"
 
 ObjectManager::ObjectManager()
 {
@@ -108,6 +109,34 @@ void ObjectManager::ChangeRoom()
 	DeleteVec(1);
 	//DeleteVec(2);
 	//DeleteVec(3);
+}
+
+void ObjectManager::MakeRenderMap(Camera* pCamera)
+{
+	_RenderMap.clear();
+
+	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = GetAllObject();
+
+	for (auto& objectList : Arr) {
+		for (auto& object : objectList) {
+			if (object && object->IsVisible(pCamera)) {
+				// 오브젝트의 머터리얼에서 셰이더를 키로 사용하여 렌더 큐에 추가
+				if (nullptr == object->m_pMaterial)
+				{
+					_RenderMap[typeid(CObjectsShader)].push_back(object);
+				}
+				else
+				{
+					_RenderMap[typeid(*(object->m_pMaterial->_Shader))].push_back(object);
+				}
+			}
+		}
+	}
+}
+
+std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>>& ObjectManager::GetRenderMap()
+{
+	return _RenderMap;
 }
 
 void ObjectManager::PushObject(std::shared_ptr<GameObject> object)

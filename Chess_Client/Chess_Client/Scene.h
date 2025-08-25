@@ -50,10 +50,15 @@ public:
 	virtual void AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Collision(float fElapsedTime) = 0;
+	void MakeSrv(ID3D12Device* pd3dDevice);
 	void ReleaseUploadBuffers();
 	//그래픽 루트 시그너쳐를 생성한다. 
 	ID3D12RootSignature* CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);
+	ID3D12RootSignature* CreateSkinnedGraphicsRootSignature(ID3D12Device* pd3dDevice); // GLB를 위한 루트시그너처 추가
 	ID3D12RootSignature* GetGraphicsRootSignature();
+
+	// 디스크립터 핸들을 할당하고 다음 위치로 이동시키는 함수
+	void AllocateNextSrvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle);
 
 	// 충돌함수
 	GameObject* PickObjectPointedByCursor(int xClient, int yClient);
@@ -62,14 +67,21 @@ public:
 	// 오브젝트 생성 요청 실행함수
 
 protected:
-	//씬은 게임 객체들의 집합이다. 게임 객체는 셰이더를 포함한다. 
+	// 디스크립터 힙 관리를 위한 멤버 변수 추가
+	ComPtr<ID3D12DescriptorHeap> _SrvDescriptorHeap;
+	UINT _SrvDescriptorIncrementSize = 0;
+	UINT _AllocatedSrvCount = 0;
 
-	ID3D12RootSignature* m_pd3dGraphicsRootSignature = NULL;
+protected:
+	//씬은 게임 객체들의 집합이다. 게임 객체는 셰이더를 포함한다. 
+	//ID3D12RootSignature* m_pd3dGraphicsRootSignature = NULL;
+	//ID3D12RootSignature* m_pd3dSkinnedRootSignature = NULL; // GLB를 위한 것
+	std::vector<ComPtr<ID3D12RootSignature>> _AllRootSignature;
+	size_t _SignatureNum{};
 
 protected:
 	//배치(Batch) 처리를 하기 위하여 씬을 셰이더들의 리스트로 표현한다. 
-	Shader** m_pShaders = NULL;
-	int m_nShaders = 0;
+	std::vector<std::shared_ptr<Shader>> _AllShaders;
 
 	// Scene의 카메라
 	Camera* m_pCamera = nullptr;

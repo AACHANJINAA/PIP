@@ -27,6 +27,9 @@ public:
 	void SetPlayer(std::shared_ptr <GameObject> player) { m_Player = player; }
 	std::shared_ptr<GameObject> GetPlayer() const { return m_Player; }
 
+	// 어떤 셰이더를 사용하는지에 따라 렌더하기 위한 것들
+	void MakeRenderMap(Camera* pCamera);
+	std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>>& GetRenderMap();
 
 	// 오브젝트 넣기
 	// 플레이어 = 체력, 위치(x,y,z), name, id, size
@@ -63,5 +66,7 @@ private:
 	// 요청 임시 변수
 	std::queue<std::shared_ptr<GameObject>> m_RequestObjects{};
 	
+	std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>> _RenderMap{};
+
 };
 
