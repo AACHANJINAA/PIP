@@ -49,7 +49,7 @@ namespace chess::packet
 		}
 		catch (const std::runtime_error& e)
 		{
-			MYLOG("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
+			MYERROR("[Login] **ERROR**: Failed to read player name from stream. " << e.what());
 			// 여기서 세션 접속을 끊는 등의 처리를 할 수 있습니다.
 			return;
 		}

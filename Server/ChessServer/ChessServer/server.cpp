@@ -148,7 +148,7 @@ namespace chess::server
 		}
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
-		MYLOG("[SERVER] Loading Map...");
+		//MYLOG("[SERVER] Loading Map...");
 		MapDataManager::Instance()->LoadMapData("..\\..\\..\\PIPMap250821\\PIPMap\\MapData\\MyExportedData.json");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
@@ -166,12 +166,12 @@ namespace chess::server
 		SOCKADDR_IN server_addr;
 		ZeroMemory(&server_addr, sizeof(server_addr));
 		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(3000); // 포트 번호, 필요시 수정
+		server_addr.sin_port = htons(packet::SERVER_PORT); // 포트 번호, 필요시 수정
 		server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		
 		bind(_listen_socket, reinterpret_cast<SOCKADDR*>(&server_addr), sizeof(server_addr));
 		listen(_listen_socket, SOMAXCONN);
-		MYLOG("Server listening on port " << 3000 << "...");
+		MYLOG("Server listening on port " << packet::SERVER_PORT << "...");
 
 		do_accept();
 	}
