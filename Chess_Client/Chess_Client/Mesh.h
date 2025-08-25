@@ -268,6 +268,25 @@ private:
 	}
 };
 
+struct CollisionPrimitive
+{
+	// 충돌 계산 전용의 최소화된 정점 데이터를 사용
+	std::vector<Vertex> vertices;
+
+	// 정점을 연결하여 삼각형을 만드는 인덱스 데이터
+	std::vector<uint32_t> indices;
+
+	// 광역 단계에서 사용할 AABB
+	BoundingBox aabb;
+
+	// (추가)협역 단계 및 시각화용 OBB
+	DirectX::BoundingOrientedBox oobb;
+
+	// 월드 변환 행렬
+	XMFLOAT4X4 worldTransform;
+	CollisionPrimitive() = default;
+};
+
 class ReadFbxMesh : public Mesh
 {
 public:
@@ -275,7 +294,7 @@ public:
 	ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
 	virtual ~ReadFbxMesh();
 
-	const std::vector<BoundingOrientedBox>& GetCollisionBoxes() const { return m_collisionBoxes; }
+	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return m_collisionPrimitives; }
 
 private:
 	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
@@ -285,12 +304,12 @@ private:
 
 private:
 	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
-	std::vector<BoundingOrientedBox> m_collisionBoxes;
+	std::vector<CollisionPrimitive> m_collisionPrimitives;
 };
 
-class DebugCubeMesh : public Mesh
+class DebugWireframe : public Mesh
 {
 public:
-	DebugCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color);
-	virtual ~DebugCubeMesh();
+	DebugWireframe(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color);
+	virtual ~DebugWireframe();
 };
