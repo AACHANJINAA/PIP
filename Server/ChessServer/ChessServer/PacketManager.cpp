@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "PacketManager.h"
-
 namespace chess::packet
 {
 	void PacketManager::Initialize()

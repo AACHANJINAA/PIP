@@ -82,9 +82,7 @@ public:
 	XMFLOAT4	m_dwColor = { 0.f,0.f,0.f,0.f };
 
 	XMFLOAT3 m_xmf3Gravity; // 중력
-
 	float Gravity = -2.0f; // 중력값
-
 	bool m_bGravity = true;
 
 public:
@@ -102,7 +100,7 @@ public:
 	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) = 0;
 	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
-public:
+
 	//상수 버퍼를 생성한다. 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 	//상수 버퍼의 내용을 갱신한다. 
@@ -148,7 +146,6 @@ public:
 
 	bool IsVisible(Camera* pCamera = NULL);
 
-public:
 	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
 
 public:
