@@ -11,16 +11,35 @@ Material_Shader::Material_Shader()
 }
 Material_Shader::~Material_Shader()
 {
-	if (m_pMaterial) delete m_pMaterial;
-	if (m_pShader) m_pShader->Release();
+	if (m_pMaterial) 
+		delete m_pMaterial;
+	/*if (_Shader)
+		_Shader->Release();*/
 }
 
-void Material_Shader::SetShader(Shader* pShader)
+void Material_Shader::SetShader(std::shared_ptr<Shader> pShader)
 {
-	if (m_pShader) m_pShader->Release();
-	m_pShader = pShader;
-	if (m_pShader) m_pShader->AddRef();
+	if (_Shader) _Shader->Release();
+	_Shader = pShader;
+	if (_Shader) _Shader->AddRef();
 }
+
+void Material_Shader::SetShaderRootSignature(ID3D12RootSignature* RootSignature)
+{
+	if (_Shader) // 셰이더가 없으면 루트 시그너쳐도 있을 이유가 없음
+	{
+		_RootSignature = RootSignature;
+	}
+}
+
+void Material_Shader::SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	if(_RootSignature)
+	{
+		pd3dCommandList->SetGraphicsRootSignature(_RootSignature);
+	}
+}
+
 
 
 GameObject::GameObject()
@@ -39,7 +58,7 @@ GameObject::~GameObject()
 }
 
 // (수정) [PONG]
-void GameObject::SetShader(Shader* pShader)
+void GameObject::SetShader(std::shared_ptr<Shader> pShader)
 {
 	if (!m_pMaterial) m_pMaterial = new Material_Shader(); // 재질이 없으면 새로 생성
 	if (m_pMaterial) m_pMaterial->SetShader(pShader);
@@ -74,28 +93,32 @@ void GameObject::ReleaseUploadBuffers()
 		m_pMesh->ReleaseUploadBuffers();
 }
 
-void GameObject::OnPrepareRender()
+void GameObject::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	if (m_pMaterial) // 머터리얼이 있는지 확인
+	{
+		if (m_pMaterial->_Shader) // 머터리얼에 셰이더가 있는지 확인
+		{
+			m_pMaterial->SetRootSignature(pd3dCommandList);
+			// 머터리얼의 셰이더를 사용하여 렌더링
+			m_pMaterial->_Shader->OnPrepareRender(pd3dCommandList);
+		}
+	}
 }
 
 // (수정) [PONG]
 void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera)
 {
-	OnPrepareRender();
+	if (IsVisible(pCamera))
+	{
+		// 렌더링 상태 설정
+		OnPrepareRender(pd3dCommandList);
 
-	if (IsVisible(pCamera)) {
-		if (m_pMaterial) // 머터리얼이 있는지 확인
-		{
-			if (m_pMaterial->m_pShader) // 머터리얼에 셰이더가 있는지 확인
-			{
-				// 머터리얼의 셰이더를 사용하여 렌더링
-				m_pMaterial->m_pShader->Render(pd3dCommandList, pCamera);
-			}
-		}
-
-		//객체의 정보를 셰이더 변수(상수 버퍼)로 복사한다. 
+		// 개별 데이터 업데이트 (본인, 카메라)
 		UpdateShaderVariables(pd3dCommandList);
+		pCamera->UpdateShaderVariables(pd3dCommandList);
 
+		// 그리기 실행
 		if (m_pMesh) m_pMesh->Render(pd3dCommandList);
 	}
 }
@@ -279,7 +302,7 @@ void GameObject::UpdateBoundingBox()
 
 bool GameObject::IsVisible(Camera* pCamera)
 {
-	OnPrepareRender(); 
+	//OnPrepareRender();
 	bool bIsVisible = false;
 	BoundingOrientedBox xmBoundingBox = m_pMesh->GetBoundingBox();
 	xmBoundingBox.Transform(xmBoundingBox, XMLoadFloat4x4(&m_xmf4x4World)); 

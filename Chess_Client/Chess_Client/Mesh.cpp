@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Mesh.h"
+#include "Scene.h"
 #include <algorithm>
 
 BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max) {
@@ -562,13 +563,21 @@ void ReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
 	for (const auto& primitive : m_primitives)
 	{
+		// 이 Primitive가 텍스처를 가지고 있다면, GpuHandle가 0이 아니라면
+		if (primitive->m_pTexture && primitive->m_d3dGpuSrvHandle.ptr != 0)
+		{
+			// 해당 텍스처의 SRV를 루트 테이블에 바인딩합니다.
+			// 5번 파라미터가 텍스처 테이블
+			pd3dCommandList->SetGraphicsRootDescriptorTable(5, primitive->m_d3dGpuSrvHandle);
+		}
+
 		pd3dCommandList->IASetVertexBuffers(0, 1, &primitive->m_d3dVertexBufferView);
 		pd3dCommandList->IASetIndexBuffer(&primitive->m_d3dIndexBufferView);
 		pd3dCommandList->DrawIndexedInstanced(primitive->m_nIndices, 1, 0, 0, 0);
 	}
 }
 
-ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, Scene* pScene)
 {
 	// --- 1단계: 파일 읽기 및 청크 분리 ---
 	std::vector<char> fileData;
@@ -822,6 +831,25 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 							m_vUploadBuffers.push_back(pTextureUploadHeap);
 
 							// TODO: SRV 생성 및 newPrimitive->m_d3dGpuSrvHandle에 핸들 저장
+
+							D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+							srvDesc.Format = textureDesc.Format;
+							srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+							srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+							srvDesc.Texture2D.MipLevels = 1;
+
+							D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle{};
+							D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle{};
+
+							pScene->AllocateNextSrvDescriptor(CpuHandle, GpuHandle);
+
+							// 전달받은 CPU 핸들 위치에 SRV를 생성합니다.
+							pd3dDevice->CreateShaderResourceView(newPrimitive->m_pTexture, &srvDesc, CpuHandle);
+
+							// 이 Primitive에 GPU 핸들을 저장합니다. (이제 이 핸들은 유효한 주소를 가짐)
+							newPrimitive->m_d3dGpuSrvHandle = GpuHandle;
+
+							++_Textures; // 로드된 텍스처 개수 카운트
 						}
 					}
 				}
