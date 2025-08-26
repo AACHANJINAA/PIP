@@ -9,7 +9,7 @@ public:
 
 public:
 	// GameObject을(를) 통해 상속됨
-	void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) override;
+	void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) override;
 	void Collision(float fElapsedTime) override;
 	void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) override;
 

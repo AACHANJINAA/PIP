@@ -96,23 +96,23 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     ObjectManager::Instance()->PushFloorObject(Board);
 
     // 언리얼에서 뽑은 FBX 테스트
-    std::shared_ptr<GameObject> churchObject = std::make_shared<BoardCube>();
-    Mesh* churchMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCube.fbx" };
+    _pChurchObject = std::make_shared<BoardCube>();
+    _pChurchFbxMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCube.fbx" };
 
-    churchObject->SetMesh(churchMesh);
+    _pChurchObject->SetMesh(_pChurchFbxMesh);
     XMFLOAT3 churchScale = XMFLOAT3(0.05f, 0.05f, 0.05f);
-    churchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
-    churchObject->SetPosition(((churchObject->m_pMesh->m_Right - churchObject->m_pMesh->m_Left) * churchObject->GetSize().x + 3), 
+    _pChurchObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
+    _pChurchObject->SetPosition(((_pChurchObject->m_pMesh->m_Right - _pChurchObject->m_pMesh->m_Left) * _pChurchObject->GetSize().x + 3),
         0.8f,
-        ((churchObject->m_pMesh->m_Front - churchObject->m_pMesh->m_Back) * churchObject->GetSize().z) + 5);
+        ((_pChurchObject->m_pMesh->m_Front - _pChurchObject->m_pMesh->m_Back) * _pChurchObject->GetSize().z) + 5);
     Board->m_PosX = 0;
     Board->m_PosY = 0;
-    ObjectManager::Instance()->PushFloorObject(churchObject);
+    ObjectManager::Instance()->PushFloorObject(_pChurchObject);
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------
     // collision 디버깅 코드
 
-    ReadFbxMesh* churchFbxMesh = dynamic_cast<ReadFbxMesh*>(churchMesh);
+    ReadFbxMesh* churchFbxMesh = dynamic_cast<ReadFbxMesh*>(_pChurchFbxMesh);
 
     if (churchFbxMesh)
     {
@@ -120,7 +120,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
         const auto& collisionPrimitives = churchFbxMesh->GetCollisionPrimitives();
 
         // 부모 객체(churchObject)의 월드 행렬을 미리 로드합니다.
-        XMMATRIX parentWorld = XMLoadFloat4x4(&churchObject->m_xmf4x4World);
+        XMMATRIX parentWorld = XMLoadFloat4x4(&_pChurchObject->m_xmf4x4World);
 
         for (const auto& primitive : collisionPrimitives)
         {
@@ -158,6 +158,21 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
                 XMStoreFloat4x4(&debugAABBObject->m_xmf4x4World, localBoxMatrix * parentWorld);
                 debugObjects.push_back(debugAABBObject);
             }
+
+            // --- 3. Convex Hull 와이어프레임 시각화 (초록색) ---
+            {
+                XMFLOAT4 wireColor = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 초록색
+                auto debugWireframeObject = std::make_shared<BoardCube>();
+
+                // primitive에 저장된 정점과 인덱스 데이터를 직접 넘겨 메시를 생성합니다.
+                debugWireframeObject->SetMesh(new DebugWireframeMesh(pd3dDevice, pd3dCommandList, primitive.vertices, primitive.indices, wireColor));
+
+                // 와이어프레임 메시는 이미 로컬 좌표를 가지고 있으므로, 부모의 월드 행렬만 적용해줍니다.
+                debugWireframeObject->m_xmf4x4World = _pChurchObject->m_xmf4x4World;
+
+                debugObjects.push_back(debugWireframeObject);
+            }
+
         }
     }
 
@@ -246,18 +261,16 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
     m_pCamera->Rotate();
 
     std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
-
     for (std::list<std::shared_ptr<GameObject>>& Objects : Arr) {
         for (std::shared_ptr<GameObject>& Object : Objects) {
             if (nullptr != Object)
             {
-                Object->Animate(fTimeElapsed, pd3dCommandList);
+                Object->Animate(fTimeElapsed, m_pCamera, pd3dCommandList);
                 Object.get()->UpdateBoundingBox();
             }
         }
     }
 
-    
     std::list<std::shared_ptr<GameObject>>& ObjectList = ObjectManager::Instance()->GetEnemy();
     for (std::shared_ptr<GameObject>& Object : ObjectList) {
         if (nullptr != Object)
@@ -270,7 +283,6 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
     }
 
     Collision(fTimeElapsed);
-
     m_ChessCamera->UpdateAnimateCamera(fTimeElapsed);
 }
 
@@ -327,15 +339,37 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         }
     }*/
 
-    // 디버그 객체를 렌더링하는 블록을 추가합니다.
-    if (isRenderFbxFileBoundingBoxes) // 올바른 플래그 이름을 사용합니다.
+    if (isRenderFbxFileBoundingBoxes && _pChurchFbxMesh && _pChurchObject)
     {
-        for (std::shared_ptr<GameObject>& debugObject : debugObjects) // 올바른 벡터 이름을 사용합니다.
+        // Render 함수 시점에서는 m_pChurchObject의 월드 행렬이 최종 갱신된 상태입니다.
+        const auto& collisionPrimitives = _pChurchFbxMesh->GetCollisionPrimitives();
+        XMMATRIX parentWorld = XMLoadFloat4x4(&_pChurchObject->m_xmf4x4World);
+
+        for (size_t i = 0; i < collisionPrimitives.size(); ++i)
         {
-          if (nullptr != debugObject)
-          {
-              debugObject->Render(pd3dCommandList, m_pCamera);
-          }
+            const auto& primitive = collisionPrimitives[i];
+
+            std::shared_ptr<GameObject>& debugOOBBObject = debugObjects[i * 3 + 0];
+            std::shared_ptr<GameObject>& debugAABBObject = debugObjects[i * 3 + 1];
+            std::shared_ptr<GameObject>& debugWireframeObject = debugObjects[i * 3 + 2];
+
+            // 1. OBB 위치 갱신
+            XMMATRIX oobb_S = XMMatrixScaling(primitive.oobb.Extents.x * 2.0f, primitive.oobb.Extents.y * 2.0f, primitive.oobb.Extents.z * 2.0f);
+            XMVECTOR oobb_quat = XMQuaternionNormalize(XMLoadFloat4(&primitive.oobb.Orientation));
+            XMMATRIX oobb_R = XMMatrixRotationQuaternion(oobb_quat);
+            XMMATRIX oobb_T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
+            XMStoreFloat4x4(&debugOOBBObject->m_xmf4x4World, (oobb_S * oobb_R * oobb_T) * parentWorld);
+            debugOOBBObject->Render(pd3dCommandList, m_pCamera); // 바로 렌더링
+
+            // 2. AABB 위치 갱신
+            XMMATRIX aabb_S = XMMatrixScaling(primitive.aabb.Extents.x * 2.0f, primitive.aabb.Extents.y * 2.0f, primitive.aabb.Extents.z * 2.0f);
+            XMMATRIX aabb_T = XMMatrixTranslation(primitive.aabb.Center.x, primitive.aabb.Center.y, primitive.aabb.Center.z);
+            XMStoreFloat4x4(&debugAABBObject->m_xmf4x4World, (aabb_S * aabb_T) * parentWorld);
+            debugAABBObject->Render(pd3dCommandList, m_pCamera); // 바로 렌더링
+
+            // 3. 와이어프레임 위치 갱신
+            debugWireframeObject->m_xmf4x4World = _pChurchObject->m_xmf4x4World;
+            debugWireframeObject->Render(pd3dCommandList, m_pCamera); // 바로 렌더링
         }
     }
 }

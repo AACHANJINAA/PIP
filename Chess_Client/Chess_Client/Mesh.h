@@ -318,3 +318,12 @@ public:
 	DebugWireframe(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color);
 	virtual ~DebugWireframe();
 };
+
+// 정점/인덱스 데이터를 받아 와이어프레임으로 그리는 범용 디버그 메시 클래스
+class DebugWireframeMesh : public Mesh
+{
+public:
+	// 생성자에서 정점과 인덱스 목록을 직접 받습니다.
+	DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color);
+	virtual ~DebugWireframeMesh();
+};
