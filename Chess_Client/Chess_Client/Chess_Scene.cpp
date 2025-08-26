@@ -102,11 +102,11 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     // 언리얼에서 뽑은 FBX 테스트
     _pFbxObject = std::make_shared<BoardCube>();
-    _pCollisionMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCube.fbx" };
+    _pCollisionMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCollision.fbx" };
 
     _pFbxObject->SetMesh(_pCollisionMesh);
-    XMFLOAT3 churchScale = XMFLOAT3(0.05f, 0.05f, 0.05f);
-    _pFbxObject->SetScale(churchScale.x, churchScale.y, churchScale.z);
+    XMFLOAT3 Scale = XMFLOAT3(0.01f, 0.01f, 0.01f);
+    _pFbxObject->SetScale(Scale.x, Scale.y, Scale.z);
     _pFbxObject->SetPosition(((_pFbxObject->m_pMesh->m_Right - _pFbxObject->m_pMesh->m_Left) * _pFbxObject->GetSize().x + 3),
         0.8f,
         ((_pFbxObject->m_pMesh->m_Front - _pFbxObject->m_pMesh->m_Back) * _pFbxObject->GetSize().z) + 5);
