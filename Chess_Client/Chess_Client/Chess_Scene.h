@@ -1,6 +1,8 @@
 #pragma once
 #include "Scene.h"
 #include "FreeCamera.h"
+#include "Shader.h"
+
 class Chess_Scene : public Scene
 {
 public:
@@ -25,6 +27,8 @@ private:
 	bool isRenderFbxFileBoundingBoxes = false;
 	std::vector<std::shared_ptr<GameObject>> debugObjects;
 
-	std::shared_ptr<GameObject> _pChurchObject;
-	ReadFbxMesh* _pChurchFbxMesh = nullptr;
+	std::shared_ptr<GameObject> _pFbxObject;
+	ReadFbxMesh* _pCollisionMesh = nullptr;
+
+	Shader* m_pDebugShader = nullptr;
 };

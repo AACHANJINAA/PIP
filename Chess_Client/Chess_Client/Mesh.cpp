@@ -1009,7 +1009,7 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 		float fLengthSq;
 		XMStoreFloat(&fLengthSq, lengthSq);
 
-		m_collisionPrimitives.push_back(primitive);
+		_collisionPrimitives.push_back(primitive);
 	}
 	else {
 		// 현재 메쉬의 정점 정보를 임시로 담을 벡터
@@ -1095,60 +1095,46 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 	}
 }
 
-DebugWireframe::DebugWireframe(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
+DebugCollisionBox::DebugCollisionBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
 {
+	// 정점 8개의 위치는 고정, 색상은 인자로 받은 color를 사용합니다.
 	m_Vertexvec.resize(8);
+	m_Vertexvec[0] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[1] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[2] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[3] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[4] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[5] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[6] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	m_Vertexvec[7] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
 
-	m_Vertexvec[0] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f,0.0f), color);
-	m_Vertexvec[1] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f,1.0f), color);
-	m_Vertexvec[2] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f,1.0f), color);
-	m_Vertexvec[3] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f,0.0f), color);
-	m_Vertexvec[4] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f,0.0f), color);
-	m_Vertexvec[5] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f,1.0f), color);
-	m_Vertexvec[6] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f,1.0f), color);
-	m_Vertexvec[7] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f,0.0f), color);
-
+	// 인덱스 데이터 (12개의 선)
 	m_Indexvec.resize(24);
-	// 앞면
-	m_Indexvec[0] = 0; m_Indexvec[1] = 1;
-	m_Indexvec[2] = 1; m_Indexvec[3] = 2;
-	m_Indexvec[4] = 2; m_Indexvec[5] = 3;
-	m_Indexvec[6] = 3; m_Indexvec[7] = 0;
-	// 뒷면
-	m_Indexvec[8] = 4; m_Indexvec[9] = 5;
-	m_Indexvec[10] = 5; m_Indexvec[11] = 6;
-	m_Indexvec[12] = 6; m_Indexvec[13] = 7;
-	m_Indexvec[14] = 7; m_Indexvec[15] = 4;
-	// 옆면
-	m_Indexvec[16] = 0; m_Indexvec[17] = 4;
-	m_Indexvec[18] = 1; m_Indexvec[19] = 5;
-	m_Indexvec[20] = 2; m_Indexvec[21] = 6;
-	m_Indexvec[22] = 3; m_Indexvec[23] = 7;
+	m_Indexvec[0] = 0; m_Indexvec[1] = 1; m_Indexvec[2] = 1; m_Indexvec[3] = 2;
+	m_Indexvec[4] = 2; m_Indexvec[5] = 3; m_Indexvec[6] = 3; m_Indexvec[7] = 0;
+	m_Indexvec[8] = 4; m_Indexvec[9] = 5; m_Indexvec[10] = 5; m_Indexvec[11] = 6;
+	m_Indexvec[12] = 6; m_Indexvec[13] = 7; m_Indexvec[14] = 7; m_Indexvec[15] = 4;
+	m_Indexvec[16] = 0; m_Indexvec[17] = 4; m_Indexvec[18] = 1; m_Indexvec[19] = 5;
+	m_Indexvec[20] = 2; m_Indexvec[21] = 6; m_Indexvec[22] = 3; m_Indexvec[23] = 7;
 
+	// D3D 리소스 생성 (나머지 부분은 DebugWireframeMesh와 거의 동일)
 	m_nStride = sizeof(IlluminatedVertex);
 	m_nVertices = m_Vertexvec.size();
-	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 와이어프레임으로 렌더링
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 
-	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(),
-		m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT,
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-		&m_pd3dVertexUploadBuffer);
-
+	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(), m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dVertexUploadBuffer);
 	m_d3dVertexBufferView.BufferLocation = m_pd3dVertexBuffer->GetGPUVirtualAddress();
 	m_d3dVertexBufferView.StrideInBytes = m_nStride;
 	m_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
 
 	m_nIndices = m_Indexvec.size();
-	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(),
-		sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
-		&m_pd3dIndexUploadBuffer);
-
+	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(), sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &m_pd3dIndexUploadBuffer);
 	m_d3dIndexBufferView.BufferLocation = m_pd3dIndexBuffer->GetGPUVirtualAddress();
 	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
 }
 
-DebugWireframe::~DebugWireframe()
+DebugCollisionBox::~DebugCollisionBox()
 {
 }
 

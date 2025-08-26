@@ -80,3 +80,20 @@ public:
 protected:
 	int m_nObjects = 0;
 };
+
+class DebugShader : public Shader
+{
+public:
+	DebugShader();
+	virtual ~DebugShader();
+
+	// Shader 클래스의 가상 함수들을 오버라이드합니다.
+	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout() override;
+
+	// 셰이더 바이트코드를 생성하는 함수들을 오버라이드합니다.
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** ppd3dShaderBlob) override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** ppd3dShaderBlob) override;
+
+	// 파이프라인 상태 객체(PSO)를 생성하는 함수를 오버라이드합니다.
+	virtual void CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature) override;
+};

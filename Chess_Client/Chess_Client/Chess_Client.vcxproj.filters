@@ -204,4 +204,7 @@
     <None Include="packages.config" />
     <None Include="GLB_Shader.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Debug.hlsl" />
+  </ItemGroup>
 </Project>

@@ -299,7 +299,7 @@ public:
 	ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
 	virtual ~ReadFbxMesh();
 
-	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return m_collisionPrimitives; }
+	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return _collisionPrimitives; }
 
 private:
 	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
@@ -309,14 +309,14 @@ private:
 
 private:
 	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
-	std::vector<CollisionPrimitive> m_collisionPrimitives;
+	std::vector<CollisionPrimitive> _collisionPrimitives;
 };
 
-class DebugWireframe : public Mesh
+class DebugCollisionBox : public Mesh
 {
 public:
-	DebugWireframe(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color);
-	virtual ~DebugWireframe();
+	DebugCollisionBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color);
+	virtual ~DebugCollisionBox();
 };
 
 // 정점/인덱스 데이터를 받아 와이어프레임으로 그리는 범용 디버그 메시 클래스
