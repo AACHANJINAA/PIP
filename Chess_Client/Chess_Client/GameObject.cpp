@@ -314,33 +314,3 @@ bool GameObject::IsVisible(Camera* pCamera)
 
 	return pCamera->IsInFrustum(worldOOBB);
 }
-
-DynamicObject::DynamicObject()
-{
-}
-
-DynamicObject::~DynamicObject()
-{
-}
-
-void DynamicObject::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
-{
-	if (pCamera) 
-	{
-		// 방법: 오브젝트가 항상 카메라가 바라보는 방향과 같게 만듭니다.
-
-		// 1. 카메라의 정면 벡터(Look Vector)를 가져옵니다.
-		XMFLOAT3 cameraLook = pCamera->GetLookVec();
-
-		// 2. 오브젝트가 위아래로 기울어지는 것을 방지하기 위해 y축 방향 성분은 0으로 만듭니다.
-		cameraLook.y = 0.0f;
-
-		// y 0만들면서 벡터의 길이가 1이 아니게 될 수 있으니 정규화 시키고 LookTo
-		XMVECTOR lookVector = XMLoadFloat3(&cameraLook);
-		lookVector = XMVector3Normalize(lookVector);
-		XMStoreFloat3(&cameraLook, lookVector);
-
-		XMFLOAT3 worldUp(0.0f, 1.0f, 0.0f);
-		LookTo(cameraLook, worldUp);
-	}
-}

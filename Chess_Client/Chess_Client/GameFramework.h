@@ -95,7 +95,7 @@ public:
 	ComPtr<ID3D12Device>& GetDevice() { return m_pd3dDevice; }
 public:
 
-	//마지막으로 마우스 버튼을 클릭할 때의 마우스 커서의 위치이다. 
+	//마지막으로 마우스 버튼을 클릭할 때의 마우스 커서의 위치
 	POINT m_ptOldCursorPos;
 
 	UINT m_nMessageID; // 어떤 키를 입력받은것인지에 대한 확인용이다.
