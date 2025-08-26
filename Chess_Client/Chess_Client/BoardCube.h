@@ -7,7 +7,7 @@ public:
 	virtual ~BoardCube();
 
 public:
-	virtual void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void Collision(float fElapsedTime);
 
 	// CGameObject을(를) 통해 상속됨

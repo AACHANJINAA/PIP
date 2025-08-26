@@ -22,9 +22,9 @@ public:
 private:
 	FreeCamera* m_ChessCamera{};
 
-	
-
 	bool isRenderFbxFileBoundingBoxes = false;
 	std::vector<std::shared_ptr<GameObject>> debugObjects;
-};
 
+	std::shared_ptr<GameObject> _pChurchObject;
+	ReadFbxMesh* _pChurchFbxMesh = nullptr;
+};

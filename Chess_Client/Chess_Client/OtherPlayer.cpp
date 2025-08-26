@@ -12,7 +12,7 @@ OtherPlayer::~OtherPlayer()
 
 }
 
-void OtherPlayer::Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
+void OtherPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	SetPosition(_NowX * _MoveDistance, 0.f, _NowY * _MoveDistance);
 }

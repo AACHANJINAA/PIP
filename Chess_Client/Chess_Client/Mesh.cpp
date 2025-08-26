@@ -1151,3 +1151,48 @@ DebugWireframe::DebugWireframe(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 DebugWireframe::~DebugWireframe()
 {
 }
+
+DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color)
+{
+	// 1. 렌더링에 사용할 정점 목록(m_Vertexvec)을 채웁니다.
+	// CollisionPrimitive의 Vertex는 위치만 있으므로, 색상 정보를 포함하는 IlluminatedVertex로 변환합니다.
+	m_Vertexvec.reserve(vertices.size());
+	for (const auto& v : vertices)
+	{
+		m_Vertexvec.emplace_back(v.m_xmf3Position, XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	}
+
+	// 2. (핵심!) 삼각형 인덱스를 라인 리스트 인덱스로 변환합니다.
+	// 삼각형 인덱스 {0, 1, 2} -> 라인 인덱스 {0,1, 1,2, 2,0}
+	m_Indexvec.reserve(indices.size() * 2);
+	for (size_t i = 0; i < indices.size(); i += 3)
+	{
+		UINT i0 = indices[i];
+		UINT i1 = indices[i + 1];
+		UINT i2 = indices[i + 2];
+
+		m_Indexvec.push_back(i0); m_Indexvec.push_back(i1); // 0-1 라인
+		m_Indexvec.push_back(i1); m_Indexvec.push_back(i2); // 1-2 라인
+		m_Indexvec.push_back(i2); m_Indexvec.push_back(i0); // 2-0 라인
+	}
+
+	// 3. D3D12 리소스 및 뷰를 생성합니다. (DebugCubeMesh와 유사)
+	m_nStride = sizeof(IlluminatedVertex);
+	m_nVertices = m_Vertexvec.size();
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링
+
+	// 정점 버퍼 생성
+	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(), m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dVertexUploadBuffer);
+	m_d3dVertexBufferView.BufferLocation = m_pd3dVertexBuffer->GetGPUVirtualAddress();
+	m_d3dVertexBufferView.StrideInBytes = m_nStride;
+	m_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
+
+	// 인덱스 버퍼 생성
+	m_nIndices = m_Indexvec.size();
+	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(), sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &m_pd3dIndexUploadBuffer);
+	m_d3dIndexBufferView.BufferLocation = m_pd3dIndexBuffer->GetGPUVirtualAddress();
+	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+}
+
+DebugWireframeMesh::~DebugWireframeMesh() {}

@@ -95,7 +95,7 @@ public:
 	virtual void SetMesh(Mesh* pMesh);
 	virtual void SetShader(std::shared_ptr<Shader> pShader);
 	void SetMaterial(Material_Shader* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
-	virtual void Animate(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
+	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Collision(float fElapsedTime) = 0;
 	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) = 0;
 	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
@@ -151,4 +151,17 @@ public:
 public:
 	int m_PosX{};
 	int m_PosY{};
+};
+
+
+// 디버깅용 콜리전 박스 회전을 위한 클래스
+class DynamicObject : public GameObject
+{
+public:
+	DynamicObject();
+	virtual ~DynamicObject();
+
+	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) override;
+	virtual void Collision(float fElapsedTime) override {}
+	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) override {}
 };
