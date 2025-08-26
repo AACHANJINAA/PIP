@@ -7,14 +7,17 @@
 #include "MyExporterBPL.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class PIPMAP_API UMyExporterBPL : public UBlueprintFunctionLibrary
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 public:
     // 이 함수를 블루프린트에서 호출할 수 있게 만듭니다.
     UFUNCTION(BlueprintCallable, Category = "My Export Tools")
-    static void ExportStaticMeshesWithCollision(UObject* WorldContextObject);
+    static void ExportServerData(UObject* WorldContextObject);
+
+    UFUNCTION(BlueprintCallable, Category = "My Export Tools")
+    static void ExportClientData(UObject* WorldContextObject);
 };
