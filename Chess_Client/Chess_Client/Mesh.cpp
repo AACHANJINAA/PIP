@@ -1140,15 +1140,15 @@ DebugCollisionBox::~DebugCollisionBox()
 
 DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color)
 {
-	// 1. 렌더링에 사용할 정점 목록(m_Vertexvec)을 채웁니다.
-	// CollisionPrimitive의 Vertex는 위치만 있으므로, 색상 정보를 포함하는 IlluminatedVertex로 변환합니다.
+	// 렌더링에 사용할 정점 목록을 채움.
+	// CollisionPrimitive의 Vertex는 위치만 있으므로, 색상 정보를 포함하는 IlluminatedVertex로 변환
 	m_Vertexvec.reserve(vertices.size());
 	for (const auto& v : vertices)
 	{
 		m_Vertexvec.emplace_back(v.m_xmf3Position, XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
 	}
 
-	// 2. (핵심!) 삼각형 인덱스를 라인 리스트 인덱스로 변환합니다.
+	// 삼각형 인덱스를 라인 리스트 인덱스로 변환
 	// 삼각형 인덱스 {0, 1, 2} -> 라인 인덱스 {0,1, 1,2, 2,0}
 	m_Indexvec.reserve(indices.size() * 2);
 	for (size_t i = 0; i < indices.size(); i += 3)
@@ -1162,7 +1162,7 @@ DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsC
 		m_Indexvec.push_back(i2); m_Indexvec.push_back(i0); // 2-0 라인
 	}
 
-	// 3. D3D12 리소스 및 뷰를 생성합니다. (DebugCubeMesh와 유사)
+	// D3D12 리소스 및 뷰를 생성
 	m_nStride = sizeof(IlluminatedVertex);
 	m_nVertices = m_Vertexvec.size();
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링

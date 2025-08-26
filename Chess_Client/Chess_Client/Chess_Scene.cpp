@@ -124,11 +124,11 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
         const auto& collisionPrimitives = _pCollisionMesh->GetCollisionPrimitives();
         debugObjects.clear(); // 이전 데이터 클리어
 
-        // CollisionPrimitive 개수만큼 디버그 오브젝트를 미리 생성만 해둡니다.
+        // CollisionPrimitive 개수만큼 디버그 오브젝트를 미리 생성
         for (const auto& primitive : collisionPrimitives)
         {
-            // OBB, AABB, Wireframe 오브젝트 3개를 생성만 하고 벡터에 추가합니다.
-            // 위치 계산은 Render 함수에서 매 프레임 수행하므로 여기서는 하지 않습니다.
+            // OBB, AABB, Wireframe 오브젝트 3개를 생성만 하고 벡터에 추가
+            // 위치 계산은 Render 함수에서 매 프레임 수행하므로 여기서는 안함
             auto debugOOBBObject = std::make_shared<BoardCube>();
             debugOOBBObject->SetMesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));
             debugObjects.push_back(debugOOBBObject);
@@ -250,7 +250,6 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
     m_ChessCamera->UpdateAnimateCamera(fTimeElapsed);
 }
 
-// (수정) 조명, 머터리얼 데이터 연결 [PONG]
 void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     m_pCamera->Update();
