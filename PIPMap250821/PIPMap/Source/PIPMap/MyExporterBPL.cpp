@@ -1,4 +1,21 @@
-// FVector¸¦ { "X": °ª, "Y": °ª, "Z": °ª } ÇüÅÂÀÇ FJsonObject·Î º¯È¯ÇÏ´Â ÇïÆÛ ÇÔ¼ö
+#include "MyExporterBPL.h"
+
+#if WITH_EDITOR
+#include "Editor.h"
+#include "Subsystems/EditorActorSubsystem.h"
+#endif
+
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
+#include "Engine/Texture.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "GameFramework/Actor.h"
+
+
+// FVectorë¥¼ { "X": ê°’, "Y": ê°’, "Z": ê°’ } í˜•íƒœì˜ FJsonObjectë¡œ ë³€í™˜í•˜ëŠ” í—¬í¼ í•¨ìˆ˜
 TSharedPtr<FJsonObject> VectorToJsonObject(const FVector& InVector)
 {
     TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
@@ -8,7 +25,7 @@ TSharedPtr<FJsonObject> VectorToJsonObject(const FVector& InVector)
     return JsonObject;
 }
 
-// FRotator¸¦ { "Pitch": °ª, "Yaw": °ª, "Roll": °ª } ÇüÅÂÀÇ FJsonObject·Î º¯È¯ÇÏ´Â ÇïÆÛ ÇÔ¼ö
+// FRotatorë¥¼ { "Pitch": ê°’, "Yaw": ê°’, "Roll": ê°’ } í˜•íƒœì˜ FJsonObjectë¡œ ë³€í™˜í•˜ëŠ” í—¬í¼ í•¨ìˆ˜
 TSharedPtr<FJsonObject> RotatorToJsonObject(const FRotator& InRotator)
 {
     TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
@@ -20,6 +37,7 @@ TSharedPtr<FJsonObject> RotatorToJsonObject(const FRotator& InRotator)
 
 void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
 {
+#if WITH_EDITOR
     TArray<TSharedPtr<FJsonValue>> ActorJsonArray;
 
     UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
@@ -41,12 +59,12 @@ void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
         ActorJsonObject->SetStringField(TEXT("Name"), Actor->GetActorLabel());
         ActorJsonObject->SetStringField(TEXT("Mesh"), MeshComponent->GetStaticMesh()->GetName());
 
-        // À§Ä¡ Á¤º¸ º¯È¯ ¹× ÀúÀå
+        // ìœ„ì¹˜ ì •ë³´ ë³€í™˜ ë° ì €ì¥
         FVector UnrealLocation = MeshComponent->GetComponentLocation() / 100.0f;
         FVector ExportedLocation(UnrealLocation.Y, UnrealLocation.Z, UnrealLocation.X);
         ActorJsonObject->SetObjectField(TEXT("Location"), VectorToJsonObject(ExportedLocation));
 
-        // AABB Á¤º¸ º¯È¯ ¹× ÀúÀå
+        // AABB ì •ë³´ ë³€í™˜ ë° ì €ì¥
         FBox WorldBounds = MeshComponent->Bounds.GetBox();
         FVector UnrealMin = WorldBounds.Min / 100.0f;
         FVector UnrealMax = WorldBounds.Max / 100.0f;
@@ -61,17 +79,21 @@ void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
         ActorJsonArray.Add(MakeShareable(new FJsonValueObject(ActorJsonObject)));
     }
 
-    // ÆÄÀÏ ÀúÀå
+    // íŒŒì¼ ì €ì¥
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(ActorJsonArray, Writer);
     FString FilePath = FPaths::ProjectSavedDir() + TEXT("MapData/ExportedServerData.json");
     FFileHelper::SaveStringToFile(OutputString, *FilePath);
     UE_LOG(LogTemp, Warning, TEXT("Server data export complete! File saved to: %s"), *FilePath);
+#else
+    UE_LOG(LogTemp, Error, TEXT("ExportServerData can only be called from the editor."));
+#endif
 }
 
 void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
 {
+#if WITH_EDITOR
     TArray<TSharedPtr<FJsonValue>> ActorJsonArray;
 
     UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
@@ -93,7 +115,7 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         ActorJsonObject->SetStringField(TEXT("Name"), Actor->GetActorLabel());
         ActorJsonObject->SetStringField(TEXT("Mesh"), MeshComponent->GetStaticMesh()->GetName());
 
-        // Æ®·£½ºÆû µ¥ÀÌÅÍ º¯È¯
+        // íŠ¸ëœìŠ¤í¼ ì •ë³´ ë³€í™˜
         FVector UnrealLocation = MeshComponent->GetComponentLocation() / 100.0f;
         FQuat UnrealQuat = MeshComponent->GetComponentQuat();
         FVector UnrealScale = MeshComponent->GetComponentScale();
@@ -102,15 +124,15 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         FQuat ExportedQuat(UnrealQuat.Y, UnrealQuat.Z, UnrealQuat.X, UnrealQuat.W);
         FVector ExportedScale(UnrealScale.Y, UnrealScale.Z, UnrealScale.X);
 
-        // --- ¼öÁ¤µÈ ºÎºĞ: Transform °´Ã¼ »ı¼º ---
+        // --- ìˆ˜ì •ëœ ë¶€ë¶„: Transform ê°ì²´ ìƒì„± ---
         TSharedPtr<FJsonObject> TransformObject = MakeShareable(new FJsonObject());
         TransformObject->SetObjectField(TEXT("Location"), VectorToJsonObject(ExportedLocation));
         TransformObject->SetObjectField(TEXT("Rotation"), RotatorToJsonObject(ExportedQuat.Rotator()));
         TransformObject->SetObjectField(TEXT("Scale"), VectorToJsonObject(ExportedScale));
         ActorJsonObject->SetObjectField(TEXT("Transform"), TransformObject);
-        // --- ¼öÁ¤ ³¡ ---
+        // --- ìˆ˜ì • ë ---
 
-        // ÅØ½ºÃ³ Á¤º¸ ÃßÃâ
+        // í…ìŠ¤ì²˜ ì •ë³´ ì €ì¥
         TArray<TSharedPtr<FJsonValue>> TexturesJsonArray;
         int32 NumMaterials = MeshComponent->GetNumMaterials();
         for (int32 MaterialIndex = 0; MaterialIndex < NumMaterials; ++MaterialIndex)
@@ -134,11 +156,14 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         ActorJsonArray.Add(MakeShareable(new FJsonValueObject(ActorJsonObject)));
     }
 
-    // ÆÄÀÏ ÀúÀå
+    // íŒŒì¼ ì €ì¥
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(ActorJsonArray, Writer);
     FString FilePath = FPaths::ProjectSavedDir() + TEXT("MapData/ExportedClientData.json");
     FFileHelper::SaveStringToFile(OutputString, *FilePath);
     UE_LOG(LogTemp, Warning, TEXT("Export Complete! File saved to: %s"), *FilePath);
+#else
+    UE_LOG(LogTemp, Error, TEXT("ExportClientData can only be called from the editor."));
+#endif
 }
