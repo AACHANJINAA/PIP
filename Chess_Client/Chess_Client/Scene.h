@@ -66,6 +66,14 @@ public:
 	// 오브젝트 생성 요청 함수
 	// 오브젝트 생성 요청 실행함수
 
+public: // GLB 뼈 없는 모델 더미전용
+	void MakeDummyBonebuffer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	D3D12_GPU_VIRTUAL_ADDRESS GetDummyBoneBufferAddress() const;
+
+protected:
+	// [추가] 모든 셰이더가 공유해서 사용할 더미 뼈 행렬 버퍼
+	ComPtr<ID3D12Resource> m_pd3dcbDummyBoneTransforms;
+
 protected:
 	// 디스크립터 힙 관리를 위한 멤버 변수 추가
 	ComPtr<ID3D12DescriptorHeap> _SrvDescriptorHeap;

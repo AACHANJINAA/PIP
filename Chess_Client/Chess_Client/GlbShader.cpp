@@ -13,7 +13,7 @@ GlbShader::~GlbShader()
 D3D12_INPUT_LAYOUT_DESC GlbShader::CreateInputLayout()
 {
 	UINT nInputElementDescs = 5; // 5개 (위치, 법선, 텍스쳐, 뼈 인덱스, 가중치)
-	D3D12_INPUT_ELEMENT_DESC* d3dSkinnedInputLayout = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs]; 
+	D3D12_INPUT_ELEMENT_DESC* d3dSkinnedInputLayout = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
 	d3dSkinnedInputLayout[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	d3dSkinnedInputLayout[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	d3dSkinnedInputLayout[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };

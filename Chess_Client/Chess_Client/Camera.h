@@ -1,6 +1,6 @@
 #pragma once
 
-struct VS_CB_CAMERA_INFO
+struct CB_CAMERA_INFO
 {
 	XMFLOAT4X4 m_xmf4x4View;
 	XMFLOAT4X4 m_xmf4x4Projection;
@@ -39,6 +39,10 @@ public:
 	XMFLOAT4X4					m_xmf4x4Projection = Matrix4x4::Identity(); // 원근투영 행렬
 	D3D12_VIEWPORT				m_d3dViewport;
 	D3D12_RECT					m_d3dScissorRect;
+
+private:
+	ComPtr<ID3D12Resource> m_pd3dcbCamera;
+	CB_CAMERA_INFO* m_pcbMappedCamera = nullptr;
 
 public:
 	//카메라의 정보를 셰이더 프로그램에게 전달하기 위한 상수 버퍼를 생성하고 갱신한다. 

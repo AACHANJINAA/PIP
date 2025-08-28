@@ -214,6 +214,15 @@ public:
 
 	UINT GetTextureCount() { return _Textures; } // 로드된 텍스처 개수를 반환하는 함수
 
+public:
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvGpuHandle(UINT nPrimitive = 0) const;
+
+	D3D12_GPU_VIRTUAL_ADDRESS GetBoneTransformsBufferAddress() const;
+
+private:
+	// 뼈 행렬들을 담을 상수 버퍼 (ComPtr로 자동 메모리 관리)
+	ComPtr<ID3D12Resource> m_pd3dcbBoneTransforms;
+
 private:
 	UINT _Textures = 0; // 로드된 텍스처 개수를 저장할 변수
 

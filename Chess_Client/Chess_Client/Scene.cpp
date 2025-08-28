@@ -90,17 +90,16 @@ ID3D12RootSignature* Scene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice
 {
     ID3D12RootSignature* pd3dGraphicsRootSignature = NULL;
     D3D12_ROOT_PARAMETER pd3dRootParameters[4];
-    // 월드 변환 행렬용 
-    pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    pd3dRootParameters[0].Constants.Num32BitValues = 16;
-    pd3dRootParameters[0].Constants.ShaderRegister = 0;
-    pd3dRootParameters[0].Constants.RegisterSpace = 0;
-    pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    // 카메라 행렬용
-    pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    pd3dRootParameters[1].Constants.Num32BitValues = 36;
-    pd3dRootParameters[1].Constants.ShaderRegister = 1;
-    pd3dRootParameters[1].Constants.RegisterSpace = 0;
+    // [수정] 0번 파라미터: 월드 행렬용 CBV
+    pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    pd3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
+    pd3dRootParameters[0].Descriptor.RegisterSpace = 0;
+    pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [수정] 1번 파라미터: 카메라용 CBV
+    pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    pd3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
+    pd3dRootParameters[1].Descriptor.RegisterSpace = 0;
     pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     // 머터리얼 정보를 위한 상수 버퍼 뷰(CBV) 추가
@@ -157,16 +156,16 @@ ID3D12RootSignature* Scene::CreateSkinnedGraphicsRootSignature(ID3D12Device* pd3
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 (총 6개)
     D3D12_ROOT_PARAMETER d3dRootParameters[6];
 
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    d3dRootParameters[0].Constants.Num32BitValues = 16;
-    d3dRootParameters[0].Constants.ShaderRegister = 0; // b0: 월드 행렬
-    d3dRootParameters[0].Constants.RegisterSpace = 0;
+    // [수정] 0번 파라미터: 월드 행렬용 CBV
+    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
+    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
     d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    d3dRootParameters[1].Constants.Num32BitValues = 36;
-    d3dRootParameters[1].Constants.ShaderRegister = 1;
-    d3dRootParameters[1].Constants.RegisterSpace = 0;
+    // [수정] 1번 파라미터: 카메라용 CBV
+    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
+    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
     d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -278,6 +277,32 @@ GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
 
     return(pNearestObject);
     return nullptr;
+}
+
+void Scene::MakeDummyBonebuffer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+    UINT nBoneCount = 128;
+    UINT nBufferSize = sizeof(XMFLOAT4X4) * nBoneCount;
+
+    // UPLOAD 힙에 생성하여 CPU가 항상 접근 가능하도록 합니다.
+    // 내용은 비어있어도 되지만, 0으로 초기화해두면 더 안정적입니다.
+    m_pd3dcbDummyBoneTransforms = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, nBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+    // 버퍼의 내용을 0으로 초기화 (선택 사항이지만 권장)
+    UINT8* pMappedData = nullptr;
+    D3D12_RANGE readRange{ 0, 0 };
+    m_pd3dcbDummyBoneTransforms->Map(0, &readRange, reinterpret_cast<void**>(&pMappedData));
+    memset(pMappedData, 0, nBufferSize);
+    m_pd3dcbDummyBoneTransforms->Unmap(0, nullptr);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Scene::GetDummyBoneBufferAddress() const
+{
+    if (m_pd3dcbDummyBoneTransforms)
+    {
+        return m_pd3dcbDummyBoneTransforms->GetGPUVirtualAddress();
+    }
+    return 0;
 }
 
 void Scene::MakeSrv(ID3D12Device* pd3dDevice)

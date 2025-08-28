@@ -3,10 +3,10 @@
 #include "Camera.h"
 
 //게임 객체의 정보를 셰이더에게 넘겨주기 위한 구조체(상수 버퍼)이다. 
-struct CB_GAMEOBJECT_INFO
-{
-	XMFLOAT4X4 m_xmf4x4World;
-};
+//struct CB_GAMEOBJECT_INFO
+//{
+//	XMFLOAT4X4 m_xmf4x4World;
+//};
 
 //셰이더 소스 코드를 컴파일하고 그래픽스 상태 객체를 생성한다. 
 class Shader
