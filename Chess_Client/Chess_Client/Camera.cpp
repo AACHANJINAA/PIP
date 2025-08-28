@@ -24,22 +24,23 @@ Camera::~Camera()
 
 void Camera::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	m_pd3dcbCamera = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, sizeof(CB_CAMERA_INFO), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+	D3D12_RANGE d3dReadRange{ 0, 0 };
+	m_pd3dcbCamera->Map(0, &d3dReadRange, reinterpret_cast<void**>(&m_pcbMappedCamera));
 
 }
 
 void Camera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	XMFLOAT4X4 xmf4x4View;
-	XMStoreFloat4x4(&xmf4x4View, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4View)));
-	//루트 파라메터 인덱스 1의
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4View, 0);
-	XMFLOAT4X4 xmf4x4Projection;
-	XMStoreFloat4x4(&xmf4x4Projection,
-		XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4Projection)));
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4Projection, 16);
+	// 뷰 행렬과 프로젝션 행렬을 Transpose하여 맵핑된 버퍼에 복사
+	XMStoreFloat4x4(&m_pcbMappedCamera->m_xmf4x4View, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4View)));
+	XMStoreFloat4x4(&m_pcbMappedCamera->m_xmf4x4Projection, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4Projection)));
+	m_pcbMappedCamera->m_f4Position = XMFLOAT4(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z, 1.0f);
 
-	//XMFLOAT4 xmf4Position(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z, 1.f);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &xmf4x4Projection, 32);
+	// [중요] 실제 바인딩은 이 함수 또는 별도의 Set... 함수에서!
+	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbCamera->GetGPUVirtualAddress();
+	pd3dCommandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress); // b1에 바인딩
 }
 
 void Camera::ReleaseShaderVariables()

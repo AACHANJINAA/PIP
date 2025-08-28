@@ -496,6 +496,27 @@ void ReadGlbMesh::ReleaseUploadBuffers()
 	Mesh::ReleaseUploadBuffers();
 }
 
+D3D12_GPU_DESCRIPTOR_HANDLE ReadGlbMesh::GetSrvGpuHandle(UINT nPrimitive) const
+{
+	// 메시가 프리미티브를 가지고 있고, 요청된 인덱스가 유효한지 확인합니다.
+	if (m_primitives.empty() || nPrimitive >= m_primitives.size())
+	{
+		return { 0 }; // 유효하지 않으면 비어있는 핸들 반환
+	}
+
+	// 지정된 프리미티브(기본값은 0번째)의 SRV GPU 핸들을 반환합니다.
+	return m_primitives[nPrimitive]->m_d3dGpuSrvHandle;
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS ReadGlbMesh::GetBoneTransformsBufferAddress() const
+{
+	if (m_pd3dcbBoneTransforms)
+	{
+		return m_pd3dcbBoneTransforms->GetGPUVirtualAddress();
+	}
+	return 0;
+}
+
 std::tuple<std::vector<unsigned char>, UINT, UINT> ReadGlbMesh::LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex)
 {
 	if (!j.contains("textures") || textureIndex >= j["textures"].size()) return {};
@@ -716,11 +737,11 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 				const auto& indexAccessor = j["accessors"][indicesAccessorIndex];
 				size_t indicesCount = indexAccessor["count"];
 				indices.resize(indicesCount);
-				if (indexAccessor["componentType"] == 5123) {
+				if (indexAccessor["componentType"] == 5123) { // uint16_t
 					auto [indices_u16, count] = getData<uint16_t>(j, binaryData, indicesAccessorIndex);
 					for (size_t i = 0; i < count; ++i) indices[i] = indices_u16[i];
 				}
-				else if (indexAccessor["componentType"] == 5125) {
+				else if (indexAccessor["componentType"] == 5125) { // uint32_t
 					auto [indices_u32, count] = getData<uint32_t>(j, binaryData, indicesAccessorIndex);
 					indices.assign(indices_u32, indices_u32 + count);
 				}
@@ -862,6 +883,21 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 		std::cerr << "JSON parse error: " << e.what() << std::endl;
 		return;
 	}
+
+	// --- [추가] 뼈 변환 행렬을 위한 상수 버퍼 생성 ---
+   // 최대 뼈 개수(예: 128개)만큼의 버퍼 공간을 UPLOAD 힙에 생성합니다.
+   // UPLOAD 힙은 CPU에서 매 프레임 업데이트하기 용이합니다.
+	UINT nBoneCount = 128; // 셰이더의 배열 크기와 일치시켜야 함
+	UINT nBufferSize = sizeof(XMFLOAT4X4) * nBoneCount;
+
+	// CreateBufferResource 헬퍼 함수를 사용해 UPLOAD 타입으로 버퍼 생성
+	m_pd3dcbBoneTransforms = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, nBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+	// TODO: 여기에 파싱한 초기 자세(Bind Pose) 뼈 행렬들을 Map/memcpy/Unmap을 통해
+	// m_pd3dcbBoneTransforms 버퍼에 복사하는 로직이 필요합니다.
+
+	// 요약 뼈는 아직 없음
+
 }
 
 ReadFbxMesh::ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)

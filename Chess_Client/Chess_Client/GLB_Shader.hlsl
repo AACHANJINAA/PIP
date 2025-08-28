@@ -99,34 +99,15 @@ cbuffer cbSkinningInfo : register(b4) // 기존 버퍼들과 겹치지 않는 레지스터(b4) 
 // --- [수정] 정점 셰이더 함수 ---
 PS_SKINNED_INPUT VSSkinning(VS_SKINNED_INPUT input)
 {
-    PS_SKINNED_INPUT output = (PS_SKINNED_INPUT) 0; // 스키닝 입력 구조체 초기화
+    PS_SKINNED_INPUT output = (PS_SKINNED_INPUT) 0;
 
-    // --- 스키닝 계산 시작 ---
-    float4 initialPos = float4(input.position, 1.0f);
-    float4 skinnedPos = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // 월드 좌표 계산 (VSLighting과 동일한 순서로 수정)
+    output.positionW = (float3) mul(float4(input.position, 1.0f), gmtxWorld);
 
-   // 뼈 가중치가 0보다 클 때만 계산 (정적 메시 호환)
-    if (input.boneWeights.x > 0)
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            skinnedPos += mul(initialPos, gBoneTransforms[(int) input.boneIndices[i]]) * input.boneWeights[i];
-        }
-        skinnedPos.w = 1.0f;
-    }
-    else // 스키닝 정보가 없는 정적 GLB 모델의 경우
-    {
-        skinnedPos = initialPos;
-    }
-    // --- 스키닝 계산 끝 ---
-
-    // 정점의 위치를 월드 좌표계로 변환 (skinnedPos 사용)
-    output.positionW = (float3) mul(skinnedPos, gmtxWorld);
-    
-    // 최종 화면 좌표로 변환
+    // 최종 화면 좌표 계산 (VSLighting과 동일한 순서로 수정)
     output.positionH = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
-    
-    // 법선 벡터도 스키닝 변환을 적용해야 하지만, 우선은 간단하게 월드 변환만 적용
+
+    // 법선 벡터 변환 (VSLighting과 동일한 순서로 수정)
     output.normalW = mul(input.normal, (float3x3) gmtxWorld);
     
     // 텍스처 좌표는 그대로 전달

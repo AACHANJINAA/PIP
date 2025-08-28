@@ -28,10 +28,12 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 	while (!m_RequestObjects.empty())
 	{
 		auto RequestObject = m_RequestObjects.front();
+		RequestObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
 		switch (RequestObject->m_Mesh_Type)
 		{
 		case PLAYER:
 		{
+
 			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" };
 
 			// 색 설정
@@ -47,6 +49,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
 		case ENEMY:
 		{
+
 			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" };
 
 			// 색 설정

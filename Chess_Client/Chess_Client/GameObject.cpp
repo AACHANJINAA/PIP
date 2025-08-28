@@ -112,7 +112,7 @@ void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCam
 	if (IsVisible(pCamera))
 	{
 		// 렌더링 상태 설정
-		OnPrepareRender(pd3dCommandList);
+		//OnPrepareRender(pd3dCommandList);
 
 		// 개별 데이터 업데이트 (본인, 카메라)
 		UpdateShaderVariables(pd3dCommandList);
@@ -126,7 +126,31 @@ void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCam
 void GameObject::CreateShaderVariables(ID3D12Device* pd3dDevice,
 	ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	// 1. 상수 버퍼 리소스 생성
+	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, sizeof(CB_GAMEOBJECT_INFO), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 
+	// [중요] 1-1. 버퍼 생성에 성공했는지 반드시 확인!
+	if (!m_pd3dcbGameObject)
+	{
+		// 여기서 에러 로그를 남기거나, 예외를 던지거나, 메시지 박스를 띄워
+		// 프로그램이 즉시 문제를 인지하고 멈추도록 해야 합니다.
+		MessageBox(NULL, L"GameObject Constant Buffer Creation Failed!", L"Error", MB_OK);
+		return; // 실패했으므로 더 이상 진행하지 않음
+	}
+
+	// 2. 생성된 버퍼를 CPU 주소에 맵핑
+	D3D12_RANGE d3dReadRange{ 0, 0 };
+	HRESULT hResult = m_pd3dcbGameObject->Map(0, &d3dReadRange, reinterpret_cast<void**>(&_pcbMappedGameObject));
+
+	// [중요] 2-1. 맵핑에 성공했는지 반드시 확인!
+	if (FAILED(hResult))
+	{
+		// Map()이 실패하면 m_pcbMappedGameObject는 nullptr인 상태로 남게 됩니다.
+		// 여기서 문제를 인지하고 멈춰야 합니다.
+		_pcbMappedGameObject = nullptr; // 안전을 위해 명시적으로 nullptr 처리
+		MessageBox(NULL, L"GameObject Constant Buffer Map Failed!", L"Error", MB_OK);
+		return;
+	}
 }
 
 void GameObject::ReleaseShaderVariables()
@@ -136,10 +160,12 @@ void GameObject::ReleaseShaderVariables()
 
 void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	XMFLOAT4X4 xmf4x4World;
-	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
-	//객체의 월드 변환 행렬을 루트 상수(32-비트 값)를 통하여 셰이더 변수(상수 버퍼)로 복사한다. 
-	pd3dCommandList->SetGraphicsRoot32BitConstants(0, 16, &xmf4x4World, 0);
+	// 1. 데이터 준비
+	XMStoreFloat4x4(&_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
+
+	// 2. GPU에 바인딩
+	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbGameObject->GetGPUVirtualAddress();
+	pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
 }
 
 void GameObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)

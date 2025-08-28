@@ -61,6 +61,13 @@ public:
 	bool IsDead() const { return _hp <= 0; }
 };
 
+// 셰이더의 cbuffer 구조체와 1:1로 대응하는 C++ 구조체
+struct CB_GAMEOBJECT_INFO
+{
+	XMFLOAT4X4 m_xmf4x4World;
+};
+
+
 class GameObject
 {
 public:
@@ -84,6 +91,12 @@ public:
 	XMFLOAT3 m_xmf3Gravity; // 중력
 	float Gravity = -2.0f; // 중력값
 	bool m_bGravity = true;
+
+private:
+	// 월드 행렬을 담을 상수 버퍼 리소스
+	ComPtr<ID3D12Resource> m_pd3dcbGameObject;
+	// 맵핑된 상수 버퍼의 CPU 주소 (매 프레임 여기다 데이터 복사)
+	CB_GAMEOBJECT_INFO* _pcbMappedGameObject = nullptr;
 
 public:
 	XMFLOAT4X4 m_xmf4x4World;
