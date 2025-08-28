@@ -153,6 +153,8 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
+		my_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
+			GameFramework::Instance()->GetCommandList().Get());
 		my_king->SetPos(spawn_data._position.x, spawn_data._position.y);
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
@@ -183,6 +185,8 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._position.x, spawn_data._position.y);
+		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
+			GameFramework::Instance()->GetCommandList().Get());
 		other_king->SetID(spawn_data._id);
 		other_king->SetPos(spawn_data._position.x, spawn_data._position.y); // 위치 설정
 		other_king->SetHP(spawn_data._hp); // HP 설정

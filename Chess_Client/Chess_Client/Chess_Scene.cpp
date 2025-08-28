@@ -25,7 +25,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     _AllRootSignature[1] = CreateSkinnedGraphicsRootSignature(pd3dDevice); // GLB
 
     MakeSrv(pd3dDevice); // Srv 디스크립터 생성
-
+    MakeDummyBonebuffer(pd3dDevice, pd3dCommandList); // 더미 생성
     // 셰이더 생성
 
     // 기존 오브젝트 셰이더
@@ -64,6 +64,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
         for (int j = 0; j < 8; ++j) // 가로
         {
             Board = std::make_shared<BoardCube>();
+            Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
             BoardMesh = new ReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube_Normal.obj" };
             if ((j + i) % 2)
             {
@@ -86,13 +87,14 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     }
 
     Board = std::make_shared<BoardCube>();
+    Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
 
     BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb", (Scene*)this};
 
     Board->SetMesh(BoardMesh);
     Board->SetShader(_AllShaders[1]); // GLB
     Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
-    Board->SetScale(0.01f, 0.01f, 0.01f);
+    Board->SetScale(0.1f, 0.1f, 0.1f);
     Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
         0.f,
         ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
@@ -102,6 +104,8 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     // 언리얼에서 뽑은 FBX 테스트
     _pFbxObject = std::make_shared<BoardCube>();
+    _pFbxObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+
     _pCollisionMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCollision.fbx" };
 
     _pFbxObject->SetMesh(_pCollisionMesh);
@@ -130,14 +134,17 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
             // OBB, AABB, Wireframe 오브젝트 3개를 생성만 하고 벡터에 추가
             // 위치 계산은 Render 함수에서 매 프레임 수행하므로 여기서는 안함
             auto debugOOBBObject = std::make_shared<BoardCube>();
+            debugOOBBObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
             debugOOBBObject->SetMesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));
             debugObjects.push_back(debugOOBBObject);
 
             auto debugAABBObject = std::make_shared<BoardCube>();
+            debugAABBObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
             debugAABBObject->SetMesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));
             debugObjects.push_back(debugAABBObject);
 
             auto debugWireframeObject = std::make_shared<BoardCube>();
+            debugWireframeObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
             debugWireframeObject->SetMesh(new DebugWireframeMesh(pd3dDevice, pd3dCommandList, primitive.vertices, primitive.indices, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));
             debugObjects.push_back(debugWireframeObject);
         }
@@ -277,18 +284,55 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
             pd3dCommandList->SetDescriptorHeaps(_countof(ppd3dDescriptorHeaps), ppd3dDescriptorHeaps);
         }
     }
-
+    size_t ShaderNum{};
     for (auto const& [shader, objectGroup] : ObjectManager::Instance()->GetRenderMap())
     {
         // 셰이더 그룹이 바뀔 때 한 번만 상태를 설정
         // 같은 그룹의 첫번째 원소를 기준으로 설정
         objectGroup[0]->OnPrepareRender(pd3dCommandList); // PSO와 루트 시그니처를 여기서 설정
 
+       
+
         // 현재 그룹(같은 셰이더 사용 하는 그룹)의 모든 오브젝트를 렌더링
         for (const std::shared_ptr<GameObject>& Object : objectGroup)
         {
+            if (ShaderNum == 1) // Glb
+            {
+                // 전역 데이터 설정 (모든 객체가 이 조명과 재질 정보를 공유)
+                UpdateShaderVariables(pd3dCommandList); // 조명/머터리얼 데이터 CPU->GPU 복사
+                D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
+                pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress);
+                d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
+                pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress);
+
+                // A. 뼈 행렬 상수 버퍼 바인딩 (애니메이션용, 아직 작동X)
+          // ReadGlbMesh가 애니메이션 데이터를 담고있는 상수 버퍼의 주소를 반환해야 합니다.
+                D3D12_GPU_VIRTUAL_ADDRESS boneTransformAddress = dynamic_cast<ReadGlbMesh*>(Object->m_pMesh)->GetBoneTransformsBufferAddress();
+                // [수정] 주소가 유효하면 실제 버퍼를, 아니면 더미 버퍼를 바인딩
+                if (boneTransformAddress != 0)
+                {
+                    pd3dCommandList->SetGraphicsRootConstantBufferView(4, boneTransformAddress);
+                }
+                else
+                {
+                    // m_pDummyBoneBuffer는 Scene이나 렌더러가 하나쯤 가지고 있으면 좋음
+                    pd3dCommandList->SetGraphicsRootConstantBufferView(4, GetDummyBoneBufferAddress());
+                }
+
+                // B. 텍스처 SRV 테이블 바인딩
+                // ReadGlbMesh가 로딩 시 생성한 SRV의 GPU 핸들을 반환해야 합니다.
+                D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = dynamic_cast<ReadGlbMesh*>(Object->m_pMesh)->GetSrvGpuHandle();
+                if (textureSrvHandle.ptr != 0)
+                {
+                    // 루트 시그니처에 정의된 SRV 테이블 슬롯(예: 5번)에 텍스처를 바인딩합니다.
+                    // 이 숫자(5)는 CreateSkinnedGraphicsRootSignature에서 SRV 테이블을 설정한 인덱스와 일치해야 합니다.
+                    pd3dCommandList->SetGraphicsRootDescriptorTable(5, textureSrvHandle);
+                }
+                //Object->Render(pd3dCommandList, m_pCamera); // 디버깅용
+            }
             Object->Render(pd3dCommandList,m_pCamera);
         }
+        ++ShaderNum;
     }
 
     /*std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
