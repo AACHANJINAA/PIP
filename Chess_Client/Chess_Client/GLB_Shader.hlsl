@@ -161,3 +161,18 @@ float4 PSSkinning(PS_SKINNED_INPUT input) : SV_TARGET
     f4TotalColor += gLights.m_xmf4GlobalAmbient;
     return saturate(f4TotalColor); // saturate로 최종 색상 범위를 0~1로 제한
 }
+
+// 내장 그래픽 용 PSSkinning (조명 계산 제거 버전)
+
+//float4 PSSkinning(PS_SKINNED_INPUT input) : SV_TARGET
+//{
+//    // 1. 텍스처에서 이 픽셀의 기본 색상(Albedo)을 가져옵니다.
+//    float4 objectColor = gAlbedoTexture.Sample(gSamplerState, input.texcoord);
+
+//    // [수정!] 복잡한 for 루프 조명 계산을 모두 제거하고, 
+//    //        가장 단순한 전역 앰비언트 조명만 적용합니다.
+//    float4 f4TotalColor = objectColor * gLights.m_xmf4GlobalAmbient;
+    
+//    // 최종 색상 범위를 0~1로 제한하여 반환합니다.
+//    return saturate(f4TotalColor);
+//}
