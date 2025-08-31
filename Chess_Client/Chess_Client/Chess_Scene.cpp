@@ -89,12 +89,12 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     Board = std::make_shared<BoardCube>();
     Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
 
-    BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/Brute_Dance.glb", (Scene*)this};
+    BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/MapData/SM_Crate_01.glb", (Scene*)this};
 
     Board->SetMesh(BoardMesh);
     Board->SetShader(_AllShaders[1]); // GLB
     Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
-    Board->SetScale(0.1f, 0.1f, 0.1f);
+    Board->SetScale(1.f, 1.f, 1.f);
     Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
         0.f,
         ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
