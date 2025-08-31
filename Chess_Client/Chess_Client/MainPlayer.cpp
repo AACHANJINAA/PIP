@@ -51,12 +51,17 @@ void MainPlayer::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, PO
 
 void MainPlayer::Move_Pos(common::packet::MOVE_TYPE Cmd)
 {
+	common::Vec3 direction{};
 	switch (Cmd)
 	{
 		case common::packet::MOVE_TYPE::MOVE_UP:
+			direction = common::Vec3Forward;
 		case common::packet::MOVE_TYPE::MOVE_DOWN:
+			direction = common::Vec3Backward;
 		case common::packet::MOVE_TYPE::MOVE_RIGHT:
+			direction = common::Vec3Right;
 		case common::packet::MOVE_TYPE::MOVE_LEFT:
+			direction = common::Vec3Left;
 			// 서버로 나 위로 이동
 			// 서버는 위치값 계산
 			// 서버는 위치값을 클라이언트로 전송
@@ -68,4 +73,5 @@ void MainPlayer::Move_Pos(common::packet::MOVE_TYPE Cmd)
 	default:
 		break;
 	}
+	ClientPacketManager::Instance()->SendMovePacket(direction);
 }
