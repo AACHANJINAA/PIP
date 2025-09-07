@@ -38,7 +38,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
     return(false);
 }
 
-void Scene::LoadSceneFromFile(const std::string& filename)
+void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
     // 1. 파일 스트림 열기
     std::ifstream file(filename);
@@ -63,9 +63,9 @@ void Scene::LoadSceneFromFile(const std::string& filename)
 
             // Transform 정보 파싱
             const auto& transformData = objectData.at("Transform");
-            XMFLOAT3 location = JsonHelper::ParseLocationString(transformData.at("Location"));
-            XMFLOAT3 rotation = JsonHelper::ParseRotationString(transformData.at("Rotation"));
-            XMFLOAT3 scale = JsonHelper::ParseScaleString(transformData.at("Scale"));
+            XMFLOAT3 location = JsonHelper::ParseVector3(transformData.at("Location"));
+            XMFLOAT3 rotation = JsonHelper::ParseRotation(transformData.at("Rotation"));
+            XMFLOAT3 scale = JsonHelper::ParseVector3(transformData.at("Scale"));
 
             // 텍스처 정보 파싱 (선택적일 수 있으므로 .contains로 확인)
             if (objectData.contains("Textures")) {
@@ -74,6 +74,22 @@ void Scene::LoadSceneFromFile(const std::string& filename)
                 }
             }
             // TODO: 게임 오브젝트 생성 및 배치 로직
+
+            std::shared_ptr<GameObject> Board{};
+            Mesh* BoardMesh{};
+            meshName = "Resource/MapData/" + meshName + ".glb";
+            Board = std::make_shared<BoardCube>();
+            Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+
+            BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,meshName, (Scene*)this };
+
+            Board->SetMesh(BoardMesh);
+            Board->SetShader(_AllShaders[1]); // GLB
+            Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
+            Board->SetScale(scale.x, scale.y, scale.z);
+            Board->Rotate(rotation.x, rotation.y, rotation.z);
+            Board->SetPosition(location.x, location.y, location.z);
+            ObjectManager::Instance()->PushFloorObject(Board);
 
         }
     }
@@ -310,7 +326,7 @@ void Scene::MakeSrv(ID3D12Device* pd3dDevice)
     // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ SRV 디스크립터 힙 생성 ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
     // 텍스처와 같은 셰이더 리소스 뷰(SRV)들을 담을 디스크립터 힙을 생성합니다.
     D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-    srvHeapDesc.NumDescriptors = 128; // 이 씬에서 사용할 최대 텍스처 개수 (임의로 128로 설정, 필요시 조절)
+    srvHeapDesc.NumDescriptors = 1024; // 이 씬에서 사용할 최대 텍스처 개수 (임의로 128로 설정, 필요시 조절)
     srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // **매우 중요**: 셰이더가 접근 가능해야 함
     srvHeapDesc.NodeMask = 0;

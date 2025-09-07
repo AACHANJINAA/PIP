@@ -1,6 +1,5 @@
 #pragma once
 #include "stdafx.h"
-#include "json.hpp"
 #include <assimp/Importer.hpp>      // Assimp 肺歹
 #include <assimp/scene.h>           // Assimp scene 按眉
 #include <assimp/postprocess.h>     // Assimp 饶贸府 可记

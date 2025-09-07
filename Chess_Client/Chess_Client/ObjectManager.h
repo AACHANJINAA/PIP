@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "BoardCube.h"
 
 class ObjectManager : public Singleton<ObjectManager>
 {
