@@ -54,37 +54,39 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     m_ChessCamera->SetPosition(0.f, 5.f, -5.f);
 
+    LoadSceneFromFile("Resource/MapData/ExportedClientData.json", pd3dDevice, pd3dCommandList);
+
     // 보드판 생성
     std::shared_ptr<GameObject> Board{};
     Mesh* BoardMesh{};
     float MoveDistance{};
 
-    for (int i = 0; i < 8; ++i) // 세로
-    {
-        for (int j = 0; j < 8; ++j) // 가로
-        {
-            Board = std::make_shared<BoardCube>();
-            Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-            BoardMesh = new ReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube_Normal.obj" };
-            if ((j + i) % 2)
-            {
-                BoardMesh->ChangeColor(pd3dCommandList, 0.941f, 0.851f, 0.710f, 1.f);
-            }
-            else
-            {
-                BoardMesh->ChangeColor(pd3dCommandList, 0.710f, 0.533f, 0.388f, 1.f);
-            }
-            Board->SetMesh(BoardMesh);
-           
-        
-            Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x * j),
-                -(Board->m_pMesh->m_Top - Board->m_pMesh->m_Bottom) * Board->GetSize().y * 0.5f,
-                ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
-            Board->m_PosX = j;
-            Board->m_PosY = i;
-            ObjectManager::Instance()->PushFloorObject(Board);
-        }
-    }
+    //for (int i = 0; i < 8; ++i) // 세로
+    //{
+    //    for (int j = 0; j < 8; ++j) // 가로
+    //    {
+    //        Board = std::make_shared<BoardCube>();
+    //        Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+    //        BoardMesh = new ReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube_Normal.obj" };
+    //        if ((j + i) % 2)
+    //        {
+    //            BoardMesh->ChangeColor(pd3dCommandList, 0.941f, 0.851f, 0.710f, 1.f);
+    //        }
+    //        else
+    //        {
+    //            BoardMesh->ChangeColor(pd3dCommandList, 0.710f, 0.533f, 0.388f, 1.f);
+    //        }
+    //        Board->SetMesh(BoardMesh);
+    //       
+    //    
+    //        Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x * j),
+    //            -(Board->m_pMesh->m_Top - Board->m_pMesh->m_Bottom) * Board->GetSize().y * 0.5f,
+    //            ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z * i));
+    //        Board->m_PosX = j;
+    //        Board->m_PosY = i;
+    //        ObjectManager::Instance()->PushFloorObject(Board);
+    //    }
+    //}
 
     Board = std::make_shared<BoardCube>();
     Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
