@@ -123,56 +123,124 @@ Texture2D gAlbedoTexture : register(t0);
 SamplerState gSamplerState : register(s0);
 
 // --- [수정] 픽셀 셰이더 함수 ---
-float4 PSSkinning(PS_SKINNED_INPUT input) : SV_TARGET
-{
-    // 텍스처에서 이 픽셀의 기본 색상(Albedo)을 가져옵니다.
-    float4 objectColor = gAlbedoTexture.Sample(gSamplerState, input.texcoord);
+//float4 PSSkinning(PS_SKINNED_INPUT input) : SV_TARGET
+//{
+//    // 텍스처에서 이 픽셀의 기본 색상(Albedo)을 가져옵니다.
+//    float4 objectColor = gAlbedoTexture.Sample(gSamplerState, input.texcoord);
 
-    // --- 조명 계산 시작 (input.color 대신 objectColor 사용) ---
-    float4 f4TotalColor = float4(0, 0, 0, 1);
-    float3 N = normalize(input.normalW);
+//    // --- 조명 계산 시작 (input.color 대신 objectColor 사용) ---
+//    float4 f4TotalColor = float4(0, 0, 0, 1);
+//    float3 N = normalize(input.normalW);
     
-    for (int i = 0; i < MAX_LIGHTS; i++)
-    {
-        if (gLights.m_pLights[i].m_bEnable)
-        {
-            MATERIAL material = gMaterials.m_pReflections[0];
+//    for (int i = 0; i < MAX_LIGHTS; i++)
+//    {
+//        if (gLights.m_pLights[i].m_bEnable)
+//        {
+//            MATERIAL material = gMaterials.m_pReflections[0];
 
-            // Ambient 계산 (objectColor 사용)
-            float4 f4Ambient = gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient * objectColor;
-            f4TotalColor += f4Ambient;
+//            // Ambient 계산 (objectColor 사용)
+//            float4 f4Ambient = gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient * objectColor;
+//            f4TotalColor += f4Ambient;
             
-            // Diffuse 계산 (objectColor 사용)
-            float3 L = normalize(gLights.m_pLights[i].m_xmf3Direction);
-            float fDiffuseFactor = max(dot(N, -L), 0.f);
-            float4 f4Diffuse = fDiffuseFactor * gLights.m_pLights[i].m_xmf4Diffuse * objectColor;
-            f4TotalColor += f4Diffuse;
+//            // Diffuse 계산 (objectColor 사용)
+//            float3 L = normalize(gLights.m_pLights[i].m_xmf3Direction);
+//            float fDiffuseFactor = max(dot(N, -L), 0.f);
+//            float4 f4Diffuse = fDiffuseFactor * gLights.m_pLights[i].m_xmf4Diffuse * objectColor;
+//            f4TotalColor += f4Diffuse;
             
-            // Specular 계산 (기존과 동일)
-            float3 V = normalize(gf4Position.xyz - input.positionW);
-            V = reflect(V, input.normalW);
-            float Shigning = max(dot(-L, V), 0.f);
-            float SpecualNum = 64.f;
-            float4 f4Specular = gLights.m_pLights[i].m_xmf4Specular * material.m_xmf4Specular * pow(Shigning, SpecualNum);
-            f4TotalColor += f4Specular;
-        }
-    }
+//            // Specular 계산 (기존과 동일)
+//            float3 V = normalize(gf4Position.xyz - input.positionW);
+//            V = reflect(V, input.normalW);
+//            float Shigning = max(dot(-L, V), 0.f);
+//            float SpecualNum = 64.f;
+//            float4 f4Specular = gLights.m_pLights[i].m_xmf4Specular * material.m_xmf4Specular * pow(Shigning, SpecualNum);
+//            f4TotalColor += f4Specular;
+//        }
+//    }
     
-    f4TotalColor += gLights.m_xmf4GlobalAmbient;
-    return saturate(f4TotalColor); // saturate로 최종 색상 범위를 0~1로 제한
-}
+//    f4TotalColor += gLights.m_xmf4GlobalAmbient;
+//    return saturate(f4TotalColor); // saturate로 최종 색상 범위를 0~1로 제한
+//}
 
 // 내장 그래픽 용 PSSkinning (조명 계산 제거 버전)
 
 //float4 PSSkinning(PS_SKINNED_INPUT input) : SV_TARGET
 //{
-//    // 1. 텍스처에서 이 픽셀의 기본 색상(Albedo)을 가져옵니다.
 //    float4 objectColor = gAlbedoTexture.Sample(gSamplerState, input.texcoord);
 
-//    // [수정!] 복잡한 for 루프 조명 계산을 모두 제거하고, 
-//    //        가장 단순한 전역 앰비언트 조명만 적용합니다.
-//    float4 f4TotalColor = objectColor * gLights.m_xmf4GlobalAmbient;
-    
-//    // 최종 색상 범위를 0~1로 제한하여 반환합니다.
+//    if (length(input.normalW) < 0.0001f)
+//    {
+//        return objectColor * gLights.m_xmf4GlobalAmbient;
+//    }
+//    float4 f4TotalColor = gLights.m_xmf4GlobalAmbient;
+//    float3 N = normalize(input.normalW);
+//    // --- 뷰 벡터 계산 ---
+//    float3 viewVector = gf4Position.xyz - input.positionW;
+//    // 뷰 벡터의 길이가 너무 짧으면 Specular 계산을 생략
+//    if (length(viewVector) < 0.0001f)
+//    { // V가 0이면 Specular 계산이 불가능하므로, Ambient+Diffuse만 계산
+//        for (int i = 0; i < MAX_LIGHTS; i++)
+//        {
+//            if (gLights.m_pLights[i].m_bEnable)
+//            {
+//                f4TotalColor += gLights.m_pLights[i].m_xmf4Ambient * gMaterials.m_pReflections[0].m_xmf4Ambient * objectColor;
+//                float3 L = normalize(gLights.m_pLights[i].m_xmf3Direction);
+//                float fDiffuseFactor = max(dot(N, -L), 0.f);
+//                f4TotalColor += fDiffuseFactor * gLights.m_pLights[i].m_xmf4Diffuse * objectColor;
+//            }
+//        }
+//        return saturate(f4TotalColor);
+//    }
+//    // 길이가 유효할 때만 정규화
+//    float3 V = normalize(viewVector);
+//    // --- 전체 조명 계산 ---
+//    for (int i = 0; i < MAX_LIGHTS; i++)
+//    {
+//        if (gLights.m_pLights[i].m_bEnable)
+//        {
+//            MATERIAL material = gMaterials.m_pReflections[0];
+//            float3 L = normalize(gLights.m_pLights[i].m_xmf3Direction); // Ambient
+//            f4TotalColor += gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient * objectColor; // Diffuse
+//            float fDiffuseFactor = max(dot(N, -L), 0.f);
+//            f4TotalColor += fDiffuseFactor * gLights.m_pLights[i].m_xmf4Diffuse * objectColor;
+        
+//        // Specular
+//            float3 H = normalize(-L + V);
+//            float fSpecularFactor = pow(max(dot(N, H), 0.0f), 16.0f);
+//            f4TotalColor += fSpecularFactor * gLights.m_pLights[i].m_xmf4Specular * material.m_xmf4Specular;
+//        }
+//    }
 //    return saturate(f4TotalColor);
 //}
+
+float4 PSSkinning(PS_SKINNED_INPUT input) : SV_TARGET
+{
+    float4 objectColor = gAlbedoTexture.Sample(gSamplerState, input.texcoord);
+
+    if (length(input.normalW) < 0.0001f)
+    {
+        return objectColor * gLights.m_xmf4GlobalAmbient;
+    }
+    float4 f4TotalColor = gLights.m_xmf4GlobalAmbient;
+    float3 N = normalize(input.normalW);
+    float3 V = gf4Position.xyz - input.positionW;
+    
+    // --- 전체 조명 계산 ---
+    for (int i = 0; i < MAX_LIGHTS; i++)
+    {
+        if (gLights.m_pLights[i].m_bEnable)
+        {
+            MATERIAL material = gMaterials.m_pReflections[0];
+            float3 L = normalize(gLights.m_pLights[i].m_xmf3Direction); // Ambient
+            f4TotalColor += gLights.m_pLights[i].m_xmf4Ambient * material.m_xmf4Ambient * objectColor; // Diffuse
+            float fDiffuseFactor = max(dot(N, -L), 0.f);
+            f4TotalColor += fDiffuseFactor * gLights.m_pLights[i].m_xmf4Diffuse * objectColor;
+        
+        // Specular
+            float3 H = max(normalize(-L + V), 0.f);
+            float fSpecularFactor = pow(max(dot(N, H), 0.0f), 16.0f);
+            f4TotalColor += fSpecularFactor * gLights.m_pLights[i].m_xmf4Specular * material.m_xmf4Specular;
+        }
+    }
+    return saturate(f4TotalColor);
+}

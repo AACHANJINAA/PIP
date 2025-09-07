@@ -94,9 +94,9 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     Board->SetMesh(BoardMesh);
     Board->SetShader(_AllShaders[1]); // GLB
     Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
-    Board->SetScale(1.f, 1.f, 1.f);
+   // Board->SetScale(1.f, 1.f, 1.f);
     Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
-        0.f,
+        1.0f,
         ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
     Board->m_PosX = 0;
     Board->m_PosY = 0;
