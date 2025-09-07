@@ -41,6 +41,9 @@ using Microsoft::WRL::ComPtr;
 #pragma comment(lib, "winmm.lib")
 
 // 필요한 것들 추가
+#include "json.hpp"
+
+// 
 // C++ 표준 라이브러리 헤더
 #include <iostream>
 #include <vector>
@@ -326,30 +329,38 @@ namespace Matrix4x4
 	}
 }
 
+using json = nlohmann::json;
+
 namespace JsonHelper
 {
-	inline XMFLOAT3 ParseLocationString(const std::string& locStr)
+	/**
+	 * @brief Location 또는 Scale 같은 3D 벡터 JSON 객체를 파싱합니다.
+	 * @param data "X", "Y", "Z" 키를 가진 JSON 객체.
+	 * @return 파싱된 XMFLOAT3 값.
+	 */
+	inline XMFLOAT3 ParseVector3(const json& data)
 	{
-		XMFLOAT3 location;
-		// "X=... Y=... Z=..." 형태를 파싱, 단위는 미터
-		sscanf_s(locStr.c_str(), "X=%f Y=%f Z=%f", &location.x, &location.y, &location.z);
-		return location;
+		XMFLOAT3 vector;
+		// json 객체에서 직접 "X", "Y", "Z" 키의 값을 float으로 가져옵니다.
+		vector.x = data.at("X").get<float>();
+		vector.y = data.at("Y").get<float>();
+		vector.z = data.at("Z").get<float>();
+		return vector;
 	}
 
-	inline XMFLOAT3 ParseRotationString(const std::string& rotStr)
+	/**
+	 * @brief Rotation JSON 객체를 파싱합니다.
+	 * @param data "Pitch", "Yaw", "Roll" 키를 가진 JSON 객체.
+	 * @return 파싱된 XMFLOAT3 값.
+	 */
+	inline XMFLOAT3 ParseRotation(const json& data)
 	{
 		XMFLOAT3 rotation;
-		// "P=... Y=... R=..." 형태를 파싱 (Pitch, Yaw, Roll)
-		sscanf_s(rotStr.c_str(), "P=%f Y=%f R=%f", &rotation.x, &rotation.y, &rotation.z);
+		// JSON 파일의 키 이름("Pitch", "Yaw", "Roll")과 정확히 일치해야 합니다.
+		rotation.x = data.at("Pitch").get<float>();
+		rotation.y = data.at("Yaw").get<float>();
+		rotation.z = data.at("Roll").get<float>();
 		return rotation;
-	}
-
-	inline XMFLOAT3 ParseScaleString(const std::string& scaleStr)
-	{
-		XMFLOAT3 scale;
-		// "X=... Y=... Z=..." 형태를 파싱
-		sscanf_s(scaleStr.c_str(), "X=%f Y=%f Z=%f", &scale.x, &scale.y, &scale.z);
-		return scale;
 	}
 }
 

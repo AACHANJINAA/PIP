@@ -1,0 +1,5548 @@
+[
+	{
+		"Name": "SM_FLOOR",
+		"Mesh": "SM_FLOOR",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 3.2026554510091938e-14,
+				"Y": 50.00000078693035,
+				"Z": -1.3311837382119714e-10
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 50,
+				"Y": 500,
+				"Z": 50
+			}
+		},
+		"Textures": [
+			"/Game/PIP/mana_pool_0810063423_texture_texture_2.mana_pool_0810063423_texture_texture_2",
+			"/Game/PIP/mana_pool_0810063423_texture_texture_0.mana_pool_0810063423_texture_texture_0",
+			"/Game/PIP/mana_pool_0810063423_texture_texture_1.mana_pool_0810063423_texture_texture_1"
+		]
+	},
+	{
+		"Name": "SM_FLOOR2",
+		"Mesh": "SM_FLOOR",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 24.874999627955258,
+				"Z": 1.4153178869240123e-08
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 75,
+				"Y": 500,
+				"Z": 75
+			}
+		},
+		"Textures": [
+			"/Game/StarterContent/Textures/T_Brick_Clay_Old_N.T_Brick_Clay_Old_N",
+			"/Game/StarterContent/Textures/T_Perlin_Noise_M.T_Perlin_Noise_M",
+			"/Game/StarterContent/Textures/T_MacroVariation.T_MacroVariation",
+			"/Game/StarterContent/Textures/T_Brick_Clay_Old_D.T_Brick_Clay_Old_D"
+		]
+	},
+	{
+		"Name": "SM_FLOOR3",
+		"Mesh": "SM_FLOOR",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 100,
+				"Y": 500,
+				"Z": 100
+			}
+		},
+		"Textures": [
+			"/Game/StarterContent/Textures/T_Rock_Sandstone_N.T_Rock_Sandstone_N",
+			"/Game/StarterContent/Textures/T_Rock_Sandstone_D.T_Rock_Sandstone_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -8.7923585676608624,
+				"Y": 24.879999999999999,
+				"Z": 76.97231458736151
+			},
+			"Rotation":
+			{
+				"Pitch": 9.999999922536345,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket2",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -17.442773191354721,
+				"Y": 24.879999999999999,
+				"Z": 75.652841863061681
+			},
+			"Rotation":
+			{
+				"Pitch": 14.9999999612682,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket3",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -25.068410716537066,
+				"Y": 24.879999999999999,
+				"Z": 74.066143640558309
+			},
+			"Rotation":
+			{
+				"Pitch": 19.999999961268148,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket4",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.124113004370223,
+				"Y": 24.879999999999999,
+				"Z": 71.466161326282233
+			},
+			"Rotation":
+			{
+				"Pitch": 24.999999961268209,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket5",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -38.689522545086788,
+				"Y": 24.879999999999999,
+				"Z": 68.26344675214348
+			},
+			"Rotation":
+			{
+				"Pitch": 29.999999961268209,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket6",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -44.820910973677108,
+				"Y": 24.879999999999999,
+				"Z": 64.300203379796798
+			},
+			"Rotation":
+			{
+				"Pitch": 34.999999961268209,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket7",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -50.053647825782882,
+				"Y": 24.879999999999999,
+				"Z": 59.611226261331581
+			},
+			"Rotation":
+			{
+				"Pitch": 39.999999961268145,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket8",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -55.237277360255867,
+				"Y": 24.879999999999999,
+				"Z": 54.226309917744032
+			},
+			"Rotation":
+			{
+				"Pitch": 44.999999961268081,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket9",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.481637653449006,
+				"Y": 24.879999999999999,
+				"Z": 48.974480561054861
+			},
+			"Rotation":
+			{
+				"Pitch": 49.999999961267783,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket10",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -64.677913059186707,
+				"Y": 24.879999999999999,
+				"Z": 43.178035439313923
+			},
+			"Rotation":
+			{
+				"Pitch": 54.999999961267548,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket11",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -68.6257080549683,
+				"Y": 24.879999999999999,
+				"Z": 37.159279856407743
+			},
+			"Rotation":
+			{
+				"Pitch": 59.999999961267797,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket12",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.767878801947617,
+				"Y": 24.879999999999999,
+				"Z": 31.139087562849713
+			},
+			"Rotation":
+			{
+				"Pitch": 64.999999961268159,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket13",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.429081499270282,
+				"Y": 24.879999999999999,
+				"Z": 24.13126966011696
+			},
+			"Rotation":
+			{
+				"Pitch": 69.999999961268244,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket14",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.619434231319133,
+				"Y": 24.879999999999999,
+				"Z": -26.64858795828356
+			},
+			"Rotation":
+			{
+				"Pitch": 70.000000774636021,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket15",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -69.231723093684977,
+				"Y": 24.879999999999999,
+				"Z": -33.801431303196154
+			},
+			"Rotation":
+			{
+				"Pitch": 65.000000774636149,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket16",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -66.344952519919005,
+				"Y": 24.879999999999999,
+				"Z": -41.035691088048644
+			},
+			"Rotation":
+			{
+				"Pitch": 60.000000774636732,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket17",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -62.559260115933185,
+				"Y": 24.879999999999999,
+				"Z": -47.532719308605593
+			},
+			"Rotation":
+			{
+				"Pitch": 55.000000774636362,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket18",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -58.265130722662292,
+				"Y": 24.879999999999999,
+				"Z": -53.442240100854633
+			},
+			"Rotation":
+			{
+				"Pitch": 50.000000774636675,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket19",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -53.297393643775202,
+				"Y": 24.879999999999999,
+				"Z": -58.792269099076094
+			},
+			"Rotation":
+			{
+				"Pitch": 45.00000077463595,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket20",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -47.770997519679234,
+				"Y": 24.879999999999999,
+				"Z": -63.131276745700198
+			},
+			"Rotation":
+			{
+				"Pitch": 40.000000774635993,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket21",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -41.567762449891113,
+				"Y": 24.879999999999999,
+				"Z": -67.301074553992265
+			},
+			"Rotation":
+			{
+				"Pitch": 35.000000774635517,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket22",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.485046686271694,
+				"Y": 24.879999999999999,
+				"Z": -71.55379079386806
+			},
+			"Rotation":
+			{
+				"Pitch": 30.000000774635986,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket23",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -29.047987098777259,
+				"Y": 24.879999999999999,
+				"Z": -74.679773393433706
+			},
+			"Rotation":
+			{
+				"Pitch": 25.000000774635989,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket24",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -22.43514261115735,
+				"Y": 24.879999999999999,
+				"Z": -77.52244674740956
+			},
+			"Rotation":
+			{
+				"Pitch": 20.000000774636217,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket25",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -15.960778390243007,
+				"Y": 24.879999999999999,
+				"Z": -79.571485616264454
+			},
+			"Rotation":
+			{
+				"Pitch": 15.000000774636012,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket26",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -8.5973120293287035,
+				"Y": 24.879999999999999,
+				"Z": -80.975364058912348
+			},
+			"Rotation":
+			{
+				"Pitch": 10.000000774636758,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "SM_Cart_01",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -13.760309796345082,
+				"Y": 25.606714534312751,
+				"Z": 79.000074598339467
+			},
+			"Rotation":
+			{
+				"Pitch": -65.000000890817418,
+				"Yaw": -179.99999999997542,
+				"Roll": 175.00000003873274
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -12.740234286997129,
+				"Y": 25.999817740701729,
+				"Z": 77.997222451879253
+			},
+			"Rotation":
+			{
+				"Pitch": 0.083509495076164342,
+				"Yaw": -4.5305139765063691,
+				"Roll": 2.1108899634497451
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full2",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -12.73852620396953,
+				"Y": 26.042982135413727,
+				"Z": 79.168300984535733
+			},
+			"Rotation":
+			{
+				"Pitch": 0.81624027180040071,
+				"Yaw": -159.54593242947487,
+				"Roll": -1.9485471041103966
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full3",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -13.842534541727145,
+				"Y": 26.099631676971637,
+				"Z": 78.332880701699565
+			},
+			"Rotation":
+			{
+				"Pitch": -24.898373485479375,
+				"Yaw": -5.5138519963020736,
+				"Roll": -132.67270040579382
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full4",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -13.784615716338877,
+				"Y": 26.14180605226181,
+				"Z": 79.597727496407202
+			},
+			"Rotation":
+			{
+				"Pitch": 0.083509495075789961,
+				"Yaw": -4.5305139765055387,
+				"Roll": -27.889109804156579
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full5",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -14.869714057503014,
+				"Y": 26.20249959915256,
+				"Z": 78.912232584442293
+			},
+			"Rotation":
+			{
+				"Pitch": -0.81624022438993027,
+				"Yaw": 20.454066176844954,
+				"Roll": 1.9485471239642764
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full6",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -16.052077837363679,
+				"Y": 25.106042739690704,
+				"Z": 80.299227464103041
+			},
+			"Rotation":
+			{
+				"Pitch": -0.81624014012253732,
+				"Yaw": 20.454066389401397,
+				"Roll": 1.9485474536128198
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Cart_2",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -59.764037359434823,
+				"Y": 25.568004353462886,
+				"Z": 54.47819342773488
+			},
+			"Rotation":
+			{
+				"Pitch": -5.0000014647817901,
+				"Yaw": -180,
+				"Roll": 175
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full7",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.091967207374502,
+				"Y": 25.931319602343649,
+				"Z": 53.109890343888502
+			},
+			"Rotation":
+			{
+				"Pitch": -59.608614996580677,
+				"Yaw": -8.9826967692571724,
+				"Roll": 9.8821184557783379
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full8",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -59.144598629770208,
+				"Y": 25.971606411734129,
+				"Z": 53.65501310800439
+			},
+			"Rotation":
+			{
+				"Pitch": 54.931452739478985,
+				"Yaw": -142.54356054551465,
+				"Roll": 29.83648784550293
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full9",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.335064671386291,
+				"Y": 26.024479296326117,
+				"Z": 54.157509590660737
+			},
+			"Rotation":
+			{
+				"Pitch": -82.93342466165663,
+				"Yaw": -45.109216645863931,
+				"Roll": -90.109226486479272
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full10",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -59.285672435675323,
+				"Y": 26.063842023675178,
+				"Z": 54.700956221430459
+			},
+			"Rotation":
+			{
+				"Pitch": -59.608614742756636,
+				"Yaw": -8.9826966338838599,
+				"Roll": -20.117881809553154
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full11",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.346130611848302,
+				"Y": 26.120489322879745,
+				"Z": 55.258133119863899
+			},
+			"Rotation":
+			{
+				"Pitch": -54.931453237005407,
+				"Yaw": 37.456437944713336,
+				"Roll": -29.836486609807004
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full12",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -59.77680578706746,
+				"Y": 25.097129598392137,
+				"Z": 56.86109067171877
+			},
+			"Rotation":
+			{
+				"Pitch": -54.931453237005407,
+				"Yaw": 37.456437944713336,
+				"Roll": -29.836486609807004
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sack_01",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -21.455165035377668,
+				"Y": 24.864542465209961,
+				"Z": 77.376923961808515
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sack_2",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -22.342142687610881,
+				"Y": 24.864542465209961,
+				"Z": 76.734295972385212
+			},
+			"Rotation":
+			{
+				"Pitch": -64.99999949648641,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sack_3",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -22.495624571832643,
+				"Y": 24.864542465209961,
+				"Z": 77.547434675665968
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999998714820507,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_01",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.242857200077609,
+				"Y": 25.539999980926513,
+				"Z": 71.970000419616696
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_2",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.307142914363311,
+				"Y": 25.539999980926513,
+				"Z": 71.870000419616701
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Crate_01",
+		"Mesh": "SM_Crate_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -48.539999999999999,
+				"Y": 25.4049999891052,
+				"Z": 64.320000000000007
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Crate_2",
+		"Mesh": "SM_Crate_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -48.539999999999999,
+				"Y": 25.404999990000011,
+				"Z": 63.300000000000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Crate_3",
+		"Mesh": "SM_Crate_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -49.560000000000002,
+				"Y": 25.404999990000011,
+				"Z": 63.520000000000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Cart_3",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.158801601283983,
+				"Y": 25.568004350000002,
+				"Z": -31.353274276654851
+			},
+			"Rotation":
+			{
+				"Pitch": -25.000000161955555,
+				"Yaw": -5.2640307153079164e-15,
+				"Roll": -4.9999999999999982
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full13",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.190654434112275,
+				"Y": 25.931319600000002,
+				"Z": -30.332254004906058
+			},
+			"Rotation":
+			{
+				"Pitch": 85.468718083044038,
+				"Yaw": -91.057084831514217,
+				"Roll": -88.942891180969696
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full14",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.283661076074821,
+				"Y": 25.97160641,
+				"Z": -30.330659837575183
+			},
+			"Rotation":
+			{
+				"Pitch": -69.530349877037679,
+				"Yaw": -92.334611019892961,
+				"Roll": -89.761201033395665
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full15",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.503935524885378,
+				"Y": 26.024479299999999,
+				"Z": -31.361067606193014
+			},
+			"Rotation":
+			{
+				"Pitch": 64.536453609378967,
+				"Yaw": -11.695922087316385,
+				"Roll": -145.58677931662618
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full16",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.684459167406814,
+				"Y": 26.063842020000003,
+				"Z": -31.307010030492151
+			},
+			"Rotation":
+			{
+				"Pitch": 85.468718111778273,
+				"Yaw": -91.05708813928679,
+				"Roll": -118.94289462696345
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full17",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.044663943613429,
+				"Y": 26.120489320000001,
+				"Z": -32.319768491244027
+			},
+			"Rotation":
+			{
+				"Pitch": 69.530350877028695,
+				"Yaw": 87.665388968189632,
+				"Roll": 89.761201022230551
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full18",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.339192520497875,
+				"Y": 25.097129599999999,
+				"Z": -33.423307988226178
+			},
+			"Rotation":
+			{
+				"Pitch": 69.530350877028695,
+				"Yaw": 87.665388968189632,
+				"Roll": 89.761201022230551
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Cart_4",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -27.084543989908152,
+				"Y": 25.568004350000002,
+				"Z": -78.677157962239178
+			},
+			"Rotation":
+			{
+				"Pitch": -64.999999690145671,
+				"Yaw": -8.4665626147143128e-15,
+				"Roll": -4.9999999999999929
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full19",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -25.686601046714383,
+				"Y": 25.931319600000002,
+				"Z": -78.517324040542377
+			},
+			"Rotation":
+			{
+				"Pitch": 49.870256819358303,
+				"Yaw": -7.0396448634060267,
+				"Roll": -3.2761722406702098
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full20",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -26.522868018555293,
+				"Y": 25.97160641,
+				"Z": -77.813531720252982
+			},
+			"Rotation":
+			{
+				"Pitch": -45.114433360415894,
+				"Yaw": -150.32064233118436,
+				"Roll": -24.241483763014507
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full21",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -26.587896919681807,
+				"Y": 26.024479299999999,
+				"Z": -79.104067796235341
+			},
+			"Rotation":
+			{
+				"Pitch": 24.898373907066055,
+				"Yaw": -5.5138523260598227,
+				"Roll": -137.32729943482957
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full22",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -27.457482967756537,
+				"Y": 26.063842020000003,
+				"Z": -78.303831321711385
+			},
+			"Rotation":
+			{
+				"Pitch": 49.870257082108623,
+				"Yaw": -7.0396448495868293,
+				"Roll": -33.276172378663937
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full23",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -27.61835996393491,
+				"Y": 26.120489320000001,
+				"Z": -79.490901760536687
+			},
+			"Rotation":
+			{
+				"Pitch": 45.114433770999277,
+				"Yaw": 29.679356376720076,
+				"Roll": 24.241482847542063
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full24",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -29.319367906358938,
+				"Y": 25.097129599999999,
+				"Z": -79.504155149062925
+			},
+			"Rotation":
+			{
+				"Pitch": 45.114433770999277,
+				"Yaw": 29.679356376720076,
+				"Roll": 24.241482847542063
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Box_3",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.26039214,
+				"Y": 24.709537180000002,
+				"Z": 74.263127670000003
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Box_4",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -33.991331219999999,
+				"Y": 24.709537180000002,
+				"Z": 73.799323950000002
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_17",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -31.606350470000002,
+				"Y": 24.849537180000002,
+				"Z": 73.496572640000011
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_18",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.242218469999997,
+				"Y": 24.849537180000002,
+				"Z": 73.420505980000002
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_19",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.570388969999996,
+				"Y": 24.849537180000002,
+				"Z": 74.002914290000007
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_20",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -31.9176134,
+				"Y": 24.849537180000002,
+				"Z": 73.93324097
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_21",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -31.851862609999998,
+				"Y": 24.849537180000002,
+				"Z": 74.56684817
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_22",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.329533009999999,
+				"Y": 24.849537180000002,
+				"Z": 74.321094110000004
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_23",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.733000750000002,
+				"Y": 24.849537180000002,
+				"Z": 74.711211919999997
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_24",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.165675700000001,
+				"Y": 24.849537180000002,
+				"Z": 74.92663687000001
+			},
+			"Rotation":
+			{
+				"Pitch": 14.999999999999996,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_25",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -33.334400529999996,
+				"Y": 24.80661392,
+				"Z": 73.070368729999998
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_26",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -34.002971960000004,
+				"Y": 24.80661392,
+				"Z": 72.796083010000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_27",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -33.660114819999997,
+				"Y": 24.80661392,
+				"Z": 73.387511580000009
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_28",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -34.165829109999997,
+				"Y": 24.80661392,
+				"Z": 73.901797299999998
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_29",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -34.200114820000003,
+				"Y": 24.80661392,
+				"Z": 73.370368729999996
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_30",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -34.418307770000006,
+				"Y": 24.80661392,
+				"Z": 74.277826349999998
+			},
+			"Rotation":
+			{
+				"Pitch": -45.000001000000005,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_31",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -33.697058849999998,
+				"Y": 24.80661392,
+				"Z": 74.271765459999997
+			},
+			"Rotation":
+			{
+				"Pitch": -45.000001000000005,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_32",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -34.048591950000002,
+				"Y": 24.80661392,
+				"Z": 74.67178586
+			},
+			"Rotation":
+			{
+				"Pitch": -45.000001000000005,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Box_01",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.942043101821845,
+				"Y": 24.709537180000002,
+				"Z": -73.565435518565849
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Box_2",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.409963571868438,
+				"Y": 24.709537180000002,
+				"Z": -72.537586559343112
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_03",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.108848427767981,
+				"Y": 24.849537180000002,
+				"Z": -74.559192583119682
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999612681833,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_4",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.575846947688341,
+				"Y": 24.849537180000002,
+				"Z": -74.120984148034566
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_5",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.340640237911373,
+				"Y": 24.849537180000002,
+				"Z": -73.495226111487497
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_6",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.974417041862736,
+				"Y": 24.849537180000002,
+				"Z": -74.040066351360224
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_7",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.44678197886882,
+				"Y": 24.849537180000002,
+				"Z": -73.683159513968633
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_8",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.942081128351234,
+				"Y": 24.849537180000002,
+				"Z": -73.475210429900798
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_9",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.902577619588214,
+				"Y": 24.849537180000002,
+				"Z": -72.91537331457593
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_10",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.37288301692314,
+				"Y": 24.849537180000002,
+				"Z": -73.211497020731798
+			},
+			"Rotation":
+			{
+				"Pitch": -34.99999961268179,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_02",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.546108746338462,
+				"Y": 24.80661392,
+				"Z": -73.509388049204944
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999612681833,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_3",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -38.185973233906424,
+				"Y": 24.80661392,
+				"Z": -73.173540091406224
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999612681833,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_11",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.512528344460414,
+				"Y": 24.80661392,
+				"Z": -73.056020932371325
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999612681833,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_12",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.443629515839397,
+				"Y": 24.80661392,
+				"Z": -72.338044821124711
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999612681833,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_13",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.872765844116593,
+				"Y": 24.80661392,
+				"Z": -72.653376149532164
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999612681833,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_14",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -37.317864711876609,
+				"Y": 24.80661392,
+				"Z": -71.90292813070306
+			},
+			"Rotation":
+			{
+				"Pitch": 4.999998612681769,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_15",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.858897746183111,
+				"Y": 24.80661392,
+				"Z": -72.45933271676509
+			},
+			"Rotation":
+			{
+				"Pitch": 4.999998612681769,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Bottle_16",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.778425469820718,
+				"Y": 24.80661392,
+				"Z": -71.932914581107866
+			},
+			"Rotation":
+			{
+				"Pitch": 4.999998612681769,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sack_4",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -56.771592920000003,
+				"Y": 24.864542470000004,
+				"Z": -57.370736479999998
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sack_5",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -57.658570570000002,
+				"Y": 24.864542470000004,
+				"Z": -58.013364469999999
+			},
+			"Rotation":
+			{
+				"Pitch": -64.999998999999988,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sack_6",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -57.812052450000003,
+				"Y": 24.864542470000004,
+				"Z": -57.200225759999995
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999998999999981,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_3",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -45.172857200000003,
+				"Y": 25.539999979999997,
+				"Z": -66.519999580000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_4",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -46.237142910000003,
+				"Y": 25.539999979999997,
+				"Z": -66.619999579999998
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Mace_01",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.200000000000003,
+				"Y": 24.870000000000001,
+				"Z": 91.519999999999996
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sword_01",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -14.25,
+				"Y": 24.870000000000001,
+				"Z": 96.980000000000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket27",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -40.91228299555042,
+				"Y": 24.879999999999999,
+				"Z": 88.24132263745382
+			},
+			"Rotation":
+			{
+				"Pitch": -25.000001316881676,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket28",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -29.411207749341433,
+				"Y": 24.879999999999999,
+				"Z": 92.483653338527319
+			},
+			"Rotation":
+			{
+				"Pitch": -20.000001394345436,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket29",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -20.204633660235825,
+				"Y": 24.879999999999999,
+				"Z": 95.315388359308798
+			},
+			"Rotation":
+			{
+				"Pitch": -10.000001510540931,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket30",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.286176446713114,
+				"Y": 24.879999999999999,
+				"Z": 64.862462661815826
+			},
+			"Rotation":
+			{
+				"Pitch": -44.99999848945896,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket31",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -65.185815294820628,
+				"Y": 24.879999999999999,
+				"Z": 72.149407337492192
+			},
+			"Rotation":
+			{
+				"Pitch": -39.999998566922478,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 2.75,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket32",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -55.916806256796008,
+				"Y": 24.879999999999999,
+				"Z": 79.324487327065981
+			},
+			"Rotation":
+			{
+				"Pitch": -34.999998644386075,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "SM_Table_01",
+		"Mesh": "SM_Table_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -49.021851501435798,
+				"Y": 24.879999999999999,
+				"Z": 83.549307777289812
+			},
+			"Rotation":
+			{
+				"Pitch": -59.999999535218315,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1,
+				"Z": 2.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sword_2",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -50.57,
+				"Y": 26.469999999999999,
+				"Z": 81.960000000000008
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sword_3",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -46.490000000000002,
+				"Y": 26.560000000000002,
+				"Z": 84.730000000000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket33",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -8.6616910157684064,
+				"Y": 24.879999999999999,
+				"Z": 96.544560339598519
+			},
+			"Rotation":
+			{
+				"Pitch": -4.9999992323909401,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket34",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -91.129842510246988,
+				"Y": 24.879999999999999,
+				"Z": 33.964630833665197
+			},
+			"Rotation":
+			{
+				"Pitch": -65.000001045758694,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket35",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -87.718851798945039,
+				"Y": 24.879999999999999,
+				"Z": 42.22344233915215
+			},
+			"Rotation":
+			{
+				"Pitch": -65.000001084490606,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket36",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -83.80927942311564,
+				"Y": 24.879999999999999,
+				"Z": 49.199935946452626
+			},
+			"Rotation":
+			{
+				"Pitch": -60.000001161954415,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket37",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -76.787965046354174,
+				"Y": 24.879999999999999,
+				"Z": 59.658371413937743
+			},
+			"Rotation":
+			{
+				"Pitch": -55.000001239418033,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "SM_Mace_2",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -80.780000000000001,
+				"Y": 24.870000000000001,
+				"Z": 54.5
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Mace_3",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -76.798885282574503,
+				"Y": 24.870000000000001,
+				"Z": -57.199303185795301
+			},
+			"Rotation":
+			{
+				"Pitch": 75.00000081336772,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sword_4",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -87.495098754589677,
+				"Y": 24.870000000000001,
+				"Z": -38.376308807613135
+			},
+			"Rotation":
+			{
+				"Pitch": 75.00000081336772,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket38",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.15347864562942,
+				"Y": 24.879999999999999,
+				"Z": -61.868360850944804
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999813369094,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket39",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -79.227952462038772,
+				"Y": 24.879999999999999,
+				"Z": -51.857171016801104
+			},
+			"Rotation":
+			{
+				"Pitch": -54.999999813369108,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket40",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -84.346034934026392,
+				"Y": 24.879999999999999,
+				"Z": -43.697210140173922
+			},
+			"Rotation":
+			{
+				"Pitch": -64.999998813369288,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket41",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -41.451073546490726,
+				"Y": 24.879999999999999,
+				"Z": -86.122321461632069
+			},
+			"Rotation":
+			{
+				"Pitch": -30.000002813369083,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket42",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -50.327430161780107,
+				"Y": 24.879999999999999,
+				"Z": -81.149899052984068
+			},
+			"Rotation":
+			{
+				"Pitch": -35.000001813369074,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.75,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket43",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -59.657021094529519,
+				"Y": 24.879999999999999,
+				"Z": -74.053770933461536
+			},
+			"Rotation":
+			{
+				"Pitch": -40.000001813369124,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "SM_Table_2",
+		"Mesh": "SM_Table_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -65.522429727581951,
+				"Y": 24.879999999999999,
+				"Z": -68.487219887751252
+			},
+			"Rotation":
+			{
+				"Pitch": 44.999999186631563,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1,
+				"Z": 2.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sword_5",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -63.586586011289278,
+				"Y": 26.469999999999999,
+				"Z": -69.571273439800606
+			},
+			"Rotation":
+			{
+				"Pitch": 75.00000081336772,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "SM_Sword_6",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -67.318182162591356,
+				"Y": 26.560000000000002,
+				"Z": -66.34722471752805
+			},
+			"Rotation":
+			{
+				"Pitch": 75.00000081336772,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket44",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -89.691189886319393,
+				"Y": 24.879999999999999,
+				"Z": -36.228813651235512
+			},
+			"Rotation":
+			{
+				"Pitch": -70.000001813369309,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket45",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -6.7289604394066433,
+				"Y": 24.879999999999999,
+				"Z": -96.326958826801146
+			},
+			"Rotation":
+			{
+				"Pitch": -9.9999998133691577,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket46",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -15.589189096928928,
+				"Y": 24.879999999999999,
+				"Z": -95.169732263921091
+			},
+			"Rotation":
+			{
+				"Pitch": -9.9999998133691577,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket47",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -23.339836185967197,
+				"Y": 24.879999999999999,
+				"Z": -93.199024526581042
+			},
+			"Rotation":
+			{
+				"Pitch": -14.999999813369108,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket48",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.259158864263043,
+				"Y": 24.879999999999999,
+				"Z": -89.12379758271473
+			},
+			"Rotation":
+			{
+				"Pitch": -19.999999813369143,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "SM_Mace_4",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -29.243340095551908,
+				"Y": 24.870000000000001,
+				"Z": -91.644722648548566
+			},
+			"Rotation":
+			{
+				"Pitch": 75.00000081336772,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket49",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -96.986134875023509,
+				"Y": 24.879999999999999,
+				"Z": 6.553132857390132
+			},
+			"Rotation":
+			{
+				"Pitch": -80.000000883804148,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket50",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -95.828908527765364,
+				"Y": 24.879999999999999,
+				"Z": 15.41336154307462
+			},
+			"Rotation":
+			{
+				"Pitch": -80.000000883804148,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket51",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -93.858200979044454,
+				"Y": 24.879999999999999,
+				"Z": 23.164008680071888
+			},
+			"Rotation":
+			{
+				"Pitch": -75.000000883804049,
+				"Yaw": 180,
+				"Roll": 180
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "SM_Mace_5",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -92.303899244679144,
+				"Y": 24.870000000000001,
+				"Z": 29.067512627482003
+			},
+			"Rotation":
+			{
+				"Pitch": 14.99999988380455,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket52",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -92.676222820824776,
+				"Y": 24.879999999999999,
+				"Z": -25.870410321616816
+			},
+			"Rotation":
+			{
+				"Pitch": -84.99999911619571,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket53",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -93.851623892917829,
+				"Y": 24.879999999999999,
+				"Z": -17.012574389135843
+			},
+			"Rotation":
+			{
+				"Pitch": -84.99999911619571,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 1.5,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/LowPolyMarket/Textures/T_PropColorMap.T_PropColorMap",
+			"/Engine/VREditor/BasicMeshes/T_CleanFloorGrunge_01_D.T_CleanFloorGrunge_01_D"
+		]
+	},
+	{
+		"Name": "Castle_Wall",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.57000000000000006,
+				"Y": 24.879999999999999,
+				"Z": 84.659999999999997
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 2,
+				"Z": 2.5
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall2",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.65000000000000002,
+				"Y": 24.879999999999999,
+				"Z": -84.680000000000007
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 2,
+				"Z": 2.5
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Door",
+		"Mesh": "Combined_DEC539CE",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -75.242589344444397,
+				"Y": 26.050000000000001,
+				"Z": -2.4325248763451683
+			},
+			"Rotation":
+			{
+				"Pitch": 2.0000000000000004,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 5.5,
+				"Y": 7.25,
+				"Z": 5.5
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_8.tower_and_castle_walls_texture_8",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_6.tower_and_castle_walls_texture_6",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_7.tower_and_castle_walls_texture_7",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_11.tower_and_castle_walls_texture_11",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_9.tower_and_castle_walls_texture_9",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_10.tower_and_castle_walls_texture_10"
+		]
+	},
+	{
+		"Name": "Castle_Wall3",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.51000000000000001,
+				"Y": 45.664986809326145,
+				"Z": 59.550000000000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2.5
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall4",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -6.7311202308357814,
+				"Y": 47.579999999999998,
+				"Z": 73.744485257297754
+			},
+			"Rotation":
+			{
+				"Pitch": -84.999999341559203,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall5",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -29.686431604906808,
+				"Y": 47.579999999999998,
+				"Z": 67.606261975632052
+			},
+			"Rotation":
+			{
+				"Pitch": -64.999999154927394,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall6",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -18.586044951456465,
+				"Y": 47.579999999999998,
+				"Z": 71.702674627206278
+			},
+			"Rotation":
+			{
+				"Pitch": -74.999999077463784,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall7",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -44.315895578691872,
+				"Y": 47.579999999999998,
+				"Z": 57.625839884095065
+			},
+			"Rotation":
+			{
+				"Pitch": -49.999999116195639,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall8",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.555301284443786,
+				"Y": 47.579999999999998,
+				"Z": 41.005456552942164
+			},
+			"Rotation":
+			{
+				"Pitch": -34.999999154927437,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall9",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.397889773401047,
+				"Y": 47.579999999999998,
+				"Z": 19.714698923061999
+			},
+			"Rotation":
+			{
+				"Pitch": -19.999999116195571,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall10",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -76.012703154087205,
+				"Y": 45.460000000000001,
+				"Z": -16.916325974617312
+			},
+			"Rotation":
+			{
+				"Pitch": 15.000000225363006,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall11",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -63.766148126224955,
+				"Y": 47.670000000000002,
+				"Z": -36.877010015912795
+			},
+			"Rotation":
+			{
+				"Pitch": 30.000000264095046,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall12",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -68.9071953665688,
+				"Y": 47.670000000000002,
+				"Z": -26.820819976471036
+			},
+			"Rotation":
+			{
+				"Pitch": 25.000000225363245,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall13",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -52.814632798029677,
+				"Y": 47.670000000000002,
+				"Z": -50.439355611926644
+			},
+			"Rotation":
+			{
+				"Pitch": 45.000000225363351,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall14",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -34.278155138308342,
+				"Y": 47.670000000000002,
+				"Z": -64.088689571000614
+			},
+			"Rotation":
+			{
+				"Pitch": 60.000000264095192,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall15",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -12.12181380533284,
+				"Y": 47.670000000000002,
+				"Z": -71.903859521944582
+			},
+			"Rotation":
+			{
+				"Pitch": 80.000000225363664,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Wall16",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.51000000000000001,
+				"Y": 45.664986810000002,
+				"Z": -58.950000000000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 2.5
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_5.tower_and_castle_walls_texture_5",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_3.tower_and_castle_walls_texture_3",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_4.tower_and_castle_walls_texture_4"
+		]
+	},
+	{
+		"Name": "Castle_Tower",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -2.79,
+				"Y": 49.75,
+				"Z": 70.710000000000008
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower2",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -21.280946166321073,
+				"Y": 49.75,
+				"Z": 67.364380662004649
+			},
+			"Rotation":
+			{
+				"Pitch": 19.999999845072693,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower4",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -39.914372908529231,
+				"Y": 49.75,
+				"Z": 58.003773724160517
+			},
+			"Rotation":
+			{
+				"Pitch": 34.999999883804605,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower5",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -53.370893628989108,
+				"Y": 49.75,
+				"Z": 46.533917002862644
+			},
+			"Rotation":
+			{
+				"Pitch": 44.999999922536404,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower6",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -63.468385755526455,
+				"Y": 49.75,
+				"Z": 31.026964273236
+			},
+			"Rotation":
+			{
+				"Pitch": 59.999999883803937,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower3",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -62.294244454281227,
+				"Y": 49.75,
+				"Z": -32.72126283729817
+			},
+			"Rotation":
+			{
+				"Pitch": 65.000000890831558,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower7",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -51.447472542825956,
+				"Y": 49.75,
+				"Z": -48.065831848217996
+			},
+			"Rotation":
+			{
+				"Pitch": 45.00000089083192,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower8",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -35.0890555647048,
+				"Y": 49.75,
+				"Z": -60.99748867671596
+			},
+			"Rotation":
+			{
+				"Pitch": 30.000000890831974,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower9",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -19.006863935914634,
+				"Y": 49.75,
+				"Z": -68.345867782341074
+			},
+			"Rotation":
+			{
+				"Pitch": 20.000000890831572,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "Castle_Tower10",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.68540743236995838,
+				"Y": 49.75,
+				"Z": -70.943782691375787
+			},
+			"Rotation":
+			{
+				"Pitch": 5.0000008908319948,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_2.tower_and_castle_walls_texture_2",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_0.tower_and_castle_walls_texture_0",
+			"/Game/Fab/Tower_and_Castle_Walls/tower_and_castle_walls_texture_1.tower_and_castle_walls_texture_1"
+		]
+	},
+	{
+		"Name": "old_cannon",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -10.321467708500878,
+				"Y": 49.660000000000004,
+				"Z": 66.366879652483547
+			},
+			"Rotation":
+			{
+				"Pitch": 9.999999922536345,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon2",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -28.478889427266438,
+				"Y": 49.660000000000004,
+				"Z": 59.872196427201601
+			},
+			"Rotation":
+			{
+				"Pitch": 24.999999883804605,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon3",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -43.99737504155015,
+				"Y": 49.660000000000004,
+				"Z": 49.42285453824411
+			},
+			"Rotation":
+			{
+				"Pitch": 39.999999883804612,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon4",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -55.09671528913178,
+				"Y": 49.660000000000004,
+				"Z": 36.440300769361208
+			},
+			"Rotation":
+			{
+				"Pitch": 54.999999883803675,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon5",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -56.180423873311888,
+				"Y": 48.730000000000004,
+				"Z": 20.134253264228342
+			},
+			"Rotation":
+			{
+				"Pitch": 69.99999988380425,
+				"Yaw": -0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 2,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon6",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -55.350364556937755,
+				"Y": 48.730000000000004,
+				"Z": -23.152751952145703
+			},
+			"Rotation":
+			{
+				"Pitch": 65.000000348586155,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 2,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon7",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -55.948839422416434,
+				"Y": 48.730000000000004,
+				"Z": -0.63875283352328627
+			},
+			"Rotation":
+			{
+				"Pitch": 88.000000000000242,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 3.25,
+				"Y": 3.25,
+				"Z": 3.25
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon8",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -54.347749316359398,
+				"Y": 49.660000000000004,
+				"Z": -38.141067024242538
+			},
+			"Rotation":
+			{
+				"Pitch": 55.000000890832311,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon9",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -41.298392778124864,
+				"Y": 49.660000000000004,
+				"Z": -51.123463082895377
+			},
+			"Rotation":
+			{
+				"Pitch": 40.000000890831679,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon10",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -25.269677740490476,
+				"Y": 49.660000000000004,
+				"Z": -60.771905226795901
+			},
+			"Rotation":
+			{
+				"Pitch": 25.0000008908317,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "old_cannon11",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -8.8127044223878723,
+				"Y": 49.660000000000004,
+				"Z": -65.344659930852174
+			},
+			"Rotation":
+			{
+				"Pitch": 10.000000890831808,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Old_Cannon/old_cannon_texture_2.old_cannon_texture_2",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_0.old_cannon_texture_0",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_1.old_cannon_texture_1",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_3.old_cannon_texture_3",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_4.old_cannon_texture_4",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_7.old_cannon_texture_7",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_5.old_cannon_texture_5",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_6.old_cannon_texture_6",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_10.old_cannon_texture_10",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_8.old_cannon_texture_8",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_9.old_cannon_texture_9",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_13.old_cannon_texture_13",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_11.old_cannon_texture_11",
+			"/Game/Fab/Old_Cannon/old_cannon_texture_12.old_cannon_texture_12"
+		]
+	},
+	{
+		"Name": "cc0_switch",
+		"Mesh": "cc0_switch",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.9800000146015494,
+				"Y": 26.530000000000001,
+				"Z": 87.870000000000005
+			},
+			"Rotation":
+			{
+				"Pitch": 1.3943452560397087e-06,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 10.75,
+				"Y": 10.75,
+				"Z": 10.75
+			}
+		},
+		"Textures": [
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_2.cc0_switch_texture_2",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_0.cc0_switch_texture_0",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_1.cc0_switch_texture_1",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_5.cc0_switch_texture_5",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_3.cc0_switch_texture_3",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_4.cc0_switch_texture_4"
+		]
+	},
+	{
+		"Name": "cc0_switch2",
+		"Mesh": "cc0_switch",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.98000309788511519,
+				"Y": 26.530000000000001,
+				"Z": -88.409999999999997
+			},
+			"Rotation":
+			{
+				"Pitch": 1.0000000109707125e-06,
+				"Yaw": -180,
+				"Roll": -180
+			},
+			"Scale":
+			{
+				"X": 10.75,
+				"Y": 10.75,
+				"Z": 10.75
+			}
+		},
+		"Textures": [
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_2.cc0_switch_texture_2",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_0.cc0_switch_texture_0",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_1.cc0_switch_texture_1",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_5.cc0_switch_texture_5",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_3.cc0_switch_texture_3",
+			"/Game/Fab/CC0_-_Switch/cc0_switch_texture_4.cc0_switch_texture_4"
+		]
+	},
+	{
+		"Name": "medieval_church",
+		"Mesh": "medieval_church",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -14.81,
+				"Y": 74.870000000000005,
+				"Z": -0.44
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.75,
+				"Y": 2.75,
+				"Z": 2.75
+			}
+		},
+		"Textures": [
+			"/Game/Fab/Medieval_Church/medieval_church_texture_6.medieval_church_texture_6",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_9.medieval_church_texture_9",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_10.medieval_church_texture_10",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_11.medieval_church_texture_11",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_7.medieval_church_texture_7",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_4.medieval_church_texture_4",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_8.medieval_church_texture_8",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_5.medieval_church_texture_5",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_3.medieval_church_texture_3",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_1.medieval_church_texture_1",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_2.medieval_church_texture_2",
+			"/Game/Fab/Medieval_Church/medieval_church_texture_0.medieval_church_texture_0"
+		]
+	},
+	{
+		"Name": "mana_pool_0810063423_texture",
+		"Mesh": "mana_pool_0810063423_texture",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -14.540000000000001,
+				"Y": 76.489999999999995,
+				"Z": -0.19
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 5,
+				"Y": 5,
+				"Z": 5
+			}
+		},
+		"Textures": [
+			"/Game/PIP/mana_pool_0810063423_texture_texture_2.mana_pool_0810063423_texture_texture_2",
+			"/Game/PIP/mana_pool_0810063423_texture_texture_0.mana_pool_0810063423_texture_texture_0",
+			"/Game/PIP/mana_pool_0810063423_texture_texture_1.mana_pool_0810063423_texture_texture_1"
+		]
+	}
+]
