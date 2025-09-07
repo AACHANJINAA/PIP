@@ -87,7 +87,7 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
             Board->SetShader(_AllShaders[1]); // GLB
             Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
             Board->SetScale(scale.x, scale.y, scale.z);
-            Board->Rotate(rotation.x, rotation.y, rotation.z);
+            Board->Rotate(rotation.z, rotation.x + 90.f, rotation.y);
             Board->SetPosition(location.x, location.y, location.z);
             ObjectManager::Instance()->PushFloorObject(Board);
 
