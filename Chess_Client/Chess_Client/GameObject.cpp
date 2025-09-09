@@ -192,7 +192,7 @@ void GameObject::SetScale(float x, float y, float z)
 
 XMFLOAT3 GameObject::GetPosition()
 {
-	return(XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43));
+	return m_xmf3Position;
 }
 //게임 객체의 로컬 z-축 벡터를 반환한다. 
 XMFLOAT3 GameObject::GetLook()
@@ -202,7 +202,7 @@ XMFLOAT3 GameObject::GetLook()
 
 XMFLOAT3 GameObject::GetSize()
 {
-	return(XMFLOAT3(m_xmf4x4World._11, m_xmf4x4World._22, m_xmf4x4World._33));
+	return _scale;
 }
 
 //게임 객체의 로컬 y-축 벡터를 반환한다. 
@@ -214,29 +214,6 @@ XMFLOAT3 GameObject::GetUp()
 XMFLOAT3 GameObject::GetRight()
 {
 	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._11, m_xmf4x4World._12, m_xmf4x4World._13)));
-}
-//게임 객체를 로컬 x-축 방향으로 이동한다. 
-void GameObject::MoveStrafe(float fDistance)
-{
-	XMFLOAT3 xmf3Position = GetPosition();
-	XMFLOAT3 xmf3Right = GetRight();
-	xmf3Position = Vector3::Add(xmf3Position, xmf3Right, fDistance);
-	GameObject::SetPosition(xmf3Position);
-}
-//게임 객체를 로컬 y-축 방향으로 이동한다. 
-void GameObject::MoveUp(float fDistance)
-{
-	XMFLOAT3 xmf3Position = GetPosition();
-	XMFLOAT3 xmf3Up = GetUp();
-	xmf3Position = Vector3::Add(xmf3Position, xmf3Up, fDistance); GameObject::SetPosition(xmf3Position);
-}
-//게임 객체를 로컬 z-축 방향으로 이동한다.
-void GameObject::MoveForward(float fDistance)
-{
-	XMFLOAT3 xmf3Position = GetPosition();
-	XMFLOAT3 xmf3Look = GetLook();
-	xmf3Position = Vector3::Add(xmf3Position, xmf3Look, fDistance);
-	GameObject::SetPosition(xmf3Position);
 }
 //게임 객체를 주어진 각도로 회전한다. 
 void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
@@ -253,15 +230,9 @@ void GameObject::Move(XMFLOAT3& vDirection, float fSpeed)
 
 void GameObject::Move(float x, float y, float z)
 {
-	m_xmf3Position.x = x;
-	m_xmf3Position.y = y;
-	m_xmf3Position.z = z;
-}
-
-
-void GameObject::Move(XMFLOAT3& vMove)
-{
-	SetPosition(m_xmf4x4World._41 + vMove.x, m_xmf4x4World._42 + vMove.y, m_xmf4x4World._43 + vMove.z);
+	m_xmf3Position.x += x;
+	m_xmf3Position.y += y;
+	m_xmf3Position.z += z;
 }
 
 void GameObject::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
