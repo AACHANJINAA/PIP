@@ -2,10 +2,9 @@
 #include "MainPlayer.h"
 #include "ClientPacketManager.h"
 
-MainPlayer::MainPlayer(int X, int Y)
+MainPlayer::MainPlayer(int x, int y, int z)
 {
-	_NowX = X;
-	_NowY = Y;
+	SetPosition(x, y, z);
 }
 
 MainPlayer::~MainPlayer()
@@ -15,7 +14,7 @@ MainPlayer::~MainPlayer()
 
 void MainPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	SetPosition(_NowX * _MoveDistance, 0.f, _NowY * _MoveDistance);
+	SetPosition(GetPosition().x * _MoveDistance, GetPosition().y * _MoveDistance, GetPosition().z * _MoveDistance);
 }
 
 void MainPlayer::Collision(float fElapsedTime)
@@ -56,16 +55,19 @@ void MainPlayer::Move_Pos(common::packet::MOVE_TYPE Cmd)
 	{
 		case common::packet::MOVE_TYPE::MOVE_UP:
 			direction = common::Vec3Forward;
+			break;
 		case common::packet::MOVE_TYPE::MOVE_DOWN:
 			direction = common::Vec3Backward;
+			break;
 		case common::packet::MOVE_TYPE::MOVE_RIGHT:
 			direction = common::Vec3Right;
+			break;
 		case common::packet::MOVE_TYPE::MOVE_LEFT:
 			direction = common::Vec3Left;
 			// 서버로 나 위로 이동
 			// 서버는 위치값 계산
 			// 서버는 위치값을 클라이언트로 전송
-			//ClientPacketManager::Instance()->SendMovePacket(/*여기에*/); //TODO: common::Vector3 타입(XMFLOAT3임)으로 방향보내기 필요(Normalize 필요)
+			//TODO: common::Vector3 타입(XMFLOAT3임)으로 방향보내기 필요(Normalize 필요)
 			break;
 		case common::packet::MOVE_TYPE::error:
 		break;
