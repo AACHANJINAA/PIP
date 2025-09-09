@@ -99,10 +99,25 @@ private:
 	CB_GAMEOBJECT_INFO* _pcbMappedGameObject = nullptr;
 
 public:
-	XMFLOAT4X4 m_xmf4x4World;
+	XMFLOAT4X4 m_xmf4x4World = Matrix4x4::Identity();
 	Mesh* m_pMesh = NULL;
 	//Shader* m_pShader = NULL; 
 	Material_Shader* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
+
+protected:
+	BoundingFrustum				m_xmFrustumView = BoundingFrustum();
+	BoundingFrustum				m_xmFrustumWorld = BoundingFrustum();
+
+	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3					m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	XMFLOAT3					m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	XMFLOAT3					m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+	XMFLOAT3					_scale = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+	XMFLOAT3					_Rotate = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+
 public:
 	void ReleaseUploadBuffers(); 
 	virtual void SetMesh(Mesh* pMesh);
@@ -160,6 +175,8 @@ public:
 	bool IsVisible(Camera* pCamera = NULL);
 
 	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
+
+	void Update();
 
 public:
 	int m_PosX{};
