@@ -177,9 +177,7 @@ void GameObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)
 
 void GameObject::SetPosition(float x, float y, float z)
 {
-	m_xmf4x4World._41 = x;
-	m_xmf4x4World._42 = y;
-	m_xmf4x4World._43 = z;
+	m_xmf3Position = { x,y,z };
 }
 void GameObject::SetPosition(XMFLOAT3 xmf3Position)
 {
@@ -189,9 +187,7 @@ void GameObject::SetPosition(XMFLOAT3 xmf3Position)
 
 void GameObject::SetScale(float x, float y, float z)
 {
-	m_xmf4x4World._11 = x;
-	m_xmf4x4World._22 = y;
-	m_xmf4x4World._33 = z;
+	_scale = {x,y,z};
 }
 
 XMFLOAT3 GameObject::GetPosition()
@@ -245,18 +241,21 @@ void GameObject::MoveForward(float fDistance)
 //게임 객체를 주어진 각도로 회전한다. 
 void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
 {
-	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(fPitch), XMConvertToRadians(fYaw), XMConvertToRadians(fRoll));
-	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
+	_Rotate = { fPitch, fYaw, fRoll };
 }
 
 void GameObject::Move(XMFLOAT3& vDirection, float fSpeed)
 {
-	SetPosition(m_xmf4x4World._41 + vDirection.x * fSpeed, m_xmf4x4World._42 + vDirection.y * fSpeed, m_xmf4x4World._43 + vDirection.z * fSpeed);
+	m_xmf3Position.x = m_xmf3Position.x + vDirection.x * fSpeed;
+	m_xmf3Position.y = m_xmf3Position.y + vDirection.y * fSpeed;
+	m_xmf3Position.z = m_xmf3Position.z + vDirection.z * fSpeed;
 }
 
 void GameObject::Move(float x, float y, float z)
 {
-	SetPosition(m_xmf4x4World._41 + x, m_xmf4x4World._42 + y, m_xmf4x4World._43 + z);
+	m_xmf3Position.x = x;
+	m_xmf3Position.y = y;
+	m_xmf3Position.z = z;
 }
 
 
@@ -339,4 +338,34 @@ bool GameObject::IsVisible(Camera* pCamera)
 	XMStoreFloat4(&worldOOBB.Orientation, orientationQuat);
 
 	return pCamera->IsInFrustum(worldOOBB);
+}
+
+
+void GameObject::Update()
+{
+	m_xmf4x4World = Matrix4x4::Identity();
+
+	// 룩업라이트 벡터를 정규직교하게 만들기
+	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
+	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
+	m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+
+
+	// 월드행렬 만들기
+	m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
+	m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
+	m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
+
+	// scale
+	m_xmf4x4World._11 = _scale.x;
+	m_xmf4x4World._22 = _scale.y;
+	m_xmf4x4World._33 = _scale.z;
+
+	// rotate
+	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(_Rotate.x), XMConvertToRadians(_Rotate.y), XMConvertToRadians(_Rotate.z));
+	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
+
+	// position
+	m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
+
 }
