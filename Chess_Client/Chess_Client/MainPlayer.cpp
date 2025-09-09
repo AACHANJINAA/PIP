@@ -14,7 +14,7 @@ MainPlayer::~MainPlayer()
 
 void MainPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	SetPosition(GetPosition().x * _MoveDistance, GetPosition().y * _MoveDistance, GetPosition().z * _MoveDistance);
+	// SetPosition(GetPosition().x * _MoveDistance, GetPosition().y * _MoveDistance, GetPosition().z * _MoveDistance);
 }
 
 void MainPlayer::Collision(float fElapsedTime)

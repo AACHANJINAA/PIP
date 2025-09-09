@@ -151,16 +151,11 @@ public:
 	//게임 객체의 중력을 나타낸다.
 	void SetGravity(XMFLOAT3& xmf3Gravity) { m_xmf3Gravity = xmf3Gravity; }
 
-	//게임 객체를 로컬 x-축, y-축, z-축 방향으로 이동한다.
-	void MoveStrafe(float fDistance = 1.0f);
-	void MoveUp(float fDistance = 1.0f);
-	void MoveForward(float fDistance = 1.0f);
 	//게임 객체를 회전(x-축, y-축, z-축)한다.
 	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
 
 	void Move(XMFLOAT3& vDirection, float fSpeed);
 	void Move(float x, float y, float z);
-	void Move(XMFLOAT3& vMove);
 
 	void LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);
 	void LookTo(XMFLOAT3& xmf3LookTo);
