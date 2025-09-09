@@ -120,9 +120,9 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         FQuat UnrealQuat = MeshComponent->GetComponentQuat();
         FVector UnrealScale = MeshComponent->GetComponentScale();
 
-        FVector ExportedLocation(UnrealLocation.Y, UnrealLocation.Z, UnrealLocation.X);
-        FQuat ExportedQuat(UnrealQuat.Y, UnrealQuat.Z, UnrealQuat.X, UnrealQuat.W);
-        FVector ExportedScale(UnrealScale.Y, UnrealScale.Z, UnrealScale.X);
+        FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Z, UnrealLocation.Y);
+        FQuat ExportedQuat(UnrealQuat.X, UnrealQuat.Y, UnrealQuat.Z, UnrealQuat.W);
+        FVector ExportedScale(UnrealScale.X, UnrealScale.Z, UnrealScale.Y);
 
         // --- 수정된 부분: Transform 객체 생성 ---
         TSharedPtr<FJsonObject> TransformObject = MakeShareable(new FJsonObject());
