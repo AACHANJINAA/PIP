@@ -1,10 +1,9 @@
 #include "stdafx.h"
 #include "OtherPlayer.h"
 
-OtherPlayer::OtherPlayer(int X, int Y)
+OtherPlayer::OtherPlayer(int x, int y, int z)
 {
-	_NowX = X;
-	_NowY = Y;
+	SetPosition(x, y, z);
 }
 
 OtherPlayer::~OtherPlayer()
@@ -14,7 +13,7 @@ OtherPlayer::~OtherPlayer()
 
 void OtherPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	SetPosition(_NowX * _MoveDistance, 0.f, _NowY * _MoveDistance);
+	SetPosition(GetPosition().x * _MoveDistance, GetPosition().y * _MoveDistance, GetPosition().z * _MoveDistance);
 }
 
 void OtherPlayer::Collision(float fElapsedTime)

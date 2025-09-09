@@ -5,7 +5,7 @@
 class OtherPlayer : public GameObject, public HPObject
 {
 public:
-	OtherPlayer(int X = 0, int Y = 0);
+	OtherPlayer(int x = 0, int y = 0, int z = 0);
 	~OtherPlayer();
 
 public:
@@ -20,7 +20,6 @@ public:
 	int64_t GetID() const { return _id; }
 	void SetName(const std::string& name) { _name = name; }
 	std::string GetName() const { return _name; }
-	void SetPos(float x = 0, float y = 0) { _NowX = x; _NowY = y; }
 
 private:
 	
@@ -28,8 +27,6 @@ private:
 private:
 	int64_t		_id = -1;
 	std::string _name;
-	int			_NowX{}; // 현재 X위치
-	int			_NowY{}; // 현재 Y위치
 
 	float _MoveDistance{2}; // 움직일 거리
 };

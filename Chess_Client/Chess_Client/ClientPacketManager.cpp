@@ -155,7 +155,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
 		my_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get());
-		my_king->SetPos(spawn_data._position.x, spawn_data._position.y);
+		my_king->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
 		my_king->SetID(_my_session_id); // 내 플레이어 ID 설정
@@ -188,7 +188,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get());
 		other_king->SetID(spawn_data._id);
-		other_king->SetPos(spawn_data._position.x, spawn_data._position.y); // 위치 설정
+		other_king->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
 		other_king->SetHP(spawn_data._hp); // HP 설정
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
@@ -219,7 +219,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
 	if (player && move_packet._id == player->GetID()) // 읽어온 id 사용
 	{
-		player->SetPos(move_packet._position.x, move_packet._position.y); // 읽어온 x, y 사용
+		player->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 	}
 	else
 	{
@@ -229,7 +229,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 									   });
 		if (it != other_players.end())
 		{
-			dynamic_cast<OtherPlayer*>(it->get())->SetPos(move_packet._position.x, move_packet._position.y); // 읽어온 x, y 사용
+			dynamic_cast<OtherPlayer*>(it->get())->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 		}
 	}
 }

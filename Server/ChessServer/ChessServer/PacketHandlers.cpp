@@ -111,6 +111,7 @@ namespace chess::packet
 			sync_packet._position = session->GetPlayer()->_position;
 
 			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
+			session->do_send(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet));
 		}
 	}
 
