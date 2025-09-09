@@ -20,6 +20,7 @@ namespace chess::packet
 		spawn_packet_data._id = session->_id;
 		spawn_packet_data._position.x = session->GetPlayer()->_position.x;
 		spawn_packet_data._position.y = session->GetPlayer()->_position.y;
+		spawn_packet_data._position.z = session->GetPlayer()->_position.z;
 		spawn_packet_data._hp = session->GetPlayer()->_hp;
 		spawn_packet_data._level = session->GetPlayer()->_level;
 		spawn_packet_data._exp = session->GetPlayer()->_exp;
