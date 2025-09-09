@@ -239,6 +239,7 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
             if (nullptr != Object)
             {
                 Object->Animate(fTimeElapsed, m_pCamera, pd3dCommandList);
+                Object->Update();
                 Object.get()->UpdateBoundingBox();
             }
         }
