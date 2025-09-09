@@ -657,12 +657,19 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 					currentNode.translation.x = nodeJson["translation"][0];
 					currentNode.translation.y = nodeJson["translation"][1];
 					currentNode.translation.z = nodeJson["translation"][2];
+
+					// [좌표계 변환] Translation의 Z축 반전
+					currentNode.translation.z *= -1.0f;
 				}
 				if (nodeJson.contains("rotation")) {
 					currentNode.rotation.x = nodeJson["rotation"][0];
 					currentNode.rotation.y = nodeJson["rotation"][1];
 					currentNode.rotation.z = nodeJson["rotation"][2];
 					currentNode.rotation.w = nodeJson["rotation"][3];
+
+					// [좌표계 변환] Quaternion의 X, Y축 반전
+					currentNode.rotation.x *= -1.0f;
+					currentNode.rotation.y *= -1.0f;
 				}
 				if (nodeJson.contains("scale")) {
 					currentNode.scale.x = nodeJson["scale"][0];
@@ -720,18 +727,28 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 				vertices.resize(posCount);
 				for (size_t i = 0; i < posCount; ++i) {
+					// [좌표계 변환] 정점 위치의 Z축 반전
 					vertices[i].m_xmf3Position = positions[i];
-					if (normals) vertices[i].m_xmf3Normal = normals[i];
+					vertices[i].m_xmf3Position.z *= -1.0f;
+
+					// [좌표계 변환] 법선 벡터의 Z축 반전
+					if (normals) {
+						vertices[i].m_xmf3Normal = normals[i];
+						vertices[i].m_xmf3Normal.z *= -1.0f;
+					}
+
 					if (texCoords) vertices[i].m_xmf2TexCoord = texCoords[i];
 					if (joints) vertices[i].m_xmf4BoneIndices = XMFLOAT4((float)joints[i].j[0], (float)joints[i].j[1], (float)joints[i].j[2], (float)joints[i].j[3]);
 					if (weights) vertices[i].m_xmf4BoneWeights = weights[i];
 
-					modelMin.x = min(modelMin.x, positions[i].x);
-					modelMin.y = min(modelMin.y, positions[i].y);
-					modelMin.z = min(modelMin.z, positions[i].z);
-					modelMax.x = max(modelMax.x, positions[i].x);
-					modelMax.y = max(modelMax.y, positions[i].y);
-					modelMax.z = max(modelMax.z, positions[i].z);
+					// Bounding Box 계산 시에는 변환된 좌표를 사용
+					XMFLOAT3 transformedPos = vertices[i].m_xmf3Position;
+					modelMin.x = min(modelMin.x, transformedPos.x);
+					modelMin.y = min(modelMin.y, transformedPos.y);
+					modelMin.z = min(modelMin.z, transformedPos.z);
+					modelMax.x = max(modelMax.x, transformedPos.x);
+					modelMax.y = max(modelMax.y, transformedPos.y);
+					modelMax.z = max(modelMax.z, transformedPos.z);
 				}
 
 				const auto& indexAccessor = j["accessors"][indicesAccessorIndex];
@@ -746,6 +763,13 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 					indices.assign(indices_u32, indices_u32 + count);
 				}
 
+				// [좌표계 변환] 인덱스 순서(Winding Order) 뒤집기
+				for (size_t i = 0; i < indices.size(); i += 3) {
+					std::swap(indices[i + 1], indices[i + 2]);
+				}
+
+
+				// --- 이하 코드는 동일 ---
 				auto newPrimitive = std::make_unique<MeshPrimitive>();
 				ID3D12Resource* pVertexUploadBuffer = nullptr;
 				ID3D12Resource* pIndexUploadBuffer = nullptr;
@@ -807,26 +831,20 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 							textureData.SlicePitch = textureData.RowPitch * height;
 
 
-							// 1. 업로드 힙을 매핑하여 CPU가 쓸 수 있는 포인터를 얻습니다.
 							void* pMappedData = nullptr;
 							pTextureUploadHeap->Map(0, nullptr, &pMappedData);
 
-							// 2. 픽셀 데이터를 한 줄씩 복사합니다. (GPU 메모리 정렬을 위해 단순 memcpy가 아님)
-							//    layout.Footprint.RowPitch는 GPU가 요구하는 한 줄의 실제 바이트 크기입니다.
-							//    textureData.RowPitch는 우리 이미지 데이터의 한 줄 크기입니다.
 							BYTE* pDest = (BYTE*)pMappedData;
 							BYTE* pSrc = (BYTE*)textureData.pData;
 							for (UINT i = 0; i < height; ++i)
 							{
 								memcpy(pDest, pSrc, textureData.RowPitch);
-								pDest += layout.Footprint.RowPitch; // GPU 메모리 레이아웃에 맞춰 포인터 이동
-								pSrc += textureData.RowPitch;      // 소스 데이터 포인터 이동
+								pDest += layout.Footprint.RowPitch;
+								pSrc += textureData.RowPitch;
 							}
 
-							// 3. 매핑을 해제합니다.
 							pTextureUploadHeap->Unmap(0, nullptr);
 
-							// 4. 업로드 힙 -> 디폴트 힙으로의 복사 명령을 커맨드 리스트에 기록합니다.
 							D3D12_TEXTURE_COPY_LOCATION destLocation = {};
 							destLocation.pResource = newPrimitive->m_pTexture;
 							destLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -835,10 +853,9 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 							D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
 							srcLocation.pResource = pTextureUploadHeap;
 							srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-							srcLocation.PlacedFootprint = layout; // GetCopyableFootprints로 얻은 레이아웃 정보 사용
+							srcLocation.PlacedFootprint = layout;
 
 							pd3dCommandList->CopyTextureRegion(&destLocation, 0, 0, 0, &srcLocation, nullptr);
-
 
 							D3D12_RESOURCE_BARRIER d3dResourceBarrier = {};
 							d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -851,8 +868,6 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 							m_vUploadBuffers.push_back(pTextureUploadHeap);
 
-							// TODO: SRV 생성 및 newPrimitive->m_d3dGpuSrvHandle에 핸들 저장
-
 							D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 							srvDesc.Format = textureDesc.Format;
 							srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -864,13 +879,11 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 							pScene->AllocateNextSrvDescriptor(CpuHandle, GpuHandle);
 
-							// 전달받은 CPU 핸들 위치에 SRV를 생성합니다.
 							pd3dDevice->CreateShaderResourceView(newPrimitive->m_pTexture, &srvDesc, CpuHandle);
 
-							// 이 Primitive에 GPU 핸들을 저장합니다. (이제 이 핸들은 유효한 주소를 가짐)
 							newPrimitive->m_d3dGpuSrvHandle = GpuHandle;
 
-							++_Textures; // 로드된 텍스처 개수 카운트
+							++_Textures;
 						}
 					}
 				}
@@ -885,18 +898,10 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	}
 
 	// --- [추가] 뼈 변환 행렬을 위한 상수 버퍼 생성 ---
-   // 최대 뼈 개수(예: 128개)만큼의 버퍼 공간을 UPLOAD 힙에 생성합니다.
-   // UPLOAD 힙은 CPU에서 매 프레임 업데이트하기 용이합니다.
-	UINT nBoneCount = 128; // 셰이더의 배열 크기와 일치시켜야 함
+	UINT nBoneCount = 128;
 	UINT nBufferSize = sizeof(XMFLOAT4X4) * nBoneCount;
 
-	// CreateBufferResource 헬퍼 함수를 사용해 UPLOAD 타입으로 버퍼 생성
 	m_pd3dcbBoneTransforms = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, nBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
-
-	// TODO: 여기에 파싱한 초기 자세(Bind Pose) 뼈 행렬들을 Map/memcpy/Unmap을 통해
-	// m_pd3dcbBoneTransforms 버퍼에 복사하는 로직이 필요합니다.
-
-	// 요약 뼈는 아직 없음
 
 }
 
