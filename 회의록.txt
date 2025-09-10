@@ -183,3 +183,38 @@ Content/Developers/
 # Ignore Binaries and Intermediate folders within plugins
 /Plugins/*/Binaries/
 /Plugins/*/Intermediate/
+
+2025-09-10
+-------------
+1. 진행상황
+ - 언리얼에서 맵데이터를 뽑아서 적용
+  * 서버는 적용완료
+  * 클라이언트 좌표 시스템 불일치 문제로 삽질 숭
+ - 카메라 조작 방법 변경
+  * 3인칭 추가
+  * 커서키 -> WASD로 변경 필요
+ - 언리얼에서 맵데이터 추출
+  * AABB 충돌 정보 추출
+  * 파쿠르를 하려면 AABB로는 부족하고 충돌폴리곤을 뽑아서 사용해야 한다.
+  * 충돌검색 부하가 커서, BSP, Octree, KDTREE같은 최적화 기법을 사용해야 한다.
+2. ToDo
+ - 클라이언트 : 
+   * 좌표계 문제 해결
+   * WASD적용
+   * 충돌데이터 적용
+   * GLB에서 GLTF로 변경 (이미지 외부 파일 참조 형식)
+ - 서버
+  * 충돌검사 테스트
+  * 랜덤이동 NPC
+
+3. 중점연구과제
+ - 차세대 그래픽 모델 저장 포맷 표준인 GLTF Parser 구현
+ - Visual Studio Code에는 플러그인이 있어서, GLTF 파일을 예쁘게 포매팅해서 보여준다. (SHIFT+CTRL+F), 에러가 있으면 지렁도 깔아준다. 별도 windows에서 3D 그려준다.
+
+4. 종합설계 기업 연계형
+ => 100만원 지원 => 지도교수의 소개로 GLTF Parser관련 중점연구과제 연계
+  https://www.tukorea.ac.kr/tukorea/1096/subview.do?enc=Zm5jdDF8QEB8JTJGYmJzJTJGdHVrb3JlYSUyRjEwNyUyRjE0MzEwNSUyRmFydGNsVmlldy5kbyUzRg%3D%3D
+  => 박대원
+
+4. 다음 미팅
+ - 9월 22일 월요일 오후 8시
