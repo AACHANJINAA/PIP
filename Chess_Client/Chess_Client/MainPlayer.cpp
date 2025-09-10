@@ -25,17 +25,17 @@ void MainPlayer::Collision(float fElapsedTime)
 
 void MainPlayer::ProcessInput(float fElapsedTime)
 {
-	if (InputManager::Instance()->IsKeyDown(VK_UP)) {
+	if (InputManager::Instance()->IsKeyDown('W')) {
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_UP);
 	}
-	if (InputManager::Instance()->IsKeyDown(VK_DOWN)) {
+	if (InputManager::Instance()->IsKeyDown('S')) {
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_DOWN);
 	}
-	if (InputManager::Instance()->IsKeyDown(VK_RIGHT))
+	if (InputManager::Instance()->IsKeyDown('D'))
 	{
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_RIGHT);
 	}
-	if (InputManager::Instance()->IsKeyDown(VK_LEFT))
+	if (InputManager::Instance()->IsKeyDown('A'))
 	{
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_LEFT);
 	}
