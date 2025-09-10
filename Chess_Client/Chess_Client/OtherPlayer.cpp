@@ -21,7 +21,7 @@ void OtherPlayer::Collision(float fElapsedTime)
 
 }
 
-void OtherPlayer::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
+void OtherPlayer::ProcessInput(float fElapsedTime)
 {
 
 }

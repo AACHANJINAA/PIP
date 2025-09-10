@@ -6,6 +6,7 @@
 #include "ClientPacketManager.h"
 #include "GameFramework.h"
 #include "resource1.h"
+#include "InputManager.h"
 
 
 SOCKET c_socket;
@@ -224,7 +225,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     }
 
     GameFramework::Instance()->OnCreate(hInstance, hMainWnd);
-
+    InputManager::Instance()->Init(hMainWnd);
 
     ShowWindow(hMainWnd, nCmdShow);
     UpdateWindow(hMainWnd);
@@ -294,16 +295,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
-    case WM_SIZE:
-    case WM_LBUTTONDOWN:
-    case WM_LBUTTONUP:
-    case WM_RBUTTONDOWN:
-    case WM_RBUTTONUP:
-    case WM_MOUSEMOVE:
-    case WM_KEYDOWN:
-    case WM_KEYUP:
-        GameFramework::Instance()->OnProcessingWindowMessage(hWnd, message, wParam, lParam);
-        break;
     case WM_DESTROY:
         ::PostQuitMessage(0);
         break;

@@ -86,20 +86,9 @@ public:
 	void WaitForGpuComplete();
 	//CPU와 GPU를 동기화하는 함수
 
-	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	//윈도우의 메시지(키보드, 마우스 입력)를 처리하는 함수이다.
-
 	ComPtr<ID3D12GraphicsCommandList>& GetCommandList() { return m_pd3dCommandList; }
 	ComPtr<ID3D12Device>& GetDevice() { return m_pd3dDevice; }
 public:
-
-	//마지막으로 마우스 버튼을 클릭할 때의 마우스 커서의 위치
-	POINT m_ptOldCursorPos;
-
-	UINT m_nMessageID; // 어떤 키를 입력받은것인지에 대한 확인용이다.
-
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 
 	enum class ClientState // 클라이언트의 상태를 나타내는 열거형
