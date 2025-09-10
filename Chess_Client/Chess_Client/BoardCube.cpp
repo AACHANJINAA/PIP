@@ -20,7 +20,7 @@ void BoardCube::Collision(float fElapsedTime)
 
 }
 
-void BoardCube::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
+void BoardCube::ProcessInput(float fElapsedTime)
 {
 
 }

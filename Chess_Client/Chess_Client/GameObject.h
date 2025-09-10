@@ -125,7 +125,7 @@ public:
 	void SetMaterial(Material_Shader* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
 	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
 	virtual void Collision(float fElapsedTime) = 0;
-	virtual void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) = 0;
+	virtual void ProcessInput(float fElapsedTime) = 0;
 	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
 

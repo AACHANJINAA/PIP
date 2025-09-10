@@ -28,9 +28,6 @@
     <Filter Include="Object\Board">
       <UniqueIdentifier>{78800909-ed8c-4bc7-93c2-71295925ec2d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object\Player">
-      <UniqueIdentifier>{64c1a271-b4ad-47e5-87e5-226297550338}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Object\OtherPlayer">
       <UniqueIdentifier>{fc9abf7d-d259-4984-b466-a6092cfee6e8}</UniqueIdentifier>
     </Filter>
@@ -57,6 +54,12 @@
     </Filter>
     <Filter Include="Shader\GlbShader">
       <UniqueIdentifier>{cea0cf3f-f716-446f-9ab0-7b9e5ff7272b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\MainPlayer">
+      <UniqueIdentifier>{64c1a271-b4ad-47e5-87e5-226297550338}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager\InputManager">
+      <UniqueIdentifier>{a4d3b8bf-b6f5-41ac-97b1-1b2fe3296232}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -88,7 +91,7 @@
       <Filter>Object\Board</Filter>
     </ClInclude>
     <ClInclude Include="MainPlayer.h">
-      <Filter>Object\Player</Filter>
+      <Filter>Object\MainPlayer</Filter>
     </ClInclude>
     <ClInclude Include="OtherPlayer.h">
       <Filter>Object\OtherPlayer</Filter>
@@ -126,6 +129,9 @@
     <ClInclude Include="GlbShader.h">
       <Filter>Shader\GlbShader</Filter>
     </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Manager\InputManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chess_Client.cpp">
@@ -150,7 +156,7 @@
       <Filter>Object\Board</Filter>
     </ClCompile>
     <ClCompile Include="MainPlayer.cpp">
-      <Filter>Object\Player</Filter>
+      <Filter>Object\MainPlayer</Filter>
     </ClCompile>
     <ClCompile Include="OtherPlayer.cpp">
       <Filter>Object\OtherPlayer</Filter>
@@ -181,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="GlbShader.cpp">
       <Filter>Shader\GlbShader</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Manager\InputManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

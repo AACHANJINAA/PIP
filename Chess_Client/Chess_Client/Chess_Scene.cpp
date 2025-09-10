@@ -5,6 +5,7 @@
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
 #include "GlbShader.h"
+#include "InputManager.h"
 
 Chess_Scene::Chess_Scene(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
@@ -207,10 +208,14 @@ void Chess_Scene::ReleaseObjects()
 	}
 }
 
-void Chess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
+void Chess_Scene::ProcessInput(float fElapsedTime)
 {
-    m_ChessCamera->KeyInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
+    m_ChessCamera->ProcessInput(fElapsedTime);
 
+    if (InputManager::Instance()->IsKeyDown('B'))
+    {
+        ToggleBoundingBoxView();
+    }
 
     std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = ObjectManager::Instance()->GetAllObject();
 
@@ -218,14 +223,11 @@ void Chess_Scene::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, P
         for (std::shared_ptr<GameObject>& Object : Objects) {
             if (nullptr != Object)
             {
-                Object->ProcessInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
+                Object->ProcessInput(fElapsedTime);
                 Object->UpdateBoundingBox();
             }
         }
     }
-
-    m_ChessCamera->KeyInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
- 
 }
 
 void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* pd3dCommandList)
