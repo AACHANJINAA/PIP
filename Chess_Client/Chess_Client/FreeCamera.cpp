@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FreeCamera.h"
 #include "ObjectManager.h"
+#include "InputManager.h"
 
 void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 {
@@ -36,82 +37,50 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 	}
 }
 
-void FreeCamera::KeyInput(float fElapsedTime, HWND hwnd, UINT nMessageID, POINT ptOldCursorPos)
+void FreeCamera::ProcessInput(float fElapsedTime)
 {
+    if (InputManager::Instance()->IsKeyDown(VK_RBUTTON))
+    {
+        ::SetCapture(InputManager::Instance()->GetHWnd());
+        ::GetCursorPos(&m_ptOldCursorPos);
+    }
 
-	float cxDelta = 0.0f, cyDelta = 0.0f;
-	POINT ptCursorPos;
-	POINT ScreenPos;
+    if (InputManager::Instance()->IsKeyDown(VK_RBUTTON) || InputManager::Instance()->IsKeyPress(VK_RBUTTON))
+    {
+        POINT ptCursorPos;
+        ::GetCursorPos(&ptCursorPos); 
 
-	/*마우스를 캡쳐했으면 마우스가 얼마만큼 이동하였는 가를 계산한다. 마우스 왼쪽 또는 오른쪽 버튼이 눌러질 때의
-	메시지(WM_LBUTTONDOWN, WM_RBUTTONDOWN)를 처리할 때 마우스를 캡쳐하였다. 그러므로 마우스가 캡쳐된
-	것은 마우스 버튼이 눌려진 상태를 의미한다. 마우스 버튼이 눌려진 상태에서 마우스를 좌우 또는 상하로 움직이면 플
-	레이어를 x-축 또는 y-축으로 회전한다.*/
-	if (::GetCapture() == hwnd)
-	{
-		//마우스 커서를 화면에서 없앤다(보이지 않게 한다).
-		//::SetCursor(NULL);
+        float cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
+        float cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
 
-		//현재 마우스 커서의 위치를 가져온다. 
-		::GetCursorPos(&ptCursorPos);
+        if (cxDelta != 0.0f || cyDelta != 0.0f)
+        {
+            Rotate(cyDelta, cxDelta, 0.f);
+            ::SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
+        }
+    }
 
-		switch (nMessageID)
-		{
-		case WM_LBUTTONDOWN:
-		{
+    if (InputManager::Instance()->IsKeyUp(VK_RBUTTON))
+    {
+        ::ReleaseCapture();
+    }
 
-		}
-		break;
+    if (InputManager::Instance()->IsKeyDown('V')) {
+        m_NowMode = CAMERA_MODE::CAMERA_FREE;
+    }
+    if (InputManager::Instance()->IsKeyDown('B')) {
+        m_NowMode = CAMERA_MODE::CAMERA_THIRD_PERSON;
+    }
 
-		case WM_RBUTTONDOWN:
-
-			ScreenPos = ptCursorPos;
-			ScreenToClient(hwnd, &ScreenPos);
-
-			break;
-		}
-
-		//마우스 버튼이 눌린 상태에서 마우스가 움직인 양을 구한다.
-		cxDelta = (float)(ptCursorPos.x - ptOldCursorPos.x) / 3.0f;
-		cyDelta = (float)(ptCursorPos.y - ptOldCursorPos.y) / 3.0f;
-
-		Rotate(cyDelta, cxDelta, 0.f);
-
-		//마우스 커서의 위치를 마우스가 눌려졌던 위치로 설정한다. 
-		::SetCursorPos(ptOldCursorPos.x, ptOldCursorPos.y);
-	}
-
-	if (GetAsyncKeyState('V') & 0x8000) {
-		m_NowMode = CAMERA_MODE::CAMERA_FREE;
-	}
-	if (GetAsyncKeyState('B') & 0x8000) {
-		m_NowMode = CAMERA_MODE::CAMERA_THIRD_PERSON;
-	}
-
-
-	if(m_NowMode == CAMERA_MODE::CAMERA_FREE)
-	{
-		if (GetAsyncKeyState('W') & 0x8000) {
-			MoveForward(1);
-		}
-		if (GetAsyncKeyState('S') & 0x8000) {
-			MoveForward(-1);
-		}
-		if (GetAsyncKeyState('D') & 0x8000) {
-			MoveRight(1);
-		}
-		if (GetAsyncKeyState('A') & 0x8000) {
-			MoveRight(-1);
-		}
-
-		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-			MoveUP(1);
-		}
-
-		if (GetAsyncKeyState(VK_LCONTROL) & 0x8000) {
-			MoveUP(-1);
-		}
-	}
+    if (m_NowMode == CAMERA_MODE::CAMERA_FREE)
+    {
+        if (InputManager::Instance()->IsKeyPress('W')) MoveForward(1);
+        if (InputManager::Instance()->IsKeyPress('S')) MoveForward(-1);
+        if (InputManager::Instance()->IsKeyPress('D')) MoveRight(1);
+        if (InputManager::Instance()->IsKeyPress('A')) MoveRight(-1);
+        if (InputManager::Instance()->IsKeyPress(VK_SPACE)) MoveUP(1);
+        if (InputManager::Instance()->IsKeyPress(VK_LCONTROL)) MoveUP(-1);
+    }
 }
 
 

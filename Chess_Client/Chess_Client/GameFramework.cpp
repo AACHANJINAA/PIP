@@ -3,6 +3,7 @@
 #include "ObjectManager.h"
 #include "Chess_Scene.h"
 #include "ClientPacketManager.h"
+#include "InputManager.h"
 
 GameFramework::GameFramework()
 	: m_nWndClientWidth(FRAME_BUFFER_WIDTH)
@@ -267,119 +268,14 @@ void GameFramework::ProcessNetwork()
 	recv_and_process_packets();
 }
 
-void GameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
-{
-	switch (nMessageID)
-	{
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-		//마우스 캡쳐를 하고 현재 마우스 위치를 가져온다. 
-		::SetCapture(hWnd);
-		::GetCursorPos(&m_ptOldCursorPos);
-		m_nMessageID = nMessageID;
-		break;
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-		//마우스 캡쳐를 해제한다.
-		::ReleaseCapture();
-		break;
-	}
-}
-
-void GameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM	wParam, LPARAM lParam) 
-{
-	switch (nMessageID)
-	{
-	case WM_KEYUP:
-		switch (wParam)
-		{
-		case VK_F1:
-			if (m_eClientState == ClientState::Lobby)
-			{
-				std::cout << "[C->S] Requesting room list (F1 pressed)\n";
-				ClientPacketManager::Instance()->SendRoomListPacket();
-			}
-			break;
-		case VK_F2:
-			if (m_eClientState == ClientState::Lobby)
-			{
-				int room_id_to_enter = 0;
-				std::cout << "[C->S] Requesting to enter room " << room_id_to_enter << " (F2pressed)\n";
-				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
-			}
-			break;
-		case VK_F3:
-			break;
-		case VK_ESCAPE:
-			::PostQuitMessage(0);
-			break;
-		case VK_RETURN:
-			break;
-		case VK_F8:
-			break;
-			//“F9” 키가 눌려지면 윈도우 모드와 전체화면 모드의 전환을 처리한다. 
-		case VK_F9:
-			ChangeSwapChainState();
-			break;
-			// [추가] 숫자 키 1~6으로 방 입장 요청
-		case '1': case '2': case '3': case '4': case '5': case '6':
-			{
-				int room_id_to_enter = static_cast<int>(wParam - '1') + 1; // '1' -> 1, '2' -> 2 ...
-				CLOG(L"[C->S] Requesting to enter room %d (Key %c pressed)", room_id_to_enter, (wchar_t)wParam);
-				ObjectManager::Instance()->ChangeRoom();
-				ClientPacketManager::Instance()->SendEnterRoomPacket(room_id_to_enter);
-				break;
-			}
-		case 'B': case 'b':
-			if (m_pScene) {
-				Chess_Scene* pChessScene = dynamic_cast<Chess_Scene*>(m_pScene.get());
-				if (pChessScene) 
-				{
-					pChessScene->ToggleBoundingBoxView();
-				}
-			}
-			break;
-		default:
-			break;
-		}
-		break;
-	default:
-		break;
-	}
-}
-
-LRESULT CALLBACK GameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID,
-	WPARAM wParam, LPARAM lParam)
-{
-	switch (nMessageID)
-	{
-	case WM_SIZE:
-	{
-		m_nWndClientWidth = LOWORD(lParam);
-		m_nWndClientHeight = HIWORD(lParam);
-		break;
-	}
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MOUSEMOVE:
-		OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
-		break;
-	case WM_KEYDOWN:
-	case WM_KEYUP:
-		OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
-		break;
-	}
-	return(0);
-}
-
-
 void GameFramework::ProcessInput()
 {
-	if(m_bIsWindowActive)
+	InputManager::Instance()->Update(); // 매 프레임 입력 상태를 갱신합니다.
+
+	if (m_bIsWindowActive)
 	{
-		m_pScene.get()->ProcessInput(m_GameTimer.GetTimeElapsed(), m_hWnd, m_nMessageID, m_ptOldCursorPos);
+		// 씬의 입력 처리 함수를 호출합니다. (파라미터가 변경될 예정)
+		m_pScene.get()->ProcessInput(m_GameTimer.GetTimeElapsed());
 	}
 }
 

@@ -19,9 +19,9 @@ public:
 
 	void ChangeScene();
 
-	void ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos) {
+	void ProcessInput(float fElapsedTime) {
 		if (m_pCurrentScene.get()) {
-			m_pCurrentScene.get()->ProcessInput(fElapsedTime, hWnd, nMessageID, ptOldCursorPos);
+			m_pCurrentScene.get()->ProcessInput(fElapsedTime);
 		}
 	}
 
