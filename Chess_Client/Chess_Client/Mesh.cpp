@@ -658,8 +658,6 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 					currentNode.translation.y = nodeJson["translation"][1];
 					currentNode.translation.z = nodeJson["translation"][2];
 
-					// [좌표계 변환] Translation의 Z축 반전
-					currentNode.translation.z *= -1.0f;
 				}
 				if (nodeJson.contains("rotation")) {
 					currentNode.rotation.x = nodeJson["rotation"][0];
@@ -667,14 +665,12 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 					currentNode.rotation.z = nodeJson["rotation"][2];
 					currentNode.rotation.w = nodeJson["rotation"][3];
 
-					// [좌표계 변환] Quaternion의 X, Y축 반전
-					currentNode.rotation.x *= -1.0f;
-					currentNode.rotation.y *= -1.0f;
 				}
 				if (nodeJson.contains("scale")) {
 					currentNode.scale.x = nodeJson["scale"][0];
 					currentNode.scale.y = nodeJson["scale"][1];
 					currentNode.scale.z = nodeJson["scale"][2];
+
 				}
 				if (nodeJson.contains("children")) {
 					for (const auto& childIndex : nodeJson["children"]) {
@@ -727,14 +723,11 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 				vertices.resize(posCount);
 				for (size_t i = 0; i < posCount; ++i) {
-					// [좌표계 변환] 정점 위치의 Z축 반전
+				
 					vertices[i].m_xmf3Position = positions[i];
-					vertices[i].m_xmf3Position.z *= -1.0f;
 
-					// [좌표계 변환] 법선 벡터의 Z축 반전
 					if (normals) {
 						vertices[i].m_xmf3Normal = normals[i];
-						vertices[i].m_xmf3Normal.z *= -1.0f;
 					}
 
 					if (texCoords) vertices[i].m_xmf2TexCoord = texCoords[i];
@@ -761,11 +754,6 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 				else if (indexAccessor["componentType"] == 5125) { // uint32_t
 					auto [indices_u32, count] = getData<uint32_t>(j, binaryData, indicesAccessorIndex);
 					indices.assign(indices_u32, indices_u32 + count);
-				}
-
-				// [좌표계 변환] 인덱스 순서(Winding Order) 뒤집기
-				for (size_t i = 0; i < indices.size(); i += 3) {
-					std::swap(indices[i + 1], indices[i + 2]);
 				}
 
 

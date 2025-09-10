@@ -316,27 +316,28 @@ void GameObject::Update()
 {
 	m_xmf4x4World = Matrix4x4::Identity();
 
-	// 룩업라이트 벡터를 정규직교하게 만들기
-	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
-	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
-	m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+	// 1. 크기, 회전, 이동 행렬을 각각 생성
+	XMMATRIX scaleMatrix = XMMatrixScaling(_scale.x, _scale.y, _scale.z);
+	XMMATRIX rotateMatrix = XMMatrixRotationRollPitchYaw(XMConvertToRadians(_Rotate.x), XMConvertToRadians(_Rotate.y), XMConvertToRadians(_Rotate.z));
+	XMMATRIX translateMatrix = XMMatrixTranslation(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z);
+
+	// 2. S-R-T 순서로 행렬을 곱하여 월드 행렬을 만듦
+	// (참고: Right, Up, Look 벡터로 회전을 만들고 싶다면 rotateMatrix를 해당 행렬로 교체)
+	XMMATRIX worldMatrix = scaleMatrix * rotateMatrix * translateMatrix;
+	XMStoreFloat4x4(&m_xmf4x4World, worldMatrix);
 
 
-	// 월드행렬 만들기
-	m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
-	m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
-	m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
+	//if (nullptr != m_pMaterial)
+	//{
+	//	// 이 셰이더를 쓰는 객체가 GLB 모델이라고 가정
+	//	if (typeid(CObjectsShader) == typeid(*(m_pMaterial->_Shader)))
+	//	{
+	//		// Z축을 뒤집는 변환 행렬 생성
+	//		XMMATRIX zFlipMatrix = XMMatrixScaling(1.0f, 1.0f, -1.0f);
 
-	// scale
-	m_xmf4x4World._11 = _scale.x;
-	m_xmf4x4World._22 = _scale.y;
-	m_xmf4x4World._33 = _scale.z;
-
-	// rotate
-	XMMATRIX mtxRotate = XMMatrixRotationRollPitchYaw(XMConvertToRadians(_Rotate.x), XMConvertToRadians(_Rotate.y), XMConvertToRadians(_Rotate.z));
-	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
-
-	// position
-	m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
-
+	//		// 기존 월드 행렬 앞에 곱해서 최종 월드 행렬을 만듦
+	//		worldMatrix = zFlipMatrix * worldMatrix;
+	//		XMStoreFloat4x4(&m_xmf4x4World, worldMatrix);
+	//	}
+	//}
 }
