@@ -354,7 +354,7 @@ ReadObjMesh::ReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 			});
 
 	m_nStride = sizeof(IlluminatedVertex);
-	m_nVertices = m_Vertexvec.size();
+	m_nVertices = static_cast<UINT>(m_Vertexvec.size());
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	m_pd3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(),
@@ -375,7 +375,7 @@ ReadObjMesh::ReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	m_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
 
 
-	m_nIndices = m_Indexvec.size();
+	m_nIndices = static_cast<UINT>(m_Indexvec.size());
 	//인덱스 버퍼를 생성한다. 인덱스 버퍼는 변경 안될것임
 	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(),
 		sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
@@ -552,7 +552,7 @@ std::tuple<std::vector<unsigned char>, UINT, UINT> ReadGlbMesh::LoadImageFromGLB
 	if (FAILED(hr)) { CoUninitialize(); return {}; }
 
 	hr = pFactory->CreateStream(&pStream);
-	if (SUCCEEDED(hr)) hr = pStream->InitializeFromMemory(const_cast<unsigned char*>(pImageData), byteLength);
+	if (SUCCEEDED(hr)) hr = pStream->InitializeFromMemory(const_cast<unsigned char*>(pImageData), static_cast<DWORD>(byteLength));
 	if (SUCCEEDED(hr)) hr = pFactory->CreateDecoderFromStream(pStream, NULL, WICDecodeMetadataCacheOnDemand, &pDecoder);
 	if (SUCCEEDED(hr)) hr = pDecoder->GetFrame(0, &pFrame);
 
