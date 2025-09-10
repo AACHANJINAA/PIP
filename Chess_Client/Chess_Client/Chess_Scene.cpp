@@ -210,6 +210,10 @@ void Chess_Scene::ReleaseObjects()
 
 void Chess_Scene::ProcessInput(float fElapsedTime)
 {
+    bool IsThirdPerson = (m_ChessCamera->GetCameraMode() == CAMERA_MODE::CAMERA_THIRD_PERSON);
+
+	MainPlayer* Player = nullptr;
+
     m_ChessCamera->ProcessInput(fElapsedTime);
 
     if (InputManager::Instance()->IsKeyDown('B'))
@@ -223,7 +227,20 @@ void Chess_Scene::ProcessInput(float fElapsedTime)
         for (std::shared_ptr<GameObject>& Object : Objects) {
             if (nullptr != Object)
             {
-                Object->ProcessInput(fElapsedTime);
+                Player = dynamic_cast<MainPlayer*>(Object.get());
+
+                if (Player) 
+                {
+                    if (IsThirdPerson)
+                    {
+                        Player->ProcessInput(fElapsedTime);
+                    }
+                }
+                else
+                {
+                    Object->ProcessInput(fElapsedTime);
+                }
+
                 Object->UpdateBoundingBox();
             }
         }
