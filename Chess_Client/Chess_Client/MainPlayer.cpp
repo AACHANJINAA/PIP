@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainPlayer.h"
 #include "ClientPacketManager.h"
+#include "InputManager.h"
 
 MainPlayer::MainPlayer(int x, int y, int z)
 {
@@ -22,27 +23,23 @@ void MainPlayer::Collision(float fElapsedTime)
 
 }
 
-void MainPlayer::ProcessInput(float fElapsedTime, HWND hWnd, UINT nMessageID, POINT ptOldCursorPos)
+void MainPlayer::ProcessInput(float fElapsedTime)
 {
-	if (GetAsyncKeyState(VK_UP) & 0x0001) {
+	if (InputManager::Instance()->IsKeyDown(VK_UP)) {
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_UP);
 	}
-
-	if (GetAsyncKeyState(VK_DOWN) & 0x0001) {
+	if (InputManager::Instance()->IsKeyDown(VK_DOWN)) {
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_DOWN);
 	}
-
-	if (GetAsyncKeyState(VK_RIGHT) & 0x0001)
+	if (InputManager::Instance()->IsKeyDown(VK_RIGHT))
 	{
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_RIGHT);
 	}
-
-	if (GetAsyncKeyState(VK_LEFT) & 0x0001)
+	if (InputManager::Instance()->IsKeyDown(VK_LEFT))
 	{
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_LEFT);
 	}
-	
-	if (GetAsyncKeyState('F') & 0x0001)
+	if (InputManager::Instance()->IsKeyDown('F'))
 	{
 		ClientPacketManager::Instance()->SendAttackPacket();
 	}

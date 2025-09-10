@@ -140,6 +140,7 @@
     <ClInclude Include="BoardCube.h" />
     <ClInclude Include="Chess_Client.h" />
     <ClInclude Include="GlbShader.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="BoardCube.cpp" />
     <ClCompile Include="Chess_Client.cpp" />
     <ClCompile Include="GlbShader.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="MainPlayer.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
