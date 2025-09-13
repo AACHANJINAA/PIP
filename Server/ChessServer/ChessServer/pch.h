@@ -19,7 +19,9 @@
 #include <type_traits>
 #include <filesystem>
 #include <fstream>
-#include <sstream> // std::ostringstream Ãß°¡
+#include <sstream>
+#include <chrono>
+#include <queue>
 
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
@@ -27,66 +29,65 @@ using namespace DirectX;
 
 #include "Packet.h"
 #include "Vector3.h"
-using namespace common;
+
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
 
 #include "json.hpp"
 
 
-// 1. ·Î±×¿ë Àü¿ª ¹ÂÅØ½º´Â ±×´ë·Î »ç¿ëÇÕ´Ï´Ù.
+// 1. ë¡œê·¸ìš© ì „ì—­ ë®¤í…ìŠ¤ëŠ” ê·¸ëŒ€ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
 inline std::mutex g_log_mutex;
 
-// µğ¹ö±× ºôµå¿¡¼­¸¸ ·Î±×°¡ µ¿ÀÛÇÏµµ·Ï ¼³Á¤
+// ë””ë²„ê·¸ ë¹Œë“œì—ì„œë§Œ ë¡œê·¸ê°€ ë™ì‘í•˜ë„ë¡ ì„¤ì •
 #ifdef _DEBUG
-#define ENABLE_DEBUG_LOG // ÁÖ¼® Ã³¸®·Î ²¯´ÙÄÖ´ÙÇÏ¸é¼­ »ç¿ëÇÒ°Í
+#define ENABLE_DEBUG_LOG // ì£¼ì„ ì²˜ë¦¬ë¡œ ê»ë‹¤ì¼¯ë‹¤í•˜ë©´ì„œ ì‚¬ìš©í• ê²ƒ
 #endif
-
-// 2. ·Î±× ·¹º§À» ³ªÅ¸³»´Â ¿­°ÅÇü
-enum class LogLevel { Info, Error };
-
-// 3. ÇÙ½É ·Î°Å Å¬·¡½º Á¤ÀÇ
-class Logger
-{
-public:
-    Logger(LogLevel level, const char* file, int line)
-        : _level(level), _file(file), _line(line)
-    {}
-
-    // ¼Ò¸êÀÚ¿¡¼­ Àá±İÀ» °É°í ÀüÃ¼ ·Î±× ¸Ş½ÃÁö¸¦ Ãâ·Â
-    ~Logger()
-    {
-        std::lock_guard<std::mutex> lock(g_log_mutex);
-        if (_level == LogLevel::Error)
-        {
-            std::cout << "[ERROR in ";
-        }
-        else
-        {
-            std::cout << "[";
-        }
-        std::cout << std::filesystem::path(_file).filename().string() << ":" << _line << "] "
-            << _buffer.str() << std::endl;
-
-        // ¿¡·¯ ·¹º§ÀÌ¸é µğ¹ö°Å¸¦ ¸ØÃã
-        if (_level == LogLevel::Error)
-        {
-            __debugbreak();
-        }
-    }
-
-    // `MYLOG << ...` ¿Í °°Àº ½ºÆ®¸² ¿¬»êÀ» °¡´ÉÇÏ°Ô ÇØÁÖ´Â ÇÔ¼ö
-    std::ostringstream& stream() { return _buffer; }
-
-private:
-    std::ostringstream _buffer;
-    LogLevel _level;
-    const char* _file;
-    int _line;
-};
 
 #ifdef _DEBUG
 	#ifdef ENABLE_DEBUG_LOG
+		// 2. ë¡œê·¸ ë ˆë²¨ì„ ë‚˜íƒ€ë‚´ëŠ” ì—´ê±°í˜•
+		enum class LogLevel { Info, Error };
+
+		// 3. í•µì‹¬ ë¡œê±° í´ë˜ìŠ¤ ì •ì˜
+		class Logger
+		{
+		public:
+		    Logger(LogLevel level, const char* file, int line)
+		        : _level(level), _file(file), _line(line)
+		    {}
+
+			// ì†Œë©¸ìì—ì„œ ì ê¸ˆì„ ê±¸ê³  ì „ì²´ ë¡œê·¸ ë©”ì‹œì§€ë¥¼ ì¶œë ¥
+		    ~Logger()
+		    {
+		        std::lock_guard<std::mutex> lock(g_log_mutex);
+		        if (_level == LogLevel::Error)
+		        {
+		            std::cout << "[ERROR in ";
+		        }
+		        else
+		        {
+		            std::cout << "[";
+		        }
+		        std::cout << std::filesystem::path(_file).filename().string() << ":" << _line << "] "
+		            << _buffer.str() << std::endl;
+
+        // ì—ëŸ¬ ë ˆë²¨ì´ë©´ ë””ë²„ê±°ë¥¼ ë©ˆì¶¤
+		        if (_level == LogLevel::Error)
+		        {
+		            __debugbreak();
+		        }
+		    }
+
+			// `MYLOG << ...` ì™€ ê°™ì€ ìŠ¤íŠ¸ë¦¼ ì—°ì‚°ì„ ê°€ëŠ¥í•˜ê²Œ í•´ì£¼ëŠ” í•¨ìˆ˜
+		    std::ostringstream& stream() { return _buffer; }
+
+		private:
+		    std::ostringstream _buffer;
+		    LogLevel _level;
+		    const char* _file;
+		    int _line;
+		};
 		#define MYLOG(msg) Logger(LogLevel::Info, __FILE__, __LINE__).stream() << msg
 		#define MYERROR(msg) Logger(LogLevel::Error, __FILE__, __LINE__).stream() << msg
 	#else
@@ -116,7 +117,7 @@ public:
 	}
 };
 
-namespace chess
+namespace PIP
 {
 	extern void print_error(const char* msg, int err_no);
 }

@@ -28,6 +28,8 @@ namespace common::packet
 		C2S_P_CHAT_IN_ROOM = 301, // 클라 -> 서버: 방 내부 채팅 메시지
 		S2C_P_CHAT_IN_ROOM = 302, // 서버 -> 클라: 방 내부 채팅 메시지 전달
 
+        S2C_NPC_SPAWN = 501,
+		S2C_NPC_MOVE = 502,
 	};
 
     
@@ -157,6 +159,20 @@ namespace common::packet
     struct CS_PACKET_MOVE : PacketHeader
     {
         Vec3 _direction;
+    };
+
+    struct SC_PACKET_NPC_SPAWN : PacketHeader
+    {
+        int64_t _npc_id; // NPC의 고유 ID
+		int32_t _npc_type; // NPC의 타입 (예: 몬스터 종류)
+        Vec3    _position;  // NPC의 초기 위치
+        // 뒤에 가변크기 name
+	};
+
+    struct SC_PACKET_NPC_MOVE : PacketHeader
+    {
+        int64_t     npcId;
+        Vec3        position;
     };
 
 #pragma pack (pop)

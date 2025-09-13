@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "PacketManager.h"
-namespace chess::packet
+namespace PIP::packet
 {
 	void PacketManager::Initialize()
 	{
@@ -13,12 +13,12 @@ namespace chess::packet
 		RegisterHandler(PacketType::C2S_P_CHAT_IN_ROOM, Handle_C2S_CHAT_IN_ROOM);
 	}
 
-	void PacketManager::Dispatch(const std::shared_ptr<chess::server::SESSION>& session, chess::packet::PacketStream& stream)
+	void PacketManager::Dispatch(const std::shared_ptr<PIP::server::SESSION>& session, PIP::packet::PacketStream& stream)
     {
         packet::PacketHeader header = stream.PeekHeader();
 
 		server::SESSION_STATE sessionState = session->_state;
-       // LOG("[DISPATCHER] Dispatching packet type " << static_cast<int>(header._type) << " for Session ID : " 
+       // MYLOG("[DISPATCHER] Dispatching packet type " << static_cast<int>(header._type) << " for Session ID : " 
        //     << session->_id << " in state " << static_cast<int>(sessionState));
 
 		bool bIsValidPacket = false;

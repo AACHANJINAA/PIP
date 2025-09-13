@@ -2,9 +2,9 @@
 #include "PacketHandlers.h"
 #include "server.h"
 
-namespace chess::packet
+namespace PIP::packet
 {
-	using PacketHandler = std::function<void(std::shared_ptr<chess::server::SESSION>, chess::packet::PacketStream&)>;
+	using PacketHandler = std::function<void(std::shared_ptr<PIP::server::SESSION>, PIP::packet::PacketStream&)>;
 
 	class PacketManager : public Singleton<PacketManager>
 	{
@@ -19,7 +19,7 @@ namespace chess::packet
 			_handlers[packetId] = std::move(handler);
 		}
 
-		void Dispatch(const std::shared_ptr<chess::server::SESSION>& session, chess::packet::PacketStream& stream);
+		void Dispatch(const std::shared_ptr<PIP::server::SESSION>& session, PIP::packet::PacketStream& stream);
 		
 	};
 }

@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="소스 파일\Packet">
       <UniqueIdentifier>{fe5bd637-c753-4132-95d9-35a1507618f7}</UniqueIdentifier>
     </Filter>
@@ -21,9 +17,6 @@
     </Filter>
     <Filter Include="소스 파일\JSON">
       <UniqueIdentifier>{6cd71e3b-475b-42bf-9877-81d2ab8acdfa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\MapDataManager">
-      <UniqueIdentifier>{8b6bc8f8-6074-4542-ab85-ccb5baed8929}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Server">
       <UniqueIdentifier>{4b20dcfe-da3f-4689-8997-8f10c1de7032}</UniqueIdentifier>
@@ -34,6 +27,21 @@
     <Filter Include="소스 파일\Core">
       <UniqueIdentifier>{4a53db0e-1d2b-4a0a-b56e-15df98d1f979}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\NPC">
+      <UniqueIdentifier>{bc12a6c6-29f0-4c1a-b83b-8694c1a4ddea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Manager">
+      <UniqueIdentifier>{2ee47003-8414-4e1d-bf13-517f073291a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Manager\MapDataManager">
+      <UniqueIdentifier>{8b6bc8f8-6074-4542-ab85-ccb5baed8929}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Manager\Time">
+      <UniqueIdentifier>{491b1f11-b7bf-42eb-a27f-fd0697c04c16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Manager\AIManager">
+      <UniqueIdentifier>{ba659bec-0424-44d2-a563-c4f85fc9adb2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -43,7 +51,7 @@
       <Filter>소스 파일\Packet</Filter>
     </ClCompile>
     <ClCompile Include="MapDataManager.cpp">
-      <Filter>소스 파일\MapDataManager</Filter>
+      <Filter>소스 파일\Manager\MapDataManager</Filter>
     </ClCompile>
     <ClCompile Include="Room.cpp">
       <Filter>소스 파일\Server</Filter>
@@ -59,6 +67,15 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>소스 파일\Manager\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC.cpp">
+      <Filter>소스 파일\NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="AIManager.cpp">
+      <Filter>소스 파일\Manager\AIManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -81,7 +98,7 @@
       <Filter>소스 파일\JSON</Filter>
     </ClInclude>
     <ClInclude Include="MapDataManager.h">
-      <Filter>소스 파일\MapDataManager</Filter>
+      <Filter>소스 파일\Manager\MapDataManager</Filter>
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>소스 파일\Server</Filter>
@@ -97,6 +114,15 @@
     </ClInclude>
     <ClInclude Include="ServerCore.h">
       <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>소스 파일\Manager\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC.h">
+      <Filter>소스 파일\NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="AIManager.h">
+      <Filter>소스 파일\Manager\AIManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

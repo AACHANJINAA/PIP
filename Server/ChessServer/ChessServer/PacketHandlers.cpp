@@ -6,11 +6,11 @@
 #include "server.h"
 #include "Room.h"
 
-namespace chess::packet
+namespace PIP::packet
 {
 	
 	// 중복 코드를 줄이기 위한 Helper 함수
-	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<chess::server::SESSION> session)
+	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<PIP::server::SESSION> session)
 	{
 		// [수정] SC_PACKET_SPAWN_PLAYER 구조체 변수를 선언하고 멤버를 채웁니다.
 		packet::SC_PACKET_SPAWN_PLAYER spawn_packet_data;
@@ -39,7 +39,7 @@ namespace chess::packet
 	}
 
 
-	void Handle_C2S_LOGIN(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
+	void Handle_C2S_LOGIN(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_LOGIN login_packet;
 		std::string player_name;
@@ -71,7 +71,7 @@ namespace chess::packet
 		MYLOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
 	}
 
-	void Handle_C2S_MOVE(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
+	void Handle_C2S_MOVE(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
 		server::Room * room = server::Server::Instance()->GetRoom(session->_room_id);
@@ -89,15 +89,15 @@ namespace chess::packet
 
 		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
 
-		Vec3 targetPos;
+		common::Vec3 targetPos;
 		targetPos.x = session->GetPlayer()->_position.x + move_packet._direction.x * MOVE_SPEED;
 		targetPos.y = session->GetPlayer()->_position.y + move_packet._direction.y * MOVE_SPEED;
 		targetPos.z = session->GetPlayer()->_position.z + move_packet._direction.z * MOVE_SPEED;
 		//TODO: deltaTime를 고려한 이동 로직 추가 필요
-
+		//TODO: 클라이언트에서 이동하고 이상 위치면 서버에서 보정하는 형태로 바꿔야됨
 		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
 
-		Vec3 player_extents = { 1.f, 1.8f, 1.f };
+		common::Vec3 player_extents = { 1.f, 1.8f, 1.f };
 
 		// 충돌 검사
 		if (false == MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
@@ -116,7 +116,7 @@ namespace chess::packet
 		}
 	}
 
-	void Handle_C2S_ATTACK(std::shared_ptr<chess::server::SESSION> session, chess::packet::PacketStream& stream)
+	void Handle_C2S_ATTACK(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		// 1. 세션과 방의 유효성 검사
 		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) 
@@ -187,7 +187,7 @@ namespace chess::packet
 				old_room->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof
 				(leave_packet), session->_id);
 
-				old_room->RemovePlayer(session->_id);
+				old_room->LeavePlayer(session->_id);
 			}
 		}
 
@@ -211,7 +211,7 @@ namespace chess::packet
 		session->do_send(ack_stream.constable_data(), ack_stream.Size());
 		MYLOG("[EnterRoom] Sent ENTER_ROOM_ACK(success) to session " << session->_id);
 
-		room->SendAllPlayersInfoToNewPlayer(session);
+		room->SendRoomInfoToNewPlayer(session);
 
 		packet::PacketStream self_spawn_stream = MakeSpawnPlayerPacket(session);
 		session->do_send(self_spawn_stream.mutable_data(), self_spawn_stream.Size());
@@ -219,7 +219,7 @@ namespace chess::packet
 		room->Broadcast(self_spawn_stream.constable_data(), self_spawn_stream.Size(), session->_id);
 		MYLOG("[EnterRoom] Broadcasted SPAWN_PLAYER of new session " << session->_id << " to other players in room " << room->GetRoomId());
 
-		room->AddPlayer(session);
+		room->EnterPlayer(session);
 	}
 
 	void Handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)

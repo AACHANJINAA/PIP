@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "MapDataManager.h"
-namespace chess
+namespace PIP
 {
 	void MapDataManager::LoadMapData(std::string_view mapDataPath)
 	{
@@ -17,12 +17,12 @@ namespace chess
 		{
 			if (!item.contains("AABB")) continue;
 
-			Vec3 min_v;
+			common::Vec3 min_v;
 			min_v.x = item["AABB"]["Min"]["X"];
 			min_v.y = item["AABB"]["Min"]["Y"];
 			min_v.z = item["AABB"]["Min"]["Z"];
 
-			Vec3 max_v;
+			common::Vec3 max_v;
 			max_v.x = item["AABB"]["Max"]["X"];
 			max_v.y = item["AABB"]["Max"]["Y"];
 			max_v.z = item["AABB"]["Max"]["Z"];
@@ -30,16 +30,16 @@ namespace chess
 			_map_objects.push_back({ min_v, max_v });
 		}
 	}
-	bool MapDataManager::CheckForCollision(Vec3 target_pos, Vec3 player_extents)
+	bool MapDataManager::CheckForCollision(common::Vec3 target_pos, common::Vec3 player_extents)
 	{
-		// 1. ÇÃ·¹ÀÌ¾îÀÇ AABB(°æ°è »óÀÚ) °è»ê
-		Vec3 player_min = { target_pos.x - player_extents.x, target_pos.y - player_extents.y, target_pos.z - player_extents.z };
-		Vec3 player_max = { target_pos.x + player_extents.x, target_pos.y + player_extents.y, target_pos.z + player_extents.z };
+		// 1. í”Œë ˆì´ì–´ì˜ AABB(ê²½ê³„ ìƒì) ê³„ì‚°
+		common::Vec3 player_min = { target_pos.x - player_extents.x, target_pos.y - player_extents.y, target_pos.z - player_extents.z };
+		common::Vec3 player_max = { target_pos.x + player_extents.x, target_pos.y + player_extents.y, target_pos.z + player_extents.z };
 
-		// 2. ¸ğµç ¸Ê ¿ÀºêÁ§Æ®¿Í Ãæµ¹ °Ë»ç
+		// 2. ëª¨ë“  ë§µ ì˜¤ë¸Œì íŠ¸ì™€ ì¶©ëŒ ê²€ì‚¬
 		for (const auto& map_object : _map_objects)
 		{
-			// 3. AABB Ãæµ¹ °Ë»ç ·ÎÁ÷
+			// 3. AABB ì¶©ëŒ ê²€ì‚¬ ë¡œì§
 			if (player_max.x > map_object._min.x &&
 				player_min.x < map_object._max.x &&
 				player_max.y > map_object._min.y &&
@@ -47,10 +47,10 @@ namespace chess
 				player_max.z > map_object._min.z &&
 				player_min.z < map_object._max.z)
 			{
-				return true; // Ãæµ¹ ¹ß»ı
+				return true; // ì¶©ëŒ ë°œìƒ
 			}
 		}
 
-		return false; // Ãæµ¹ ¾øÀ½
+		return false; // ì¶©ëŒ ì—†ìŒ
 	}
 }

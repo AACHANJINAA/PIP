@@ -1,9 +1,11 @@
 ﻿#include "pch.h"
 #include "Room.h"
+#include "AIManager.h"
 #include "Player.h"
 #include "PacketHandlers.h"
+#include "Timer.h"
 
-namespace chess::server
+namespace PIP::server
 {
 	constexpr int MAX_ROOM_PLAYERS = 4; // 최대 플레이어 수
 
@@ -12,25 +14,50 @@ namespace chess::server
 	{
 		MYLOG("Room " << _room_id << " created. Assigned to Logic Thread " << _logic_thread_idx << " Max Players: " << static_cast<int>(_max_players));
 	}
-	void Room::AddPlayer(std::shared_ptr<SESSION> new_player)
+
+	void Room::Initialize()
 	{
-		if (new_player == nullptr) return;
-		_players.insert({ new_player->_id, new_player });
-		MYLOG("Player " << new_player->_id << " added to Room " << _room_id << ". Total: " << _players.size());
-		
-		if (_room_state == RoomState::WAITING)
+		for (int i = 0; i < 5; ++i)
 		{
-			StartGame();
+			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
+			int npcId = AIManager::Instance()->GetNewNpcId();
+			common::Vec3 randomPos = { static_cast<float>(rand() % 50), 4.0f, static_cast<float>(rand() % 50)
+			};
+
+			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos);
+			AddNPC(std::move(npc));
+
+			// 생성된 NPC의 AI를 1초 뒤에 처음으로 실행하도록 타이머에 등록
+			// AI 로직은 AIManager에 위임하고, Room과 NPC 정보를 넘겨줍니다.
+			Timer::Instance()->AddTimerJob(std::chrono::milliseconds(10), [this, npcId]() {
+				AIManager::Instance()->UpdateNPC(this, npcId);
+			}); 
 		}
 	}
-	void Room::RemovePlayer(long long player_id)
+
+	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
-		auto it = _players.find(player_id);
-		if (it != _players.end())
+		_players.emplace(new_player->_id, new_player);
+		SendRoomInfoToNewPlayer(new_player);
+	}
+	void Room::LeavePlayer(long long player_id)
+	{
+		_players.erase(player_id);
+	}
+
+	void Room::AddNPC(std::unique_ptr<NPC> npc)
+	{
+		_npcs.emplace(npc->GetNpcId(), std::move(npc));
+	}
+
+	NPC* Room::GetNPC(int npc_id)
+	{
+		auto it = _npcs.find(npc_id);
+		if (it == _npcs.end())
 		{
-			_players.erase(it);
-			MYLOG("Player " << player_id << " removed from Room " << _room_id << ". Total: " << _players.size());
+			return nullptr;
 		}
+		return it->second.get();
 	}
 
 	void Room::StartGame()
@@ -49,32 +76,37 @@ namespace chess::server
 
 	void Room::Broadcast(const char* data, size_t size, long long except_id)
 	{
-		packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(const_cast<char*>(data));
-
-		MYLOG("[Room::Broadcast] Room " << _room_id << " broadcasting packet type " << static_cast<int
-		>(header->_type) << ". Except ID: " << except_id);
-
-		for (auto const& [player_id, player_session] : _players)
+		for (auto& pair : _players)
 		{
-			if (player_session && player_id != except_id)
-			{
-				player_session->do_send(data, size);
-				MYLOG("[Room::Broadcast]   -> Sent to player ID: " << player_id);
-			}
+			if (pair.first == except_id) continue;
+			pair.second->do_send(data, size);
 		}
 	}
 
-	void Room::SendAllPlayersInfoToNewPlayer(std::shared_ptr<SESSION> new_player)
+	void Room::SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player)
 	{
-		for (auto const& [player_id, existing_player] : _players)
+		// 1. 방에 이미 있던 다른 플레이어들의 정보를 새 플레이어에게 전송
+		for (auto& pair : _players)
 		{
-		    if (existing_player)
-		    {
-		    	packet::PacketStream spawn_stream = packet::MakeSpawnPlayerPacket(existing_player);
-		    	new_player->do_send(spawn_stream.mutable_data(), spawn_stream.Size());
-				MYLOG("[Room] Sent SPAWN_PLAYER of " << player_id << " to new session " << new_player->_id);
-		    }
-		 }
+			if (pair.first == new_player->_id) continue;
+
+			auto& other_player_session = pair.second;
+			packet::PacketStream spawn_packet = packet::MakeSpawnPlayerPacket(other_player_session);
+			new_player->do_send(spawn_packet.constable_data(), spawn_packet.Size());
+		}
+
+		// 2. 방에 있는 모든 NPC들의 정보를 새 플레이어에게 전송
+		for (auto& pair : _npcs)
+		{
+			NPC* npc = pair.second.get();
+			common::packet::SC_PACKET_NPC_SPAWN spawnPacket;
+			spawnPacket._size = sizeof(spawnPacket);
+			spawnPacket._type = common::packet::PacketType::S2C_NPC_SPAWN;
+			spawnPacket._npc_id = npc->GetNpcId();
+			spawnPacket._npc_type = npc->GetNpcType();
+			spawnPacket._position = npc->GetPosition();
+			new_player->do_send(reinterpret_cast<const char*>(&spawnPacket), sizeof(spawnPacket));
+		}
 	}
 
 	void Room::HandleAttack(std::shared_ptr<SESSION> attacker)
