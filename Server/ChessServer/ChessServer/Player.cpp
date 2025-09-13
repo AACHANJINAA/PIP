@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Player.h"
 
-namespace chess
+namespace PIP
 {
 	Player::Player(long long owner_id) 
 		:

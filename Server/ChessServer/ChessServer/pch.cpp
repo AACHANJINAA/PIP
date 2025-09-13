@@ -1,6 +1,6 @@
 #include "pch.h"
 
-void chess::print_error(const char* msg, int err_no)
+void PIP::print_error(const char* msg, int err_no)
 {
 	if (WSA_IO_PENDING == err_no)
 	{

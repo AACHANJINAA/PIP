@@ -3,7 +3,7 @@
 #include "Room.h"
 #include "Player.h"
 
-namespace chess::server
+namespace PIP::server
 {
 	class Server;
 
@@ -59,7 +59,7 @@ namespace chess::server
 
 		std::atomic<SESSION_STATE>			_state;
 	private:
-		std::shared_ptr<chess::Player>		_player;
+		std::shared_ptr<PIP::Player>		_player;
 	public:
 		SESSION();
 		SESSION(long long session_id, SOCKET s, int logic_index);
@@ -69,19 +69,22 @@ namespace chess::server
 		void do_send(const char* data, size_t size);
 		void OnRecv(size_t len, Server* server_ptr);
 
-		std::shared_ptr<chess::Player> GetPlayer() const { return _player; }
+		std::shared_ptr<PIP::Player> GetPlayer() const { return _player; }
 	};
-
+	struct LogicJob
+	{
+		std::function<void()> _task;
+	};
 	struct LogicPacket // 로직 스레드에 전달될 패킷 구조체
 	{
 		std::shared_ptr<SESSION> session; // 이 세션이
-		packet::PacketStream packet_stream; // 그냥 스트림을 가져오도록 변경
+		common::packet::PacketStream packet_stream; // 그냥 스트림을 가져오도록 변경
 	};
 
 	struct LogicWorker
 	{
 		std::thread thread;
-		concurrency::concurrent_queue<LogicPacket> queue;
+		concurrency::concurrent_queue<LogicJob> queue;
 
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
@@ -105,13 +108,15 @@ namespace chess::server
 		void Stop();
 
 		// 로직 큐를 얻어오기 위한 public 메소드
-		concurrency::concurrent_queue<LogicPacket>* get_logic_queue(int worker_idx);
+		concurrency::concurrent_queue<LogicJob>* get_logic_queue(int worker_idx);
 		Room* GetRoom(int room_id); // [추가] 특정 룸을 얻어오기 위한 메소드
+		int GetLogicWorkerCount() const { return static_cast<int>(_logic_workers.size()); }
 
 		// [추가] 세션 관리를 위한 함수들
 		void AddSession(long long session_id, std::shared_ptr<SESSION> session);
 		std::shared_ptr<SESSION> GetSession(long long session_id);
 		void RemoveSession(long long session_id);
+
 	private:
 		// 서버 내부 동작 함수들 (클래스 외부에서 호출될 필요 없음)
 		void do_accept();

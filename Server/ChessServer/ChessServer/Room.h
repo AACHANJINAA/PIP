@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include "Server.h"
+#include "NPC.h"
 
-namespace chess::server
+namespace PIP::server
 {
 
 	enum class RoomState : uint8_t
@@ -14,24 +15,36 @@ namespace chess::server
 	{
 	public:
 		Room(int room_id, int logic_thread_idx);
+		void Initialize();
 
-		void AddPlayer(std::shared_ptr<SESSION> new_player);
-		void RemovePlayer(long long player_id);
+		// 플레이어 추가/제거
+		void EnterPlayer(std::shared_ptr<SESSION> new_player);
+		void LeavePlayer(long long player_id);
 
+		// NPC
+		void AddNPC(std::unique_ptr<NPC> npc);
+		NPC* GetNPC(int npc_id);
+
+
+		// 게임 시작
 		void StartGame();
-   
+
+		// 공용
+		// void Update(); //아직 사용 안함
 		// 방에 있는 모든 플레이어에게 패킷을 전송 (브로드캐스팅)
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
 
-		void SendAllPlayersInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
+		// 정보 전송
+		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
 
+		// 공격 처리
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
+		// 게터
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
 		RoomState GetRoomState() const { return _room_state; }
-
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
 		
 	private:
@@ -42,5 +55,6 @@ namespace chess::server
 
 		// 이 방에 속한 플레이어들의 목록
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
+		std::unordered_map<int, std::unique_ptr<NPC>> _npcs;
 	};
 }

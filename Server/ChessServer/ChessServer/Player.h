@@ -1,5 +1,5 @@
 #pragma once
-namespace chess
+namespace PIP
 {
 	class Player
 	{
@@ -7,7 +7,7 @@ namespace chess
 		Player(long long owner_id);
 		Player();
 	public:
-		Vec3						_position;
+		common::Vec3				_position;
 		std::string					_name;
 		short						_hp;
 		short						_max_hp;

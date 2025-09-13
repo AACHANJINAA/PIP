@@ -1,41 +1,51 @@
-#include "pch.h"
+ï»¿#include "pch.h"
+
+#include "AIManager.h"
 #include "PacketManager.h"
 #include "server.h"
+#include "Timer.h"
 
-constexpr short SERVER_PORT = 3000; // ³»°¡ °¡Áö°í ÀÖ¾î¾ßÇÔ
+constexpr short SERVER_PORT = 3000; // ë‚´ê°€ ê°€ì§€ê³  ìˆì–´ì•¼í•¨
 
-namespace chess
+namespace PIP::server
 {
     HANDLE g_iocp = nullptr;
     std::atomic<int> g_new_id = 0;
 }
 
 
-using namespace chess;
+using namespace PIP;
 int main()
 {
     std::wcout.imbue(std::locale("korean"));
     WSAData wsadata;
     if(WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
     {
-		return -1; // WSAStartup ½ÇÆĞ
+		return -1; // WSAStartup ì‹¤íŒ¨
     }
 
-    chess::packet::PacketManager::Instance()->Initialize();
-	std::cout << "PacketManager Initialized." << std::endl;
+    PIP::packet::PacketManager::Instance()->Initialize();
+	MYLOG("PacketManager Initialized." << std::endl);
 
-    // I/O ½º·¹µå´Â 2°³, ·ÎÁ÷ ½º·¹µå´Â ³ª¸ÓÁö CPU ÄÚ¾î ¼ö¸¸Å­ ÇÒ´çÇÕ´Ï´Ù.
-	// (ÃÖ¼Ò 1°³ÀÇ ·ÎÁ÷ ½º·¹µå´Â º¸Àå)
-	int total_cores = static_cast<int>(std::thread::hardware_concurrency());
+    server::Timer::Instance()->Initialize();
+	MYLOG("Timer Initialized." << std::endl);
+
+
+    // I/O ìŠ¤ë ˆë“œëŠ” 2ê°œ, ë¡œì§ ìŠ¤ë ˆë“œëŠ” ë‚˜ë¨¸ì§€ CPU ì½”ì–´ ìˆ˜ë§Œí¼ í• ë‹¹í•©ë‹ˆë‹¤.
+	// (ìµœì†Œ 1ê°œì˜ ë¡œì§ ìŠ¤ë ˆë“œëŠ” ë³´ì¥)
+	int total_cores = static_cast<int>(std::thread::hardware_concurrency() * 1.5);
 	int logic_thread_count = std::max(1, total_cores - 2);
 	int io_thread_count = 2;
 
-    // ¼­¹ö ½ºÅ»Æ®!
+    // ì„œë²„ ìŠ¤íƒˆíŠ¸!
     server::Server::Instance()->Start(io_thread_count, logic_thread_count);
 
-    // ¼­¹ö°¡ Á¾·áµÉ ¶§±îÁö ´ë±â (ÄÜ¼Ö¿¡¼­ Enter Å°¸¦ ´©¸£¸é Á¾·á)
+    // ì„œë²„ê°€ ì¢…ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸° (ì½˜ì†”ì—ì„œ Enter í‚¤ë¥¼ ëˆ„ë¥´ë©´ ì¢…ë£Œ)
 	std::cout << "Press Enter to stop the server..." << std::endl;
     std::cin.get();
+
+    server::Timer::Instance()->Stop();
+    MYLOG("Timer Stopped \n");
 
     server::Server::Instance()->Stop();
     WSACleanup();

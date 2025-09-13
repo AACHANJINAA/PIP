@@ -5,7 +5,7 @@
 #include "PacketManager.h"
 #include "ServerCore.h"
 
-namespace chess::server
+namespace PIP::server
 {
 	
 
@@ -18,7 +18,7 @@ namespace chess::server
 		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }
 	{
 		_state = SESSION_STATE::ST_LOBBY;
-		_player = std::make_shared<chess::Player>(session_id);
+		_player = std::make_shared<PIP::Player>(session_id);
 	}
 	SESSION::~SESSION()
 	{
@@ -62,50 +62,36 @@ namespace chess::server
 	}
 	void SESSION::OnRecv(size_t len, Server* server_ptr)
 	{
-		//LOG("[OnRecv] Session " << _id << " received " << len << " bytes. Current buffer size: " << _recv_buffer.size());
 		_recv_buffer.insert(_recv_buffer.end(), _recv_over._buffer.data(), _recv_over._buffer.data() + len);
-		//LOG("[OnRecv] Buffer size after insert: " << _recv_buffer.size());
 		size_t processed_bytes = 0;
 		while (true)
 		{
-			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader))
-			{
-				//LOG("[OnRecv] Not enough data for a header. Breaking loop.");
-				break;
-			}
-			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
-			//LOG("[OnRecv] Parsing header at offset " << processed_bytes << ". Header size: " << header->_size << ", type: " << static_cast<int>(header->_type));
+			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader)) break;
 
+			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
 			constexpr int MAX_PACKET_SIZE = 4096;
 			if (header->_size < sizeof(packet::PacketHeader) || header->_size > MAX_PACKET_SIZE)
 			{
-				//LOG("[Hacking] Session " << _id << " sent an invalid packet size: " << header->_size << ". Closing session.");
 				_recv_buffer.clear();
 				break;
 			}
+			if (_recv_buffer.size() - processed_bytes < header->_size) break;
 
-			if (_recv_buffer.size() - processed_bytes < header->_size)
+			auto task = 
+				[session = shared_from_this(), stream = packet::PacketStream(_recv_buffer.data() + processed_bytes, header->_size)]
+			() mutable
 			{
-				MYLOG("[OnRecv] Incomplete packet. Need " << header->_size << " bytes, have " << (_recv_buffer.size() - processed_bytes) << ". Breaking loop.");
-				break;
-			}
-		
-			// LogicPacket
-			LogicPacket logic_packet;
-			logic_packet.session = shared_from_this();
-			logic_packet.packet_stream = packet::PacketStream(_recv_buffer.data() + processed_bytes,header->_size);
+				packet::PacketManager::Instance()->Dispatch(session, stream);
+			};
 
-			MYLOG("[Packet] Received from Session " << _id << ". Size: " << header->_size
-				<< ", Type: " << static_cast<int>(header->_type) << ". Pushing to logic queue #" << _logic_thread_idx);
-			server_ptr->get_logic_queue(_logic_thread_idx)->push(logic_packet);
-		
+			server_ptr->get_logic_queue(_logic_thread_idx)->push({ std::move(task) });
+
 			processed_bytes += header->_size;
 		}
-		
+
 		if (processed_bytes > 0)
 		{
 			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
-			//LOG("[OnRecv] Erased " << processed_bytes << " bytes from buffer. Remaining size: " << _recv_buffer.size());
 		}
 	}
 
@@ -145,7 +131,9 @@ namespace chess::server
 		{
 			int logic_idx = i % _logic_workers.size();
 			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
+			_rooms.back()->Initialize();
 		}
+		MYLOG("[SERVER] Room count: " << _rooms.size());
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
 		//MYLOG("[SERVER] Loading Map...");
@@ -185,9 +173,7 @@ namespace chess::server
 		// 1. 모든 로직 스레드의 큐에 종료 신호(더미 패킷)를 보냄
 		for (auto& worker : _logic_workers)
 		{
-			LogicPacket dummy_packet;
-			dummy_packet.session = nullptr; // 종료 신호로 nullptr 사용
-			worker.queue.push(dummy_packet);
+			worker.queue.push({[](){}});
 		}
 
 		for (size_t i = 0; i < _io_threads.size(); ++i)
@@ -216,7 +202,7 @@ namespace chess::server
 
 		MYLOG("Server stopped.");
 	}
-	auto Server::get_logic_queue(int worker_idx) -> concurrency::concurrent_queue<LogicPacket>*
+	concurrency::concurrent_queue<LogicJob>* Server::get_logic_queue(int worker_idx)
 	{
 		if (worker_idx < 0 || worker_idx >= _logic_workers.size())
 		{
@@ -225,7 +211,7 @@ namespace chess::server
 		return &(_logic_workers[worker_idx].queue);
 	}
 
-	auto Server::GetRoom(int room_id) -> Room*
+	Room* Server::GetRoom(int room_id)
 	{
 		if (room_id < 0 || room_id >= _rooms.size())
 		{
@@ -253,7 +239,7 @@ namespace chess::server
 		//		 세션 객체를 삭제(erase)하는 대신, 상태를 초기화하고
 		//		 별도의 free_list (객체 풀)에 넣어 재사용하는 방식을 고려 필요.
 		//		 (Object Pooling 패턴)
-		_sessions.unsafe_erase(session_id);
+		_sessions[session_id] = nullptr;
 	}
 
 	void Server::do_accept()
@@ -290,10 +276,21 @@ namespace chess::server
 				{
 					MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
 
-					LogicPacket disconnect_packet;
-					disconnect_packet.session = session;
+					auto task = [this, session_id = session->_id]() {
+						std::shared_ptr<SESSION> s = GetSession(session_id);
+						if (s && s->_state == SESSION_STATE::ST_INGAME && s->_room_id != -1)
+						{
+							Room* room = GetRoom(s->_room_id);
+							if (room)
+							{
+								room->LeavePlayer(s->_id);
+								MYLOG("[Logic_worker] Processed disconnect for session " << s->_id << " from room " << room->GetRoomId());
+							}
+						}
+						RemoveSession(session_id);
+					}; 
 
-					get_logic_queue(session->_logic_thread_idx)->push(disconnect_packet);
+					get_logic_queue(session->_logic_thread_idx)->push({std::move(task)});
 
 					RemoveSession(key); // 이제 g_users에서 제거하는 것이 아니라 Server의 멤버에서 제거
 				}
@@ -331,58 +328,30 @@ namespace chess::server
 	void Server::Logic_worker(int thread_idx)
 	{
 		MYLOG("[Thread] Logic worker thread #" << thread_idx << " started. ID: " << std::this_thread::get_id());
-		LogicPacket packet_to_process;
+		LogicJob job_to_process;
 		while (_is_running)
 		{
 			while (true) {
-				if (true == _logic_workers[thread_idx].queue.try_pop(packet_to_process))
+				if (true == _logic_workers[thread_idx].queue.try_pop(job_to_process))
 					break;
 				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 큐가 비어있으면 잠시 대기	
 			}
 
-			auto& session = packet_to_process.session;
-			if (session == nullptr) continue;
-
-			// 연결 끊김 처리
-			if (packet_to_process.packet_stream.Size() == 0)
+			if (!job_to_process._task)
 			{
-				if (session->_state == SESSION_STATE::ST_INGAME && session->_room_id != -1)
-				{
-					Room* room = GetRoom(session->_room_id);
-					if (room)
-					{
-						room->RemovePlayer(session->_id);
-						MYLOG("[Logic_worker] Processed disconnect for session " << session->_id
-							<< " from room " << room->GetRoomId());
-					}
-				}
 				continue;
 			}
-
-			// [수정] 이제 Logic_worker는 상태 검사 없이 Dispatcher에게 모든 것을 위임합니다.
-			packet::PacketManager::Instance()->Dispatch(session, packet_to_process.packet_stream);
+			job_to_process._task();
 		}
 	}
 	void Server::register_new_session(SOCKET client_socket)
 	{
-		//세션에 할당할 로직 스레드를 라운드-로빈 방식으로 선택
 		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_workers.size();
-		
-		// 2. 세션 ID 발급
 		long long new_id = g_new_id++;
-		
-		// 3. 새 세션 객체 생성
 		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
-		
-		// 4. 새 클라이언트 소켓을 IOCP에 연결하고, 세션 ID(new_id)를 Completion Key로 사용
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), g_iocp, new_id, 0);
-		
-		// 5. 전체 유저 목록에 새 세션 추가
 		AddSession(new_id, p);
-		
-		// 6. 첫 Recv 요청
 		p->do_recv();
-		
 		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
 	}
 }
