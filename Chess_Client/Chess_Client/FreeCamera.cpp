@@ -2,6 +2,7 @@
 #include "FreeCamera.h"
 #include "ObjectManager.h"
 #include "InputManager.h"
+#include "GameFramework.h"
 
 void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 {
@@ -39,10 +40,23 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 
 void FreeCamera::ProcessInput(float fElapsedTime)
 {
-    if (InputManager::Instance()->IsKeyDown(VK_RBUTTON))
+
+	// 창이 포커싱 되어있고, 커서가 안보일 때만 회전 적용
+	if (GameFramework::Instance()->m_bIsWindowActive && !InputManager::Instance()->GetIsShowCusor())
+	{
+		float cxDelta = InputManager::Instance()->GetMouseDelta().x;
+		float cyDelta = InputManager::Instance()->GetMouseDelta().y;
+
+		if (cxDelta != 0.0f || cyDelta != 0.0f)
+		{
+			Rotate(cyDelta, cxDelta, 0.f);
+		}
+	}
+
+   /* if (InputManager::Instance()->IsKeyDown(VK_RBUTTON))
     {
         ::SetCapture(InputManager::Instance()->GetHWnd());
-        ::GetCursorPos(&m_ptOldCursorPos);
+		::GetCursorPos(&m_ptOldCursorPos);
     }
 
     if (InputManager::Instance()->IsKeyDown(VK_RBUTTON) || InputManager::Instance()->IsKeyPress(VK_RBUTTON))
@@ -63,7 +77,7 @@ void FreeCamera::ProcessInput(float fElapsedTime)
     if (InputManager::Instance()->IsKeyUp(VK_RBUTTON))
     {
         ::ReleaseCapture();
-    }
+    }*/
 
     if (InputManager::Instance()->IsKeyDown('V')) {
         m_NowMode = CAMERA_MODE::CAMERA_FREE;
