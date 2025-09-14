@@ -19,6 +19,12 @@ Chess_Scene::~Chess_Scene()
 
 void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
+    // 마우스 처음에 숨기기
+    if (InputManager::Instance()->GetIsShowCusor())
+    {
+        InputManager::Instance()->ChangeShowCusor();
+    }
+
     _SignatureNum = 2;
     _AllRootSignature.resize(_SignatureNum);
    
@@ -213,6 +219,12 @@ void Chess_Scene::ProcessInput(float fElapsedTime)
     bool IsThirdPerson = (m_ChessCamera->GetCameraMode() == CAMERA_MODE::CAMERA_THIRD_PERSON);
 
 	MainPlayer* Player = nullptr;
+
+    // ESC 누르면 커서 키고 끌 수 있도록 수정
+    if (InputManager::Instance()->IsKeyDown(VK_ESCAPE))
+    {
+        InputManager::Instance()->ChangeShowCusor();
+    }
 
     m_ChessCamera->ProcessInput(fElapsedTime);
 
