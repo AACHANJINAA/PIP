@@ -4,13 +4,13 @@
 class Shader;
 
 
-enum MESH_TYPE {
+enum MeshType {
 	PLAYER,
 	ENEMY
 };
 
 // (추가) MATERIAL 구조체 [PONG]
-struct MATERIAL
+struct Material
 {
 	XMFLOAT4 m_xmf4Ambient;     // 환경광(Ambient) 
 	XMFLOAT4 m_xmf4Diffuse;     // 난반사(Diffuse) 
@@ -27,7 +27,7 @@ public:
 
 private:
 	int m_nReferences = 0;
-	ID3D12RootSignature* _RootSignature = nullptr;
+	ID3D12RootSignature* _rootSignature = nullptr;
 public:
 	void AddRef() { m_nReferences++; }
 	void Release() { 
@@ -36,15 +36,15 @@ public:
 	}
 
 	// Material_Shader은 재질 정보 + 셰이더
-	MATERIAL* m_pMaterial = NULL;
-	std::shared_ptr<Shader> _Shader = NULL;
+	Material* _material = nullptr;
+	std::shared_ptr<Shader> _shader = nullptr;
 
 	void SetShader(std::shared_ptr<Shader> pShader);
 	void SetShaderRootSignature(ID3D12RootSignature* RootSignature);
 	void SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandList);
 };
 
-class HPObject // HPObject 클래스는 HP와 MaxHP를 관리하는 기본 클래스
+class HPObject // TODO: 이것을 컴포넌트로 뺄것 <- 찬진스
 {
 	short _hp;
 	short _max_hp;
@@ -62,7 +62,7 @@ public:
 };
 
 // 셰이더의 cbuffer 구조체와 1:1로 대응하는 C++ 구조체
-struct CB_GAMEOBJECT_INFO
+struct CbGameObjectInfo
 {
 	XMFLOAT4X4 m_xmf4x4World;
 };
@@ -79,55 +79,53 @@ public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 
-	MESH_TYPE m_Mesh_Type{}; // 메쉬 어떤걸 원하는지?
+	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?
 
-	BoundingOrientedBox m_xmOOBB = BoundingOrientedBox();
-	bool m_Delete{}; // 객체를 삭제해야 하는지?
-	bool m_bCollision{}; // 충돌하였는지?
+	BoundingOrientedBox _orientedBoundingBox = BoundingOrientedBox();
+	bool _shouldDelete{}; // 객체를 삭제해야 하는지?
+	bool _isCollided{}; // 충돌하였는지?
 
-	GameObject* m_pObjectCollided = NULL; // 누구랑 박은건지?
-	XMFLOAT4	m_dwColor = { 0.f,0.f,0.f,0.f };
+	GameObject* _collidedObject = nullptr; // 누구랑 박은건지?
+	XMFLOAT4	_color = { 0.f,0.f,0.f,0.f };
 
-	XMFLOAT3 m_xmf3Gravity; // 중력
-	float Gravity = -2.0f; // 중력값
-	bool m_bGravity = true;
+	XMFLOAT3 _gravityVector; // 중력
+	float _gravityValue = -2.0f; // 중력값
+	bool _hasGravity = true;
 
 private:
 	// 월드 행렬을 담을 상수 버퍼 리소스
-	ComPtr<ID3D12Resource> m_pd3dcbGameObject;
+	ComPtr<ID3D12Resource> _cbGameObject;
 	// 맵핑된 상수 버퍼의 CPU 주소 (매 프레임 여기다 데이터 복사)
-	CB_GAMEOBJECT_INFO* _pcbMappedGameObject = nullptr;
+	CbGameObjectInfo* _cbMappedGameObject = nullptr;
 
 public:
-	XMFLOAT4X4 m_xmf4x4World = Matrix4x4::Identity();
-	Mesh* m_pMesh = NULL;
+	XMFLOAT4X4 _worldMatrix = Matrix4x4::Identity();
+	Mesh* _mesh = nullptr;
 	//Shader* m_pShader = NULL; 
-	Material_Shader* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
+	Material_Shader* _materialShader = nullptr; // 쉐이더 대신 머터리얼 [PONG]
 
 protected:
-	BoundingFrustum				m_xmFrustumView = BoundingFrustum();
-	BoundingFrustum				m_xmFrustumWorld = BoundingFrustum();
+	BoundingFrustum				_viewFrustum = BoundingFrustum();
+	BoundingFrustum				_worldFrustum = BoundingFrustum();
 
-	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3					m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	XMFLOAT3					m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	XMFLOAT3					m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
-
+	XMFLOAT3					_position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3					_right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	XMFLOAT3					_up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	XMFLOAT3					_look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	XMFLOAT3					_scale = XMFLOAT3(0.0f, 0.0f, 1.0f);
-
-	XMFLOAT3					_Rotate = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	XMFLOAT3					_rotate = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
 
 public:
-	void ReleaseUploadBuffers(); 
-	virtual void SetMesh(Mesh* pMesh);
-	virtual void SetShader(std::shared_ptr<Shader> pShader);
-	void SetMaterial(Material_Shader* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
-	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
-	virtual void Collision(float fElapsedTime) = 0;
-	virtual void ProcessInput(float fElapsedTime) = 0;
-	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
+	void release_upload_buffers(); 
+	virtual void set_mesh(Mesh* mesh);
+	virtual void set_shader(std::shared_ptr<Shader> shader);
+	void set_material(Material_Shader* material); // 쉐이더 대신 머터리얼 [PONG]
+	virtual void animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list) = 0;
+	virtual void collision(float elapsed_time) = 0;
+	virtual void process_input(float elapsed_time) = 0;
+	virtual void on_prepare_render(ID3D12GraphicsCommandList* command_List);
+	virtual void render(ID3D12GraphicsCommandList* command_list, Camera* camera);
 
 	//상수 버퍼를 생성한다. 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
@@ -136,25 +134,25 @@ public:
 	virtual void ReleaseShaderVariables();
 
 	//게임 객체의 월드 변환 행렬에서 위치 벡터와 방향(x-축, y-축, z-축) 벡터를 반환한다. 
-	XMFLOAT3 GetPosition();
-	XMFLOAT3 GetLook();
-	XMFLOAT3 GetSize();
-	XMFLOAT3 GetUp();
-	XMFLOAT3 GetRight();
+	XMFLOAT3 look();
+	XMFLOAT3 size();
+	XMFLOAT3 up();
+	XMFLOAT3 right();
 	//게임 객체의 위치를 설정한다. 
-	void SetPosition(float x, float y, float z);
-	void SetPosition(XMFLOAT3 xmf3Position);
+	void set_position(float x, float y, float z);
+	void set_position(XMFLOAT3 position);
+	XMFLOAT3 position();
 
 	//게임 객체의 크기를 설정한다.
 	void SetScale(float x, float y, float z);
 
 	//게임 객체의 중력을 나타낸다.
-	void SetGravity(XMFLOAT3& xmf3Gravity) { m_xmf3Gravity = xmf3Gravity; }
+	void SetGravity(XMFLOAT3& xmf3Gravity) { _gravityVector = xmf3Gravity; }
 
 	//게임 객체를 회전(x-축, y-축, z-축)한다.
-	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
+	void rotate(float pitch = 10.0f, float yaw = 10.0f, float roll = 10.0f);
 
-	void Move(XMFLOAT3& vDirection, float fSpeed);
+	void move(XMFLOAT3& direction, float speed);
 	void Move(float x, float y, float z);
 
 	void LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);

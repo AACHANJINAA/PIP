@@ -26,7 +26,7 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 			{
 				int i = 0; // DW디버깅
 			}
-			SetPosition(XMFLOAT3(Player.get()->GetPosition().x - (GetLookVec().x) * m_NowOffset, Player.get()->GetPosition().y - (GetLookVec().y) * m_NowOffset, Player.get()->GetPosition().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
+			SetPosition(XMFLOAT3(Player.get()->position().x - (GetLookVec().x) * m_NowOffset, Player.get()->position().y - (GetLookVec().y) * m_NowOffset, Player.get()->position().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
 		}
 	}
 		break;

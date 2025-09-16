@@ -31,7 +31,7 @@ struct LIGHTS
 // MATERIALS 구조체: 씬의 모든 재질 정보.
 struct MATERIALS
 {
-	MATERIAL m_pReflections[MAX_MATERIALS];
+	Material m_pReflections[MAX_MATERIALS];
 };
 
 // (추가) 씬의 라이팅, 머터리얼 관련 변수 및 함수 선언

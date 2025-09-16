@@ -24,7 +24,7 @@ bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, 
 
         if (m_pLockedObject)
         {
-            m_pLockedObject->m_bCollision = true;
+            m_pLockedObject->_isCollision = true;
         }
 
         break;
@@ -83,12 +83,12 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
 
             BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,meshName, (Scene*)this };
 
-            Board->SetMesh(BoardMesh);
-            Board->SetShader(_AllShaders[1]); // GLB
-            Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
-            Board->Rotate(rotation.x, -rotation.y, rotation.z);
+            Board->set_mesh(BoardMesh);
+            Board->set_shader(_AllShaders[1]); // GLB
+            Board->_materialShader->SetShaderRootSignature(_AllRootSignature[1].Get());
+            Board->rotate(rotation.x, -rotation.y, rotation.z);
             Board->SetScale(scale.x, scale.y, scale.z);
-            Board->SetPosition(location.x, location.y, location.z);
+            Board->set_position(location.x, location.y, location.z);
 
             ObjectManager::Instance()->PushFloorObject(Board);
 
@@ -349,7 +349,7 @@ void Scene::ReleaseUploadBuffers()
 
     for (auto& Objects : Arr) {
         for (auto& Object : Objects) {
-            Object.get()->ReleaseUploadBuffers();
+            Object.get()->release_upload_buffers();
         }
     }
 }

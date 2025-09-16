@@ -170,7 +170,7 @@ public:
 	BoundingOrientedBox GetBoundingBox() const { return m_xmOOBB; }
 };
 
-struct Material                                                                                                                                          
+struct OBJMaterial                                                                                                                                          
 {                                                                                                                                              
 	std::string name;
 	XMFLOAT4 Ka; // Ambient
@@ -193,7 +193,7 @@ public:
 	virtual ~ReadObjMesh();
 
 private:
-	std::map<std::string, Material> m_mapMaterials;
+	std::map<std::string, OBJMaterial> m_mapMaterials;
 	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
 };
 
