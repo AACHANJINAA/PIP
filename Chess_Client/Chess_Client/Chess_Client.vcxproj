@@ -168,6 +168,7 @@
     <ClCompile Include="BoardCube.cpp" />
     <ClCompile Include="Chess_Client.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="MainPlayer.cpp" />

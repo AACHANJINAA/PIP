@@ -100,19 +100,19 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,"Resource/MapData/SM_Crate_01.glb", (Scene*)this};
 
-    Board->SetMesh(BoardMesh);
-    Board->SetShader(_AllShaders[1]); // GLB
-    Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
+    Board->set_mesh(BoardMesh);
+    Board->set_shader(_AllShaders[1]); // GLB
+    Board->_materialShader->set_shader_root_signature(_AllRootSignature[1].Get());
    // Board->SetScale(1.f, 1.f, 1.f);
 	auto BoardObjaect_Transform = Board->GetComponent<TransformComponent>();
     if (BoardObjaect_Transform) 
     {
-        BoardObjaect_Transform->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * BoardObjaect_Transform->GetSize().x),
+        BoardObjaect_Transform->set_position(((Board->_mesh->m_Right - Board->_mesh->m_Left) * BoardObjaect_Transform->get_size().x),
             1.0f,
-            ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * BoardObjaect_Transform->GetSize().z));
+            ((Board->_mesh->m_Front - Board->_mesh->m_Back) * BoardObjaect_Transform->get_size().z));
     }
-    Board->m_PosX = 0;
-    Board->m_PosY = 0;
+    Board->_posX = 0;
+    Board->_posY = 0;
     ObjectManager::Instance()->PushFloorObject(Board);
 
     // 언리얼에서 뽑은 FBX 테스트
@@ -121,18 +121,18 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     _pCollisionMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCollision.fbx" };
 
-    _pFbxObject->SetMesh(_pCollisionMesh);
+    _pFbxObject->set_mesh(_pCollisionMesh);
     XMFLOAT3 Scale = XMFLOAT3(0.01f, 0.01f, 0.01f);
     auto FbxObject_Transform = _pFbxObject->GetComponent<TransformComponent>();
     if (FbxObject_Transform)
     {
-        FbxObject_Transform->SetScale(Scale.x, Scale.y, Scale.z);
-        FbxObject_Transform->SetPosition(((_pFbxObject->m_pMesh->m_Right - _pFbxObject->m_pMesh->m_Left) * FbxObject_Transform->GetSize().x + 3),
+        FbxObject_Transform->set_scale(Scale.x, Scale.y, Scale.z);
+        FbxObject_Transform->set_position(((_pFbxObject->_mesh->m_Right - _pFbxObject->_mesh->m_Left) * FbxObject_Transform->get_size().x + 3),
             0.8f,
-            ((_pFbxObject->m_pMesh->m_Front - _pFbxObject->m_pMesh->m_Back) * FbxObject_Transform->GetSize().z) + 5);
+            ((_pFbxObject->_mesh->m_Front - _pFbxObject->_mesh->m_Back) * FbxObject_Transform->get_size().z) + 5);
     }
-    Board->m_PosX = 0;
-    Board->m_PosY = 0;
+    Board->_posX = 0;
+    Board->_posY = 0;
     ObjectManager::Instance()->PushFloorObject(_pFbxObject);
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -152,17 +152,17 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
             // 위치 계산은 Render 함수에서 매 프레임 수행하므로 여기서는 안함
             auto debugOOBBObject = std::make_shared<BoardCube>();
             debugOOBBObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-            debugOOBBObject->SetMesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));
+            debugOOBBObject->set_mesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));
             debugObjects.push_back(debugOOBBObject);
 
             auto debugAABBObject = std::make_shared<BoardCube>();
             debugAABBObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-            debugAABBObject->SetMesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));
+            debugAABBObject->set_mesh(new DebugCollisionBox(pd3dDevice, pd3dCommandList, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));
             debugObjects.push_back(debugAABBObject);
 
             auto debugWireframeObject = std::make_shared<BoardCube>();
             debugWireframeObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-            debugWireframeObject->SetMesh(new DebugWireframeMesh(pd3dDevice, pd3dCommandList, primitive.vertices, primitive.indices, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));
+            debugWireframeObject->set_mesh(new DebugWireframeMesh(pd3dDevice, pd3dCommandList, primitive.vertices, primitive.indices, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));
             debugObjects.push_back(debugWireframeObject);
         }
     }
@@ -253,15 +253,15 @@ void Chess_Scene::ProcessInput(float fElapsedTime)
                 {
                     if (IsThirdPerson)
                     {
-                        Player->ProcessInput(fElapsedTime);
+                        Player->process_input(fElapsedTime);
                     }
                 }
                 else
                 {
-                    Object->ProcessInput(fElapsedTime);
+                    Object->process_input(fElapsedTime);
                 }
 
-                Object->UpdateBoundingBox();
+                Object->update_bounding_box();
             }
         }
     }
@@ -277,9 +277,9 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
         for (std::shared_ptr<GameObject>& Object : Objects) {
             if (nullptr != Object)
             {
-                Object->Animate(fTimeElapsed, m_pCamera, pd3dCommandList);
-                Object->Update(fTimeElapsed);
-                Object.get()->UpdateBoundingBox();
+                Object->animate(fTimeElapsed, m_pCamera, pd3dCommandList);
+                Object->update(fTimeElapsed);
+                Object.get()->update_bounding_box();
             }
         }
     }
@@ -288,7 +288,7 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
     for (std::shared_ptr<GameObject>& Object : ObjectList) {
         if (nullptr != Object)
         {
-            Object->m_pMesh->ChangeColor(pd3dCommandList, std::dynamic_pointer_cast<OtherPlayer>(Object)->GetHP() / 100.f,
+            Object->_mesh->ChangeColor(pd3dCommandList, std::dynamic_pointer_cast<OtherPlayer>(Object)->GetHP() / 100.f,
                 1.f,
                 std::dynamic_pointer_cast<OtherPlayer>(Object)->GetHP() / 100.f,
                 1.f);
@@ -331,7 +331,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
     {
         // 셰이더 그룹이 바뀔 때 한 번만 상태를 설정
         // 같은 그룹의 첫번째 원소를 기준으로 설정
-        objectGroup[0]->OnPrepareRender(pd3dCommandList); // PSO와 루트 시그니처를 여기서 설정
+        objectGroup[0]->on_prepare_render(pd3dCommandList); // PSO와 루트 시그니처를 여기서 설정
 
        
 
@@ -349,7 +349,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
                 // A. 뼈 행렬 상수 버퍼 바인딩 (애니메이션용, 아직 작동X)
           // ReadGlbMesh가 애니메이션 데이터를 담고있는 상수 버퍼의 주소를 반환해야 합니다.
-                D3D12_GPU_VIRTUAL_ADDRESS boneTransformAddress = dynamic_cast<ReadGlbMesh*>(Object->m_pMesh)->GetBoneTransformsBufferAddress();
+                D3D12_GPU_VIRTUAL_ADDRESS boneTransformAddress = dynamic_cast<ReadGlbMesh*>(Object->_mesh)->GetBoneTransformsBufferAddress();
                 // [수정] 주소가 유효하면 실제 버퍼를, 아니면 더미 버퍼를 바인딩
                 if (boneTransformAddress != 0)
                 {
@@ -363,7 +363,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
                 // B. 텍스처 SRV 테이블 바인딩
                 // ReadGlbMesh가 로딩 시 생성한 SRV의 GPU 핸들을 반환해야 합니다.
-                D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = dynamic_cast<ReadGlbMesh*>(Object->m_pMesh)->GetSrvGpuHandle();
+                D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = dynamic_cast<ReadGlbMesh*>(Object->_mesh)->GetSrvGpuHandle();
                 if (textureSrvHandle.ptr != 0)
                 {
                     // 루트 시그니처에 정의된 SRV 테이블 슬롯(예: 5번)에 텍스처를 바인딩합니다.
@@ -372,7 +372,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
                 }
                 //Object->Render(pd3dCommandList, m_pCamera); // 디버깅용
             }
-            Object->Render(pd3dCommandList,m_pCamera);
+            Object->render(pd3dCommandList,m_pCamera);
         }
         ++ShaderNum;
     }
@@ -395,7 +395,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         m_pCamera->UpdateShaderVariables(pd3dCommandList);
 
         const auto& collisionPrimitives = _pCollisionMesh->GetCollisionPrimitives();
-        XMMATRIX parentWorld = XMLoadFloat4x4(&_pFbxObject->GetComponent<TransformComponent>()->GetWorldMatrix());
+        XMMATRIX parentWorld = XMLoadFloat4x4(&_pFbxObject->GetComponent<TransformComponent>()->get_world_matrix());
 
         for (size_t i = 0; i < collisionPrimitives.size(); ++i)
         {
@@ -410,19 +410,19 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
             XMVECTOR oobb_quat = XMQuaternionNormalize(XMLoadFloat4(&primitive.oobb.Orientation));
             XMMATRIX oobb_R = XMMatrixRotationQuaternion(oobb_quat);
             XMMATRIX oobb_T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
-            XMStoreFloat4x4(&debugOOBBObject->GetComponent<TransformComponent>()->GetWorldMatrix(), (oobb_S * oobb_R * oobb_T) * parentWorld);
+            XMStoreFloat4x4(&debugOOBBObject->GetComponent<TransformComponent>()->get_world_matrix(), (oobb_S * oobb_R * oobb_T) * parentWorld);
 
             // 2. AABB 위치 갱신
             XMMATRIX aabb_S = XMMatrixScaling(primitive.aabb.Extents.x * 2.0f, primitive.aabb.Extents.y * 2.0f, primitive.aabb.Extents.z * 2.0f);
             XMMATRIX aabb_T = XMMatrixTranslation(primitive.aabb.Center.x, primitive.aabb.Center.y, primitive.aabb.Center.z);
-            XMStoreFloat4x4(&debugAABBObject->GetComponent<TransformComponent>()->GetWorldMatrix(), (aabb_S * aabb_T) * parentWorld);
+            XMStoreFloat4x4(&debugAABBObject->GetComponent<TransformComponent>()->get_world_matrix(), (aabb_S * aabb_T) * parentWorld);
 
             // 3. 와이어프레임 위치 갱신
-            debugWireframeObject->GetComponent<TransformComponent>()->GetWorldMatrix() = _pFbxObject->GetComponent<TransformComponent>()->GetWorldMatrix();
+            debugWireframeObject->GetComponent<TransformComponent>()->get_world_matrix() = _pFbxObject->GetComponent<TransformComponent>()->get_world_matrix();
 
-            debugObjects[i * 3 + 0]->Render(pd3dCommandList, m_pCamera); // OBB
-            debugObjects[i * 3 + 1]->Render(pd3dCommandList, m_pCamera); // AABB
-            debugObjects[i * 3 + 2]->Render(pd3dCommandList, m_pCamera); // Wireframe
+            debugObjects[i * 3 + 0]->render(pd3dCommandList, m_pCamera); // OBB
+            debugObjects[i * 3 + 1]->render(pd3dCommandList, m_pCamera); // AABB
+            debugObjects[i * 3 + 2]->render(pd3dCommandList, m_pCamera); // Wireframe
         }
     }
 }
@@ -435,7 +435,7 @@ void Chess_Scene::Collision(float fElapsedTime)
         for (std::shared_ptr<GameObject>& Object : Objects) {
             if (nullptr != Object)
             {
-                Object->Collision(fElapsedTime);
+                Object->collision(fElapsedTime);
             }
         }
     }

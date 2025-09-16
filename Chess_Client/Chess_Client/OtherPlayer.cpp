@@ -3,7 +3,7 @@
 
 OtherPlayer::OtherPlayer(int x, int y, int z)
 {
-	if (OtherPlayer_Trasnform) OtherPlayer_Trasnform->SetPosition(x, y, z);
+	if (OtherPlayer_Trasnform) OtherPlayer_Trasnform->set_position(x, y, z);
 }
 
 OtherPlayer::~OtherPlayer()
@@ -11,22 +11,22 @@ OtherPlayer::~OtherPlayer()
 
 }
 
-void OtherPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
+void OtherPlayer::animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list)
 {
 	if (OtherPlayer_Trasnform)
 	{
-		OtherPlayer_Trasnform->SetPosition(OtherPlayer_Trasnform->GetPosition().x * _MoveDistance,
-										   OtherPlayer_Trasnform->GetPosition().y * _MoveDistance,
-										   OtherPlayer_Trasnform->GetPosition().z * _MoveDistance);
+		OtherPlayer_Trasnform->set_position(OtherPlayer_Trasnform->get_position().x * _MoveDistance,
+										    OtherPlayer_Trasnform->get_position().y * _MoveDistance,
+										    OtherPlayer_Trasnform->get_position().z * _MoveDistance);
 	}
 }
 
-void OtherPlayer::Collision(float fElapsedTime)
+void OtherPlayer::collision(float elapsed_time)
 {
 
 }
 
-void OtherPlayer::ProcessInput(float fElapsedTime)
+void OtherPlayer::process_input(float elapsed_time)
 {
 
 }

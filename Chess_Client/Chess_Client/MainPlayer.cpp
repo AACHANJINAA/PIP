@@ -5,7 +5,7 @@
 
 MainPlayer::MainPlayer(int x, int y, int z)
 {
-	if(MainPlayer_Trasnform) MainPlayer_Trasnform->SetPosition(x, y, z);
+	if(MainPlayer_Trasnform) MainPlayer_Trasnform->set_position(x, y, z);
 }
 
 MainPlayer::~MainPlayer()
@@ -13,17 +13,17 @@ MainPlayer::~MainPlayer()
 
 }
 
-void MainPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
+void MainPlayer::animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list)
 {
 	// SetPosition(GetPosition().x * _MoveDistance, GetPosition().y * _MoveDistance, GetPosition().z * _MoveDistance);
 }
 
-void MainPlayer::Collision(float fElapsedTime)
+void MainPlayer::collision(float elapsed_time)
 {
 
 }
 
-void MainPlayer::ProcessInput(float fElapsedTime)
+void MainPlayer::process_input(float elapsed_time)
 {
 	if (InputManager::Instance()->IsKeyDown('W')) {
 		Move_Pos(common::packet::MOVE_TYPE::MOVE_UP);

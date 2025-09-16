@@ -3,40 +3,38 @@
 #include "Shader.h"
 #include "BoardCube.h"
 
-// (Ãß°¡) ¸ÓÅÍ¸®¾ó »ý¼ºÀÚ & ¼Ò¸êÀÚ & SetShader [PONG]
-
 Material_Shader::Material_Shader()
 {
-	m_pMaterial = new MATERIAL();
+	_material = new Material();
 }
 Material_Shader::~Material_Shader()
 {
-	if (m_pMaterial) 
-		delete m_pMaterial;
+	if (_material) 
+		delete _material;
 	/*if (_Shader)
 		_Shader->Release();*/
 }
 
-void Material_Shader::SetShader(std::shared_ptr<Shader> pShader)
+void Material_Shader::set_shader(const std::shared_ptr<Shader>& shader)
 {
-	if (_Shader) _Shader->Release();
-	_Shader = pShader;
-	if (_Shader) _Shader->AddRef();
+	if (_shader) _shader->Release();
+	_shader = shader;
+	if (_shader) _shader->AddRef();
 }
 
-void Material_Shader::SetShaderRootSignature(ID3D12RootSignature* RootSignature)
+void Material_Shader::set_shader_root_signature(ID3D12RootSignature* root_signature)
 {
-	if (_Shader) // ¼ÎÀÌ´õ°¡ ¾øÀ¸¸é ·çÆ® ½Ã±×³ÊÃÄµµ ÀÖÀ» ÀÌÀ¯°¡ ¾øÀ½
+	if (_shader)
 	{
-		_RootSignature = RootSignature;
+		_rootSignature = root_signature;
 	}
 }
 
-void Material_Shader::SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandList)
+void Material_Shader::set_root_signature(ID3D12GraphicsCommandList* command_list)
 {
-	if(_RootSignature)
+	if(_rootSignature)
 	{
-		pd3dCommandList->SetGraphicsRootSignature(_RootSignature);
+		command_list->SetGraphicsRootSignature(_rootSignature);
 	}
 }
 
@@ -48,106 +46,91 @@ GameObject::GameObject()
 }
 GameObject::~GameObject()
 {
-	if (m_pMesh) m_pMesh->Release();
+	if (_mesh) _mesh->Release();
 	/*if (m_pShader)
 	{
 		m_pShader->ReleaseShaderVariables();
 		m_pShader->Release();
 	}*/
-	if (m_pMaterial) m_pMaterial->Release(); // (¼öÁ¤) ¸ÓÅÍ¸®¾ó·Î ¹Ù²ñ [PONG]
+	if (_materialShader) _materialShader->Release(); 
 }
 
-// (¼öÁ¤) [PONG]
-void GameObject::SetShader(std::shared_ptr<Shader> pShader)
+void GameObject::set_shader(std::shared_ptr<Shader> shader)
 {
-	if (!m_pMaterial) m_pMaterial = new Material_Shader(); // ÀçÁúÀÌ ¾øÀ¸¸é »õ·Î »ý¼º
-	if (m_pMaterial) m_pMaterial->SetShader(pShader);
+	if (!_materialShader) _materialShader = new Material_Shader(); 
+	if (_materialShader) _materialShader->set_shader(shader);
 }
 
-void GameObject::SetMaterial(Material_Shader* pMaterial)
+void GameObject::set_material(Material_Shader* material)
 {
-	if (m_pMaterial) m_pMaterial->Release();
-	m_pMaterial = pMaterial;
-	if (m_pMaterial) m_pMaterial->AddRef();
+	if (_materialShader) _materialShader->Release();
+	_materialShader = material;
+	if (_materialShader) _materialShader->AddRef();
 }
 
-void GameObject::SetMesh(Mesh* pMesh)
+void GameObject::set_mesh(Mesh* mesh)
 {
-	if (m_pMesh) 
+	if (_mesh) 
 	{
-		m_pMesh->Release();
+		_mesh->Release();
 	}
 
-	m_pMesh = pMesh;
+	_mesh = mesh;
 
-	if (m_pMesh) 
+	if (_mesh) 
 	{
-		m_pMesh->AddRef();
+		_mesh->AddRef();
 	}
 }
 
-void GameObject::ReleaseUploadBuffers()
+void GameObject::release_upload_buffers()
 {
-	//Á¤Á¡ ¹öÆÛ¸¦ À§ÇÑ ¾÷·Îµå ¹öÆÛ¸¦ ¼Ò¸ê½ÃÅ²´Ù. 
-	if (m_pMesh) 
-		m_pMesh->ReleaseUploadBuffers();
+	if (_mesh) 
+		_mesh->ReleaseUploadBuffers();
 }
 
-void GameObject::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
+void GameObject::on_prepare_render(ID3D12GraphicsCommandList* command_List)
 {
-	if (m_pMaterial) // ¸ÓÅÍ¸®¾óÀÌ ÀÖ´ÂÁö È®ÀÎ
+	if (_materialShader) 
 	{
-		if (m_pMaterial->_Shader) // ¸ÓÅÍ¸®¾ó¿¡ ¼ÎÀÌ´õ°¡ ÀÖ´ÂÁö È®ÀÎ
+		if (_materialShader->_shader) 
 		{
-			m_pMaterial->SetRootSignature(pd3dCommandList);
-			// ¸ÓÅÍ¸®¾óÀÇ ¼ÎÀÌ´õ¸¦ »ç¿ëÇÏ¿© ·»´õ¸µ
-			m_pMaterial->_Shader->OnPrepareRender(pd3dCommandList);
+			_materialShader->set_root_signature(command_List);
+			_materialShader->_shader->OnPrepareRender(command_List);
 		}
 	}
 }
 
-// (¼öÁ¤) [PONG]
-void GameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera)
+void GameObject::render(ID3D12GraphicsCommandList* command_list, Camera* camera)
 {
-	if (IsVisible(pCamera))
+	if (is_visible(camera))
 	{
-		// ·»´õ¸µ »óÅÂ ¼³Á¤
 		//OnPrepareRender(pd3dCommandList);
 
-		// °³º° µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® (º»ÀÎ, Ä«¸Þ¶ó)
-		UpdateShaderVariables(pd3dCommandList);
-		pCamera->UpdateShaderVariables(pd3dCommandList);
+		UpdateShaderVariables(command_list);
+		camera->UpdateShaderVariables(command_list);
 
-		// ±×¸®±â ½ÇÇà
-		if (m_pMesh) m_pMesh->Render(pd3dCommandList);
+		if (_mesh) _mesh->Render(command_list);
 	}
 }
 
 void GameObject::CreateShaderVariables(ID3D12Device* pd3dDevice,
 	ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	// 1. »ó¼ö ¹öÆÛ ¸®¼Ò½º »ý¼º
-	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, sizeof(CB_GAMEOBJECT_INFO), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+	_cbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, sizeof(CbGameObjectInfo), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 
-	// [Áß¿ä] 1-1. ¹öÆÛ »ý¼º¿¡ ¼º°øÇß´ÂÁö ¹Ýµå½Ã È®ÀÎ!
-	if (!m_pd3dcbGameObject)
+	if (!_cbGameObject)
 	{
-		// ¿©±â¼­ ¿¡·¯ ·Î±×¸¦ ³²±â°Å³ª, ¿¹¿Ü¸¦ ´øÁö°Å³ª, ¸Þ½ÃÁö ¹Ú½º¸¦ ¶ç¿ö
-		// ÇÁ·Î±×·¥ÀÌ Áï½Ã ¹®Á¦¸¦ ÀÎÁöÇÏ°í ¸ØÃßµµ·Ï ÇØ¾ß ÇÕ´Ï´Ù.
 		MessageBox(NULL, L"GameObject Constant Buffer Creation Failed!", L"Error", MB_OK);
-		return; // ½ÇÆÐÇßÀ¸¹Ç·Î ´õ ÀÌ»ó ÁøÇàÇÏÁö ¾ÊÀ½
+		return; 
 	}
 
-	// 2. »ý¼ºµÈ ¹öÆÛ¸¦ CPU ÁÖ¼Ò¿¡ ¸ÊÇÎ
 	D3D12_RANGE d3dReadRange{ 0, 0 };
-	HRESULT hResult = m_pd3dcbGameObject->Map(0, &d3dReadRange, reinterpret_cast<void**>(&_pcbMappedGameObject));
+	HRESULT hResult = _cbGameObject->Map(0, &d3dReadRange, reinterpret_cast<void**>(&_cbMappedGameObject));
 
-	// [Áß¿ä] 2-1. ¸ÊÇÎ¿¡ ¼º°øÇß´ÂÁö ¹Ýµå½Ã È®ÀÎ!
 	if (FAILED(hResult))
 	{
-		// Map()ÀÌ ½ÇÆÐÇÏ¸é m_pcbMappedGameObject´Â nullptrÀÎ »óÅÂ·Î ³²°Ô µË´Ï´Ù.
-		// ¿©±â¼­ ¹®Á¦¸¦ ÀÎÁöÇÏ°í ¸ØÃç¾ß ÇÕ´Ï´Ù.
-		_pcbMappedGameObject = nullptr; // ¾ÈÀüÀ» À§ÇØ ¸í½ÃÀûÀ¸·Î nullptr Ã³¸®
+		_cbMappedGameObject = nullptr; 
 		MessageBox(NULL, L"GameObject Constant Buffer Map Failed!", L"Error", MB_OK);
 		return;
 	}
@@ -160,24 +143,23 @@ void GameObject::ReleaseShaderVariables()
 
 void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	// 1. µ¥ÀÌÅÍ ÁØºñ
 	auto Transform = GetComponent<TransformComponent>();
 	if (Transform)
 	{
-		XMStoreFloat4x4(&_pcbMappedGameObject->_4x4World, XMMatrixTranspose(XMLoadFloat4x4(&Transform->GetWorldMatrix())));
+		XMStoreFloat4x4(&_cbMappedGameObject->_world, XMMatrixTranspose(XMLoadFloat4x4(&Transform->get_world_matrix())));
 
 	}
 
-	// 2. GPU¿¡ ¹ÙÀÎµù
-	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbGameObject->GetGPUVirtualAddress();
+	// 2. GPUï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½
+	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbGameObject->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
 }
 
-void GameObject::GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection)
+void GameObject::generate_ray_for_picking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection)
 {
 	auto Transform = GetComponent<TransformComponent>();
 	if (Transform) {
-		XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&Transform->GetWorldMatrix()) * xmmtxView);
+		XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&Transform->get_world_matrix()) * xmmtxView);
 
 		XMFLOAT3 xmf3CameraOrigin(0.0f, 0.0f, 0.0f);
 		xmvPickRayOrigin = XMVector3TransformCoord(XMLoadFloat3(&xmf3CameraOrigin), xmmtxToModel);
@@ -186,79 +168,77 @@ void GameObject::GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmt
 	}
 }
 
-int GameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance)
+int GameObject::pick_object_by_ray_intersection(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance)
 {
 	int nIntersected = 0;
-	if (m_pMesh)
+	if (_mesh)
 	{
 		XMVECTOR xmvPickRayOrigin, xmvPickRayDirection;
-		GenerateRayForPicking(xmvPickPosition, xmmtxView, xmvPickRayOrigin, xmvPickRayDirection);
-		nIntersected = m_pMesh->CheckRayIntersection(xmvPickRayOrigin, xmvPickRayDirection, pfHitDistance);
+		generate_ray_for_picking(pick_position, view_matrix, xmvPickRayOrigin, xmvPickRayDirection);
+		nIntersected = _mesh->CheckRayIntersection(xmvPickRayOrigin, xmvPickRayDirection, hit_distance);
 	}
 	return(nIntersected);
-	// DWÁú¹® : nIntersections ÀÌ°Å °³¼ö ¿Ö »õ´Â°ÇÁö? ¹Û¿¡¼­µµ 0 ÀÌ»óÀÎÁö¸¸ È®ÀÎÇÏ°í ³¡³², È¤½Ã Áß¿äÇÑ ´Ù¸¥ ÀÇ¹Ì°¡ ÀÖ´ÂÁö?
-	// ¿µ»ó¿¡¼­µµ nIntersectionsÀÌ º¯¼ö¿¡ ´ëÇÑ ¾ð±ÞÀº µüÈ÷ ¾ø¾úÀ½
 }
 
-bool GameObject::PickModelOBB(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance)
+bool GameObject::pick_model_obb(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance)
 {
-	if (m_pMesh)
+	if (_mesh)
 	{
 		XMVECTOR xmvPickRayOrigin, xmvPickRayDirection;
-		GenerateRayForPicking(xmPickPosition, xmmtxView, xmvPickRayOrigin, xmvPickRayDirection);
-		return(m_pMesh->m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *pfHitDistance));
+		generate_ray_for_picking(pick_position, view_matrix, xmvPickRayOrigin, xmvPickRayDirection);
+		return(_mesh->m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *hit_distance));
 	}
 	return false;
 }
 
-void GameObject::UpdateBoundingBox()
+void GameObject::update_bounding_box()
 {
 	auto Transform = GetComponent<TransformComponent>();
-	if (m_pMesh)
+	if (_mesh)
 	{
 		if (Transform)
 		{
-			XMVectorScale(XMLoadFloat3(&m_pMesh->m_xmOOBB.Extents), Transform->GetSize().x);
+			XMVectorScale(XMLoadFloat3(&_mesh->m_xmOOBB.Extents), Transform->get_size().x);
 		}
-		m_pMesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&Transform->GetWorldMatrix()));
-		XMStoreFloat4(&m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
+		_mesh->m_xmOOBB.Transform(_mesh->m_xmOOBB, XMLoadFloat4x4(&Transform->get_world_matrix()));
+		XMStoreFloat4(&_mesh->m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&_mesh->m_xmOOBB.Orientation)));
 	}
 }
 
-bool GameObject::IsVisible(Camera* pCamera)
+bool GameObject::is_visible(Camera * camera)
 {
 	//OnPrepareRender();
-	if (!pCamera) return false; 
+	if (!camera) return false; 
 
 	auto Transform = GetComponent<TransformComponent>();
 
-	BoundingOrientedBox worldOOBB = m_pMesh->GetBoundingBox();
-	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&Transform->GetWorldMatrix()));
+	BoundingOrientedBox worldOOBB = _mesh->GetBoundingBox();
+	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&Transform->get_world_matrix()));
 
 	XMVECTOR orientationQuat = XMLoadFloat4(&worldOOBB.Orientation);
 	orientationQuat = XMQuaternionNormalize(orientationQuat);
 	XMStoreFloat4(&worldOOBB.Orientation, orientationQuat);
 
-	return pCamera->IsInFrustum(worldOOBB);
+	return camera->IsInFrustum(worldOOBB);
 }
 
 
-void GameObject::Update(float DeltaTime)
+void GameObject::update(float DeltaTime)
 {
 	for (const std::shared_ptr<Component>& component : _components)
 	{
-		component->Update(DeltaTime);
+		component->update(DeltaTime);
 	}
 
 	//if (nullptr != m_pMaterial)
 	//{
-	//	// ÀÌ ¼ÎÀÌ´õ¸¦ ¾²´Â °´Ã¼°¡ GLB ¸ðµ¨ÀÌ¶ó°í °¡Á¤
+	//	// ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ GLB ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	//	if (typeid(CObjectsShader) == typeid(*(m_pMaterial->_Shader)))
 	//	{
-	//		// ZÃàÀ» µÚÁý´Â º¯È¯ Çà·Ä »ý¼º
+	//		// Zï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	//		XMMATRIX zFlipMatrix = XMMatrixScaling(1.0f, 1.0f, -1.0f);
 
-	//		// ±âÁ¸ ¿ùµå Çà·Ä ¾Õ¿¡ °öÇØ¼­ ÃÖÁ¾ ¿ùµå Çà·ÄÀ» ¸¸µê
+	//		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Õ¿ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	//		worldMatrix = zFlipMatrix * worldMatrix;
 	//		XMStoreFloat4x4(&_4x4World, worldMatrix);
 	//	}

@@ -7,8 +7,8 @@ public:
 	virtual ~BoardCube();
 
 public:
-	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual void Collision(float fElapsedTime);
-	virtual void ProcessInput(float fElapsedTime) override;
+	virtual void animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list);
+	virtual void collision(float elapsed_time);
+	virtual void process_input(float elapsed_time) override;
 };
 

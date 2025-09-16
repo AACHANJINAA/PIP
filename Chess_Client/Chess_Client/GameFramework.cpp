@@ -6,17 +6,17 @@
 #include "InputManager.h"
 
 GameFramework::GameFramework()
-	: m_nWndClientWidth(FRAME_BUFFER_WIDTH)
-	, m_nWndClientHeight(FRAME_BUFFER_HEIGHT)
-	, m_bMsaa4xEnable(false)
-	, m_nMsaa4xQualityLevels(0)
-	, m_nSwapChainBufferIndex(0)
-	, m_nRtvDescriptorIncrementSize(0)
-	, m_nDsvDescriptorIncrementSize(0)
-	, m_hFenceEvent(NULL)
+	: _wndClientWidth(FRAME_BUFFER_WIDTH)
+	, _wndClientHeight(FRAME_BUFFER_HEIGHT)
+	, _isEnableMsaa(false)
+	, _msaa4XQualityLevels(0)
+	, _swapChainBufferIndex(0)
+	, _rtvDescriptorIncrementSize(0)
+	, _dsvDescriptorIncrementSize(0)
+	, _fenceEvent(NULL)
 {
-	_tcscpy_s(m_pszFrameRate, _T("LapProject ("));
-	m_nFenceValues.fill(0);
+	_tcscpy_s(_frameRate, _T("LapProject ("));
+	_fenceValues.fill(0);
 }
 
 
@@ -29,8 +29,8 @@ GameFramework::~GameFramework()
 //다음 함수는 응용 프로그램이 실행되어 주 윈도우가 생성되면 호출된다는 것에 유의하라. 
 bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
-	m_hInstance = hInstance;
-	m_hWnd = hMainWnd;
+	_hInstance = hInstance;
+	_hWnd = hMainWnd;
 
 	// 매니저 생성
 	ObjectManager::Instance();
@@ -51,8 +51,8 @@ void GameFramework::OnDestroy()
 {
 	WaitForGpuComplete();
 	ReleaseObjects();
-	if (m_pdxgiSwapChain) m_pdxgiSwapChain->SetFullscreenState(FALSE, NULL);
-	::CloseHandle(m_hFenceEvent);
+	if (_swapChain) _swapChain->SetFullscreenState(FALSE, NULL);
+	::CloseHandle(_fenceEvent);
 
 #if defined(_DEBUG)
 	ComPtr<IDXGIDebug1> pdxgiDebug;
@@ -65,34 +65,34 @@ void GameFramework::OnDestroy()
 void GameFramework::CreateSwapChain()
 {
 	RECT rcClient;
-	::GetClientRect(m_hWnd, &rcClient);
-	m_nWndClientWidth = rcClient.right - rcClient.left;
-	m_nWndClientHeight = rcClient.bottom - rcClient.top;
+	::GetClientRect(_hWnd, &rcClient);
+	_wndClientWidth = rcClient.right - rcClient.left;
+	_wndClientHeight = rcClient.bottom - rcClient.top;
 
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 	::ZeroMemory(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
-	dxgiSwapChainDesc.BufferCount = m_nSwapChainBuffers;
-	dxgiSwapChainDesc.BufferDesc.Width = m_nWndClientWidth;
-	dxgiSwapChainDesc.BufferDesc.Height = m_nWndClientHeight;
+	dxgiSwapChainDesc.BufferCount = SWAP_CHAIN_BUFFERS;
+	dxgiSwapChainDesc.BufferDesc.Width = _wndClientWidth;
+	dxgiSwapChainDesc.BufferDesc.Height = _wndClientHeight;
 	dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	dxgiSwapChainDesc.OutputWindow = m_hWnd;
-	dxgiSwapChainDesc.SampleDesc.Count = (m_bMsaa4xEnable) ? 4 : 1; dxgiSwapChainDesc.SampleDesc.Quality = (m_bMsaa4xEnable) ? (m_nMsaa4xQualityLevels - 1) : 0;
+	dxgiSwapChainDesc.OutputWindow = _hWnd;
+	dxgiSwapChainDesc.SampleDesc.Count = (_isEnableMsaa) ? 4 : 1; dxgiSwapChainDesc.SampleDesc.Quality = (_isEnableMsaa) ? (_msaa4XQualityLevels - 1) : 0;
 	dxgiSwapChainDesc.Windowed = TRUE;
 	dxgiSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	ComPtr<IDXGISwapChain> pSwapChain;
-	HRESULT hResult = m_pdxgiFactory->CreateSwapChain(m_pd3dCommandQueue.Get(), &dxgiSwapChainDesc, &pSwapChain);
+	HRESULT hResult = _factory->CreateSwapChain(_commandQueue.Get(), &dxgiSwapChainDesc, &pSwapChain);
 	_ASSERTE(SUCCEEDED(hResult));
 
-	hResult = pSwapChain.As(&m_pdxgiSwapChain);
+	hResult = pSwapChain.As(&_swapChain);
 	_ASSERTE(SUCCEEDED(hResult));
 
-	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
-	hResult = m_pdxgiFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER);
+	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
+	hResult = _factory->MakeWindowAssociation(_hWnd, DXGI_MWA_NO_ALT_ENTER);
 
 #ifndef _WITH_SWAPCHAIN_FULLSCREEN_STATE 
 	CreateRenderTargetViews();
@@ -112,21 +112,21 @@ void GameFramework::CreateDirect3DDevice() {
 	nDXGIFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-	hResult = ::CreateDXGIFactory2(nDXGIFactoryFlags, __uuidof(IDXGIFactory4), (void**)&m_pdxgiFactory);
+	hResult = ::CreateDXGIFactory2(nDXGIFactoryFlags, __uuidof(IDXGIFactory4), (void**)&_factory);
 	_ASSERTE(SUCCEEDED(hResult));
 
 	ComPtr<IDXGIAdapter1> pd3dAdapter;
-	for (UINT i = 0; DXGI_ERROR_NOT_FOUND != m_pdxgiFactory->EnumAdapters1(i, &pd3dAdapter); i++)
+	for (UINT i = 0; DXGI_ERROR_NOT_FOUND != _factory->EnumAdapters1(i, &pd3dAdapter); i++)
 	{
 		DXGI_ADAPTER_DESC1 dxgiAdapterDesc;
 		pd3dAdapter->GetDesc1(&dxgiAdapterDesc);
 		if (dxgiAdapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
-		if (SUCCEEDED(D3D12CreateDevice(pd3dAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_pd3dDevice)))) break;
+		if (SUCCEEDED(D3D12CreateDevice(pd3dAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&_device)))) break;
 	}
 
 	if (!pd3dAdapter) {
-		m_pdxgiFactory->EnumWarpAdapter(_uuidof(IDXGIAdapter1), (void**)&pd3dAdapter);
-		D3D12CreateDevice(pd3dAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_pd3dDevice));
+		_factory->EnumWarpAdapter(_uuidof(IDXGIAdapter1), (void**)&pd3dAdapter);
+		D3D12CreateDevice(pd3dAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&_device));
 	}
 
 	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS d3dMsaaQualityLevels;
@@ -134,14 +134,14 @@ void GameFramework::CreateDirect3DDevice() {
 	d3dMsaaQualityLevels.SampleCount = 4;
 	d3dMsaaQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
 	d3dMsaaQualityLevels.NumQualityLevels = 0;
-	m_pd3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &d3dMsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS));
-	m_nMsaa4xQualityLevels = d3dMsaaQualityLevels.NumQualityLevels;
+	_device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &d3dMsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS));
+	_msaa4XQualityLevels = d3dMsaaQualityLevels.NumQualityLevels;
 
-	m_bMsaa4xEnable = (m_nMsaa4xQualityLevels > 1) ? true : false;
-	hResult = m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pd3dFence));
+	_isEnableMsaa = (_msaa4XQualityLevels > 1) ? true : false;
+	hResult = _device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	m_hFenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+	_fenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 }
 
 void GameFramework::CreateCommandQueueAndList()
@@ -150,16 +150,16 @@ void GameFramework::CreateCommandQueueAndList()
 	::ZeroMemory(&d3dCommandQueueDesc, sizeof(D3D12_COMMAND_QUEUE_DESC));
 	d3dCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	d3dCommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	HRESULT hResult = m_pd3dDevice->CreateCommandQueue(&d3dCommandQueueDesc, IID_PPV_ARGS(&m_pd3dCommandQueue));
+	HRESULT hResult = _device->CreateCommandQueue(&d3dCommandQueueDesc, IID_PPV_ARGS(&_commandQueue));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	hResult = m_pd3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_pd3dCommandAllocator));
+	hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_commandAllocator));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	hResult = m_pd3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pd3dCommandAllocator.Get(), NULL, IID_PPV_ARGS(&m_pd3dCommandList));
+	hResult = _device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, _commandAllocator.Get(), NULL, IID_PPV_ARGS(&_commandList));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	hResult = m_pd3dCommandList->Close();
+	hResult = _commandList->Close();
 	_ASSERTE(SUCCEEDED(hResult));
 }
 
@@ -167,32 +167,32 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC d3dDescriptorHeapDesc;
 	::ZeroMemory(&d3dDescriptorHeapDesc, sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
-	d3dDescriptorHeapDesc.NumDescriptors = m_nSwapChainBuffers;
+	d3dDescriptorHeapDesc.NumDescriptors = SWAP_CHAIN_BUFFERS;
 	d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	d3dDescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	d3dDescriptorHeapDesc.NodeMask = 0;
-	HRESULT hResult = m_pd3dDevice->CreateDescriptorHeap(&d3dDescriptorHeapDesc, IID_PPV_ARGS(&m_pd3dRtvDescriptorHeap));
+	HRESULT hResult = _device->CreateDescriptorHeap(&d3dDescriptorHeapDesc, IID_PPV_ARGS(&_rtvDescriptorHeap));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	m_nRtvDescriptorIncrementSize = m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	_rtvDescriptorIncrementSize = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	d3dDescriptorHeapDesc.NumDescriptors = 1;
 	d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	hResult = m_pd3dDevice->CreateDescriptorHeap(&d3dDescriptorHeapDesc, IID_PPV_ARGS(&m_pd3dDsvDescriptorHeap));
+	hResult = _device->CreateDescriptorHeap(&d3dDescriptorHeapDesc, IID_PPV_ARGS(&_dsvDescriptorHeap));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	m_nDsvDescriptorIncrementSize = m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	_dsvDescriptorIncrementSize = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
 //스왑체인의 각 후면 버퍼에 대한 렌더 타겟 뷰를 생성한다. 
 void GameFramework::CreateRenderTargetViews()
 {
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	for (UINT i = 0; i < m_nSwapChainBuffers; i++)
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	for (UINT i = 0; i < SWAP_CHAIN_BUFFERS; i++)
 	{
-		m_pdxgiSwapChain->GetBuffer(i, IID_PPV_ARGS(&m_d3dRenderTargetBuffers[i]));
-		m_pd3dDevice->CreateRenderTargetView(m_d3dRenderTargetBuffers[i].Get(), NULL, d3dRtvCPUDescriptorHandle);
-		d3dRtvCPUDescriptorHandle.ptr += m_nRtvDescriptorIncrementSize;
+		_swapChain->GetBuffer(i, IID_PPV_ARGS(&_renderTargetBuffers[i]));
+		_device->CreateRenderTargetView(_renderTargetBuffers[i].Get(), NULL, d3dRtvCPUDescriptorHandle);
+		d3dRtvCPUDescriptorHandle.ptr += _rtvDescriptorIncrementSize;
 	}
 }
 
@@ -201,13 +201,13 @@ void GameFramework::CreateDepthStencilView()
 	D3D12_RESOURCE_DESC d3dResourceDesc;
 	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	d3dResourceDesc.Alignment = 0;
-	d3dResourceDesc.Width = m_nWndClientWidth;
-	d3dResourceDesc.Height = m_nWndClientHeight;
+	d3dResourceDesc.Width = _wndClientWidth;
+	d3dResourceDesc.Height = _wndClientHeight;
 	d3dResourceDesc.DepthOrArraySize = 1;
 	d3dResourceDesc.MipLevels = 1;
 	d3dResourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	d3dResourceDesc.SampleDesc.Count = (m_bMsaa4xEnable) ? 4 : 1;
-	d3dResourceDesc.SampleDesc.Quality = (m_bMsaa4xEnable) ? (m_nMsaa4xQualityLevels - 1) : 0;
+	d3dResourceDesc.SampleDesc.Count = (_isEnableMsaa) ? 4 : 1;
+	d3dResourceDesc.SampleDesc.Quality = (_isEnableMsaa) ? (_msaa4XQualityLevels - 1) : 0;
 	d3dResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	d3dResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
@@ -223,10 +223,10 @@ void GameFramework::CreateDepthStencilView()
 	d3dClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; d3dClearValue.DepthStencil.Depth = 1.0f;
 	d3dClearValue.DepthStencil.Stencil = 0;
 
-	m_pd3dDevice->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &d3dClearValue, IID_PPV_ARGS(&m_pd3dDepthStencilBuffer));
+	_device->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &d3dClearValue, IID_PPV_ARGS(&_depthStencilBuffer));
 
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle = m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	m_pd3dDevice->CreateDepthStencilView(m_pd3dDepthStencilBuffer.Get(), NULL, d3dDsvCPUDescriptorHandle);
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle = _dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	_device->CreateDepthStencilView(_depthStencilBuffer.Get(), NULL, d3dDsvCPUDescriptorHandle);
 }
 
 
@@ -234,24 +234,24 @@ void GameFramework::CreateDepthStencilView()
 
 void GameFramework::BuildObjects()
 {
-	m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
-	m_pScene = std::make_unique<Chess_Scene>();
-	m_pScene.get()->BuildObjects(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
+	_commandList->Reset(_commandAllocator.Get(), NULL);
+	_scene = std::make_unique<Chess_Scene>();
+	_scene.get()->BuildObjects(_device.Get(), _commandList.Get());
 
-	m_pd3dCommandList->Close();
-	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList.Get() };
-	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
+	_commandList->Close();
+	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
+	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 
 	WaitForGpuComplete();
 
-	m_pScene.get()->ReleaseUploadBuffers();
+	_scene.get()->ReleaseUploadBuffers();
 
-	m_GameTimer.Reset();
+	_gameTimer.Reset();
 }
 
 void GameFramework::ReleaseObjects()
 {
-	m_pScene.reset();
+	_scene.reset();
 }
 
 void GameFramework::ProcessNetwork()
@@ -275,46 +275,46 @@ void GameFramework::ProcessInput()
 	if (m_bIsWindowActive)
 	{
 		// 씬의 입력 처리 함수를 호출합니다. (파라미터가 변경될 예정)
-		m_pScene.get()->ProcessInput(m_GameTimer.GetTimeElapsed());
+		_scene.get()->ProcessInput(_gameTimer.GetTimeElapsed());
 	}
 }
 
 void GameFramework::AnimateObjects()
 {
-	m_pScene.get()->AnimateObjects(m_GameTimer.GetTimeElapsed(), m_pd3dCommandList.Get());
+	_scene.get()->AnimateObjects(_gameTimer.GetTimeElapsed(), _commandList.Get());
 }
 
 void GameFramework::WaitForGpuComplete()
 {
-	UINT64 nFenceValue = ++m_nFenceValues[m_nSwapChainBufferIndex];
-	HRESULT hResult = m_pd3dCommandQueue->Signal(m_pd3dFence.Get(), nFenceValue);
-	if (m_pd3dFence->GetCompletedValue() < nFenceValue)
+	UINT64 nFenceValue = ++_fenceValues[_swapChainBufferIndex];
+	HRESULT hResult = _commandQueue->Signal(_fence.Get(), nFenceValue);
+	if (_fence->GetCompletedValue() < nFenceValue)
 	{
-		hResult = m_pd3dFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
-		::WaitForSingleObject(m_hFenceEvent, INFINITE);
+		hResult = _fence->SetEventOnCompletion(nFenceValue, _fenceEvent);
+		::WaitForSingleObject(_fenceEvent, INFINITE);
 	}
 }
 
 void GameFramework::MoveToNextFrame()
 {
-	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
+	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
-	UINT64 nFenceValue = m_nFenceValues[m_nSwapChainBufferIndex];
-	HRESULT hResult = m_pd3dCommandQueue->Signal(m_pd3dFence.Get(), nFenceValue);
+	UINT64 nFenceValue = _fenceValues[_swapChainBufferIndex];
+	HRESULT hResult = _commandQueue->Signal(_fence.Get(), nFenceValue);
 
-	if (m_pd3dFence->GetCompletedValue() < nFenceValue)
+	if (_fence->GetCompletedValue() < nFenceValue)
 	{
-		hResult = m_pd3dFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
-		::WaitForSingleObject(m_hFenceEvent, INFINITE);
+		hResult = _fence->SetEventOnCompletion(nFenceValue, _fenceEvent);
+		::WaitForSingleObject(_fenceEvent, INFINITE);
 	}
 }
 
 void GameFramework::FrameAdvance()
 {
 	
-	m_GameTimer.Tick(0.0f);
-	HRESULT hResult = m_pd3dCommandAllocator->Reset();
-	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
+	_gameTimer.Tick(0.0f);
+	HRESULT hResult = _commandAllocator->Reset();
+	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
 
 	ObjectManager::Instance()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
 
@@ -330,32 +330,32 @@ void GameFramework::FrameAdvance()
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
 	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	d3dResourceBarrier.Transition.pResource = m_d3dRenderTargetBuffers[m_nSwapChainBufferIndex].Get();
+	d3dResourceBarrier.Transition.pResource = _renderTargetBuffers[_swapChainBufferIndex].Get();
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =	m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	d3dRtvCPUDescriptorHandle.ptr += (m_nSwapChainBufferIndex *	m_nRtvDescriptorIncrementSize);
+	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =	_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	d3dRtvCPUDescriptorHandle.ptr += (_swapChainBufferIndex *	_rtvDescriptorIncrementSize);
 	//float pfClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 	
 	// 내가 한 색상
 	float pfClearColor[4] = { 0.894f, 0.651f, 0.475f, 1.0f };
-	m_pd3dCommandList->ClearRenderTargetView(d3dRtvCPUDescriptorHandle,	pfClearColor/*Colors::Azure*/, 0, NULL);
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle =	m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	_commandList->ClearRenderTargetView(d3dRtvCPUDescriptorHandle,	pfClearColor/*Colors::Azure*/, 0, NULL);
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle =	_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle,	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-		1.0f, 0, 0, NULL); m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
+	_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle,	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+		1.0f, 0, 0, NULL); _commandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
 	
 	
-	m_pScene.get()->Render(m_pd3dCommandList.Get());
+	_scene.get()->Render(_commandList.Get());
 
 	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.
 	#ifdef _WITH_PLAYER_TOP
 
 	//렌더 타겟은 그대로 두고 깊이 버퍼를 1.0으로 지우고 플레이어를 렌더링하면 플레이어는 무조건 그려질 것이다.
-	/m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, 
+	/_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, 
 	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 
 #endif
@@ -367,18 +367,18 @@ void GameFramework::FrameAdvance()
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
-	hResult = m_pd3dCommandList->Close();
-	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList.Get()};
-	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
+	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
+	hResult = _commandList->Close();
+	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get()};
+	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	
-	m_pdxgiSwapChain->Present(0, 0);
+	_swapChain->Present(0, 0);
 	WaitForGpuComplete();
 	MoveToNextFrame();
 	
 	
-	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
-	::SetWindowText(m_hWnd, m_pszFrameRate);
+	_gameTimer.GetFrameRate(_frameRate + 12, 37);
+	::SetWindowText(_hWnd, _frameRate);
 }
 
 void GameFramework::ChangeSwapChainState()
@@ -386,27 +386,27 @@ void GameFramework::ChangeSwapChainState()
 	WaitForGpuComplete();
 
 	BOOL bFullScreenState = FALSE;
-	m_pdxgiSwapChain->GetFullscreenState(&bFullScreenState, NULL);
-	m_pdxgiSwapChain->SetFullscreenState(!bFullScreenState, NULL);
+	_swapChain->GetFullscreenState(&bFullScreenState, NULL);
+	_swapChain->SetFullscreenState(!bFullScreenState, NULL);
 
 	DXGI_MODE_DESC dxgiTargetParameters;
 	dxgiTargetParameters.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	dxgiTargetParameters.Width = m_nWndClientWidth;
-	dxgiTargetParameters.Height = m_nWndClientHeight;
+	dxgiTargetParameters.Width = _wndClientWidth;
+	dxgiTargetParameters.Height = _wndClientHeight;
 	dxgiTargetParameters.RefreshRate.Numerator = 60;
 	dxgiTargetParameters.RefreshRate.Denominator = 1;
 	dxgiTargetParameters.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	dxgiTargetParameters.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	m_pdxgiSwapChain->ResizeTarget(&dxgiTargetParameters);
+	_swapChain->ResizeTarget(&dxgiTargetParameters);
 
-	for (int i = 0; i < m_nSwapChainBuffers; i++) m_d3dRenderTargetBuffers[i].Reset();
+	for (int i = 0; i < SWAP_CHAIN_BUFFERS; i++) _renderTargetBuffers[i].Reset();
 
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-	m_pdxgiSwapChain->GetDesc(&dxgiSwapChainDesc);
-	m_pdxgiSwapChain->ResizeBuffers(m_nSwapChainBuffers, m_nWndClientWidth,
-		m_nWndClientHeight, dxgiSwapChainDesc.BufferDesc.Format, dxgiSwapChainDesc.Flags);
+	_swapChain->GetDesc(&dxgiSwapChainDesc);
+	_swapChain->ResizeBuffers(SWAP_CHAIN_BUFFERS, _wndClientWidth,
+		_wndClientHeight, dxgiSwapChainDesc.BufferDesc.Format, dxgiSwapChainDesc.Flags);
 
-	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
+	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 	CreateRenderTargetViews();
 }
 

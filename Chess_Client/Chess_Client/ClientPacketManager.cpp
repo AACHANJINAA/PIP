@@ -158,7 +158,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 			GameFramework::Instance()->GetCommandList().Get());
 		if (my_king_Transform)
 		{
-			my_king_Transform->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
+			my_king_Transform->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
 		}
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
@@ -174,9 +174,9 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 
 		// 색 설정
 		//Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
-		my_king->SetMesh(Chess_Mesh);
+		my_king->set_mesh(Chess_Mesh);
 		if (my_king_Transform)
-			my_king_Transform->SetScale(0.01f, 0.01f, 0.01f);
+			my_king_Transform->set_scale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
 		ObjectManager::Instance()->PushObject(my_king);
@@ -195,23 +195,23 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		other_king->SetID(spawn_data._id);
 		if (other_king_Transform)
 		{
-			other_king_Transform->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
+			other_king_Transform->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
 		}
 		other_king->SetHP(spawn_data._hp); // HP 설정
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
-		other_king->m_Mesh_Type = ENEMY; // 적 타입으로 설정
+		other_king->_meshType = ENEMY; // 적 타입으로 설정
 		Mesh* Chess_Mesh = new ReadObjMesh{ GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Monster/test_monster.obj" };
 
 		// 색 설정
 		Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 0.0f, 1.0f, 0.0f, 1.f);
-		other_king->SetMesh(Chess_Mesh);
+		other_king->set_mesh(Chess_Mesh);
 
 		// 이동 거리 설정
 		if (other_king_Transform)
-			other_king_Transform->SetScale(1.f, 1.f, 1.f);
+			other_king_Transform->set_scale(1.f, 1.f, 1.f);
 
 		// 매니저에 넣기
 		ObjectManager::Instance()->PushEnemy(other_king);
@@ -229,7 +229,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	auto player_Trasnform = player->GetComponent<TransformComponent>();
 	if (player && move_packet._id == player->GetID() && player_Trasnform) // 읽어온 id 사용
 	{
-		player_Trasnform->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+		player_Trasnform->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 	}
 	else
 	{
@@ -240,7 +240,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 		auto other_player_Trasnform = dynamic_cast<OtherPlayer*>(it->get())->GetComponent<TransformComponent>();
 		if (it != other_players.end())
 		{
-			other_player_Trasnform->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+			other_player_Trasnform->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 		}
 	}
 }
@@ -256,7 +256,7 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 								   });
 	if (it != other_players.end())
 	{
-		(*it)->m_Delete = true;
+		(*it)->_shouldDelete = true;
 	}
 }
 

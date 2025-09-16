@@ -30,7 +30,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 		auto RequestObject = m_RequestObjects.front();
 		RequestObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
 		auto RequestObject_Transform = RequestObject->GetComponent<TransformComponent>();
-		switch (RequestObject->m_Mesh_Type)
+		switch (RequestObject->_meshType)
 		{
 		case PLAYER:
 		{
@@ -39,9 +39,9 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
 			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
-			RequestObject->SetMesh(Chess_Mesh);
+			RequestObject->set_mesh(Chess_Mesh);
 			if (RequestObject_Transform)
-				RequestObject_Transform->SetScale(1.f, 1.f, 1.f);
+				RequestObject_Transform->set_scale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
 			ObjectManager::Instance()->PushObject(RequestObject);
@@ -56,11 +56,11 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
 			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 1.0f, 0.0f, 1.f);
-			RequestObject->SetMesh(Chess_Mesh);
+			RequestObject->set_mesh(Chess_Mesh);
 
 			// 이동 거리 설정
 			if(RequestObject_Transform)
-				RequestObject_Transform->SetScale(1.f, 1.f, 1.f);
+				RequestObject_Transform->set_scale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
 			ObjectManager::Instance()->PushEnemy(RequestObject);
@@ -103,7 +103,7 @@ void ObjectManager::DeleteObject()
 	for (auto& objectList : m_AllObject)
 	{
 		objectList.remove_if([](const std::shared_ptr<GameObject>& pObject) {
-			return pObject->m_Delete;
+			return pObject->_shouldDelete;
 		});
 	}
 }
@@ -125,15 +125,15 @@ void ObjectManager::MakeRenderMap(Camera* pCamera)
 
 	for (auto& objectList : Arr) {
 		for (auto& object : objectList) {
-			if (object && object->IsVisible(pCamera)) {
+			if (object && object->is_visible(pCamera)) {
 				// 오브젝트의 머터리얼에서 셰이더를 키로 사용하여 렌더 큐에 추가
-				if (nullptr == object->m_pMaterial)
+				if (nullptr == object->_materialShader)
 				{
 					_RenderMap[typeid(CObjectsShader)].push_back(object);
 				}
 				else
 				{
-					_RenderMap[typeid(*(object->m_pMaterial->_Shader))].push_back(object);
+					_RenderMap[typeid(*(object->_materialShader->_shader))].push_back(object);
 				}
 			}
 		}

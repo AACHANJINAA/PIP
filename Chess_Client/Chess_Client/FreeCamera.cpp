@@ -29,9 +29,9 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 			auto player_Transform = Player->GetComponent<TransformComponent>();
 			if (player_Transform)
 			{
-				SetPosition(XMFLOAT3(player_Transform->GetPosition().x - (GetLookVec().x) * m_NowOffset,
-									 player_Transform->GetPosition().y - (GetLookVec().y) * m_NowOffset,
-									 player_Transform->GetPosition().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
+				SetPosition(XMFLOAT3(player_Transform->get_position().x - (GetLookVec().x) * m_NowOffset,
+									 player_Transform->get_position().y - (GetLookVec().y) * m_NowOffset,
+									 player_Transform->get_position().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
 			}
 		}
 	}

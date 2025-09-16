@@ -10,17 +10,17 @@ BoardCube::~BoardCube()
 {
 }
 
-void BoardCube::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
+void BoardCube::animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list)
 {
 
 }
 
-void BoardCube::Collision(float fElapsedTime)
+void BoardCube::collision(float elapsed_time)
 {
 
 }
 
-void BoardCube::ProcessInput(float fElapsedTime)
+void BoardCube::process_input(float elapsed_time)
 {
 
 }
