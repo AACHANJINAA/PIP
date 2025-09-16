@@ -153,7 +153,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
-		auto my_king_Transform = my_king->GetComponent<TransformComponent>();
+		auto my_king_Transform = my_king->get_component<TransformComponent>();
 		my_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get());
 		if (my_king_Transform)
@@ -191,7 +191,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._position.x, spawn_data._position.y);
 		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
-		auto other_king_Transform = other_king->GetComponent<TransformComponent>();
+		auto other_king_Transform = other_king->get_component<TransformComponent>();
 		other_king->SetID(spawn_data._id);
 		if (other_king_Transform)
 		{
@@ -226,7 +226,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	common::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
 	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
-	auto player_Trasnform = player->GetComponent<TransformComponent>();
+	auto player_Trasnform = player->get_component<TransformComponent>();
 	if (player && move_packet._id == player->GetID() && player_Trasnform) // 읽어온 id 사용
 	{
 		player_Trasnform->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
@@ -237,7 +237,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
 			return move_packet._id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 id 사용
 									   });
-		auto other_player_Trasnform = dynamic_cast<OtherPlayer*>(it->get())->GetComponent<TransformComponent>();
+		auto other_player_Trasnform = dynamic_cast<OtherPlayer*>(it->get())->get_component<TransformComponent>();
 		if (it != other_players.end())
 		{
 			other_player_Trasnform->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용

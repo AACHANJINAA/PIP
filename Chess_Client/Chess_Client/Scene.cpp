@@ -83,7 +83,7 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
 
             BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,meshName, (Scene*)this };
 
-			auto Board_Transform = Board->GetComponent<TransformComponent>();
+			auto Board_Transform = Board->get_component<TransformComponent>();
 
             Board->set_mesh(BoardMesh);
             Board->set_shader(_AllShaders[1]); // GLB
