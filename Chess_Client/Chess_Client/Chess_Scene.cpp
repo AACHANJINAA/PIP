@@ -116,33 +116,33 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     ObjectManager::Instance()->PushFloorObject(Board);
 
     // 언리얼에서 뽑은 FBX 테스트
-    _pFbxObject = std::make_shared<BoardCube>();
-    _pFbxObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+    _fbxObject = std::make_shared<BoardCube>();
+    _fbxObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
 
-    _pCollisionMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCollision.fbx" };
+    _collisionMesh = new ReadFbxMesh{ pd3dDevice,pd3dCommandList,"Resource/Test/TestCollision.fbx" };
 
-    _pFbxObject->set_mesh(_pCollisionMesh);
+    _fbxObject->set_mesh(_collisionMesh);
     XMFLOAT3 Scale = XMFLOAT3(0.01f, 0.01f, 0.01f);
-    auto FbxObject_Transform = _pFbxObject->GetComponent<TransformComponent>();
-    if (FbxObject_Transform)
+    auto fbxObject_Transform = _fbxObject->GetComponent<TransformComponent>();
+    if (fbxObject_Transform)
     {
-        FbxObject_Transform->set_scale(Scale.x, Scale.y, Scale.z);
-        FbxObject_Transform->set_position(((_pFbxObject->_mesh->m_Right - _pFbxObject->_mesh->m_Left) * FbxObject_Transform->get_size().x + 3),
+        fbxObject_Transform->set_scale(Scale.x, Scale.y, Scale.z);
+        fbxObject_Transform->set_position(((_fbxObject->_mesh->m_Right - _fbxObject->_mesh->m_Left) * fbxObject_Transform->get_size().x + 3),
             0.8f,
-            ((_pFbxObject->_mesh->m_Front - _pFbxObject->_mesh->m_Back) * FbxObject_Transform->get_size().z) + 5);
+            ((_fbxObject->_mesh->m_Front - _fbxObject->_mesh->m_Back) * fbxObject_Transform->get_size().z) + 5);
     }
     Board->_posX = 0;
     Board->_posY = 0;
-    ObjectManager::Instance()->PushFloorObject(_pFbxObject);
+    ObjectManager::Instance()->PushFloorObject(_fbxObject);
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------
     // collision 디버깅 코드
 
-    ReadFbxMesh* churchFbxMesh = dynamic_cast<ReadFbxMesh*>(_pCollisionMesh);
+    ReadFbxMesh* fbxMesh = dynamic_cast<ReadFbxMesh*>(_collisionMesh);
 
-    if (_pCollisionMesh)
+    if (_collisionMesh)
     {
-        const auto& collisionPrimitives = _pCollisionMesh->GetCollisionPrimitives();
+        const auto& collisionPrimitives = _collisionMesh->GetCollisionPrimitives();
         debugObjects.clear(); // 이전 데이터 클리어
 
         // CollisionPrimitive 개수만큼 디버그 오브젝트를 미리 생성
@@ -388,14 +388,14 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         }
     }*/
 
-    if (isRenderFbxFileBoundingBoxes && _pCollisionMesh && _pFbxObject)
+    if (isRenderFbxFileBoundingBoxes && _collisionMesh && _fbxObject)
     {
         pd3dCommandList->SetGraphicsRootSignature(_AllRootSignature[0].Get());
         m_pDebugShader->OnPrepareRender(pd3dCommandList);
         m_pCamera->UpdateShaderVariables(pd3dCommandList);
 
-        const auto& collisionPrimitives = _pCollisionMesh->GetCollisionPrimitives();
-        XMMATRIX parentWorld = XMLoadFloat4x4(&_pFbxObject->GetComponent<TransformComponent>()->get_world_matrix());
+        const auto& collisionPrimitives = _collisionMesh->GetCollisionPrimitives();
+        XMMATRIX parentWorld = XMLoadFloat4x4(&_fbxObject->GetComponent<TransformComponent>()->get_world_matrix());
 
         for (size_t i = 0; i < collisionPrimitives.size(); ++i)
         {
@@ -418,7 +418,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
             XMStoreFloat4x4(&debugAABBObject->GetComponent<TransformComponent>()->get_world_matrix(), (aabb_S * aabb_T) * parentWorld);
 
             // 3. 와이어프레임 위치 갱신
-            debugWireframeObject->GetComponent<TransformComponent>()->get_world_matrix() = _pFbxObject->GetComponent<TransformComponent>()->get_world_matrix();
+            debugWireframeObject->GetComponent<TransformComponent>()->get_world_matrix() = _fbxObject->GetComponent<TransformComponent>()->get_world_matrix();
 
             debugObjects[i * 3 + 0]->render(pd3dCommandList, m_pCamera); // OBB
             debugObjects[i * 3 + 1]->render(pd3dCommandList, m_pCamera); // AABB
