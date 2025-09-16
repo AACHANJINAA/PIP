@@ -3,7 +3,7 @@
 
 OtherPlayer::OtherPlayer(int x, int y, int z)
 {
-	SetPosition(x, y, z);
+	if (OtherPlayer_Trasnform) OtherPlayer_Trasnform->SetPosition(x, y, z);
 }
 
 OtherPlayer::~OtherPlayer()
@@ -13,7 +13,12 @@ OtherPlayer::~OtherPlayer()
 
 void OtherPlayer::Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	SetPosition(GetPosition().x * _MoveDistance, GetPosition().y * _MoveDistance, GetPosition().z * _MoveDistance);
+	if (OtherPlayer_Trasnform)
+	{
+		OtherPlayer_Trasnform->SetPosition(OtherPlayer_Trasnform->GetPosition().x * _MoveDistance,
+										   OtherPlayer_Trasnform->GetPosition().y * _MoveDistance,
+										   OtherPlayer_Trasnform->GetPosition().z * _MoveDistance);
+	}
 }
 
 void OtherPlayer::Collision(float fElapsedTime)

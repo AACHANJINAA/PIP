@@ -29,6 +29,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 	{
 		auto RequestObject = m_RequestObjects.front();
 		RequestObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+		auto RequestObject_Transform = RequestObject->GetComponent<TransformComponent>();
 		switch (RequestObject->m_Mesh_Type)
 		{
 		case PLAYER:
@@ -39,7 +40,8 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
 			RequestObject->SetMesh(Chess_Mesh);
-			RequestObject->SetScale(1.f, 1.f, 1.f);
+			if (RequestObject_Transform)
+				RequestObject_Transform->SetScale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
 			ObjectManager::Instance()->PushObject(RequestObject);
@@ -57,7 +59,8 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 			RequestObject->SetMesh(Chess_Mesh);
 
 			// 이동 거리 설정
-			RequestObject->SetScale(1.f, 1.f, 1.f);
+			if(RequestObject_Transform)
+				RequestObject_Transform->SetScale(1.f, 1.f, 1.f);
 
 			// 매니저에 넣기
 			ObjectManager::Instance()->PushEnemy(RequestObject);

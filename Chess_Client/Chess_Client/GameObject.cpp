@@ -44,7 +44,7 @@ void Material_Shader::SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandLis
 
 GameObject::GameObject()
 {
-	XMStoreFloat4x4(&m_xmf4x4World, XMMatrixIdentity());
+	AddComponent<TransformComponent>(this);
 }
 GameObject::~GameObject()
 {
@@ -161,104 +161,29 @@ void GameObject::ReleaseShaderVariables()
 void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	// 1. 데이터 준비
-	XMStoreFloat4x4(&_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
+	auto Transform = GetComponent<TransformComponent>();
+	if (Transform)
+	{
+		XMStoreFloat4x4(&_pcbMappedGameObject->_4x4World, XMMatrixTranspose(XMLoadFloat4x4(&Transform->GetWorldMatrix())));
+
+	}
 
 	// 2. GPU에 바인딩
 	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbGameObject->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
 }
 
-void GameObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)
-{
-	XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(pxmf3Axis),
-		XMConvertToRadians(fAngle));
-	m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
-}
-
-void GameObject::SetPosition(float x, float y, float z)
-{
-	m_xmf3Position = { x,y,z };
-}
-void GameObject::SetPosition(XMFLOAT3 xmf3Position)
-{
-	SetPosition(xmf3Position.x, xmf3Position.y, xmf3Position.z);
-}
-
-
-void GameObject::SetScale(float x, float y, float z)
-{
-	_scale = {x,y,z};
-}
-
-XMFLOAT3 GameObject::GetPosition()
-{
-	return m_xmf3Position;
-}
-//게임 객체의 로컬 z-축 벡터를 반환한다. 
-XMFLOAT3 GameObject::GetLook()
-{
-	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33)));
-}
-
-XMFLOAT3 GameObject::GetSize()
-{
-	return _scale;
-}
-
-//게임 객체의 로컬 y-축 벡터를 반환한다. 
-XMFLOAT3 GameObject::GetUp()
-{
-	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._21, m_xmf4x4World._22, m_xmf4x4World._23)));
-}
-//게임 객체의 로컬 x-축 벡터를 반환한다. 
-XMFLOAT3 GameObject::GetRight()
-{
-	return(Vector3::Normalize(XMFLOAT3(m_xmf4x4World._11, m_xmf4x4World._12, m_xmf4x4World._13)));
-}
-//게임 객체를 주어진 각도로 회전한다. 
-void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
-{
-	_Rotate = { fPitch, fYaw, fRoll };
-}
-
-void GameObject::Move(XMFLOAT3& vDirection, float fSpeed)
-{
-	m_xmf3Position.x = m_xmf3Position.x + vDirection.x * fSpeed;
-	m_xmf3Position.y = m_xmf3Position.y + vDirection.y * fSpeed;
-	m_xmf3Position.z = m_xmf3Position.z + vDirection.z * fSpeed;
-}
-
-void GameObject::Move(float x, float y, float z)
-{
-	m_xmf3Position.x += x;
-	m_xmf3Position.y += y;
-	m_xmf3Position.z += z;
-}
-
-void GameObject::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
-{
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosition(), xmf3LookTo, xmf3Up);
-	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
-	m_xmf4x4World._21 = xmf4x4View._12; m_xmf4x4World._22 = xmf4x4View._22; m_xmf4x4World._23 = xmf4x4View._32;
-	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
-}
-
-void GameObject::LookTo(XMFLOAT3& xmf3LookTo)
-{
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosition(), xmf3LookTo, GetUp());
-	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
-	m_xmf4x4World._21 = xmf4x4View._12; m_xmf4x4World._22 = xmf4x4View._22; m_xmf4x4World._23 = xmf4x4View._32;
-	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
-}
-
 void GameObject::GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection)
 {
-	XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&m_xmf4x4World) * xmmtxView);
+	auto Transform = GetComponent<TransformComponent>();
+	if (Transform) {
+		XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&Transform->GetWorldMatrix()) * xmmtxView);
 
-	XMFLOAT3 xmf3CameraOrigin(0.0f, 0.0f, 0.0f);
-	xmvPickRayOrigin = XMVector3TransformCoord(XMLoadFloat3(&xmf3CameraOrigin), xmmtxToModel);
-	xmvPickRayDirection = XMVector3TransformCoord(xmvPickPosition, xmmtxToModel);
-	xmvPickRayDirection = XMVector3Normalize(xmvPickRayDirection - xmvPickRayOrigin);
+		XMFLOAT3 xmf3CameraOrigin(0.0f, 0.0f, 0.0f);
+		xmvPickRayOrigin = XMVector3TransformCoord(XMLoadFloat3(&xmf3CameraOrigin), xmmtxToModel);
+		xmvPickRayDirection = XMVector3TransformCoord(xmvPickPosition, xmmtxToModel);
+		xmvPickRayDirection = XMVector3Normalize(xmvPickRayDirection - xmvPickRayOrigin);
+	}
 }
 
 int GameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance)
@@ -288,10 +213,14 @@ bool GameObject::PickModelOBB(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, flo
 
 void GameObject::UpdateBoundingBox()
 {
+	auto Transform = GetComponent<TransformComponent>();
 	if (m_pMesh)
 	{
-		XMVectorScale(XMLoadFloat3(&m_pMesh->m_xmOOBB.Extents), GetSize().x);
-		m_pMesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+		if (Transform)
+		{
+			XMVectorScale(XMLoadFloat3(&m_pMesh->m_xmOOBB.Extents), Transform->GetSize().x);
+		}
+		m_pMesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&Transform->GetWorldMatrix()));
 		XMStoreFloat4(&m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
 	}
 }
@@ -301,8 +230,10 @@ bool GameObject::IsVisible(Camera* pCamera)
 	//OnPrepareRender();
 	if (!pCamera) return false; 
 
+	auto Transform = GetComponent<TransformComponent>();
+
 	BoundingOrientedBox worldOOBB = m_pMesh->GetBoundingBox();
-	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&Transform->GetWorldMatrix()));
 
 	XMVECTOR orientationQuat = XMLoadFloat4(&worldOOBB.Orientation);
 	orientationQuat = XMQuaternionNormalize(orientationQuat);
@@ -312,20 +243,12 @@ bool GameObject::IsVisible(Camera* pCamera)
 }
 
 
-void GameObject::Update()
+void GameObject::Update(float DeltaTime)
 {
-	m_xmf4x4World = Matrix4x4::Identity();
-
-	// 1. 크기, 회전, 이동 행렬을 각각 생성
-	XMMATRIX scaleMatrix = XMMatrixScaling(_scale.x, _scale.y, _scale.z);
-	XMMATRIX rotateMatrix = XMMatrixRotationRollPitchYaw(XMConvertToRadians(_Rotate.x), XMConvertToRadians(_Rotate.y), XMConvertToRadians(_Rotate.z));
-	XMMATRIX translateMatrix = XMMatrixTranslation(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z);
-
-	// 2. S-R-T 순서로 행렬을 곱하여 월드 행렬을 만듦
-	// (참고: Right, Up, Look 벡터로 회전을 만들고 싶다면 rotateMatrix를 해당 행렬로 교체)
-	XMMATRIX worldMatrix = scaleMatrix * rotateMatrix * translateMatrix;
-	XMStoreFloat4x4(&m_xmf4x4World, worldMatrix);
-
+	for (const std::shared_ptr<Component>& component : _components)
+	{
+		component->Update(DeltaTime);
+	}
 
 	//if (nullptr != m_pMaterial)
 	//{
@@ -337,7 +260,7 @@ void GameObject::Update()
 
 	//		// 기존 월드 행렬 앞에 곱해서 최종 월드 행렬을 만듦
 	//		worldMatrix = zFlipMatrix * worldMatrix;
-	//		XMStoreFloat4x4(&m_xmf4x4World, worldMatrix);
+	//		XMStoreFloat4x4(&_4x4World, worldMatrix);
 	//	}
 	//}
 }

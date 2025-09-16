@@ -5,7 +5,7 @@
 
 MainPlayer::MainPlayer(int x, int y, int z)
 {
-	SetPosition(x, y, z);
+	if(MainPlayer_Trasnform) MainPlayer_Trasnform->SetPosition(x, y, z);
 }
 
 MainPlayer::~MainPlayer()

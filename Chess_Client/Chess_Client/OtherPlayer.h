@@ -22,12 +22,11 @@ public:
 	std::string GetName() const { return _name; }
 
 private:
-	
-
-private:
 	int64_t		_id = -1;
 	std::string _name;
 
 	float _MoveDistance{2}; // 움직일 거리
+
+	std::shared_ptr<TransformComponent> OtherPlayer_Trasnform = GetComponent<TransformComponent>();
 };
 
