@@ -102,6 +102,6 @@ void TransformComponent::update(float DeltaTime)
 	XMMATRIX translateMatrix = XMMatrixTranslation(_position.x, _position.y, _position.z);
 
 	XMMATRIX worldMatrix = scaleMatrix * rotateMatrix * translateMatrix;
-	//XMMATRIX zFlipworldMatrix = XMMatrixScaling(1.0f, 1.0f, -1.0f) * worldMatrix; // GLB 모델의 Z축 뒤집기
+	XMMATRIX zFlipworldMatrix = XMMatrixScaling(1.0f, 1.0f, -1.0f) * worldMatrix; // GLB 모델의 Z축 뒤집기
 	XMStoreFloat4x4(&_world, worldMatrix);
 }

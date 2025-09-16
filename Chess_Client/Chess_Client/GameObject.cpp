@@ -150,7 +150,6 @@ void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandLis
 
 	}
 
-	// 2. GPU�� ���ε�
 	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbGameObject->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
 }
@@ -207,10 +206,12 @@ void GameObject::update_bounding_box()
 
 bool GameObject::is_visible(Camera * camera)
 {
+	//return true;
 	//OnPrepareRender();
 	if (!camera) return false; 
 
 	auto Transform = GetComponent<TransformComponent>();
+	//if (!Transform) return true; //만약, TransformComponent가 없으면 이거 쓰기
 
 	BoundingOrientedBox worldOOBB = _mesh->GetBoundingBox();
 	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&Transform->get_world_matrix()));
@@ -229,18 +230,4 @@ void GameObject::update(float DeltaTime)
 	{
 		component->update(DeltaTime);
 	}
-
-	//if (nullptr != m_pMaterial)
-	//{
-	//	// �� ���̴��� ���� ��ü�� GLB ���̶�� ����
-	//	if (typeid(CObjectsShader) == typeid(*(m_pMaterial->_Shader)))
-	//	{
-	//		// Z���� ������ ��ȯ ��� ����
-	//		XMMATRIX zFlipMatrix = XMMatrixScaling(1.0f, 1.0f, -1.0f);
-
-	//		// ���� ���� ��� �տ� ���ؼ� ���� ���� ����� ����
-	//		worldMatrix = zFlipMatrix * worldMatrix;
-	//		XMStoreFloat4x4(&_4x4World, worldMatrix);
-	//	}
-	//}
 }

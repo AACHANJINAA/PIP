@@ -27,8 +27,8 @@ private:
 	bool isRenderFbxFileBoundingBoxes = false;
 	std::vector<std::shared_ptr<GameObject>> debugObjects;
 
-	std::shared_ptr<GameObject> _pFbxObject;
-	ReadFbxMesh* _pCollisionMesh = nullptr;
+	std::shared_ptr<GameObject> _fbxObject;
+	ReadFbxMesh* _collisionMesh = nullptr;
 
 	Shader* m_pDebugShader = nullptr;
 };
