@@ -29,6 +29,6 @@ private:
 
 	float _MoveDistance{2}; // 움직일 거리
 
-	std::shared_ptr<TransformComponent> MainPlayer_Trasnform = GetComponent<TransformComponent>();
+	std::shared_ptr<TransformComponent> MainPlayer_Trasnform = get_component<TransformComponent>();
 };
 

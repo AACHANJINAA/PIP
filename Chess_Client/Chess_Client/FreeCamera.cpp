@@ -26,7 +26,7 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 			{
 				int i = 0; // DWµð¹ö±ë
 			}
-			auto player_Transform = Player->GetComponent<TransformComponent>();
+			auto player_Transform = Player->get_component<TransformComponent>();
 			if (player_Transform)
 			{
 				SetPosition(XMFLOAT3(player_Transform->get_position().x - (GetLookVec().x) * m_NowOffset,

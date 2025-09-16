@@ -148,7 +148,7 @@ public:
 	std::vector<std::shared_ptr<Component>> _components;
 
 	template<typename T, typename... Args>
-	std::shared_ptr<T> AddComponent(Args&&... args) {
+	std::shared_ptr<T> add_component(Args&&... args) {
 		std::shared_ptr<T> newComponent = std::make_shared<T>(std::forward<Args>(args)...);
 		_components.emplace_back(newComponent);
 		newComponent->start();
@@ -156,7 +156,7 @@ public:
 	}
 
 	template<typename T>
-	std::shared_ptr<T> GetComponent() {
+	std::shared_ptr<T> get_component() {
 		for (const auto& component : _components) {
 			if (auto casting = std::dynamic_pointer_cast<T>(component)) {
 				return casting;

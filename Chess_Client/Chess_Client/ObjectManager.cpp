@@ -29,7 +29,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 	{
 		auto RequestObject = m_RequestObjects.front();
 		RequestObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-		auto RequestObject_Transform = RequestObject->GetComponent<TransformComponent>();
+		auto RequestObject_Transform = RequestObject->get_component<TransformComponent>();
 		switch (RequestObject->_meshType)
 		{
 		case PLAYER:

@@ -42,7 +42,7 @@ void Material_Shader::set_root_signature(ID3D12GraphicsCommandList* command_list
 
 GameObject::GameObject()
 {
-	AddComponent<TransformComponent>(this);
+	add_component<TransformComponent>(this);
 }
 GameObject::~GameObject()
 {
@@ -143,7 +143,7 @@ void GameObject::ReleaseShaderVariables()
 
 void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	auto Transform = GetComponent<TransformComponent>();
+	auto Transform = get_component<TransformComponent>();
 	if (Transform)
 	{
 		XMStoreFloat4x4(&_cbMappedGameObject->_world, XMMatrixTranspose(XMLoadFloat4x4(&Transform->get_world_matrix())));
@@ -156,7 +156,7 @@ void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandLis
 
 void GameObject::generate_ray_for_picking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection)
 {
-	auto Transform = GetComponent<TransformComponent>();
+	auto Transform = get_component<TransformComponent>();
 	if (Transform) {
 		XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&Transform->get_world_matrix()) * xmmtxView);
 
@@ -192,7 +192,7 @@ bool GameObject::pick_model_obb(XMVECTOR& pick_position, XMMATRIX& view_matrix, 
 
 void GameObject::update_bounding_box()
 {
-	auto Transform = GetComponent<TransformComponent>();
+	auto Transform = get_component<TransformComponent>();
 	if (_mesh)
 	{
 		if (Transform)
@@ -210,7 +210,7 @@ bool GameObject::is_visible(Camera * camera)
 	//OnPrepareRender();
 	if (!camera) return false; 
 
-	auto Transform = GetComponent<TransformComponent>();
+	auto Transform = get_component<TransformComponent>();
 	//if (!Transform) return true; //만약, TransformComponent가 없으면 이거 쓰기
 
 	BoundingOrientedBox worldOOBB = _mesh->GetBoundingBox();
