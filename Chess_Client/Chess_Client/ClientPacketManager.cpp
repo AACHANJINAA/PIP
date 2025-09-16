@@ -155,7 +155,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
 		my_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get());
-		my_king->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
+		my_king->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
 		my_king->SetID(_my_session_id); // 내 플레이어 ID 설정
@@ -170,7 +170,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 
 		// 색 설정
 		//Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
-		my_king->SetMesh(Chess_Mesh);
+		my_king->set_mesh(Chess_Mesh);
 		my_king->SetScale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
@@ -188,18 +188,18 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get());
 		other_king->SetID(spawn_data._id);
-		other_king->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
+		other_king->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
 		other_king->SetHP(spawn_data._hp); // HP 설정
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
-		other_king->m_Mesh_Type = ENEMY; // 적 타입으로 설정
+		other_king->_meshType = ENEMY; // 적 타입으로 설정
 		Mesh* Chess_Mesh = new ReadObjMesh{ GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get(),
 			"Resource/Monster/test_monster.obj" };
 
 		// 색 설정
 		Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 0.0f, 1.0f, 0.0f, 1.f);
-		other_king->SetMesh(Chess_Mesh);
+		other_king->set_mesh(Chess_Mesh);
 
 		// 이동 거리 설정
 		other_king->SetScale(1.f, 1.f, 1.f);
@@ -219,7 +219,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
 	if (player && move_packet._id == player->GetID()) // 읽어온 id 사용
 	{
-		player->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+		player->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 	}
 	else
 	{
@@ -229,7 +229,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 									   });
 		if (it != other_players.end())
 		{
-			dynamic_cast<OtherPlayer*>(it->get())->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+			dynamic_cast<OtherPlayer*>(it->get())->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 		}
 	}
 }
@@ -245,7 +245,7 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 								   });
 	if (it != other_players.end())
 	{
-		(*it)->m_Delete = true;
+		(*it)->_shouldDelete = true;
 	}
 }
 
