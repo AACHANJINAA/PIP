@@ -17,26 +17,26 @@ Material_Shader::~Material_Shader()
 		_Shader->Release();*/
 }
 
-void Material_Shader::SetShader(std::shared_ptr<Shader> pShader)
+void Material_Shader::set_shader(const std::shared_ptr<Shader>& shader)
 {
-	if (_Shader) _Shader->Release();
-	_Shader = pShader;
-	if (_Shader) _Shader->AddRef();
+	if (_shader) _shader->Release();
+	_shader = shader;
+	if (_shader) _shader->AddRef();
 }
 
-void Material_Shader::SetShaderRootSignature(ID3D12RootSignature* RootSignature)
+void Material_Shader::set_shader_root_signature(ID3D12RootSignature* root_signature)
 {
-	if (_Shader) // 셰이더가 없으면 루트 시그너쳐도 있을 이유가 없음
+	if (_shader) // 셰이더가 없으면 루트 시그너쳐도 있을 이유가 없음
 	{
-		_rootSignature = RootSignature;
+		_rootSignature = root_signature;
 	}
 }
 
-void Material_Shader::SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandList)
+void Material_Shader::set_root_signature(ID3D12GraphicsCommandList* command_list)
 {
 	if(_rootSignature)
 	{
-		pd3dCommandList->SetGraphicsRootSignature(_rootSignature);
+		command_list->SetGraphicsRootSignature(_rootSignature);
 	}
 }
 
@@ -61,7 +61,7 @@ GameObject::~GameObject()
 void GameObject::set_shader(std::shared_ptr<Shader> shader)
 {
 	if (!_materialShader) _materialShader = new Material_Shader(); // 재질이 없으면 새로 생성
-	if (_materialShader) _materialShader->SetShader(shader);
+	if (_materialShader) _materialShader->set_shader(shader);
 }
 
 void GameObject::set_material(Material_Shader* material)
@@ -97,11 +97,11 @@ void GameObject::on_prepare_render(ID3D12GraphicsCommandList* command_List)
 {
 	if (_materialShader) // 머터리얼이 있는지 확인
 	{
-		if (_materialShader->_Shader) // 머터리얼에 셰이더가 있는지 확인
+		if (_materialShader->_shader) // 머터리얼에 셰이더가 있는지 확인
 		{
-			_materialShader->SetRootSignature(command_List);
+			_materialShader->set_root_signature(command_List);
 			// 머터리얼의 셰이더를 사용하여 렌더링
-			_materialShader->_Shader->OnPrepareRender(command_List);
+			_materialShader->_shader->OnPrepareRender(command_List);
 		}
 	}
 }
@@ -109,7 +109,7 @@ void GameObject::on_prepare_render(ID3D12GraphicsCommandList* command_List)
 // (수정) [PONG]
 void GameObject::render(ID3D12GraphicsCommandList* command_list, Camera* camera)
 {
-	if (IsVisible(camera))
+	if (is_visible(camera))
 	{
 		// 렌더링 상태 설정
 		//OnPrepareRender(pd3dCommandList);
@@ -161,17 +161,17 @@ void GameObject::ReleaseShaderVariables()
 void GameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	// 1. 데이터 준비
-	XMStoreFloat4x4(&_cbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&_worldMatrix)));
+	XMStoreFloat4x4(&_cbMappedGameObject->_world, XMMatrixTranspose(XMLoadFloat4x4(&_worldMatrix)));
 
 	// 2. GPU에 바인딩
 	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbGameObject->GetGPUVirtualAddress();
 	pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
 }
 
-void GameObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)
+void GameObject::rotate(const XMFLOAT3& axis, float angle)
 {
-	XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(pxmf3Axis),
-		XMConvertToRadians(fAngle));
+	XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&axis),
+		XMConvertToRadians(angle));
 	_worldMatrix = Matrix4x4::Multiply(mtxRotate, _worldMatrix);
 }
 
@@ -228,78 +228,78 @@ void GameObject::move(XMFLOAT3& direction, float speed)
 	_position.z = _position.z + direction.z * speed;
 }
 
-void GameObject::Move(float x, float y, float z)
+void GameObject::move(float x, float y, float z)
 {
 	_position.x += x;
 	_position.y += y;
 	_position.z += z;
 }
 
-void GameObject::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
+void GameObject::look_to(XMFLOAT3& look_to, XMFLOAT3& up)
 {
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(position(), xmf3LookTo, xmf3Up);
+	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(position(), look_to, up);
 	_worldMatrix._11 = xmf4x4View._11; _worldMatrix._12 = xmf4x4View._21; _worldMatrix._13 = xmf4x4View._31;
 	_worldMatrix._21 = xmf4x4View._12; _worldMatrix._22 = xmf4x4View._22; _worldMatrix._23 = xmf4x4View._32;
 	_worldMatrix._31 = xmf4x4View._13; _worldMatrix._32 = xmf4x4View._23; _worldMatrix._33 = xmf4x4View._33;
 }
 
-void GameObject::LookTo(XMFLOAT3& xmf3LookTo)
+void GameObject::look_to(XMFLOAT3& look_to)
 {
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(position(), xmf3LookTo, up());
+	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(position(), look_to, up());
 	_worldMatrix._11 = xmf4x4View._11; _worldMatrix._12 = xmf4x4View._21; _worldMatrix._13 = xmf4x4View._31;
 	_worldMatrix._21 = xmf4x4View._12; _worldMatrix._22 = xmf4x4View._22; _worldMatrix._23 = xmf4x4View._32;
 	_worldMatrix._31 = xmf4x4View._13; _worldMatrix._32 = xmf4x4View._23; _worldMatrix._33 = xmf4x4View._33;
 }
 
-void GameObject::GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection)
+void GameObject::generate_ray_for_picking(XMVECTOR& pick_position, XMMATRIX& view_matrix, XMVECTOR& pick_ray_origin, XMVECTOR& pick_ray_direction)
 {
-	XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&_worldMatrix) * xmmtxView);
+	XMMATRIX xmmtxToModel = XMMatrixInverse(NULL, XMLoadFloat4x4(&_worldMatrix) * view_matrix);
 
 	XMFLOAT3 xmf3CameraOrigin(0.0f, 0.0f, 0.0f);
-	xmvPickRayOrigin = XMVector3TransformCoord(XMLoadFloat3(&xmf3CameraOrigin), xmmtxToModel);
-	xmvPickRayDirection = XMVector3TransformCoord(xmvPickPosition, xmmtxToModel);
-	xmvPickRayDirection = XMVector3Normalize(xmvPickRayDirection - xmvPickRayOrigin);
+	pick_ray_origin = XMVector3TransformCoord(XMLoadFloat3(&xmf3CameraOrigin), xmmtxToModel);
+	pick_ray_direction = XMVector3TransformCoord(pick_position, xmmtxToModel);
+	pick_ray_direction = XMVector3Normalize(pick_ray_direction - pick_ray_origin);
 }
 
-int GameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance)
+int GameObject::pick_object_by_ray_intersection(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance)
 {
 	int nIntersected = 0;
 	if (_mesh)
 	{
 		XMVECTOR xmvPickRayOrigin, xmvPickRayDirection;
-		GenerateRayForPicking(xmvPickPosition, xmmtxView, xmvPickRayOrigin, xmvPickRayDirection);
-		nIntersected = _mesh->CheckRayIntersection(xmvPickRayOrigin, xmvPickRayDirection, pfHitDistance);
+		generate_ray_for_picking(pick_position, view_matrix, xmvPickRayOrigin, xmvPickRayDirection);
+		nIntersected = _mesh->CheckRayIntersection(xmvPickRayOrigin, xmvPickRayDirection, hit_distance);
 	}
 	return(nIntersected);
 	// DW질문 : nIntersections 이거 개수 왜 새는건지? 밖에서도 0 이상인지만 확인하고 끝남, 혹시 중요한 다른 의미가 있는지?
 	// 영상에서도 nIntersections이 변수에 대한 언급은 딱히 없었음
 }
 
-bool GameObject::PickModelOBB(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance)
+bool GameObject::pick_model_obb(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance)
 {
 	if (_mesh)
 	{
 		XMVECTOR xmvPickRayOrigin, xmvPickRayDirection;
-		GenerateRayForPicking(xmPickPosition, xmmtxView, xmvPickRayOrigin, xmvPickRayDirection);
-		return(_mesh->m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *pfHitDistance));
+		generate_ray_for_picking(pick_position, view_matrix, xmvPickRayOrigin, xmvPickRayDirection);
+		return(_mesh->m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *hit_distance));
 	}
 	return false;
 }
 
-void GameObject::UpdateBoundingBox()
+void GameObject::update_bounding_box()
 {
 	if (_mesh)
 	{
 		XMVectorScale(XMLoadFloat3(&_mesh->m_xmOOBB.Extents), size().x);
-		_mesh->m_xmOOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&_worldMatrix));
-		XMStoreFloat4(&m_xmOOBB.Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
+		_mesh->m_xmOOBB.Transform(_orientedBoundingBox, XMLoadFloat4x4(&_worldMatrix));
+		XMStoreFloat4(&_orientedBoundingBox.Orientation, XMQuaternionNormalize(XMLoadFloat4(&_orientedBoundingBox.Orientation)));
 	}
 }
 
-bool GameObject::IsVisible(Camera* pCamera)
+bool GameObject::is_visible(Camera* camera)
 {
 	//OnPrepareRender();
-	if (!pCamera) return false; 
+	if (!camera) return false; 
 
 	BoundingOrientedBox worldOOBB = _mesh->GetBoundingBox();
 	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&_worldMatrix));
@@ -308,11 +308,11 @@ bool GameObject::IsVisible(Camera* pCamera)
 	orientationQuat = XMQuaternionNormalize(orientationQuat);
 	XMStoreFloat4(&worldOOBB.Orientation, orientationQuat);
 
-	return pCamera->IsInFrustum(worldOOBB);
+	return camera->IsInFrustum(worldOOBB);
 }
 
 
-void GameObject::Update()
+void GameObject::update()
 {
 	_worldMatrix = Matrix4x4::Identity();
 

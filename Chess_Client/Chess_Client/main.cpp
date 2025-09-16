@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "Chess_Client.h"
+#include "main.h"
 #include "ClientPacketManager.h"
 #include "GameFramework.h"
 #include "resource1.h"

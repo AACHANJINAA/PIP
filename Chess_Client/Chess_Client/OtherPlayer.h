@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
-
+// TODO: 이것은 스크립트가 되어야함 오브젝트에 컴포넌트 합치는 것은 런타임에? 아님 상속으로?
 class OtherPlayer : public GameObject, public HPObject
 {
 public:

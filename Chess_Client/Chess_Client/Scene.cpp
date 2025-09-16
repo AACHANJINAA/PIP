@@ -24,7 +24,7 @@ bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, 
 
         if (m_pLockedObject)
         {
-            m_pLockedObject->_isCollision = true;
+            m_pLockedObject->_isCollided = true;
         }
 
         break;
@@ -85,7 +85,7 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
 
             Board->set_mesh(BoardMesh);
             Board->set_shader(_AllShaders[1]); // GLB
-            Board->_materialShader->SetShaderRootSignature(_AllRootSignature[1].Get());
+            Board->_materialShader->set_shader_root_signature(_AllRootSignature[1].Get());
             Board->rotate(rotation.x, -rotation.y, rotation.z);
             Board->SetScale(scale.x, scale.y, scale.z);
             Board->set_position(location.x, location.y, location.z);
@@ -277,7 +277,7 @@ GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
         for (auto& Objects : Arr) {
             for (auto& Object : Objects) {
                 float fHitDistance = FLT_MAX;
-                nIntersected = Object.get()->PickModelOBB(xmvPickPosition, xmmtxView, &fHitDistance);
+                nIntersected = Object.get()->pick_model_obb(xmvPickPosition, xmmtxView, &fHitDistance);
                 if (nIntersected && (fHitDistance < fNearestHitDistance))
                 {
                     fNearestHitDistance = fHitDistance;
@@ -372,10 +372,10 @@ void Scene::BuildLightsAndMaterials()
     ::ZeroMemory(m_pMaterials, sizeof(MATERIALS));
 
     // Èò»ö ÇÃ¶ó½ºÆ½ ´À³¦
-    m_pMaterials->m_pReflections[0].m_xmf4Ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Specular = XMFLOAT4(1.f, 1.f, 1.f, 16.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+    m_pMaterials->m_pReflections[0]._ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_pMaterials->m_pReflections[0]._diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+    m_pMaterials->m_pReflections[0]._specular = XMFLOAT4(1.f, 1.f, 1.f, 16.0f);
+    m_pMaterials->m_pReflections[0]._emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void Scene::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
