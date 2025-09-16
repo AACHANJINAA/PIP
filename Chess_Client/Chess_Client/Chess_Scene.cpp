@@ -104,9 +104,13 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     Board->SetShader(_AllShaders[1]); // GLB
     Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
    // Board->SetScale(1.f, 1.f, 1.f);
-    Board->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * Board->GetSize().x),
-        1.0f,
-        ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * Board->GetSize().z));
+	auto BoardObjaect_Transform = Board->GetComponent<TransformComponent>();
+    if (BoardObjaect_Transform) 
+    {
+        BoardObjaect_Transform->SetPosition(((Board->m_pMesh->m_Right - Board->m_pMesh->m_Left) * BoardObjaect_Transform->GetSize().x),
+            1.0f,
+            ((Board->m_pMesh->m_Front - Board->m_pMesh->m_Back) * BoardObjaect_Transform->GetSize().z));
+    }
     Board->m_PosX = 0;
     Board->m_PosY = 0;
     ObjectManager::Instance()->PushFloorObject(Board);
@@ -119,10 +123,14 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     _pFbxObject->SetMesh(_pCollisionMesh);
     XMFLOAT3 Scale = XMFLOAT3(0.01f, 0.01f, 0.01f);
-    _pFbxObject->SetScale(Scale.x, Scale.y, Scale.z);
-    _pFbxObject->SetPosition(((_pFbxObject->m_pMesh->m_Right - _pFbxObject->m_pMesh->m_Left) * _pFbxObject->GetSize().x + 3),
-        0.8f,
-        ((_pFbxObject->m_pMesh->m_Front - _pFbxObject->m_pMesh->m_Back) * _pFbxObject->GetSize().z) + 5);
+    auto FbxObject_Transform = _pFbxObject->GetComponent<TransformComponent>();
+    if (FbxObject_Transform)
+    {
+        FbxObject_Transform->SetScale(Scale.x, Scale.y, Scale.z);
+        FbxObject_Transform->SetPosition(((_pFbxObject->m_pMesh->m_Right - _pFbxObject->m_pMesh->m_Left) * FbxObject_Transform->GetSize().x + 3),
+            0.8f,
+            ((_pFbxObject->m_pMesh->m_Front - _pFbxObject->m_pMesh->m_Back) * FbxObject_Transform->GetSize().z) + 5);
+    }
     Board->m_PosX = 0;
     Board->m_PosY = 0;
     ObjectManager::Instance()->PushFloorObject(_pFbxObject);
@@ -270,7 +278,7 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
             if (nullptr != Object)
             {
                 Object->Animate(fTimeElapsed, m_pCamera, pd3dCommandList);
-                Object->Update();
+                Object->Update(fTimeElapsed);
                 Object.get()->UpdateBoundingBox();
             }
         }
@@ -387,7 +395,7 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         m_pCamera->UpdateShaderVariables(pd3dCommandList);
 
         const auto& collisionPrimitives = _pCollisionMesh->GetCollisionPrimitives();
-        XMMATRIX parentWorld = XMLoadFloat4x4(&_pFbxObject->m_xmf4x4World);
+        XMMATRIX parentWorld = XMLoadFloat4x4(&_pFbxObject->GetComponent<TransformComponent>()->GetWorldMatrix());
 
         for (size_t i = 0; i < collisionPrimitives.size(); ++i)
         {
@@ -402,15 +410,15 @@ void Chess_Scene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
             XMVECTOR oobb_quat = XMQuaternionNormalize(XMLoadFloat4(&primitive.oobb.Orientation));
             XMMATRIX oobb_R = XMMatrixRotationQuaternion(oobb_quat);
             XMMATRIX oobb_T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
-            XMStoreFloat4x4(&debugOOBBObject->m_xmf4x4World, (oobb_S * oobb_R * oobb_T) * parentWorld);
+            XMStoreFloat4x4(&debugOOBBObject->GetComponent<TransformComponent>()->GetWorldMatrix(), (oobb_S * oobb_R * oobb_T) * parentWorld);
 
             // 2. AABB 위치 갱신
             XMMATRIX aabb_S = XMMatrixScaling(primitive.aabb.Extents.x * 2.0f, primitive.aabb.Extents.y * 2.0f, primitive.aabb.Extents.z * 2.0f);
             XMMATRIX aabb_T = XMMatrixTranslation(primitive.aabb.Center.x, primitive.aabb.Center.y, primitive.aabb.Center.z);
-            XMStoreFloat4x4(&debugAABBObject->m_xmf4x4World, (aabb_S * aabb_T) * parentWorld);
+            XMStoreFloat4x4(&debugAABBObject->GetComponent<TransformComponent>()->GetWorldMatrix(), (aabb_S * aabb_T) * parentWorld);
 
             // 3. 와이어프레임 위치 갱신
-            debugWireframeObject->m_xmf4x4World = _pFbxObject->m_xmf4x4World;
+            debugWireframeObject->GetComponent<TransformComponent>()->GetWorldMatrix() = _pFbxObject->GetComponent<TransformComponent>()->GetWorldMatrix();
 
             debugObjects[i * 3 + 0]->Render(pd3dCommandList, m_pCamera); // OBB
             debugObjects[i * 3 + 1]->Render(pd3dCommandList, m_pCamera); // AABB

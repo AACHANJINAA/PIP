@@ -16,7 +16,7 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 	case CAMERA_MODE::CAMERA_THIRD_PERSON:
 	{
 		std::shared_ptr<GameObject>Player = ObjectManager::Instance()->GetPlayer();
-		if(Player.get())
+		if(Player)
 		{
 			if (m_NowOffset < m_Offset)
 			{
@@ -26,7 +26,13 @@ void FreeCamera::UpdateAnimateCamera(float fElapsedTime)
 			{
 				int i = 0; // DW디버깅
 			}
-			SetPosition(XMFLOAT3(Player.get()->GetPosition().x - (GetLookVec().x) * m_NowOffset, Player.get()->GetPosition().y - (GetLookVec().y) * m_NowOffset, Player.get()->GetPosition().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
+			auto player_Transform = Player->GetComponent<TransformComponent>();
+			if (player_Transform)
+			{
+				SetPosition(XMFLOAT3(player_Transform->GetPosition().x - (GetLookVec().x) * m_NowOffset,
+									 player_Transform->GetPosition().y - (GetLookVec().y) * m_NowOffset,
+									 player_Transform->GetPosition().z - (GetLookVec().z) * m_NowOffset)); // 카메라를 플레이어한테 붙이기
+			}
 		}
 	}
 		break;
@@ -106,7 +112,7 @@ void FreeCamera::RotateMouseCamera(float NowX, float NowY)
 		m_BeforeY = NowY;
 	}
 
-	Rotate((NowY - m_BeforeY) / 5.f, (NowX - m_BeforeX) / 5.f, 0.f);
+	Rotate((NowY - m_BeforeY) / 4.f, (NowX - m_BeforeX) / 4.f, 0.f);
 
 	m_BeforeX = NowX;
 	m_BeforeY = NowY;

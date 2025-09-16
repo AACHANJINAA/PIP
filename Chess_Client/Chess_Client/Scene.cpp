@@ -83,13 +83,17 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
 
             BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,meshName, (Scene*)this };
 
+			auto Board_Transform = Board->GetComponent<TransformComponent>();
+
             Board->SetMesh(BoardMesh);
             Board->SetShader(_AllShaders[1]); // GLB
             Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
-            Board->Rotate(rotation.x, -rotation.y, rotation.z);
-            Board->SetScale(scale.x, scale.y, scale.z);
-            Board->SetPosition(location.x, location.y, location.z);
-
+            if (Board_Transform)
+            {
+                Board_Transform->Rotate(rotation.x, -rotation.y, rotation.z);
+                Board_Transform->SetScale(scale.x, scale.y, scale.z);
+                Board_Transform->SetPosition(location.x, location.y, location.z);
+            }
             ObjectManager::Instance()->PushFloorObject(Board);
 
         }

@@ -34,7 +34,7 @@ protected:
 	float						m_ElapseTime{};
 
 public:
-	XMFLOAT4X4					m_xmf4x4World = Matrix4x4::Identity(); // 카메라 월드행렬
+	XMFLOAT4X4					_4x4World = Matrix4x4::Identity(); // 카메라 월드행렬
 	XMFLOAT4X4					m_xmf4x4View = Matrix4x4::Identity(); // 카메라 변환 행렬
 	XMFLOAT4X4					m_xmf4x4Projection = Matrix4x4::Identity(); // 원근투영 행렬
 	D3D12_VIEWPORT				m_d3dViewport;

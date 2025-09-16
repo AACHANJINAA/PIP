@@ -153,9 +153,13 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
+		auto my_king_Transform = my_king->GetComponent<TransformComponent>();
 		my_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get());
-		my_king->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
+		if (my_king_Transform)
+		{
+			my_king_Transform->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
+		}
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
 		my_king->SetID(_my_session_id); // 내 플레이어 ID 설정
@@ -171,7 +175,8 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		// 색 설정
 		//Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
 		my_king->SetMesh(Chess_Mesh);
-		my_king->SetScale(0.01f, 0.01f, 0.01f);
+		if (my_king_Transform)
+			my_king_Transform->SetScale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
 		ObjectManager::Instance()->PushObject(my_king);
@@ -185,10 +190,13 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._position.x, spawn_data._position.y);
-		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
-			GameFramework::Instance()->GetCommandList().Get());
+		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
+		auto other_king_Transform = other_king->GetComponent<TransformComponent>();
 		other_king->SetID(spawn_data._id);
-		other_king->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
+		if (other_king_Transform)
+		{
+			other_king_Transform->SetPosition(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
+		}
 		other_king->SetHP(spawn_data._hp); // HP 설정
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
@@ -202,7 +210,8 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		other_king->SetMesh(Chess_Mesh);
 
 		// 이동 거리 설정
-		other_king->SetScale(1.f, 1.f, 1.f);
+		if (other_king_Transform)
+			other_king_Transform->SetScale(1.f, 1.f, 1.f);
 
 		// 매니저에 넣기
 		ObjectManager::Instance()->PushEnemy(other_king);
@@ -217,9 +226,10 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	common::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
 	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
-	if (player && move_packet._id == player->GetID()) // 읽어온 id 사용
+	auto player_Trasnform = player->GetComponent<TransformComponent>();
+	if (player && move_packet._id == player->GetID() && player_Trasnform) // 읽어온 id 사용
 	{
-		player->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+		player_Trasnform->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 	}
 	else
 	{
@@ -227,9 +237,10 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
 			return move_packet._id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 id 사용
 									   });
+		auto other_player_Trasnform = dynamic_cast<OtherPlayer*>(it->get())->GetComponent<TransformComponent>();
 		if (it != other_players.end())
 		{
-			dynamic_cast<OtherPlayer*>(it->get())->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+			other_player_Trasnform->SetPosition(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
 		}
 	}
 }

@@ -1,6 +1,10 @@
 #pragma once
 #include "Mesh.h"
 #include "Camera.h"
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include "TransformComponent.h"
 class Shader;
 
 
@@ -64,7 +68,7 @@ public:
 // 셰이더의 cbuffer 구조체와 1:1로 대응하는 C++ 구조체
 struct CB_GAMEOBJECT_INFO
 {
-	XMFLOAT4X4 m_xmf4x4World;
+	XMFLOAT4X4 _4x4World;
 };
 
 
@@ -93,13 +97,11 @@ public:
 	bool m_bGravity = true;
 
 private:
-	// 월드 행렬을 담을 상수 버퍼 리소스
 	ComPtr<ID3D12Resource> m_pd3dcbGameObject;
 	// 맵핑된 상수 버퍼의 CPU 주소 (매 프레임 여기다 데이터 복사)
 	CB_GAMEOBJECT_INFO* _pcbMappedGameObject = nullptr;
 
 public:
-	XMFLOAT4X4 m_xmf4x4World = Matrix4x4::Identity();
 	Mesh* m_pMesh = NULL;
 	//Shader* m_pShader = NULL; 
 	Material_Shader* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
@@ -107,16 +109,6 @@ public:
 protected:
 	BoundingFrustum				m_xmFrustumView = BoundingFrustum();
 	BoundingFrustum				m_xmFrustumWorld = BoundingFrustum();
-
-	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3					m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	XMFLOAT3					m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	XMFLOAT3					m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
-
-	XMFLOAT3					_scale = XMFLOAT3(0.0f, 0.0f, 1.0f);
-
-	XMFLOAT3					_Rotate = XMFLOAT3(0.0f, 0.0f, 1.0f);
-
 
 public:
 	void ReleaseUploadBuffers(); 
@@ -135,30 +127,8 @@ public:
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void ReleaseShaderVariables();
 
-	//게임 객체의 월드 변환 행렬에서 위치 벡터와 방향(x-축, y-축, z-축) 벡터를 반환한다. 
-	XMFLOAT3 GetPosition();
-	XMFLOAT3 GetLook();
-	XMFLOAT3 GetSize();
-	XMFLOAT3 GetUp();
-	XMFLOAT3 GetRight();
-	//게임 객체의 위치를 설정한다. 
-	void SetPosition(float x, float y, float z);
-	void SetPosition(XMFLOAT3 xmf3Position);
-
-	//게임 객체의 크기를 설정한다.
-	void SetScale(float x, float y, float z);
-
 	//게임 객체의 중력을 나타낸다.
 	void SetGravity(XMFLOAT3& xmf3Gravity) { m_xmf3Gravity = xmf3Gravity; }
-
-	//게임 객체를 회전(x-축, y-축, z-축)한다.
-	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
-
-	void Move(XMFLOAT3& vDirection, float fSpeed);
-	void Move(float x, float y, float z);
-
-	void LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);
-	void LookTo(XMFLOAT3& xmf3LookTo);
 
 	void GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection);
 
@@ -169,11 +139,30 @@ public:
 
 	bool IsVisible(Camera* pCamera = NULL);
 
-	void Rotate(XMFLOAT3* pxmf3Axis, float fAngle);
-
-	void Update();
+	void Update(float DeltaTime);
 
 public:
 	int m_PosX{};
 	int m_PosY{};
+
+public:
+	std::vector<std::shared_ptr<Component>> _components;
+
+	template<typename T, typename... Args>
+	std::shared_ptr<T> AddComponent(Args&&... args) {
+		std::shared_ptr<T> newComponent = std::make_shared<T>(std::forward<Args>(args)...);
+		_components.emplace_back(newComponent);
+		newComponent->Start();
+		return newComponent;
+	}
+
+	template<typename T>
+	std::shared_ptr<T> GetComponent() {
+		for (const auto& component : _components) {
+			if (auto casting = std::dynamic_pointer_cast<T>(component)) {
+				return casting;
+			}
+		}
+		return nullptr;
+	}
 };

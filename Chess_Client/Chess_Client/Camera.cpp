@@ -133,17 +133,17 @@ void Camera::Rotate(float fPitchX, float fYawY, float fRollZ)
 void Camera::LookTo(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosVec(), xmf3LookTo, xmf3Up);
-	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
-	m_xmf4x4World._21 = xmf4x4View._12; m_xmf4x4World._22 = xmf4x4View._22; m_xmf4x4World._23 = xmf4x4View._32;
-	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
+	_4x4World._11 = xmf4x4View._11; _4x4World._12 = xmf4x4View._21; _4x4World._13 = xmf4x4View._31;
+	_4x4World._21 = xmf4x4View._12; _4x4World._22 = xmf4x4View._22; _4x4World._23 = xmf4x4View._32;
+	_4x4World._31 = xmf4x4View._13; _4x4World._32 = xmf4x4View._23; _4x4World._33 = xmf4x4View._33;
 }
 
 void Camera::LookTo(XMFLOAT3& xmf3LookTo)
 {
 	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(GetPosVec(), xmf3LookTo, GetUpVec());
-	m_xmf4x4World._11 = xmf4x4View._11; m_xmf4x4World._12 = xmf4x4View._21; m_xmf4x4World._13 = xmf4x4View._31;
-	m_xmf4x4World._21 = xmf4x4View._12; m_xmf4x4World._22 = xmf4x4View._22; m_xmf4x4World._23 = xmf4x4View._32;
-	m_xmf4x4World._31 = xmf4x4View._13; m_xmf4x4World._32 = xmf4x4View._23; m_xmf4x4World._33 = xmf4x4View._33;
+	_4x4World._11 = xmf4x4View._11; _4x4World._12 = xmf4x4View._21; _4x4World._13 = xmf4x4View._31;
+	_4x4World._21 = xmf4x4View._12; _4x4World._22 = xmf4x4View._22; _4x4World._23 = xmf4x4View._32;
+	_4x4World._31 = xmf4x4View._13; _4x4World._32 = xmf4x4View._23; _4x4World._33 = xmf4x4View._33;
 }
 
 
@@ -166,12 +166,12 @@ void Camera::Update()
 	// 투영행렬들
 	m_xmf4x4Projection = m_xmf4x4Projection;
 
-	m_xmf4x4World._11 = m_xmf3Right.x; m_xmf4x4World._12 = m_xmf3Right.y; m_xmf4x4World._13 = m_xmf3Right.z;
-	m_xmf4x4World._21 = m_xmf3Up.x; m_xmf4x4World._22 = m_xmf3Up.y; m_xmf4x4World._23 = m_xmf3Up.z;
-	m_xmf4x4World._31 = m_xmf3Look.x; m_xmf4x4World._32 = m_xmf3Look.y; m_xmf4x4World._33 = m_xmf3Look.z;
-	m_xmf4x4World._41 = m_xmf3Position.x; m_xmf4x4World._42 = m_xmf3Position.y; m_xmf4x4World._43 = m_xmf3Position.z;
+	_4x4World._11 = m_xmf3Right.x; _4x4World._12 = m_xmf3Right.y; _4x4World._13 = m_xmf3Right.z;
+	_4x4World._21 = m_xmf3Up.x; _4x4World._22 = m_xmf3Up.y; _4x4World._23 = m_xmf3Up.z;
+	_4x4World._31 = m_xmf3Look.x; _4x4World._32 = m_xmf3Look.y; _4x4World._33 = m_xmf3Look.z;
+	_4x4World._41 = m_xmf3Position.x; _4x4World._42 = m_xmf3Position.y; _4x4World._43 = m_xmf3Position.z;
 
-	m_xmFrustumView.Transform(m_xmFrustumWorld, XMLoadFloat4x4(&m_xmf4x4World));
+	m_xmFrustumView.Transform(m_xmFrustumWorld, XMLoadFloat4x4(&_4x4World));
 
 	GenerateFrustum();
 }

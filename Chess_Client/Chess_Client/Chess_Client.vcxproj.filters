@@ -61,6 +61,9 @@
     <Filter Include="Manager\InputManager">
       <UniqueIdentifier>{a4d3b8bf-b6f5-41ac-97b1-1b2fe3296232}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{a97c6d1e-e8d0-4a49-b99b-0f6aaa158c8e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -132,6 +135,15 @@
     <ClInclude Include="InputManager.h">
       <Filter>Manager\InputManager</Filter>
     </ClInclude>
+    <ClInclude Include="TransformComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Chess_Client.cpp">
@@ -190,6 +202,15 @@
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Manager\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderComponent.cpp">
+      <Filter>Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
