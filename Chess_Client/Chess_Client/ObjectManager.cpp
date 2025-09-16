@@ -122,7 +122,7 @@ void ObjectManager::MakeRenderMap(Camera* pCamera)
 
 	for (auto& objectList : Arr) {
 		for (auto& object : objectList) {
-			if (object && object->IsVisible(pCamera)) {
+			if (object && object->is_visible(pCamera)) {
 				// 오브젝트의 머터리얼에서 셰이더를 키로 사용하여 렌더 큐에 추가
 				if (nullptr == object->_materialShader)
 				{
@@ -130,7 +130,7 @@ void ObjectManager::MakeRenderMap(Camera* pCamera)
 				}
 				else
 				{
-					_RenderMap[typeid(*(object->_materialShader->_Shader))].push_back(object);
+					_RenderMap[typeid(*(object->_materialShader->_shader))].push_back(object);
 				}
 			}
 		}

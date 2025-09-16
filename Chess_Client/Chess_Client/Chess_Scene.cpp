@@ -102,13 +102,13 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
     Board->set_mesh(BoardMesh);
     Board->set_shader(_AllShaders[1]); // GLB
-    Board->_materialShader->SetShaderRootSignature(_AllRootSignature[1].Get());
+    Board->_materialShader->set_shader_root_signature(_AllRootSignature[1].Get());
    // Board->SetScale(1.f, 1.f, 1.f);
     Board->set_position(((Board->_mesh->m_Right - Board->_mesh->m_Left) * Board->size().x),
         1.0f,
         ((Board->_mesh->m_Front - Board->_mesh->m_Back) * Board->size().z));
-    Board->m_PosX = 0;
-    Board->m_PosY = 0;
+    Board->_posX = 0;
+    Board->_posY = 0;
     ObjectManager::Instance()->PushFloorObject(Board);
 
     // 언리얼에서 뽑은 FBX 테스트
@@ -123,8 +123,8 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
     _pFbxObject->set_position(((_pFbxObject->_mesh->m_Right - _pFbxObject->_mesh->m_Left) * _pFbxObject->size().x + 3),
         0.8f,
         ((_pFbxObject->_mesh->m_Front - _pFbxObject->_mesh->m_Back) * _pFbxObject->size().z) + 5);
-    Board->m_PosX = 0;
-    Board->m_PosY = 0;
+    Board->_posX = 0;
+    Board->_posY = 0;
     ObjectManager::Instance()->PushFloorObject(_pFbxObject);
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ void Chess_Scene::ProcessInput(float fElapsedTime)
                     Object->process_input(fElapsedTime);
                 }
 
-                Object->UpdateBoundingBox();
+                Object->update_bounding_box();
             }
         }
     }
@@ -270,8 +270,8 @@ void Chess_Scene::AnimateObjects(float fTimeElapsed, ID3D12GraphicsCommandList* 
             if (nullptr != Object)
             {
                 Object->animate(fTimeElapsed, m_pCamera, pd3dCommandList);
-                Object->Update();
-                Object.get()->UpdateBoundingBox();
+                Object->update();
+                Object.get()->update_bounding_box();
             }
         }
     }

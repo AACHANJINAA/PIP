@@ -1,54 +1,55 @@
 #pragma once
 #include "Timer.h"
 #include "Scene.h"
+static constexpr UINT SWAP_CHAIN_BUFFERS = 2;
 
 class GameFramework : public Singleton<GameFramework>
 {
 	friend Singleton<GameFramework>; // 싱글톤 접근 허용
 private:
 	
-	HINSTANCE m_hInstance = NULL;
-	HWND m_hWnd = NULL;
+	HINSTANCE _hInstance = nullptr;
+	HWND _hWnd = nullptr;
 
-	int m_nWndClientWidth;
-	int m_nWndClientHeight;
+	int _wndClientWidth;
+	int _wndClientHeight;
 
-	ComPtr<IDXGIFactory4> m_pdxgiFactory;
-	ComPtr<IDXGISwapChain3> m_pdxgiSwapChain;
-	ComPtr<ID3D12Device> m_pd3dDevice;
+	ComPtr<IDXGIFactory4> _factory;
+	ComPtr<IDXGISwapChain3> _swapChain;
+	ComPtr<ID3D12Device> _device;
 
-	bool m_bMsaa4xEnable = false;
+	bool _isEnableMsaa = false;
 
-	UINT m_nMsaa4xQualityLevels = 0;
+	UINT _msaa4XQualityLevels = 0;
 
-	static const UINT m_nSwapChainBuffers = 2;
-	UINT m_nSwapChainBufferIndex;
+	
+	UINT _swapChainBufferIndex;
 
-	std::array<ComPtr<ID3D12Resource>, m_nSwapChainBuffers> m_d3dRenderTargetBuffers;
+	std::array<ComPtr<ID3D12Resource>, SWAP_CHAIN_BUFFERS> _renderTargetBuffers;
 
-	ComPtr<ID3D12DescriptorHeap> m_pd3dRtvDescriptorHeap;
-	UINT m_nRtvDescriptorIncrementSize;
+	ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap;
+	UINT _rtvDescriptorIncrementSize;
 
-	ComPtr<ID3D12Resource> m_pd3dDepthStencilBuffer;
-	ComPtr<ID3D12DescriptorHeap> m_pd3dDsvDescriptorHeap;
-	UINT m_nDsvDescriptorIncrementSize;
+	ComPtr<ID3D12Resource> _depthStencilBuffer;
+	ComPtr<ID3D12DescriptorHeap> _dsvDescriptorHeap;
+	UINT _dsvDescriptorIncrementSize;
 
-	ComPtr<ID3D12CommandQueue> m_pd3dCommandQueue;
-	ComPtr<ID3D12CommandAllocator> m_pd3dCommandAllocator;
-	ComPtr<ID3D12GraphicsCommandList> m_pd3dCommandList;
+	ComPtr<ID3D12CommandQueue> _commandQueue;
+	ComPtr<ID3D12CommandAllocator> _commandAllocator;
+	ComPtr<ID3D12GraphicsCommandList> _commandList;
 
-	ComPtr<ID3D12PipelineState> m_pd3dPipelineState; // 기존 PSO
+	ComPtr<ID3D12PipelineState> _pipelineState; // 기존 PSO
 
-	ComPtr<ID3D12PipelineState> _d3dGlbPipelineState; // GLB 스키닝/텍스쳐용 PSO
+	ComPtr<ID3D12PipelineState> _glbPipelineState; // GLB 스키닝/텍스쳐용 PSO
 
-	ComPtr<ID3D12Fence> m_pd3dFence;
-	std::array<UINT64, m_nSwapChainBuffers> m_nFenceValues;
-	HANDLE m_hFenceEvent;
+	ComPtr<ID3D12Fence> _fence;
+	std::array<UINT64, SWAP_CHAIN_BUFFERS> _fenceValues;
+	HANDLE _fenceEvent;
 
-	GameTimer m_GameTimer;
-	_TCHAR m_pszFrameRate[50];
+	GameTimer _gameTimer;
+	_TCHAR _frameRate[50];
 
-	std::unique_ptr<Scene> m_pScene;
+	std::unique_ptr<Scene> _scene;
 
 	
 public:
@@ -86,8 +87,8 @@ public:
 	void WaitForGpuComplete();
 	//CPU와 GPU를 동기화하는 함수
 
-	ComPtr<ID3D12GraphicsCommandList>& GetCommandList() { return m_pd3dCommandList; }
-	ComPtr<ID3D12Device>& GetDevice() { return m_pd3dDevice; }
+	ComPtr<ID3D12GraphicsCommandList>& GetCommandList() { return _commandList; }
+	ComPtr<ID3D12Device>& GetDevice() { return _device; }
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 

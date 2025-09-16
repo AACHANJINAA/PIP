@@ -117,10 +117,30 @@ inline void DebugLog(const wchar_t* format, ...)
 #else
 	#define CLOG(format, ...)
 #endif
+
 #include "Packet.h"
 #include "PacketStream.h"
 
+using f2 = XMFLOAT2;
+using f3 = XMFLOAT3;
+using f4 = XMFLOAT4;
+using f4x4 = XMFLOAT4X4;
+using m4 = XMMATRIX;
+using v4 = XMVECTOR;
 
+constexpr f3 one = f3(1.0f, 1.0f, 1.0f);
+constexpr f3 zero = f3(0.0f, 0.0f, 0.0f);
+constexpr f3 up = f3(0.0f, 1.0f, 0.0f);
+constexpr f3 down = f3(0.0f, -1.0f, 0.0f);
+constexpr f3 right = f3(1.0f, 0.0f, 0.0f);
+constexpr f3 left = f3(-1.0f, 0.0f, 0.0f);
+constexpr f3 forward = f3(0.0f, 0.0f, 1.0f);
+constexpr f3 backward = f3(0.0f, 0.0f, -1.0f);
+
+constexpr f4x4 identity4x4 = f4x4(1.0f, 0.0f, 0.0f, 0.0f,
+								0.0f, 1.0f, 0.0f, 0.0f,
+								0.0f, 0.0f, 1.0f, 0.0f,
+								0.0f, 0.0f, 0.0f, 1.0f);
 
 // ==================================================
 template <typename T>
@@ -144,13 +164,13 @@ public:
 //3차원 벡터의 연산 
 namespace Vector3
 {
-	inline XMFLOAT3 XMVectorToFloat3(XMVECTOR& xmvVector)
+	inline XMFLOAT3 XMVectorToFloat3(const XMVECTOR& xmvVector)
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, xmvVector);
 		return(xmf3Result);
 	}
-	inline XMFLOAT3 ScalarProduct(XMFLOAT3& xmf3Vector, float fScalar, bool bNormalize =
+	inline XMFLOAT3 ScalarProduct(const XMFLOAT3& xmf3Vector, float fScalar, bool bNormalize =
 		true)
 	{
 		XMFLOAT3 xmf3Result;
@@ -167,29 +187,28 @@ namespace Vector3
 		XMStoreFloat3(&xmf3Result, XMLoadFloat3(&xmf3Vector1) +
 			XMLoadFloat3(&xmf3Vector2)); return(xmf3Result);
 	}
-	inline XMFLOAT3 Add(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2, float fScalar)
+	inline XMFLOAT3 Add(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2, float fScalar)
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, XMLoadFloat3(&xmf3Vector1) + (XMLoadFloat3(&xmf3Vector2)
 			* fScalar));
 		return(xmf3Result);
 	}
-	inline XMFLOAT3 Subtract(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2)
+	inline XMFLOAT3 Subtract(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2)
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, XMLoadFloat3(&xmf3Vector1) -
 			XMLoadFloat3(&xmf3Vector2));
 		return(xmf3Result);
 	}
-	inline float DotProduct(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2)
+	inline float DotProduct(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2)
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, XMVector3Dot(XMLoadFloat3(&xmf3Vector1),
 			XMLoadFloat3(&xmf3Vector2)));
 		return(xmf3Result.x);
 	}
-	inline XMFLOAT3 CrossProduct(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2, bool
-		bNormalize = true)
+	inline XMFLOAT3 CrossProduct(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2, bool bNormalize = true)
 	{
 		XMFLOAT3 xmf3Result;
 		if (bNormalize)
@@ -207,7 +226,7 @@ namespace Vector3
 		XMStoreFloat3(&m_xmf3Normal, XMVector3Normalize(XMLoadFloat3(&xmf3Vector)));
 		return(m_xmf3Normal);
 	}
-	inline float Length(XMFLOAT3& xmf3Vector)
+	inline float Length(const XMFLOAT3& xmf3Vector)
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, XMVector3Length(XMLoadFloat3(&xmf3Vector)));
@@ -217,27 +236,27 @@ namespace Vector3
 		XMVECTOR xmvAngle = XMVector3AngleBetweenNormals(xmvVector1, xmvVector2);
 		return(XMConvertToDegrees(acosf(XMVectorGetX(xmvAngle))));
 	}
-	inline float Angle(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2)
+	inline float Angle(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2)
 	{
 		return(Angle(XMLoadFloat3(&xmf3Vector1), XMLoadFloat3(&xmf3Vector2)));
 	}
-	inline XMFLOAT3 TransformNormal(const XMFLOAT3& xmf3Vector, const XMMATRIX& xmmtxTransform)
+	inline XMFLOAT3 TransformNormal(const XMFLOAT3& xmf3Vector, const XMMATRIX& transform)
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, XMVector3TransformNormal(XMLoadFloat3(&xmf3Vector),
-			xmmtxTransform));
+			transform));
 		return(xmf3Result);
 	}
-	inline XMFLOAT3 TransformCoord(const XMFLOAT3& xmf3Vector, const XMMATRIX& xmmtxTransform) // DW수정 이거 문제 생기면 말하기
+	inline XMFLOAT3 TransformCoord(const XMFLOAT3& xmf3Vector, const XMMATRIX& transform) // DW수정 이거 문제 생기면 말하기
 	{
 		XMFLOAT3 xmf3Result;
 		XMStoreFloat3(&xmf3Result, XMVector3TransformCoord(XMLoadFloat3(&xmf3Vector),
-			xmmtxTransform));
+			transform));
 		return(xmf3Result);
 	}
-	inline XMFLOAT3 TransformCoord(XMFLOAT3& xmf3Vector, const XMFLOAT4X4& xmmtx4x4Matrix)
+	inline XMFLOAT3 TransformCoord(const XMFLOAT3& xmf3Vector, const XMFLOAT4X4& Matrix)
 	{
-		return(TransformCoord(xmf3Vector, XMLoadFloat4x4(&xmmtx4x4Matrix)));
+		return(TransformCoord(xmf3Vector, XMLoadFloat4x4(&Matrix)));
 	}
 }
 //4차원 벡터의 연산
