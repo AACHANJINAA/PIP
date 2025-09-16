@@ -138,10 +138,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BoardCube.h" />
-    <ClInclude Include="Chess_Client.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
@@ -166,7 +166,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoardCube.cpp" />
-    <ClCompile Include="Chess_Client.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
