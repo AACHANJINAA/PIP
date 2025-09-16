@@ -23,7 +23,7 @@ D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
 	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID; // DW수정 : 원래 이걸로 해야한다. 채우기로
 	//D3D12_FILL_MODE_WIREFRAME은 프리미티브(삼각형)의 내부를 칠하지 않고 변(Edge)만 그린다. 
 	//d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME; // DW수정 : 따라하기 10에서 잠시 설정함
-	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
+	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	//d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_NONE; // DW수정 : 따라하기 9에서 이걸로 잠시 설정함
 	d3dRasterizerDesc.FrontCounterClockwise = FALSE;
 	d3dRasterizerDesc.DepthBias = 0;
