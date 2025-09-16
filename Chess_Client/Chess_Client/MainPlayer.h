@@ -9,9 +9,9 @@ public:
 
 public:
 	// GameObject을(를) 통해 상속됨
-	void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) override;
-	void Collision(float fElapsedTime) override;
-	void ProcessInput(float fElapsedTime) override;
+	void animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list) override;
+	void collision(float elapsed_time) override;
+	void process_input(float elapsed_time) override;
 
 public:
 	void SetDistance(float MoveDistance) { _MoveDistance = MoveDistance; }

@@ -429,7 +429,7 @@ void ReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string&
 		if (type == "newmtl")
 		{
 			iss >> currentMtlName;
-			m_mapMaterials[currentMtlName] = Material();
+			m_mapMaterials[currentMtlName] = OBJMaterial();
 			m_mapMaterials[currentMtlName].name = currentMtlName;
 		}
 		// 확산광(diffuse) 색상 값 (r, g, b)

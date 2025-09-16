@@ -5,21 +5,20 @@
 #include <memory>
 #include <algorithm>
 #include "TransformComponent.h"
+
 class Shader;
-
-
-enum MESH_TYPE {
+enum MeshType {
 	PLAYER,
 	ENEMY
 };
 
 // (추가) MATERIAL 구조체 [PONG]
-struct MATERIAL
+struct Material
 {
-	XMFLOAT4 m_xmf4Ambient;     // 환경광(Ambient) 
-	XMFLOAT4 m_xmf4Diffuse;     // 난반사(Diffuse) 
-	XMFLOAT4 m_xmf4Specular;    // 정반사(Specular)
-	XMFLOAT4 m_xmf4Emissive;    // 방출광(Emissive)
+	XMFLOAT4 _ambient;     // 환경광(Ambient) 
+	XMFLOAT4 _diffuse;     // 난반사(Diffuse) 
+	XMFLOAT4 _specular;    // 정반사(Specular)
+	XMFLOAT4 _emissive;    // 방출광(Emissive)
 };
 
 // (추가) Material_Shader 클래스 [PONG]
@@ -31,8 +30,8 @@ public:
 
 private:
 	int m_nReferences = 0;
-	ID3D12RootSignature* _RootSignature = nullptr;
-public:
+	ID3D12RootSignature* _rootSignature = nullptr;
+public://TODO: 참조 카운트 갖다 버리고 -> 스마트포인터로 바꿀것
 	void AddRef() { m_nReferences++; }
 	void Release() { 
 		if (--m_nReferences <= 0) 
@@ -40,35 +39,35 @@ public:
 	}
 
 	// Material_Shader은 재질 정보 + 셰이더
-	MATERIAL* m_pMaterial = NULL;
-	std::shared_ptr<Shader> _Shader = NULL;
+	Material* _material = nullptr;
+	std::shared_ptr<Shader> _shader = nullptr;
 
-	void SetShader(std::shared_ptr<Shader> pShader);
-	void SetShaderRootSignature(ID3D12RootSignature* RootSignature);
-	void SetRootSignature(ID3D12GraphicsCommandList* pd3dCommandList);
+	void set_shader(const std::shared_ptr<Shader>& shader);
+	void set_shader_root_signature(ID3D12RootSignature* root_signature);
+	void set_root_signature(ID3D12GraphicsCommandList* command_list);
 };
 
-class HPObject // HPObject 클래스는 HP와 MaxHP를 관리하는 기본 클래스
+class HPObject // TODO: 이것을 컴포넌트로 뺄것 <- 찬진스
 {
 	short _hp;
-	short _max_hp;
+	short _maxHp;
 public:
-	HPObject(short hp = 100, short max_hp = 100) : _hp(hp), _max_hp(max_hp) {}
+	HPObject(short hp = 100, short max_hp = 100) : _hp(hp), _maxHp(max_hp) {}
 	virtual ~HPObject() = default; // 가상 소멸자 => 파생 클래스에서 소멸자 호출 가능 = 무조건 가상테이블 생성됨(8바이트)
 
 	void SetHP(short hp) { _hp = hp; }
 	short GetHP() const { return _hp; }
 
-	void SetMaxHP(short max_hp) { _max_hp = max_hp; }
-	short GetMaxHP() const { return _max_hp; }
+	void SetMaxHP(short max_hp) { _maxHp = max_hp; }
+	short GetMaxHP() const { return _maxHp; }
 
 	bool IsDead() const { return _hp <= 0; }
 };
 
 // 셰이더의 cbuffer 구조체와 1:1로 대응하는 C++ 구조체
-struct CB_GAMEOBJECT_INFO
+struct CbGameObjectInfo
 {
-	XMFLOAT4X4 _4x4World;
+	XMFLOAT4X4 _world;
 };
 
 
@@ -77,49 +76,49 @@ class GameObject
 public:
 	GameObject();
 	virtual ~GameObject();
-private:
+
+private: //TODO: 참조 카운트 갖다 버리고 -> 스마트포인터로 바꿀것
 	int m_nReferences = 0;
 public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 
-	MESH_TYPE m_Mesh_Type{}; // 메쉬 어떤걸 원하는지?
+	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?
 
-	BoundingOrientedBox m_xmOOBB = BoundingOrientedBox();
-	bool m_Delete{}; // 객체를 삭제해야 하는지?
-	bool m_bCollision{}; // 충돌하였는지?
+	BoundingOrientedBox _orientedBoundingBox = BoundingOrientedBox();
+	bool _shouldDelete{}; // 객체를 삭제해야 하는지?
+	bool _isCollided{}; // 충돌하였는지?
 
-	GameObject* m_pObjectCollided = NULL; // 누구랑 박은건지?
-	XMFLOAT4	m_dwColor = { 0.f,0.f,0.f,0.f };
+	GameObject* _collidedObject = nullptr; // 누구랑 박은건지?
+	XMFLOAT4	_color = { 0.f,0.f,0.f,0.f };
 
-	XMFLOAT3 m_xmf3Gravity; // 중력
-	float Gravity = -2.0f; // 중력값
-	bool m_bGravity = true;
+	XMFLOAT3 _gravityVector; // 중력
+	float _gravityValue = -2.0f; // 중력값
+	bool _hasGravity = true;
 
 private:
-	ComPtr<ID3D12Resource> m_pd3dcbGameObject;
-	// 맵핑된 상수 버퍼의 CPU 주소 (매 프레임 여기다 데이터 복사)
-	CB_GAMEOBJECT_INFO* _pcbMappedGameObject = nullptr;
+	ComPtr<ID3D12Resource> _cbGameObject;
+	CbGameObjectInfo* _cbMappedGameObject = nullptr;
 
 public:
-	Mesh* m_pMesh = NULL;
+	Mesh* _mesh = nullptr;
 	//Shader* m_pShader = NULL; 
-	Material_Shader* m_pMaterial = NULL; // 쉐이더 대신 머터리얼 [PONG]
+	Material_Shader* _materialShader = nullptr; // 쉐이더 대신 머터리얼 [PONG]
 
 protected:
-	BoundingFrustum				m_xmFrustumView = BoundingFrustum();
-	BoundingFrustum				m_xmFrustumWorld = BoundingFrustum();
+	BoundingFrustum				_viewFrustum = BoundingFrustum();
+	BoundingFrustum				_worldFrustum = BoundingFrustum();
 
 public:
-	void ReleaseUploadBuffers(); 
-	virtual void SetMesh(Mesh* pMesh);
-	virtual void SetShader(std::shared_ptr<Shader> pShader);
-	void SetMaterial(Material_Shader* pMaterial); // 쉐이더 대신 머터리얼 [PONG]
-	virtual void Animate(float fTimeElapsed, Camera* pCamera, ID3D12GraphicsCommandList* pd3dCommandList) = 0;
-	virtual void Collision(float fElapsedTime) = 0;
-	virtual void ProcessInput(float fElapsedTime) = 0;
-	virtual void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera);
+	void release_upload_buffers(); 
+	virtual void set_mesh(Mesh* mesh);
+	virtual void set_shader(std::shared_ptr<Shader> shader);
+	void set_material(Material_Shader* material); // 쉐이더 대신 머터리얼 [PONG]
+	virtual void animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list) = 0;
+	virtual void collision(float elapsed_time) = 0;
+	virtual void process_input(float elapsed_time) = 0;
+	virtual void on_prepare_render(ID3D12GraphicsCommandList* command_List);
+	virtual void render(ID3D12GraphicsCommandList* command_list, Camera* camera);
 
 	//상수 버퍼를 생성한다. 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
@@ -128,22 +127,22 @@ public:
 	virtual void ReleaseShaderVariables();
 
 	//게임 객체의 중력을 나타낸다.
-	void SetGravity(XMFLOAT3& xmf3Gravity) { m_xmf3Gravity = xmf3Gravity; }
+	void SetGravity(const XMFLOAT3& xmf3Gravity) { _gravityVector = xmf3Gravity; }
 
-	void GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection);
+	//TODO: 피킹도 컴포넌트로 뺄것 or 스크립트 컴포넌트로 뺄것
+	void generate_ray_for_picking(XMVECTOR& pick_position, XMMATRIX& view_matrix, XMVECTOR& pick_ray_origin, XMVECTOR& pick_ray_direction);
+	int pick_object_by_ray_intersection(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance);
+	bool pick_model_obb(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance);// 모델좌표계의 OBB와 충돌했는지 알려주는 함수 삼각형 검사는 안함
 
-	int PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance);
+	void update_bounding_box(); // DW설명 : OOBB바운딩 박스를 업데이트 한다. 즉 회전같은 것들을 업데이트함
 
-	bool PickModelOBB(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, float* pfHitDistance);// 모델좌표계의 OBB와 충돌했는지 알려주는 함수 삼각형 검사는 안함
-	void UpdateBoundingBox(); // DW설명 : OOBB바운딩 박스를 업데이트 한다. 즉 회전같은 것들을 업데이트함
+	bool is_visible(Camera* camera = nullptr);
 
-	bool IsVisible(Camera* pCamera = NULL);
-
-	void Update(float DeltaTime);
+	void update(float DeltaTime);
 
 public:
-	int m_PosX{};
-	int m_PosY{};
+	int _posX{};
+	int _posY{};
 
 public:
 	std::vector<std::shared_ptr<Component>> _components;
@@ -152,7 +151,7 @@ public:
 	std::shared_ptr<T> AddComponent(Args&&... args) {
 		std::shared_ptr<T> newComponent = std::make_shared<T>(std::forward<Args>(args)...);
 		_components.emplace_back(newComponent);
-		newComponent->Start();
+		newComponent->start();
 		return newComponent;
 	}
 

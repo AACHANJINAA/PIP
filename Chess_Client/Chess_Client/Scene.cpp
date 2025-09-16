@@ -24,7 +24,7 @@ bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, 
 
         if (m_pLockedObject)
         {
-            m_pLockedObject->m_bCollision = true;
+            m_pLockedObject->_isCollided = true;
         }
 
         break;
@@ -85,14 +85,14 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
 
 			auto Board_Transform = Board->GetComponent<TransformComponent>();
 
-            Board->SetMesh(BoardMesh);
-            Board->SetShader(_AllShaders[1]); // GLB
-            Board->m_pMaterial->SetShaderRootSignature(_AllRootSignature[1].Get());
+            Board->set_mesh(BoardMesh);
+            Board->set_shader(_AllShaders[1]); // GLB
+            Board->_materialShader->set_shader_root_signature(_AllRootSignature[1].Get());
             if (Board_Transform)
             {
-                Board_Transform->Rotate(rotation.x, -rotation.y, rotation.z);
-                Board_Transform->SetScale(scale.x, scale.y, scale.z);
-                Board_Transform->SetPosition(location.x, location.y, location.z);
+                Board_Transform->rotate(rotation.x, -rotation.y, rotation.z);
+                Board_Transform->set_scale(scale.x, scale.y, scale.z);
+                Board_Transform->set_position(location.x, location.y, location.z);
             }
             ObjectManager::Instance()->PushFloorObject(Board);
 
@@ -281,7 +281,7 @@ GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
         for (auto& Objects : Arr) {
             for (auto& Object : Objects) {
                 float fHitDistance = FLT_MAX;
-                nIntersected = Object.get()->PickModelOBB(xmvPickPosition, xmmtxView, &fHitDistance);
+                nIntersected = Object.get()->pick_model_obb(xmvPickPosition, xmmtxView, &fHitDistance);
                 if (nIntersected && (fHitDistance < fNearestHitDistance))
                 {
                     fNearestHitDistance = fHitDistance;
@@ -353,7 +353,7 @@ void Scene::ReleaseUploadBuffers()
 
     for (auto& Objects : Arr) {
         for (auto& Object : Objects) {
-            Object.get()->ReleaseUploadBuffers();
+            Object.get()->release_upload_buffers();
         }
     }
 }
@@ -376,10 +376,10 @@ void Scene::BuildLightsAndMaterials()
     ::ZeroMemory(m_pMaterials, sizeof(MATERIALS));
 
     // Èò»ö ÇÃ¶ó½ºÆ½ ´À³¦
-    m_pMaterials->m_pReflections[0].m_xmf4Ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Specular = XMFLOAT4(1.f, 1.f, 1.f, 16.0f);
-    m_pMaterials->m_pReflections[0].m_xmf4Emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+    m_pMaterials->m_pReflections[0]._ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_pMaterials->m_pReflections[0]._diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+    m_pMaterials->m_pReflections[0]._specular = XMFLOAT4(1.f, 1.f, 1.f, 16.0f);
+    m_pMaterials->m_pReflections[0]._emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void Scene::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
