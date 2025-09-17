@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include "Component.h"
 
 class TransformComponent : public Component
@@ -8,7 +9,7 @@ public:
 		: Component(Owner)
 	{
 	}
-	~TransformComponent() = default;
+	~TransformComponent() override = default;
 public:
 	void start() override;
 	void update(float DeltaTime) override;
@@ -34,14 +35,14 @@ public:
 	XMFLOAT4X4 get_world_matrix() const;
 
 protected:
-	XMFLOAT4X4 _world = Matrix4x4::Identity();
+	XMFLOAT4X4					_world = Matrix4x4::Identity();
 
-	XMFLOAT3					_position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3					_right = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	XMFLOAT3					_up = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	XMFLOAT3					_look = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	XMFLOAT3					_position = F3_ZERO;
+	XMFLOAT3					_right = F3_RIGHT;
+	XMFLOAT3					_up = F3_UP;
+	XMFLOAT3					_look = F3_FORWARD;
 
-	XMFLOAT3					_scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	XMFLOAT3					_scale = F3_ONE;
 	XMFLOAT3					_rotate = XMFLOAT3(0.0f, 0.0f, 1.0f);
 };
 

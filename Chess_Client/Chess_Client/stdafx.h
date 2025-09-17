@@ -128,14 +128,14 @@ using f4x4 = XMFLOAT4X4;
 using m4 = XMMATRIX;
 using v4 = XMVECTOR;
 
-constexpr f3 one = f3(1.0f, 1.0f, 1.0f);
-constexpr f3 zero = f3(0.0f, 0.0f, 0.0f);
-constexpr f3 up = f3(0.0f, 1.0f, 0.0f);
-constexpr f3 down = f3(0.0f, -1.0f, 0.0f);
-constexpr f3 right = f3(1.0f, 0.0f, 0.0f);
-constexpr f3 left = f3(-1.0f, 0.0f, 0.0f);
-constexpr f3 forward = f3(0.0f, 0.0f, 1.0f);
-constexpr f3 backward = f3(0.0f, 0.0f, -1.0f);
+constexpr f3 F3_ONE = f3(1.0f, 1.0f, 1.0f);
+constexpr f3 F3_ZERO = f3(0.0f, 0.0f, 0.0f);
+constexpr f3 F3_UP = f3(0.0f, 1.0f, 0.0f);
+constexpr f3 F3_DOWN = f3(0.0f, -1.0f, 0.0f);
+constexpr f3 F3_RIGHT = f3(1.0f, 0.0f, 0.0f);
+constexpr f3 F3_LEFT = f3(-1.0f, 0.0f, 0.0f);
+constexpr f3 F3_FORWARD = f3(0.0f, 0.0f, 1.0f);
+constexpr f3 F3_BACKWARD = f3(0.0f, 0.0f, -1.0f);
 
 constexpr f4x4 identity4x4 = f4x4(1.0f, 0.0f, 0.0f, 0.0f,
 								0.0f, 1.0f, 0.0f, 0.0f,

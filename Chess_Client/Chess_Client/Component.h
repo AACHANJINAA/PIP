@@ -1,10 +1,10 @@
 #pragma once
 
 class GameObject;
-
 class Component
 {
 public:
+	//TODO: shared_ptr·Î ¹Ù²Ü°Í
 	Component(GameObject* Owner) :_GameObject(Owner) {};
 	virtual ~Component() = default;
 
