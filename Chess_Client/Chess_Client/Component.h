@@ -1,19 +1,20 @@
 #pragma once
+#include <memory>
 
 class GameObject;
+
 class Component
 {
 public:
-	//TODO: shared_ptr·Î ¹Ù²Ü°Í
-	Component(GameObject* Owner) :_GameObject(Owner) {};
+	Component(GameObject* Owner) :_gameObject(Owner) {};
 	virtual ~Component() = default;
 
 	virtual void start();
 	virtual void update(float DeltaTime);
 
-	GameObject* get_Gameobject() const { return _GameObject; }
+	std::shared_ptr<GameObject> get_Gameobject() const { return _gameObject; }
 
 protected:
-	GameObject* _GameObject;
+	std::shared_ptr<GameObject> _gameObject;
 };
 

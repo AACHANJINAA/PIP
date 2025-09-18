@@ -11,8 +11,6 @@ Material_Shader::~Material_Shader()
 {
 	if (_material) 
 		delete _material;
-	/*if (_Shader)
-		_Shader->Release();*/
 }
 
 void Material_Shader::set_shader(const std::shared_ptr<Shader>& shader)
