@@ -28,7 +28,7 @@ private:
 	std::vector<std::shared_ptr<GameObject>> debugObjects;
 
 	std::shared_ptr<GameObject> _fbxObject;
-	ReadFbxMesh* _collisionMesh = nullptr;
+	std::shared_ptr<ReadFbxMesh> _collisionMesh;
 
 	Shader* m_pDebugShader = nullptr;
 };

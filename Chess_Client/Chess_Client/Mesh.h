@@ -142,12 +142,12 @@ protected:
 public:
 	BoundingOrientedBox	m_xmOOBB = BoundingOrientedBox();
 
-	float m_Left;
-	float m_Top;
-	float m_Right;
-	float m_Bottom;
-	float m_Front;
-	float m_Back;
+	float m_Left{};
+	float m_Top{};
+	float m_Right{};
+	float m_Bottom{};
+	float m_Front{};
+	float m_Back{};
 
 private:
 	int m_nReferences = 0;

@@ -45,13 +45,13 @@ public:
 
 
 	// 오브젝트 얻기
-	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& GetAllObject() { return m_AllObject; }
+	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& GetAllObject() { return _allobject; }
 
-	std::list<std::shared_ptr<GameObject>>& GetObjectVec() { return m_AllObject[0]; } 
-	std::list<std::shared_ptr<GameObject>>& GetEnemy() { return  m_AllObject[1]; }
-	std::list<std::shared_ptr<GameObject>>& GetPlayerBulletVec() { return  m_AllObject[2]; }
-	std::list<std::shared_ptr<GameObject>>& GetEnemyBulletVec() { return  m_AllObject[3]; }
-	std::list<std::shared_ptr<GameObject>>& GetFloor() { return  m_AllObject[4]; }
+	std::list<std::shared_ptr<GameObject>>& GetObjectVec() { return _allobject[0]; }
+	std::list<std::shared_ptr<GameObject>>& GetEnemy() { return  _allobject[1]; }
+	std::list<std::shared_ptr<GameObject>>& GetPlayerBulletVec() { return  _allobject[2]; }
+	std::list<std::shared_ptr<GameObject>>& GetEnemyBulletVec() { return  _allobject[3]; }
+	std::list<std::shared_ptr<GameObject>>& GetFloor() { return  _allobject[4]; }
 
 	GameObject* Terrain{};
 
@@ -61,13 +61,13 @@ private:
 
 	std::shared_ptr <GameObject> m_Player{};
 
-	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE> m_AllObject{}; // 현재 씬 오브젝트
+	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE> _allobject{}; // 현재 씬 오브젝트
 
 
 	// 요청 임시 변수
-	std::queue<std::shared_ptr<GameObject>> m_RequestObjects{};
+	std::queue<std::shared_ptr<GameObject>> _requestobjects{};
 	
-	std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>> _RenderMap{};
+	std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>> _rendermap{};
 
 };
 

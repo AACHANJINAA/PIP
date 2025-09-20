@@ -153,28 +153,26 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
+
 		auto my_king_Transform = my_king->get_component<TransformComponent>();
-		my_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(),
-			GameFramework::Instance()->GetCommandList().Get());
+		auto my_king_Render = my_king->get_component<RenderComponent>();
+
+		if (my_king_Render)
+			my_king_Render->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
 		if (my_king_Transform)
-		{
 			my_king_Transform->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
-		}
+
 		my_king->SetHP(spawn_data._hp);
 		my_king->SetName(name);
-		my_king->SetID(_my_session_id); // 내 플레이어 ID 설정
-		/*CMesh* Chess_Mesh = new CReadObjMesh{
-			GameFramework::Instance()->GetDevice().Get(),
-			GameFramework::Instance()->GetCommandList().Get(),
-			"Resource/Character/test_mesh.obj" };*/
-		Mesh* Chess_Mesh = new ReadFbxMesh{
-			GameFramework::Instance()->GetDevice().Get(),
-			GameFramework::Instance()->GetCommandList().Get(),
-			"Resource/Test/testfbx_texture_included.fbx" };
+		my_king->SetID(_my_session_id); 
 
-		// 색 설정
-		//Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 1.0f, 1.0f, 1.0f, 1.f);
-		my_king->set_mesh(Chess_Mesh);
+		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadFbxMesh>(
+			GameFramework::Instance()->GetDevice().Get(),
+			GameFramework::Instance()->GetCommandList().Get(),
+			"Resource/Test/testfbx_texture_included.fbx");
+		
+		if (my_king_Render)
+			my_king_Render->set_mesh(Chess_Mesh);
 		if (my_king_Transform)
 			my_king_Transform->set_scale(0.01f, 0.01f, 0.01f);
 
@@ -190,8 +188,12 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._position.x, spawn_data._position.y);
-		other_king->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
+
 		auto other_king_Transform = other_king->get_component<TransformComponent>();
+		auto other_king_Render = other_king->get_component<RenderComponent>();
+
+		other_king_Render->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
+		
 		other_king->SetID(spawn_data._id);
 		if (other_king_Transform)
 		{
@@ -201,13 +203,14 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		other_king->SetName(name); // 이름 설정
 		// level, exp 등 추가 정보도 설정 가능
 		other_king->_meshType = ENEMY; // 적 타입으로 설정
-		Mesh* Chess_Mesh = new ReadObjMesh{ GameFramework::Instance()->GetDevice().Get(),
+		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadObjMesh>(
+			GameFramework::Instance()->GetDevice().Get(),
 			GameFramework::Instance()->GetCommandList().Get(),
-			"Resource/Monster/test_monster.obj" };
+			"Resource/Monster/test_monster.obj");
 
 		// 색 설정
 		Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 0.0f, 1.0f, 0.0f, 1.f);
-		other_king->set_mesh(Chess_Mesh);
+		other_king_Render->set_mesh(Chess_Mesh);
 
 		// 이동 거리 설정
 		if (other_king_Transform)

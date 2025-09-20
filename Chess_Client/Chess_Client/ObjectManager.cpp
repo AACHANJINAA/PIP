@@ -3,6 +3,7 @@
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
 #include "Shader.h"
+#include "RenderComponent.h"
 
 ObjectManager::ObjectManager()
 {
@@ -15,35 +16,38 @@ ObjectManager::~ObjectManager()
 
 void ObjectManager::RequestObject(std::shared_ptr<GameObject> WhatYouWant)
 {
-	m_RequestObjects.push(WhatYouWant);
+	_requestobjects.push(WhatYouWant);
 }
 
 void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	if (m_RequestObjects.empty())
+	if (_requestobjects.empty())
 	{
 		return;
 	}
 
-	while (!m_RequestObjects.empty())
+	while (!_requestobjects.empty())
 	{
-		auto RequestObject = m_RequestObjects.front();
-		RequestObject->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+		std::shared_ptr<GameObject> RequestObject = _requestobjects.front();
+
+		auto RequestObject_Render = RequestObject->get_component<RenderComponent>();
+		if (RequestObject_Render)
+			RequestObject_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+
 		auto RequestObject_Transform = RequestObject->get_component<TransformComponent>();
 		switch (RequestObject->_meshType)
 		{
 		case PLAYER:
 		{
+			std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<Mesh>(ReadObjMesh{pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" });
 
-			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" };
-
-			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
-			RequestObject->set_mesh(Chess_Mesh);
+			if (RequestObject_Render)
+				RequestObject_Render->set_mesh(Chess_Mesh);
+
 			if (RequestObject_Transform)
 				RequestObject_Transform->set_scale(1.f, 1.f, 1.f);
 
-			// 매니저에 넣기
 			ObjectManager::Instance()->PushObject(RequestObject);
 			ObjectManager::Instance()->SetPlayer(RequestObject);
 		}
@@ -52,17 +56,15 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 		case ENEMY:
 		{
 
-			Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" };
+			std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<Mesh>(ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" });
 
-			// 색 설정
 			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 1.0f, 0.0f, 1.f);
-			RequestObject->set_mesh(Chess_Mesh);
+			if (RequestObject_Render)
+				RequestObject_Render->set_mesh(Chess_Mesh);
 
-			// 이동 거리 설정
 			if(RequestObject_Transform)
 				RequestObject_Transform->set_scale(1.f, 1.f, 1.f);
 
-			// 매니저에 넣기
 			ObjectManager::Instance()->PushEnemy(RequestObject);
 		}
 		break;
@@ -71,7 +73,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
 			break;
 		}
-		m_RequestObjects.pop();
+		_requestobjects.pop();
 	}
 	
 
@@ -79,7 +81,7 @@ void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
 
 void ObjectManager::DeleteAll()
 {
-	for (auto& objectList : m_AllObject)
+	for (auto& objectList : _allobject)
 	{
 		objectList.clear();
 	}
@@ -95,12 +97,12 @@ void ObjectManager::DeleteVec(int WantVecNum)
 		return;
 	}
 	
-	m_AllObject[WantVecNum].clear();
+	_allobject[WantVecNum].clear();
 }
 
 void ObjectManager::DeleteObject()
 {
-	for (auto& objectList : m_AllObject)
+	for (auto& objectList : _allobject)
 	{
 		objectList.remove_if([](const std::shared_ptr<GameObject>& pObject) {
 			return pObject->_shouldDelete;
@@ -119,21 +121,29 @@ void ObjectManager::ChangeRoom()
 
 void ObjectManager::MakeRenderMap(Camera* pCamera)
 {
-	_RenderMap.clear();
+	_rendermap.clear();
 
 	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = GetAllObject();
 
 	for (auto& objectList : Arr) {
 		for (auto& object : objectList) {
-			if (object && object->is_visible(pCamera)) {
-				// 오브젝트의 머터리얼에서 셰이더를 키로 사용하여 렌더 큐에 추가
-				if (nullptr == object->_materialShader)
+			auto object_Render = object->get_component<RenderComponent>();
+			if (object_Render && object_Render->is_visible(pCamera)) {
+				auto maerialShader = object_Render->get_material_shader();
+
+				std::shared_ptr<Shader> shader = nullptr;
+				if (maerialShader)
 				{
-					_RenderMap[typeid(CObjectsShader)].push_back(object);
+					shader = maerialShader->get_shader();
+				}
+
+				if (shader)
+				{
+					_rendermap[typeid(*shader)].push_back(object);
 				}
 				else
 				{
-					_RenderMap[typeid(*(object->_materialShader->_shader))].push_back(object);
+					_rendermap[typeid(CObjectsShader)].push_back(object);
 				}
 			}
 		}
@@ -142,32 +152,32 @@ void ObjectManager::MakeRenderMap(Camera* pCamera)
 
 std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>>& ObjectManager::GetRenderMap()
 {
-	return _RenderMap;
+	return _rendermap;
 }
 
 void ObjectManager::PushObject(std::shared_ptr<GameObject> object)
 {
-	m_AllObject[0].push_back(object);
+	_allobject[0].push_back(object);
 }
 
 void ObjectManager::PushEnemy(std::shared_ptr<GameObject> object)
 {
-	m_AllObject[1].push_back(object);
+	_allobject[1].push_back(object);
 }
 
 void ObjectManager::PushPlayerBullet(std::shared_ptr<GameObject> object)
 {
-	m_AllObject[2].push_back(object);
+	_allobject[2].push_back(object);
 }
 
 void ObjectManager::PushEnemyBullet(std::shared_ptr<GameObject> object)
 {
-	m_AllObject[3].push_back(object);
+	_allobject[3].push_back(object);
 }
 
 void ObjectManager::PushFloorObject(std::shared_ptr<GameObject> object)
 {
-	m_AllObject[4].push_back(object);
+	_allobject[4].push_back(object);
 }
 
 
