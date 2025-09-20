@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BoardCube.h" />
+    <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
@@ -166,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoardCube.cpp" />
+    <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />

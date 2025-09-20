@@ -75,19 +75,26 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
             }
             // TODO: 게임 오브젝트 생성 및 배치 로직
 
-            std::shared_ptr<GameObject> Board{};
-            Mesh* BoardMesh{};
+            std::shared_ptr<GameObject> Board = std::make_shared<BoardCube>();
+            std::shared_ptr<Mesh> BoardMesh;
             meshName = "Resource/MapData/" + meshName + ".glb";
-            Board = std::make_shared<BoardCube>();
-            Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
 
-            BoardMesh = new ReadGlbMesh{ pd3dDevice,pd3dCommandList,meshName, (Scene*)this };
+            auto Board_Transform = Board->get_component<TransformComponent>();
+			auto Board_Render = Board->get_component<RenderComponent>();
 
-			auto Board_Transform = Board->get_component<TransformComponent>();
+            BoardMesh = make_shared<ReadGlbMesh>(pd3dDevice, pd3dCommandList, meshName, (Scene*)this);
 
-            Board->set_mesh(BoardMesh);
-            Board->set_shader(_AllShaders[1]); // GLB
-            Board->_materialShader->set_shader_root_signature(_AllRootSignature[1].Get());
+            if (Board_Render)
+            {
+                auto materialShader = std::make_shared<Material_Shader>();
+                Board_Render->set_material(materialShader);
+
+                Board_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
+                Board_Render->set_mesh(BoardMesh);
+                Board_Render->set_shader(_AllShaders[1]); // GLB
+                Board_Render->get_material_shader()->set_shader_root_signature(_AllRootSignature[1].Get());
+            }
+
             if (Board_Transform)
             {
                 Board_Transform->rotate(rotation.x, -rotation.y, rotation.z);
@@ -261,7 +268,7 @@ void Scene::AllocateNextSrvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle,
 
 GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
 {
-    XMFLOAT3 xmf3PickPosition;
+    XMFLOAT3 xmf3PickPosition = {0.0f, 0.0f, 0.0f};
     xmf3PickPosition.x = (((2.0f * xClient) / (float)m_pCamera->m_d3dViewport.Width) - 1) / m_pCamera->m_xmf4x4Projection._11;
     xmf3PickPosition.y = -(((2.0f * yClient) / (float)m_pCamera->m_d3dViewport.Height) - 1) / m_pCamera->m_xmf4x4Projection._22;
     xmf3PickPosition.z = 1.0f;
@@ -353,7 +360,9 @@ void Scene::ReleaseUploadBuffers()
 
     for (auto& Objects : Arr) {
         for (auto& Object : Objects) {
-            Object.get()->release_upload_buffers();
+			auto Object_Render = Object->get_component<RenderComponent>();
+			if (Object_Render)
+                Object_Render->release_upload_buffers();
         }
     }
 }
