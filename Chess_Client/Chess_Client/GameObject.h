@@ -79,7 +79,6 @@ public:
 	std::shared_ptr<T> add_component(Args&&... args) {
 		std::shared_ptr<T> newComponent = std::make_shared<T>(std::forward<Args>(args)...);
 		_components.emplace_back(newComponent);
-		//newComponent->set_owner(shared_from_this());
 		newComponent->start();
 		return newComponent;
 	}
