@@ -278,7 +278,7 @@ public:
 	virtual bool IsValid() const override {
 		if (m_primitives.empty()) return false;
 		for (const auto& primitive : m_primitives) {
-			if (!primitive || !primitive->m_pd3dVertexBuffer) return false;
+			if (!primitive || !primitive->_d3dVertexBuffer) return false;
 		}
 	}
 
