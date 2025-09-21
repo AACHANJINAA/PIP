@@ -1213,17 +1213,18 @@ DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsC
 
 DebugWireframeMesh::~DebugWireframeMesh() {}
 
-ReadGLTFMesh::ReadGLTFMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, Scene* pScene)
+ReadGLTFMesh::ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const std::string str, Scene* pScene)
 {
 	json gltf_json; // .gltf파일의 JSON 데이터를 저장할 json객체
 	std::vector<char> binary_data; // .bin파일의 바이너리 데이터를 저장할 벡터
 	can_load_gltf_file(str, gltf_json, binary_data);
 
-	GltfMeshData gltfMeshData{};
-	can_Extract_mesh_data(gltf_json, binary_data, gltfMeshData);
+	GltfMeshData gltf_mesh_data{};
+	can_Extract_mesh_data(gltf_json, binary_data, gltf_mesh_data);
 
+	create_vertex_and_index_buffers(d3d_device, d3d_commandList, gltf_mesh_data);
 
-
+	load_textures(d3d_device, d3d_commandList, gltf_json, str);
 
 }
 
@@ -1358,35 +1359,34 @@ bool ReadGLTFMesh::can_Extract_mesh_data(const json& gltf_json, const std::vecto
 	std::vector<char> texcoord_data;
 	copy_data_from_buffer(texcoord_data, bin_buffer, gltf_json, texcoord_accessor_index);
 
-
-
 	// Vertex 구조체에 맞게 데이터 재구성
-	int vertexCount = gltf_json["accessors"][position_accessor_index]["count"];
-	out_mesh_data.vertices.resize(vertexCount);
+	int vertex_count = gltf_json["accessors"][position_accessor_index]["count"];
+	out_mesh_data.vertices.resize(vertex_count);
 
 	// 각 데이터 버퍼를 float 포인터로 변환하여 다루기 쉽게 만들기
+	// DW설명 : 부득이 하게 p를 붙임 float*를 이용하기 위한 변수들이기 때문
 	float* p_positions = reinterpret_cast<float*>(position_data.data());
 	float* p_normals = reinterpret_cast<float*>(normal_data.data());
 	float* p_tangent = reinterpret_cast<float*>(tangent_data.data());
 	float* p_texCoords = reinterpret_cast<float*>(texcoord_data.data());
 
-	for (int i = 0; i < vertexCount; ++i) {
-		// 1. Position 복사 (float 3개)
+	for (int i = 0; i < vertex_count; ++i) {
+		// Position 복사 (float 3개)
 		memcpy(&out_mesh_data.vertices[i]._position,   // 목적지: i번째 정점의 position 필드
 			p_positions + (i * 3),               // 원본: 전체 위치 데이터에서 i번째 위치 (vec3)
 			sizeof(float) * 3);                 // 크기: float 3개
 
-		// 2. Normal 복사 (float 3개)
+		// Normal 복사 (float 3개)
 		memcpy(&out_mesh_data.vertices[i]._normal,     // 목적지: i번째 정점의 normal 필드
 			p_normals + (i * 3),                 // 원본: 전체 법선 데이터에서 i번째 법선 (vec3)
 			sizeof(float) * 3);                 // 크기: float 3개
 
-		// 3. Tangent 복사 (float 4개)
+		// Tangent 복사 (float 4개)
 		memcpy(&out_mesh_data.vertices[i]._tangent,   // 목적지: i번째 정점의 tangent 필드
 			p_tangent + (i * 4),               // 원본:전체 탄젠트 데이터에서 i번째 탄젠트 (vec4)
 			sizeof(float) * 4);                 // 크기: float 4개
 
-		// 4. TexCoord 복사 (float 2개)
+		// TexCoord 복사 (float 2개)
 		memcpy(&out_mesh_data.vertices[i]._texCoord,   // 목적지: i번째 정점의 texCoord 필드
 			p_texCoords + (i * 2),               // 원본: 전체 UV 데이터에서 i번째 UV (vec2)
 			sizeof(float) * 2);                 // 크기: float 2개
@@ -1466,7 +1466,7 @@ void ReadGLTFMesh::load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommand
 	int image_index = gltf_json["textures"][texture_index]["source"];
 	std::string texture_uri = gltf_json["images"][image_index]["uri"];
 
-	// .gltf 파일에 대한 상대 경로이므로, 전체 경로를 만들어 줍니다.
+	// .gltf 파일에 대한 상대 경로이므로, 전체 경로를 만들어 줌
 	std::filesystem::path full_path = std::filesystem::path(base_path).parent_path() / texture_uri;
 
 	// DirectXTex를 사용하여 이미지 파일 로드
@@ -1479,110 +1479,110 @@ void ReadGLTFMesh::load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommand
 	}
 
 	// 텍스처 리소스 생성 (DEFAULT 힙)
-	ID3D12Resource* pTextureBuffer = nullptr;
-	D3D12_RESOURCE_DESC textureDesc = {};
-	textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	textureDesc.Alignment = 0;
-	textureDesc.Width = image.GetMetadata().width;
-	textureDesc.Height = image.GetMetadata().height;
-	textureDesc.DepthOrArraySize = 1;
-	textureDesc.MipLevels = 1;
-	textureDesc.Format = image.GetMetadata().format;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	ID3D12Resource* texture_buffer = nullptr;
+	D3D12_RESOURCE_DESC texture_desc = {};
+	texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	texture_desc.Alignment = 0;
+	texture_desc.Width = image.GetMetadata().width;
+	texture_desc.Height = image.GetMetadata().height;
+	texture_desc.DepthOrArraySize = 1;
+	texture_desc.MipLevels = 1;
+	texture_desc.Format = image.GetMetadata().format;
+	texture_desc.SampleDesc.Count = 1;
+	texture_desc.SampleDesc.Quality = 0;
+	texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	texture_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	D3D12_HEAP_PROPERTIES heapDefaultProps = {};
-	heapDefaultProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-	heapDefaultProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapDefaultProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	heapDefaultProps.CreationNodeMask = 1;
-	heapDefaultProps.VisibleNodeMask = 1;
+	D3D12_HEAP_PROPERTIES heap_default_props = {};
+	heap_default_props.Type = D3D12_HEAP_TYPE_DEFAULT;
+	heap_default_props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heap_default_props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	heap_default_props.CreationNodeMask = 1;
+	heap_default_props.VisibleNodeMask = 1;
 
 	d3d_device->CreateCommittedResource(
-		&heapDefaultProps,
+		&heap_default_props,
 		D3D12_HEAP_FLAG_NONE,
-		&textureDesc,
+		&texture_desc,
 		D3D12_RESOURCE_STATE_COPY_DEST, // 업로드를 위해 COPY_DEST 상태로 생성
 		nullptr,
-		IID_PPV_ARGS(&pTextureBuffer));
+		IID_PPV_ARGS(&texture_buffer));
 
 	// 업로드 힙을 통해 텍스처 데이터 복사
-	UINT64 nUploadBufferSize;
-	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedFootprint;
-	d3d_device->GetCopyableFootprints(&textureDesc, 0, 1, 0, &placedFootprint, nullptr, nullptr, &nUploadBufferSize);
+	UINT64 upload_buffer_size;
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placed_footprint;
+	d3d_device->GetCopyableFootprints(&texture_desc, 0, 1, 0, &placed_footprint, nullptr, nullptr, &upload_buffer_size);
 
-	ID3D12Resource* pTextureUploadBuffer = nullptr;
+	ID3D12Resource* texture_upload_buffer = nullptr;
 	//auto heapUpload = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-	D3D12_HEAP_PROPERTIES heapUploadProps = {};
-	heapUploadProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-	heapUploadProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapUploadProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	heapUploadProps.CreationNodeMask = 1;
-	heapUploadProps.VisibleNodeMask = 1;
+	D3D12_HEAP_PROPERTIES heap_upload_props = {};
+	heap_upload_props.Type = D3D12_HEAP_TYPE_UPLOAD;
+	heap_upload_props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heap_upload_props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	heap_upload_props.CreationNodeMask = 1;
+	heap_upload_props.VisibleNodeMask = 1;
 
 	//auto bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(nUploadBufferSize);
-	D3D12_RESOURCE_DESC uploadBufferDesc = {};
-	uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	uploadBufferDesc.Alignment = 0;
-	uploadBufferDesc.Width = nUploadBufferSize;
-	uploadBufferDesc.Height = 1;
-	uploadBufferDesc.DepthOrArraySize = 1;
-	uploadBufferDesc.MipLevels = 1;
-	uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-	uploadBufferDesc.SampleDesc.Count = 1;
-	uploadBufferDesc.SampleDesc.Quality = 0;
-	uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	D3D12_RESOURCE_DESC upload_buffer_desc = {};
+	upload_buffer_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	upload_buffer_desc.Alignment = 0;
+	upload_buffer_desc.Width = upload_buffer_size;
+	upload_buffer_desc.Height = 1;
+	upload_buffer_desc.DepthOrArraySize = 1;
+	upload_buffer_desc.MipLevels = 1;
+	upload_buffer_desc.Format = DXGI_FORMAT_UNKNOWN;
+	upload_buffer_desc.SampleDesc.Count = 1;
+	upload_buffer_desc.SampleDesc.Quality = 0;
+	upload_buffer_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	upload_buffer_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
 
 	d3d_device->CreateCommittedResource(
-		&heapUploadProps,
+		&heap_upload_props,
 		D3D12_HEAP_FLAG_NONE,
-		&uploadBufferDesc,
+		&upload_buffer_desc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&pTextureUploadBuffer));
+		IID_PPV_ARGS(&texture_upload_buffer));
 
 	//UpdateSubresources(d3d_commandList, pTextureBuffer, pTextureUploadBuffer, 0, 0, 1, &textureData);
 
-	// 1. 업로드 버퍼를 CPU에서 쓸 수 있도록 매핑(Map)합니다.
-	void* pMappedData;
-	pTextureUploadBuffer->Map(0, nullptr, &pMappedData);
+	// 1. 업로드 버퍼를 CPU에서 쓸 수 있도록 매핑(Map)
+	void* mapped_data;
+	texture_upload_buffer->Map(0, nullptr, &mapped_data);
 
-	// 2. 원본 이미지 데이터를 업로드 버퍼로 한 줄씩 복사합니다.
+	// 2. 원본 이미지 데이터를 업로드 버퍼로 한 줄씩 복사
 	//    GPU는 메모리 정렬을 위해 각 라인 끝에 패딩(padding)을 추가할 수 있으므로,
-	//    단순 memcpy가 아닌 라인별 복사가 필요합니다.
-	D3D12_SUBRESOURCE_DATA textureData = {};
-	textureData.pData = image.GetPixels();
-	textureData.RowPitch = image.GetImage(0, 0, 0)->rowPitch;
-	textureData.SlicePitch = image.GetImage(0, 0, 0)->slicePitch;
+	//    단순 memcpy가 아닌 라인별 복사가 필요
+	D3D12_SUBRESOURCE_DATA texture_data = {};
+	texture_data.pData = image.GetPixels();
+	texture_data.RowPitch = image.GetImage(0, 0, 0)->rowPitch;
+	texture_data.SlicePitch = image.GetImage(0, 0, 0)->slicePitch;
 
-	BYTE* pDestSlice = reinterpret_cast<BYTE*>(pMappedData);
-	const BYTE* pSrcSlice = reinterpret_cast<const BYTE*>(textureData.pData);
-	for (UINT y = 0; y < textureDesc.Height; ++y)
+	BYTE* dest_slice = reinterpret_cast<BYTE*>(mapped_data);
+	const BYTE* src_slice = reinterpret_cast<const BYTE*>(texture_data.pData);
+	for (UINT y = 0; y < texture_desc.Height; ++y)
 	{
-		memcpy(pDestSlice + y * placedFootprint.Footprint.RowPitch, // 목적지: GPU가 요구하는 RowPitch 사용
-			pSrcSlice + y * textureData.RowPitch,             // 원본: 이미지 파일의 RowPitch 사용
-			textureData.RowPitch);
+		memcpy(dest_slice + y * placed_footprint.Footprint.RowPitch, // 목적지: GPU가 요구하는 RowPitch 사용
+			src_slice + y * texture_data.RowPitch,             // 원본: 이미지 파일의 RowPitch 사용
+			texture_data.RowPitch);
 	}
 
-	// 3. CPU 쓰기가 끝났으므로 매핑을 해제(Unmap)합니다.
-	pTextureUploadBuffer->Unmap(0, nullptr);
+	// 3. CPU 쓰기가 끝났으므로 매핑을 해제(Unmap)
+	texture_upload_buffer->Unmap(0, nullptr);
 
 	// 4. 커맨드 리스트에 GPU 복사 명령을 기록합니다.
-	D3D12_TEXTURE_COPY_LOCATION destLocation = {};
-	destLocation.pResource = pTextureBuffer;
-	destLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-	destLocation.SubresourceIndex = 0;
+	D3D12_TEXTURE_COPY_LOCATION dest_location = {};
+	dest_location.pResource = texture_buffer;
+	dest_location.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	dest_location.SubresourceIndex = 0;
 
-	D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
-	srcLocation.pResource = pTextureUploadBuffer;
-	srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-	srcLocation.PlacedFootprint = placedFootprint;
+	D3D12_TEXTURE_COPY_LOCATION src_location = {};
+	src_location.pResource = texture_upload_buffer;
+	src_location.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+	src_location.PlacedFootprint = placed_footprint;
 
-	d3d_commandList->CopyTextureRegion(&destLocation, 0, 0, 0, &srcLocation, nullptr);
+	d3d_commandList->CopyTextureRegion(&dest_location, 0, 0, 0, &src_location, nullptr);
 
 
 	// 텍스처 상태를 셰이더에서 읽을 수 있도록 변경
@@ -1590,7 +1590,7 @@ void ReadGLTFMesh::load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommand
 	D3D12_RESOURCE_BARRIER barrier = {};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = pTextureBuffer;
+	barrier.Transition.pResource = texture_buffer;
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -1598,6 +1598,6 @@ void ReadGLTFMesh::load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommand
 	d3d_commandList->ResourceBarrier(1, &barrier);
 
 	// 생성된 리소스들을 멤버 변수에 저장
-	_TextureResources.push_back(pTextureBuffer);
-	_TextureUploadBuffers.push_back(pTextureUploadBuffer); // 나중에 해제해야 함
+	_TextureResources.push_back(texture_buffer);
+	_TextureUploadBuffers.push_back(texture_upload_buffer); // 나중에 해제해야 함 -> Comptr이라 이제 안해도 되지롱~
 }
