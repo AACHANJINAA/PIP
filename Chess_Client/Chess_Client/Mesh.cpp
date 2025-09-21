@@ -703,8 +703,8 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 		{
 			for (const auto& primitiveJson : mesh["primitives"])
 			{
-				std::vector<SkinnedVertex> vertices;
-				std::vector<UINT> indices;
+				std::vector<SkinnedVertex> _vertices;
+				std::vector<UINT> _indices;
 
 				int posAccessorIndex = primitiveJson["attributes"]["POSITION"];
 				int indicesAccessorIndex = primitiveJson["indices"];
@@ -722,21 +722,21 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 				struct JointType { uint16_t j[4]; };
 				auto [joints, jointCount] = (jointAccessorIndex != -1) ? getData<JointType>(j, binaryData, jointAccessorIndex) : std::pair<JointType*, size_t>(nullptr, 0);
 
-				vertices.resize(posCount);
+				_vertices.resize(posCount);
 				for (size_t i = 0; i < posCount; ++i) {
 				
-					vertices[i].m_xmf3Position = positions[i];
+					_vertices[i].m_xmf3Position = positions[i];
 
 					if (normals) {
-						vertices[i].m_xmf3Normal = normals[i];
+						_vertices[i].m_xmf3Normal = normals[i];
 					}
 
-					if (texCoords) vertices[i].m_xmf2TexCoord = texCoords[i];
-					if (joints) vertices[i].m_xmf4BoneIndices = XMFLOAT4((float)joints[i].j[0], (float)joints[i].j[1], (float)joints[i].j[2], (float)joints[i].j[3]);
-					if (weights) vertices[i].m_xmf4BoneWeights = weights[i];
+					if (texCoords) _vertices[i].m_xmf2TexCoord = texCoords[i];
+					if (joints) _vertices[i].m_xmf4BoneIndices = XMFLOAT4((float)joints[i].j[0], (float)joints[i].j[1], (float)joints[i].j[2], (float)joints[i].j[3]);
+					if (weights) _vertices[i].m_xmf4BoneWeights = weights[i];
 
 					// Bounding Box 계산 시에는 변환된 좌표를 사용
-					XMFLOAT3 transformedPos = vertices[i].m_xmf3Position;
+					XMFLOAT3 transformedPos = _vertices[i].m_xmf3Position;
 					modelMin.x = min(modelMin.x, transformedPos.x);
 					modelMin.y = min(modelMin.y, transformedPos.y);
 					modelMin.z = min(modelMin.z, transformedPos.z);
@@ -747,14 +747,14 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 
 				const auto& indexAccessor = j["accessors"][indicesAccessorIndex];
 				size_t indicesCount = indexAccessor["count"];
-				indices.resize(indicesCount);
+				_indices.resize(indicesCount);
 				if (indexAccessor["componentType"] == 5123) { // uint16_t
 					auto [indices_u16, count] = getData<uint16_t>(j, binaryData, indicesAccessorIndex);
-					for (size_t i = 0; i < count; ++i) indices[i] = indices_u16[i];
+					for (size_t i = 0; i < count; ++i) _indices[i] = indices_u16[i];
 				}
 				else if (indexAccessor["componentType"] == 5125) { // uint32_t
 					auto [indices_u32, count] = getData<uint32_t>(j, binaryData, indicesAccessorIndex);
-					indices.assign(indices_u32, indices_u32 + count);
+					_indices.assign(indices_u32, indices_u32 + count);
 				}
 
 
@@ -763,17 +763,17 @@ ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 				ID3D12Resource* pVertexUploadBuffer = nullptr;
 				ID3D12Resource* pIndexUploadBuffer = nullptr;
 
-				newPrimitive->m_nIndices = indices.size();
+				newPrimitive->m_nIndices = _indices.size();
 
-				newPrimitive->_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, vertices.data(), sizeof(SkinnedVertex) * vertices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &pVertexUploadBuffer);
+				newPrimitive->_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, _vertices.data(), sizeof(SkinnedVertex) * _vertices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &pVertexUploadBuffer);
 				newPrimitive->_d3dVertexBufferView.BufferLocation = newPrimitive->_d3dVertexBuffer->GetGPUVirtualAddress();
 				newPrimitive->_d3dVertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
-				newPrimitive->_d3dVertexBufferView.SizeInBytes = sizeof(SkinnedVertex) * vertices.size();
+				newPrimitive->_d3dVertexBufferView.SizeInBytes = sizeof(SkinnedVertex) * _vertices.size();
 
-				newPrimitive->_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, indices.data(), sizeof(UINT) * indices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &pIndexUploadBuffer);
+				newPrimitive->_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, _indices.data(), sizeof(UINT) * _indices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &pIndexUploadBuffer);
 				newPrimitive->_d3dIndexBufferView.BufferLocation = newPrimitive->_d3dIndexBuffer->GetGPUVirtualAddress();
 				newPrimitive->_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-				newPrimitive->_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * indices.size();
+				newPrimitive->_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * _indices.size();
 
 				m_vUploadBuffers.push_back(pVertexUploadBuffer);
 				m_vUploadBuffers.push_back(pIndexUploadBuffer);
@@ -1014,7 +1014,7 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 			v.m_xmf3Position.x = mesh->mVertices[i].x;
 			v.m_xmf3Position.y = mesh->mVertices[i].y;
 			v.m_xmf3Position.z = mesh->mVertices[i].z;
-			primitive.vertices.push_back(v);
+			primitive._vertices.push_back(v);
 		}
 
 		for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
@@ -1023,14 +1023,14 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 
 			for (unsigned int j = 0; j < face.mNumIndices; ++j)
 			{
-				primitive.indices.push_back(face.mIndices[j]);
+				primitive._indices.push_back(face.mIndices[j]);
 			}
 		}
 
 		// AABB 계산 
-		DirectX::BoundingBox::CreateFromPoints(primitive.aabb, primitive.vertices.size(), &primitive.vertices[0].m_xmf3Position, sizeof(Vertex));
+		DirectX::BoundingBox::CreateFromPoints(primitive.aabb, primitive._vertices.size(), &primitive._vertices[0].m_xmf3Position, sizeof(Vertex));
 		// OBB 계산
-		DirectX::BoundingOrientedBox::CreateFromPoints(primitive.oobb, primitive.vertices.size(), &primitive.vertices[0].m_xmf3Position, sizeof(Vertex));
+		DirectX::BoundingOrientedBox::CreateFromPoints(primitive.oobb, primitive._vertices.size(), &primitive._vertices[0].m_xmf3Position, sizeof(Vertex));
 
 		XMVECTOR quat = XMLoadFloat4(&primitive.oobb.Orientation);
 
@@ -1043,7 +1043,7 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 	}
 	else {
 		// 현재 메쉬의 정점 정보를 임시로 담을 벡터
-		std::vector<IlluminatedVertex> vertices;
+		std::vector<IlluminatedVertex> _vertices;
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
 			// Render Mesh
@@ -1104,7 +1104,7 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 				}
 			}
 
-			vertices.push_back(vertex);
+			_vertices.push_back(vertex);
 		}
 
 		// 현재 메쉬의 인덱스 정보를 임시로 담을 벡터
@@ -1121,7 +1121,7 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 		}
 
 		// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
-		m_Vertexvec.insert(m_Vertexvec.end(), vertices.begin(), vertices.end());
+		m_Vertexvec.insert(m_Vertexvec.end(), _vertices.begin(), _vertices.end());
 	}
 }
 
@@ -1168,24 +1168,24 @@ DebugCollisionBox::~DebugCollisionBox()
 {
 }
 
-DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color)
+DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices, XMFLOAT4 color)
 {
 	// 렌더링에 사용할 정점 목록을 채움.
 	// CollisionPrimitive의 Vertex는 위치만 있으므로, 색상 정보를 포함하는 IlluminatedVertex로 변환
-	m_Vertexvec.reserve(vertices.size());
-	for (const auto& v : vertices)
+	m_Vertexvec.reserve(_vertices.size());
+	for (const auto& v : _vertices)
 	{
 		m_Vertexvec.emplace_back(v.m_xmf3Position, XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
 	}
 
 	// 삼각형 인덱스를 라인 리스트 인덱스로 변환
 	// 삼각형 인덱스 {0, 1, 2} -> 라인 인덱스 {0,1, 1,2, 2,0}
-	m_Indexvec.reserve(indices.size() * 2);
-	for (size_t i = 0; i < indices.size(); i += 3)
+	m_Indexvec.reserve(_indices.size() * 2);
+	for (size_t i = 0; i < _indices.size(); i += 3)
 	{
-		UINT i0 = indices[i];
-		UINT i1 = indices[i + 1];
-		UINT i2 = indices[i + 2];
+		UINT i0 = _indices[i];
+		UINT i1 = _indices[i + 1];
+		UINT i2 = _indices[i + 2];
 
 		m_Indexvec.push_back(i0); m_Indexvec.push_back(i1); // 0-1 라인
 		m_Indexvec.push_back(i1); m_Indexvec.push_back(i2); // 1-2 라인
@@ -1361,57 +1361,57 @@ bool ReadGLTFMesh::can_Extract_mesh_data(const json& gltf_json, const std::vecto
 
 	// Vertex 구조체에 맞게 데이터 재구성
 	int vertex_count = gltf_json["accessors"][position_accessor_index]["count"];
-	out_mesh_data.vertices.resize(vertex_count);
+	out_mesh_data._vertices.resize(vertex_count);
 
 	// 각 데이터 버퍼를 float 포인터로 변환하여 다루기 쉽게 만들기
 	// DW설명 : 부득이 하게 p를 붙임 float*를 이용하기 위한 변수들이기 때문
 	float* p_positions = reinterpret_cast<float*>(position_data.data());
 	float* p_normals = reinterpret_cast<float*>(normal_data.data());
 	float* p_tangent = reinterpret_cast<float*>(tangent_data.data());
-	float* p_texCoords = reinterpret_cast<float*>(texcoord_data.data());
+	float* p_texcoords = reinterpret_cast<float*>(texcoord_data.data());
 
 	for (int i = 0; i < vertex_count; ++i) {
 		// Position 복사 (float 3개)
-		memcpy(&out_mesh_data.vertices[i]._position,   // 목적지: i번째 정점의 position 필드
+		memcpy(&out_mesh_data._vertices[i]._position,   // 목적지: i번째 정점의 position 필드
 			p_positions + (i * 3),               // 원본: 전체 위치 데이터에서 i번째 위치 (vec3)
 			sizeof(float) * 3);                 // 크기: float 3개
 
 		// Normal 복사 (float 3개)
-		memcpy(&out_mesh_data.vertices[i]._normal,     // 목적지: i번째 정점의 normal 필드
+		memcpy(&out_mesh_data._vertices[i]._normal,     // 목적지: i번째 정점의 normal 필드
 			p_normals + (i * 3),                 // 원본: 전체 법선 데이터에서 i번째 법선 (vec3)
 			sizeof(float) * 3);                 // 크기: float 3개
 
 		// Tangent 복사 (float 4개)
-		memcpy(&out_mesh_data.vertices[i]._tangent,   // 목적지: i번째 정점의 tangent 필드
+		memcpy(&out_mesh_data._vertices[i]._tangent,   // 목적지: i번째 정점의 tangent 필드
 			p_tangent + (i * 4),               // 원본:전체 탄젠트 데이터에서 i번째 탄젠트 (vec4)
 			sizeof(float) * 4);                 // 크기: float 4개
 
 		// TexCoord 복사 (float 2개)
-		memcpy(&out_mesh_data.vertices[i]._texCoord,   // 목적지: i번째 정점의 texCoord 필드
-			p_texCoords + (i * 2),               // 원본: 전체 UV 데이터에서 i번째 UV (vec2)
+		memcpy(&out_mesh_data._vertices[i]._texCoord,   // 목적지: i번째 정점의 texCoord 필드
+			p_texcoords + (i * 2),               // 원본: 전체 UV 데이터에서 i번째 UV (vec2)
 			sizeof(float) * 2);                 // 크기: float 2개
 	}
 
 	// 인덱스(indices) 데이터 추출
-	int indicesAccessorIndex = primitive["indices"];
-	std::vector<char> indicesData;
-	copy_data_from_buffer(indicesData, bin_buffer, gltf_json, indicesAccessorIndex);
+	int indices_accessor_index = primitive["indices"];
+	std::vector<char> indices_data;
+	copy_data_from_buffer(indices_data, bin_buffer, gltf_json, indices_accessor_index);
 
 	// glTF는 인덱스 타입으로 UNSIGNED_SHORT (2바이트) 또는 UNSIGNED_INT (4바이트)를 주로 사용
 	// 여기서는 uint32_t로 변환하여 저장
-	int indexCount = gltf_json["accessors"][indicesAccessorIndex]["count"];
-	out_mesh_data.indices.resize(indexCount);
+	int index_count = gltf_json["accessors"][indices_accessor_index]["count"];
+	out_mesh_data._indices.resize(index_count);
 
-	const auto& indexAccessor = gltf_json["accessors"][indicesAccessorIndex];
-	if (indexAccessor["componentType"] == 5123) { // UNSIGNED_SHORT
-		std::vector<uint16_t> shortIndices(indexCount);
-		memcpy(shortIndices.data(), indicesData.data(), indicesData.size());
-		for (int i = 0; i < indexCount; ++i) {
-			out_mesh_data.indices[i] = static_cast<uint32_t>(shortIndices[i]);
+	const auto& index_accessor = gltf_json["accessors"][indices_accessor_index];
+	if (index_accessor["componentType"] == 5123) { // UNSIGNED_SHORT
+		std::vector<uint16_t> short_indices(index_count);
+		memcpy(short_indices.data(), indices_data.data(), indices_data.size());
+		for (int i = 0; i < index_count; ++i) {
+			out_mesh_data._indices[i] = static_cast<uint32_t>(short_indices[i]);
 		}
 	}
-	else if (indexAccessor["componentType"] == 5125) { // UNSIGNED_INT
-		memcpy(out_mesh_data.indices.data(), indicesData.data(), indicesData.size());
+	else if (index_accessor["componentType"] == 5125) { // UNSIGNED_INT
+		memcpy(out_mesh_data._indices.data(), indices_data.data(), indices_data.size());
 	}
 
 	return true;
@@ -1420,10 +1420,10 @@ bool ReadGLTFMesh::can_Extract_mesh_data(const json& gltf_json, const std::vecto
 void ReadGLTFMesh::create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const GltfMeshData& gltf_mesh_data)
 {
 	// --- 1. 정점 버퍼 생성 ---
-	UINT vertex_buffer_size = sizeof(GltfVertex) * gltf_mesh_data.vertices.size(); // GltfVertex는 직접 정의한 정점 구조체
+	UINT vertex_buffer_size = sizeof(GltfVertex) * gltf_mesh_data._vertices.size(); // GltfVertex는 직접 정의한 정점 구조체
 
 	// 최종 버퍼는 DEFAULT 힙에, 최종 상태는 VERTEX_BUFFER로 지정
-	_d3dVertexBuffer = CreateBufferResource(d3d_device, d3d_commandList, (void*)gltf_mesh_data.vertices.data(),
+	_d3dVertexBuffer = CreateBufferResource(d3d_device, d3d_commandList, (void*)gltf_mesh_data._vertices.data(),
 		vertex_buffer_size, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_d3dVertexUploadBuffer);
 
 	// --- 2. 정점 버퍼 뷰 생성 ---
@@ -1432,10 +1432,10 @@ void ReadGLTFMesh::create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3
 	_d3dVertexBufferView.SizeInBytes = vertex_buffer_size;
 
 	// --- 3. 인덱스 버퍼 생성 ---
-	UINT nIndexBufferSize = sizeof(UINT) * gltf_mesh_data.indices.size();
+	UINT nIndexBufferSize = sizeof(UINT) * gltf_mesh_data._indices.size();
 
 	// 인덱스 버퍼 리소스를 생성, 최종 상태는 INDEX_BUFFER
-	_d3dIndexBuffer = CreateBufferResource(d3d_device, d3d_commandList, (void*)gltf_mesh_data.indices.data(),
+	_d3dIndexBuffer = CreateBufferResource(d3d_device, d3d_commandList, (void*)gltf_mesh_data._indices.data(),
 		nIndexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_d3dIndexUploadBuffer);
 
 	// --- 4. 인덱스 버퍼 뷰 생성 ---
@@ -1444,7 +1444,7 @@ void ReadGLTFMesh::create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3
 	_d3dIndexBufferView.SizeInBytes = nIndexBufferSize;
 
 	// --- 5. 렌더링에 사용할 인덱스 개수 저장 ---
-	_indexCount = gltf_mesh_data.indices.size();
+	_indexCount = gltf_mesh_data._indices.size();
 }
 
 void ReadGLTFMesh::load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const json& gltf_json, const std::string& base_path)

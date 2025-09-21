@@ -87,8 +87,20 @@ struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구�
 
 struct GltfMeshData
 {
-	std::vector<GltfVertex> vertices;
-	std::vector<uint32_t> indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
+	std::vector<GltfVertex> _vertices;
+	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
+};
+
+struct GltfPrimitiveData
+{
+	ComPtr<ID3D12Resource> _vertexBuffer;
+	ComPtr<ID3D12Resource> _indexBuffer;
+
+	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
+	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
+
+	UINT _indexCount = 0;
+	int _materialIndex = -1; // 이 프리미티브가 사용할 m_textures 벡터의 인덱스
 };
 
 // (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
@@ -217,7 +229,7 @@ class ReadGLTFMesh : public Mesh
 {
 public:
 	ReadGLTFMesh() {};
-	ReadGLTFMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, class Scene* pScene);
+	ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const std::string str, class Scene* pScene);
 
 	virtual ~ReadGLTFMesh();
 
@@ -360,10 +372,10 @@ private:
 struct CollisionPrimitive
 {
 	// 충돌 계산 전용의 최소화된 정점 데이터를 사용
-	std::vector<Vertex> vertices;
+	std::vector<Vertex> _vertices;
 
 	// 정점을 연결하여 삼각형을 만드는 인덱스 데이터
-	std::vector<uint32_t> indices;
+	std::vector<uint32_t> _indices;
 
 	// 광역 단계에서 사용할 AABB
 	BoundingBox aabb;
@@ -408,6 +420,6 @@ class DebugWireframeMesh : public Mesh
 {
 public:
 	// 생성자에서 정점과 인덱스 목록을 직접 받습니다.
-	DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color);
+	DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices, XMFLOAT4 color);
 	virtual ~DebugWireframeMesh();
 };
