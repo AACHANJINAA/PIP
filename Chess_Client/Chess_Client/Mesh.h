@@ -49,11 +49,11 @@ struct SkinnedVertex
 
 struct MeshPrimitive
 {
-	ID3D12Resource* m_pd3dVertexBuffer = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView{};
+	ID3D12Resource* _d3dVertexBuffer = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView{};
 
-	ID3D12Resource* m_pd3dIndexBuffer = nullptr;
-	D3D12_INDEX_BUFFER_VIEW m_d3dIndexBufferView{};
+	ID3D12Resource* _d3dIndexBuffer = nullptr;
+	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView{};
 
 	UINT m_nIndices = 0;
 
@@ -65,17 +65,31 @@ struct MeshPrimitive
 
 	// 소멸자에서 리소스 해제
 	~MeshPrimitive() {
-		if (m_pd3dVertexBuffer)
-			m_pd3dVertexBuffer->Release();
+		if (_d3dVertexBuffer)
+			_d3dVertexBuffer->Release();
 
-		if (m_pd3dIndexBuffer)
-			m_pd3dIndexBuffer->Release();
+		if (_d3dIndexBuffer)
+			_d3dIndexBuffer->Release();
 
 		if (m_pTexture)
 			m_pTexture->Release();
 	}
 };
 
+
+struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
+{
+	XMFLOAT3 _position;
+	XMFLOAT3 _normal;
+	XMFLOAT4 _tangent;
+	XMFLOAT2 _texCoord;
+};
+
+struct GltfMeshData
+{
+	std::vector<GltfVertex> vertices;
+	std::vector<uint32_t> indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
+};
 
 // (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
 class IlluminatedVertex : public Vertex
@@ -109,21 +123,21 @@ public:
 	virtual ~Mesh();
 
 protected:
-	ID3D12Resource* m_pd3dVertexBuffer = NULL;
-	ID3D12Resource* m_pd3dVertexUploadBuffer = NULL;
+	ID3D12Resource* _d3dVertexBuffer = NULL;
+	ID3D12Resource* _d3dVertexUploadBuffer = NULL;
 
 	ID3D12Resource* m_pd3dUploadVertexBuffer = NULL; // 매 틱마다 업데이트 해주기 위함
 
-	D3D12_VERTEX_BUFFER_VIEW m_d3dVertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
 	D3D12_PRIMITIVE_TOPOLOGY m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	UINT m_nSlot = 0;
 	UINT m_nVertices = 0;
 	UINT m_nStride = 0;
 	UINT m_nOffset = 0;
 
-	ID3D12Resource* m_pd3dIndexBuffer = NULL;
+	ID3D12Resource* _d3dIndexBuffer = NULL;
 
-	ID3D12Resource* m_pd3dIndexUploadBuffer = NULL;
+	ID3D12Resource* _d3dIndexUploadBuffer = NULL;
 
 	std::vector<UINT> m_Indexvec; // 인덱스 버퍼를 저장하기 위한 벡터(인덱스 버퍼는 변함이 없음)
 
@@ -131,7 +145,7 @@ protected:
 
 	/*인덱스 버퍼(인덱스의 배열)와 인덱스 버퍼를 위한 업로드 버퍼에 대한 인터페이스 포인터이다. 인덱스 버퍼는 정점
 	버퍼(배열)에 대한 인덱스를 가진다.*/
-	D3D12_INDEX_BUFFER_VIEW m_d3dIndexBufferView;
+	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
 	UINT m_nIndices = 0;
 	//인덱스 버퍼에 포함되는 인덱스의 개수이다. 
 	UINT m_nStartIndex = 0;
@@ -196,6 +210,60 @@ private:
 	std::map<std::string, OBJMaterial> m_mapMaterials;
 	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
 };
+
+class ReadGLTFMesh : public Mesh
+{
+public:
+	ReadGLTFMesh() {};
+	ReadGLTFMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, class Scene* pScene);
+
+	virtual ~ReadGLTFMesh();
+
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList);
+
+private: // DW생각 : gltf이기 때문에 함수 단위로 분리해서 불러오기
+	// .gltf파일 불러오기 및 .bin파일 읽고, 성공여부를 반환ㅎㅏ기
+	bool can_load_gltf_file(const std::string& filename, json& out_json, std::vector<char>& out_bin_buffer);
+
+	// 거대한 bin 데이서에서 gltf의 accessor정보에 따라 잘라내는 것
+	void copy_data_from_buffer(std::vector<char>& dest,	const std::vector<char>& source_bin_buffer, const json& gltf_json, int accessor_index);
+
+	// 데이터 추출
+	bool can_Extract_mesh_data(const json& gltf_json, const std::vector<char>& bin_buffer, GltfMeshData& out_mesh_data);
+
+	// 정점버퍼 및 인덱스버퍼 생성
+	void create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const GltfMeshData& gltf_mesh_data);
+
+	// 텍스쳐 로드
+	void load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const json& gltf_json, const std::string& base_path);
+
+private:
+	// json _gltfJson; // .gltf파일의 JSON 데이터를 저장할 json객체
+	// std::vector<char> _binaryData; // .bin파일의 바이너리 데이터를 저장할 벡터
+	// 렌더링 시 사용할 함수
+
+
+private:
+	// 버퍼 리소스
+	ComPtr<ID3D12Resource> _d3dVertexBuffer = nullptr;
+	ComPtr<ID3D12Resource> _d3dIndexBuffer = nullptr;
+
+	// 버퍼 생성을 위한 임시 업로드 버퍼
+	ComPtr<ID3D12Resource> _d3dVertexUploadBuffer = nullptr;
+	ComPtr<ID3D12Resource> _d3dIndexUploadBuffer = nullptr;
+
+	// 텍스처 리소스 (여러 개일 수 있음)
+	std::vector<ComPtr<ID3D12Resource>> _TextureResources;
+	std::vector<ComPtr<ID3D12Resource>> _TextureUploadBuffers; // 텍스처 업로드용
+
+	// 버퍼 뷰
+	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
+	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
+
+	// 그릴 인덱스 개수
+	UINT _indexCount = 0;
+};
+
 
 class ReadGlbMesh : public Mesh
 {
