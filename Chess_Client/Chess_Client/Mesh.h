@@ -168,6 +168,8 @@ public:
 	// DW설명 : 모델좌표계에서 충돌체크를 할 것이기 때문에 메쉬클래스에서 가지고 있는 것 같다.
 
 	BoundingOrientedBox GetBoundingBox() const { return m_xmOOBB; }
+
+	virtual bool IsValid() const { return true; }
 };
 
 struct OBJMaterial                                                                                                                                          
@@ -205,6 +207,12 @@ public:
 
 	ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, class Scene* pScene);
 
+	virtual bool IsValid() const override {
+		if (m_primitives.empty()) return false;
+		for (const auto& primitive : m_primitives) {
+			if (!primitive || !primitive->m_pd3dVertexBuffer) return false;
+		}
+	}
 
 	// Mesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;

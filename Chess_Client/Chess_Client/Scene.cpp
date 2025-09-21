@@ -80,9 +80,12 @@ void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDev
             meshName = "Resource/MapData/" + meshName + ".glb";
 
             auto Board_Transform = Board->get_component<TransformComponent>();
-			auto Board_Render = Board->get_component<RenderComponent>();
+            auto Board_Render = Board->get_component<RenderComponent>();
 
             BoardMesh = make_shared<ReadGlbMesh>(pd3dDevice, pd3dCommandList, meshName, (Scene*)this);
+
+            if (!BoardMesh || !BoardMesh->IsValid())
+                continue;
 
             if (Board_Render)
             {
@@ -360,8 +363,8 @@ void Scene::ReleaseUploadBuffers()
 
     for (auto& Objects : Arr) {
         for (auto& Object : Objects) {
-			auto Object_Render = Object->get_component<RenderComponent>();
-			if (Object_Render)
+            auto Object_Render = Object->get_component<RenderComponent>();
+            if (Object_Render)
                 Object_Render->release_upload_buffers();
         }
     }
