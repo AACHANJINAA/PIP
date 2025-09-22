@@ -231,9 +231,9 @@ public:
 	ReadGLTFMesh() {};
 	ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const std::string str, class Scene* pScene);
 
-	virtual ~ReadGLTFMesh();
+	~ReadGLTFMesh() override;
 
-	void Render(ID3D12GraphicsCommandList* pd3dCommandList);
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
 
 private: // DW생각 : gltf이기 때문에 함수 단위로 분리해서 불러오기
 	// .gltf파일 불러오기 및 .bin파일 읽고, 성공여부를 반환ㅎㅏ기
