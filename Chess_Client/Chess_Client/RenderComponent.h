@@ -1,5 +1,7 @@
 #pragma once
 #include "stdafx.h"
+
+#include "Behaviour.h"
 #include "Component.h"
 #include "Camera.h"
 #include "Mesh.h"
@@ -37,42 +39,30 @@ private:
 	std::shared_ptr<Shader> _shader;
 };
 
-class RenderComponent : public Component
+class RenderComponent : public Behaviour
 {
 public:
-	RenderComponent(GameObject* Owner)
-		: Component(Owner)
-	{
-	}
-	~RenderComponent() override = default;
-public:
-	void start() override;
-	void update(float DeltaTime) override;
-	virtual void render(ComPtr<ID3D12GraphicsCommandList> command_list, Camera* camera) override;
+    RenderComponent();
+    virtual ~RenderComponent() = default;
 
-public:
-	virtual void set_mesh(std::shared_ptr<Mesh> mesh);
-	virtual void set_shader(std::shared_ptr<Shader> shader);
-	void set_material(std::shared_ptr<Material_Shader> material);
+    // render 함수는 이제 Renderer에 의해 호출됩니다.
+    virtual void render(ID3D12GraphicsCommandList* commandList, Camera* camera);
 
-	void release_upload_buffers();
+    // --- Getters & Setters ---
+    void set_mesh(std::shared_ptr<Mesh> mesh) { _mesh = mesh; }
+    std::shared_ptr<Mesh> mesh() const { return _mesh; }
 
-	virtual void on_prepare_render(ComPtr<ID3D12GraphicsCommandList> command_List);
+    // (기존에 get_material_shader 같은 함수가 있었다면, 유사한 역할을 할 함수)
+    void set_shader(std::shared_ptr<Shader> shader) { _shader = shader; }
+    std::shared_ptr<Shader> shader() const { return _shader; }
 
-	bool is_visible(Camera* camera = nullptr);
+    // 이 컴포넌트가 사용할 PSO의 이름을 설정하고 가져옵니다.
+    void set_pso_name(const std::string& name) { _psoName = name; }
+    const std::string& pso_name() const { return _psoName; }
 
-	virtual void CreateShaderVariables(ComPtr<ID3D12Device>pd3dDevice, ComPtr<ID3D12GraphicsCommandList> pd3dCommandList);
-	virtual void UpdateShaderVariables(ComPtr<ID3D12GraphicsCommandList> pd3dCommandList);
-	virtual void ReleaseShaderVariables();
-
-	std::shared_ptr<Mesh> get_mesh() const { return _mesh; }
-	std::shared_ptr<Material_Shader> get_material_shader() const { return _materialShader; }
-
-protected:
-	std::shared_ptr<Mesh> _mesh;
-	std::shared_ptr<Material_Shader> _materialShader;
-	ComPtr<ID3D12Resource> _cbGameObject;
-	// Map 직관적으로 표현하려면 raw 포인터로 계속 쓰는게 나을 듯
-	CbGameObjectInfo* _cbMappedGameObject = nullptr;
+private:
+    std::shared_ptr<Mesh> _mesh;
+    std::shared_ptr<Shader> _shader; // 셰이더 또는 머티리얼
+    std::string _psoName = "default"; // 사용할 PSO의 이름 (기본값 "default")
 };
 

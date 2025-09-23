@@ -51,7 +51,11 @@ private:
 
 	std::unique_ptr<Scene> _scene;
 
-	
+	std::shared_ptr<Camera> _camera; // 메인 카메라에 대한 포인터
+	float _physicsTimeAccumulator = 0.0f; // 물리 업데이트 시간 누적 변수
+
+	void update_game_logic(float deltaTime);
+	void update_physics(float elapsedTime);
 public:
 	GameFramework();
 	~GameFramework();

@@ -1,48 +1,64 @@
 #pragma once
-#include "stdafx.h"
 #include "Component.h"
+#include <DirectXMath.h>
+#include <vector>
+#include <memory>
 
-class TransformComponent : public Component
+using namespace DirectX;
+
+class TransformComponent : public Component, public std::enable_shared_from_this<TransformComponent>
 {
 public:
-	TransformComponent(GameObject* Owner)
-		: Component(Owner)
-	{
-	}
-	~TransformComponent() override = default;
-public:
-	void start() override;
-	void update(float DeltaTime) override;
-public:
-	void set_position(float x, float y, float z);
-	void set_position(XMFLOAT3 xmf3Position);
-	void set_scale(float x, float y, float z);
-	
-	void rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
-	void rotate(XMFLOAT3* pxmf3Axis, float fAngle);
+    TransformComponent();
+    virtual ~TransformComponent() = default;
 
-	void move(XMFLOAT3& vDirection, float fSpeed);
-	void move(float x, float y, float z);
+    void update();
 
-	void look_to(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up);
-	void look_to(XMFLOAT3& xmf3LookTo);
+    // --- Getters ---
+	// --- Local Space Getters ---
+	// 부모 기준 위치, 회전, 스케일
+    const XMFLOAT3& local_position() const { return _localPosition; }
+    const XMFLOAT4& local_rotation() const { return _localRotation; }
+    const XMFLOAT3& local_scale() const { return _localScale; }
 
-	XMFLOAT3 get_position() const;
-	XMFLOAT3 get_look() const;
-	XMFLOAT3 get_size() const;
-	XMFLOAT3 get_up() const;
-	XMFLOAT3 get_right() const;
-	XMFLOAT4X4 get_world_matrix() const;
+	// 월드 기준 위치, 회전, 방향 벡터
+    const XMFLOAT3& position() const { return _position; }
+    const XMFLOAT4& rotation() const { return _rotation; }
+    const XMFLOAT3& right() const { return _right; }
+    const XMFLOAT3& up() const { return _up; }
+    const XMFLOAT3& forward() const { return _forward; }
+    const XMFLOAT4X4& world_matrix() const { return _worldMatrix; }
 
-protected:
-	XMFLOAT4X4					_world = Matrix4x4::Identity();
+    // --- Setters ---
+    void set_local_position(const XMFLOAT3& position);
+    void set_local_rotation(const XMFLOAT4& rotation);
+    void set_local_scale(const XMFLOAT3& scale);
 
-	XMFLOAT3					_position = F3_ZERO;
-	XMFLOAT3					_right = F3_RIGHT;
-	XMFLOAT3					_up = F3_UP;
-	XMFLOAT3					_look = F3_FORWARD;
+    // --- Hierarchy Management ---
+    void set_parent(std::shared_ptr<TransformComponent> parent);
+    std::weak_ptr<TransformComponent> parent() const { return _parent; }
+    std::shared_ptr<TransformComponent> get_child(int index) const;
+    int child_count() const { return static_cast<int>(_children.size()); }
 
-	XMFLOAT3					_scale = F3_ONE;
-	XMFLOAT3					_rotate = XMFLOAT3(0.0f, 0.0f, 1.0f);
+private:
+    void add_child(std::shared_ptr<TransformComponent> child);
+    void remove_child(std::shared_ptr<TransformComponent> child);
+
+    // Local space data
+    XMFLOAT3 _localPosition;
+    XMFLOAT4 _localRotation;
+    XMFLOAT3 _localScale;
+    bool _isDirty;
+
+    // World space data (pre-calculated)
+    XMFLOAT4X4 _worldMatrix;
+    XMFLOAT3 _position;
+    XMFLOAT4 _rotation;
+    XMFLOAT3 _right;
+    XMFLOAT3 _up;
+    XMFLOAT3 _forward;
+
+    // Hierarchy Data
+    std::weak_ptr<TransformComponent> _parent;
+    std::vector<std::shared_ptr<TransformComponent>> _children;
 };
-

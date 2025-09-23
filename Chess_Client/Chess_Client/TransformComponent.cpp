@@ -1,107 +1,107 @@
 #include "stdafx.h"
 #include "TransformComponent.h"
+#include "GameObject.h"
 
-void TransformComponent::set_position(float x, float y, float z)
+TransformComponent::TransformComponent() : _isDirty(true)
 {
-	_position = { x,y,z };
-}
-void TransformComponent::set_position(XMFLOAT3 xmf3Position)
-{
-	set_position(xmf3Position.x, xmf3Position.y, xmf3Position.z);
-}
+    _localPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
+    _localRotation = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+    _localScale = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
+    XMStoreFloat4x4(&_worldMatrix, XMMatrixIdentity());
+    _position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+    _rotation = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+    _right = XMFLOAT3(1.0f, 0.0f, 0.0f);
+    _up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+    _forward = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
-void TransformComponent::set_scale(float x, float y, float z)
-{
-	_scale = { x,y,z };
-}
-
-void TransformComponent::rotate(float fPitch, float fYaw, float fRoll)
-{
-	_rotate = { fPitch, fYaw, fRoll };
+    set_name("TransformComponent");
 }
 
-void TransformComponent::rotate(XMFLOAT3* pxmf3Axis, float fAngle)
+void TransformComponent::update()
 {
-	XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(pxmf3Axis),
-		XMConvertToRadians(fAngle));
-	_world = Matrix4x4::Multiply(mtxRotate, _world);
+    if (!_isDirty) return;
+
+    XMMATRIX localTransform = XMMatrixScalingFromVector(XMLoadFloat3(&_localScale)) *
+        XMMatrixRotationQuaternion(XMLoadFloat4(&_localRotation)) *
+        XMMatrixTranslationFromVector(XMLoadFloat3(&_localPosition));
+
+    XMMATRIX finalWorldMatrix;
+    if (auto parent_ptr = _parent.lock())
+    {
+        finalWorldMatrix = localTransform * XMLoadFloat4x4(&parent_ptr->_worldMatrix);
+    }
+    else
+    {
+        finalWorldMatrix = localTransform;
+    }
+
+    XMStoreFloat4x4(&_worldMatrix, finalWorldMatrix);
+
+    XMVECTOR worldScale, worldRotation, worldPosition;
+    XMMatrixDecompose(&worldScale, &worldRotation, &worldPosition, finalWorldMatrix);
+
+    XMStoreFloat3(&_position, worldPosition);
+    XMStoreFloat4(&_rotation, worldRotation);
+    XMStoreFloat3(&_right, XMVector3Rotate(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), worldRotation));
+    XMStoreFloat3(&_up, XMVector3Rotate(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), worldRotation));
+    XMStoreFloat3(&_forward, XMVector3Rotate(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), worldRotation));
+
+    _isDirty = false;
+
+    // 자식들도 연쇄적으로 업데이트하도록 dirty 플래그 설정
+    for (const auto& child : _children)
+    {
+        child->_isDirty = true;
+    }
 }
 
-void TransformComponent::move(XMFLOAT3& vDirection, float fSpeed)
+// --- Hierarchy Management ---
+void TransformComponent::set_parent(std::shared_ptr<TransformComponent> newParent)
 {
-	_position.x = _position.x + vDirection.x * fSpeed;
-	_position.y = _position.y + vDirection.y * fSpeed;
-	_position.z = _position.z + vDirection.z * fSpeed;
+    if (auto oldParent_ptr = _parent.lock())
+    {
+        oldParent_ptr->remove_child(std::static_pointer_cast<TransformComponent>(shared_from_this()));
+    }
+    if (newParent)
+    {
+        newParent->add_child(std::static_pointer_cast<TransformComponent>(shared_from_this()));
+    }
+    _parent = newParent;
+    _isDirty = true;
 }
 
-void TransformComponent::move(float x, float y, float z)
+void TransformComponent::add_child(std::shared_ptr<TransformComponent> child)
 {
-	_position.x += x;
-	_position.y += y;
-	_position.z += z;
+    if (child) { _children.push_back(child); }
 }
 
-void TransformComponent::look_to(XMFLOAT3& xmf3LookTo, XMFLOAT3& xmf3Up)
+void TransformComponent::remove_child(std::shared_ptr<TransformComponent> child)
 {
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(get_position(), xmf3LookTo, xmf3Up);
-	_world._11 = xmf4x4View._11; _world._12 = xmf4x4View._21; _world._13 = xmf4x4View._31;
-	_world._21 = xmf4x4View._12; _world._22 = xmf4x4View._22; _world._23 = xmf4x4View._32;
-	_world._31 = xmf4x4View._13; _world._32 = xmf4x4View._23; _world._33 = xmf4x4View._33;
+    _children.erase(std::ranges::remove(_children, child).begin(), _children.end());
 }
 
-void TransformComponent::look_to(XMFLOAT3& xmf3LookTo)
+std::shared_ptr<TransformComponent> TransformComponent::get_child(int index) const
 {
-	XMFLOAT4X4 xmf4x4View = Matrix4x4::LookToLH(get_position(), xmf3LookTo, get_up());
-	_world._11 = xmf4x4View._11; _world._12 = xmf4x4View._21; _world._13 = xmf4x4View._31;
-	_world._21 = xmf4x4View._12; _world._22 = xmf4x4View._22; _world._23 = xmf4x4View._32;
-	_world._31 = xmf4x4View._13; _world._32 = xmf4x4View._23; _world._33 = xmf4x4View._33;
+    if (index < 0 || index >= _children.size()) return nullptr;
+    return _children[index];
 }
 
-XMFLOAT3 TransformComponent::get_position() const
+// --- Setters ---
+void TransformComponent::set_local_position(const XMFLOAT3& position)
 {
-	return _position;
+    _localPosition = position;
+    _isDirty = true;
 }
 
-XMFLOAT3 TransformComponent::get_look() const
+void TransformComponent::set_local_rotation(const XMFLOAT4& rotation)
 {
-	return(Vector3::Normalize(XMFLOAT3(_world._31, _world._32, _world._33)));
+    _localRotation = rotation;
+    _isDirty = true;
 }
 
-XMFLOAT3 TransformComponent::get_size() const
+void TransformComponent::set_local_scale(const XMFLOAT3& scale)
 {
-	return _scale;
-}
-
-XMFLOAT3 TransformComponent::get_up() const
-{
-	return(Vector3::Normalize(XMFLOAT3(_world._21, _world._22, _world._23)));
-}
-
-XMFLOAT3 TransformComponent::get_right() const
-{
-	return(Vector3::Normalize(XMFLOAT3(_world._11, _world._12, _world._13)));
-}
-
-XMFLOAT4X4 TransformComponent::get_world_matrix() const
-{
-	return _world;
-}
-
-
-void TransformComponent::start()
-{
-}
-
-void TransformComponent::update(float DeltaTime)
-{
-	_world = Matrix4x4::Identity();
-
-	XMMATRIX scaleMatrix = XMMatrixScaling(_scale.x, _scale.y, _scale.z);
-	XMMATRIX rotateMatrix = XMMatrixRotationRollPitchYaw(XMConvertToRadians(_rotate.x), XMConvertToRadians(_rotate.y), XMConvertToRadians(_rotate.z));
-	XMMATRIX translateMatrix = XMMatrixTranslation(_position.x, _position.y, _position.z);
-
-	XMMATRIX worldMatrix = scaleMatrix * rotateMatrix * translateMatrix;
-	XMMATRIX zFlipworldMatrix = XMMatrixScaling(1.0f, 1.0f, -1.0f) * worldMatrix; // GLB 모델의 Z축 뒤집기
-	XMStoreFloat4x4(&_world, worldMatrix);
+    _localScale = scale;
+    _isDirty = true;
 }

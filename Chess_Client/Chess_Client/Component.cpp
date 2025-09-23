@@ -1,15 +1,7 @@
 #include "stdafx.h"
 #include "Component.h"
 
-void Component::start()
+
+Component::Component() : Object("Component"), _gameObject(nullptr)
 {
 }
-
-void Component::update(float DeltaTime)
-{
-}
-
-void Component::render(ComPtr<ID3D12GraphicsCommandList> command_list, Camera* camera)
-{
-}
-
