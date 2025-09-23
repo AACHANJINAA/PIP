@@ -124,11 +124,11 @@ void ClientPacketManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& str
 	if (ack_packet._success)
 	{
 		_my_session_id = ack_packet._my_session_id; // [핵심] 자신의 ID 저장
-		CLOG(L"[S->C] Login successful! My Session ID is now: %lld", _my_session_id);
+		CLOG("[S->C] Login successful! My Session ID is now: %lld" << _my_session_id);
 	}
 	else
 	{
-		CLOG(L"[S->C] Login failed!");
+		CLOG("[S->C] Login failed!");
 		MessageBox(g_hwnd, L"Login failed.", L"Login Error", MB_OK);
 	}
 }
@@ -150,7 +150,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 	// 패킷의 ID가 내 플레이어 ID와 같은지 확인합니다.
 	if (spawn_data._id == _my_session_id)
 	{
-		CLOG(L"[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
+		CLOG("[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
 
@@ -180,12 +180,17 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		ObjectManager::Instance()->PushObject(my_king);
 		ObjectManager::Instance()->SetPlayer(my_king);
 		// level, exp 등 추가 정보도 업데이트 가능
-		CLOG(L"[S->C] My player spawned/updated: ID=%lld, Pos=(%d,%d), HP=%d, Level=%d, Exp=%d, Name=%s",
-			 spawn_data._id, spawn_data._position.x, spawn_data._position.y, spawn_data._hp, spawn_data._level, spawn_data._exp, name.c_str());
+		
+		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
+			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
+			<<"HP=" << spawn_data._hp 
+			<<"Level=" << spawn_data._level
+			<<"Exp=" << spawn_data._exp
+			<< "Name=" << name.c_str());
 	}
 	else
 	{
-		CLOG(L"[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
+		CLOG("[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._position.x, spawn_data._position.y);
 
@@ -218,8 +223,12 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 
 		// 매니저에 넣기
 		ObjectManager::Instance()->PushEnemy(other_king);
-		CLOG(L"[S->C] Other player spawned: ID=%lld, Pos=(%d,%d), HP=%d, Level=%d, Exp=%d, Name=%s",
-			 spawn_data._id, spawn_data._position.x, spawn_data._position.y, spawn_data._hp, spawn_data._level, spawn_data._exp, name.c_str());
+		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
+			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
+			<< "HP=" << spawn_data._hp
+			<< "Level=" << spawn_data._level
+			<< "Exp=" << spawn_data._exp
+			<< "Name=" << name.c_str());
 	}
 }
 

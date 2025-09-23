@@ -1271,7 +1271,7 @@ bool ReadGLTFMesh::can_load_gltf_file(const std::string& filename, json& outJson
 
 		outBinBuffer.resize(size);
 		if (!bin_file.read(outBinBuffer.data(), size)) {
-			std::cerr << "Error: Failed to read binary data from " << bin_path << std::endl;
+			CERROR("Error: Failed to read binary data from " << bin_path);
 			return false;
 		}
 		bin_file.close();
