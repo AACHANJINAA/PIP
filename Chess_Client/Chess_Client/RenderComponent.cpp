@@ -68,7 +68,7 @@ void RenderComponent::on_prepare_render(ComPtr<ID3D12GraphicsCommandList> comman
 
 bool RenderComponent::is_visible(Camera* camera)
 {
-	//return true;
+	return true;
 	//OnPrepareRender();
 	if (!camera) return false;
 
