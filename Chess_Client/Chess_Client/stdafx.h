@@ -13,7 +13,6 @@
 
 #include <tchar.h>
 
-#include <string>
 #include <wrl.h>
 #include <shellapi.h>
 
@@ -52,13 +51,16 @@ using Microsoft::WRL::ComPtr;
 #include <typeindex>
 #include <list>
 #include <fstream>
-#include <string>
 #include <sstream>
 #include <numeric>
 #include <random>
 #include <queue>
 #include <unordered_map>
 #include <functional>
+#include <concepts>
+#include <string>
+#include <atomic>
+#include <mutex>
 
 
 

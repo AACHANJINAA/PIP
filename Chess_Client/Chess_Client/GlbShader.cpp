@@ -104,7 +104,7 @@ void GlbShader::ReleaseUploadBuffers()
 
 }
 
-void GlbShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera)
+void GlbShader::render(ID3D12GraphicsCommandList* pd3dCommandList, Camera* pCamera)
 {
-	Shader::Render(pd3dCommandList, pCamera);
+	Shader::render(pd3dCommandList, pCamera);
 }

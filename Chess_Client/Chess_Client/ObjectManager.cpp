@@ -5,179 +5,85 @@
 #include "Shader.h"
 #include "RenderComponent.h"
 
-ObjectManager::ObjectManager()
+#include "stdafx.h"
+#include "ObjectManager.h"
+#include "GameObject.h"
+#include "Component.h"
+#include "TransformComponent.h"
+
+// --- 객체 생성 및 파괴 ---
+std::shared_ptr<GameObject> ObjectManager::create_game_object(const std::string& name, int layer)
 {
+    auto newGameObject = std::make_shared<GameObject>(name);
+    newGameObject->set_layer(layer);
+
+    std::lock_guard<std::mutex> lock(_mutex);
+    _gameObjects.push_back(newGameObject);
+    return newGameObject;
 }
 
-ObjectManager::~ObjectManager()
+void ObjectManager::request_destruction(std::shared_ptr<Object> objectToDestroy)
 {
-	DeleteAll();
+    std::lock_guard<std::mutex> lock(_mutex);
+    _destructionQueue.push_back(objectToDestroy);
 }
 
-void ObjectManager::RequestObject(std::shared_ptr<GameObject> WhatYouWant)
+void ObjectManager::process_destructions()
 {
-	_requestobjects.push(WhatYouWant);
+    std::lock_guard<std::mutex> lock(_mutex);
+    if (_destructionQueue.empty()) return;
+
+    for (auto& obj : _destructionQueue)
+    {
+        if (auto gameObj = std::dynamic_pointer_cast<GameObject>(obj))
+        {
+            // on_destroy() 콜백 호출 (GameObject에 구현 필요)
+            // gameObj->on_destroy();
+            remove_game_object_from_list(gameObj);
+        }
+        else if (auto component = std::dynamic_pointer_cast<Component>(obj))
+        {
+            // 컴포넌트가 속한 게임오브젝트에서 해당 컴포넌트 제거 (GameObject에 구현 필요)
+            // component->game_object()->remove_component(component);
+        }
+    }
+    _destructionQueue.clear();
 }
 
-void ObjectManager::MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void ObjectManager::remove_game_object_from_list(std::shared_ptr<GameObject> gameObject)
 {
-	if (_requestobjects.empty())
-	{
-		return;
-	}
-
-	while (!_requestobjects.empty())
-	{
-		std::shared_ptr<GameObject> RequestObject = _requestobjects.front();
-
-		auto RequestObject_Render = RequestObject->get_component<RenderComponent>();
-		if (RequestObject_Render)
-			RequestObject_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-
-		auto RequestObject_Transform = RequestObject->get_component<TransformComponent>();
-		switch (RequestObject->_meshType)
-		{
-		case PLAYER:
-		{
-			std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<Mesh>(ReadObjMesh{pd3dDevice, pd3dCommandList, "Resource/Character/test_mesh.obj" });
-
-			Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
-			if (RequestObject_Render)
-				RequestObject_Render->set_mesh(Chess_Mesh);
-
-			if (RequestObject_Transform)
-				RequestObject_Transform->set_scale(1.f, 1.f, 1.f);
-
-			ObjectManager::Instance()->PushObject(RequestObject);
-			ObjectManager::Instance()->SetPlayer(RequestObject);
-		}
-		break;
-
-		case ENEMY:
-		{
-
-			std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<Mesh>(ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Monster/test_monster.obj" });
-
-			Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 1.0f, 0.0f, 1.f);
-			if (RequestObject_Render)
-				RequestObject_Render->set_mesh(Chess_Mesh);
-
-			if(RequestObject_Transform)
-				RequestObject_Transform->set_scale(1.f, 1.f, 1.f);
-
-			ObjectManager::Instance()->PushEnemy(RequestObject);
-		}
-		break;
-
-		default:
-
-			break;
-		}
-		_requestobjects.pop();
-	}
-	
-
+    // 부모로부터 연결 끊기
+    if (auto parent = gameObject->transform()->parent().lock())
+    {
+        // parent->remove_child(gameObject->transform()); // Transform에 구현 필요
+    }
+    // 관리 목록에서 제거
+    std::erase(_gameObjects, gameObject);
 }
 
-void ObjectManager::DeleteAll()
+// --- 객체 검색 ---
+std::shared_ptr<GameObject> ObjectManager::find_by_name(const std::string& name)
 {
-	for (auto& objectList : _allobject)
-	{
-		objectList.clear();
-	}
-
-	m_Player = nullptr;
+    std::lock_guard<std::mutex> lock(_mutex);
+    for (const auto& obj : _gameObjects)
+    {
+        if (obj->name() == name) return obj;
+    }
+    return nullptr;
 }
 
-
-void ObjectManager::DeleteVec(int WantVecNum)
+std::vector<std::shared_ptr<GameObject>> ObjectManager::find_by_layer(int layer)
 {
-	if (WantVecNum < 0 || WantVecNum >= ALLARRAYSIZE)
-	{
-		return;
-	}
-	
-	_allobject[WantVecNum].clear();
-}
-
-void ObjectManager::DeleteObject()
-{
-	for (auto& objectList : _allobject)
-	{
-		objectList.remove_if([](const std::shared_ptr<GameObject>& pObject) {
-			return pObject->_shouldDelete;
-		});
-	}
-}
-
-void ObjectManager::ChangeRoom()
-{
-	m_Player = nullptr; 
-	DeleteVec(0);
-	DeleteVec(1);
-	//DeleteVec(2);
-	//DeleteVec(3);
-}
-
-void ObjectManager::MakeRenderMap(Camera* pCamera)
-{
-	_rendermap.clear();
-
-	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& Arr = GetAllObject();
-
-	for (auto& objectList : Arr) {
-		for (auto& object : objectList) {
-			auto object_Render = object->get_component<RenderComponent>();
-			if (object_Render && object_Render->is_visible(pCamera)) {
-				auto maerialShader = object_Render->get_material_shader();
-
-				std::shared_ptr<Shader> shader = nullptr;
-				if (maerialShader)
-				{
-					shader = maerialShader->get_shader();
-				}
-
-				if (shader)
-				{
-					_rendermap[typeid(*shader)].push_back(object);
-				}
-				else
-				{
-					_rendermap[typeid(CObjectsShader)].push_back(object);
-				}
-			}
-		}
-	}
-}
-
-std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>>& ObjectManager::GetRenderMap()
-{
-	return _rendermap;
-}
-
-void ObjectManager::PushObject(std::shared_ptr<GameObject> object)
-{
-	_allobject[0].push_back(object);
-}
-
-void ObjectManager::PushEnemy(std::shared_ptr<GameObject> object)
-{
-	_allobject[1].push_back(object);
-}
-
-void ObjectManager::PushPlayerBullet(std::shared_ptr<GameObject> object)
-{
-	_allobject[2].push_back(object);
-}
-
-void ObjectManager::PushEnemyBullet(std::shared_ptr<GameObject> object)
-{
-	_allobject[3].push_back(object);
-}
-
-void ObjectManager::PushFloorObject(std::shared_ptr<GameObject> object)
-{
-	_allobject[4].push_back(object);
+    std::vector<std::shared_ptr<GameObject>> foundObjects;
+    std::lock_guard<std::mutex> lock(_mutex);
+    for (const auto& obj : _gameObjects)
+    {
+        if (obj->layer() == layer)
+        {
+            foundObjects.push_back(obj);
+        }
+    }
+    return foundObjects;
 }
 
 

@@ -4,6 +4,9 @@
 #include "Chess_Scene.h"
 #include "ClientPacketManager.h"
 #include "InputManager.h"
+#include "Renderer.h"
+#include "TransformComponent.h"
+
 
 GameFramework::GameFramework()
 	: _wndClientWidth(FRAME_BUFFER_WIDTH)
@@ -38,6 +41,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다. 
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
+	Renderer::Instance()->initialize(_device.Get());
 	CreateRtvAndDsvDescriptorHeaps();
 	CreateSwapChain(); 
 	CreateDepthStencilView();
@@ -238,6 +242,17 @@ void GameFramework::BuildObjects()
 	_scene = std::make_unique<Chess_Scene>();
 	_scene.get()->BuildObjects(_device.Get(), _commandList.Get());
 
+	// 1. 카메라 역할을 할 GameObject 생성
+	auto cameraObject = ObjectManager::Instance()->create_game_object("MainCamera", 0);
+
+	// 2. GameObject에 Camera 컴포넌트 추가
+	_camera = cameraObject->add_component<Camera>();
+
+	// 3. 카메라 초기 설정 (위치, 바라보는 방향 등)
+	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
+	// cameraObject->transform()->look_at(...); // 필요시 look_at 설정
+	// TODO: 원래 카메라에 맞게끔 조정 필요 지금은 예시로 만든거임
+
 	_commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
@@ -313,19 +328,17 @@ void GameFramework::FrameAdvance()
 {
 	
 	_gameTimer.Tick(0.0f);
-	HRESULT hResult = _commandAllocator->Reset();
-	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
-
-	ObjectManager::Instance()->DeleteObject(); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
-
-	//오브젝트 생성가능
-	//ObjectManager::Instance()->MakeObject(m_pd3dDevice.Get(), m_pd3dCommandList.Get()); //TODO: 이부분은 아마 프로세스네트워크에서 처리되어야됨
-
 	ProcessNetwork();
 	ProcessInput();
+	//AnimateObjects();
+	// 2. 게임 로직 업데이트 (Update, LateUpdate)
+	float deltaTime = _gameTimer.GetTimeElapsed();
+	update_game_logic(deltaTime);
 
-	AnimateObjects();
-
+	// 3. 물리 업데이트 (FixedUpdate)
+	update_physics(deltaTime);
+	HRESULT hResult = _commandAllocator->Reset();
+	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
 	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -347,15 +360,18 @@ void GameFramework::FrameAdvance()
 	_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle,	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
 		1.0f, 0, 0, NULL); _commandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
+
+	if (_camera)
+	{
+		Renderer::Instance()->render(_commandList.Get(), _camera.get());
+	}
 	
-	
-	_scene.get()->Render(_commandList.Get());
 
 	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.
-	#ifdef _WITH_PLAYER_TOP
+#ifdef _WITH_PLAYER_TOP
 
 	//렌더 타겟은 그대로 두고 깊이 버퍼를 1.0으로 지우고 플레이어를 렌더링하면 플레이어는 무조건 그려질 것이다.
-	/_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, 
+	_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, 
 	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 
 #endif
@@ -368,6 +384,7 @@ void GameFramework::FrameAdvance()
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
+
 	hResult = _commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get()};
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
@@ -376,7 +393,7 @@ void GameFramework::FrameAdvance()
 	WaitForGpuComplete();
 	MoveToNextFrame();
 	
-	
+	ObjectManager::Instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 12, 37);
 	::SetWindowText(_hWnd, _frameRate);
 }
@@ -408,6 +425,47 @@ void GameFramework::ChangeSwapChainState()
 
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 	CreateRenderTargetViews();
+}
+void GameFramework::update_game_logic(float deltaTime)
+{
+	const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
+
+	// Update
+	for (const auto& gameObject : allGameObjects)
+	{
+		if (gameObject && !gameObject->is_destroyed())
+		{
+			gameObject->update(deltaTime);
+		}
+	}
+
+	// LateUpdate
+	for (const auto& gameObject : allGameObjects)
+	{
+		if (gameObject && !gameObject->is_destroyed())
+		{
+			gameObject->late_update(deltaTime);
+		}
+	}
+}
+
+void GameFramework::update_physics(float elapsedTime)
+{
+	_physicsTimeAccumulator += elapsedTime;
+	const float fixedTimeStep = 1.0f / 60.0f;
+
+	while (_physicsTimeAccumulator >= fixedTimeStep)
+	{
+		const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
+		for (const auto& gameObject : allGameObjects)
+		{
+			if (gameObject && !gameObject->is_destroyed())
+			{
+				gameObject->fixed_update(fixedTimeStep);
+			}
+		}
+		_physicsTimeAccumulator -= fixedTimeStep;
+	}
 }
 
 

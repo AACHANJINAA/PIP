@@ -31,122 +31,26 @@ void Material_Shader::set_root_signature(ComPtr<ID3D12GraphicsCommandList> comma
 		command_list->SetGraphicsRootSignature(_rootSignature.Get());
 	}
 }
+//------------------------------------------------------------ RenderComponent ------------------------------------------------------------//
 
-
-void RenderComponent::set_shader(std::shared_ptr<Shader> shader)
+RenderComponent::RenderComponent()
 {
-	_materialShader->set_shader(shader);
+	set_name("RenderComponent");
 }
 
-void RenderComponent::set_material(std::shared_ptr<Material_Shader> material)
+void RenderComponent::render(ID3D12GraphicsCommandList* commandList, Camera* camera)
 {
-	_materialShader = material;
-}
+	if (!_shader || !_mesh) return;
 
-void RenderComponent::set_mesh(std::shared_ptr<Mesh> mesh)
-{
-	_mesh = mesh;
-}
+	// --- 지역 UpdateShaderVariable의 역할이 여기로 왔습니다 ---
+	// 1. 이 GameObject의 Transform 컴포넌트로부터 월드 행렬을 가져옵니다.
+	const XMFLOAT4X4& worldMatrix = game_object()->transform()->world_matrix();
 
-void RenderComponent::release_upload_buffers()
-{
-	if (_mesh)
-		_mesh->ReleaseUploadBuffers();
-}
+	// 2. 셰이더(또는 머티리얼)에게 월드 행렬을 GPU로 보내라고 명령합니다.
+	//    이 역할을 할 새로운 함수가 Shader/Material 클래스에 필요합니다.
+	_shader->update_object_constants(commandList, &worldMatrix);
+	// ---------------------------------------------------------
 
-void RenderComponent::on_prepare_render(ComPtr<ID3D12GraphicsCommandList> command_List)
-{
-	if (_materialShader)
-	{
-		if (_materialShader->get_shader())
-		{
-			_materialShader->set_root_signature(command_List.Get());
-			_materialShader->get_shader()->OnPrepareRender(command_List.Get());
-		}
-	}
-}
-
-bool RenderComponent::is_visible(Camera* camera)
-{
-	return true;
-	//OnPrepareRender();
-	if (!camera) return false;
-
-	auto Transform = get_GameObject()->get_component<TransformComponent>();
-	//if (!Transform) return true; //만약, TransformComponent가 없으면 이거 쓰기
-
-	BoundingOrientedBox worldOOBB = _mesh->GetBoundingBox();
-	worldOOBB.Transform(worldOOBB, XMLoadFloat4x4(&Transform->get_world_matrix()));
-
-	XMVECTOR orientationQuat = XMLoadFloat4(&worldOOBB.Orientation);
-	orientationQuat = XMQuaternionNormalize(orientationQuat);
-	XMStoreFloat4(&worldOOBB.Orientation, orientationQuat);
-
-	return camera->IsInFrustum(worldOOBB);
-}
-
-void RenderComponent::CreateShaderVariables(ComPtr<ID3D12Device> pd3dDevice, ComPtr<ID3D12GraphicsCommandList> pd3dCommandList)
-{
-	_cbGameObject = ::CreateBufferResource(pd3dDevice.Get(), pd3dCommandList.Get(), nullptr, sizeof(CbGameObjectInfo), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
-
-	if (!_cbGameObject)
-	{
-		MessageBox(NULL, L"GameObject Constant Buffer Creation Failed!", L"Error", MB_OK);
-		return;
-	}
-
-	D3D12_RANGE d3dReadRange{ 0, 0 };
-	HRESULT hResult = _cbGameObject->Map(0, &d3dReadRange, reinterpret_cast<void**>(&_cbMappedGameObject));
-
-	if (FAILED(hResult))
-	{
-		_cbMappedGameObject = nullptr;
-		MessageBox(NULL, L"GameObject Constant Buffer Map Failed!", L"Error", MB_OK);
-		return;
-	}
-}
-
-void RenderComponent::UpdateShaderVariables(ComPtr<ID3D12GraphicsCommandList> pd3dCommandList)
-{
-	auto Transform = get_GameObject()->get_component<TransformComponent>();
-	if (Transform)
-	{
-		XMStoreFloat4x4(&_cbMappedGameObject->_world, XMMatrixTranspose(XMLoadFloat4x4(&Transform->get_world_matrix())));
-
-	}
-
-	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbGameObject->GetGPUVirtualAddress();
-	pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
-}
-
-
-void RenderComponent::ReleaseShaderVariables()
-{
-	if (_cbGameObject)
-	{
-		D3D12_RANGE d3dRange = { 0, 0 };
-		_cbGameObject->Unmap(0, &d3dRange);
-		_cbGameObject.Reset();
-	}
-}
-
-void RenderComponent::start()
-{
-}
-
-void RenderComponent::update(float DeltaTime)
-{
-}
-
-void RenderComponent::render(ComPtr<ID3D12GraphicsCommandList> command_list, Camera* camera)
-{
-	auto Transform = get_GameObject()->get_component<TransformComponent>();
-
-	if (is_visible(camera))
-	{
-		UpdateShaderVariables(command_list);
-		camera->UpdateShaderVariables(command_list.Get());
-
-		if (_mesh) _mesh->Render(command_list.Get());
-	}
+	// 3. 메시를 그립니다.
+	_mesh->Render(commandList);
 }

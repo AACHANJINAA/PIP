@@ -141,10 +141,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Behaviour.h" />
     <ClInclude Include="BoardCube.h" />
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
-    <ClInclude Include="DirectXTex.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="main.h" />
@@ -157,13 +157,16 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OtherPlayer.h" />
     <ClInclude Include="RenderComponent.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="ScriptComponent.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -171,6 +174,7 @@
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Behaviour.cpp" />
     <ClCompile Include="BoardCube.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -185,11 +189,14 @@
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="OtherPlayer.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="ScriptComponent.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
