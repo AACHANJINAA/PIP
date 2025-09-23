@@ -144,7 +144,6 @@
     <ClInclude Include="BoardCube.h" />
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
-    <ClInclude Include="DirectXTex.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="main.h" />
