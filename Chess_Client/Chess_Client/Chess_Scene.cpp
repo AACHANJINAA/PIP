@@ -182,7 +182,7 @@ void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
             if (debugWireframe_Render)
             {
                 debugWireframe_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-                debugWireframe_Render->set_mesh(std::make_shared<DebugWireframeMesh>(pd3dDevice, pd3dCommandList, primitive.vertices, primitive.indices, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));
+                debugWireframe_Render->set_mesh(std::make_shared<DebugWireframeMesh>(pd3dDevice, pd3dCommandList, primitive._vertices, primitive._indices, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));
             }
             debugObjects.push_back(debugWireframeObject);
         }

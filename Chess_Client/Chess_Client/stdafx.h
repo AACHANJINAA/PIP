@@ -98,24 +98,24 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 // ==================================================
 #if defined(_DEBUG)
 
-// 사용법: CLOG(L"포맷 문자열", 인자1, 인자2, ...);
-// 예시: CLOG(L"Player HP: %d, Pos: (%d, %d)", hp, x, y);
-// 필요한 곳에 추가해서 사용 할 것, 비주얼 스튜디오의 출력 창에 로그가 출력됩니다.
-inline void DebugLog(const wchar_t* format, ...)
-{
-	wchar_t buffer[4096];
-	va_list args;
-	va_start(args, format);
-	vswprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t), format, args);
-	va_end(args);
+	#include <sstream>
 
-	wcscat_s(buffer, L"\n"); // 줄바꿈 추가
-	OutputDebugStringW(buffer);
-}
-#define CLOG(format, ...) DebugLog(format, __VA_ARGS__)
+	// 스트림 기반 로그 함수 (std::string)
+	inline void DebugLogStream(const std::ostringstream& oss)
+	{
+		std::string msg = oss.str() + "\n";
+		OutputDebugStringA(msg.c_str());
+	}
+
+	// 매크로로 간단하게 사용
+	#define CLOG(expr) \
+	        {std::ostringstream oss; oss << expr; DebugLogStream(oss);}
+	#define CERROR(expr) \
+	        {std::ostringstream oss; oss << expr; DebugLogStream(oss); DebugBreak();}
 
 #else
-	#define CLOG(format, ...)
+#define CLOG(expr)
+#define CERROR(expr)
 #endif
 
 #include "Packet.h"

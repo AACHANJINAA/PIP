@@ -135,7 +135,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ClientPacketManager::Instance()->SendLoginPacket(player_name_mb); // 호출 변경
 
     int room_to_enter = 1;
-    CLOG(L"[Auto-Enter] Automatically requesting to enter room %d...", room_to_enter);
+    CLOG("[Auto-Enter] Automatically requesting to enter room %d...", room_to_enter);
     ClientPacketManager::Instance()->SendEnterRoomPacket(room_to_enter);
 
     // 기본 메시지 루프입니다:
