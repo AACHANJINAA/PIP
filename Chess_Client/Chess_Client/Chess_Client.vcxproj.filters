@@ -9,236 +9,264 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Manager">
-      <UniqueIdentifier>{6e7f2e12-a68e-4f8b-9f43-1ce8482333d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Camera">
-      <UniqueIdentifier>{183f65e4-7787-428b-988f-1da74594e21a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{ea058eaf-9df0-428d-8d7c-24f97ba5a348}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Object">
-      <UniqueIdentifier>{ed1cb633-b854-44c6-bf1a-811dda95c9e9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Object\Board">
-      <UniqueIdentifier>{78800909-ed8c-4bc7-93c2-71295925ec2d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Object\OtherPlayer">
-      <UniqueIdentifier>{fc9abf7d-d259-4984-b466-a6092cfee6e8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mesh">
       <UniqueIdentifier>{3cb941c5-e4eb-4004-b9bd-dba88610b0f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{21175f27-b823-432c-a930-0d481624ee56}</UniqueIdentifier>
+    <Filter Include="0. Engine">
+      <UniqueIdentifier>{6730e9d7-258d-4cdc-a60a-a7ea4c98a5f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Time">
-      <UniqueIdentifier>{d256a012-db7a-43f7-9fc7-8b2c45e9fbfe}</UniqueIdentifier>
+    <Filter Include="0. Engine\0. Core">
+      <UniqueIdentifier>{d64dca8d-4d9d-4ffc-9f0b-3bdd36a86684}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Server">
-      <UniqueIdentifier>{f83e51a8-331c-4271-b348-e1da86009054}</UniqueIdentifier>
+    <Filter Include="0. Engine\1. GameObject &amp; Components">
+      <UniqueIdentifier>{40fc7769-fa6c-4cfa-bd37-4a98bc2d4d93}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Server\PacketManager">
-      <UniqueIdentifier>{825abd1e-e651-4dbd-bcbb-9421d0b755fb}</UniqueIdentifier>
+    <Filter Include="0. Engine\2. Scene">
+      <UniqueIdentifier>{e72b49de-ff01-45b6-8e07-78de65576d73}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Manager\ObjectManager">
-      <UniqueIdentifier>{0db53fe6-163a-461a-a322-9a198b5eaafa}</UniqueIdentifier>
+    <Filter Include="0. Engine\4. Input">
+      <UniqueIdentifier>{cd85da84-a0d2-440f-8376-38de42e6e5a7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Manager\SceneManager">
-      <UniqueIdentifier>{2fe3ac17-8f03-410d-bb43-80766b303528}</UniqueIdentifier>
+    <Filter Include="0. Engine\5. Network">
+      <UniqueIdentifier>{bbbeeb8d-7ddc-4baf-b779-0e40344b10bc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\GlbShader">
-      <UniqueIdentifier>{cea0cf3f-f716-446f-9ab0-7b9e5ff7272b}</UniqueIdentifier>
+    <Filter Include="1. Game">
+      <UniqueIdentifier>{8e324fec-cda5-4286-bd76-28664481253e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object\MainPlayer">
-      <UniqueIdentifier>{64c1a271-b4ad-47e5-87e5-226297550338}</UniqueIdentifier>
+    <Filter Include="2. Shaders">
+      <UniqueIdentifier>{0068f34a-ddb9-4852-9c80-c942eb76cfd5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Manager\InputManager">
-      <UniqueIdentifier>{a4d3b8bf-b6f5-41ac-97b1-1b2fe3296232}</UniqueIdentifier>
+    <Filter Include="3. Resources">
+      <UniqueIdentifier>{301ec9b5-08aa-44d1-beea-f5c6a2401a67}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Component">
-      <UniqueIdentifier>{a97c6d1e-e8d0-4a49-b99b-0f6aaa158c8e}</UniqueIdentifier>
+    <Filter Include="4. External">
+      <UniqueIdentifier>{8ca5bc59-1c58-44c2-b0c7-03c92476ca1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="5. App">
+      <UniqueIdentifier>{e4c3f90e-7e5a-41e9-86d2-316a161999b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer">
+      <UniqueIdentifier>{dac40cf2-add3-4952-a011-2941edaba02f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\1. Scenes">
+      <UniqueIdentifier>{0ab5777e-dea9-4111-ae10-8f80fef9b406}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\0. GameObjects">
+      <UniqueIdentifier>{bafa645d-167e-4014-b30a-619a52dd8b06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts">
+      <UniqueIdentifier>{0ef3f030-8b8e-42f0-9d8d-aafe373aee88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\3. Components">
+      <UniqueIdentifier>{97f1da0b-e79c-418e-a350-e3b3c3a84cd7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="targetver.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="GameFramework.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="FreeCamera.h">
-      <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Chess_Scene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="BoardCube.h">
-      <Filter>Object\Board</Filter>
-    </ClInclude>
-    <ClInclude Include="MainPlayer.h">
-      <Filter>Object\MainPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherPlayer.h">
-      <Filter>Object\OtherPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="resource1.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>Time</Filter>
-    </ClInclude>
-    <ClInclude Include="ClientPacketManager.h">
-      <Filter>Server\PacketManager</Filter>
-    </ClInclude>
-    <ClInclude Include="json.hpp">
-      <Filter>Mesh</Filter>
+      <Filter>0. Engine\0. Core</Filter>
     </ClInclude>
     <ClInclude Include="ObjectManager.h">
-      <Filter>Manager\ObjectManager</Filter>
+      <Filter>0. Engine\0. Core</Filter>
     </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>Manager\SceneManager</Filter>
+    <ClInclude Include="Timer.h">
+      <Filter>0. Engine\0. Core</Filter>
     </ClInclude>
-    <ClInclude Include="GlbShader.h">
-      <Filter>Shader\GlbShader</Filter>
+    <ClInclude Include="Object.h">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Manager\InputManager</Filter>
+    <ClInclude Include="Behaviour.h">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
     <ClInclude Include="TransformComponent.h">
-      <Filter>Component</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
-      <Filter>Component</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
     <ClInclude Include="RenderComponent.h">
-      <Filter>Component</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
     <ClInclude Include="ColiderComponent.h">
-      <Filter>Component</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>0. Engine\4. Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="FreeCamera.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GlbShader.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>4. External</Filter>
+    </ClInclude>
+    <ClInclude Include="MainPlayer.h">
+      <Filter>1. Game\0. GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherPlayer.h">
+      <Filter>1. Game\0. GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess_Scene.h">
+      <Filter>1. Game\1. Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientPacketManager.h">
+      <Filter>0. Engine\5. Network</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardCube.h">
+      <Filter>1. Game\0. GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>5. App</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>3. Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="resource1.h">
+      <Filter>3. Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>5. App</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>5. App</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="GameFramework.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="FreeCamera.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Chess_Scene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="BoardCube.cpp">
-      <Filter>Object\Board</Filter>
-    </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
-      <Filter>Object\MainPlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
-      <Filter>Object\OtherPlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>Time</Filter>
-    </ClCompile>
-    <ClCompile Include="ClientPacketManager.cpp">
-      <Filter>Server\PacketManager</Filter>
+      <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
     <ClCompile Include="ObjectManager.cpp">
-      <Filter>Manager\ObjectManager</Filter>
+      <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>Manager\SceneManager</Filter>
+    <ClCompile Include="Timer.cpp">
+      <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
-    <ClCompile Include="GlbShader.cpp">
-      <Filter>Shader\GlbShader</Filter>
+    <ClCompile Include="Object.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Manager\InputManager</Filter>
+    <ClCompile Include="Behaviour.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
-      <Filter>Component</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClCompile>
     <ClCompile Include="Component.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderComponent.cpp">
-      <Filter>Component</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClCompile>
     <ClCompile Include="ColiderComponent.cpp">
-      <Filter>Component</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>0. Engine\4. Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeCamera.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GlbShader.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="MainPlayer.cpp">
+      <Filter>1. Game\0. GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayer.cpp">
+      <Filter>1. Game\0. GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Chess_Scene.cpp">
+      <Filter>1. Game\1. Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketManager.cpp">
+      <Filter>0. Engine\5. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardCube.cpp">
+      <Filter>1. Game\0. GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>5. App</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>5. App</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
-      <Filter>리소스 파일</Filter>
+      <Filter>3. Resources</Filter>
     </ResourceCompile>
     <ResourceCompile Include="Resource.rc">
-      <Filter>리소스 파일</Filter>
+      <Filter>3. Resources</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>리소스 파일</Filter>
-    </Image>
     <Image Include="Chess_Client.ico">
-      <Filter>리소스 파일</Filter>
+      <Filter>3. Resources</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>3. Resources</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders.hlsl" />
-    <None Include="packages.config" />
-    <None Include="GLB_Shader.hlsl" />
-    <None Include="Debug.hlsl" />
+    <None Include="GLB_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </None>
+    <None Include="Debug.hlsl">
+      <Filter>2. Shaders</Filter>
+    </None>
+    <None Include="Shaders.hlsl">
+      <Filter>2. Shaders</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>4. External</Filter>
+    </None>
   </ItemGroup>
 </Project>

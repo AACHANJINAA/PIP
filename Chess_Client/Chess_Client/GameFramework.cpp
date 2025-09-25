@@ -239,19 +239,14 @@ void GameFramework::CreateDepthStencilView()
 void GameFramework::BuildObjects()
 {
 	_commandList->Reset(_commandAllocator.Get(), NULL);
-	_scene = std::make_unique<Chess_Scene>();
-	_scene.get()->BuildObjects(_device.Get(), _commandList.Get());
 
-	// 1. 카메라 역할을 할 GameObject 생성
-	auto cameraObject = ObjectManager::Instance()->create_game_object("MainCamera", 0);
+	_scene = std::make_unique<Chess_Scene>(); //초기 씬 생성 TODO: 나중에 씬 매니저로 변경
+	_scene->build_objects(_device.Get(), _commandList.Get());
 
-	// 2. GameObject에 Camera 컴포넌트 추가
+	// 카메라 역할을 할 GameObject 생성
+	auto cameraObject = ObjectManager::Instance()->create_game_object("MainCamera");
 	_camera = cameraObject->add_component<Camera>();
-
-	// 3. 카메라 초기 설정 (위치, 바라보는 방향 등)
 	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
-	// cameraObject->transform()->look_at(...); // 필요시 look_at 설정
-	// TODO: 원래 카메라에 맞게끔 조정 필요 지금은 예시로 만든거임
 
 	_commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
@@ -259,7 +254,7 @@ void GameFramework::BuildObjects()
 
 	WaitForGpuComplete();
 
-	_scene.get()->ReleaseUploadBuffers();
+	_scene->release_upload_buffers();
 
 	_gameTimer.Reset();
 }
@@ -271,33 +266,20 @@ void GameFramework::ReleaseObjects()
 
 void GameFramework::ProcessNetwork()
 {
-	// 이 함수는 외부 전역 변수/함수에 의존합니다.
-	// Chess_Client.cpp 에 있는 c_socket, recv_and_process_packets()를
-	// GameFramework의 멤버로 가져오는 것이 더 좋은 설계일 수 있습니다.
-	// 여기서는 일단 기존 구조를 활용합니다.
 	extern SOCKET c_socket;
 	extern void recv_and_process_packets();
-
-	// recv_and_process_packets() 함수를 직접 호출합니다.
-	// 논블로킹 소켓이므로, 받을 데이터가 없으면 즉시 리턴됩니다.
 	recv_and_process_packets();
 }
 
 void GameFramework::ProcessInput()
 {
-	InputManager::Instance()->Update(); // 매 프레임 입력 상태를 갱신합니다.
-
-	if (m_bIsWindowActive)
-	{
-		// 씬의 입력 처리 함수를 호출합니다. (파라미터가 변경될 예정)
-		_scene.get()->ProcessInput(_gameTimer.GetTimeElapsed());
-	}
+	InputManager::Instance()->Update();
 }
 
-void GameFramework::AnimateObjects()
-{
-	_scene.get()->AnimateObjects(_gameTimer.GetTimeElapsed(), _commandList.Get());
-}
+//void GameFramework::AnimateObjects()
+//{
+//	_scene.get()->AnimateObjects(_gameTimer.GetTimeElapsed(), _commandList.Get());
+//} 씬에 있던거 게임프레임워크로 옮김
 
 void GameFramework::WaitForGpuComplete()
 {
@@ -326,17 +308,18 @@ void GameFramework::MoveToNextFrame()
 
 void GameFramework::FrameAdvance()
 {
-	
+	// 1. 타이머 틱 및 기본 처리
 	_gameTimer.Tick(0.0f);
+	float deltaTime = _gameTimer.GetTimeElapsed();
 	ProcessNetwork();
 	ProcessInput();
-	//AnimateObjects();
+	
 	// 2. 게임 로직 업데이트 (Update, LateUpdate)
-	float deltaTime = _gameTimer.GetTimeElapsed();
 	update_game_logic(deltaTime);
 
 	// 3. 물리 업데이트 (FixedUpdate)
 	update_physics(deltaTime);
+
 	HRESULT hResult = _commandAllocator->Reset();
 	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
@@ -392,7 +375,7 @@ void GameFramework::FrameAdvance()
 	_swapChain->Present(0, 0);
 	WaitForGpuComplete();
 	MoveToNextFrame();
-	
+	// 5. 파괴 예정 객체 정리
 	ObjectManager::Instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 12, 37);
 	::SetWindowText(_hWnd, _frameRate);
