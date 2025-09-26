@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameObject.h"
 #include "Behaviour.h"
-
+#include "TransformComponent.h"
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
 {
 	auto transform = add_component<TransformComponent>();
@@ -46,6 +46,17 @@ void GameObject::update(float DeltaTime)
 			{
 				// 다음 단계에서 Behaviour/Script의 update 함수 시그니처를 수정할 예정
 				behaviour->update(DeltaTime);
+			}
+		}
+	}
+
+	if (transform())
+	{
+		for (const auto& childTransform : transform()->children())
+		{
+			if (childTransform && childTransform->game_object())
+			{
+				childTransform->game_object()->update(deltaTime);
 			}
 		}
 	}
