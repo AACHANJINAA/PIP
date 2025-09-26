@@ -5,6 +5,7 @@
 #include "ClientPacketManager.h"
 #include "InputManager.h"
 #include "Renderer.h"
+#include "ResourceManager.h"
 #include "TransformComponent.h"
 
 
@@ -35,13 +36,11 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	_hInstance = hInstance;
 	_hWnd = hMainWnd;
 
-	// 매니저 생성
-	ObjectManager::Instance();
-
 	//Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다. 
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	Renderer::Instance()->initialize(_device.Get());
+	ResourceManager::Instance()->initialize(_device.Get(), _commandList.Get());
 	CreateRtvAndDsvDescriptorHeaps();
 	CreateSwapChain(); 
 	CreateDepthStencilView();
@@ -411,6 +410,11 @@ void GameFramework::ChangeSwapChainState()
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
+	// --- [추가] Awake 및 Start 단계 ---
+	// ObjectManager가 관리하는 새로운 객체들의 초기화 함수를 호출합니다.
+	ObjectManager::Instance()->process_new_game_objects();
+
+
 	const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
 
 	// Update

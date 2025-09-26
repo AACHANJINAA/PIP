@@ -9,9 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Mesh">
-      <UniqueIdentifier>{3cb941c5-e4eb-4004-b9bd-dba88610b0f3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="0. Engine">
       <UniqueIdentifier>{6730e9d7-258d-4cdc-a60a-a7ea4c98a5f7}</UniqueIdentifier>
     </Filter>
@@ -23,12 +20,6 @@
     </Filter>
     <Filter Include="0. Engine\2. Scene">
       <UniqueIdentifier>{e72b49de-ff01-45b6-8e07-78de65576d73}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="0. Engine\4. Input">
-      <UniqueIdentifier>{cd85da84-a0d2-440f-8376-38de42e6e5a7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="0. Engine\5. Network">
-      <UniqueIdentifier>{bbbeeb8d-7ddc-4baf-b779-0e40344b10bc}</UniqueIdentifier>
     </Filter>
     <Filter Include="1. Game">
       <UniqueIdentifier>{8e324fec-cda5-4286-bd76-28664481253e}</UniqueIdentifier>
@@ -59,6 +50,15 @@
     </Filter>
     <Filter Include="1. Game\3. Components">
       <UniqueIdentifier>{97f1da0b-e79c-418e-a350-e3b3c3a84cd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\4. Resource">
+      <UniqueIdentifier>{d6386f6e-812d-4783-95f2-130cc65a370e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\5. Input">
+      <UniqueIdentifier>{cd85da84-a0d2-440f-8376-38de42e6e5a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\6. Network">
+      <UniqueIdentifier>{bbbeeb8d-7ddc-4baf-b779-0e40344b10bc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -102,7 +102,7 @@
       <Filter>0. Engine\2. Scene</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.h">
-      <Filter>0. Engine\4. Input</Filter>
+      <Filter>0. Engine\5. Input</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>0. Engine\3. Renderer</Filter>
@@ -122,17 +122,11 @@
     <ClInclude Include="json.hpp">
       <Filter>4. External</Filter>
     </ClInclude>
-    <ClInclude Include="MainPlayer.h">
-      <Filter>1. Game\0. GameObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherPlayer.h">
-      <Filter>1. Game\0. GameObjects</Filter>
-    </ClInclude>
     <ClInclude Include="Chess_Scene.h">
       <Filter>1. Game\1. Scenes</Filter>
     </ClInclude>
     <ClInclude Include="ClientPacketManager.h">
-      <Filter>0. Engine\5. Network</Filter>
+      <Filter>0. Engine\6. Network</Filter>
     </ClInclude>
     <ClInclude Include="BoardCube.h">
       <Filter>1. Game\0. GameObjects</Filter>
@@ -154,6 +148,15 @@
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>5. App</Filter>
+    </ClInclude>
+    <ClInclude Include="MainPlayer.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherPlayer.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>0. Engine\4. Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -197,7 +200,7 @@
       <Filter>0. Engine\2. Scene</Filter>
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
-      <Filter>0. Engine\4. Input</Filter>
+      <Filter>0. Engine\5. Input</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>0. Engine\3. Renderer</Filter>
@@ -214,17 +217,11 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
-      <Filter>1. Game\0. GameObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
-      <Filter>1. Game\0. GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="Chess_Scene.cpp">
       <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
     <ClCompile Include="ClientPacketManager.cpp">
-      <Filter>0. Engine\5. Network</Filter>
+      <Filter>0. Engine\6. Network</Filter>
     </ClCompile>
     <ClCompile Include="BoardCube.cpp">
       <Filter>1. Game\0. GameObjects</Filter>
@@ -237,6 +234,15 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>5. App</Filter>
+    </ClCompile>
+    <ClCompile Include="MainPlayer.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayer.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>0. Engine\4. Resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

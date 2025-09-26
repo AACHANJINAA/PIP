@@ -1,8 +1,8 @@
 #pragma once
 #pragma once
 #include "Behaviour.h"
+#include "TransformComponent.h"
 
-class TransformComponent;
 class ScriptComponent : public Behaviour
 {
 public:

@@ -2,60 +2,32 @@
 #include "Chess_Scene.h"
 #include "ObjectManager.h"
 #include "GameObject.h"
+#include "MainPlayer.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 #include "Mesh.h" // 메시 클래스가 필요할 수 있음
+#include "ResourceManager.h"
 // #include "PlayerScript.h" // 앞으로 만들 스크립트들
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    // =================================================================
-    // 새로운 BuildObjects 구현
-    // 역할: ObjectManager를 통해 GameObject를 생성하고, 컴포넌트를 붙여 설정합니다.
-    // =================================================================
+    // --- 조명 생성 (예시) ---
+      // 조명은 보통 보이지 않으므로 RenderComponent가 필요 없습니다.
+    auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
+    lightObject->add_component<LightComponent>(); // LightComponent를 만든다면 부착
 
-    // --- 예시 1: 맵 오브젝트 생성 (기존 LoadSceneFromFile 로직 재구성) ---
-    {
-        // 1. ObjectManager를 통해 빈 GameObject를 생성합니다.
-        auto mapObject = ObjectManager::Instance()->create_game_object("Crate", 1 /* LAYER_STATIC_MAP */);
+    // --- 플레이어 생성 ---
+    auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+    playerObject->add_component<MainPlayerScript>(); // 스크립트를 부착하면 awake()에서 모든 설정이 자동으로 이루어집니다.
 
-        // 2. 필요한 컴포넌트를 추가합니다.
-        auto renderer = mapObject->add_component<RenderComponent>();
+        // --- 맵 오브젝트 생성 (JSON 또는 파일 로딩 로직이 여기로 올 수 있습니다) ---
+        auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
+    auto renderer = mapObject->add_component<RenderComponent>();
 
-        // 3. 컴포넌트의 세부 내용을 설정합니다.
-        // 메시 로딩 (ReadGlbMesh 등은 이제 리소스 매니저를 통해 관리되는 것이 이상적)
-        auto mesh = std::make_shared<ReadGlbMesh>(device, commandList, "Resource/MapData/SM_Crate_01.glb");
-        renderer->set_mesh(mesh);
-        renderer->set_pso_name("skinned"); // 이 메시는 스키닝/GLB용 PSO를 사용한다고 지정
+    renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));
+    renderer->set_pso_name("skinned"); // GLB 파일이므로 skinned PSO 사용
 
-        // Transform 설정
-        mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 1.0f, 0.0f));
-        mapObject->transform()->set_local_scale(XMFLOAT3(1.0f, 1.0f, 1.0f));
-    }
-
-    // --- 예시 2: 플레이어 오브젝트 생성 ---
-    {
-        auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer", 2 /* LAYER_PLAYER*/);
-
-		// 플레이어에 필요한 컴포넌트들 추가
-        auto renderer = playerObject->add_component<RenderComponent>();
-        auto script = playerObject->add_component<PlayerScript>(); // 플레이어 로직
-        auto collider = playerObject->add_component<ColliderComponent>(); // 충돌체
-        // KJ 설명 TODO: 컴포넌트도 스크립트에서 추가해도됨
-
-        // 컴포넌트 설정
-        auto playerMesh = std::make_shared<ReadObjMesh>(device, commandList,
-            "Resource/Character/test_mesh.obj");
-        renderer->set_mesh(playerMesh);
-        renderer->set_pso_name("default"); // 일반 오브젝트용 PSO 사용
-
-        playerObject->transform()->set_local_position(XMFLOAT3(5.0f, 0.0f, 0.0f));
-
-        // script->set_speed(10.0f); // 스크립트 변수 초기화
-    }
-
-    // (기존 BuildObjects에 있던 조명, 재질 생성 로직도 여기에 포함되거나,
-    //  별도의 LightManager, MaterialManager로 분리되어야 합니다.)
+    mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));
 }
 
 void Chess_Scene::release_objects()
@@ -64,6 +36,7 @@ void Chess_Scene::release_objects()
     // 이제 대부분의 GameObject는 ObjectManager가 관리하므로,
     // 씬 전환 시 ObjectManager에게 모든 객체를 파괴하라고 요청하게 됩니다.
     // (예: ObjectManager::Instance()->clear_all());
+    ObjectManager::Instance()->DeleteAll();
 }
 
 // =================================================================

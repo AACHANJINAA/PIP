@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "ObjectManager.h"
 #include "RenderComponent.h"
+#include "ResourceManager.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -181,6 +182,11 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* 
 
     // 조명 상수 버퍼 업데이트
     // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
+    // ---------------------------------------------------------
+
+    // --- [추가] ResourceManager로부터 SRV 힙을 가져와 설정 ---
+    ID3D12DescriptorHeap* ppHeaps[] = { ResourceManager::Instance()->get_srv_heap() };
+    commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
     // ---------------------------------------------------------
     for (auto const& [psoName, gameObjects] : _renderMap)
     {
