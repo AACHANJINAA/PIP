@@ -49,6 +49,9 @@ void TransformComponent::update()
 
     _isDirty = false;
 
+    // 부모가 update 되었는데 만약 오브젝트배열의 마지막에 있다면, 지금 프레임에 업데이트가 안될수 있다.
+    
+
     // 자식들도 연쇄적으로 업데이트하도록 dirty 플래그 설정
     for (const auto& child : _children)
     {

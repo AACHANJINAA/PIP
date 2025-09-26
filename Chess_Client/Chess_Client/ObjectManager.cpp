@@ -15,15 +15,16 @@ std::shared_ptr<GameObject> ObjectManager::create_game_object(const std::string&
     auto newGameObject = std::make_shared<GameObject>(name);
     newGameObject->set_layer(layer); // TODO: GameObject에 layer 기능이 추가되면 이 줄의 주석을 해제합니다.
 
-    std::lock_guard<std::mutex> lock(_mutex);
+    //std::lock_guard<std::mutex> lock(_mutex);
     _gameObjects.push_back(newGameObject);
+    _newGameObjects.push(newGameObject); // [추가] 새로운 객체 큐에도 추가
     return newGameObject;
 }
 
 // [변경] 파괴할 객체를 _destructionQueue에 추가하기만 합니다.
 void ObjectManager::request_destruction(std::shared_ptr<Object> objectToDestroy)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
+    //std::lock_guard<std::mutex> lock(_mutex);
     _destructionQueue.push_back(objectToDestroy);
 }
 
@@ -51,6 +52,43 @@ void ObjectManager::process_destructions()
             // TODO: 컴포넌트가 속한 게임오브젝트에서 해당 컴포넌트를 제거합니다. (GameObject에 구현 필요)
             if(component->game_object())
                  component->game_object()->remove_component(component);
+        }
+    }
+}
+
+void ObjectManager::process_new_game_objects()
+{
+    // 처리할 새 객체가 없으면 즉시 반환
+    if (_newGameObjects.empty()) return;
+
+    // 이번 프레임에 처리할 객체들을 임시로 담을 벡터
+    std::vector<std::shared_ptr<GameObject>> processedThisFrame;
+    processedThisFrame.reserve(_newGameObjects.size());
+
+    // --- Awake 단계 ---
+    // 큐가 빌 때까지 모든 객체의 awake()를 호출
+    while (!_newGameObjects.empty())
+    {
+        // 1. 큐에서 객체를 하나 가져옴
+        std::shared_ptr<GameObject> newObj = _newGameObjects.front();
+        _newGameObjects.pop();
+
+        if (newObj && !newObj->is_destroyed())
+        {
+            // 2. awake() 호출
+            newObj->awake();
+            // 3. start() 호출을 위해 임시 벡터에 저장
+            processedThisFrame.push_back(newObj);
+        }
+    }
+
+    // --- Start 단계 ---
+    // Awake가 모두 끝난 객체들의 start()를 호출
+    for (const auto& obj : processedThisFrame)
+    {
+        if (obj && !obj->is_destroyed())
+        {
+            obj->start();
         }
     }
 }
