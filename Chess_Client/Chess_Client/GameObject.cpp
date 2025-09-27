@@ -1,11 +1,24 @@
 #include "stdafx.h"
 #include "GameObject.h"
 #include "Behaviour.h"
+#include "LayerManager.h"
 #include "TransformComponent.h"
+
+LayerManager::LayerManager()
+{
+}
+
+uint32_t LayerManager::get_layer_value(const std::string& name) const
+{
+}
+
+bool LayerManager::add_layer(const std::string& name)
+{
+}
+
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
 {
-	auto transform = add_component<TransformComponent>();
-	_transform = transform.get(); // 빠른 접근을 위해 포인터 저장
+	_transform = add_component<TransformComponent>();
 }
 
 void GameObject::awake()
@@ -36,27 +49,21 @@ void GameObject::start()
 		}
 	}
 }
-void GameObject::update(float DeltaTime)
+void GameObject::update(float delta_time)
 {
+	// [제거] TransformComponent는 더 이상 GameFramework의 업데이트 루프에 의존하지 않습니다.
+	 // if (_transform) {
+	 //     _transform->update();
+	 // }
+
+	 // 자신의 모든 Behaviour 컴포넌트의 update를 호출합니다.
 	for (const auto& component : _components)
 	{
 		if (auto behaviour = std::dynamic_pointer_cast<Behaviour>(component))
 		{
 			if (behaviour->is_enabled())
 			{
-				// 다음 단계에서 Behaviour/Script의 update 함수 시그니처를 수정할 예정
-				behaviour->update(DeltaTime);
-			}
-		}
-	}
-
-	if (transform())
-	{
-		for (const auto& childTransform : transform()->children())
-		{
-			if (childTransform && childTransform->game_object())
-			{
-				childTransform->game_object()->update(deltaTime);
+				behaviour->update(deltaTime);
 			}
 		}
 	}
@@ -89,9 +96,32 @@ void GameObject::late_update(float delta_time)
 	}
 }
 
-void GameObject::destory()
+void GameObject::destroy()
 {
 	Object::destroy(shared_from_this());
+}
+
+void GameObject::set_layer(const std::string& name)
+{
+	_layerMask = LayerManager::Instance()->get_layer_value(name);
+}
+
+bool GameObject::is_in_layer(const std::string& name) const
+{
+	uint32_t layerValue = LayerManager::Instance()->get_layer_value(name);
+	return (_layerMask & layerValue) != 0;
+}
+
+void GameObject::remove_component(std::shared_ptr<Component> component)
+{
+	if (component)
+	{
+		if (_transform == component)
+		{
+			return;
+		}
+		std::erase(_components, component);
+	}
 }
 
 //

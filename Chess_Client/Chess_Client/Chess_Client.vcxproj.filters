@@ -149,14 +149,17 @@
     <ClInclude Include="targetver.h">
       <Filter>5. App</Filter>
     </ClInclude>
-    <ClInclude Include="MainPlayer.h">
+    <ClInclude Include="MainPlayerScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
-    <ClInclude Include="OtherPlayer.h">
+    <ClInclude Include="OtherPlayerScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
       <Filter>0. Engine\4. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="LayerManager.h">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -235,14 +238,17 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>5. App</Filter>
     </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
+    <ClCompile Include="MainPlayerScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
+    <ClCompile Include="OtherPlayerScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
       <Filter>0. Engine\4. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="LayerManager.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

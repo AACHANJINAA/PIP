@@ -40,7 +40,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	Renderer::Instance()->initialize(_device.Get());
-	ResourceManager::Instance()->initialize(_device.Get(), _commandList.Get());
+	ResourceManager::Instance()->initialize(_device.Get());
 	CreateRtvAndDsvDescriptorHeaps();
 	CreateSwapChain(); 
 	CreateDepthStencilView();

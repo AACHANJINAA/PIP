@@ -30,4 +30,7 @@ private:
 
     // Key: PSO 이름 (string), Value: 해당 PSO를 사용하는 GameObject 목록
     std::map<std::string, std::vector<std::shared_ptr<GameObject>>> _renderMap;
+
+    // [추가] GPU 업로드에 사용하기 위해 Device 포인터를 저장합니다.
+    ID3D12Device* _device = nullptr;
 };

@@ -1,9 +1,8 @@
 #include "stdafx.h"
-#include "MainPlayer.h"
+#include "MainPlayerScript.h"
 #include "ClientPacketManager.h"
 #include "GameFramework.h"
 #include "InputManager.h"
-#include "Mesh.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 

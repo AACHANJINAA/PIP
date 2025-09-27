@@ -12,22 +12,25 @@ public:
     Object(Object&&) = delete;
     Object& operator=(Object&&) = delete;
 
-    // --- Getter  ---
-    uint64_t instance_id() const { return _instanceId; }
+    /// --- [변경] Getter ---
+    ObjectID object_id() const { return _objectId; } // instance_id() -> object_id()
     bool is_destroyed() const { return _isDestroyed; }
-
-    // ---- Setter ----
     const std::string& name() const { return _name; }
+
+    // --- [변경] Setter ---
     void set_name(const std::string& name) { _name = name; }
     void set_destroyed(bool isDestroyed) { _isDestroyed = isDestroyed; }
 
+    // [추가] ObjectManager가 ID를 설정하기 위한 함수
+    void set_object_id(ObjectID id) { _objectId = id; }
+
+    // --- [변경] destroy 함수 ---
+    // 이제 shared_ptr 대신 ObjectID를 받아 처리하는 것을 고려할 수 있으나,
+    // 우선은 기존 구조를 유지합니다.
     static void destroy(std::shared_ptr<Object> obj_to_destroy, float delay = 0.0f);
 protected:
     std::string _name;
     bool _isDestroyed = false;
-    const uint64_t _instanceId;
-private:
-    // 모든 Object 인스턴스에 대해 고유한 ID를 생성하기 위한 static 변수
-	static std::atomic_uint64_t _nextInstanceId; //KJ 설명: atomic으로 변경, 멀티스레드 환경에서 안전하게 ID 생성 가능
+    ObjectID _objectId = INVALID_OBJECT_ID;
 
 };

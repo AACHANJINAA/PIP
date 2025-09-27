@@ -147,8 +147,9 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="LayerManager.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="MainPlayer.h" />
+    <ClInclude Include="MainPlayerScript.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ClientPacketManager.h" />
@@ -159,7 +160,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="OtherPlayer.h" />
+    <ClInclude Include="OtherPlayerScript.h" />
     <ClInclude Include="RenderComponent.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
@@ -179,10 +180,11 @@
     <ClCompile Include="BoardCube.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="MainPlayer.cpp" />
+    <ClCompile Include="MainPlayerScript.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ClientPacketManager.cpp" />
@@ -192,7 +194,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="OtherPlayer.cpp" />
+    <ClCompile Include="OtherPlayerScript.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
