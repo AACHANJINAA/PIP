@@ -3,7 +3,7 @@
 
 class Object;
 class GameObject;
-class Component;
+struct GameObjectHandle;
 class ObjectManager : public Singleton<ObjectManager>
 {
     friend Singleton<ObjectManager>;
@@ -12,56 +12,23 @@ private:
     ~ObjectManager() = default;
 
 public:
-	// =================================================================
-    // 1. 객체 생성 및 파괴 (새로운 핵심 기능)
-    // =================================================================
-
-    // [변경] 이제 ObjectManager는 이 함수를 통해 모든 GameObject를 생성합니다.
-    std::shared_ptr<GameObject> create_game_object(const std::string& name = "GameObject", int layer = 0);
-
-    // [변경] 모든 Object 파생 클래스(GameObject, Component 등)의 파괴 요청을 받습니다.
+    std::shared_ptr<GameObject> create_game_object(const std::string& name = "GameObject");
     void request_destruction(std::shared_ptr<Object> objectToDestroy);
-
-    // [변경] GameFramework가 프레임 끝에 호출하여 파괴 큐를 실제로 처리합니다.
     void process_destructions();
+	void remove_game_object_from_list(std::shared_ptr<GameObject> gameObject);
 
 
-    // =================================================================
-    // 2. 객체 검색 (새로운 핵심 기능)
-    // =================================================================
-
-    // [대체] GetPlayer() 등 특정 객체를 찾던 기능을 대체합니다.
     std::shared_ptr<GameObject> find_by_name(const std::string& name);
-
-    // [대체] GetObjectVec(), GetEnemy() 등 종류별 리스트를 반환하던 기능을 대체합니다.
-    std::vector<std::shared_ptr<GameObject>> find_by_layer(int layer);
-
-    // [대체] GetAllObject()를 대체합니다. 이제 모든 객체는 이 함수를 통해 단일 리스트로 접근합니다.
-    const std::vector<std::shared_ptr<GameObject>>& get_all_game_objects() const { return _gameObjects; }
+    std::vector<std::shared_ptr<GameObject>> find_by_layer(uint32_t layerMask);
+	const std::vector<std::shared_ptr<GameObject>>& get_all_game_objects() const { return _gameObjects; }
 
 	// [추가] 새로 생성된 GameObject의 Awake/Start를 처리합니다. (GameFramework가 프레임 시작에 호출)
 	void process_new_game_objects();
 
 private:
-    // [추가] 파괴 과정에서 사용되는 내부 헬퍼 함수입니다.
-    void remove_game_object_from_list(std::shared_ptr<GameObject> gameObject);
-
-    // =================================================================
-    // 3. 멤버 변수 (완전히 새로 구성)
-    // =================================================================
-
-    // [변경] _allobject, _requestobjects, _rendermap 등 모든 복잡한 컨테이너를 아래 단 두 개로 통합합니다.
-
-	// 모든 활성 GameObject를 저장하는 단일 리스트
-	std::vector<std::shared_ptr<GameObject>> _gameObjects;
-
-	std::queue<std::shared_ptr<GameObject>> _newGameObjects; // 새로 생성된 오브젝트를 임시로 담아두는 큐 (awke,start 루틴)
-
-    // 파괴가 예약된 모든 Object를 임시로 담아두는 큐
-    std::vector<std::shared_ptr<Object>> _destructionQueue;
-
-    // (참고) 멀티스레딩 환경에서의 안전한 접근을 위한 뮤텍스 -> 락 프리를 지향해야함 임시적으로 추가
-    std::mutex _mutex;
+    std::vector<std::shared_ptr<GameObject>> _gameObjects;
+    std::vector<std::shared_ptr<Object>>     _destructionQueue;
+    std::queue<std::shared_ptr<GameObject>>  _newGameObjects;
 };
 // =================================================================
  // [제거된 기능 목록]

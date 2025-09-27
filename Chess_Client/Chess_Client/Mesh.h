@@ -4,6 +4,8 @@
 #include <assimp/scene.h>           // Assimp scene 객체
 #include <assimp/postprocess.h>     // Assimp 후처리 옵션
 #include <assimp/material.h> // AI_MATKEY_TEXTURE_DIFFUSE, AI_MATKEY_COLOR_DIFFUSE 정의 포함
+
+#include "Object.h"
 // nlohmann/json 헤더 // json 파싱 위해 추가
 using json = nlohmann::json;
 
@@ -12,10 +14,10 @@ class Vertex
 {
 public:
 	//정점의 위치 벡터이다(모든 정점은 최소한 위치 벡터를 가져야 한다).
-	XMFLOAT3 m_xmf3Position;
+	XMFLOAT3 _position;
 public:
-	Vertex() { m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
-	Vertex(XMFLOAT3 xmf3Position) { m_xmf3Position = xmf3Position; }
+	Vertex() { _position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
+	Vertex(XMFLOAT3 xmf3Position) { _position = xmf3Position; }
 	~Vertex() {}
 };
 
@@ -113,13 +115,13 @@ public:
 
 public:
 	IlluminatedVertex() { 
-		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
+		_position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
 		m_xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
 		m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f); // 추가
 		m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 	IlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT4 c = RANDOM_COLOR) {
-		m_xmf3Position = p;
+		_position = p;
 		m_xmf3Normal = n;
 		m_xmf2Texcoord = t;
 		m_xmf4Diffuse = c;
@@ -127,76 +129,111 @@ public:
 	~IlluminatedVertex() {}
 };
 
-class Mesh
+class Mesh : public Object
 {
 public:
-	Mesh() {}
-	Mesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	// [변경] 생성자는 이제 파일 경로만 받아서 CPU 메모리에 데이터를 로드하는 역할만 합니다.
+	// 구체적인 파일 파싱은 파생 클래스(ReadObjMesh 등)에서 구현합니다.
+	Mesh();
 	virtual ~Mesh();
 
+	// [추가] CPU 메모리에 로드된 데이터를 기반으로 실제 GPU 버퍼를 생성하는 함수입니다.
+	// Renderer가 렌더링 직전에 호출해줍니다.
+	void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
+	// [추가] GPU에 업로드되었는지 확인하는 플래그
+	bool is_uploaded() const { return _isUploaded; }
+
+	// 렌더링 함수는 VBV/IBV를 설정하고 DrawInstanced를 호출합니다.
+	virtual void render(ID3D12GraphicsCommandList* commandList);
+
 protected:
-	ID3D12Resource* _d3dVertexBuffer = NULL;
-	ID3D12Resource* _d3dVertexUploadBuffer = NULL;
+	// [변경] 생성 시점에는 이 변수들에 정점/인덱스 데이터가 채워집니다.
+	std::vector<Vertex> _vertices; // Vertex 구조체가 정의되어 있다고 가정
+	std::vector<UINT> _indices;
 
-	ID3D12Resource* m_pd3dUploadVertexBuffer = NULL; // 매 틱마다 업데이트 해주기 위함
+	// [변경] 이 GPU 리소스들은 upload_to_gpu가 호출될 때 생성됩니다.
+	ComPtr<ID3D12Resource> _vertexBuffer;
+	ComPtr<ID3D12Resource> _indexBuffer;
+	ComPtr<ID3D12Resource> _vertexUploadBuffer;
+	ComPtr<ID3D12Resource> _indexUploadBuffer;
 
-	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
-	D3D12_PRIMITIVE_TOPOLOGY m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	UINT m_nSlot = 0;
-	UINT m_nVertices = 0;
-	UINT m_nStride = 0;
-	UINT m_nOffset = 0;
+	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
+	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
 
-	ID3D12Resource* _d3dIndexBuffer = NULL;
-
-	ID3D12Resource* _d3dIndexUploadBuffer = NULL;
-
-	std::vector<UINT> m_Indexvec; // 인덱스 버퍼를 저장하기 위한 벡터(인덱스 버퍼는 변함이 없음)
-
-	std::vector<IlluminatedVertex> m_Vertexvec; // 버텍스 버퍼를 저장하기 위한 벡터 -> (수정) IlluminatedVertex class로 변경 [PONG]
-
-	/*인덱스 버퍼(인덱스의 배열)와 인덱스 버퍼를 위한 업로드 버퍼에 대한 인터페이스 포인터이다. 인덱스 버퍼는 정점
-	버퍼(배열)에 대한 인덱스를 가진다.*/
-	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
-	UINT m_nIndices = 0;
-	//인덱스 버퍼에 포함되는 인덱스의 개수이다. 
-	UINT m_nStartIndex = 0;
-	//인덱스 버퍼에서 메쉬를 그리기 위해 사용되는 시작 인덱스이다. 
-	int m_nBaseVertex = 0;
-	//인덱스 버퍼의 인덱스에 더해질 인덱스이다. 
-
-public:
-	BoundingOrientedBox	m_xmOOBB = BoundingOrientedBox();
-
-	float m_Left{};
-	float m_Top{};
-	float m_Right{};
-	float m_Bottom{};
-	float m_Front{};
-	float m_Back{};
-
-private:
-	int m_nReferences = 0;
-
-public:
-	void AddRef() { m_nReferences++; }
-	void Release() { if (--m_nReferences <= 0) delete this; }
-	virtual void ReleaseUploadBuffers();
-
-	virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
-
-	void ChangeColor(ID3D12GraphicsCommandList* pd3dCommandList,float r, float g, float b, float a = 1.f);
-
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
-
-	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
-	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance); // 모델좌표계에서의 레이 좌표와 방향을 넣어준다.
-	// DW설명 : 모델좌표계에서 충돌체크를 할 것이기 때문에 메쉬클래스에서 가지고 있는 것 같다.
-
-	BoundingOrientedBox GetBoundingBox() const { return m_xmOOBB; }
-
-	virtual bool IsValid() const { return true; }
+	bool _isUploaded = false;
 };
+
+//class Mesh
+//{
+//public:
+//	Mesh() {}
+//	Mesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+//	virtual ~Mesh();
+//
+//protected:
+//	ID3D12Resource* _d3dVertexBuffer = NULL;
+//	ID3D12Resource* _d3dVertexUploadBuffer = NULL;
+//
+//	ID3D12Resource* m_pd3dUploadVertexBuffer = NULL; // 매 틱마다 업데이트 해주기 위함
+//
+//	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
+//	D3D12_PRIMITIVE_TOPOLOGY m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+//	UINT m_nSlot = 0;
+//	UINT m_nVertices = 0;
+//	UINT m_nStride = 0;
+//	UINT m_nOffset = 0;
+//
+//	ID3D12Resource* _d3dIndexBuffer = NULL;
+//
+//	ID3D12Resource* _d3dIndexUploadBuffer = NULL;
+//
+//	std::vector<UINT> m_Indexvec; // 인덱스 버퍼를 저장하기 위한 벡터(인덱스 버퍼는 변함이 없음)
+//
+//	std::vector<IlluminatedVertex> m_Vertexvec; // 버텍스 버퍼를 저장하기 위한 벡터 -> (수정) IlluminatedVertex class로 변경 [PONG]
+//
+//	/*인덱스 버퍼(인덱스의 배열)와 인덱스 버퍼를 위한 업로드 버퍼에 대한 인터페이스 포인터이다. 인덱스 버퍼는 정점
+//	버퍼(배열)에 대한 인덱스를 가진다.*/
+//	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
+//	UINT m_nIndices = 0;
+//	//인덱스 버퍼에 포함되는 인덱스의 개수이다. 
+//	UINT m_nStartIndex = 0;
+//	//인덱스 버퍼에서 메쉬를 그리기 위해 사용되는 시작 인덱스이다. 
+//	int m_nBaseVertex = 0;
+//	//인덱스 버퍼의 인덱스에 더해질 인덱스이다. 
+//
+//public:
+//	BoundingOrientedBox	m_xmOOBB = BoundingOrientedBox();
+//
+//	float m_Left{};
+//	float m_Top{};
+//	float m_Right{};
+//	float m_Bottom{};
+//	float m_Front{};
+//	float m_Back{};
+//
+//private:
+//	int m_nReferences = 0;
+//
+//public:
+//	void AddRef() { m_nReferences++; }
+//	void Release() { if (--m_nReferences <= 0) delete this; }
+//	virtual void ReleaseUploadBuffers();
+//
+//	virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
+//
+//	void ChangeColor(ID3D12GraphicsCommandList* pd3dCommandList,float r, float g, float b, float a = 1.f);
+//
+//	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
+//
+//	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
+//	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance); // 모델좌표계에서의 레이 좌표와 방향을 넣어준다.
+//	// DW설명 : 모델좌표계에서 충돌체크를 할 것이기 때문에 메쉬클래스에서 가지고 있는 것 같다.
+//
+//	BoundingOrientedBox GetBoundingBox() const { return m_xmOOBB; }
+//
+//	virtual bool IsValid() const { return true; }
+//};
 
 struct OBJMaterial                                                                                                                                          
 {                                                                                                                                              
@@ -211,7 +248,7 @@ class ReadObjMesh : public Mesh
 {
 public:
 	ReadObjMesh() {};
-	ReadObjMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+	ReadObjMesh(const std::string& filePath);
 
 	//void ChangeColor(float r, float g, float b, float a);
 

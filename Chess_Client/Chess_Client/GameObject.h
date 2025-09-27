@@ -1,10 +1,12 @@
 #pragma once
 #include "Object.h"
 
+
+
+
 class Component;
 class Behaviour;
 class TransformComponent; // TransformComponent에 대한 전방 선언 추가
-
 class GameObject : public Object, public std::enable_shared_from_this<GameObject>
 {
 public:
@@ -16,10 +18,18 @@ public:
     void update(float deltaTime);
     void fixed_update(float deltaTime);
     void late_update(float deltaTime);
-    void destory();
+    void destroy();
+    // [변경] 레이어 타입을 uint32_t로 변경
+    uint32_t layer_mask() const { return _layerMask; }
 
+    // [변경] 이름으로 레이어를 설정하는 함수
+    void set_layer(const std::string& name);
+
+    // [추가] 특정 레이어에 속하는지 확인하는 함수
+    bool is_in_layer(const std::string& name) const;
     // --- 편의 Getter ---
-    TransformComponent* transform() const { return _transform; }
+	// [변경] 반환 타입을 shared_ptr로 변경
+    std::shared_ptr<TransformComponent> transform() const { return _transform; }
 
     // --- Component Management ---
     template<typename T, typename... Args>
@@ -44,10 +54,11 @@ public:
         }
         return nullptr;
     }
-
+    void remove_component(std::shared_ptr<Component> component);
 private:
     std::vector<std::shared_ptr<Component>> _components;
-    TransformComponent* _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
+    std::shared_ptr<TransformComponent> _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
+    uint32_t _layerMask = 0;
 };
 //public:
 //	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?

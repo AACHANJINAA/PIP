@@ -16,8 +16,9 @@ public:
         D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle);
 
     // 파일 경로를 기반으로 메시를 로드하거나, 이미 로드되었다면 캐시된 메시를 반환합니다.
-    std::shared_ptr<Mesh> load_mesh(const std::string& filePath, ID3D12GraphicsCommandList* command_list);
+    std::shared_ptr<Mesh> load_mesh(const std::string& filePath);
 
+    void release_upload_buffers();
     // (향후 확장) 텍스처 로드 함수
     // std::shared_ptr<Texture> load_texture(const std::string& filePath);
 

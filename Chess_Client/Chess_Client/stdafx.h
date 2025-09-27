@@ -139,7 +139,7 @@ constexpr f3 F3_LEFT = f3(-1.0f, 0.0f, 0.0f);
 constexpr f3 F3_FORWARD = f3(0.0f, 0.0f, 1.0f);
 constexpr f3 F3_BACKWARD = f3(0.0f, 0.0f, -1.0f);
 
-constexpr f4x4 identity4x4 = f4x4(1.0f, 0.0f, 0.0f, 0.0f,
+constexpr f4x4 F4X4_IDENTIFY = f4x4(1.0f, 0.0f, 0.0f, 0.0f,
 								0.0f, 1.0f, 0.0f, 0.0f,
 								0.0f, 0.0f, 1.0f, 0.0f,
 								0.0f, 0.0f, 0.0f, 1.0f);

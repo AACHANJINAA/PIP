@@ -9,6 +9,7 @@
 
 void Renderer::initialize(ID3D12Device* device)
 {
+    _device = device; // [추가] Device 포인터 저장
     create_root_signatures(device);
     create_pipeline_state_objects(device);
 }
@@ -210,7 +211,20 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* 
         // 이 그룹의 모든 객체를 그립니다.
         for (const auto& gameObject : gameObjects)
         {
-            gameObject->get_component<RenderComponent>()->render(commandList, camera);
+            auto renderComp = gameObject->get_component<RenderComponent>();
+            if (!renderComp) continue;
+
+            auto mesh = renderComp->mesh();
+            if (!mesh) continue;
+
+            // --- [추가] GPU 업로드 확인 및 실행 ---
+            if (!mesh->is_uploaded())
+            {
+                mesh->upload_to_gpu(_device, commandList);
+            }
+            // ------------------------------------
+
+            renderComp->render(commandList, camera);
         }
     }
     //KJ 설명: OnPrepareRender 함수는 더 이상 필요 없으며, 그 역할은 Renderer가 더 효율적인 방식으로 수행하게 됩니다.

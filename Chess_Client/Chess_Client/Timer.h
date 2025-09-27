@@ -17,8 +17,8 @@ public:
 	float GetTimeElapsed(); // 프레임의 평균 경과 시간을 반환한다.
 
 private:
-	bool m_bHardwareHasPerformanceCounter;	// 컴퓨터가 Performance Counter를 갖고 있는지?
-	float m_fTimeScale;						// Scale Counter의 양
+	bool _hasHardwareHasPerformanceCounter;	// 컴퓨터가 Performance Counter를 갖고 있는지?
+	float _timeScale;						// Scale Counter의 양
 	float m_fTimeElapsed;					// 마지막 프레임 이후 지나간 시간
 	__int64 m_nCurrentTime;					// 현재의 시간
 	__int64 m_nLastTime;					// 마지막 프레임의 시간

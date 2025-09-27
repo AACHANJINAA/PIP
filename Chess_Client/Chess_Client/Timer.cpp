@@ -6,15 +6,15 @@ GameTimer::GameTimer()
 {
 	if (::QueryPerformanceFrequency((LARGE_INTEGER*)&m_nPerformanceFrequency))
 	{
-		m_bHardwareHasPerformanceCounter = TRUE;
+		_hasHardwareHasPerformanceCounter = TRUE;
 		::QueryPerformanceCounter((LARGE_INTEGER*)&m_nLastTime);
-		m_fTimeScale = 1.0f / m_nPerformanceFrequency;
+		_timeScale = 1.0f / m_nPerformanceFrequency;
 	}
 	else
 	{
-		m_bHardwareHasPerformanceCounter = FALSE;
+		_hasHardwareHasPerformanceCounter = FALSE;
 		m_nLastTime = ::timeGetTime();
-		m_fTimeScale = 0.001f;
+		_timeScale = 0.001f;
 	}
 	m_nSampleCount = 0;
 	m_nCurrentFrameRate = 0;
@@ -28,7 +28,7 @@ GameTimer::~GameTimer()
 
 void GameTimer::Tick(float fLockFPS)
 {
-	if (m_bHardwareHasPerformanceCounter)
+	if (_hasHardwareHasPerformanceCounter)
 	{
 		::QueryPerformanceCounter((LARGE_INTEGER*)&m_nCurrentTime);
 	}
@@ -37,13 +37,13 @@ void GameTimer::Tick(float fLockFPS)
 		m_nCurrentTime = ::timeGetTime();
 	}
 	//마지막으로 이 함수를 호출한 이후 경과한 시간을 계산한다. 
-	float fTimeElapsed = (m_nCurrentTime - m_nLastTime) * m_fTimeScale;
+	float fTimeElapsed = (m_nCurrentTime - m_nLastTime) * _timeScale;
 	if (fLockFPS > 0.0f)
 	{
 		//이 함수의 파라메터(fLockFPS)가 0보다 크면 이 시간만큼 호출한 함수를 기다리게 한다. 
 		while (fTimeElapsed < (1.0f / fLockFPS))
 		{
-			if (m_bHardwareHasPerformanceCounter)
+			if (_hasHardwareHasPerformanceCounter)
 			{
 				::QueryPerformanceCounter((LARGE_INTEGER*)&m_nCurrentTime);
 			}
@@ -51,7 +51,7 @@ void GameTimer::Tick(float fLockFPS)
 			{
 				m_nCurrentTime = ::timeGetTime();
 			} //마지막으로 이 함수를 호출한 이후 경과한 시간을 계산한다. 
-			fTimeElapsed = (m_nCurrentTime - m_nLastTime) * m_fTimeScale;
+			fTimeElapsed = (m_nCurrentTime - m_nLastTime) * _timeScale;
 		}
 	}
 	//현재 시간을 m_nLastTime에 저장한다. 
