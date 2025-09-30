@@ -84,3 +84,72 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	}
 	return(pd3dBuffer);
 }
+
+//TODO: 오류 있을 확률 5만 2천 퍼센트
+inline void UpdateSubresources(
+	ID3D12GraphicsCommandList* pCmdList,
+	ID3D12Resource* pDestinationResource,
+	ID3D12Resource* pIntermediate,
+	UINT64 IntermediateOffset,
+	UINT FirstSubresource,
+	UINT NumSubresources,
+	D3D12_SUBRESOURCE_DATA* pSrcData)
+{
+	// 리소스의 Description을 가져옵니다.
+	D3D12_RESOURCE_DESC DestinationDesc = pDestinationResource->GetDesc();
+	ID3D12Device* pDevice;
+	pDestinationResource->GetDevice(IID_PPV_ARGS(&pDevice));
+
+	// 복사에 필요한 메모리 레이아웃(크기, 정렬 등)을 계산합니다.
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts =
+		(D3D12_PLACED_SUBRESOURCE_FOOTPRINT*)_alloca(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) *
+			NumSubresources);
+	UINT64* pRowSizesInBytes = (UINT64*)_alloca(sizeof(UINT64) * NumSubresources);
+	UINT* pNumRows = (UINT*)_alloca(sizeof(UINT) * NumSubresources);
+
+	UINT64 RequiredSize = 0;
+
+	// [수정] GetDesc()로 얻은 구조체의 주소를 직접 넘겨줍니다.
+	pDevice->GetCopyableFootprints(&DestinationDesc, FirstSubresource, NumSubresources,
+		IntermediateOffset, pLayouts, pNumRows, pRowSizesInBytes, &RequiredSize);
+	pDevice->Release(); // GetDevice로 얻은 참조 카운트를 감소시킵니다.
+
+	// CPU 데이터를 UPLOAD 힙(pIntermediate)으로 복사
+	BYTE* pMappedData;
+	pIntermediate->Map(0, nullptr, reinterpret_cast<void**>(&pMappedData));
+	for (UINT i = 0; i < NumSubresources; ++i)
+	{
+		D3D12_SUBRESOURCE_DATA SubresourceData = pSrcData[i];
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT& DestFootprint = pLayouts[i];
+
+		BYTE* pDestSlice = pMappedData + DestFootprint.Offset;
+		const BYTE* pSrcSlice = (const BYTE*)SubresourceData.pData;
+
+		// 한 줄씩 레이아웃에 맞춰 복사합니다.
+		for (UINT y = 0; y < pNumRows[i]; ++y)
+		{
+			memcpy(pDestSlice + y * DestFootprint.Footprint.RowPitch,
+				pSrcSlice + y * SubresourceData.RowPitch,
+				pRowSizesInBytes[i]);
+		}
+	}
+	pIntermediate->Unmap(0, nullptr);
+
+	// UPLOAD 힙에서 DEFAULT 힙으로 복사 명령 기록
+	if (DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
+	{
+		pCmdList->CopyBufferRegion(pDestinationResource, 0, pIntermediate, IntermediateOffset,
+			RequiredSize);
+	}
+	else
+	{
+		for (UINT i = 0; i < NumSubresources; ++i)
+		{
+			D3D12_TEXTURE_COPY_LOCATION Dst = { pDestinationResource, D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
+				FirstSubresource + i };
+			D3D12_TEXTURE_COPY_LOCATION Src = { pIntermediate, D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT,
+				pLayouts[i] };
+			pCmdList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+		}
+	}
+}
