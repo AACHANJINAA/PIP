@@ -60,6 +60,12 @@
     <Filter Include="0. Engine\6. Network">
       <UniqueIdentifier>{bbbeeb8d-7ddc-4baf-b779-0e40344b10bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\3. Renderer\1. Shaders">
+      <UniqueIdentifier>{d2b00202-bdc5-4a93-a8e4-083aa9e580cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\2. Meshes">
+      <UniqueIdentifier>{f2843c66-3557-4ecb-8bf5-90a971785347}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -113,9 +119,6 @@
     <ClInclude Include="Shader.h">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="GlbShader.h">
-      <Filter>0. Engine\3. Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClInclude>
@@ -127,9 +130,6 @@
     </ClInclude>
     <ClInclude Include="ClientPacketManager.h">
       <Filter>0. Engine\6. Network</Filter>
-    </ClInclude>
-    <ClInclude Include="BoardCube.h">
-      <Filter>1. Game\0. GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
       <Filter>5. App</Filter>
@@ -160,6 +160,27 @@
     </ClInclude>
     <ClInclude Include="LayerManager.h">
       <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardCubeScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="DefaultObjectShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="RootSignature.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GlbShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ReadGLBMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -214,9 +235,6 @@
     <ClCompile Include="Shader.cpp">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="GlbShader.cpp">
-      <Filter>0. Engine\3. Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClCompile>
@@ -225,9 +243,6 @@
     </ClCompile>
     <ClCompile Include="ClientPacketManager.cpp">
       <Filter>0. Engine\6. Network</Filter>
-    </ClCompile>
-    <ClCompile Include="BoardCube.cpp">
-      <Filter>1. Game\0. GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>5. App</Filter>
@@ -249,6 +264,27 @@
     </ClCompile>
     <ClCompile Include="LayerManager.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardCubeScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultObjectShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="RootSignature.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GlbShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="ReadGLBMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

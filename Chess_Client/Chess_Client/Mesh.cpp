@@ -46,15 +46,13 @@ void Mesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* comman
 	// --- 기존 생성자에 있던 GPU 버퍼 생성 로직이 여기로 이전 ---
 
 	// 정점 버퍼 생성
-	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertices.data(), sizeof(Vertex) *
-		_vertices.size(),
+	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertices.data(), sizeof(Vertex) * _vertices.size(),
 		D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_vertexUploadBuffer);
 
 	// 인덱스 버퍼 생성 (인덱스가 있는 경우)
 	if (!_indices.empty())
 	{
-		_indexBuffer = ::CreateBufferResource(device, commandList, _indices.data(), sizeof(UINT) *
-			_indices.size(),
+		_indexBuffer = ::CreateBufferResource(device, commandList, _indices.data(), sizeof(UINT) * _indices.size(),
 			D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_indexUploadBuffer);
 	}
 

@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include "RootSignature.h"
+#include "Shader.h"
 
 class GameObject;
 class Camera;
@@ -24,13 +26,17 @@ private:
     void build_render_list(Camera* camera);
     void draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* camera);
 
-    ComPtr<ID3D12RootSignature> _defaultRootSignature;
-    ComPtr<ID3D12RootSignature> _skinnedRootSignature;
-    std::map<std::string, ComPtr<ID3D12PipelineState>> _pipelineStates;
+    // [변경] 개별 ComPtr 대신, 이름으로 루트 시그니처를 관리하는 map을 사용합니다.
+    std::unordered_map<std::string, ComPtr<ID3D12RootSignature>> _rootSignatures;
+    std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> _pipelineStates;
 
     // Key: PSO 이름 (string), Value: 해당 PSO를 사용하는 GameObject 목록
-    std::map<std::string, std::vector<std::shared_ptr<GameObject>>> _renderMap;
+    std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>> _renderMap;
+    // [추가] PSO 생성을 위해 등록된 모든 셰이더의 프로토타입을 저장합니다.
+    std::unordered_map<std::string, std::shared_ptr<Shader>> _shaderPrototypes;
 
+	// [추가] 사용할 루트 시그니처 생성기들을 저장합니다.
+    std::vector<std::unique_ptr<IRootSignatureGenerator>> _rootSignatureGenerators; 
     // [추가] GPU 업로드에 사용하기 위해 Device 포인터를 저장합니다.
     ID3D12Device* _device = nullptr;
 };

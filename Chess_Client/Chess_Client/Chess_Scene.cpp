@@ -2,7 +2,8 @@
 #include "Chess_Scene.h"
 #include "ObjectManager.h"
 #include "GameObject.h"
-#include "MainPlayer.h"
+
+#include "MainPlayerScript.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 #include "Mesh.h" // 메시 클래스가 필요할 수 있음

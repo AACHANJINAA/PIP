@@ -22,32 +22,32 @@ public:
 };
 
 // Node 구조체 정의 DW : GLTF/GLB 파일에서 노드 정보를 표현하기 위해 추가
-struct Node
-{
-	std::string name;
-	int parentIndex = -1; // 부모가 없으면 -1
-	std::vector<int> childrenIndices;
+//struct Node
+//{
+//	std::string name;
+//	int parentIndex = -1; // 부모가 없으면 -1
+//	std::vector<int> childrenIndices;
+//
+//	// 변환 정보
+//	XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
+//	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // 쿼터니언
+//	XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f };
+//
+//	int meshIndex = -1;
+//	int skinIndex = -1;
+//};
 
-	// 변환 정보
-	XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
-	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // 쿼터니언
-	XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f };
-
-	int meshIndex = -1;
-	int skinIndex = -1;
-};
-
-// 스키닝 정보를 포함하는 새로운 정점 구조체 -> Vertex 대신에 사용할 것임
-struct SkinnedVertex
-{
-	XMFLOAT3 m_xmf3Position;
-	XMFLOAT3 m_xmf3Normal;
-	XMFLOAT2 m_xmf2TexCoord;
-
-	// 추가된 스키닝 데이터
-	XMFLOAT4 m_xmf4BoneIndices; // 영향을 주는 뼈의 인덱스 (최대 4개)
-	XMFLOAT4 m_xmf4BoneWeights; // 각 뼈로부터 받는 영향(가중치)
-};
+//// 스키닝 정보를 포함하는 새로운 정점 구조체 -> Vertex 대신에 사용할 것임
+//struct SkinnedVertex
+//{
+//	XMFLOAT3 m_xmf3Position;
+//	XMFLOAT3 m_xmf3Normal;
+//	XMFLOAT2 m_xmf2TexCoord;
+//
+//	// 추가된 스키닝 데이터
+//	XMFLOAT4 m_xmf4BoneIndices; // 영향을 주는 뼈의 인덱스 (최대 4개)
+//	XMFLOAT4 m_xmf4BoneWeights; // 각 뼈로부터 받는 영향(가중치)
+//};
 
 struct MeshPrimitive
 {
@@ -139,7 +139,7 @@ public:
 
 	// [추가] CPU 메모리에 로드된 데이터를 기반으로 실제 GPU 버퍼를 생성하는 함수입니다.
 	// Renderer가 렌더링 직전에 호출해줍니다.
-	void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
 	// [추가] GPU에 업로드되었는지 확인하는 플래그
 	bool is_uploaded() const { return _isUploaded; }
@@ -316,95 +316,95 @@ private:
 };
 
 
-class ReadGlbMesh : public Mesh
-{
-public:
-	ReadGlbMesh() {}
-	virtual ~ReadGlbMesh();
-
-	ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, class Scene* pScene);
-
-	virtual bool IsValid() const override {
-		if (m_primitives.empty()) return false;
-		for (const auto& primitive : m_primitives) {
-			if (!primitive || !primitive->_d3dVertexBuffer) return false;
-		}
-	}
-
-	// Mesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
-	// 업로드 버퍼 해제도 오버라이드
-	void ReleaseUploadBuffers() override;
-
-	UINT GetTextureCount() { return _Textures; } // 로드된 텍스처 개수를 반환하는 함수
-
-public:
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvGpuHandle(UINT nPrimitive = 0) const;
-
-	D3D12_GPU_VIRTUAL_ADDRESS GetBoneTransformsBufferAddress() const;
-
-private:
-	// 뼈 행렬들을 담을 상수 버퍼 (ComPtr로 자동 메모리 관리)
-	ComPtr<ID3D12Resource> m_pd3dcbBoneTransforms;
-
-private:
-	UINT _Textures = 0; // 로드된 텍스처 개수를 저장할 변수
-
-	// 렌더링에 필요한 데이터는 ReadGlbMesh가 직접 관리
-	std::vector<std::unique_ptr<MeshPrimitive>> m_primitives;
-
-	// 로딩 과정에서만 사용할 멤버 변수들
-	std::vector<Node> m_Nodes;
-	std::vector<ID3D12Resource*> m_vUploadBuffers;
-
-	// 반환값: {픽셀 데이터, 가로 크기, 세로 크기}
-	std::tuple<std::vector<unsigned char>, UINT, UINT> LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex);
-
-	template<typename T>
-	std::pair<T*, size_t> getData(const json& j, const std::vector<char>& binaryData, int accessorIndex)
-	{
-		// --- 방어 코드 1: accessorIndex가 유효한 범위 내에 있는지 확인 ---
-		if (accessorIndex < 0 || !j.contains("accessors") || accessorIndex >= j["accessors"].size()) {
-			std::cerr << "Error: Invalid accessorIndex provided: " << accessorIndex << std::endl;
-			return { nullptr, 0 };
-		}
-		const auto& accessor = j["accessors"][accessorIndex];
-
-		// --- 방어 코드 2: accessor가 "bufferView" 키를 가지고 있는지 확인 ---
-		if (!accessor.contains("bufferView")) {
-			std::cerr << "Error: Accessor " << accessorIndex << " does not contain a bufferView." << std::endl;
-			return { nullptr, 0 };
-		}
-		int bufferViewIndex = accessor["bufferView"];
-
-		// --- 방어 코드 3: bufferViewIndex가 유효한 범위 내에 있는지 확인 ---
-		if (bufferViewIndex < 0 || !j.contains("bufferViews") || bufferViewIndex >= j["bufferViews"].size()) {
-			std::cerr << "Error: Invalid bufferViewIndex found in accessor " << accessorIndex << ": " << bufferViewIndex << std::endl;
-			return { nullptr, 0 };
-		}
-		const auto& bufferView = j["bufferViews"][bufferViewIndex];
-
-		// 기존 방어 코드 (byteOffset 처리)
-		size_t totalOffset = 0;
-		if (bufferView.contains("byteOffset")) {
-			totalOffset += bufferView["byteOffset"].get<size_t>();
-		}
-		if (accessor.contains("byteOffset")) {
-			totalOffset += accessor["byteOffset"].get<size_t>();
-		}
-
-		const char* dataStart = binaryData.data() + totalOffset;
-		size_t count = accessor["count"];
-
-		// 기존 방어 코드 (메모리 범위 초과 방지)
-		size_t dataSizeInBytes = count * sizeof(T);
-		if ((totalOffset + dataSizeInBytes) > binaryData.size()) {
-			std::cerr << "Error: Data access is out of bounds for the binary buffer." << std::endl;
-			return { nullptr, 0 };
-		}
-		return { reinterpret_cast<T*>(const_cast<char*>(dataStart)), count };
-	}
-};
+//class ReadGlbMesh : public Mesh
+//{
+//public:
+//	ReadGlbMesh() {}
+//	virtual ~ReadGlbMesh();
+//
+//	ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, class Scene* pScene);
+//
+//	virtual bool IsValid() const override {
+//		if (m_primitives.empty()) return false;
+//		for (const auto& primitive : m_primitives) {
+//			if (!primitive || !primitive->_d3dVertexBuffer) return false;
+//		}
+//	}
+//
+//	// Mesh의 Render 함수를 오버라이드하여 GLB/glTF 모델만의 렌더링 로직을 구현
+//	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
+//	// 업로드 버퍼 해제도 오버라이드
+//	void ReleaseUploadBuffers() override;
+//
+//	UINT GetTextureCount() { return _Textures; } // 로드된 텍스처 개수를 반환하는 함수
+//
+//public:
+//	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvGpuHandle(UINT nPrimitive = 0) const;
+//
+//	D3D12_GPU_VIRTUAL_ADDRESS GetBoneTransformsBufferAddress() const;
+//
+//private:
+//	// 뼈 행렬들을 담을 상수 버퍼 (ComPtr로 자동 메모리 관리)
+//	ComPtr<ID3D12Resource> m_pd3dcbBoneTransforms;
+//
+//private:
+//	UINT _Textures = 0; // 로드된 텍스처 개수를 저장할 변수
+//
+//	// 렌더링에 필요한 데이터는 ReadGlbMesh가 직접 관리
+//	std::vector<std::unique_ptr<MeshPrimitive>> m_primitives;
+//
+//	// 로딩 과정에서만 사용할 멤버 변수들
+//	std::vector<Node> m_Nodes;
+//	std::vector<ID3D12Resource*> m_vUploadBuffers;
+//
+//	// 반환값: {픽셀 데이터, 가로 크기, 세로 크기}
+//	std::tuple<std::vector<unsigned char>, UINT, UINT> LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex);
+//
+//	template<typename T>
+//	std::pair<T*, size_t> getData(const json& j, const std::vector<char>& binaryData, int accessorIndex)
+//	{
+//		// --- 방어 코드 1: accessorIndex가 유효한 범위 내에 있는지 확인 ---
+//		if (accessorIndex < 0 || !j.contains("accessors") || accessorIndex >= j["accessors"].size()) {
+//			std::cerr << "Error: Invalid accessorIndex provided: " << accessorIndex << std::endl;
+//			return { nullptr, 0 };
+//		}
+//		const auto& accessor = j["accessors"][accessorIndex];
+//
+//		// --- 방어 코드 2: accessor가 "bufferView" 키를 가지고 있는지 확인 ---
+//		if (!accessor.contains("bufferView")) {
+//			std::cerr << "Error: Accessor " << accessorIndex << " does not contain a bufferView." << std::endl;
+//			return { nullptr, 0 };
+//		}
+//		int bufferViewIndex = accessor["bufferView"];
+//
+//		// --- 방어 코드 3: bufferViewIndex가 유효한 범위 내에 있는지 확인 ---
+//		if (bufferViewIndex < 0 || !j.contains("bufferViews") || bufferViewIndex >= j["bufferViews"].size()) {
+//			std::cerr << "Error: Invalid bufferViewIndex found in accessor " << accessorIndex << ": " << bufferViewIndex << std::endl;
+//			return { nullptr, 0 };
+//		}
+//		const auto& bufferView = j["bufferViews"][bufferViewIndex];
+//
+//		// 기존 방어 코드 (byteOffset 처리)
+//		size_t totalOffset = 0;
+//		if (bufferView.contains("byteOffset")) {
+//			totalOffset += bufferView["byteOffset"].get<size_t>();
+//		}
+//		if (accessor.contains("byteOffset")) {
+//			totalOffset += accessor["byteOffset"].get<size_t>();
+//		}
+//
+//		const char* dataStart = binaryData.data() + totalOffset;
+//		size_t count = accessor["count"];
+//
+//		// 기존 방어 코드 (메모리 범위 초과 방지)
+//		size_t dataSizeInBytes = count * sizeof(T);
+//		if ((totalOffset + dataSizeInBytes) > binaryData.size()) {
+//			std::cerr << "Error: Data access is out of bounds for the binary buffer." << std::endl;
+//			return { nullptr, 0 };
+//		}
+//		return { reinterpret_cast<T*>(const_cast<char*>(dataStart)), count };
+//	}
+//};
 
 struct CollisionPrimitive
 {
