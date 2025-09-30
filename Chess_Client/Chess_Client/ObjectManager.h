@@ -25,8 +25,11 @@ public:
 	// [추가] 새로 생성된 GameObject의 Awake/Start를 처리합니다. (GameFramework가 프레임 시작에 호출)
 	void process_new_game_objects();
 
+    // [추가] 영속성(persistent) 플래그가 없는 모든 게임 오브젝트를 파괴 요청 목록에 추가합니다.
+    void clear_non_persistent_objects();
 private:
-    std::vector<std::shared_ptr<GameObject>> _gameObjects;
+    
+    std::vector<std::shared_ptr<GameObject>> _gameObjects; // tODO : 순회 속도보다 삽입삭제 속도가 더 중요해 질 가능성 농후함 -> 트리 구조로 바꿔야할 가능성 있음
     std::vector<std::shared_ptr<Object>>     _destructionQueue;
     std::queue<std::shared_ptr<GameObject>>  _newGameObjects;
 };

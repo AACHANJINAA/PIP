@@ -156,7 +156,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		auto my_king_Render = my_king->get_component<RenderComponent>();
 
 		if (my_king_Render)
-			my_king_Render->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
+			my_king_Render->CreateShaderVariables(GameFramework::Instance()->device().Get(), GameFramework::Instance()->command_list().Get());
 		if (my_king_Transform)
 			my_king_Transform->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
 
@@ -165,8 +165,8 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		my_king->SetID(_my_session_id); 
 
 		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadFbxMesh>(
-			GameFramework::Instance()->GetDevice().Get(),
-			GameFramework::Instance()->GetCommandList().Get(),
+			GameFramework::Instance()->device().Get(),
+			GameFramework::Instance()->command_list().Get(),
 			"Resource/Test/testfbx_texture_included.fbx");
 		
 		if (my_king_Render)
@@ -195,7 +195,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		auto other_king_Transform = other_king->get_component<TransformComponent>();
 		auto other_king_Render = other_king->get_component<RenderComponent>();
 
-		other_king_Render->CreateShaderVariables(GameFramework::Instance()->GetDevice().Get(), GameFramework::Instance()->GetCommandList().Get());
+		other_king_Render->CreateShaderVariables(GameFramework::Instance()->device().Get(), GameFramework::Instance()->command_list().Get());
 		
 		other_king->SetID(spawn_data._id);
 		if (other_king_Transform)
@@ -207,12 +207,12 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		// level, exp 등 추가 정보도 설정 가능
 		other_king->_meshType = ENEMY; // 적 타입으로 설정
 		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadObjMesh>(
-			GameFramework::Instance()->GetDevice().Get(),
-			GameFramework::Instance()->GetCommandList().Get(),
+			GameFramework::Instance()->device().Get(),
+			GameFramework::Instance()->command_list().Get(),
 			"Resource/Monster/test_monster.obj");
 
 		// 색 설정
-		Chess_Mesh->ChangeColor(GameFramework::Instance()->GetCommandList().Get(), 0.0f, 1.0f, 0.0f, 1.f);
+		Chess_Mesh->ChangeColor(GameFramework::Instance()->command_list().Get(), 0.0f, 1.0f, 0.0f, 1.f);
 		other_king_Render->set_mesh(Chess_Mesh);
 
 		// 이동 거리 설정

@@ -21,6 +21,9 @@ public:
     void set_name(const std::string& name) { _name = name; }
     void set_destroyed(bool isDestroyed) { _isDestroyed = isDestroyed; }
 
+    // [추가] 영속성 플래그를 확인하고 설정하는 Getter/Setter
+    bool is_persistent() const { return _isPersistent; }
+    void set_persistent(bool is_persistent) { _isPersistent = is_persistent; }
 
     // --- [변경] destroy 함수 ---
     static void destroy(std::shared_ptr<Object> obj_to_destroy, float delay = 0.0f);
@@ -28,6 +31,9 @@ protected:
     std::string _name;
     uint64_t _uniqueId;
     bool _isDestroyed = false;
+
+    // [추가] 이 오브젝트가 씬 전환 시 파괴되지 않아야 하는지 여부
+    bool _isPersistent = false;
 private:
     static std::atomic_uint64_t next_id;
 };

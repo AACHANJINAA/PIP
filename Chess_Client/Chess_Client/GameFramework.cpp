@@ -6,6 +6,7 @@
 #include "InputManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "SceneManager.h"
 #include "TransformComponent.h"
 
 
@@ -43,7 +44,8 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateSwapChain(); 
 	CreateDepthStencilView();
 
-	InputManager::Instance()->Init(hMainWnd);
+	InputManager::Instance()->initialize(hMainWnd);
+	SceneManager::Instance()->initialize();
 	Renderer::Instance()->initialize(_device.Get());
 	ResourceManager::Instance()->initialize(_device.Get());
 	// 2. [추가] 리소스 매니저에게 대기중인 모든 메시를 GPU에 업로드하라고 명령합니다.
@@ -315,6 +317,9 @@ void GameFramework::MoveToNextFrame()
 
 void GameFramework::FrameAdvance()
 {
+	// [핵심] 실제 렌더링이나 업데이트 시작 전에 씬 전환을 먼저 처리합니다. 한프레임 지연
+	SceneManager::Instance()->process_scene_change_if_requested();
+
 	// 1. 타이머 틱 및 기본 처리
 	_gameTimer.Tick(0.0f);
 	float deltaTime = _gameTimer.GetTimeElapsed();
@@ -339,7 +344,7 @@ void GameFramework::FrameAdvance()
 	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =	_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	d3dRtvCPUDescriptorHandle.ptr += (_swapChainBufferIndex *	_rtvDescriptorIncrementSize);
+	d3dRtvCPUDescriptorHandle.ptr += (_swapChainBufferIndex * _rtvDescriptorIncrementSize);
 	//float pfClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
 	
 	// 내가 한 색상
