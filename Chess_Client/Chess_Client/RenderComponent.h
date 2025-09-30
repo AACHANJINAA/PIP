@@ -47,7 +47,7 @@ public:
 
     // render 함수는 이제 Renderer에 의해 호출됩니다.
     virtual void render(ID3D12GraphicsCommandList* commandList, Camera* camera);
-
+    virtual void awake() override;
     // --- Getters & Setters ---
     void set_mesh(std::shared_ptr<Mesh> mesh) { _mesh = mesh; }
     std::shared_ptr<Mesh> mesh() const { return _mesh; }
@@ -64,5 +64,9 @@ private:
     std::shared_ptr<Mesh> _mesh;
     std::shared_ptr<Shader> _shader; // 셰이더 또는 머티리얼
     std::string _psoName = "default"; // 사용할 PSO의 이름 (기본값 "default")
+
+    // [추가] 이 RenderComponent만의 고유한 상수 버퍼 관련 멤버들
+    ComPtr<ID3D12Resource> _cbGameObjectInfo;
+    CbGameObjectInfo* _mappedCbGameObjectInfo = nullptr;
 };
 

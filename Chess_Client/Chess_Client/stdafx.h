@@ -116,8 +116,8 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 	        {std::ostringstream oss; oss << expr; DebugLogStream(oss); DebugBreak();}
 
 #else
-#define CLOG(expr)
-#define CERROR(expr)
+	#define CLOG(expr)
+	#define CERROR(expr)
 #endif
 
 #include "Packet.h"

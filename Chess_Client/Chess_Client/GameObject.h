@@ -1,9 +1,6 @@
 #pragma once
 #include "Object.h"
 
-
-
-
 class Component;
 class Behaviour;
 class TransformComponent; // TransformComponent에 대한 전방 선언 추가

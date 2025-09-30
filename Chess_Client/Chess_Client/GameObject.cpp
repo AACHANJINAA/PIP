@@ -4,21 +4,9 @@
 #include "LayerManager.h"
 #include "TransformComponent.h"
 
-LayerManager::LayerManager()
-{
-}
-
-uint32_t LayerManager::get_layer_value(const std::string& name) const
-{
-}
-
-bool LayerManager::add_layer(const std::string& name)
-{
-}
-
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
 {
-	_transform = add_component<TransformComponent>();
+		_transform = add_component<TransformComponent>();
 }
 
 void GameObject::awake()
@@ -63,7 +51,7 @@ void GameObject::update(float delta_time)
 		{
 			if (behaviour->is_enabled())
 			{
-				behaviour->update(deltaTime);
+				behaviour->update(delta_time);
 			}
 		}
 	}

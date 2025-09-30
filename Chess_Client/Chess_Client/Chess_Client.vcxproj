@@ -142,9 +142,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Behaviour.h" />
-    <ClInclude Include="BoardCube.h" />
+    <ClInclude Include="BoardCubeScript.h" />
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="DebugShader.h" />
+    <ClInclude Include="DefaultObjectShader.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LayerManager.h" />
@@ -161,11 +163,14 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OtherPlayerScript.h" />
+    <ClInclude Include="PlayerShader.h" />
+    <ClInclude Include="ReadGLBMesh.h" />
     <ClInclude Include="RenderComponent.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="RootSignature.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptComponent.h" />
@@ -177,9 +182,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Behaviour.cpp" />
-    <ClCompile Include="BoardCube.cpp" />
+    <ClCompile Include="BoardCubeScript.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="DebugShader.cpp" />
+    <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
@@ -195,9 +202,12 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="OtherPlayerScript.cpp" />
+    <ClCompile Include="PlayerShader.cpp" />
+    <ClCompile Include="ReadGLBMesh.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="RootSignature.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptComponent.cpp" />

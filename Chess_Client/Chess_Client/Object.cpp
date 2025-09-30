@@ -2,10 +2,13 @@
 #include "Object.h"
 #include "ObjectManager.h"
 
+// 정적 멤버 변수 초기화 (컨벤션에 따라 snake_case로 변경)
+std::atomic_uint64_t Object::next_id{ 1 };
+
 Object::Object(const std::string& name)
-    : _name(name)
+    : _name(name), _uniqueId(next_id++) // 컨벤션에 맞게 next_id 사용
 {
-    // ID 할당은 ObjectManager의 책임
+    // 생성 시 고유 ID가 자동으로 할당됩니다.
 }
 
 // [제거] _nextInstanceId 초기화 코드를 제거합니다.
