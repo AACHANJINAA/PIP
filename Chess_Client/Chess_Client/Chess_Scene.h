@@ -14,7 +14,7 @@ public:
 
     // --- Scene의 순수 가상 함수 오버라이드 ---
     virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
-    virtual void release_objects() override;
+    virtual void release_upload_buffers() override;
 
 private:
     // [제거] m_ChessCamera, _AllShaders, _fbxObject 등 모든 멤버 변수를 제거합니다.

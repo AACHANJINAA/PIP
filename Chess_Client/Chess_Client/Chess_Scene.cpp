@@ -31,13 +31,9 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));
 }
 
-void Chess_Scene::release_objects()
+void Chess_Scene::release_upload_buffers()
 {
-    // Scene이 소유하던 리소스가 있다면 여기서 해제합니다.
-    // 이제 대부분의 GameObject는 ObjectManager가 관리하므로,
-    // 씬 전환 시 ObjectManager에게 모든 객체를 파괴하라고 요청하게 됩니다.
-    // (예: ObjectManager::Instance()->clear_all());
-    ObjectManager::Instance()->DeleteAll();
+
 }
 
 // =================================================================
