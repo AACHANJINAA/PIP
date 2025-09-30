@@ -195,12 +195,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* 
             if (!mesh) continue;
 
             // --- [추가] GPU 업로드 확인 및 실행 ---
-            if (!mesh->is_uploaded())
+            /*if (!mesh->is_uploaded())
             {
                 // TODO: 현재는 Renderer에서 메쉬의 gpu업로드를 플래그로 한번씩 처리하고 있음(레거시코드처럼 한번에 만들고 업로드 한게 아님)
 				// TODO: 추후 ResourceManager에서 메쉬를 관리하게 될 때, ResourceManager에서 한번에 업로드하는 방식으로 변경할 예정
                 mesh->upload_to_gpu(_device, commandList);
-            }
+            }*/
             // ------------------------------------
 
             renderComp->render(commandList, camera);

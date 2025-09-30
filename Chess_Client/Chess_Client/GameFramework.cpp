@@ -39,11 +39,16 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다. 
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
-	Renderer::Instance()->initialize(_device.Get());
-	ResourceManager::Instance()->initialize(_device.Get());
 	CreateRtvAndDsvDescriptorHeaps();
 	CreateSwapChain(); 
 	CreateDepthStencilView();
+
+	InputManager::Instance()->Init(hMainWnd);
+	Renderer::Instance()->initialize(_device.Get());
+	ResourceManager::Instance()->initialize(_device.Get());
+	// 2. [추가] 리소스 매니저에게 대기중인 모든 메시를 GPU에 업로드하라고 명령합니다.
+	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
+
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
 
@@ -247,14 +252,17 @@ void GameFramework::BuildObjects()
 	_camera = cameraObject->add_component<Camera>();
 	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
 
+	// 4. [핵심] 대기중인 모든 리소스를 GPU에 업로드합니다.
+	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
+
 	_commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
-
 	WaitForGpuComplete();
 
 	_scene->release_upload_buffers();
-
+	// 6. [중요] 임시 업로드 버퍼들을 해제합니다.
+	// 예: ResourceManager::Instance()->release_upload_buffers();
 	_gameTimer.Reset();
 }
 

@@ -31,32 +31,39 @@ void ResourceManager::allocate_srv_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCp
     _allocatedSrvCount++;
 }
 
-std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& filePath)
+std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
 {
-    auto it = _meshes.find(filePath);
-    if (it != _meshes.end())
-    {
+    // 이미 로드된 메시인지 확인
+    auto it = _meshes.find(file_path);
+    if (it != _meshes.end()) {
         return it->second;
     }
 
-    std::shared_ptr<Mesh> newMesh = nullptr;
-    std::string extension = filePath.substr(filePath.find_last_of("."));
+    // [변경] 새로 메시를 로드한 경우 (이때는 CPU 데이터만 로드됨)
+    // ReadGlbMesh, ReadObjMesh 등 적절한 클래스 사용
+    std::shared_ptr<Mesh> new_mesh = std::make_shared<ReadGlbMesh>(file_path);
+    //TODO: 템플릿 코드로 만들어야할듯?
 
-    if (extension == ".obj")
-    {
-        newMesh = std::make_shared<ReadObjMesh>(filePath);
-    }
-    else if (extension == ".glb")
-    {
-		newMesh = std::make_shared<ReadGlbMesh>(filePath);
-    }
+    _meshes[file_path] = new_mesh;
 
-    if (newMesh)
+    // [추가] GPU에 업로드해야 할 '대기 목록'에 추가합니다.
+    _pending_meshes.push_back(new_mesh);
+
+    return new_mesh;
+}
+
+void ResourceManager::upload_pending_meshes(ID3D12GraphicsCommandList* command_list)
+{
+    // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.
+    for (const auto& mesh : _pending_meshes)
     {
-        _meshes[filePath] = newMesh;
-        return newMesh;
+        if (!mesh->is_uploaded())
+        {
+            mesh->upload_to_gpu(_device, command_list);
+        }
     }
-    return nullptr;
+    // 업로드가 끝났으므로 대기 목록을 비웁니다.
+    _pending_meshes.clear();
 }
 
 void ResourceManager::release_upload_buffers()

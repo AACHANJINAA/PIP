@@ -225,7 +225,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     }
 
     GameFramework::Instance()->OnCreate(hInstance, hMainWnd);
-    InputManager::Instance()->Init(hMainWnd);
 
     ShowWindow(hMainWnd, nCmdShow);
     UpdateWindow(hMainWnd);
