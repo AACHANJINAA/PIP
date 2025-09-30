@@ -135,3 +135,27 @@ void ObjectManager::process_new_game_objects()
         }
     }
 }
+
+void ObjectManager::clear_non_persistent_objects()
+{
+    // _allGameObjects를 직접 수정하면 반복자가 무효화될 수 있으므로,
+	// 파괴할 오브젝트 목록을 따로 만듭니다.
+    std::vector<std::shared_ptr<GameObject>> objects_to_destroy;
+
+    for (const auto& game_object : _gameObjects)
+    {
+        // is_persistent() 플래그가 false인 오브젝트만 파괴 목록에 추가합니다.
+        if (game_object && !game_object->is_persistent())
+        {
+            objects_to_destroy.push_back(game_object);
+        }
+    }
+
+    // 목록에 있는 모든 오브젝트에 대해 파괴를 요청합니다.
+    for (const auto& game_object : objects_to_destroy)
+    {
+        Object::destroy(game_object);
+    }
+
+    // process_destructions()가 다음 프레임에 실제로 메모리에서 제거할 것입니다.
+}

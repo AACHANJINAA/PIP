@@ -8,7 +8,7 @@ InputManager::InputManager()
     m_ptOldMousePos = { 0, 0 };
 }
 
-void InputManager::Init(HWND hWnd)
+void InputManager::initialize(HWND hWnd)
 {
     m_hWnd = hWnd;
     for (int i = 0; i < KEY_MAX; ++i)

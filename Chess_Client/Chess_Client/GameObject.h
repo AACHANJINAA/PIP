@@ -54,8 +54,8 @@ public:
     void remove_component(std::shared_ptr<Component> component);
 private:
     std::vector<std::shared_ptr<Component>> _components;
-    std::shared_ptr<TransformComponent> _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
-    uint32_t _layerMask = 0;
+    std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
+    uint32_t                                _layerMask = 0;
 };
 //public:
 //	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?

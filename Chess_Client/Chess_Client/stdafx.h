@@ -110,6 +110,9 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 	}
 
 	// 매크로로 간단하게 사용
+	// TODO: 흠.... 콘솔도 같이 띄워서 디버그 로그, 정보, 에러 텍스트 색깔 다르게 출력하는 기능 추가하고 싶다.
+	#define CINFO(expr) \
+			{std::ostringstream oss; oss << expr; DebugLogStream(oss);}
 	#define CLOG(expr) \
 	        {std::ostringstream oss; oss << expr; DebugLogStream(oss);}
 	#define CERROR(expr) \

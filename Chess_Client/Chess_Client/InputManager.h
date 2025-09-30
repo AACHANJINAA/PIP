@@ -31,7 +31,7 @@ public:
         return &instance;
     }
 
-    void Init(HWND hWnd);
+    void initialize(HWND hWnd);
     void Update();
 
     bool IsKeyDown(int key) { return m_eKeyState[key] == KEY_STATE::DOWN; }

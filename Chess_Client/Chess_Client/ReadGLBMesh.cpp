@@ -199,7 +199,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
             gpu_primitive->m_nIndices = cpu_primitive.indices.size();
             gpu_primitive->_d3dIndexBuffer = ::CreateBufferResource(device, command_list,
                 index_data, index_buffer_size, D3D12_HEAP_TYPE_DEFAULT,
-                D3D12_RESOURCE_STATE_INDEX_BUFFER, &index_upload_buffer);
+                D3D12_RESOURCE_STATE_INDEX_BUFFER, index_upload_buffer.GetAddressOf());
 
             gpu_primitive->_d3dIndexBufferView.BufferLocation =
                 gpu_primitive->_d3dIndexBuffer->GetGPUVirtualAddress();

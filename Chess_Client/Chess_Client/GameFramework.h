@@ -91,8 +91,10 @@ public:
 	void WaitForGpuComplete();
 	//CPU와 GPU를 동기화하는 함수
 
-	ComPtr<ID3D12GraphicsCommandList>& GetCommandList() { return _commandList; }
-	ComPtr<ID3D12Device>& GetDevice() { return _device; }
+	ComPtr<ID3D12GraphicsCommandList>& command_list() { return _commandList; }
+	ComPtr<ID3D12Device>& device() { return _device; }
+	ComPtr<ID3D12CommandAllocator>& command_allocator() { return _commandAllocator; }
+	ComPtr<ID3D12CommandQueue>& command_queue() { return _commandQueue; }
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 

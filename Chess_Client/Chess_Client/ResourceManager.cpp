@@ -72,6 +72,35 @@ void ResourceManager::release_upload_buffers()
       // 모든 메시의 임시 업로드 버퍼를 해제합니다.
     for (auto const& [key, val] : _meshes)
     {
-        // val->release_upload_buffers(); // Mesh 클래스에 해당 함수 구현 필요
+        val->release_upload_buffers(); // TODO: Mesh 클래스에 해당 함수 구현 필요
+    }
+}
+
+void ResourceManager::unload_unused_meshes()
+{
+    // 맵을 순회하면서 직접 원소를 제거하면 반복자가 무효화되어 위험
+    std::vector<std::string> keys_to_unload;
+
+    for (const auto& pair : _meshes)
+    {
+        const std::string& path = pair.first;
+        const std::shared_ptr<Mesh>& mesh_ptr = pair.second;
+
+        // use_count()가 1이라는 것은 오직 이 ResourceManager만이 참조하고 있다는 의미입니다.
+        if (mesh_ptr.use_count() == 1)
+        {
+            keys_to_unload.push_back(path);
+        }
+    }
+
+    // 수집된 키를 기반으로 맵에서 해당 메시들을 제거합니다.
+    for (const std::string& key : keys_to_unload)
+    {
+        _meshes.erase(key);
+        // 맵에서 shared_ptr이 제거되면, 참조 카운트가 0이 되어
+        // Mesh 객체의 소멸자가 호출되고, GPU 리소스(ComPtr)도 자동으로 해제됩니다.
+
+        // 로그를 남겨서 확인하면 좋습니다.
+        CINFO("Unloaded unused mesh: " << key);
     }
 }

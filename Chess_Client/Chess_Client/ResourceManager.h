@@ -21,7 +21,11 @@ public:
     // [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
     void upload_pending_meshes(ID3D12GraphicsCommandList* command_list);
 
+	// [추가] 업로드에 사용된 임시 버퍼들을 해제하는 함수
     void release_upload_buffers();
+
+	// [추가] 사용되지 않는 메시들을 메모리에서 해제하는 함수
+    void unload_unused_meshes();
     // (향후 확장) 텍스처 로드 함수
     // std::shared_ptr<Texture> load_texture(const std::string& filePath);
 

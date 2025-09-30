@@ -66,6 +66,18 @@
     <Filter Include="0. Engine\3. Renderer\2. Meshes">
       <UniqueIdentifier>{f2843c66-3557-4ecb-8bf5-90a971785347}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\0. Object">
+      <UniqueIdentifier>{28044087-c5ad-4f75-83ea-b2ca74906fd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\1. Behaviour">
+      <UniqueIdentifier>{d6bc12f8-cab7-47f6-9d9a-4b774be9fda4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\2. GameObject">
+      <UniqueIdentifier>{7d8d333e-662c-4518-867a-4deacc3add82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components">
+      <UniqueIdentifier>{2b2fa94d-e5b9-4d7e-bb50-04537f23ab0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -76,30 +88,6 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>0. Engine\0. Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Behaviour.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ScriptComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Component.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ColiderComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>0. Engine\2. Scene</Filter>
@@ -158,9 +146,6 @@
     <ClInclude Include="ResourceManager.h">
       <Filter>0. Engine\4. Resource</Filter>
     </ClInclude>
-    <ClInclude Include="LayerManager.h">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClInclude>
     <ClInclude Include="BoardCubeScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
@@ -182,6 +167,33 @@
     <ClInclude Include="ReadGLBMesh.h">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\0. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Behaviour.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\1. Behaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ColiderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="LayerManager.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -192,30 +204,6 @@
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>0. Engine\0. Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Behaviour.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="ScriptComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="TransformComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Component.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="ColiderComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>0. Engine\2. Scene</Filter>
@@ -262,9 +250,6 @@
     <ClCompile Include="ResourceManager.cpp">
       <Filter>0. Engine\4. Resource</Filter>
     </ClCompile>
-    <ClCompile Include="LayerManager.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components</Filter>
-    </ClCompile>
     <ClCompile Include="BoardCubeScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
@@ -285,6 +270,33 @@
     </ClCompile>
     <ClCompile Include="ReadGLBMesh.cpp">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\0. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Behaviour.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\1. Behaviour</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ColiderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="LayerManager.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
