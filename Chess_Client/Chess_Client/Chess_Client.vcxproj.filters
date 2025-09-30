@@ -107,9 +107,6 @@
     <ClInclude Include="Shader.h">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>0. Engine\3. Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="json.hpp">
       <Filter>4. External</Filter>
     </ClInclude>
@@ -194,6 +191,9 @@
     <ClInclude Include="LayerManager.h">
       <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -221,9 +221,6 @@
       <Filter>0. Engine\3. Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>0. Engine\3. Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Chess_Scene.cpp">
@@ -297,6 +294,9 @@
     </ClCompile>
     <ClCompile Include="LayerManager.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

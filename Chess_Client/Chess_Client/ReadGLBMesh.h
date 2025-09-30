@@ -59,7 +59,7 @@ public:
 private:
     // accessor 인덱스를 기반으로 바이너리 버퍼에서 데이터를 추출하는 헬퍼 함수입니다.
     template<typename T>
-    std::pair<T*, size_t> ReadGlbMesh::get_data(const nlohmann::json& j, const std::vector<char>& binary_data,
+    std::pair<T*, size_t> get_data(const nlohmann::json& j, const std::vector<char>& binary_data,
         int accessor_index)
     {
         if (accessor_index < 0 || !j.contains("accessors") || accessor_index >= j["accessors"].size()) {
