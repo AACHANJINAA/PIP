@@ -1,7 +1,5 @@
 ﻿#include "stdafx.h"
 #include "ClientPacketManager.h"
-#include "MainPlayer.h"
-#include "OtherPlayer.h"
 #include "GameFramework.h"
 #include "ObjectManager.h"
 

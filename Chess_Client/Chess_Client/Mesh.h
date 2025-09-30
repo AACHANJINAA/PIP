@@ -270,7 +270,7 @@ public:
 
 	~ReadGLTFMesh() override;
 
-	void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
+	void render(ID3D12GraphicsCommandList* pd3dCommandList) override;
 
 private: // DW생각 : gltf이기 때문에 함수 단위로 분리해서 불러오기
 	// .gltf파일 불러오기 및 .bin파일 읽고, 성공여부를 반환ㅎㅏ기

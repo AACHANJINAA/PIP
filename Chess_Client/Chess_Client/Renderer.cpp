@@ -4,6 +4,7 @@
 #include "DebugShader.h"
 #include "DefaultObjectShader.h"
 #include "GameObject.h"
+#include "GlbShader.h"
 #include "Shader.h"
 #include "ObjectManager.h"
 #include "PlayerShader.h"
@@ -29,6 +30,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto debug_shader = std::make_shared<DebugShader>();
     _shaderPrototypes[debug_shader->pso_name()] = debug_shader;
+
+    auto glb_shader = std::make_shared<GlbShader>();
+    _shaderPrototypes[glb_shader->pso_name()] = glb_shader;
     // 앞으로 새로운 셰이더를 추가할 땐 이 목록에 한 줄만 추가하면 됩니다.
 
     create_pipeline_state_objects(device);

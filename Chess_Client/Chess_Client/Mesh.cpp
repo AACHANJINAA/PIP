@@ -1380,7 +1380,7 @@ ReadGLTFMesh::~ReadGLTFMesh()
 
 }
 
-void ReadGLTFMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+void ReadGLTFMesh::render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 
 }
