@@ -3,12 +3,15 @@
 #if WITH_EDITOR
 #include "Editor.h"
 #include "Subsystems/EditorActorSubsystem.h"
+#include "Exporters/Exporter.h"         // CJ설명 : UExporter 사용을 위해 추가
+#include "HAL/PlatformFileManager.h"    // CJ설명 : 파일/디렉토리 관리를 위해 추가
 #endif
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/Texture.h"
+#include "Engine/Texture2D.h" // UTexture2D로 캐스팅하기 위해 추가
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
@@ -61,15 +64,15 @@ void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
 
         // 위치 정보 변환 및 저장
         FVector UnrealLocation = MeshComponent->GetComponentLocation() / 100.0f;
-        FVector ExportedLocation(UnrealLocation.Y, UnrealLocation.Z, UnrealLocation.X);
+        FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Y, UnrealLocation.Z);
         ActorJsonObject->SetObjectField(TEXT("Location"), VectorToJsonObject(ExportedLocation));
 
         // AABB 정보 변환 및 저장
         FBox WorldBounds = MeshComponent->Bounds.GetBox();
         FVector UnrealMin = WorldBounds.Min / 100.0f;
         FVector UnrealMax = WorldBounds.Max / 100.0f;
-        FVector ExportedMin(UnrealMin.Y, UnrealMin.Z, UnrealMin.X);
-        FVector ExportedMax(UnrealMax.Y, UnrealMax.Z, UnrealMax.X);
+        FVector ExportedMin(UnrealMin.X, UnrealMin.Y, UnrealMin.Z);
+        FVector ExportedMax(UnrealMax.X, UnrealMax.Y, UnrealMax.Z);
 
         TSharedPtr<FJsonObject> AABBObject = MakeShareable(new FJsonObject());
         AABBObject->SetObjectField(TEXT("Min"), VectorToJsonObject(ExportedMin));
@@ -95,6 +98,17 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
 {
 #if WITH_EDITOR
     TArray<TSharedPtr<FJsonValue>> ActorJsonArray;
+
+    // CJ설명 : DDS 파일을 저장할 기본 디렉토리 경로 설정
+    const FString BaseExportDir = FPaths::ProjectSavedDir() + TEXT("MapData/");
+    const FString TextureExportDir = BaseExportDir + TEXT("Textures/");
+
+    // CJ설명 : TextureExportDir가 존재하는지 확인하고, 없으면 생성
+    IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+    if (!PlatformFile.DirectoryExists(*TextureExportDir))
+    {
+        PlatformFile.CreateDirectoryTree(*TextureExportDir);
+    }
 
     UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
     TArray<AActor*> FoundActors;
@@ -132,8 +146,10 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         ActorJsonObject->SetObjectField(TEXT("Transform"), TransformObject);
         // --- 수정 끝 ---
 
-        // 텍스처 정보 저장
+        // 텍스처 정보 저장 -> CJ 수정
         TArray<TSharedPtr<FJsonValue>> TexturesJsonArray;
+        TSet<UTexture*> ExportedTextures; // 중복된 텍스처 익스포트를 방지하기 위한 Set
+
         int32 NumMaterials = MeshComponent->GetNumMaterials();
         for (int32 MaterialIndex = 0; MaterialIndex < NumMaterials; ++MaterialIndex)
         {
@@ -142,11 +158,44 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
             {
                 TArray<UTexture*> UsedTextures;
                 Material->GetUsedTextures(UsedTextures, EMaterialQualityLevel::High, true, ERHIFeatureLevel::SM5, true);
+
                 for (UTexture* Texture : UsedTextures)
                 {
-                    if (Texture)
+                    // UTexture2D 타입이고, 아직 익스포트되지 않은 텍스처만 처리
+                    UTexture2D* Texture2D = Cast<UTexture2D>(Texture);
+                    if (Texture2D && !ExportedTextures.Contains(Texture2D))
                     {
-                        TexturesJsonArray.Add(MakeShareable(new FJsonValueString(Texture->GetPathName())));
+                        // DDS 파일 경로 생성
+                        FString DDSFileName = Texture2D->GetName() + TEXT(".dds");
+                        FString DDSFullFilePath = TextureExportDir + DDSFileName;
+
+                        // Texture2D를 DDS로 내보낼 수 있는 Exporter 찾기
+                        UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("DDS"));
+
+                        if (Exporter)
+                        {
+                            // 찾아낸 Exporter를 사용하여 파일을 내보내기
+                            int32 bExported = UExporter::ExportToFile(Texture2D, Exporter, *DDSFullFilePath, false, false);
+
+                            if (bExported == 1)
+                            {
+                                // JSON에는 상대 경로를 저장
+                                FString RelativePath = TEXT("Textures/") + DDSFileName;
+                                TexturesJsonArray.Add(MakeShareable(new FJsonValueString(RelativePath)));
+                                UE_LOG(LogTemp, Log, TEXT("Exported Texture: %s"), *DDSFullFilePath);
+                            }
+                            else
+                            {
+                                UE_LOG(LogTemp, Warning, TEXT("Failed to export texture: %s"), *Texture2D->GetPathName());
+                            }
+                        }
+                        else
+                        {
+                            UE_LOG(LogTemp, Error, TEXT("DDS Exporter not found for texture: %s"), *Texture2D->GetPathName());
+                        }
+
+                        // 처리된 텍스처를 Set에 추가하여 중복 방지
+                        ExportedTextures.Add(Texture2D);
                     }
                 }
             }
@@ -160,6 +209,7 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(ActorJsonArray, Writer);
+
     FString FilePath = FPaths::ProjectSavedDir() + TEXT("MapData/ExportedClientData.json");
     FFileHelper::SaveStringToFile(OutputString, *FilePath);
     UE_LOG(LogTemp, Warning, TEXT("Export Complete! File saved to: %s"), *FilePath);
