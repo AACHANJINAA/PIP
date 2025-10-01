@@ -9,7 +9,7 @@ private:
     SOCKET _socket; // 클라이언트 소켓
     std::vector<char> _recvBuffer; // 수신 버퍼
 	long long _my_session_id = -1; // 자신의 세션 ID (로그인 후 서버로부터 받음) [TODO: 임시로 여기에 저장하긴 했음]
-
+    std::string _name;
     // 패킷 핸들러 함수 포인터 타입 정의
     using PacketHandler = std::function<void(common::packet::PacketStream& stream)>;
     std::unordered_map<common::packet::PacketType, PacketHandler> _handlers;
