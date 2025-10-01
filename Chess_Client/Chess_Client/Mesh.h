@@ -70,13 +70,13 @@ struct MeshPrimitive
 };
 
 
-//struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
-//{
-//	XMFLOAT3 _position;
-//	XMFLOAT3 _normal;
-//	XMFLOAT4 _tangent;
-//	XMFLOAT2 _texCoord;
-//};
+struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
+{
+	XMFLOAT3 _position;
+	XMFLOAT3 _normal;
+	XMFLOAT4 _tangent;
+	XMFLOAT2 _texCoord;
+};
 
 
 struct GltfPrimitiveData
@@ -106,7 +106,11 @@ struct IlluminatedVertex : public Vertex
 public:
 	XMFLOAT3 _normal; // 법선 벡터
 	XMFLOAT2 _texCoord; // 텍스처 좌표 (추가)
-	XMFLOAT4 _diffuse; // CDiffusedVertex꺼 가져오기
+	union
+	{
+		XMFLOAT4 _diffuse; // CDiffusedVertex꺼 가져오기
+		XMFLOAT4 _tangent; // TODO: DW확인해줘야함 꼭, 임시로 컴파일 에러 막으려고 넣어둠
+	};
 
 public:
 	IlluminatedVertex() { 
@@ -128,6 +132,7 @@ struct GltfMeshData
 	std::vector<IlluminatedVertex> _vertices;
 	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
 };
+
 class Mesh : public Object
 {
 public:

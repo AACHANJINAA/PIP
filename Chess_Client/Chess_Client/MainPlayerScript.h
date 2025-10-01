@@ -14,16 +14,28 @@ public:
 
     // --- 고유 기능 ---
     // (예시: HP, ID, 이름 등 플레이어의 상태를 관리하는 변수와 함수들이 여기에 위치할 수 있습니다.)
-    // void set_hp(int hp) { _hp = hp; }
-    // int hp() const { return _hp; }
+	void set_hp(int hp) { _hp = hp; }
+	int hp() const { return _hp; }
+    void set_position(const f3& pos)
+	{
+		auto transform = this->transform();
+        if (transform)
+        {
+            transform->set_local_position(pos);
+		}
+	}
+	const f3& position() const { return this->transform()->local_position(); }
+
+    void set_id(int64_t id) { _playerId = id; }
+	int64_t id() const { return _playerId; }
 
 private:
     // 기존 MainPlayer의 private 함수였던 move_pos를 가져옵니다.
     void move_pos(common::packet::MOVE_TYPE cmd);
 
     // (예시: 플레이어의 상태 변수들)
-    // int _hp;
-    // int64_t _playerId;
+    int _hp;
+    int64_t _playerId;
 };
 
 
