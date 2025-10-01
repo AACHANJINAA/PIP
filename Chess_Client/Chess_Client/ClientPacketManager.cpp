@@ -1,8 +1,10 @@
 ﻿#include "stdafx.h"
 #include "ClientPacketManager.h"
 #include "GameFramework.h"
+#include "LayerManager.h"
 #include "MainPlayerScript.h"
 #include "ObjectManager.h"
+#include "OtherPlayerScript.h"
 
 // 외부 전역 변수 (Chess_Client.cpp에 정의된 g_hwnd)
 extern HWND g_hwnd;
@@ -141,7 +143,11 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 	// [추가] 이름(가변 길이)을 스트림에서 읽어옵니다.
 	std::string name;
 	stream >> name;
-
+	if (name != _name)
+	{
+		_name = name;// 서버에서 보내준 이름으로 업데이트
+		CLOG(" [S->C] Updated player name from server: " << _name << " 아마 에러임");
+	}
 	// 이제 spawn_data 구조체와 name 변수에 올바른 값이 들어있습니다.
 	// 이 값들을 사용하여 플레이어 객체를 생성하거나 업데이트합니다.
 
@@ -152,28 +158,19 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 		CLOG("[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		auto main_player = ObjectManager::Instance()->create_game_object("MainPlayer");
+
+		main_player->set_layer("Player");
 		auto main_player_logic = main_player->add_component<MainPlayerScript>();
 
 		if (main_player_logic)
 			main_player_logic->set_position(spawn_data._position);
 
 		main_player_logic->set_hp(spawn_data._hp);
-		main_player_logic->SetName(name);
-		main_player_logic->SetID(_my_session_id);
 
-		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadFbxMesh>(
-			GameFramework::Instance()->device().Get(),
-			GameFramework::Instance()->command_list().Get(),
-			"Resource/Test/testfbx_texture_included.fbx");
 		
-		if (my_king_Render)
-			my_king_Render->set_mesh(Chess_Mesh);
-		if (my_king_Transform)
-			my_king_Transform->set_scale(0.01f, 0.01f, 0.01f);
 
 		// 매니저에 넣기
-		ObjectManager::Instance()->PushObject(my_king);
-		ObjectManager::Instance()->SetPlayer(my_king);
+		
 		// level, exp 등 추가 정보도 업데이트 가능
 		
 		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
@@ -187,37 +184,17 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 	{
 		CLOG("[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
-		std::shared_ptr<OtherPlayer> other_king = std::make_shared<OtherPlayer>(spawn_data._position.x, spawn_data._position.y);
+		auto other_player = ObjectManager::Instance()->create_game_object(name);
+		auto other_player_logic = other_player->add_component<OtherPlayerScript>();
+		other_player->transform()->set_local_position(spawn_data._position);
+		other_player->set_layer("Enemy");
 
-		auto other_king_Transform = other_king->get_component<TransformComponent>();
-		auto other_king_Render = other_king->get_component<RenderComponent>();
-
-		other_king_Render->CreateShaderVariables(GameFramework::Instance()->device().Get(), GameFramework::Instance()->command_list().Get());
+		other_player_logic->set_hp(spawn_data._hp);
+		other_player_logic->set_id(spawn_data._id);
 		
-		other_king->SetID(spawn_data._id);
-		if (other_king_Transform)
-		{
-			other_king_Transform->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z); // 위치 설정
-		}
-		other_king->SetHP(spawn_data._hp); // HP 설정
-		other_king->SetName(name); // 이름 설정
-		// level, exp 등 추가 정보도 설정 가능
-		other_king->_meshType = ENEMY; // 적 타입으로 설정
-		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadObjMesh>(
-			GameFramework::Instance()->device().Get(),
-			GameFramework::Instance()->command_list().Get(),
-			"Resource/Monster/test_monster.obj");
 
-		// 색 설정
-		Chess_Mesh->ChangeColor(GameFramework::Instance()->command_list().Get(), 0.0f, 1.0f, 0.0f, 1.f);
-		other_king_Render->set_mesh(Chess_Mesh);
 
-		// 이동 거리 설정
-		if (other_king_Transform)
-			other_king_Transform->set_scale(1.f, 1.f, 1.f);
 
-		// 매니저에 넣기
-		ObjectManager::Instance()->PushEnemy(other_king);
 		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
 			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
 			<< "HP=" << spawn_data._hp
@@ -232,22 +209,22 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
 	common::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
-	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
+	auto player = ObjectManager::Instance()->find_by_name("MainPlayer");
 	auto player_Trasnform = player->get_component<TransformComponent>();
-	if (player && move_packet._id == player->GetID() && player_Trasnform) // 읽어온 id 사용
+	if (player && move_packet._id == _my_session_id && player_Trasnform) // 읽어온 id 사용
 	{
-		player_Trasnform->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+		player_Trasnform->set_local_position(move_packet._position); // 읽어온 x, y 사용
 	}
 	else
 	{
-		auto other_players = ObjectManager::Instance()->GetEnemy();
+		auto enemy_layer = LayerManager::Instance()->get_layer_value("Enemy");
+		auto other_players = ObjectManager::Instance()->find_by_layer(enemy_layer);
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-			return move_packet._id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 id 사용
-									   });
-		auto other_player_Trasnform = dynamic_cast<OtherPlayer*>(it->get())->get_component<TransformComponent>();
+			return move_packet._id == other->get_component<OtherPlayerScript>()->id();
+		});
 		if (it != other_players.end())
 		{
-			other_player_Trasnform->set_position(move_packet._position.x, move_packet._position.y, move_packet._position.z); // 읽어온 x, y 사용
+			(*it)->get_component<OtherPlayerScript>()->on_sync_position(move_packet._position);
 		}
 	}
 }
@@ -256,14 +233,14 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_LEAVE leave_packet;
 	stream >> leave_packet; // id만 읽습니다.
-
-	auto other_players = ObjectManager::Instance()->GetEnemy();
+	auto enemy_layer = LayerManager::Instance()->get_layer_value("Enemy");
+	auto other_players = ObjectManager::Instance()->find_by_layer(enemy_layer);
 	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-		return leave_packet._id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 id 사용
-								   });
+		return leave_packet._id == other->get_component<OtherPlayerScript>()->id();
+	});
 	if (it != other_players.end())
 	{
-		(*it)->_shouldDelete = true;
+		(*it)->destroy();
 	}
 }
 
@@ -274,20 +251,22 @@ void ClientPacketManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream
 	stream >> attack_packet; // 구조체 전체를 읽습니다.
 
 
-	auto player = std::dynamic_pointer_cast<MainPlayer>(ObjectManager::Instance()->GetPlayer());
-	if (player && attack_packet._target_id == player->GetID()) // 읽어온 target_id 사용
+	auto player = ObjectManager::Instance()->find_by_name("MainPlayer");
+	auto player_logic = player->get_component<MainPlayerScript>();
+	if (player && attack_packet._target_id == player_logic->id()) // 읽어온 target_id 사용
 	{
-		player->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
+		player_logic->set_hp(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 	}
 	else
 	{
-		auto other_players = ObjectManager::Instance()->GetEnemy();
+		auto enemy_layer = LayerManager::Instance()->get_layer_value("Enemy");
+		auto other_players = ObjectManager::Instance()->find_by_layer(enemy_layer);
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-			return attack_packet._target_id == static_cast<OtherPlayer*>(other.get())->GetID(); // 읽어온 target_id 사용
-									   });
+			return attack_packet._target_id == other->get_component<OtherPlayerScript>()->id(); // 읽어온 target_id 사용
+		});
 		if (it != other_players.end())
 		{
-			dynamic_cast<OtherPlayer*>(it->get())->SetHP(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
+			(*it)->get_component<OtherPlayerScript>()->set_hp(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
 		}
 	}
 }

@@ -35,7 +35,11 @@ void MainPlayerScript::awake()
     // 렏더러 컴포넌트 멤버변수로 들고 있어도 좋다.
 
     // 3. 컴포넌트들을 설정합니다.
-    auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/test_mesh.obj");
+    /*std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadFbxMesh>(
+        GameFramework::Instance()->device().Get(),
+        GameFramework::Instance()->command_list().Get(),
+        "Resource/Test/testfbx_texture_included.fbx");*/
+    auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Test/testfbx_texture_included.fbx");
     renderer->set_mesh(playerMesh);
     renderer->set_pso_name("default"); // 사용할 PSO 이름 지정
 
