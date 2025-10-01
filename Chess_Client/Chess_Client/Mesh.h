@@ -10,16 +10,7 @@
 using json = nlohmann::json;
 
 //정점을 표현하기 위한 클래스를 선언한다.
-class Vertex
-{
-public:
-	//정점의 위치 벡터이다(모든 정점은 최소한 위치 벡터를 가져야 한다).
-	XMFLOAT3 _position;
-public:
-	Vertex() { _position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
-	Vertex(XMFLOAT3 xmf3Position) { _position = xmf3Position; }
-	~Vertex() {}
-};
+
 
 // Node 구조체 정의 DW : GLTF/GLB 파일에서 노드 정보를 표현하기 위해 추가
 //struct Node
@@ -79,19 +70,14 @@ struct MeshPrimitive
 };
 
 
-struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
-{
-	XMFLOAT3 _position;
-	XMFLOAT3 _normal;
-	XMFLOAT4 _tangent;
-	XMFLOAT2 _texCoord;
-};
+//struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
+//{
+//	XMFLOAT3 _position;
+//	XMFLOAT3 _normal;
+//	XMFLOAT4 _tangent;
+//	XMFLOAT2 _texCoord;
+//};
 
-struct GltfMeshData
-{
-	std::vector<GltfVertex> _vertices;
-	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
-};
 
 struct GltfPrimitiveData
 {
@@ -105,30 +91,43 @@ struct GltfPrimitiveData
 	int _materialIndex = -1; // 이 프리미티브가 사용할 m_textures 벡터의 인덱스
 };
 
-// (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
-class IlluminatedVertex : public Vertex
+struct Vertex
 {
 public:
-	XMFLOAT3 m_xmf3Normal; // 법선 벡터
-	XMFLOAT2 m_xmf2Texcoord; // 텍스처 좌표 (추가)
-	XMFLOAT4 m_xmf4Diffuse; // CDiffusedVertex꺼 가져오기
+	//정점의 위치 벡터이다(모든 정점은 최소한 위치 벡터를 가져야 한다).
+	XMFLOAT3 _position;
+public:
+	Vertex() { _position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
+	Vertex(XMFLOAT3 xmf3Position) { _position = xmf3Position; }
+};
+// (추가) 조명 효과를 표현하기 위한 정점 클래스이다. [PONG]
+struct IlluminatedVertex : public Vertex
+{
+public:
+	XMFLOAT3 _normal; // 법선 벡터
+	XMFLOAT2 _texCoord; // 텍스처 좌표 (추가)
+	XMFLOAT4 _diffuse; // CDiffusedVertex꺼 가져오기
 
 public:
 	IlluminatedVertex() { 
 		_position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
-		m_xmf3Normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
-		m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f); // 추가
-		m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		_normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
+		_texCoord = XMFLOAT2(0.0f, 0.0f); // 추가
+		_diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 	IlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT4 c = RANDOM_COLOR) {
 		_position = p;
-		m_xmf3Normal = n;
-		m_xmf2Texcoord = t;
-		m_xmf4Diffuse = c;
+		_normal = n;
+		_texCoord = t;
+		_diffuse = c;
 	}
-	~IlluminatedVertex() {}
 };
 
+struct GltfMeshData
+{
+	std::vector<IlluminatedVertex> _vertices;
+	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
+};
 class Mesh : public Object
 {
 public:
@@ -152,6 +151,10 @@ protected:
 	std::vector<Vertex> _vertices; // Vertex 구조체가 정의되어 있다고 가정
 	std::vector<UINT> _indices;
 
+	bool _isUploaded = false;
+	UINT _stride;
+	D3D_PRIMITIVE_TOPOLOGY _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링
+
 	// [변경] 이 GPU 리소스들은 upload_to_gpu가 호출될 때 생성됩니다.
 	ComPtr<ID3D12Resource> _vertexBuffer;
 	ComPtr<ID3D12Resource> _indexBuffer;
@@ -161,7 +164,7 @@ protected:
 	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
 	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
 
-	bool _isUploaded = false;
+	BoundingOrientedBox _orientedBoundingBox = BoundingOrientedBox();
 };
 
 //class Mesh
@@ -247,19 +250,24 @@ struct OBJMaterial
 class ReadObjMesh : public Mesh
 {
 public:
-	ReadObjMesh() {};
+	ReadObjMesh() = default;
 	ReadObjMesh(const std::string& filePath);
 
 	//void ChangeColor(float r, float g, float b, float a);
 
 	//virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
 
-
-	virtual ~ReadObjMesh();
-
+	~ReadObjMesh() override;
 private:
-	std::map<std::string, OBJMaterial> m_mapMaterials;
 	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
+private:
+	float _front = 0.0f;
+	float _back = 0.0f;
+	float _left = 0.0f;
+	float _right = 0.0f;
+	float _top = 0.0f;
+	float _bottom = 0.0f;
+	std::map<std::string, OBJMaterial> m_mapMaterials;
 };
 
 class ReadGLTFMesh : public Mesh
@@ -433,7 +441,6 @@ public:
 	virtual ~ReadFbxMesh();
 
 	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return _collisionPrimitives; }
-
 private:
 	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
 	void ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
@@ -457,6 +464,6 @@ class DebugWireframeMesh : public Mesh
 {
 public:
 	// 생성자에서 정점과 인덱스 목록을 직접 받습니다.
-	DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices, XMFLOAT4 color);
+	DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color);
 	virtual ~DebugWireframeMesh();
 };

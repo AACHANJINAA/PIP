@@ -83,7 +83,7 @@ void SceneManager::process_scene_change_if_requested()
     game_framework->WaitForGpuComplete();
 
     // TODO: 임시 업로드 버퍼 해제 로직
-    ResourceManager::Instance()->release_upload_buffers();
+    //ResourceManager::Instance()->release_upload_buffers();
     // --- [추가] 모든 씬 전환 작업이 끝난 후 ---
 	// 이제 더 이상 사용되지 않는 이전 씬의 메시들을 메모리에서 완전히 해제합니다.
     ResourceManager::Instance()->unload_unused_meshes();

@@ -28,7 +28,7 @@ BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max) {
 }
 // --- Mesh Base Class ---
 
-Mesh::Mesh()
+Mesh::Mesh() : _stride{ 0 }
 {
 	set_name("Mesh");
 }
@@ -41,12 +41,15 @@ Mesh::~Mesh()
 void Mesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 	// 이미 업로드되었다면 중복 실행 방지
-	if (_isUploaded || _vertices.empty()) return;
-
+	if (_isUploaded || _vertices.empty() ) return;
+	if ( 0 == _stride)
+	{
+		CERROR("stride 설정 안됨")
+	}
 	// --- 기존 생성자에 있던 GPU 버퍼 생성 로직이 여기로 이전 ---
 
 	// 정점 버퍼 생성
-	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertices.data(), sizeof(Vertex) * _vertices.size(),
+	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertices.data(), _stride * _vertices.size(),
 		D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_vertexUploadBuffer);
 
 	// 인덱스 버퍼 생성 (인덱스가 있는 경우)
@@ -58,8 +61,8 @@ void Mesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* comman
 
 	// 버퍼 뷰 설정
 	_vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
-	_vertexBufferView.StrideInBytes = sizeof(Vertex);
-	_vertexBufferView.SizeInBytes = sizeof(Vertex) * _vertices.size();
+	_vertexBufferView.StrideInBytes = _stride;
+	_vertexBufferView.SizeInBytes = _stride * _vertices.size();
 
 	if (!_indices.empty())
 	{
@@ -472,86 +475,206 @@ ReadObjMesh::ReadObjMesh(const std::string& filePath)
 	set_name(filePath); // Object의 이름 설정
 
 	// --- 아래는 기존의 파싱 로직을 거의 그대로 사용합니다 ---
-
 	std::ifstream in{ filePath };
 	if (!in) {
 		return;
 	}
 
-	std::string line;
-	std::string type;
-	std::string currentMtlName = "";
+	std::string Line{};
+	std::string type{};
+	std::string currentMtlName = ""; // mtl 파일 이름 추가
 
-	std::vector<XMFLOAT3> temp_positions;
-	std::vector<XMFLOAT3> temp_normals;
-	std::vector<XMFLOAT2> temp_texcoords;
-	std::vector<UINT> position_indices, normal_indices, texcoord_indices;
+	int FaceNum{}; // 1,2,3 반복
 
-	while (std::getline(in, line))
+	// 원래는 바로 넣었던 걸 수정하여, 임시로 위치, 법선을 저장할 벡터를 사용합니다.
+	std::vector<XMFLOAT3> temp_positions; // 임시로 위치를 저장할 벡터
+	std::vector<XMFLOAT3> temp_normals; // 임시로 법선을 저장할 벡터
+	std::vector<XMFLOAT2> temp_texcoords; // 임시로 텍스처 좌표를 저장할 벡터
+	std::vector<UINT> position_indices, normal_indices, texcoord_indices; // 위치 인덱스 저장용 & 법선 인덱스 저장용 & 텍스처 인덱스 저장용
+	std::vector<std::string> object_names; // 오브젝트 이름 저장용
+
+
+	while (std::getline(in, Line))
 	{
-		std::istringstream iss(line);
+		std::istringstream iss(Line);
+
 		iss >> type;
 
 		if (type == "v") {
+			// 수정 (위치벡터에 위치를 저장)
 			XMFLOAT3 pos;
 			iss >> pos.x >> pos.y >> pos.z;
-			temp_positions.push_back(pos);
+			temp_positions.emplace_back(pos);
+			
 		}
 		else if (type == "vn") {
+			// 수정 (법선벡터에 법선을 저장)
 			XMFLOAT3 normal;
 			iss >> normal.x >> normal.y >> normal.z;
-			temp_normals.push_back(normal);
+			temp_normals.emplace_back(normal);
 		}
 		else if (type == "vt") {
 			XMFLOAT2 tex;
 			iss >> tex.x >> tex.y;
-			tex.y = 1.0f - tex.y; // Y축 뒤집기
-			temp_texcoords.push_back(tex);
+			temp_texcoords.emplace_back(tex);
 		}
+		else if (type == "o") {
+			std::string objName;
+			iss >> objName;
+			object_names.push_back(objName);
+		}
+		// .mtl 파일을 로드하라는 지시어(mtllib) 처리
 		else if (type == "mtllib") {
-			std::string mtlFileName;
+		    std::string mtlFileName;
 			iss >> mtlFileName; // .obj 파일 경로를 기준으로 .mtl 파일 로드 함수 호출
 			LoadMtlFile(filePath, mtlFileName);
-		}
-		else if (type == "usemtl") {
-			iss >> currentMtlName;
+		} 
+		// 사용할 재질을 지정하는 지시어(usemtl) 처리
+			else if (type == "usemtl") {
+			// 현재 사용할 재질의 이름을 저장
+			 iss >> currentMtlName;
 		}
 		else if (type == "f")
 		{
 			std::string face_chunk;
-			for (int i = 0; i < 3; ++i) {
-				iss >> face_chunk;
-				for (int i = 0; i < 3; ++i)
-				{
-					iss >> face_chunk; // 예: "1//1"
+			// "f" 뒤에 나오는 세 개의 "v//vn" 덩어리를 각각 처리
+			for (int i = 0; i < 3; ++i)
+			{
+				iss >> face_chunk; // 예: "1//1"
 
-					std::stringstream face_ss(face_chunk);
-					std::string part;
+				std::stringstream face_ss(face_chunk);
+				std::string part;
 
-					// 위치 인덱스 '/' 전까지 읽어 위치 인덱스로 저장
-					std::getline(face_ss, part, '/');
-					position_indices.push_back(std::stoul(part));
+				// 위치 인덱스 '/' 전까지 읽어 위치 인덱스로 저장
+				std::getline(face_ss, part, '/');
+				position_indices.push_back(std::stoul(part));
 
-					// 텍스처 인덱스'/' 전까지 읽음 (비어 있을 수 있음)
-					std::getline(face_ss, part, '/');
-					texcoord_indices.push_back(part.empty() ? 0 : std::stoul(part));
+				// 텍스처 인덱스'/' 전까지 읽음 (비어 있을 수 있음)
+				std::getline(face_ss, part, '/');
+				texcoord_indices.push_back(part.empty() ? 0 : std::stoul(part));
 
-					// 법선 인덱스 (비어있을 수 있음)
-					if (std::getline(face_ss, part))
-						normal_indices.push_back(part.empty() ? 0 : std::stoul(part));
-					else
-						normal_indices.push_back(0); // 없으면 0
-				}
+				// 법선 인덱스 (비어있을 수 있음)
+				if (std::getline(face_ss, part))
+					normal_indices.push_back(part.empty() ? 0 : std::stoul(part));
+				else
+					normal_indices.push_back(0); // 없으면 0
 			}
 		}
 	}
-	in.close();
+
+	_vertices.clear();
+	_indices.clear();
+
+	// 이 코드는 (위치, 법선)의 고유한 조합을 찾아내어, 중복되는 정점 생성을 막고 메모리를 최적화
+	// 법선 벡터가 고유한 solid 객체를 받아올 때는 아래코드가 있으면 좋음
+	// 투명, 반투명, 구멍이 뚫려있는 물체 등을 사용할 때는 다른 형식으로 생각해봐야할듯 <- 왜냐하면 이거는 위치가 같더라도 서로다른 법선벡터가 필요할 거니까
+
+	// Key: (위치 인덱스, 법선 인덱스)의 한 쌍
+	// Value: 우리가 새로 만드는 최종 정점 목록에서의 인덱스 번호
+	std::map<std::pair<UINT, UINT>, UINT> vertex_map;
+
+	// .obj 파일의 f 라인에서 읽어온 모든 면(face)의 인덱스 정보(인덱스 3개 => 삼각형 1개)를 순회
+	for (size_t i = 0; i < position_indices.size(); ++i)
+	{
+		// .obj 파일의 인덱스는 1부터 시작하지만, C++ 벡터의 인덱스는 0부터 시작하므로 1을 빼서 실제 배열의 인덱스로 변환
+		UINT pos_idx = position_indices[i] - 1;
+		UINT norm_idx = normal_indices[i] - 1;
+		UINT tex_idx = texcoord_indices[i] - 1;
+		if (tex_idx >= temp_texcoords.size() || tex_idx < 0)
+			tex_idx = 0; // 또는 XMFLOAT2(0,0) 등 기본값 사용
+
+		if (pos_idx >= temp_positions.size() || norm_idx >= temp_normals.size())
+		{
+			__debugbreak();
+		}
+
+		// 위치/법선/텍스처 좌표가 없을 때 기본값 처리
+		XMFLOAT3 position = (pos_idx < temp_positions.size() && pos_idx >= 0) ? temp_positions[pos_idx] : XMFLOAT3(0, 0, 0);
+		XMFLOAT3 normal = (norm_idx < temp_normals.size() && norm_idx >= 0) ? temp_normals[norm_idx] : XMFLOAT3(0, 0, 1);
+		XMFLOAT2 texcoord = (tex_idx < temp_texcoords.size() && tex_idx >= 0) ? temp_texcoords[tex_idx] : XMFLOAT2(0, 0);
+
+		// 현재 처리 중인 정점의 '(위치 인덱스, 법선 인덱스)' 조합을 Key로
+		std::pair<UINT, UINT> vertex_key = { pos_idx, norm_idx };
+
+		// map에서 이 조합을 이전에 본 적이 있는지 찾기
+		auto it = vertex_map.find(vertex_key);
+
+		// 위 find에서 end가 나왔을 경우엔?(map안에 없다는 거)
+		if (it == vertex_map.end())
+		{
+			// 사용할 색상을 저장할 변수 (기본값은 랜덤 색상)
+			XMFLOAT4 color = RANDOM_COLOR;
+			// 현재 재질 이름(currentMtlName)이 재질 맵(m_mapMaterials)에 있는지 확인
+			if (m_mapMaterials.count(currentMtlName))
+			{
+				// 재질 맵에 있다면 해당 재질의 Kd(확산광) 값을 색상으로 사용
+				color = m_mapMaterials[currentMtlName].Kd;
+			}
+
+			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성 + color 추가
+			IlluminatedVertex new_vertex(position, normal, texcoord, color);
+
+			// 이 새 정점을 최종 정점 목록에 추가
+			_vertices.emplace_back(new_vertex);
+
+			// 방금 추가한 정점의 인덱스 번호를 구하고
+			UINT new_index = static_cast<UINT>(_vertices.size() - 1);
+
+			// 새로 만든 정점의 인덱스를 최종 인덱스 목록에 추가
+			_indices.emplace_back(new_index);
+
+			// map에 (위치/법선 조합, 새로 부여된 인덱스)를 기록 <- 이러면 다음에 똑같은게 나오면 중복체크가 되서 넘어가겠지 
+			vertex_map[vertex_key] = new_index;
+		}
+		else
+		{
+			// 정점을 또 만들지 않고, map에서 찾은 기존 인덱스 번호를 최종 인덱스 목록에 추가하여 재사용
+			_indices.emplace_back(it->second);
+		}
+	}
+
+	// (수정) IlluminatedVertex로 변경
+	auto [min_x, max_x] =
+		std::minmax_element(_vertices.begin(), _vertices.end(),
+			[](const IlluminatedVertex& a, const IlluminatedVertex& b)
+			{ 
+				return a._position.x < b._position.x;
+			});
+	auto [min_y, max_y] =
+		std::minmax_element(_vertices.begin(), _vertices.end(),
+			[](const IlluminatedVertex& a, const IlluminatedVertex& b)
+			{ 
+				return a._position.y < b._position.y;
+			});
+	auto [min_z, max_z] =
+		std::minmax_element(_vertices.begin(), _vertices.end(),
+			[](const IlluminatedVertex& a, const IlluminatedVertex& b)
+			{ 
+				return a._position.z < b._position.z;
+			});
+
+	_bottom = min_y->_position.y;
+	_top = max_y->_position.y;
+
+	_right = max_x->_position.x;
+	_left = min_x->_position.x;
+
+	_front = max_z->_position.z;
+	_back = min_z->_position.z;
+
+	_orientedBoundingBox = CreateOOBB(XMFLOAT3(min_x->_position.x, min_y->_position.y, min_z->_position.z),
+		XMFLOAT3(max_x->_position.x, max_y->_position.y, max_z->_position.z));
+
+	//--- 아래 렌더 시 필요한 정보
+	_stride = sizeof(IlluminatedVertex);
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	
 }
 ReadObjMesh::~ReadObjMesh()
 {
 
 }
-
 
 // .mtl 파일을 읽어 재질 정보를 파싱하고 m_mapMaterials 맵에 저장하는 함수
 void ReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName)
@@ -621,425 +744,425 @@ void ReadObjMesh::LoadMtlFile(const std::string& objFilePath, const std::string&
 
 
 
-// ReadGlbMesh 소멸자: 생성된 모든 Primitive와 업로드 버퍼를 정리합니다.
-ReadGlbMesh::~ReadGlbMesh()
-{
-	m_primitives.clear(); // unique_ptr 벡터가 자동으로 각 Primitive 소멸자 호출
-	for (auto& buffer : m_vUploadBuffers) {
-		if (buffer) buffer->Release();
-	}
-	m_vUploadBuffers.clear();
-}
-
-// 오버라이드된 ReleaseUploadBuffers 함수
-void ReadGlbMesh::ReleaseUploadBuffers()
-{
-	// ReadGlbMesh는 로딩이 끝나면 업로드 버퍼를 모두 해제합니다.
-	for (auto& buffer : m_vUploadBuffers) {
-		if (buffer) buffer->Release();
-	}
-	m_vUploadBuffers.clear();
-
-	// 베이스 클래스의 업로드 버퍼도 혹시 모르니 호출해줄 수 있습니다.
-	Mesh::ReleaseUploadBuffers();
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE ReadGlbMesh::GetSrvGpuHandle(UINT nPrimitive) const
-{
-	// 메시가 프리미티브를 가지고 있고, 요청된 인덱스가 유효한지 확인합니다.
-	if (m_primitives.empty() || nPrimitive >= m_primitives.size())
-	{
-		return { 0 }; // 유효하지 않으면 비어있는 핸들 반환
-	}
-
-	// 지정된 프리미티브(기본값은 0번째)의 SRV GPU 핸들을 반환합니다.
-	return m_primitives[nPrimitive]->m_d3dGpuSrvHandle;
-}
-
-D3D12_GPU_VIRTUAL_ADDRESS ReadGlbMesh::GetBoneTransformsBufferAddress() const
-{
-	if (m_pd3dcbBoneTransforms)
-	{
-		return m_pd3dcbBoneTransforms->GetGPUVirtualAddress();
-	}
-	return 0;
-}
-
-std::tuple<std::vector<unsigned char>, UINT, UINT> ReadGlbMesh::LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex)
-{
-	if (!j.contains("textures") || textureIndex >= j["textures"].size()) return {};
-	const auto& tex = j["textures"][textureIndex];
-
-	if (!tex.contains("source")) return {};
-	int imageIndex = tex["source"];
-
-	if (!j.contains("images") || imageIndex >= j["images"].size()) return {};
-	const auto& img = j["images"][imageIndex];
-
-	if (!img.contains("bufferView")) return {};
-	int bufferViewIndex = img["bufferView"];
-
-	if (!j.contains("bufferViews") || bufferViewIndex >= j["bufferViews"].size()) return {};
-	const auto& bv = j["bufferViews"][bufferViewIndex];
-
-	size_t byteOffset = bv["byteOffset"];
-	size_t byteLength = bv["byteLength"];
-
-	const unsigned char* pImageData = reinterpret_cast<const unsigned char*>(binaryData.data() + byteOffset);
-
-	// WIC를 사용하여 메모리상의 이미지 데이터 디코딩
-	HRESULT hr;
-	IWICImagingFactory* pFactory = nullptr;
-	IWICStream* pStream = nullptr;
-	IWICBitmapDecoder* pDecoder = nullptr;
-	IWICBitmapFrameDecode* pFrame = nullptr;
-	IWICFormatConverter* pConverter = nullptr;
-
-	CoInitialize(NULL);
-	hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFactory));
-	if (FAILED(hr)) { CoUninitialize(); return {}; }
-
-	hr = pFactory->CreateStream(&pStream);
-	if (SUCCEEDED(hr)) hr = pStream->InitializeFromMemory(const_cast<unsigned char*>(pImageData), static_cast<DWORD>(byteLength));
-	if (SUCCEEDED(hr)) hr = pFactory->CreateDecoderFromStream(pStream, NULL, WICDecodeMetadataCacheOnDemand, &pDecoder);
-	if (SUCCEEDED(hr)) hr = pDecoder->GetFrame(0, &pFrame);
-
-	UINT width, height;
-	if (SUCCEEDED(hr)) hr = pFrame->GetSize(&width, &height);
-
-	if (SUCCEEDED(hr)) hr = pFactory->CreateFormatConverter(&pConverter);
-	if (SUCCEEDED(hr)) hr = pConverter->Initialize(pFrame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, NULL, 0.f, WICBitmapPaletteTypeMedianCut);
-
-	std::vector<unsigned char> pixels(width * height * 4);
-	if (SUCCEEDED(hr)) hr = pConverter->CopyPixels(NULL, width * 4, pixels.size(), pixels.data());
-
-	if (pConverter) pConverter->Release();
-	if (pFrame) pFrame->Release();
-	if (pDecoder) pDecoder->Release();
-	if (pStream) pStream->Release();
-	if (pFactory) pFactory->Release();
-	CoUninitialize();
-
-	if (FAILED(hr)) return {};
-
-	return { std::move(pixels), width, height };
-}
-
-// 오버라이드된 Render 함수: ReadGlbMesh만의 렌더링 로직
-void ReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
-{
-	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	for (const auto& primitive : m_primitives)
-	{
-		// 이 Primitive가 텍스처를 가지고 있다면, GpuHandle가 0이 아니라면
-		if (primitive->m_pTexture && primitive->m_d3dGpuSrvHandle.ptr != 0)
-		{
-			// 해당 텍스처의 SRV를 루트 테이블에 바인딩합니다.
-			// 5번 파라미터가 텍스처 테이블
-			pd3dCommandList->SetGraphicsRootDescriptorTable(5, primitive->m_d3dGpuSrvHandle);
-		}
-
-		pd3dCommandList->IASetVertexBuffers(0, 1, &primitive->_d3dVertexBufferView);
-		pd3dCommandList->IASetIndexBuffer(&primitive->_d3dIndexBufferView);
-		pd3dCommandList->DrawIndexedInstanced(primitive->m_nIndices, 1, 0, 0, 0);
-	}
-}
-
-ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, Scene* pScene)
-{
-	// --- 1단계: 파일 읽기 및 청크 분리 ---
-	std::vector<char> fileData;
-	std::ifstream file(str, std::ios::binary | std::ios::ate);
-	if (!file.is_open()) {
-		std::cerr << "Error: Failed to open " << str << std::endl;
-		return;
-	}
-	std::streamsize size = file.tellg();
-	file.seekg(0, std::ios::beg);
-	fileData.resize(size);
-	if (!file.read(fileData.data(), size)) {
-		std::cerr << "Error: Failed to read file content." << std::endl;
-		return;
-	}
-	file.close();
-
-	std::string jsonString;
-	std::vector<char> binaryData;
-	char* pData = fileData.data();
-
-	uint32_t magic = *reinterpret_cast<uint32_t*>(pData); pData += 4;
-	uint32_t version = *reinterpret_cast<uint32_t*>(pData); pData += 4;
-	uint32_t length = *reinterpret_cast<uint32_t*>(pData); pData += 4;
-
-	if (magic != 0x46546C67) { // "glTF"
-		std::cerr << "Error: Not a valid GLB file." << std::endl;
-		return;
-	}
-
-	while (pData < fileData.data() + length) {
-		uint32_t chunkLength = *reinterpret_cast<uint32_t*>(pData); pData += 4;
-		uint32_t chunkType = *reinterpret_cast<uint32_t*>(pData); pData += 4;
-		if (chunkType == 0x4E4F534A) { // "JSON"
-			jsonString.assign(pData, chunkLength);
-		}
-		else if (chunkType == 0x004E4942) { // "BIN"
-			binaryData.assign(pData, pData + chunkLength);
-		}
-		pData += chunkLength;
-	}
-
-	try
-	{
-		auto j = json::parse(jsonString);
-
-		// --- 2단계: 노드 계층 구조 파싱 ---
-		if (j.contains("nodes")) {
-			const auto& nodes = j["nodes"];
-			m_Nodes.resize(nodes.size());
-			for (size_t i = 0; i < nodes.size(); ++i) {
-				const auto& nodeJson = nodes[i];
-				Node& currentNode = m_Nodes[i];
-				if (nodeJson.contains("name")) currentNode.name = nodeJson["name"];
-				if (nodeJson.contains("translation")) {
-					currentNode.translation.x = nodeJson["translation"][0];
-					currentNode.translation.y = nodeJson["translation"][1];
-					currentNode.translation.z = nodeJson["translation"][2];
-
-				}
-				if (nodeJson.contains("rotation")) {
-					currentNode.rotation.x = nodeJson["rotation"][0];
-					currentNode.rotation.y = nodeJson["rotation"][1];
-					currentNode.rotation.z = nodeJson["rotation"][2];
-					currentNode.rotation.w = nodeJson["rotation"][3];
-
-				}
-				if (nodeJson.contains("scale")) {
-					currentNode.scale.x = nodeJson["scale"][0];
-					currentNode.scale.y = nodeJson["scale"][1];
-					currentNode.scale.z = nodeJson["scale"][2];
-
-				}
-				if (nodeJson.contains("children")) {
-					for (const auto& childIndex : nodeJson["children"]) {
-						currentNode.childrenIndices.push_back(childIndex);
-					}
-				}
-				if (nodeJson.contains("mesh")) currentNode.meshIndex = nodeJson["mesh"];
-				if (nodeJson.contains("skin")) currentNode.skinIndex = nodeJson["skin"];
-			}
-			for (size_t i = 0; i < m_Nodes.size(); ++i) {
-				for (int childIndex : m_Nodes[i].childrenIndices) {
-					if (childIndex >= 0 && childIndex < m_Nodes.size()) {
-						m_Nodes[childIndex].parentIndex = i;
-					}
-				}
-			}
-		}
-
-		// --- 3단계: 모든 메시 및 텍스처 파싱 ---
-		if (!j.contains("meshes") || j["meshes"].empty()) {
-			std::cout << "Warning: No meshes found in the glTF file." << std::endl;
-			return;
-		}
-
-		XMFLOAT3 modelMin(FLT_MAX, FLT_MAX, FLT_MAX);
-		XMFLOAT3 modelMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-
-		for (const auto& mesh : j["meshes"])
-		{
-			for (const auto& primitiveJson : mesh["primitives"])
-			{
-				std::vector<SkinnedVertex> _vertices;
-				std::vector<UINT> _indices;
-
-				int posAccessorIndex = primitiveJson["attributes"]["POSITION"];
-				int indicesAccessorIndex = primitiveJson["indices"];
-				int normalAccessorIndex = primitiveJson.value("/attributes/NORMAL"_json_pointer, -1);
-				int texCoordAccessorIndex = primitiveJson.value("/attributes/TEXCOORD_0"_json_pointer, -1);
-				int jointAccessorIndex = primitiveJson.value("/attributes/JOINTS_0"_json_pointer, -1);
-				int weightAccessorIndex = primitiveJson.value("/attributes/WEIGHTS_0"_json_pointer, -1);
-
-				if (posAccessorIndex == -1 || indicesAccessorIndex == -1) continue;
-
-				auto [positions, posCount] = getData<XMFLOAT3>(j, binaryData, posAccessorIndex);
-				auto [normals, normCount] = (normalAccessorIndex != -1) ? getData<XMFLOAT3>(j, binaryData, normalAccessorIndex) : std::pair<XMFLOAT3*, size_t>(nullptr, 0);
-				auto [texCoords, texCount] = (texCoordAccessorIndex != -1) ? getData<XMFLOAT2>(j, binaryData, texCoordAccessorIndex) : std::pair<XMFLOAT2*, size_t>(nullptr, 0);
-				auto [weights, weightCount] = (weightAccessorIndex != -1) ? getData<XMFLOAT4>(j, binaryData, weightAccessorIndex) : std::pair<XMFLOAT4*, size_t>(nullptr, 0);
-				struct JointType { uint16_t j[4]; };
-				auto [joints, jointCount] = (jointAccessorIndex != -1) ? getData<JointType>(j, binaryData, jointAccessorIndex) : std::pair<JointType*, size_t>(nullptr, 0);
-
-				_vertices.resize(posCount);
-				for (size_t i = 0; i < posCount; ++i) {
-				
-					_vertices[i].m_xmf3Position = positions[i];
-
-					if (normals) {
-						_vertices[i].m_xmf3Normal = normals[i];
-					}
-
-					if (texCoords) _vertices[i].m_xmf2TexCoord = texCoords[i];
-					if (joints) _vertices[i].m_xmf4BoneIndices = XMFLOAT4((float)joints[i].j[0], (float)joints[i].j[1], (float)joints[i].j[2], (float)joints[i].j[3]);
-					if (weights) _vertices[i].m_xmf4BoneWeights = weights[i];
-
-					// Bounding Box 계산 시에는 변환된 좌표를 사용
-					XMFLOAT3 transformedPos = _vertices[i].m_xmf3Position;
-					modelMin.x = min(modelMin.x, transformedPos.x);
-					modelMin.y = min(modelMin.y, transformedPos.y);
-					modelMin.z = min(modelMin.z, transformedPos.z);
-					modelMax.x = max(modelMax.x, transformedPos.x);
-					modelMax.y = max(modelMax.y, transformedPos.y);
-					modelMax.z = max(modelMax.z, transformedPos.z);
-				}
-
-				const auto& indexAccessor = j["accessors"][indicesAccessorIndex];
-				size_t indicesCount = indexAccessor["count"];
-				_indices.resize(indicesCount);
-				if (indexAccessor["componentType"] == 5123) { // uint16_t
-					auto [indices_u16, count] = getData<uint16_t>(j, binaryData, indicesAccessorIndex);
-					for (size_t i = 0; i < count; ++i) _indices[i] = indices_u16[i];
-				}
-				else if (indexAccessor["componentType"] == 5125) { // uint32_t
-					auto [indices_u32, count] = getData<uint32_t>(j, binaryData, indicesAccessorIndex);
-					_indices.assign(indices_u32, indices_u32 + count);
-				}
-
-
-				// --- 이하 코드는 동일 ---
-				auto newPrimitive = std::make_unique<MeshPrimitive>();
-				ID3D12Resource* pVertexUploadBuffer = nullptr;
-				ID3D12Resource* pIndexUploadBuffer = nullptr;
-
-				newPrimitive->m_nIndices = _indices.size();
-
-				newPrimitive->_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, _vertices.data(), sizeof(SkinnedVertex) * _vertices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &pVertexUploadBuffer);
-				newPrimitive->_d3dVertexBufferView.BufferLocation = newPrimitive->_d3dVertexBuffer->GetGPUVirtualAddress();
-				newPrimitive->_d3dVertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
-				newPrimitive->_d3dVertexBufferView.SizeInBytes = sizeof(SkinnedVertex) * _vertices.size();
-
-				newPrimitive->_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, _indices.data(), sizeof(UINT) * _indices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &pIndexUploadBuffer);
-				newPrimitive->_d3dIndexBufferView.BufferLocation = newPrimitive->_d3dIndexBuffer->GetGPUVirtualAddress();
-				newPrimitive->_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-				newPrimitive->_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * _indices.size();
-
-				m_vUploadBuffers.push_back(pVertexUploadBuffer);
-				m_vUploadBuffers.push_back(pIndexUploadBuffer);
-
-				if (primitiveJson.contains("material")) {
-					newPrimitive->m_nMaterialIndex = primitiveJson["material"];
-					const auto& mat = j["materials"][newPrimitive->m_nMaterialIndex];
-					if (mat.contains("pbrMetallicRoughness") && mat["pbrMetallicRoughness"].contains("baseColorTexture")) {
-						int textureIndex = mat["pbrMetallicRoughness"]["baseColorTexture"]["index"];
-						auto [pixels, width, height] = LoadImageFromGLB(j, binaryData, textureIndex);
-
-						if (!pixels.empty()) {
-							D3D12_RESOURCE_DESC textureDesc = {};
-							textureDesc.MipLevels = 1;
-							textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-							textureDesc.Width = width;
-							textureDesc.Height = height;
-							textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-							textureDesc.DepthOrArraySize = 1;
-							textureDesc.SampleDesc.Count = 1;
-							textureDesc.SampleDesc.Quality = 0;
-							textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-
-
-							D3D12_HEAP_PROPERTIES d3dHeapProperties = {};
-							d3dHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-							d3dHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-							d3dHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-							d3dHeapProperties.CreationNodeMask = 1;
-							d3dHeapProperties.VisibleNodeMask = 1;
-
-							pd3dDevice->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &textureDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&newPrimitive->m_pTexture));
-
-							UINT64 uploadBufferSize;
-							D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout;
-							pd3dDevice->GetCopyableFootprints(&textureDesc, 0, 1, 0, &layout, nullptr, nullptr, &uploadBufferSize);
-
-							ID3D12Resource* pTextureUploadHeap = nullptr;
-							pTextureUploadHeap = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, uploadBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
-
-							D3D12_SUBRESOURCE_DATA textureData = {};
-							textureData.pData = pixels.data();
-							textureData.RowPitch = width * 4;
-							textureData.SlicePitch = textureData.RowPitch * height;
-
-
-							void* pMappedData = nullptr;
-							pTextureUploadHeap->Map(0, nullptr, &pMappedData);
-
-							BYTE* pDest = (BYTE*)pMappedData;
-							BYTE* pSrc = (BYTE*)textureData.pData;
-							for (UINT i = 0; i < height; ++i)
-							{
-								memcpy(pDest, pSrc, textureData.RowPitch);
-								pDest += layout.Footprint.RowPitch;
-								pSrc += textureData.RowPitch;
-							}
-
-							pTextureUploadHeap->Unmap(0, nullptr);
-
-							D3D12_TEXTURE_COPY_LOCATION destLocation = {};
-							destLocation.pResource = newPrimitive->m_pTexture;
-							destLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-							destLocation.SubresourceIndex = 0;
-
-							D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
-							srcLocation.pResource = pTextureUploadHeap;
-							srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-							srcLocation.PlacedFootprint = layout;
-
-							pd3dCommandList->CopyTextureRegion(&destLocation, 0, 0, 0, &srcLocation, nullptr);
-
-							D3D12_RESOURCE_BARRIER d3dResourceBarrier = {};
-							d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-							d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-							d3dResourceBarrier.Transition.pResource = newPrimitive->m_pTexture;
-							d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-							d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-							d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-							pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
-
-							m_vUploadBuffers.push_back(pTextureUploadHeap);
-
-							D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-							srvDesc.Format = textureDesc.Format;
-							srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-							srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-							srvDesc.Texture2D.MipLevels = 1;
-
-							D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle{};
-							D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle{};
-
-							pScene->AllocateNextSrvDescriptor(CpuHandle, GpuHandle);
-
-							pd3dDevice->CreateShaderResourceView(newPrimitive->m_pTexture, &srvDesc, CpuHandle);
-
-							newPrimitive->m_d3dGpuSrvHandle = GpuHandle;
-
-							++_Textures;
-						}
-					}
-				}
-				m_primitives.push_back(std::move(newPrimitive));
-			}
-		}
-		m_xmOOBB = CreateOOBB(modelMin, modelMax);
-	}
-	catch (json::parse_error& e) {
-		std::cerr << "JSON parse error: " << e.what() << std::endl;
-		return;
-	}
-
-	// --- [추가] 뼈 변환 행렬을 위한 상수 버퍼 생성 ---
-	UINT nBoneCount = 128;
-	UINT nBufferSize = sizeof(XMFLOAT4X4) * nBoneCount;
-
-	m_pd3dcbBoneTransforms = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, nBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
-
-}
+//// ReadGlbMesh 소멸자: 생성된 모든 Primitive와 업로드 버퍼를 정리합니다.
+//ReadGlbMesh::~ReadGlbMesh()
+//{
+//	m_primitives.clear(); // unique_ptr 벡터가 자동으로 각 Primitive 소멸자 호출
+//	for (auto& buffer : m_vUploadBuffers) {
+//		if (buffer) buffer->Release();
+//	}
+//	m_vUploadBuffers.clear();
+//}
+//
+//// 오버라이드된 ReleaseUploadBuffers 함수
+//void ReadGlbMesh::ReleaseUploadBuffers()
+//{
+//	// ReadGlbMesh는 로딩이 끝나면 업로드 버퍼를 모두 해제합니다.
+//	for (auto& buffer : m_vUploadBuffers) {
+//		if (buffer) buffer->Release();
+//	}
+//	m_vUploadBuffers.clear();
+//
+//	// 베이스 클래스의 업로드 버퍼도 혹시 모르니 호출해줄 수 있습니다.
+//	Mesh::ReleaseUploadBuffers();
+//}
+//
+//D3D12_GPU_DESCRIPTOR_HANDLE ReadGlbMesh::GetSrvGpuHandle(UINT nPrimitive) const
+//{
+//	// 메시가 프리미티브를 가지고 있고, 요청된 인덱스가 유효한지 확인합니다.
+//	if (m_primitives.empty() || nPrimitive >= m_primitives.size())
+//	{
+//		return { 0 }; // 유효하지 않으면 비어있는 핸들 반환
+//	}
+//
+//	// 지정된 프리미티브(기본값은 0번째)의 SRV GPU 핸들을 반환합니다.
+//	return m_primitives[nPrimitive]->m_d3dGpuSrvHandle;
+//}
+//
+//D3D12_GPU_VIRTUAL_ADDRESS ReadGlbMesh::GetBoneTransformsBufferAddress() const
+//{
+//	if (m_pd3dcbBoneTransforms)
+//	{
+//		return m_pd3dcbBoneTransforms->GetGPUVirtualAddress();
+//	}
+//	return 0;
+//}
+//
+//std::tuple<std::vector<unsigned char>, UINT, UINT> ReadGlbMesh::LoadImageFromGLB(const json& j, const std::vector<char>& binaryData, int textureIndex)
+//{
+//	if (!j.contains("textures") || textureIndex >= j["textures"].size()) return {};
+//	const auto& tex = j["textures"][textureIndex];
+//
+//	if (!tex.contains("source")) return {};
+//	int imageIndex = tex["source"];
+//
+//	if (!j.contains("images") || imageIndex >= j["images"].size()) return {};
+//	const auto& img = j["images"][imageIndex];
+//
+//	if (!img.contains("bufferView")) return {};
+//	int bufferViewIndex = img["bufferView"];
+//
+//	if (!j.contains("bufferViews") || bufferViewIndex >= j["bufferViews"].size()) return {};
+//	const auto& bv = j["bufferViews"][bufferViewIndex];
+//
+//	size_t byteOffset = bv["byteOffset"];
+//	size_t byteLength = bv["byteLength"];
+//
+//	const unsigned char* pImageData = reinterpret_cast<const unsigned char*>(binaryData.data() + byteOffset);
+//
+//	// WIC를 사용하여 메모리상의 이미지 데이터 디코딩
+//	HRESULT hr;
+//	IWICImagingFactory* pFactory = nullptr;
+//	IWICStream* pStream = nullptr;
+//	IWICBitmapDecoder* pDecoder = nullptr;
+//	IWICBitmapFrameDecode* pFrame = nullptr;
+//	IWICFormatConverter* pConverter = nullptr;
+//
+//	CoInitialize(NULL);
+//	hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFactory));
+//	if (FAILED(hr)) { CoUninitialize(); return {}; }
+//
+//	hr = pFactory->CreateStream(&pStream);
+//	if (SUCCEEDED(hr)) hr = pStream->InitializeFromMemory(const_cast<unsigned char*>(pImageData), static_cast<DWORD>(byteLength));
+//	if (SUCCEEDED(hr)) hr = pFactory->CreateDecoderFromStream(pStream, NULL, WICDecodeMetadataCacheOnDemand, &pDecoder);
+//	if (SUCCEEDED(hr)) hr = pDecoder->GetFrame(0, &pFrame);
+//
+//	UINT width, height;
+//	if (SUCCEEDED(hr)) hr = pFrame->GetSize(&width, &height);
+//
+//	if (SUCCEEDED(hr)) hr = pFactory->CreateFormatConverter(&pConverter);
+//	if (SUCCEEDED(hr)) hr = pConverter->Initialize(pFrame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, NULL, 0.f, WICBitmapPaletteTypeMedianCut);
+//
+//	std::vector<unsigned char> pixels(width * height * 4);
+//	if (SUCCEEDED(hr)) hr = pConverter->CopyPixels(NULL, width * 4, pixels.size(), pixels.data());
+//
+//	if (pConverter) pConverter->Release();
+//	if (pFrame) pFrame->Release();
+//	if (pDecoder) pDecoder->Release();
+//	if (pStream) pStream->Release();
+//	if (pFactory) pFactory->Release();
+//	CoUninitialize();
+//
+//	if (FAILED(hr)) return {};
+//
+//	return { std::move(pixels), width, height };
+//}
+//
+//// 오버라이드된 Render 함수: ReadGlbMesh만의 렌더링 로직
+//void ReadGlbMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+//{
+//	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//
+//	for (const auto& primitive : m_primitives)
+//	{
+//		// 이 Primitive가 텍스처를 가지고 있다면, GpuHandle가 0이 아니라면
+//		if (primitive->m_pTexture && primitive->m_d3dGpuSrvHandle.ptr != 0)
+//		{
+//			// 해당 텍스처의 SRV를 루트 테이블에 바인딩합니다.
+//			// 5번 파라미터가 텍스처 테이블
+//			pd3dCommandList->SetGraphicsRootDescriptorTable(5, primitive->m_d3dGpuSrvHandle);
+//		}
+//
+//		pd3dCommandList->IASetVertexBuffers(0, 1, &primitive->_d3dVertexBufferView);
+//		pd3dCommandList->IASetIndexBuffer(&primitive->_d3dIndexBufferView);
+//		pd3dCommandList->DrawIndexedInstanced(primitive->m_nIndices, 1, 0, 0, 0);
+//	}
+//}
+//
+//ReadGlbMesh::ReadGlbMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str, Scene* pScene)
+//{
+//	// --- 1단계: 파일 읽기 및 청크 분리 ---
+//	std::vector<char> fileData;
+//	std::ifstream file(str, std::ios::binary | std::ios::ate);
+//	if (!file.is_open()) {
+//		std::cerr << "Error: Failed to open " << str << std::endl;
+//		return;
+//	}
+//	std::streamsize size = file.tellg();
+//	file.seekg(0, std::ios::beg);
+//	fileData.resize(size);
+//	if (!file.read(fileData.data(), size)) {
+//		std::cerr << "Error: Failed to read file content." << std::endl;
+//		return;
+//	}
+//	file.close();
+//
+//	std::string jsonString;
+//	std::vector<char> binaryData;
+//	char* pData = fileData.data();
+//
+//	uint32_t magic = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+//	uint32_t version = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+//	uint32_t length = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+//
+//	if (magic != 0x46546C67) { // "glTF"
+//		std::cerr << "Error: Not a valid GLB file." << std::endl;
+//		return;
+//	}
+//
+//	while (pData < fileData.data() + length) {
+//		uint32_t chunkLength = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+//		uint32_t chunkType = *reinterpret_cast<uint32_t*>(pData); pData += 4;
+//		if (chunkType == 0x4E4F534A) { // "JSON"
+//			jsonString.assign(pData, chunkLength);
+//		}
+//		else if (chunkType == 0x004E4942) { // "BIN"
+//			binaryData.assign(pData, pData + chunkLength);
+//		}
+//		pData += chunkLength;
+//	}
+//
+//	try
+//	{
+//		auto j = json::parse(jsonString);
+//
+//		// --- 2단계: 노드 계층 구조 파싱 ---
+//		if (j.contains("nodes")) {
+//			const auto& nodes = j["nodes"];
+//			m_Nodes.resize(nodes.size());
+//			for (size_t i = 0; i < nodes.size(); ++i) {
+//				const auto& nodeJson = nodes[i];
+//				Node& currentNode = m_Nodes[i];
+//				if (nodeJson.contains("name")) currentNode.name = nodeJson["name"];
+//				if (nodeJson.contains("translation")) {
+//					currentNode.translation.x = nodeJson["translation"][0];
+//					currentNode.translation.y = nodeJson["translation"][1];
+//					currentNode.translation.z = nodeJson["translation"][2];
+//
+//				}
+//				if (nodeJson.contains("rotation")) {
+//					currentNode.rotation.x = nodeJson["rotation"][0];
+//					currentNode.rotation.y = nodeJson["rotation"][1];
+//					currentNode.rotation.z = nodeJson["rotation"][2];
+//					currentNode.rotation.w = nodeJson["rotation"][3];
+//
+//				}
+//				if (nodeJson.contains("scale")) {
+//					currentNode.scale.x = nodeJson["scale"][0];
+//					currentNode.scale.y = nodeJson["scale"][1];
+//					currentNode.scale.z = nodeJson["scale"][2];
+//
+//				}
+//				if (nodeJson.contains("children")) {
+//					for (const auto& childIndex : nodeJson["children"]) {
+//						currentNode.childrenIndices.push_back(childIndex);
+//					}
+//				}
+//				if (nodeJson.contains("mesh")) currentNode.meshIndex = nodeJson["mesh"];
+//				if (nodeJson.contains("skin")) currentNode.skinIndex = nodeJson["skin"];
+//			}
+//			for (size_t i = 0; i < m_Nodes.size(); ++i) {
+//				for (int childIndex : m_Nodes[i].childrenIndices) {
+//					if (childIndex >= 0 && childIndex < m_Nodes.size()) {
+//						m_Nodes[childIndex].parentIndex = i;
+//					}
+//				}
+//			}
+//		}
+//
+//		// --- 3단계: 모든 메시 및 텍스처 파싱 ---
+//		if (!j.contains("meshes") || j["meshes"].empty()) {
+//			std::cout << "Warning: No meshes found in the glTF file." << std::endl;
+//			return;
+//		}
+//
+//		XMFLOAT3 modelMin(FLT_MAX, FLT_MAX, FLT_MAX);
+//		XMFLOAT3 modelMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+//
+//		for (const auto& mesh : j["meshes"])
+//		{
+//			for (const auto& primitiveJson : mesh["primitives"])
+//			{
+//				std::vector<SkinnedVertex> _vertices;
+//				std::vector<UINT> _indices;
+//
+//				int posAccessorIndex = primitiveJson["attributes"]["POSITION"];
+//				int indicesAccessorIndex = primitiveJson["indices"];
+//				int normalAccessorIndex = primitiveJson.value("/attributes/NORMAL"_json_pointer, -1);
+//				int texCoordAccessorIndex = primitiveJson.value("/attributes/TEXCOORD_0"_json_pointer, -1);
+//				int jointAccessorIndex = primitiveJson.value("/attributes/JOINTS_0"_json_pointer, -1);
+//				int weightAccessorIndex = primitiveJson.value("/attributes/WEIGHTS_0"_json_pointer, -1);
+//
+//				if (posAccessorIndex == -1 || indicesAccessorIndex == -1) continue;
+//
+//				auto [positions, posCount] = getData<XMFLOAT3>(j, binaryData, posAccessorIndex);
+//				auto [normals, normCount] = (normalAccessorIndex != -1) ? getData<XMFLOAT3>(j, binaryData, normalAccessorIndex) : std::pair<XMFLOAT3*, size_t>(nullptr, 0);
+//				auto [texCoords, texCount] = (texCoordAccessorIndex != -1) ? getData<XMFLOAT2>(j, binaryData, texCoordAccessorIndex) : std::pair<XMFLOAT2*, size_t>(nullptr, 0);
+//				auto [weights, weightCount] = (weightAccessorIndex != -1) ? getData<XMFLOAT4>(j, binaryData, weightAccessorIndex) : std::pair<XMFLOAT4*, size_t>(nullptr, 0);
+//				struct JointType { uint16_t j[4]; };
+//				auto [joints, jointCount] = (jointAccessorIndex != -1) ? getData<JointType>(j, binaryData, jointAccessorIndex) : std::pair<JointType*, size_t>(nullptr, 0);
+//
+//				_vertices.resize(posCount);
+//				for (size_t i = 0; i < posCount; ++i) {
+//				
+//					_vertices[i].m_xmf3Position = positions[i];
+//
+//					if (normals) {
+//						_vertices[i].m_xmf3Normal = normals[i];
+//					}
+//
+//					if (texCoords) _vertices[i].m_xmf2TexCoord = texCoords[i];
+//					if (joints) _vertices[i].m_xmf4BoneIndices = XMFLOAT4((float)joints[i].j[0], (float)joints[i].j[1], (float)joints[i].j[2], (float)joints[i].j[3]);
+//					if (weights) _vertices[i].m_xmf4BoneWeights = weights[i];
+//
+//					// Bounding Box 계산 시에는 변환된 좌표를 사용
+//					XMFLOAT3 transformedPos = _vertices[i].m_xmf3Position;
+//					modelMin.x = min(modelMin.x, transformedPos.x);
+//					modelMin.y = min(modelMin.y, transformedPos.y);
+//					modelMin.z = min(modelMin.z, transformedPos.z);
+//					modelMax.x = max(modelMax.x, transformedPos.x);
+//					modelMax.y = max(modelMax.y, transformedPos.y);
+//					modelMax.z = max(modelMax.z, transformedPos.z);
+//				}
+//
+//				const auto& indexAccessor = j["accessors"][indicesAccessorIndex];
+//				size_t indicesCount = indexAccessor["count"];
+//				_indices.resize(indicesCount);
+//				if (indexAccessor["componentType"] == 5123) { // uint16_t
+//					auto [indices_u16, count] = getData<uint16_t>(j, binaryData, indicesAccessorIndex);
+//					for (size_t i = 0; i < count; ++i) _indices[i] = indices_u16[i];
+//				}
+//				else if (indexAccessor["componentType"] == 5125) { // uint32_t
+//					auto [indices_u32, count] = getData<uint32_t>(j, binaryData, indicesAccessorIndex);
+//					_indices.assign(indices_u32, indices_u32 + count);
+//				}
+//
+//
+//				// --- 이하 코드는 동일 ---
+//				auto newPrimitive = std::make_unique<MeshPrimitive>();
+//				ID3D12Resource* pVertexUploadBuffer = nullptr;
+//				ID3D12Resource* pIndexUploadBuffer = nullptr;
+//
+//				newPrimitive->m_nIndices = _indices.size();
+//
+//				newPrimitive->_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, _vertices.data(), sizeof(SkinnedVertex) * _vertices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &pVertexUploadBuffer);
+//				newPrimitive->_d3dVertexBufferView.BufferLocation = newPrimitive->_d3dVertexBuffer->GetGPUVirtualAddress();
+//				newPrimitive->_d3dVertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
+//				newPrimitive->_d3dVertexBufferView.SizeInBytes = sizeof(SkinnedVertex) * _vertices.size();
+//
+//				newPrimitive->_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, _indices.data(), sizeof(UINT) * _indices.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &pIndexUploadBuffer);
+//				newPrimitive->_d3dIndexBufferView.BufferLocation = newPrimitive->_d3dIndexBuffer->GetGPUVirtualAddress();
+//				newPrimitive->_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+//				newPrimitive->_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * _indices.size();
+//
+//				m_vUploadBuffers.push_back(pVertexUploadBuffer);
+//				m_vUploadBuffers.push_back(pIndexUploadBuffer);
+//
+//				if (primitiveJson.contains("material")) {
+//					newPrimitive->m_nMaterialIndex = primitiveJson["material"];
+//					const auto& mat = j["materials"][newPrimitive->m_nMaterialIndex];
+//					if (mat.contains("pbrMetallicRoughness") && mat["pbrMetallicRoughness"].contains("baseColorTexture")) {
+//						int textureIndex = mat["pbrMetallicRoughness"]["baseColorTexture"]["index"];
+//						auto [pixels, width, height] = LoadImageFromGLB(j, binaryData, textureIndex);
+//
+//						if (!pixels.empty()) {
+//							D3D12_RESOURCE_DESC textureDesc = {};
+//							textureDesc.MipLevels = 1;
+//							textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+//							textureDesc.Width = width;
+//							textureDesc.Height = height;
+//							textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+//							textureDesc.DepthOrArraySize = 1;
+//							textureDesc.SampleDesc.Count = 1;
+//							textureDesc.SampleDesc.Quality = 0;
+//							textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+//
+//
+//							D3D12_HEAP_PROPERTIES d3dHeapProperties = {};
+//							d3dHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+//							d3dHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+//							d3dHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+//							d3dHeapProperties.CreationNodeMask = 1;
+//							d3dHeapProperties.VisibleNodeMask = 1;
+//
+//							pd3dDevice->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &textureDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&newPrimitive->m_pTexture));
+//
+//							UINT64 uploadBufferSize;
+//							D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout;
+//							pd3dDevice->GetCopyableFootprints(&textureDesc, 0, 1, 0, &layout, nullptr, nullptr, &uploadBufferSize);
+//
+//							ID3D12Resource* pTextureUploadHeap = nullptr;
+//							pTextureUploadHeap = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, uploadBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+//
+//							D3D12_SUBRESOURCE_DATA textureData = {};
+//							textureData.pData = pixels.data();
+//							textureData.RowPitch = width * 4;
+//							textureData.SlicePitch = textureData.RowPitch * height;
+//
+//
+//							void* pMappedData = nullptr;
+//							pTextureUploadHeap->Map(0, nullptr, &pMappedData);
+//
+//							BYTE* pDest = (BYTE*)pMappedData;
+//							BYTE* pSrc = (BYTE*)textureData.pData;
+//							for (UINT i = 0; i < height; ++i)
+//							{
+//								memcpy(pDest, pSrc, textureData.RowPitch);
+//								pDest += layout.Footprint.RowPitch;
+//								pSrc += textureData.RowPitch;
+//							}
+//
+//							pTextureUploadHeap->Unmap(0, nullptr);
+//
+//							D3D12_TEXTURE_COPY_LOCATION destLocation = {};
+//							destLocation.pResource = newPrimitive->m_pTexture;
+//							destLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+//							destLocation.SubresourceIndex = 0;
+//
+//							D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
+//							srcLocation.pResource = pTextureUploadHeap;
+//							srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+//							srcLocation.PlacedFootprint = layout;
+//
+//							pd3dCommandList->CopyTextureRegion(&destLocation, 0, 0, 0, &srcLocation, nullptr);
+//
+//							D3D12_RESOURCE_BARRIER d3dResourceBarrier = {};
+//							d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+//							d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+//							d3dResourceBarrier.Transition.pResource = newPrimitive->m_pTexture;
+//							d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+//							d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+//							d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+//							pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
+//
+//							m_vUploadBuffers.push_back(pTextureUploadHeap);
+//
+//							D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+//							srvDesc.Format = textureDesc.Format;
+//							srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+//							srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+//							srvDesc.Texture2D.MipLevels = 1;
+//
+//							D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle{};
+//							D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle{};
+//
+//							pScene->AllocateNextSrvDescriptor(CpuHandle, GpuHandle);
+//
+//							pd3dDevice->CreateShaderResourceView(newPrimitive->m_pTexture, &srvDesc, CpuHandle);
+//
+//							newPrimitive->m_d3dGpuSrvHandle = GpuHandle;
+//
+//							++_Textures;
+//						}
+//					}
+//				}
+//				m_primitives.push_back(std::move(newPrimitive));
+//			}
+//		}
+//		m_xmOOBB = CreateOOBB(modelMin, modelMax);
+//	}
+//	catch (json::parse_error& e) {
+//		std::cerr << "JSON parse error: " << e.what() << std::endl;
+//		return;
+//	}
+//
+//	// --- [추가] 뼈 변환 행렬을 위한 상수 버퍼 생성 ---
+//	UINT nBoneCount = 128;
+//	UINT nBufferSize = sizeof(XMFLOAT4X4) * nBoneCount;
+//
+//	m_pd3dcbBoneTransforms = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, nBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+//
+//}
 
 ReadFbxMesh::ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
 {
@@ -1064,53 +1187,28 @@ ReadFbxMesh::ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	// 루트 노드부터 시작하여 모든 노드를 재귀적으로 처리
 	ProcessNode(pScene->mRootNode, pScene, pd3dDevice, pd3dCommandList);
 
-	auto [min_x, max_x] = std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),
+	auto [min_x, max_x] = std::minmax_element(_vertices.begin(), _vertices.end(),
 		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
 			return a._position.x < b._position.x;
 		});
 
-	auto [min_y, max_y] = std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),
+	auto [min_y, max_y] = std::minmax_element(_vertices.begin(), _vertices.end(),
 		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
 			return a._position.y < b._position.y;
 		});
 	
-	auto [min_z, max_z] = std::minmax_element(m_Vertexvec.begin(), m_Vertexvec.end(),
+	auto [min_z, max_z] = std::minmax_element(_vertices.begin(), _vertices.end(),
 		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
 			return a._position.z < b._position.z;
 		});
 
-	XMFLOAT3 Min(min_x->m_xmf3Position.x, min_y->m_xmf3Position.y, min_z->m_xmf3Position.z);
-	XMFLOAT3 Max(max_x->m_xmf3Position.x, max_y->m_xmf3Position.y, max_z->m_xmf3Position.z);
+	XMFLOAT3 Min(min_x->_position.x, min_y->_position.y, min_z->_position.z);
+	XMFLOAT3 Max(max_x->_position.x, max_y->_position.y, max_z->_position.z);
 
-	m_xmOOBB = CreateOOBB(Min, Max);
+	_orientedBoundingBox = CreateOOBB(Min, Max);
 
-	// --- 모든 메쉬 데이터 처리가 끝난 후, 최종 버퍼 생성 ---
-
-	m_nStride = sizeof(IlluminatedVertex);
-	m_nVertices = m_Vertexvec.size();
-	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	// 정점 버퍼 생성
-	_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(),
-		m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT,
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-		&_d3dVertexUploadBuffer);
-
-	// 인덱스 버퍼 생성
-	m_nIndices = m_Indexvec.size();
-	_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(),
-		sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
-		&_d3dIndexUploadBuffer);
-
-	// 정점 버퍼 뷰 설정
-	_d3dVertexBufferView.BufferLocation = _d3dVertexBuffer->GetGPUVirtualAddress();
-	_d3dVertexBufferView.StrideInBytes = m_nStride;
-	_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
-
-	// 인덱스 버퍼 뷰 설정
-	_d3dIndexBufferView.BufferLocation = _d3dIndexBuffer->GetGPUVirtualAddress();
-	_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+	_stride = sizeof(IlluminatedVertex);
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 
 ReadFbxMesh::~ReadFbxMesh()
@@ -1204,20 +1302,20 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 			// 법선 (Normal)
 			if (mesh->HasNormals())
 			{
-				vertex.m_xmf3Normal.x = mesh->mNormals[i].x;
-				vertex.m_xmf3Normal.y = mesh->mNormals[i].y;
-				vertex.m_xmf3Normal.z = mesh->mNormals[i].z;
+				vertex._normal.x = mesh->mNormals[i].x;
+				vertex._normal.y = mesh->mNormals[i].y;
+				vertex._normal.z = mesh->mNormals[i].z;
 			}
 
 			// 텍스처 좌표 (Texture Coordinate)
 			if (mesh->mTextureCoords[0]) // 텍스처 좌표 채널이 존재하는지 확인
 			{
-				vertex.m_xmf2Texcoord.x = mesh->mTextureCoords[0][i].x;
-				vertex.m_xmf2Texcoord.y = mesh->mTextureCoords[0][i].y;
+				vertex._texCoord.x = mesh->mTextureCoords[0][i].x;
+				vertex._texCoord.y = mesh->mTextureCoords[0][i].y;
 			}
 			else
 			{
-				vertex.m_xmf2Texcoord = XMFLOAT2(0.0f, 0.0f);
+				vertex._texCoord = XMFLOAT2(0.0f, 0.0f);
 			}
 
 			// 재질 정보 처리
@@ -1228,11 +1326,11 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 			// 확산 색상 가져오기 (없으면 흰색 기본값)
 			if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
 			{
-				vertex.m_xmf4Diffuse = XMFLOAT4(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+				vertex._diffuse = XMFLOAT4(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
 			}
 			else
 			{
-				vertex.m_xmf4Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 기본 흰색
+				vertex._diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 기본 흰색
 			}
 
 			// 확산 텍스처 경로 가져오기 (첫 번째 텍스처 채널)
@@ -1263,99 +1361,108 @@ void ReadFbxMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 			{
 				// 전체 인덱스 벡터에 현재 메쉬의 인덱스를 추가
 				// 이 때, 이미 추가된 정점 수를 더해줘서 전체 정점 배열에 맞는 인덱스가 되도록 함
-				m_Indexvec.push_back(face.mIndices[j] + m_Vertexvec.size());
+				_indices.push_back(face.mIndices[j] + _vertices.size());
 			}
 		}
 
 		// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
-		m_Vertexvec.insert(m_Vertexvec.end(), _vertices.begin(), _vertices.end());
+		_vertices.insert(_vertices.end(), _vertices.begin(), _vertices.end());
 	}
 }
 
 DebugCollisionBox::DebugCollisionBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
 {
 	// 정점 8개의 위치는 고정, 색상은 인자로 받은 color를 사용합니다.
-	m_Vertexvec.resize(8);
-	m_Vertexvec[0] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[1] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[2] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[3] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[4] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[5] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[6] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
-	m_Vertexvec[7] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices.resize(8);
+	_vertices[0] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[1] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[2] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[3] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[4] = IlluminatedVertex(XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[5] = IlluminatedVertex(XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[6] = IlluminatedVertex(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+	_vertices[7] = IlluminatedVertex(XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
 
 	// 인덱스 데이터 (12개의 선)
-	m_Indexvec.resize(24);
-	m_Indexvec[0] = 0; m_Indexvec[1] = 1; m_Indexvec[2] = 1; m_Indexvec[3] = 2;
-	m_Indexvec[4] = 2; m_Indexvec[5] = 3; m_Indexvec[6] = 3; m_Indexvec[7] = 0;
-	m_Indexvec[8] = 4; m_Indexvec[9] = 5; m_Indexvec[10] = 5; m_Indexvec[11] = 6;
-	m_Indexvec[12] = 6; m_Indexvec[13] = 7; m_Indexvec[14] = 7; m_Indexvec[15] = 4;
-	m_Indexvec[16] = 0; m_Indexvec[17] = 4; m_Indexvec[18] = 1; m_Indexvec[19] = 5;
-	m_Indexvec[20] = 2; m_Indexvec[21] = 6; m_Indexvec[22] = 3; m_Indexvec[23] = 7;
+	_indices.resize(24);
+	_indices[0] = 0; _indices[1] = 1; _indices[2] = 1; _indices[3] = 2;
+	_indices[4] = 2; _indices[5] = 3; _indices[6] = 3; _indices[7] = 0;
+	_indices[8] = 4; _indices[9] = 5; _indices[10] = 5; _indices[11] = 6;
+	_indices[12] = 6; _indices[13] = 7; _indices[14] = 7; _indices[15] = 4;
+	_indices[16] = 0; _indices[17] = 4; _indices[18] = 1; _indices[19] = 5;
+	_indices[20] = 2; _indices[21] = 6; _indices[22] = 3; _indices[23] = 7;
 
-	// D3D 리소스 생성 (나머지 부분은 DebugWireframeMesh와 거의 동일)
-	m_nStride = sizeof(IlluminatedVertex);
-	m_nVertices = m_Vertexvec.size();
-	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+	_stride = sizeof(IlluminatedVertex);
+	_numVertices = static_cast<UINT>(_vertices.size());
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+	//// D3D 리소스 생성 (나머지 부분은 DebugWireframeMesh와 거의 동일)
+	//m_nStride = sizeof(IlluminatedVertex);
+	//m_nVertices = m_Vertexvec.size();
+	//m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 
-	_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(), m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_d3dVertexUploadBuffer);
-	_d3dVertexBufferView.BufferLocation = _d3dVertexBuffer->GetGPUVirtualAddress();
-	_d3dVertexBufferView.StrideInBytes = m_nStride;
-	_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
+	//_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(), m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_d3dVertexUploadBuffer);
+	//_d3dVertexBufferView.BufferLocation = _d3dVertexBuffer->GetGPUVirtualAddress();
+	//_d3dVertexBufferView.StrideInBytes = m_nStride;
+	//_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
 
-	m_nIndices = m_Indexvec.size();
-	_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(), sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_d3dIndexUploadBuffer);
-	_d3dIndexBufferView.BufferLocation = _d3dIndexBuffer->GetGPUVirtualAddress();
-	_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+	//m_nIndices = m_Indexvec.size();
+	//_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(), sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_d3dIndexUploadBuffer);
+	//_d3dIndexBufferView.BufferLocation = _d3dIndexBuffer->GetGPUVirtualAddress();
+	//_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	//_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
 }
 
 DebugCollisionBox::~DebugCollisionBox()
 {
 }
 
-DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices, XMFLOAT4 color)
+DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color)
 {
 	// 렌더링에 사용할 정점 목록을 채움.
 	// CollisionPrimitive의 Vertex는 위치만 있으므로, 색상 정보를 포함하는 IlluminatedVertex로 변환
-	m_Vertexvec.reserve(_vertices.size());
-	for (const auto& v : _vertices)
+	_vertices.reserve(vertices.size());
+	for (const auto& v : vertices)
 	{
-		m_Vertexvec.emplace_back(v._position, XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0), color);
+		IlluminatedVertex iv;
+		iv._position = v._position;
+		iv._normal = XMFLOAT3(0, 0, 0); // 법선은 필요 없음
+		iv._texCoord = XMFLOAT2(0, 0); // 텍스처 좌표는 필요 없음
+		iv._diffuse = color; // 인자로 받은 색상 사용
+		_vertices.emplace_back(iv);
 	}
 
 	// 삼각형 인덱스를 라인 리스트 인덱스로 변환
 	// 삼각형 인덱스 {0, 1, 2} -> 라인 인덱스 {0,1, 1,2, 2,0}
-	m_Indexvec.reserve(_indices.size() * 2);
-	for (size_t i = 0; i < _indices.size(); i += 3)
+	_indices.reserve(indices.size() * 2);
+	for (size_t i = 0; i < indices.size(); i += 3)
 	{
-		UINT i0 = _indices[i];
-		UINT i1 = _indices[i + 1];
-		UINT i2 = _indices[i + 2];
+		UINT i0 = indices[i];
+		UINT i1 = indices[i + 1];
+		UINT i2 = indices[i + 2];
 
-		m_Indexvec.push_back(i0); m_Indexvec.push_back(i1); // 0-1 라인
-		m_Indexvec.push_back(i1); m_Indexvec.push_back(i2); // 1-2 라인
-		m_Indexvec.push_back(i2); m_Indexvec.push_back(i0); // 2-0 라인
+		_indices.push_back(i0); _indices.push_back(i1); // 0-1 라인
+		_indices.push_back(i1); _indices.push_back(i2); // 1-2 라인
+		_indices.push_back(i2); _indices.push_back(i0); // 2-0 라인
 	}
+	_stride = sizeof(IlluminatedVertex);
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+	//// D3D12 리소스 및 뷰를 생성
+	//m_nStride = sizeof(IlluminatedVertex);
+	//m_nVertices = m_Vertexvec.size();
+	//m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링
 
-	// D3D12 리소스 및 뷰를 생성
-	m_nStride = sizeof(IlluminatedVertex);
-	m_nVertices = m_Vertexvec.size();
-	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링
+	//// 정점 버퍼 생성
+	//_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(), m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_d3dVertexUploadBuffer);
+	//_d3dVertexBufferView.BufferLocation = _d3dVertexBuffer->GetGPUVirtualAddress();
+	//_d3dVertexBufferView.StrideInBytes = m_nStride;
+	//_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
 
-	// 정점 버퍼 생성
-	_d3dVertexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Vertexvec.data(), m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_d3dVertexUploadBuffer);
-	_d3dVertexBufferView.BufferLocation = _d3dVertexBuffer->GetGPUVirtualAddress();
-	_d3dVertexBufferView.StrideInBytes = m_nStride;
-	_d3dVertexBufferView.SizeInBytes = m_nStride * m_nVertices;
-
-	// 인덱스 버퍼 생성
-	m_nIndices = m_Indexvec.size();
-	_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(), sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_d3dIndexUploadBuffer);
-	_d3dIndexBufferView.BufferLocation = _d3dIndexBuffer->GetGPUVirtualAddress();
-	_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
+	//// 인덱스 버퍼 생성
+	//m_nIndices = m_Indexvec.size();
+	//_d3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_Indexvec.data(), sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_d3dIndexUploadBuffer);
+	//_d3dIndexBufferView.BufferLocation = _d3dIndexBuffer->GetGPUVirtualAddress();
+	//_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	//_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
 }
 
 DebugWireframeMesh::~DebugWireframeMesh() {}
@@ -1369,6 +1476,8 @@ ReadGLTFMesh::ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* 
 	GltfMeshData gltf_mesh_data{};
 	can_Extract_mesh_data(gltf_json, binary_data, gltf_mesh_data);
 
+	//TODO: 기존 Mesh 클래스에 맞게 수정하든지 아니면 메쉬 클래스를 수정하든지
+	//TODO: 정점, 인덱스 버퍼의 생성->upload_gpu함수, 텍스쳐 로드의 경우 ResourceManager로 옮기기
 	create_vertex_and_index_buffers(d3d_device, d3d_commandList, gltf_mesh_data);
 
 	load_textures(d3d_device, d3d_commandList, gltf_json, str);
@@ -1567,7 +1676,7 @@ bool ReadGLTFMesh::can_Extract_mesh_data(const json& gltf_json, const std::vecto
 void ReadGLTFMesh::create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const GltfMeshData& gltf_mesh_data)
 {
 	// --- 1. 정점 버퍼 생성 ---
-	UINT vertex_buffer_size = sizeof(GltfVertex) * gltf_mesh_data._vertices.size(); // GltfVertex는 직접 정의한 정점 구조체
+	UINT vertex_buffer_size = sizeof(IlluminatedVertex) * gltf_mesh_data._vertices.size(); // GltfVertex는 직접 정의한 정점 구조체
 
 	// 최종 버퍼는 DEFAULT 힙에, 최종 상태는 VERTEX_BUFFER로 지정
 	_d3dVertexBuffer = CreateBufferResource(d3d_device, d3d_commandList, (void*)gltf_mesh_data._vertices.data(),
@@ -1575,7 +1684,7 @@ void ReadGLTFMesh::create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3
 
 	// --- 2. 정점 버퍼 뷰 생성 ---
 	_d3dVertexBufferView.BufferLocation = _d3dVertexBuffer->GetGPUVirtualAddress();
-	_d3dVertexBufferView.StrideInBytes = sizeof(GltfVertex);
+	_d3dVertexBufferView.StrideInBytes = sizeof(IlluminatedVertex);
 	_d3dVertexBufferView.SizeInBytes = vertex_buffer_size;
 
 	// --- 3. 인덱스 버퍼 생성 ---
