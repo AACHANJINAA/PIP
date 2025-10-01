@@ -12,8 +12,7 @@ public:
     // [추가] SRV 디스크립터 힙을 반환하는 Getter
     ID3D12DescriptorHeap* get_srv_heap() const { return _srvDescriptorHeap.Get(); }
     // [추가] 다음 SRV 디스크립터를 할당하고 핸들을 반환하는 함수
-    void allocate_srv_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, 
-        D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle);
+    void allocate_srv_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle);
 
     // 파일 경로를 기반으로 메시를 로드하거나, 이미 로드되었다면 캐시된 메시를 반환합니다.
     std::shared_ptr<Mesh> load_mesh(const std::string& file_path);
