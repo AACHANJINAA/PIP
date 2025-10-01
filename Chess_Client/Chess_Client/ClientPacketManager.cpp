@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "ClientPacketManager.h"
 #include "GameFramework.h"
+#include "MainPlayerScript.h"
 #include "ObjectManager.h"
 
 // 외부 전역 변수 (Chess_Client.cpp에 정의된 g_hwnd)
@@ -61,7 +62,7 @@ void ClientPacketManager::SendLoginPacket(const std::string& name)
 
 	stream << login_packet;
 	stream << name;   // PacketStream이 알아서 [길이][내용]을 써 줌
-
+	_name = name;
 	// 스트림에 모든 데이터를 쓴 후, 실제 크기를 계산하여 헤더에 덮어쓴다.
 	auto* final_header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
 	final_header->_size = static_cast<uint16_t>(stream.Size());
@@ -150,19 +151,15 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 	{
 		CLOG("[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
-		std::shared_ptr<MainPlayer> my_king = std::make_shared<MainPlayer>();
+		auto main_player = ObjectManager::Instance()->create_game_object("MainPlayer");
+		auto main_player_logic = main_player->add_component<MainPlayerScript>();
 
-		auto my_king_Transform = my_king->get_component<TransformComponent>();
-		auto my_king_Render = my_king->get_component<RenderComponent>();
+		if (main_player_logic)
+			main_player_logic->set_position(spawn_data._position);
 
-		if (my_king_Render)
-			my_king_Render->CreateShaderVariables(GameFramework::Instance()->device().Get(), GameFramework::Instance()->command_list().Get());
-		if (my_king_Transform)
-			my_king_Transform->set_position(spawn_data._position.x, spawn_data._position.y, spawn_data._position.z);
-
-		my_king->SetHP(spawn_data._hp);
-		my_king->SetName(name);
-		my_king->SetID(_my_session_id); 
+		main_player_logic->set_hp(spawn_data._hp);
+		main_player_logic->SetName(name);
+		main_player_logic->SetID(_my_session_id);
 
 		std::shared_ptr<Mesh> Chess_Mesh = std::make_shared<ReadFbxMesh>(
 			GameFramework::Instance()->device().Get(),
