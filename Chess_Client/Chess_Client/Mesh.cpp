@@ -1393,7 +1393,6 @@ DebugCollisionBox::DebugCollisionBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	_indices[20] = 2; _indices[21] = 6; _indices[22] = 3; _indices[23] = 7;
 
 	_stride = sizeof(IlluminatedVertex);
-	_numVertices = static_cast<UINT>(_vertices.size());
 	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 	//// D3D 리소스 생성 (나머지 부분은 DebugWireframeMesh와 거의 동일)
 	//m_nStride = sizeof(IlluminatedVertex);
