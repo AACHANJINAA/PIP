@@ -1,0 +1,5554 @@
+[
+	{
+		"Name": "SM_FLOOR",
+		"Mesh": "SM_FLOOR",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -1.3311837382119714e-10,
+				"Y": 50.00000078693035,
+				"Z": 3.2026554510091938e-14
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 50,
+				"Y": 500,
+				"Z": 50
+			}
+		},
+		"Textures": [
+			"Textures/T_Rock_Slate_N.dds",
+			"Textures/T_MacroVariation.dds",
+			"Textures/T_Perlin_Noise_M.dds",
+			"Textures/T_Rock_Slate_D.dds"
+		]
+	},
+	{
+		"Name": "SM_FLOOR2",
+		"Mesh": "SM_FLOOR",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 1.4153178869240123e-08,
+				"Y": 24.874999627955258,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 75,
+				"Y": 500,
+				"Z": 75
+			}
+		},
+		"Textures": [
+			"Textures/T_Rock_Slate_N.dds",
+			"Textures/T_MacroVariation.dds",
+			"Textures/T_Perlin_Noise_M.dds",
+			"Textures/T_Rock_Slate_D.dds"
+		]
+	},
+	{
+		"Name": "SM_FLOOR3",
+		"Mesh": "SM_FLOOR",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 100,
+				"Y": 500,
+				"Z": 100
+			}
+		},
+		"Textures": [
+			"Textures/T_Rock_Slate_N.dds",
+			"Textures/T_MacroVariation.dds",
+			"Textures/T_Perlin_Noise_M.dds",
+			"Textures/T_Rock_Slate_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 76.97231458736151,
+				"Y": 24.879999999999999,
+				"Z": -8.7923585676608624
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -9.999999922536345,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket2",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 75.652841863061681,
+				"Y": 24.879999999999999,
+				"Z": -17.442773191354721
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999961268202,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket3",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.066143640558309,
+				"Y": 24.879999999999999,
+				"Z": -25.068410716537066
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -19.999999961268145,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket4",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 71.466161326282233,
+				"Y": 24.879999999999999,
+				"Z": -32.124113004370223
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -24.999999961268205,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket5",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 68.26344675214348,
+				"Y": 24.879999999999999,
+				"Z": -38.689522545086788
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -29.999999961268209,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket6",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 64.300203379796798,
+				"Y": 24.879999999999999,
+				"Z": -44.820910973677108
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -34.999999961268216,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket7",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 59.611226261331581,
+				"Y": 24.879999999999999,
+				"Z": -50.053647825782882
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -39.999999961268145,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket8",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 54.226309917744032,
+				"Y": 24.879999999999999,
+				"Z": -55.237277360255867
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -44.999999961268081,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket9",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 48.974480561054861,
+				"Y": 24.879999999999999,
+				"Z": -60.481637653449006
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -49.99999996126779,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket10",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 43.178035439313923,
+				"Y": 24.879999999999999,
+				"Z": -64.677913059186707
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -54.999999961267569,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket11",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 37.159279856407743,
+				"Y": 24.879999999999999,
+				"Z": -68.6257080549683
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -59.999999961267811,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket12",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 31.139087562849713,
+				"Y": 24.879999999999999,
+				"Z": -71.767878801947617
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -64.999999961268188,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket13",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 24.13126966011696,
+				"Y": 24.879999999999999,
+				"Z": -74.429081499270282
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -69.999999961268244,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket14",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -26.64858795828356,
+				"Y": 24.879999999999999,
+				"Z": -71.619434231319133
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -109.99999922536399,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket15",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -33.801431303196154,
+				"Y": 24.879999999999999,
+				"Z": -69.231723093684977
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -114.99999922536382,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket16",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -41.035691088048644,
+				"Y": 24.879999999999999,
+				"Z": -66.344952519919005
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -119.99999922536328,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket17",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -47.532719308605593,
+				"Y": 24.879999999999999,
+				"Z": -62.559260115933185
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -124.99999922536361,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket18",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -53.442240100854633,
+				"Y": 24.879999999999999,
+				"Z": -58.265130722662292
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -129.9999992253633,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket19",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -58.792269099076094,
+				"Y": 24.879999999999999,
+				"Z": -53.297393643775202
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -134.99999922536404,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket20",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -63.131276745700198,
+				"Y": 24.879999999999999,
+				"Z": -47.770997519679234
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -139.99999922536401,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket21",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -67.301074553992265,
+				"Y": 24.879999999999999,
+				"Z": -41.567762449891113
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -144.99999922536449,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket22",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.55379079386806,
+				"Y": 24.879999999999999,
+				"Z": -35.485046686271694
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -149.99999922536404,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket23",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.679773393433706,
+				"Y": 24.879999999999999,
+				"Z": -29.047987098777259
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -154.99999922536404,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket24",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -77.52244674740956,
+				"Y": 24.879999999999999,
+				"Z": -22.43514261115735
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -159.99999922536378,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket25",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -79.571485616264454,
+				"Y": 24.879999999999999,
+				"Z": -15.960778390243007
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -164.99999922536398,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket26",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -80.975364058912348,
+				"Y": 24.879999999999999,
+				"Z": -8.5973120293287035
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -169.99999922536324,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "SM_Cart_01",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 79.000074598339467,
+				"Y": 25.606714534312751,
+				"Z": -13.760309796345082
+			},
+			"Rotation":
+			{
+				"Pitch": -4.9999999612450106,
+				"Yaw": 114.99999910918172,
+				"Roll": 1.0431361763219996e-11
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 77.997222451879253,
+				"Y": 25.999817740701729,
+				"Z": -12.740234286997129
+			},
+			"Rotation":
+			{
+				"Pitch": 2.110887720297332,
+				"Yaw": 0.083566202133212364,
+				"Roll": 4.5335920233322335
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full2",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 79.168300984535733,
+				"Y": 26.042982135413727,
+				"Z": -12.73852620396953
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108877202973866,
+				"Yaw": 0.083566202133211046,
+				"Roll": 159.533590822647
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full3",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 78.332880701699565,
+				"Y": 26.099631676971637,
+				"Z": -13.842534541727145
+			},
+			"Rotation":
+			{
+				"Pitch": -44.782385313450014,
+				"Yaw": -150.01893107853545,
+				"Roll": 172.94677335995482
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full4",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 79.597727496407202,
+				"Y": 26.14180605226181,
+				"Z": -13.784615716338877
+			},
+			"Rotation":
+			{
+				"Pitch": -27.787814918127456,
+				"Yaw": -2.4768905373277921,
+				"Roll": 5.1225570614081306
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full5",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 78.912232584442293,
+				"Y": 26.20249959915256,
+				"Z": -14.869714057503014
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108877202974754,
+				"Yaw": 0.083566202133241341,
+				"Roll": -20.466407783007988
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full6",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 80.299227464103041,
+				"Y": 25.106042739690704,
+				"Z": -16.052077837363679
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000001,
+				"Yaw": 0.083566000000000015,
+				"Roll": -20.466408000000005
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Cart_2",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 54.47819342773488,
+				"Y": 25.568004353462886,
+				"Z": -59.764037359434823
+			},
+			"Rotation":
+			{
+				"Pitch": -5,
+				"Yaw": 174.99999853521823,
+				"Roll": 1.0226629627298599e-15
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full7",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 53.109890343888502,
+				"Y": 25.931319602343649,
+				"Z": -60.091967207374502
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000303,
+				"Yaw": 60.08356553521859,
+				"Roll": 4.5335920000000653
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full8",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 53.65501310800439,
+				"Y": 25.971606411734129,
+				"Z": -59.144598629770208
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000294,
+				"Yaw": 60.08356553521849,
+				"Roll": 159.53359100000017
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full9",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 54.157509590660737,
+				"Y": 26.024479296326117,
+				"Z": -60.335064671386291
+			},
+			"Rotation":
+			{
+				"Pitch": -44.782385000000303,
+				"Yaw": -90.018931464782241,
+				"Roll": 172.94677300000004
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full10",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 54.700956221430459,
+				"Y": 26.063842023675178,
+				"Z": -59.285672435675323
+			},
+			"Rotation":
+			{
+				"Pitch": -27.787815000000482,
+				"Yaw": 57.523108535218626,
+				"Roll": 5.1225570000000999
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full11",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 55.258133119863899,
+				"Y": 26.120489322879745,
+				"Z": -60.346130611848302
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000352,
+				"Yaw": 60.083565535218519,
+				"Roll": -20.466408000000001
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full12",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 56.86109067171877,
+				"Y": 25.097129598392137,
+				"Z": -59.77680578706746
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000352,
+				"Yaw": 60.083565535218519,
+				"Roll": -20.466408000000001
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sack_01",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 77.376923961808515,
+				"Y": 24.864542465209961,
+				"Z": -21.455165035377668
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sack_2",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 76.734295972385212,
+				"Y": 24.864542465209961,
+				"Z": -22.342142687610881
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 64.99999949648641,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sack_3",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 77.547434675665968,
+				"Y": 24.864542465209961,
+				"Z": -22.495624571832643
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 130.00000128517945,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_01",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 71.970000419616696,
+				"Y": 25.539999980926513,
+				"Z": -36.242857200077609
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_2",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 71.870000419616701,
+				"Y": 25.539999980926513,
+				"Z": -37.307142914363311
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Crate_01",
+		"Mesh": "SM_Crate_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 64.320000000000007,
+				"Y": 25.4049999891052,
+				"Z": -48.539999999999999
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Crate_2",
+		"Mesh": "SM_Crate_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 63.300000000000004,
+				"Y": 25.404999990000011,
+				"Z": -48.539999999999999
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Crate_3",
+		"Mesh": "SM_Crate_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 63.520000000000003,
+				"Y": 25.404999990000011,
+				"Z": -49.560000000000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Cart_3",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -31.353274276654851,
+				"Y": 25.568004350000002,
+				"Z": -73.158801601283983
+			},
+			"Rotation":
+			{
+				"Pitch": -5.0000000000000009,
+				"Yaw": 25.000000161955551,
+				"Roll": 4.7890558254666607e-15
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full13",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -30.332254004906058,
+				"Y": 25.931319600000002,
+				"Z": -72.190654434112275
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000783,
+				"Yaw": -89.916432838046433,
+				"Roll": 4.5335920000001302
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full14",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -30.330659837575183,
+				"Y": 25.97160641,
+				"Z": -73.283661076074821
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000414,
+				"Yaw": -89.916432838045282,
+				"Roll": 159.53359100000034
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full15",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -31.361067606193014,
+				"Y": 26.024479299999999,
+				"Z": -72.503935524885378
+			},
+			"Rotation":
+			{
+				"Pitch": -44.782384999999259,
+				"Yaw": 119.98107016195361,
+				"Roll": 172.94677300000004
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full16",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -31.307010030492151,
+				"Y": 26.063842020000003,
+				"Z": -73.684459167406814
+			},
+			"Rotation":
+			{
+				"Pitch": -27.787815000000734,
+				"Yaw": -92.476889838045565,
+				"Roll": 5.1225570000001612
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full17",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.319768491244027,
+				"Y": 26.120489320000001,
+				"Z": -73.044663943613429
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000561,
+				"Yaw": -89.916432838045367,
+				"Roll": -20.466408000000012
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full18",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -33.423307988226178,
+				"Y": 25.097129599999999,
+				"Z": -74.339192520497875
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000561,
+				"Yaw": -89.916432838045367,
+				"Roll": -20.466408000000012
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Cart_4",
+		"Mesh": "SM_Cart_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -78.677157962239178,
+				"Y": 25.568004350000002,
+				"Z": -27.084543989908152
+			},
+			"Rotation":
+			{
+				"Pitch": -5,
+				"Yaw": 64.999999690145671,
+				"Roll": 3.5917918690999953e-15
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full19",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -78.517324040542377,
+				"Y": 25.931319600000002,
+				"Z": -25.686601046714383
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000232,
+				"Yaw": -49.916433309855123,
+				"Roll": 4.5335920000000378
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full20",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -77.813531720252982,
+				"Y": 25.97160641,
+				"Z": -26.522868018555293
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000223,
+				"Yaw": -49.916433309854931,
+				"Roll": 159.53359100000011
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full21",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -79.104067796235341,
+				"Y": 26.024479299999999,
+				"Z": -26.587896919681807
+			},
+			"Rotation":
+			{
+				"Pitch": -44.782384999999849,
+				"Yaw": 159.98106969014555,
+				"Roll": 172.94677300000001
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full22",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -78.303831321711385,
+				"Y": 26.063842020000003,
+				"Z": -27.457482967756537
+			},
+			"Rotation":
+			{
+				"Pitch": -27.787815000000315,
+				"Yaw": -52.476890309855222,
+				"Roll": 5.1225570000000529
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full23",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -79.490901760536687,
+				"Y": 26.120489320000001,
+				"Z": -27.61835996393491
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000179,
+				"Yaw": -49.916433309855059,
+				"Roll": -20.466408000000005
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Food_Watermelon_Full24",
+		"Mesh": "SM_Food_Watermelon_Full",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -79.504155149062925,
+				"Y": 25.097129599999999,
+				"Z": -29.319367906358938
+			},
+			"Rotation":
+			{
+				"Pitch": 2.1108880000000179,
+				"Yaw": -49.916433309855059,
+				"Roll": -20.466408000000005
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Box_3",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.263127670000003,
+				"Y": 24.709537180000002,
+				"Z": -32.26039214
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Box_4",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.799323950000002,
+				"Y": 24.709537180000002,
+				"Z": -33.991331219999999
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_17",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.496572640000011,
+				"Y": 24.849537180000002,
+				"Z": -31.606350470000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_18",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.420505980000002,
+				"Y": 24.849537180000002,
+				"Z": -32.242218469999997
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_19",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.002914290000007,
+				"Y": 24.849537180000002,
+				"Z": -32.570388969999996
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_20",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.93324097,
+				"Y": 24.849537180000002,
+				"Z": -31.9176134
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_21",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.56684817,
+				"Y": 24.849537180000002,
+				"Z": -31.851862609999998
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_22",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.321094110000004,
+				"Y": 24.849537180000002,
+				"Z": -32.329533009999999
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_23",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.711211919999997,
+				"Y": 24.849537180000002,
+				"Z": -32.733000750000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_24",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.92663687000001,
+				"Y": 24.849537180000002,
+				"Z": -32.165675700000001
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.999999999999996,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_25",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.070368729999998,
+				"Y": 24.80661392,
+				"Z": -33.334400529999996
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_26",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 72.796083010000004,
+				"Y": 24.80661392,
+				"Z": -34.002971960000004
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_27",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.387511580000009,
+				"Y": 24.80661392,
+				"Z": -33.660114819999997
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_28",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.901797299999998,
+				"Y": 24.80661392,
+				"Z": -34.165829109999997
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_29",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.370368729999996,
+				"Y": 24.80661392,
+				"Z": -34.200114820000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_30",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.277826349999998,
+				"Y": 24.80661392,
+				"Z": -34.418307770000006
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 134.999999,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_31",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.271765459999997,
+				"Y": 24.80661392,
+				"Z": -33.697058849999998
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 134.999999,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_32",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 74.67178586,
+				"Y": 24.80661392,
+				"Z": -34.048591950000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 134.999999,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Box_01",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.565435518565849,
+				"Y": 24.709537180000002,
+				"Z": -35.942043101821845
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Box_2",
+		"Mesh": "SM_Box_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.537586559343112,
+				"Y": 24.709537180000002,
+				"Z": -37.409963571868438
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_03",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.559192583119682,
+				"Y": 24.849537180000002,
+				"Z": -36.108848427767981
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.99999961268184,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_4",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.120984148034566,
+				"Y": 24.849537180000002,
+				"Z": -36.575846947688341
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_5",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.495226111487497,
+				"Y": 24.849537180000002,
+				"Z": -36.340640237911373
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_6",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.040066351360224,
+				"Y": 24.849537180000002,
+				"Z": -35.974417041862736
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_7",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.683159513968633,
+				"Y": 24.849537180000002,
+				"Z": -35.44678197886882
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_8",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.475210429900798,
+				"Y": 24.849537180000002,
+				"Z": -35.942081128351234
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_9",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.91537331457593,
+				"Y": 24.849537180000002,
+				"Z": -35.902577619588214
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_10",
+		"Mesh": "SM_Bottle_03",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.211497020731798,
+				"Y": 24.849537180000002,
+				"Z": -35.37288301692314
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.99999961268179,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_02",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.509388049204944,
+				"Y": 24.80661392,
+				"Z": -37.546108746338462
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.99999961268184,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_3",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.173540091406224,
+				"Y": 24.80661392,
+				"Z": -38.185973233906424
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.99999961268184,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_11",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -73.056020932371325,
+				"Y": 24.80661392,
+				"Z": -37.512528344460414
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.99999961268184,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_12",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.338044821124711,
+				"Y": 24.80661392,
+				"Z": -37.443629515839397
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.99999961268184,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_13",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.653376149532164,
+				"Y": 24.80661392,
+				"Z": -37.872765844116593
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.99999961268184,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_14",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.90292813070306,
+				"Y": 24.80661392,
+				"Z": -37.317864711876609
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -175.00000138731824,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_15",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -72.45933271676509,
+				"Y": 24.80661392,
+				"Z": -36.858897746183111
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -175.00000138731824,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Bottle_16",
+		"Mesh": "SM_Bottle_02",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.932914581107866,
+				"Y": 24.80661392,
+				"Z": -36.778425469820718
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -175.00000138731824,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 3,
+				"Z": 3
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sack_4",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -57.370736479999998,
+				"Y": 24.864542470000004,
+				"Z": -56.771592920000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sack_5",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -58.013364469999999,
+				"Y": 24.864542470000004,
+				"Z": -57.658570570000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 64.999998999999988,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sack_6",
+		"Mesh": "SM_Sack_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -57.200225759999995,
+				"Y": 24.864542470000004,
+				"Z": -57.812052450000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 130.000001,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_3",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -66.519999580000004,
+				"Y": 25.539999979999997,
+				"Z": -45.172857200000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Barrell_Closed_4",
+		"Mesh": "SM_Barrell_Closed_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -66.619999579999998,
+				"Y": 25.539999979999997,
+				"Z": -46.237142910000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.25,
+				"Y": 1.25,
+				"Z": 1.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Mace_01",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 91.519999999999996,
+				"Y": 24.870000000000001,
+				"Z": -35.200000000000003
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sword_01",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 96.980000000000004,
+				"Y": 24.870000000000001,
+				"Z": -14.25
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket27",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 88.24132263745382,
+				"Y": 24.879999999999999,
+				"Z": -40.91228299555042
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 154.99999868311832,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket28",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 92.483653338527319,
+				"Y": 24.879999999999999,
+				"Z": -29.411207749341433
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 159.99999860565458,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket29",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 95.315388359308798,
+				"Y": 24.879999999999999,
+				"Z": -20.204633660235825
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 169.99999848945907,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket30",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 64.862462661815826,
+				"Y": 24.879999999999999,
+				"Z": -72.286176446713114
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 135.00000151054101,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket31",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 72.149407337492192,
+				"Y": 24.879999999999999,
+				"Z": -65.185815294820628
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 140.00000143307753,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket32",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 79.324487327065981,
+				"Y": 24.879999999999999,
+				"Z": -55.916806256796008
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 145.00000135561393,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "SM_Table_01",
+		"Mesh": "SM_Table_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 83.549307777289812,
+				"Y": 24.879999999999999,
+				"Z": -49.021851501435798
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 59.999999535218336,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 1,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sword_2",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 81.960000000000008,
+				"Y": 26.469999999999999,
+				"Z": -50.57
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sword_3",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 84.730000000000004,
+				"Y": 26.560000000000002,
+				"Z": -46.490000000000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket33",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 96.544560339598519,
+				"Y": 24.879999999999999,
+				"Z": -8.6616910157684064
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 175.00000076760907,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket34",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 33.964630833665197,
+				"Y": 24.879999999999999,
+				"Z": -91.129842510246988
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 114.99999895424131,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket35",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 42.22344233915215,
+				"Y": 24.879999999999999,
+				"Z": -87.718851798945039
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 114.99999891550939,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket36",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 49.199935946452626,
+				"Y": 24.879999999999999,
+				"Z": -83.80927942311564
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 119.99999883804558,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket37",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 59.658371413937743,
+				"Y": 24.879999999999999,
+				"Z": -76.787965046354174
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 124.99999876058192,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "SM_Mace_2",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 54.5,
+				"Y": 24.870000000000001,
+				"Z": -80.780000000000001
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Mace_3",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -57.199303185795301,
+				"Y": 24.870000000000001,
+				"Z": -76.798885282574503
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -104.99999918663232,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sword_4",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -38.376308807613135,
+				"Y": 24.870000000000001,
+				"Z": -87.495098754589677
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -104.99999918663232,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket38",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -61.868360850944804,
+				"Y": 24.879999999999999,
+				"Z": -72.15347864562942
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.999999813369101,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket39",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -51.857171016801104,
+				"Y": 24.879999999999999,
+				"Z": -79.227952462038772
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 54.999999813369115,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket40",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -43.697210140173922,
+				"Y": 24.879999999999999,
+				"Z": -84.346034934026392
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 64.999998813369288,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_Rock_Slate_N.dds",
+			"Textures/T_MacroVariation.dds",
+			"Textures/T_Perlin_Noise_M.dds",
+			"Textures/T_Rock_Slate_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket41",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -86.122321461632069,
+				"Y": 24.879999999999999,
+				"Z": -41.451073546490726
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 30.000002813369083,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket42",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -81.149899052984068,
+				"Y": 24.879999999999999,
+				"Z": -50.327430161780107
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 35.000001813369074,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket43",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -74.053770933461536,
+				"Y": 24.879999999999999,
+				"Z": -59.657021094529519
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 40.000001813369131,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "SM_Table_2",
+		"Mesh": "SM_Table_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -68.487219887751252,
+				"Y": 24.879999999999999,
+				"Z": -65.522429727581951
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -44.999999186631563,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 1,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sword_5",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -69.571273439800606,
+				"Y": 26.469999999999999,
+				"Z": -63.586586011289278
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -104.99999918663232,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "SM_Sword_6",
+		"Mesh": "SM_Sword_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -66.34722471752805,
+				"Y": 26.560000000000002,
+				"Z": -67.318182162591356
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -104.99999918663232,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.75,
+				"Y": 3.75,
+				"Z": 3.75
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket44",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.228813651235512,
+				"Y": 24.879999999999999,
+				"Z": -89.691189886319393
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 70.000001813369295,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket45",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -96.326958826801146,
+				"Y": 24.879999999999999,
+				"Z": -6.7289604394066433
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 9.9999998133691577,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket46",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -95.169732263921091,
+				"Y": 24.879999999999999,
+				"Z": -15.589189096928928
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 9.9999998133691577,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket47",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -93.199024526581042,
+				"Y": 24.879999999999999,
+				"Z": -23.339836185967197
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 14.999999813369108,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket48",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -89.12379758271473,
+				"Y": 24.879999999999999,
+				"Z": -35.259158864263043
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 19.999999813369143,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "SM_Mace_4",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -91.644722648548566,
+				"Y": 24.870000000000001,
+				"Z": -29.243340095551908
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -104.99999918663232,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket49",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 6.553132857390132,
+				"Y": 24.879999999999999,
+				"Z": -96.986134875023509
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 99.999999116195966,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket50",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 15.41336154307462,
+				"Y": 24.879999999999999,
+				"Z": -95.828908527765364
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 99.999999116195966,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket51",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 23.164008680071888,
+				"Y": 24.879999999999999,
+				"Z": -93.858200979044454
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 104.99999911619598,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "SM_Mace_5",
+		"Mesh": "SM_Mace_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 29.067512627482003,
+				"Y": 24.870000000000001,
+				"Z": -92.303899244679144
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -14.99999988380455,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.5,
+				"Y": 3.5,
+				"Z": 3.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket52",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -25.870410321616816,
+				"Y": 24.879999999999999,
+				"Z": -92.676222820824776
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 84.999999116195625,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "BP_PurpleMarket53",
+		"Mesh": "SM_MarketStall_01",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -17.012574389135843,
+				"Y": 24.879999999999999,
+				"Z": -93.851623892917829
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 84.999999116195625,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1.5,
+				"Z": 2.25
+			}
+		},
+		"Textures": [
+			"Textures/T_PropColorMap.dds",
+			"Textures/T_CleanFloorGrunge_01_D.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 84.659999999999997,
+				"Y": 24.879999999999999,
+				"Z": -0.57000000000000006
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 2,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall2",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -84.680000000000007,
+				"Y": 24.879999999999999,
+				"Z": -0.65000000000000002
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 2,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Door",
+		"Mesh": "Combined_DEC539CE",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -2.4325248763451683,
+				"Y": 26.050000000000001,
+				"Z": -75.242589344444397
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -2.0000000000000004,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 5.5,
+				"Y": 7.25,
+				"Z": 5.5
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_8.dds",
+			"Textures/tower_and_castle_walls_texture_6.dds",
+			"Textures/tower_and_castle_walls_texture_7.dds",
+			"Textures/tower_and_castle_walls_texture_11.dds",
+			"Textures/tower_and_castle_walls_texture_9.dds",
+			"Textures/tower_and_castle_walls_texture_10.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall3",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 59.550000000000004,
+				"Y": 45.664986809326145,
+				"Z": -0.51000000000000001
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall4",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 73.744485257297754,
+				"Y": 47.579999999999998,
+				"Z": -6.7311202308357814
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 84.999999341559203,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall5",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 67.606261975632052,
+				"Y": 47.579999999999998,
+				"Z": -29.686431604906808
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 64.999999154927409,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall6",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 71.702674627206278,
+				"Y": 47.579999999999998,
+				"Z": -18.586044951456465
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 74.999999077463755,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall7",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 57.625839884095065,
+				"Y": 47.579999999999998,
+				"Z": -44.315895578691872
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 49.999999116195653,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall8",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 41.005456552942164,
+				"Y": 47.579999999999998,
+				"Z": -60.555301284443786
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 34.999999154927437,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall9",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 19.714698923061999,
+				"Y": 47.579999999999998,
+				"Z": -71.397889773401047
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 19.999999116195571,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall10",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -16.916325974617312,
+				"Y": 45.460000000000001,
+				"Z": -76.012703154087205
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -15.000000225363006,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall11",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.877010015912795,
+				"Y": 47.670000000000002,
+				"Z": -63.766148126224955
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -30.000000264095046,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall12",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -26.820819976471036,
+				"Y": 47.670000000000002,
+				"Z": -68.9071953665688
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -25.000000225363241,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall13",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -50.439355611926644,
+				"Y": 47.670000000000002,
+				"Z": -52.814632798029677
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -45.000000225363351,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall14",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -64.088689571000614,
+				"Y": 47.670000000000002,
+				"Z": -34.278155138308342
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -60.000000264095206,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall15",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -71.903859521944582,
+				"Y": 47.670000000000002,
+				"Z": -12.12181380533284
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -80.000000225363635,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Wall16",
+		"Mesh": "tower_and_castle_walls_1_B4BB0D62",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -58.950000000000003,
+				"Y": 45.664986810000002,
+				"Z": -0.51000000000000001
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_5.dds",
+			"Textures/tower_and_castle_walls_texture_3.dds",
+			"Textures/tower_and_castle_walls_texture_4.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 70.710000000000008,
+				"Y": 49.75,
+				"Z": -2.79
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower2",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 67.364380662004649,
+				"Y": 49.75,
+				"Z": -21.280946166321073
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -19.999999845072693,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower4",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 58.003773724160517,
+				"Y": 49.75,
+				"Z": -39.914372908529231
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -34.999999883804605,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower5",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 46.533917002862644,
+				"Y": 49.75,
+				"Z": -53.370893628989108
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -44.999999922536404,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower6",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 31.026964273236,
+				"Y": 49.75,
+				"Z": -63.468385755526455
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -59.999999883803966,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower3",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.72126283729817,
+				"Y": 49.75,
+				"Z": -62.294244454281227
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -114.99999910916844,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower7",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -48.065831848217996,
+				"Y": 49.75,
+				"Z": -51.447472542825956
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -134.99999910916804,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower8",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.99748867671596,
+				"Y": 49.75,
+				"Z": -35.0890555647048
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -149.99999910916804,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower9",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -68.345867782341074,
+				"Y": 49.75,
+				"Z": -19.006863935914634
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -159.99999910916844,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "Castle_Tower10",
+		"Mesh": "tower_and_castle_walls_0_8F42F975",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -70.943782691375787,
+				"Y": 49.75,
+				"Z": -0.68540743236995838
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -174.99999910916802,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1.5,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/tower_and_castle_walls_texture_2.dds",
+			"Textures/tower_and_castle_walls_texture_0.dds",
+			"Textures/tower_and_castle_walls_texture_1.dds"
+		]
+	},
+	{
+		"Name": "old_cannon",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 66.366879652483547,
+				"Y": 49.660000000000004,
+				"Z": -10.321467708500878
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -9.999999922536345,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon2",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 59.872196427201601,
+				"Y": 49.660000000000004,
+				"Z": -28.478889427266438
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -24.999999883804605,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon3",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 49.42285453824411,
+				"Y": 49.660000000000004,
+				"Z": -43.99737504155015
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -39.999999883804612,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon4",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 36.440300769361208,
+				"Y": 49.660000000000004,
+				"Z": -55.09671528913178
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -54.999999883803682,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon5",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 20.134253264228342,
+				"Y": 48.730000000000004,
+				"Z": -56.180423873311888
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -69.999999883804264,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 2,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon6",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -23.152751952145703,
+				"Y": 48.730000000000004,
+				"Z": -55.350364556937755
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -114.99999965141383,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 2,
+				"Y": 2,
+				"Z": 2
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon7",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.63875283352328627,
+				"Y": 48.730000000000004,
+				"Z": -55.948839422416434
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -92.000000000000014,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 3.25,
+				"Y": 3.25,
+				"Z": 3.25
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon8",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -38.141067024242538,
+				"Y": 49.660000000000004,
+				"Z": -54.347749316359398
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -124.99999910916769,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon9",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -51.123463082895377,
+				"Y": 49.660000000000004,
+				"Z": -41.298392778124864
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -139.99999910916833,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon10",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.771905226795901,
+				"Y": 49.660000000000004,
+				"Z": -25.269677740490476
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -154.9999991091683,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "old_cannon11",
+		"Mesh": "old_cannon",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -65.344659930852174,
+				"Y": 49.660000000000004,
+				"Z": -8.8127044223878723
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -169.99999910916819,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		},
+		"Textures": [
+			"Textures/old_cannon_texture_2.dds",
+			"Textures/old_cannon_texture_0.dds",
+			"Textures/old_cannon_texture_1.dds",
+			"Textures/old_cannon_texture_3.dds",
+			"Textures/old_cannon_texture_4.dds",
+			"Textures/old_cannon_texture_7.dds",
+			"Textures/old_cannon_texture_5.dds",
+			"Textures/old_cannon_texture_6.dds",
+			"Textures/old_cannon_texture_10.dds",
+			"Textures/old_cannon_texture_8.dds",
+			"Textures/old_cannon_texture_9.dds",
+			"Textures/old_cannon_texture_13.dds",
+			"Textures/old_cannon_texture_11.dds",
+			"Textures/old_cannon_texture_12.dds"
+		]
+	},
+	{
+		"Name": "cc0_switch",
+		"Mesh": "cc0_switch",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 87.870000000000005,
+				"Y": 26.530000000000001,
+				"Z": -0.9800000146015494
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -179.99999860565475,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 10.75,
+				"Y": 10.75,
+				"Z": 10.75
+			}
+		},
+		"Textures": [
+			"Textures/cc0_switch_texture_2.dds",
+			"Textures/cc0_switch_texture_0.dds",
+			"Textures/cc0_switch_texture_1.dds",
+			"Textures/cc0_switch_texture_5.dds",
+			"Textures/cc0_switch_texture_3.dds",
+			"Textures/cc0_switch_texture_4.dds"
+		]
+	},
+	{
+		"Name": "cc0_switch2",
+		"Mesh": "cc0_switch",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -88.409999999999997,
+				"Y": 26.530000000000001,
+				"Z": -0.98000309788511519
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": -179.999999,
+				"Roll": 0
+			},
+			"Scale":
+			{
+				"X": 10.75,
+				"Y": 10.75,
+				"Z": 10.75
+			}
+		},
+		"Textures": [
+			"Textures/cc0_switch_texture_2.dds",
+			"Textures/cc0_switch_texture_0.dds",
+			"Textures/cc0_switch_texture_1.dds",
+			"Textures/cc0_switch_texture_5.dds",
+			"Textures/cc0_switch_texture_3.dds",
+			"Textures/cc0_switch_texture_4.dds"
+		]
+	},
+	{
+		"Name": "medieval_church",
+		"Mesh": "medieval_church",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.44,
+				"Y": 74.870000000000005,
+				"Z": -14.81
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 2.75,
+				"Y": 2.75,
+				"Z": 2.75
+			}
+		},
+		"Textures": [
+			"Textures/medieval_church_texture_6.dds",
+			"Textures/medieval_church_texture_9.dds",
+			"Textures/medieval_church_texture_10.dds",
+			"Textures/medieval_church_texture_11.dds",
+			"Textures/medieval_church_texture_7.dds",
+			"Textures/medieval_church_texture_4.dds",
+			"Textures/medieval_church_texture_8.dds",
+			"Textures/medieval_church_texture_5.dds",
+			"Textures/medieval_church_texture_3.dds",
+			"Textures/medieval_church_texture_1.dds",
+			"Textures/medieval_church_texture_2.dds",
+			"Textures/medieval_church_texture_0.dds"
+		]
+	},
+	{
+		"Name": "mana_pool_0810063423_texture",
+		"Mesh": "mana_pool_0810063423_texture",
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.19,
+				"Y": 76.489999999999995,
+				"Z": -14.540000000000001
+			},
+			"Rotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": -0
+			},
+			"Scale":
+			{
+				"X": 5,
+				"Y": 5,
+				"Z": 5
+			}
+		},
+		"Textures": [
+			"Textures/mana_pool_0810063423_texture_texture_2.dds",
+			"Textures/mana_pool_0810063423_texture_texture_0.dds",
+			"Textures/mana_pool_0810063423_texture_texture_1.dds"
+		]
+	}
+]
