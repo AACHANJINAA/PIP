@@ -68,8 +68,8 @@ void ResourceManager::upload_pending_meshes(ID3D12GraphicsCommandList* command_l
 
 void ResourceManager::release_upload_buffers()
 {
-    // 이 함수는 GameFramework::BuildObjects 마지막에 호출되어야 합니다.
-      // 모든 메시의 임시 업로드 버퍼를 해제합니다.
+    // 이 함수는 GameFramework::BuildObjects 마지막에 호출되어야 하는게 아니라
+    // 씬 전환시에 더이상 이 메쉬를 사용 하지 않을 때 호출 되어야함
     for (auto const& [key, val] : _meshes)
     {
         val->release_upload_buffers(); // TODO: Mesh 클래스에 해당 함수 구현 필요
