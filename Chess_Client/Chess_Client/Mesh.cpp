@@ -71,6 +71,19 @@ void Mesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* comman
 		_indexBufferView.SizeInBytes = sizeof(UINT) * _indices.size();
 	}
 
+	// 이거 중요!
+	_isUploaded = true;
+}
+
+void Mesh::should_upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+	if (_isUploaded || _vertices.empty()) return;
+	if (0 == _stride)
+	{
+		CERROR("stride 설정 안됨")
+	}
+	upload_to_gpu(device, commandList);
+	// 이거 중요!
 	_isUploaded = true;
 }
 
@@ -1480,7 +1493,6 @@ ReadGLTFMesh::ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* 
 	create_vertex_and_index_buffers(d3d_device, d3d_commandList, gltf_mesh_data);
 
 	load_textures(d3d_device, d3d_commandList, gltf_json, str);
-
 }
 
 ReadGLTFMesh::~ReadGLTFMesh()
