@@ -14,8 +14,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 {
     // --- 조명 생성 (예시) ---
       // 조명은 보통 보이지 않으므로 RenderComponent가 필요 없습니다.
-    auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
-    lightObject->add_component<LightComponent>(); // TODO: LightComponent를 만든다면 부착
+    //auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
+    //lightObject->add_component<LightComponent>(); // TODO: LightComponent를 만든다면 부착
 
     // --- 플레이어 생성 ---
     auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");

@@ -18,6 +18,11 @@ void Object::destroy(std::shared_ptr<Object> obj_to_destroy, float delay)
 {
     if (!obj_to_destroy || obj_to_destroy->is_destroyed()) return;
 
+	//TODO: delay 기능 구현 필요
+    // 어떻게 할까?
+	// delay > 0이면 일정 시간 후에 파괴 요청을 큐에 넣도록 타이머를 설정하는 로직 필요
+	// delay <= 0이면 즉시 파괴 요청을 큐에 넣습니다.
+
     obj_to_destroy->set_destroyed(true);
 
     // ObjectManager에 파괴 요청을 전달하는 것은 동일합니다.

@@ -144,6 +144,7 @@ public:
 	// [추가] CPU 메모리에 로드된 데이터를 기반으로 실제 GPU 버퍼를 생성하는 함수입니다.
 	// Renderer가 렌더링 직전에 호출해줍니다.
 	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	void should_upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
 	// [추가] GPU에 업로드되었는지 확인하는 플래그
 	bool is_uploaded() const { return _isUploaded; }
