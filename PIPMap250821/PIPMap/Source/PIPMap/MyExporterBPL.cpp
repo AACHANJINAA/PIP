@@ -165,24 +165,24 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
                     UTexture2D* Texture2D = Cast<UTexture2D>(Texture);
                     if (Texture2D && !ExportedTextures.Contains(Texture2D))
                     {
-                        // DDS 파일 경로 생성
-                        FString DDSFileName = Texture2D->GetName() + TEXT(".dds");
-                        FString DDSFullFilePath = TextureExportDir + DDSFileName;
+                        // PNG 파일 경로 생성 (임시 원본으로 사용할 파일)
+                        FString TextureFileName = Texture2D->GetName() + TEXT(".png");
+                        FString TextureFullFilePath = TextureExportDir + TextureFileName;
 
-                        // Texture2D를 DDS로 내보낼 수 있는 Exporter 찾기
-                        UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("DDS"));
+                        // Texture2D를 PNG로 내보낼 수 있는 Exporter 찾기
+                        UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("PNG"));
 
                         if (Exporter)
                         {
                             // 찾아낸 Exporter를 사용하여 파일을 내보내기
-                            int32 bExported = UExporter::ExportToFile(Texture2D, Exporter, *DDSFullFilePath, false, false);
+                            int32 ExportResult = UExporter::ExportToFile(Texture2D, Exporter, *TextureFullFilePath, false, false);
 
-                            if (bExported == 1)
+                            if (ExportResult == 1)
                             {
-                                // JSON에는 상대 경로를 저장
-                                FString RelativePath = TEXT("Textures/") + DDSFileName;
-                                TexturesJsonArray.Add(MakeShareable(new FJsonValueString(RelativePath)));
-                                UE_LOG(LogTemp, Log, TEXT("Exported Texture: %s"), *DDSFullFilePath);
+                                // JSON에는 최종 결과물인 dds 경로를 기록
+                                FString RelativeDdsPath = TEXT("Textures/") + Texture2D->GetName() + TEXT(".dds");
+                                TexturesJsonArray.Add(MakeShareable(new FJsonValueString(RelativeDdsPath)));
+                                UE_LOG(LogTemp, Log, TEXT("Exported Source Texture: %s"), *TextureFullFilePath);
                             }
                             else
                             {
@@ -191,7 +191,7 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
                         }
                         else
                         {
-                            UE_LOG(LogTemp, Error, TEXT("DDS Exporter not found for texture: %s"), *Texture2D->GetPathName());
+                            UE_LOG(LogTemp, Error, TEXT("PNG Exporter not found for texture: %s"), *Texture2D->GetPathName());
                         }
 
                         // 처리된 텍스처를 Set에 추가하여 중복 방지

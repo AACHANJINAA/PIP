@@ -24,10 +24,9 @@
 			}
 		},
 		"Textures": [
-			"Textures/T_Rock_Slate_N.dds",
-			"Textures/T_MacroVariation.dds",
-			"Textures/T_Perlin_Noise_M.dds",
-			"Textures/T_Rock_Slate_D.dds"
+			"Textures/mana_pool_0810063423_texture_texture_2.dds",
+			"Textures/mana_pool_0810063423_texture_texture_0.dds",
+			"Textures/mana_pool_0810063423_texture_texture_1.dds"
 		]
 	},
 	{
@@ -55,10 +54,10 @@
 			}
 		},
 		"Textures": [
-			"Textures/T_Rock_Slate_N.dds",
-			"Textures/T_MacroVariation.dds",
+			"Textures/T_Brick_Clay_Old_N.dds",
 			"Textures/T_Perlin_Noise_M.dds",
-			"Textures/T_Rock_Slate_D.dds"
+			"Textures/T_MacroVariation.dds",
+			"Textures/T_Brick_Clay_Old_D.dds"
 		]
 	},
 	{
@@ -86,10 +85,8 @@
 			}
 		},
 		"Textures": [
-			"Textures/T_Rock_Slate_N.dds",
-			"Textures/T_MacroVariation.dds",
-			"Textures/T_Perlin_Noise_M.dds",
-			"Textures/T_Rock_Slate_D.dds"
+			"Textures/T_Rock_Sandstone_N.dds",
+			"Textures/T_Rock_Sandstone_D.dds"
 		]
 	},
 	{
@@ -3629,10 +3626,7 @@
 		},
 		"Textures": [
 			"Textures/T_PropColorMap.dds",
-			"Textures/T_Rock_Slate_N.dds",
-			"Textures/T_MacroVariation.dds",
-			"Textures/T_Perlin_Noise_M.dds",
-			"Textures/T_Rock_Slate_D.dds"
+			"Textures/T_CleanFloorGrunge_01_D.dds"
 		]
 	},
 	{
