@@ -194,6 +194,9 @@
     <ClInclude Include="Mesh.h">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClInclude>
+    <ClInclude Include="CameraComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -297,6 +300,9 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
