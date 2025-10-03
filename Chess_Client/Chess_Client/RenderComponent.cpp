@@ -40,6 +40,17 @@ RenderComponent::RenderComponent()
 {
 	set_name("RenderComponent");
 }
+
+RenderComponent::~RenderComponent()
+{
+	if (_cbGameObjectInfo)
+	{
+		_cbGameObjectInfo->Unmap(0, nullptr);
+		_mappedCbGameObjectInfo = nullptr;
+		_cbGameObjectInfo.Reset();
+	}
+}
+
 void RenderComponent::awake()
 {
     ComPtr<ID3D12Device> device = GameFramework::Instance()->device();

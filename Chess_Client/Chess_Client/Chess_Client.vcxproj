@@ -166,7 +166,10 @@
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OtherPlayerScript.h" />
     <ClInclude Include="PlayerShader.h" />
+    <ClInclude Include="ReadFBXMesh.h" />
     <ClInclude Include="ReadGLBMesh.h" />
+    <ClInclude Include="ReadGLTFMesh.h" />
+    <ClInclude Include="ReadOBJMesh.h" />
     <ClInclude Include="RenderComponent.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
@@ -207,7 +210,10 @@
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="OtherPlayerScript.cpp" />
     <ClCompile Include="PlayerShader.cpp" />
+    <ClCompile Include="ReadFBXMesh.cpp" />
     <ClCompile Include="ReadGLBMesh.cpp" />
+    <ClCompile Include="ReadGLTFMesh.cpp" />
+    <ClCompile Include="ReadOBJMesh.cpp" />
     <ClCompile Include="RenderComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />

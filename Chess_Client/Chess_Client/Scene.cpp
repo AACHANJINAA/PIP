@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "Scene.h"
 
-#include "BoardCube.h"
+#include "BoardCubeScript.h"
 #include "ObjectManager.h"
+#include "ReadGlbMesh.h"
 
 // load_scene_from_file의 기본 구현 (파생 클래스에서 필요시 오버라이드)
 void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,
@@ -44,37 +45,12 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             }
             // TODO: 게임 오브젝트 생성 및 배치 로직
 
-            std::shared_ptr<GameObject> Board = std::make_shared<BoardCube>();
-            std::shared_ptr<Mesh> BoardMesh;
-            meshName = "Resource/MapData/" + meshName + ".glb";
+			std::shared_ptr<GameObject> Board = ObjectManager::Instance()->create_game_object(name);
+            Board->add_component<BoardCubeScript>();
+            Board->transform()->set_local_position(location);
+			Board->transform()->rotate(rotation.x, -rotation.y, rotation.z);
+            Board->transform()->set_local_scale(scale);
 
-            auto Board_Transform = Board->get_component<TransformComponent>();
-            auto Board_Render = Board->get_component<RenderComponent>();
-
-            BoardMesh = make_shared<ReadGlbMesh>(device, commandList, meshName, (Scene*)this);
-
-            if (!BoardMesh || !BoardMesh->IsValid())
-                continue;
-
-			//TODO: Material_Shader 부분도 머티리얼 시스템에 맞게 변경 필요
-            if (Board_Render)
-            {
-                auto materialShader = std::make_shared<Material_Shader>();
-                Board_Render->set_material(materialShader);
-
-                Board_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // 상수 버퍼 생성 로직 추가
-                Board_Render->set_mesh(BoardMesh);
-                Board_Render->set_shader(_AllShaders[1]); // GLB
-                Board_Render->get_material_shader()->set_shader_root_signature(_AllRootSignature[1].Get());
-            }
-
-            if (Board_Transform)
-            {
-                Board_Transform->rotate(rotation.x, -rotation.y, rotation.z);
-                Board_Transform->set_scale(scale.x, scale.y, scale.z);
-                Board_Transform->set_position(location.x, location.y, location.z);
-            }
-			ObjectManager::Instance()->PushFloorObject(Board); //TODO: ObjectManager 사용
 
         }
     }
