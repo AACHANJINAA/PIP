@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "ResourceManager.h"
 #include "Mesh.h" // ReadObjMesh, ReadGlbMesh 등을 포함해야 함
+#include "ReadGlbMesh.h"
 
 void ResourceManager::initialize(ID3D12Device* device)
 {
@@ -39,14 +40,38 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
         return it->second;
     }
 
-    // [변경] 새로 메시를 로드한 경우 (이때는 CPU 데이터만 로드됨)
-    // ReadGlbMesh, ReadObjMesh 등 적절한 클래스 사용
-    std::shared_ptr<Mesh> new_mesh = std::make_shared<ReadGlbMesh>(file_path);
-    //TODO: 템플릿 코드로 만들어야할듯?
+    // [수정] 파일 확장자에 따라 적절한 메시 로더를 선택
+    std::shared_ptr<Mesh> new_mesh = nullptr;
+    std::filesystem::path path(file_path);
+    std::string extension = path.extension().string();
+
+    if (extension == ".obj")
+    {
+        new_mesh = std::make_shared<ReadObjMesh>(file_path);
+    }
+    else if (extension == ".glb")
+    {
+        new_mesh = std::make_shared<ReadGlbMesh>(file_path);
+    }
+    // else if (extension == ".fbx")
+    // {
+    //     // 참고: ReadFbxMesh는 생성자에서 device와 commandList를 요구하므로,
+    //     // 별도의 리팩토링 없이는 현재 구조에서 직접 생성할 수 없습니다.
+    //     CERROR("FBX loading is not supported in the current ResourceManager structure.");
+    // }
+    else
+    {
+        CERROR("Unsupported mesh file format: " << file_path);
+        return nullptr;
+    }
+
+    if (!new_mesh)
+    {
+        CERROR("Failed to create mesh object for: " << file_path);
+        return nullptr;
+    }
 
     _meshes[file_path] = new_mesh;
-
-    // [추가] GPU에 업로드해야 할 '대기 목록'에 추가합니다.
     _pending_meshes.push_back(new_mesh);
 
     return new_mesh;
@@ -68,11 +93,12 @@ void ResourceManager::upload_pending_meshes(ID3D12GraphicsCommandList* command_l
 
 void ResourceManager::release_upload_buffers()
 {
-    // 이 함수는 GameFramework::BuildObjects 마지막에 호출되어야 하는게 아니라
-    // 씬 전환시에 더이상 이 메쉬를 사용 하지 않을 때 호출 되어야함
-    for (auto const& [key, val] : _meshes)
+    for (const auto& val : _meshes | std::views::values)
     {
-        val->release_upload_buffers(); // TODO: Mesh 클래스에 해당 함수 구현 필요
+        if (val)
+        {
+            val->release_upload_buffers();
+        }
     }
 }
 

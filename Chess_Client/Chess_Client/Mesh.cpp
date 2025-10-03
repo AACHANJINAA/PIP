@@ -35,7 +35,26 @@ Mesh::Mesh() : _stride{ 0 }
 
 Mesh::~Mesh()
 {
-	// ComPtr이 자동으로 리소스를 해제해줍니다.
+	if (_vertexBuffer)
+	{
+		_vertexBuffer->Unmap(0, nullptr);
+		_vertexBuffer.Reset();
+	}
+	if (_vertexUploadBuffer)
+	{
+		_vertexUploadBuffer->Unmap(0, nullptr);
+		_vertexUploadBuffer.Reset();
+	}
+	if (_indexBuffer)
+	{
+		_indexBuffer->Unmap(0, nullptr);
+		_indexBuffer.Reset();
+	}
+	if (_indexUploadBuffer)
+	{
+		_indexUploadBuffer->Unmap(0, nullptr);
+		_indexUploadBuffer.Reset();
+	}
 }
 
 void Mesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -86,6 +105,13 @@ void Mesh::should_upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
 	// 이거 중요!
 	_isUploaded = true;
 }
+
+void Mesh::release_upload_buffers()
+{
+	if (_vertexUploadBuffer) _vertexUploadBuffer.Reset();
+	if (_indexUploadBuffer) _indexUploadBuffer.Reset();
+}
+
 
 void Mesh::render(ID3D12GraphicsCommandList* commandList)
 {

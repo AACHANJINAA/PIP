@@ -146,12 +146,14 @@ public:
 	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 	void should_upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
+	virtual void release_upload_buffers();
+	
 	// [추가] GPU에 업로드되었는지 확인하는 플래그
 	bool is_uploaded() const { return _isUploaded; }
 
 	// 렌더링 함수는 VBV/IBV를 설정하고 DrawInstanced를 호출합니다.
 	virtual void render(ID3D12GraphicsCommandList* commandList);
-
+	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
 protected:
 	// [변경] 생성 시점에는 이 변수들에 정점/인덱스 데이터가 채워집니다.
 	std::vector<Vertex> _vertices; // Vertex 구조체가 정의되어 있다고 가정

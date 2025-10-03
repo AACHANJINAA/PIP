@@ -148,6 +148,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="DebugShader.h" />
     <ClInclude Include="DefaultObjectShader.h" />
+    <ClInclude Include="FreeCameraScript.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LayerManager.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DefaultObjectShader.cpp" />
+    <ClCompile Include="FreeCameraScript.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />

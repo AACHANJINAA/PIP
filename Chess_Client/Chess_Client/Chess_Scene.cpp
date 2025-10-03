@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Chess_Scene.h"
+
+#include "FreeCameraScript.h"
 #include "ObjectManager.h"
 #include "GameObject.h"
 
@@ -12,8 +14,12 @@
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    // [추가] 씬에 카메라를 생성합니다.
+    auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
+    cameraObject->add_component<FreeCameraScript>(); // 스크립트가 CameraComponent를 자동으로 추가하고 초기화합니다.
+	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
     // --- 조명 생성 (예시) ---
-      // 조명은 보통 보이지 않으므로 RenderComponent가 필요 없습니다.
+	// 조명은 보통 보이지 않으므로 RenderComponent가 필요 없습니다.
     //auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
     //lightObject->add_component<LightComponent>(); // TODO: LightComponent를 만든다면 부착
 
@@ -21,8 +27,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     playerObject->add_component<MainPlayerScript>(); // 스크립트를 부착하면 awake()에서 모든 설정이 자동으로 이루어집니다.
 
-        // --- 맵 오브젝트 생성 (JSON 또는 파일 로딩 로직이 여기로 올 수 있습니다) ---
-        auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
+	// --- 맵 오브젝트 생성 (JSON 또는 파일 로딩 로직이 여기로 올 수 있습니다) ---
+	auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
     auto renderer = mapObject->add_component<RenderComponent>();
 
     renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));

@@ -79,8 +79,8 @@ using Microsoft::WRL::ComPtr;
 #define ALLARRAYSIZE				5
 
 
-#define FRAME_BUFFER_WIDTH 1200
-#define FRAME_BUFFER_HEIGHT 800
+constexpr uint32_t FRAME_BUFFER_WIDTH = 1200;
+constexpr uint32_t FRAME_BUFFER_HEIGHT = 800;
 
 
 // 라이팅 및 PONG_SHADER 관련 상수 [PONG]

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "CameraComponent.h"
 #include "RootSignature.h"
 #include "Shader.h"
 
@@ -14,7 +15,7 @@ private:
 
 public:
     void initialize(ID3D12Device* device);
-    void render(ID3D12GraphicsCommandList* commandList, Camera* camera);
+    void render(ID3D12GraphicsCommandList* commandList);
 
     ID3D12RootSignature* get_root_signature(const std::string& name) const;
     ID3D12PipelineState* get_pso(const std::string& name) const;
@@ -23,8 +24,8 @@ private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);
 
-    void build_render_list(Camera* camera);
-    void draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* camera);
+    void build_render_list(CameraComponent* camera);
+    void draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera);
 
     // [변경] 개별 ComPtr 대신, 이름으로 루트 시그니처를 관리하는 map을 사용합니다.
     std::unordered_map<std::string, ComPtr<ID3D12RootSignature>> _rootSignatures;

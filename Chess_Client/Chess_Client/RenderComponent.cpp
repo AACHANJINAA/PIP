@@ -96,7 +96,26 @@ void RenderComponent::awake()
     _cbGameObjectInfo->Map(0, nullptr, reinterpret_cast<void**>(&_mappedCbGameObjectInfo));
 	
 }
-void RenderComponent::render(ID3D12GraphicsCommandList* commandList, Camera* camera)
+
+BoundingOrientedBox RenderComponent::get_world_bounding_box() const
+{
+    BoundingOrientedBox obb = _mesh->bounding_box();
+    if (game_object() && game_object()->transform())
+    {
+        XMMATRIX worldMatrix = XMLoadFloat4x4(&game_object()->transform()->world_matrix());
+        obb.Transform(obb, worldMatrix);
+    }
+    return obb;
+}
+bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
+{
+    if (!_mesh) return false;
+    return frustum.Intersects(get_world_bounding_box());
+}
+
+
+
+void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 {
 	// _shader 검사는 더 이상 필요 없습니다.
 	if (!_mesh)

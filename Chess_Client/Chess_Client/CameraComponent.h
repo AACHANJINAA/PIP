@@ -1,21 +1,64 @@
-﻿#include "Component.h"
-class TransformComponent;
+﻿#pragma once
+#include "Component.h"
+#include "TransformComponent.h" // Required for getting transform data
+
+// CB_CAMERA_INFO is needed by shaders, so it's good to have it accessible.
+struct CB_CAMERA_INFO
+{
+    XMFLOAT4X4  _view;
+    XMFLOAT4X4  _projection;
+    XMFLOAT4    _position;
+};
 
 // 역할: 카메라의 데이터(프로젝션)와 기능(뷰 행렬 계산)을 담당하는 순수 데이터 컴포넌트.
 // Component를 상속하며, Behaviour가 아니므로 자동 update가 호출되지 않습니다.
 // 뷰 행렬의 갱신은 렌더링 직전 Renderer에 의해 명시적으로 제어됩니다.
 class CameraComponent : public Component
 {
+public:
+    CameraComponent();
+    virtual ~CameraComponent();
+
+    // 역할 이전 (from CCamera::CreateShaderVariables, CCamera::~CCamera):
+    // 상수 버퍼 생성 및 해제
+    void initialize();
+    void release();
+
+    // 역할 이전 (from CCamera::UpdateShaderVariables):
+    // 셰이더에 뷰/프로젝션 행렬 업데이트
+    void update_shader_variables(ID3D12GraphicsCommandList* commandList);
+
+    // 역할 이전 (from CCamera::SetViewportsAndScissorRects):
+    // 뷰포트 및 시저렉트 설정
+    void set_viewports_and_scissor_rects(ID3D12GraphicsCommandList* commandList);
+
+    // 역할 이전 (from CCamera::GenerateProjectionMatrix, CCamera::SetFOVAngle):
+    // 렌즈 설정 (프로젝션 행렬 생성)
+    void set_lens(float fov, float aspect, float near_plane, float far_plane);
+
+    // 역할 이전 (from CCamera::Update):
+    // GameObject의 Transform을 기준으로 뷰 행렬을 다시 계산합니다.
+    void recalculate_view_matrix();
+
+    // --- Getters ---
+    const XMFLOAT4X4& view_matrix() const { return _viewMatrix; }
+    const XMFLOAT4X4& projection_matrix() const { return _projectionMatrix; }
+    const BoundingFrustum& frustum() const { return _frustum; }
+
+    // --- Main Camera Management ---
+	void set_main_camera() { _mainCamera = this; }
+    static CameraComponent* get_main() { return _mainCamera; }
+
 private:
     // 역할 이전 (from CCamera):
     // CCamera가 가지고 있던 뷰/프로젝션 행렬입니다. (컨벤션: _ + camelCase)
     XMFLOAT4X4 _viewMatrix;
     XMFLOAT4X4 _projectionMatrix;
-
+    BoundingFrustum _frustum;
     // 역할 이전 (from CCamera):
     // 뷰포트와 시저렉트 정보입니다.
-    D3D12_VIEWPORT _viewport;
-    D3D12_RECT _scissorRect;
+    D3D12_VIEWPORT  _viewport;
+    D3D12_RECT      _scissorRect;
 
     // 역할 이전 (from CCamera):
     // 렌즈 설정을 위한 변수들입니다.
@@ -24,20 +67,12 @@ private:
     float _near;
     float _far;
 
-public:
-    CameraComponent();
-    virtual ~CameraComponent() = default;
+    // 역할 이전 (from CCamera):
+    // 상수 버퍼 리소스 및 매핑된 포인터
+    ComPtr<ID3D12Resource> _cbCamera;
+    CB_CAMERA_INFO* _mappedCbCamera = nullptr;
 
-    // 역할: Renderer가 호출할 함수.
-    // 이 컴포넌트가 부착된 GameObject의 Transform을 기준으로 뷰 행렬을 다시 계산합니다.
-    // Behaviour의 update()와 달리, 렌더링 시점에만 호출되어 동기화를 보장합니다.
-    void recalculate_view_matrix();
-
-    // 역할 이전 (from CCamera::SetLens, 컨벤션: set_ prefix):
-    // 프로젝션 행렬(원근 투영)을 설정하는 기능은 그대로 가져왔습니다.
-    void set_lens(float fov, float aspect, float near_plane, float far_plane);
-
-    // 컨벤션: Getter는 'get_' 접두사 없이, 변수명처럼, const 키워드 사용
-    const XMFLOAT4X4& view_matrix() const { return _viewMatrix; }
-    const XMFLOAT4X4& projection_matrix() const { return _projectionMatrix; }
+    // --- Main Camera ---
+    // 렌더러가 쉽게 접근할 수 있도록 주 카메라를 가리키는 정적 포인터
+    static CameraComponent* _mainCamera;
 };
