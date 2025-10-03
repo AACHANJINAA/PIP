@@ -249,10 +249,10 @@ void GameFramework::BuildObjects()
 	_scene = std::make_unique<Chess_Scene>(); //초기 씬 생성 TODO: 나중에 씬 매니저로 변경
 	_scene->build_objects(_device.Get(), _commandList.Get());
 
-	// 카메라 역할을 할 GameObject 생성
-	auto cameraObject = ObjectManager::Instance()->create_game_object("MainCamera");
-	_camera = cameraObject->add_component<Camera>();
-	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
+	//// 카메라 역할을 할 GameObject 생성
+	//auto cameraObject = ObjectManager::Instance()->create_game_object("MainCamera");
+	//_camera = cameraObject->add_component<Camera>();
+	//cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
 
 	// 4. [핵심] 대기중인 모든 리소스를 GPU에 업로드합니다.
 	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
@@ -262,9 +262,9 @@ void GameFramework::BuildObjects()
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	WaitForGpuComplete();
 
-	_scene->release_upload_buffers();
-	// 6. [중요] 임시 업로드 버퍼들을 해제합니다.
-	// 예: ResourceManager::Instance()->release_upload_buffers();
+	// [핵심] GPU 작업이 완료되었으므로, 모든 업로드 버퍼를 해제합니다.
+	ResourceManager::Instance()->release_upload_buffers();
+	
 	_gameTimer.Reset();
 }
 
@@ -356,10 +356,8 @@ void GameFramework::FrameAdvance()
 		1.0f, 0, 0, NULL); _commandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
 
-	if (_camera)
-	{
-		Renderer::Instance()->render(_commandList.Get(), _camera.get());
-	}
+	// [수정] 렌더러 호출 시 더 이상 카메라를 넘기지 않습니다.
+	Renderer::Instance()->render(_commandList.Get());
 	
 
 	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.
@@ -423,6 +421,11 @@ void GameFramework::ChangeSwapChainState()
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
+	// [추가] 다른 로직 전에 메인 카메라의 뷰 행렬을 업데이트합니다.
+	if (auto main_cam = CameraComponent::get_main())
+	{
+		main_cam->recalculate_view_matrix();
+	}
 	// --- [추가] Awake 및 Start 단계 ---
 	// ObjectManager가 관리하는 새로운 객체들의 초기화 함수를 호출합니다.
 	ObjectManager::Instance()->process_new_game_objects();

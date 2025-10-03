@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "Renderer.h"
 #include "Camera.h"
+#include "CameraComponent.h"
 #include "DebugShader.h"
 #include "DefaultObjectShader.h"
 #include "GameObject.h"
@@ -121,8 +122,15 @@ void Renderer::create_pipeline_state_objects(ID3D12Device* device)
     }
 }
 
-void Renderer::render(ID3D12GraphicsCommandList* commandList, Camera* camera)
+void Renderer::render(ID3D12GraphicsCommandList* commandList)
 {
+    CameraComponent* camera = CameraComponent::get_main();
+    if (!camera)
+    {
+        // 렌더링할 카메라가 없으면 아무것도 하지 않습니다.
+        CERROR("렌더시에 카메라 1개이상은 필요함")
+        return;
+    }
     // 1. 이번 프레임에 그릴 객체들을 추려낸다.
     build_render_list(camera);
 
@@ -130,28 +138,33 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, Camera* camera)
     draw_render_list(commandList, camera);
 }
 
-void Renderer::build_render_list(Camera* camera)
+void Renderer::build_render_list(CameraComponent* camera)
 {
     _renderMap.clear();
     const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
-
+    const BoundingFrustum& frustum = camera->frustum();
     for (const auto& gameObject : allGameObjects)
     {
         if (!gameObject || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
-        if (renderComp && renderComp->is_enabled() /* && renderComp->is_visible(camera) */)
+        if (renderComp && renderComp->is_enabled() && renderComp->is_visible(frustum) )
         {
             _renderMap[renderComp->pso_name()].push_back(gameObject);
         }
     }
 }
 
-void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* camera)
+void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
 {
     // --- 전역 UpdateShaderVariables의 역할이 여기로 왔습니다 ---
 	// 카메라 상수 버퍼 업데이트
-    //if (camera) camera->UpdateShaderVariables(commandList);
+    // [핵심] 렌더링 시작 전, 카메라 데이터를 GPU 상수 버퍼로 업데이트하고 파이프라인에 설정합니다.
+    if (camera)
+    {
+        camera->update_shader_variables(commandList);
+        camera->set_viewports_and_scissor_rects(commandList);
+    }
 
     // 조명 상수 버퍼 업데이트
     // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
@@ -207,7 +220,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, Camera* 
             }*/
             // ------------------------------------
 
-            renderComp->render(commandList, camera);
+            renderComp->render(commandList);
         }
     }
     //KJ 설명: OnPrepareRender 함수는 더 이상 필요 없으며, 그 역할은 Renderer가 더 효율적인 방식으로 수행하게 됩니다.

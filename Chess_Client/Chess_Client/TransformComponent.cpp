@@ -116,6 +116,28 @@ void TransformComponent::set_local_scale(const XMFLOAT3& scale)
     set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
 }
 
+void TransformComponent::rotate(float pitch, float yaw, float roll)
+{
+    // 입력받은 오일러 각(degree)을 쿼터니언으로 변환합니다.
+    XMVECTOR delta_rotation_quat = XMQuaternionRotationRollPitchYaw(
+        XMConvertToRadians(pitch),
+        XMConvertToRadians(yaw),
+        XMConvertToRadians(roll)
+    );
+
+    // 기존 로컬 회전 쿼터니언을 가져옵니다.
+    XMVECTOR current_local_quat = XMLoadFloat4(&_localRotation);
+
+    // 두 쿼터니언을 곱하여 회전을 누적합니다. (순서 중요: new * old)
+    XMVECTOR new_local_quat = XMQuaternionMultiply(delta_rotation_quat, current_local_quat);
+
+    // 결과를 정규화하고 다시 저장합니다.
+    XMStoreFloat4(&_localRotation, XMQuaternionNormalize(new_local_quat));
+
+    // 행렬이 더럽혀졌음을 표시합니다.
+    set_hierarchy_dirty();
+}
+
 // --- Hierarchy Management ---
 
 void TransformComponent::set_parent(std::shared_ptr<TransformComponent> newParent)

@@ -4,6 +4,7 @@
 #include "Behaviour.h"
 #include "Component.h"
 #include "Camera.h"
+#include "CameraComponent.h"
 #include "Mesh.h"
 
 class Shader;
@@ -46,19 +47,18 @@ public:
     virtual ~RenderComponent() = default;
 
     // render 함수는 이제 Renderer에 의해 호출됩니다.
-    virtual void render(ID3D12GraphicsCommandList* commandList, Camera* camera);
+    virtual void render(ID3D12GraphicsCommandList* commandList);
     virtual void awake() override;
     // --- Getters & Setters ---
     void set_mesh(std::shared_ptr<Mesh> mesh) { _mesh = mesh; }
-    std::shared_ptr<Mesh> mesh() const { return _mesh; }
-
-    // (기존에 get_material_shader 같은 함수가 있었다면, 유사한 역할을 할 함수)
     void set_shader(std::shared_ptr<Shader> shader) { _shader = shader; }
-    std::shared_ptr<Shader> shader() const { return _shader; }
-
-    // 이 컴포넌트가 사용할 PSO의 이름을 설정하고 가져옵니다.
     void set_pso_name(const std::string& name) { _psoName = name; }
+    BoundingOrientedBox get_world_bounding_box() const;
+
+    std::shared_ptr<Mesh> mesh() const { return _mesh; }
+    std::shared_ptr<Shader> shader() const { return _shader; }
     const std::string& pso_name() const { return _psoName; }
+    bool is_visible(const BoundingFrustum& frustum) const;
 
 private:
     std::shared_ptr<Mesh> _mesh;
