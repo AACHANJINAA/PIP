@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="Behaviour.h" />
     <ClInclude Include="BoardCubeScript.h" />
+    <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DebugShader.h" />
@@ -183,6 +184,7 @@
   <ItemGroup>
     <ClCompile Include="Behaviour.cpp" />
     <ClCompile Include="BoardCubeScript.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DebugShader.cpp" />
