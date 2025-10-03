@@ -1,9 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include <assimp/Importer.hpp>      // Assimp 로더
-#include <assimp/scene.h>           // Assimp scene 객체
-#include <assimp/postprocess.h>     // Assimp 후처리 옵션
-#include <assimp/material.h> // AI_MATKEY_TEXTURE_DIFFUSE, AI_MATKEY_COLOR_DIFFUSE 정의 포함
+
 
 #include "Object.h"
 // nlohmann/json 헤더 // json 파싱 위해 추가
@@ -70,26 +67,26 @@ struct MeshPrimitive
 };
 
 
-struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
-{
-	XMFLOAT3 _position;
-	XMFLOAT3 _normal;
-	XMFLOAT4 _tangent;
-	XMFLOAT2 _texCoord;
-};
-
-
-struct GltfPrimitiveData
-{
-	ComPtr<ID3D12Resource> _vertexBuffer;
-	ComPtr<ID3D12Resource> _indexBuffer;
-
-	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
-	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
-
-	UINT _indexCount = 0;
-	int _materialIndex = -1; // 이 프리미티브가 사용할 m_textures 벡터의 인덱스
-};
+//struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
+//{
+//	XMFLOAT3 _position;
+//	XMFLOAT3 _normal;
+//	XMFLOAT4 _tangent;
+//	XMFLOAT2 _texCoord;
+//};
+//
+//
+//struct GltfPrimitiveData
+//{
+//	ComPtr<ID3D12Resource> _vertexBuffer;
+//	ComPtr<ID3D12Resource> _indexBuffer;
+//
+//	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
+//	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
+//
+//	UINT _indexCount = 0;
+//	int _materialIndex = -1; // 이 프리미티브가 사용할 m_textures 벡터의 인덱스
+//};
 
 struct Vertex
 {
@@ -127,11 +124,11 @@ public:
 	}
 };
 
-struct GltfMeshData
-{
-	std::vector<IlluminatedVertex> _vertices;
-	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
-};
+//struct GltfMeshData
+//{
+//	std::vector<IlluminatedVertex> _vertices;
+//	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
+//};
 
 class Mesh : public Object
 {
@@ -143,8 +140,8 @@ public:
 
 	// [추가] CPU 메모리에 로드된 데이터를 기반으로 실제 GPU 버퍼를 생성하는 함수입니다.
 	// Renderer가 렌더링 직전에 호출해줍니다.
+	
 	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
-	void should_upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
 	virtual void release_upload_buffers();
 	
@@ -155,12 +152,33 @@ public:
 	virtual void render(ID3D12GraphicsCommandList* commandList);
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
 protected:
+	static BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max);
+	virtual void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
+	// [추가] 템플릿 함수로 다양한 정점 타입을 지원합니다.
+	template<typename VertexType>
+	void set_vertex_data_buffer(const std::vector<VertexType>& temp_vertices)
+	{
+		// 2. 메타데이터 설정
+		_vertexCount = temp_vertices.size();
+		_vertexStride = sizeof(VertexType);
+
+		// 3. 원시 바이트 데이터를 부모 클래스의 버퍼로 복사
+		_vertexDataBuffer.resize(_vertexStride * _vertexCount);
+		memcpy(_vertexDataBuffer.data(), temp_vertices.data(), _vertexStride * _vertexCount);
+	}
+
+
+protected:
 	// [변경] 생성 시점에는 이 변수들에 정점/인덱스 데이터가 채워집니다.
-	std::vector<Vertex> _vertices; // Vertex 구조체가 정의되어 있다고 가정
+	// upload_to_gpu가 호출될 때 실제 GPU 버퍼가 생성됩니다.
+	std::vector<std::byte> _vertexDataBuffer; // 바이트 단위의 버퍼
+	UINT _vertexCount = 0; // 정점 개수
+	UINT _vertexStride = 0; // 정점 하나의 크기(바이트 단위)
+
 	std::vector<UINT> _indices;
 
 	bool _isUploaded = false;
-	UINT _stride;
 	D3D_PRIMITIVE_TOPOLOGY _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링
 
 	// [변경] 이 GPU 리소스들은 upload_to_gpu가 호출될 때 생성됩니다.
@@ -173,6 +191,7 @@ protected:
 	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
 
 	BoundingOrientedBox _orientedBoundingBox = BoundingOrientedBox();
+
 };
 
 //class Mesh
@@ -246,90 +265,90 @@ protected:
 //	virtual bool IsValid() const { return true; }
 //};
 
-struct OBJMaterial                                                                                                                                          
-{                                                                                                                                              
-	std::string name;
-	XMFLOAT4 Ka; // Ambient
-	XMFLOAT4 Kd; // Diffuse
-	XMFLOAT4 Ks; // Specular
-	float Ns;    // Specular Exponent 
-};
+//struct OBJMaterial                                                                                                                                          
+//{                                                                                                                                              
+//	std::string name;
+//	XMFLOAT4 Ka; // Ambient
+//	XMFLOAT4 Kd; // Diffuse
+//	XMFLOAT4 Ks; // Specular
+//	float Ns;    // Specular Exponent 
+//};
 
-class ReadObjMesh : public Mesh
-{
-public:
-	ReadObjMesh() = default;
-	ReadObjMesh(const std::string& filePath);
+//class ReadOBJMesh : public Mesh
+//{
+//public:
+//	ReadOBJMesh() = default;
+//	ReadOBJMesh(const std::string& filePath);
+//
+//	//void ChangeColor(float r, float g, float b, float a);
+//
+//	//virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
+//
+//	~ReadOBJMesh() override;
+//private:
+//	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
+//private:
+//	float _front = 0.0f;
+//	float _back = 0.0f;
+//	float _left = 0.0f;
+//	float _right = 0.0f;
+//	float _top = 0.0f;
+//	float _bottom = 0.0f;
+//	std::map<std::string, OBJMaterial> m_mapMaterials;
+//};
 
-	//void ChangeColor(float r, float g, float b, float a);
-
-	//virtual void UpdateVertices(ID3D12GraphicsCommandList* pd3dCommandList);
-
-	~ReadObjMesh() override;
-private:
-	void LoadMtlFile(const std::string& objFilePath, const std::string& mtlFileName);
-private:
-	float _front = 0.0f;
-	float _back = 0.0f;
-	float _left = 0.0f;
-	float _right = 0.0f;
-	float _top = 0.0f;
-	float _bottom = 0.0f;
-	std::map<std::string, OBJMaterial> m_mapMaterials;
-};
-
-class ReadGLTFMesh : public Mesh
-{
-public:
-	ReadGLTFMesh() {};
-	ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const std::string str, class Scene* pScene);
-
-	~ReadGLTFMesh() override;
-
-	void render(ID3D12GraphicsCommandList* pd3dCommandList) override;
-
-private: // DW생각 : gltf이기 때문에 함수 단위로 분리해서 불러오기
-	// .gltf파일 불러오기 및 .bin파일 읽고, 성공여부를 반환ㅎㅏ기
-	bool can_load_gltf_file(const std::string& filename, json& out_json, std::vector<char>& out_bin_buffer);
-
-	// 거대한 bin 데이서에서 gltf의 accessor정보에 따라 잘라내는 것
-	void copy_data_from_buffer(std::vector<char>& dest,	const std::vector<char>& source_bin_buffer, const json& gltf_json, int accessor_index);
-
-	// 데이터 추출
-	bool can_Extract_mesh_data(const json& gltf_json, const std::vector<char>& bin_buffer, GltfMeshData& out_mesh_data);
-
-	// 정점버퍼 및 인덱스버퍼 생성
-	void create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const GltfMeshData& gltf_mesh_data);
-
-	// 텍스쳐 로드
-	void load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const json& gltf_json, const std::string& base_path);
-
-private:
-	// json _gltfJson; // .gltf파일의 JSON 데이터를 저장할 json객체
-	// std::vector<char> _binaryData; // .bin파일의 바이너리 데이터를 저장할 벡터
-	// 렌더링 시 사용할 함수
-
-
-private:
-	// 버퍼 리소스
-	ComPtr<ID3D12Resource> _d3dVertexBuffer = nullptr;
-	ComPtr<ID3D12Resource> _d3dIndexBuffer = nullptr;
-
-	// 버퍼 생성을 위한 임시 업로드 버퍼
-	ComPtr<ID3D12Resource> _d3dVertexUploadBuffer = nullptr;
-	ComPtr<ID3D12Resource> _d3dIndexUploadBuffer = nullptr;
-
-	// 텍스처 리소스 (여러 개일 수 있음)
-	std::vector<ComPtr<ID3D12Resource>> _TextureResources;
-	std::vector<ComPtr<ID3D12Resource>> _TextureUploadBuffers; // 텍스처 업로드용
-
-	// 버퍼 뷰
-	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
-	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
-
-	// 그릴 인덱스 개수
-	UINT _indexCount = 0;
-};
+//class ReadGLTFMesh : public Mesh
+//{
+//public:
+//	ReadGLTFMesh() {};
+//	ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const std::string str, class Scene* pScene);
+//
+//	~ReadGLTFMesh() override;
+//
+//	void render(ID3D12GraphicsCommandList* pd3dCommandList) override;
+//
+//private: // DW생각 : gltf이기 때문에 함수 단위로 분리해서 불러오기
+//	// .gltf파일 불러오기 및 .bin파일 읽고, 성공여부를 반환ㅎㅏ기
+//	bool can_load_gltf_file(const std::string& filename, json& out_json, std::vector<char>& out_bin_buffer);
+//
+//	// 거대한 bin 데이서에서 gltf의 accessor정보에 따라 잘라내는 것
+//	void copy_data_from_buffer(std::vector<char>& dest,	const std::vector<char>& source_bin_buffer, const json& gltf_json, int accessor_index);
+//
+//	// 데이터 추출
+//	bool can_Extract_mesh_data(const json& gltf_json, const std::vector<char>& bin_buffer, GltfMeshData& out_mesh_data);
+//
+//	// 정점버퍼 및 인덱스버퍼 생성
+//	void create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const GltfMeshData& gltf_mesh_data);
+//
+//	// 텍스쳐 로드
+//	void load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const json& gltf_json, const std::string& base_path);
+//
+//private:
+//	// json _gltfJson; // .gltf파일의 JSON 데이터를 저장할 json객체
+//	// std::vector<char> _binaryData; // .bin파일의 바이너리 데이터를 저장할 벡터
+//	// 렌더링 시 사용할 함수
+//
+//
+//private:
+//	// 버퍼 리소스
+//	ComPtr<ID3D12Resource> _d3dVertexBuffer = nullptr;
+//	ComPtr<ID3D12Resource> _d3dIndexBuffer = nullptr;
+//
+//	// 버퍼 생성을 위한 임시 업로드 버퍼
+//	ComPtr<ID3D12Resource> _d3dVertexUploadBuffer = nullptr;
+//	ComPtr<ID3D12Resource> _d3dIndexUploadBuffer = nullptr;
+//
+//	// 텍스처 리소스 (여러 개일 수 있음)
+//	std::vector<ComPtr<ID3D12Resource>> _TextureResources;
+//	std::vector<ComPtr<ID3D12Resource>> _TextureUploadBuffers; // 텍스처 업로드용
+//
+//	// 버퍼 뷰
+//	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
+//	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
+//
+//	// 그릴 인덱스 개수
+//	UINT _indexCount = 0;
+//};
 
 
 //class ReadGlbMesh : public Mesh
@@ -441,24 +460,24 @@ struct CollisionPrimitive
 	CollisionPrimitive() = default;
 };
 
-class ReadFbxMesh : public Mesh
-{
-public:
-	ReadFbxMesh() {};
-	ReadFbxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
-	virtual ~ReadFbxMesh();
-
-	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return _collisionPrimitives; }
-private:
-	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
-	void ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
-	// Assimp Mesh를 처리하여 정점/인덱스 데이터를 추출하는 함수
-	void ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
-
-private:
-	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
-	std::vector<CollisionPrimitive> _collisionPrimitives;
-};
+//class ReadFBXMesh : public Mesh
+//{
+//public:
+//	ReadFBXMesh() {};
+//	ReadFBXMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str);
+//	virtual ~ReadFBXMesh();
+//
+//	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return _collisionPrimitives; }
+//private:
+//	// Assimp Scene의 노드를 재귀적으로 처리하는 함수
+//	void ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+//	// Assimp Mesh를 처리하여 정점/인덱스 데이터를 추출하는 함수
+//	void ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+//
+//private:
+//	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
+//	std::vector<CollisionPrimitive> _collisionPrimitives;
+//};
 
 class DebugCollisionBox : public Mesh
 {

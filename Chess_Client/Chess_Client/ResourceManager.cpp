@@ -2,6 +2,7 @@
 #include "ResourceManager.h"
 #include "Mesh.h" // ReadObjMesh, ReadGlbMesh 등을 포함해야 함
 #include "ReadGlbMesh.h"
+#include "ReadOBJMesh.h"
 
 void ResourceManager::initialize(ID3D12Device* device)
 {
@@ -47,7 +48,7 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
 
     if (extension == ".obj")
     {
-        new_mesh = std::make_shared<ReadObjMesh>(file_path);
+        new_mesh = std::make_shared<ReadOBJMesh>(file_path);
     }
     else if (extension == ".glb")
     {
