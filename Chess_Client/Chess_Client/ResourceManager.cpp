@@ -3,6 +3,7 @@
 #include "Mesh.h" // ReadObjMesh, ReadGlbMesh 등을 포함해야 함
 #include "ReadGlbMesh.h"
 #include "ReadOBJMesh.h"
+#include "ReadFBXMesh.h"
 
 void ResourceManager::initialize(ID3D12Device* device)
 {
@@ -53,6 +54,10 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     else if (extension == ".glb")
     {
         new_mesh = std::make_shared<ReadGlbMesh>(file_path);
+    }
+    else if (extension == ".fbx") 
+    {
+        new_mesh = std::make_shared<ReadFBXMesh>(file_path);
     }
     // else if (extension == ".fbx")
     // {
