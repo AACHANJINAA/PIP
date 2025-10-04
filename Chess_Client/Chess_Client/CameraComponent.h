@@ -74,5 +74,6 @@ private:
 
     // --- Main Camera ---
     // 렌더러가 쉽게 접근할 수 있도록 주 카메라를 가리키는 정적 포인터
+public:
     static CameraComponent* _mainCamera;
 };

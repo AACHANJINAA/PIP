@@ -4,6 +4,7 @@
 #include "ReadFBXMesh.h"
 #include "ReadGlbMesh.h"
 #include "ReadOBJMesh.h"
+#include "ReadFBXMesh.h"
 
 void ResourceManager::initialize(ID3D12Device* device)
 {
@@ -55,11 +56,16 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     {
         new_mesh = std::make_shared<ReadGlbMesh>(file_path);
     }
-    else if (extension == ".fbx")
+    else if (extension == ".fbx") 
     {
-		new_mesh = std::make_shared<ReadFBXMesh>(file_path);
-        CLOG("FBX 로딩은 제대로 되는지 모르겟음 <- 찬진 체크 필요");
+        new_mesh = std::make_shared<ReadFBXMesh>(file_path);
     }
+    // else if (extension == ".fbx")
+    // {
+    //     // 참고: ReadFbxMesh는 생성자에서 device와 commandList를 요구하므로,
+    //     // 별도의 리팩토링 없이는 현재 구조에서 직접 생성할 수 없습니다.
+    //     CERROR("FBX loading is not supported in the current ResourceManager structure.");
+    // }
     else
     {
         CERROR("Unsupported mesh file format: " << file_path);
