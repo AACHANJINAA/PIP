@@ -24,21 +24,25 @@ ReadFBXMesh::ReadFBXMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	// 루트 노드부터 시작하여 모든 노드를 재귀적으로 처리
 	ProcessNode(pScene->mRootNode, pScene, pd3dDevice, pd3dCommandList);
 
-	auto [min_x, max_x] = std::minmax_element(_vertexDataBuffer.begin(), _vertexDataBuffer.end(),
+	IlluminatedVertex* I_begin = reinterpret_cast<IlluminatedVertex*>(_vertexDataBuffer.data());
+	IlluminatedVertex* I_end = I_begin + (_vertexDataBuffer.size() / sizeof(IlluminatedVertex));
+
+	auto [min_x, max_x] = std::minmax_element(I_begin, I_end,
 		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
 			return a._position.x < b._position.x;
 		});
 
-	auto [min_y, max_y] = std::minmax_element(_vertexDataBuffer.begin(), _vertexDataBuffer.end(),
+	auto [min_y, max_y] = std::minmax_element(I_begin, I_end,
 		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
 			return a._position.y < b._position.y;
 		});
 
-	auto [min_z, max_z] = std::minmax_element(_vertexDataBuffer.begin(), _vertexDataBuffer.end(),
+	auto [min_z, max_z] = std::minmax_element(I_begin, I_end,
 		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
 			return a._position.z < b._position.z;
 		});
 
+	
 	XMFLOAT3 Min(min_x->_position.x, min_y->_position.y, min_z->_position.z);
 	XMFLOAT3 Max(max_x->_position.x, max_y->_position.y, max_z->_position.z);
 
@@ -78,7 +82,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 		// --- Collision Mesh 처리 ---
 		CollisionPrimitive primitive;
 
-		// 제안 2: UCX_ 메시의 정점/인덱스 데이터 저장
+		//  UCX_ 메시의 정점/인덱스 데이터 저장
 		for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
 		{
 			// Assimp로부터 데이터를 읽은 직후, 값이 유효한지 확인합니다.
