@@ -140,7 +140,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
                 vertex._normal.y = mesh->mNormals[i].y;
                 vertex._normal.z = mesh->mNormals[i].z;
             }
-			}
+			
             if (mesh->mTextureCoords[0])
             {
                 vertex._texCoord.x = mesh->mTextureCoords[0][i].x;
@@ -150,7 +150,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             {
                 vertex._texCoord = XMFLOAT2(0.0f, 0.0f);
             }
-			}
+			
 
             aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
             aiColor4D diffuseColor;
@@ -170,7 +170,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             }
             temp_vertices.push_back(vertex);
         }
-		}
+		
         // 새 인덱스를 추가하기 전, 현재까지 누적된 정점 수를 base index로 사용
         UINT baseVertex = _vertexCount;
 
@@ -182,7 +182,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
                 _indices.push_back(face.mIndices[j] + baseVertex);
             }
         }
-		}
+		
         // 임시 벡터의 정점 데이터를 메인 버퍼(_vertexDataBuffer)에 복사
         size_t current_buffer_size = _vertexDataBuffer.size();
         size_t new_vertices_size = temp_vertices.size() * sizeof(IlluminatedVertex);
@@ -192,5 +192,5 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         // 전체 정점 개수 업데이트
         _vertexCount += temp_vertices.size();
     }
-	}
+	
 }
