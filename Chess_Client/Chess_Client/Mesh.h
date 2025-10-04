@@ -170,15 +170,15 @@ protected:
 
 
 protected:
+	bool _isUploaded = false;
 	// [변경] 생성 시점에는 이 변수들에 정점/인덱스 데이터가 채워집니다.
 	// upload_to_gpu가 호출될 때 실제 GPU 버퍼가 생성됩니다.
 	std::vector<std::byte> _vertexDataBuffer; // 바이트 단위의 버퍼
 	UINT _vertexCount = 0; // 정점 개수
 	UINT _vertexStride = 0; // 정점 하나의 크기(바이트 단위)
-
 	std::vector<UINT> _indices;
 
-	bool _isUploaded = false;
+
 	D3D_PRIMITIVE_TOPOLOGY _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 선으로 렌더링
 
 	// [변경] 이 GPU 리소스들은 upload_to_gpu가 호출될 때 생성됩니다.

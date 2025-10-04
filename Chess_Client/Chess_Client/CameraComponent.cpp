@@ -3,6 +3,8 @@
 
 #include "GameFramework.h"
 
+CameraComponent* CameraComponent::_mainCamera = nullptr;
+
 CameraComponent::CameraComponent() :
 	_fov(90.0f),
 	_aspect(static_cast<float>(FRAME_BUFFER_WIDTH) / static_cast<float>(FRAME_BUFFER_HEIGHT)),
@@ -45,7 +47,12 @@ void CameraComponent::initialize()
     // 상수 버퍼 생성
     _cbCamera = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_CAMERA_INFO),
         D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
-
+    // [추가] 리소스 생성 성공 여부 확인
+    if (!_cbCamera)
+    {
+        CERROR("CameraComponent::initialize: Failed to create constant buffer. _cbCamera is null.");
+        return;
+    }
     // 상수 버퍼 매핑
     D3D12_RANGE readRange{ 0, 0 };
     _cbCamera->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbCamera));
