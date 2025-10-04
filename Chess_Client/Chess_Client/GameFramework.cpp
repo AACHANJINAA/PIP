@@ -48,8 +48,6 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	SceneManager::Instance()->initialize();
 	Renderer::Instance()->initialize(_device.Get());
 	ResourceManager::Instance()->initialize(_device.Get());
-	// 2. [추가] 리소스 매니저에게 대기중인 모든 메시를 GPU에 업로드하라고 명령합니다.
-	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
@@ -246,25 +244,24 @@ void GameFramework::BuildObjects()
 {
 	_commandList->Reset(_commandAllocator.Get(), NULL);
 
-	_scene = std::make_unique<Chess_Scene>(); //초기 씬 생성 TODO: 나중에 씬 매니저로 변경
+	_scene = std::make_unique<Chess_Scene>(); //초기 씬 설정 TODO: 나중에 씬 매니저로 변경
 	_scene->build_objects(_device.Get(), _commandList.Get());
 
-	//// 카메라 역할을 할 GameObject 생성
-	//auto cameraObject = ObjectManager::Instance()->create_game_object("MainCamera");
-	//_camera = cameraObject->add_component<Camera>();
-	//cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
+	// [추가] build_objects에서 생성된 모든 오브젝트의 awake/start를 즉시 호출합니다.
+	ObjectManager::Instance()->process_new_game_objects();
 
-	// 4. [핵심] 대기중인 모든 리소스를 GPU에 업로드합니다.
+	// 이제 모든 메쉬가 _pending_meshes 목록에 들어갔으므로, GPU에 업로드합니다.
 	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
 
 	_commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
+
 	WaitForGpuComplete();
 
-	// [핵심] GPU 작업이 완료되었으므로, 모든 업로드 버퍼를 해제합니다.
+	// GPU 작업이 완료되었으므로, 임시 업로드 버퍼를 해제합니다.
 	ResourceManager::Instance()->release_upload_buffers();
-	
+
 	_gameTimer.Reset();
 }
 
@@ -414,7 +411,7 @@ void GameFramework::ChangeSwapChainState()
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 	_swapChain->GetDesc(&dxgiSwapChainDesc);
 	_swapChain->ResizeBuffers(SWAP_CHAIN_BUFFERS, _wndClientWidth,
-		_wndClientHeight, dxgiSwapChainDesc.BufferDesc.Format, dxgiSwapChainDesc.Flags);
+	_wndClientHeight, dxgiSwapChainDesc.BufferDesc.Format, dxgiSwapChainDesc.Flags);
 
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 	CreateRenderTargetViews();

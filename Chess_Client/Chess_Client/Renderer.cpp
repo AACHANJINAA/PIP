@@ -157,14 +157,7 @@ void Renderer::build_render_list(CameraComponent* camera)
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
 {
-    // --- 전역 UpdateShaderVariables의 역할이 여기로 왔습니다 ---
-	// 카메라 상수 버퍼 업데이트
-    // [핵심] 렌더링 시작 전, 카메라 데이터를 GPU 상수 버퍼로 업데이트하고 파이프라인에 설정합니다.
-    if (camera)
-    {
-        camera->update_shader_variables(commandList);
-        camera->set_viewports_and_scissor_rects(commandList);
-    }
+    
 
     // 조명 상수 버퍼 업데이트
     // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
@@ -201,6 +194,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         // 5. 가져온 PSO와 루트 시그니처를 설정합니다. (이제 if문이 완전히 사라졌습니다!)
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
+
+        if (camera)
+        {
+            camera->update_shader_variables(commandList);
+            camera->set_viewports_and_scissor_rects(commandList);
+        }
 
         // 6. 이 PSO 그룹에 속한 모든 오브젝트를 그립니다.
         for (const auto& gameObject : gameObjects)

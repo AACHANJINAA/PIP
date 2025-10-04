@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "ReadFBXMesh.h"
 
-ReadFBXMesh::ReadFBXMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::string str)
+ReadFBXMesh::ReadFBXMesh(const std::string str)
 {
 	// Assimp Importer 객체 생성
 	Assimp::Importer importer;
@@ -21,31 +21,38 @@ ReadFBXMesh::ReadFBXMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 		return;
 	}
 
-	// 루트 노드부터 시작하여 모든 노드를 재귀적으로 처리
-	ProcessNode(pScene->mRootNode, pScene, pd3dDevice, pd3dCommandList);
+	// [수정] FBX의 모든 서브메쉬 데이터를 통합할 임시 벡터를 생성합니다.
+	std::vector<IlluminatedVertex> combined_vertices;
+	std::vector<UINT> combined_indices;
 
-	auto [min_x, max_x] = std::minmax_element(_vertexDataBuffer.begin(), _vertexDataBuffer.end(),
-		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
+	// [수정] 루트 노드부터 시작하여 모든 노드를 재귀적으로 처리하고, 데이터를 임시 벡터에 누적합니다.
+	ProcessNode(pScene->mRootNode, pScene, combined_vertices, combined_indices);
+
+	// [수정] 누적된 데이터로 최종 버퍼를 설정합니다.
+	set_vertex_data_buffer(combined_vertices);
+	_indices = combined_indices;
+
+	// [수정] 바운딩 박스 계산은 모든 정점이 통합된 후에 수행합니다.
+	if (!combined_vertices.empty())
+	{
+		auto [min_x, max_x] = std::minmax_element(combined_vertices.begin(), combined_vertices.end(),
+			[](const IlluminatedVertex & a, const IlluminatedVertex & b) {
 			return a._position.x < b._position.x;
 		});
-
-	auto [min_y, max_y] = std::minmax_element(_vertexDataBuffer.begin(), _vertexDataBuffer.end(),
-		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
+		auto [min_y, max_y] = std::minmax_element(combined_vertices.begin(), combined_vertices.end(),
+			[](const IlluminatedVertex & a, const IlluminatedVertex & b) {
 			return a._position.y < b._position.y;
 		});
-
-	auto [min_z, max_z] = std::minmax_element(_vertexDataBuffer.begin(), _vertexDataBuffer.end(),
-		[](const IlluminatedVertex& a, const IlluminatedVertex& b) {
+		auto [min_z, max_z] = std::minmax_element(combined_vertices.begin(), combined_vertices.end(),
+			[](const IlluminatedVertex & a, const IlluminatedVertex & b) {
 			return a._position.z < b._position.z;
 		});
 
-	XMFLOAT3 Min(min_x->_position.x, min_y->_position.y, min_z->_position.z);
-	XMFLOAT3 Max(max_x->_position.x, max_y->_position.y, max_z->_position.z);
+		XMFLOAT3 min_pos(min_x->_position.x, min_y->_position.y, min_z->_position.z);
+		XMFLOAT3 max_pos(max_x->_position.x, max_y->_position.y, max_z->_position.z);
 
-	_orientedBoundingBox = CreateOOBB(Min, Max);
-
-	_vertexStride = sizeof(IlluminatedVertex);
-	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		_orientedBoundingBox = CreateOOBB(min_pos, max_pos);
+	}
 }
 
 ReadFBXMesh::~ReadFBXMesh()
@@ -53,23 +60,25 @@ ReadFBXMesh::~ReadFBXMesh()
 	// 소멸자
 }
 
-void ReadFBXMesh::ProcessNode(aiNode* node, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void ReadFBXMesh::ProcessNode(aiNode* node, const aiScene* scene, std::vector<IlluminatedVertex>& combined_vertices, std::vector<UINT>& combined_indices)
 {
-	// 현재 노드에 포함된 모든 메쉬를 처리
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		ProcessMesh(mesh, scene, pd3dDevice, pd3dCommandList);
+		// [수정] 통합 벡터를 그대로 전달
+		ProcessMesh(mesh, scene, combined_vertices, combined_indices);
 	}
 
-	// 현재 노드의 모든 자식 노드에 대해 재귀적으로 이 함수를 호출
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
-		ProcessNode(node->mChildren[i], scene, pd3dDevice, pd3dCommandList);
+		// [수정] 통합 벡터를 그대로 전달
+		ProcessNode(node->mChildren[i], scene, combined_vertices, combined_indices);
 	}
 }
 
-void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, 
+	std::vector<IlluminatedVertex>& combined_vertices,
+	std::vector<UINT>& combined_indices)
 {
 	std::string meshNameStr = mesh->mName.C_Str();
 
@@ -86,13 +95,11 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 			if (std::isnan(vtx.x) || std::isnan(vtx.y) || std::isnan(vtx.z) ||
 				std::isinf(vtx.x) || std::isinf(vtx.y) || std::isinf(vtx.z))
 			{
-				char buffer[256];
-				sprintf_s(buffer, "!!! CRITICAL ERROR: Invalid vertex data loaded from mesh: %s at index %u\n", meshNameStr.c_str(), i);
-				OutputDebugStringA(buffer);
+				CLOG("!!! CRITICAL ERROR: Invalid vertex data loaded from mesh: " << meshNameStr << "at index " << i);
 				continue; // 이 비정상적인 정점은 건너뜁니다.
 			}
 
-			Vertex v;
+			Vertex v = {};
 			v._position.x = mesh->mVertices[i].x;
 			v._position.y = mesh->mVertices[i].y;
 			v._position.z = mesh->mVertices[i].z;
@@ -124,35 +131,37 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 		_collisionPrimitives.push_back(primitive);
 	}
 	else {
-		// 현재 메쉬의 정점 정보를 임시로 담을 벡터
-		std::vector<IlluminatedVertex> _vertices;
+		// [수정] 지역 변수 이름을 _vertices에서 mesh_vertices로 변경하여 혼동을 방지합니다.
+		std::vector<IlluminatedVertex> mesh_vertices;
+		mesh_vertices.reserve(mesh->mNumVertices);	// 미리 메모리를 할당합니다.
+		
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 		{
 			// Render Mesh
 			IlluminatedVertex vertex;
 
 			// 위치 (Position)
-			vertex._position.x = mesh->mVertices[i].x;
-			vertex._position.y = mesh->mVertices[i].y;
-			vertex._position.z = mesh->mVertices[i].z;
+			vertex._position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 
 			// 법선 (Normal)
 			if (mesh->HasNormals())
 			{
-				vertex._normal.x = mesh->mNormals[i].x;
-				vertex._normal.y = mesh->mNormals[i].y;
-				vertex._normal.z = mesh->mNormals[i].z;
+				vertex._normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 			}
+			else
+			{
+				vertex._normal = { 0.0f, 0.0f, 0.0f };
+			}
+
 
 			// 텍스처 좌표 (Texture Coordinate)
 			if (mesh->mTextureCoords[0]) // 텍스처 좌표 채널이 존재하는지 확인
 			{
-				vertex._texCoord.x = mesh->mTextureCoords[0][i].x;
-				vertex._texCoord.y = mesh->mTextureCoords[0][i].y;
+				vertex._texCoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
 			}
 			else
 			{
-				vertex._texCoord = XMFLOAT2(0.0f, 0.0f);
+				vertex._texCoord = { 0.0f, 0.0f };
 			}
 
 			// 재질 정보 처리
@@ -186,23 +195,22 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, ID3D12Device* 
 				}
 			}
 
-			_vertices.push_back(vertex);
+			mesh_vertices.push_back(vertex);
 		}
 
-		// 현재 메쉬의 인덱스 정보를 임시로 담을 벡터
-		// FBX의 모든 면(face)을 순회하며 인덱스를 가져옴
+		UINT index_offset = static_cast<UINT>(combined_vertices.size());
+
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 		{
 			aiFace face = mesh->mFaces[i];
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
 			{
-				// 전체 인덱스 벡터에 현재 메쉬의 인덱스를 추가
-				// 이 때, 이미 추가된 정점 수를 더해줘서 전체 정점 배열에 맞는 인덱스가 되도록 함
-				_indices.push_back(face.mIndices[j] + _vertices.size());
+				// [수정] _indices가 아닌, 함수 인자로 받은 combined_indices에 추가해야 합니다.
+				combined_indices.push_back(face.mIndices[j] + index_offset);
 			}
 		}
 
-		// 임시 정점 벡터를 클래스의 전체 정점 벡터(m_Vertexvec)에 합침
-		_vertices.insert(_vertices.end(), _vertices.begin(), _vertices.end());
+		// [수정] 지역 변수인 mesh_vertices의 내용을 combined_vertices에 합칩니다.
+		combined_vertices.insert(combined_vertices.end(), mesh_vertices.begin(), mesh_vertices.end());
 	}
 }

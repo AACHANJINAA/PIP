@@ -14,27 +14,58 @@
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    // [추가] 씬에 카메라를 생성합니다.
+
+    // --- 기존 코드 (카메라, 플레이어, 맵 등 생성) ---
     auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
-    cameraObject->add_component<FreeCameraScript>(); // 스크립트가 CameraComponent를 자동으로 추가하고 초기화합니다.
-	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
-    // --- 조명 생성 (예시) ---
-	// 조명은 보통 보이지 않으므로 RenderComponent가 필요 없습니다.
-    //auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
-    //lightObject->add_component<LightComponent>(); // TODO: LightComponent를 만든다면 부착
+    cameraObject->add_component<FreeCameraScript>();
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
 
-    // --- 플레이어 생성 ---
     auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
-    playerObject->add_component<MainPlayerScript>(); // 스크립트를 부착하면 awake()에서 모든 설정이 자동으로 이루어집니다.
+    playerObject->add_component<MainPlayerScript>();
 
-	// --- 맵 오브젝트 생성 (JSON 또는 파일 로딩 로직이 여기로 올 수 있습니다) ---
-	auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
-    auto renderer = mapObject->add_component<RenderComponent>();
-
-    renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));
-    renderer->set_pso_name("skinned"); // GLB 파일이므로 skinned PSO 사용
-
+    auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
+    auto map_renderer = mapObject->add_component<RenderComponent>();
+    map_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));
+    map_renderer->set_pso_name("skinned");
     mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));
+
+    // --- [테스트용 큐브 추가] ---
+    auto testCubeObject = ObjectManager::Instance()->create_game_object("TestCube");
+
+    // 1. 렌더 컴포넌트 추가
+    auto cube_renderer = testCubeObject->add_component<RenderComponent>();
+
+    // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
+    cube_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Cube_Normal.obj"));
+
+    // 3. .obj 파일이므로 "default" 셰이더(PSO)를 사용하도록 설정
+    cube_renderer->set_pso_name("default");
+
+    // 4. 큐브 위치 설정 (카메라에 잘 보이도록)
+    testCubeObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
+    testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // 크기를 키워 잘 보이게 함
+
+ //   // [추가] 씬에 카메라를 생성합니다.
+ //   auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
+ //   cameraObject->add_component<FreeCameraScript>(); // 스크립트가 CameraComponent를 자동으로 추가하고 초기화합니다.
+	//cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
+ //   // --- 조명 생성 (예시) ---
+	//// 조명은 보통 보이지 않으므로 RenderComponent가 필요 없습니다.
+ //   //auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
+ //   //lightObject->add_component<LightComponent>(); // TODO: LightComponent를 만든다면 부착
+
+ //   // --- 플레이어 생성 ---
+ //   auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+ //   playerObject->add_component<MainPlayerScript>(); // 스크립트를 부착하면 awake()에서 모든 설정이 자동으로 이루어집니다.
+
+	//// --- 맵 오브젝트 생성 (JSON 또는 파일 로딩 로직이 여기로 올 수 있습니다) ---
+	//auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
+ //   auto renderer = mapObject->add_component<RenderComponent>();
+
+ //   renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));
+ //   renderer->set_pso_name("skinned"); // GLB 파일이므로 skinned PSO 사용
+
+ //   mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));
 }
 
 void Chess_Scene::release_upload_buffers()

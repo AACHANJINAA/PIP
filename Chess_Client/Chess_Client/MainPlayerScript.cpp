@@ -31,7 +31,7 @@ void MainPlayerScript::awake()
 {
     // --- 이 스크립트가 부착된 GameObject에 필요한 모든 설정을 여기서 수행 ---
 
-    auto renderer = game_object()->add_component<RenderComponent>();
+    //auto renderer = game_object()->add_component<RenderComponent>();
     // 렏더러 컴포넌트 멤버변수로 들고 있어도 좋다.
 
     // 3. 컴포넌트들을 설정합니다.
@@ -39,9 +39,11 @@ void MainPlayerScript::awake()
         GameFramework::Instance()->device().Get(),
         GameFramework::Instance()->command_list().Get(),
         "Resource/Test/testfbx_texture_included.fbx");*/
-    auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Test/testfbx_texture_included.fbx");
-    renderer->set_mesh(playerMesh);
-    renderer->set_pso_name("default"); // 사용할 PSO 이름 지정
+    //auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Test/testfbx_texture_included.fbx");
+   // renderer->set_mesh(playerMesh);
+   // renderer->set_pso_name("default"); // 사용할 PSO 이름 지정
+
+    //TODO: 임시로 큐브 렌더 되는지 확인하기 위해서 주석 처리
 
     // 4. Transform을 통해 초기 위치 등을 설정합니다.
     transform()->set_local_position(XMFLOAT3(5.0f, 0.0f, 0.0f));
