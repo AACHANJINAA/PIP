@@ -3,6 +3,8 @@
 
 #include "GameFramework.h"
 
+CameraComponent* CameraComponent::_mainCamera = nullptr;
+
 CameraComponent::CameraComponent() :
 	_fov(90.0f),
 	_aspect(static_cast<float>(FRAME_BUFFER_WIDTH) / static_cast<float>(FRAME_BUFFER_HEIGHT)),
