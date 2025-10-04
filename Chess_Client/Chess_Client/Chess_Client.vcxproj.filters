@@ -197,6 +197,18 @@
     <ClInclude Include="CameraComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClInclude>
+    <ClInclude Include="ReadFBXMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="ReadGLTFMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="ReadOBJMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="FreeCameraScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -303,6 +315,18 @@
     </ClCompile>
     <ClCompile Include="CameraComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ReadFBXMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="ReadGLTFMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="ReadOBJMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeCameraScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
