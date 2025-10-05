@@ -39,10 +39,10 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cube_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Cube_Normal.obj"));
 
     // 3. .obj 파일이므로 "default" 셰이더(PSO)를 사용하도록 설정
-    cube_renderer->set_pso_name("default");
+    cube_renderer->set_pso_name("debug");
 
     // 4. 큐브 위치 설정 (카메라에 잘 보이도록)
-    testCubeObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
+    testCubeObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
     testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // 크기를 키워 잘 보이게 함
 
  //   // [추가] 씬에 카메라를 생성합니다.

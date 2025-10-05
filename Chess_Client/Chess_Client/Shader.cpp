@@ -25,7 +25,10 @@ ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootS
 	pso_desc.SampleDesc.Count = 1;
 
 	ID3D12PipelineState* pso = nullptr;
-	device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(&pso));
+	if(!SUCCEEDED(device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(&pso))))
+	{
+		CERROR("PSO 생성 실패");
+	}
 
 	return pso;
 }

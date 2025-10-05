@@ -39,20 +39,7 @@ void Material_Shader::set_root_signature(ComPtr<ID3D12GraphicsCommandList> comma
 RenderComponent::RenderComponent()
 {
 	set_name("RenderComponent");
-}
 
-RenderComponent::~RenderComponent()
-{
-	if (_cbGameObjectInfo)
-	{
-		_cbGameObjectInfo->Unmap(0, nullptr);
-		_mappedCbGameObjectInfo = nullptr;
-		_cbGameObjectInfo.Reset();
-	}
-}
-
-void RenderComponent::awake()
-{
     ComPtr<ID3D12Device> device = GameFramework::Instance()->device();
     if (!device)
     {
@@ -62,7 +49,7 @@ void RenderComponent::awake()
 
     // 2. 상수 버퍼의 힙(Heap) 속성을 정의합니다.
     // CPU에서 매 프레임 업데이트해야 하므로, CPU 쓰기 및 GPU 읽기가 모두 가능한 UPLOAD 힙 타입 사용합니다.
-	D3D12_HEAP_PROPERTIES heap_props = {};
+    D3D12_HEAP_PROPERTIES heap_props = {};
     heap_props.Type = D3D12_HEAP_TYPE_UPLOAD;
     heap_props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
     heap_props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
@@ -105,8 +92,18 @@ void RenderComponent::awake()
     //    _mappedCbGameObjectInfo 포인터를 통해 CPU에서 이 버퍼에 데이터를 쓸 수 있게 됩니다.
     //    (업로드 힙에 생성한 리소스는 Unmap을 호출할 필요가 없습니다.)
     _cbGameObjectInfo->Map(0, nullptr, reinterpret_cast<void**>(&_mappedCbGameObjectInfo));
-	
 }
+
+RenderComponent::~RenderComponent()
+{
+	if (_cbGameObjectInfo)
+	{
+		_cbGameObjectInfo->Unmap(0, nullptr);
+		_mappedCbGameObjectInfo = nullptr;
+		_cbGameObjectInfo.Reset();
+	}
+}
+
 
 BoundingOrientedBox RenderComponent::get_world_bounding_box() const
 {
