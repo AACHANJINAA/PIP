@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "GameObject.h"
 #include "Behaviour.h"
-#include "FreeCameraScript.h"
 #include "LayerManager.h"
 #include "TransformComponent.h"
 
