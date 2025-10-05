@@ -48,7 +48,6 @@ public:
 
     // render 함수는 이제 Renderer에 의해 호출됩니다.
     virtual void render(ID3D12GraphicsCommandList* commandList);
-    virtual void awake() override;
     // --- Getters & Setters ---
     void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
     void set_shader(const std::shared_ptr<Shader>& shader) { _shader = shader; }

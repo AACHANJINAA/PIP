@@ -89,8 +89,6 @@ void Mesh::release_upload_buffers()
 {
 	if (_vertexUploadBuffer) _vertexUploadBuffer.Reset();
 	if (_indexUploadBuffer) _indexUploadBuffer.Reset();
-	_vertexDataBuffer.clear();
-	_indices.clear();
 }
 
 

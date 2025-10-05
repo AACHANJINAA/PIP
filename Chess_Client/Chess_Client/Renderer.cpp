@@ -15,7 +15,7 @@
 void Renderer::initialize(ID3D12Device* device)
 {
     _device = device;
-    create_root_signatures(device);
+    
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
@@ -36,6 +36,7 @@ void Renderer::initialize(ID3D12Device* device)
     _shaderPrototypes[glb_shader->pso_name()] = glb_shader;
     // 앞으로 새로운 셰이더를 추가할 땐 이 목록에 한 줄만 추가하면 됩니다.
 
+    create_root_signatures(device);
     create_pipeline_state_objects(device);
 }
 void Renderer::create_root_signatures(ID3D12Device* device)
@@ -148,7 +149,7 @@ void Renderer::build_render_list(CameraComponent* camera)
         if (!gameObject || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
-        if (renderComp && renderComp->is_enabled() && renderComp->is_visible(frustum) )
+        if (renderComp && renderComp->is_enabled() /*&& renderComp->is_visible(frustum)*/ )
         {
             _renderMap[renderComp->pso_name()].push_back(gameObject);
         }
