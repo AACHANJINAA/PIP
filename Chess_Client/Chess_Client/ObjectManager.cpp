@@ -7,11 +7,17 @@
 
 std::shared_ptr<GameObject> ObjectManager::create_game_object(const std::string& name)
 {
-    // [롤백] make_shared를 사용하여 GameObject를 생성하고 리스트에 추가
+    // 1. make_shared로 객체를 생성합니다. 이제 생성자는 안전합니다.
     auto newGameObject = std::make_shared<GameObject>(name);
+
+    // 2. shared_ptr 생성이 완료된 후, init()을 호출하여 나머지 초기화를 진행합니다.
+    // 이 시점에는 shared_from_this()를 안전하게 호출할 수 있습니다.
+    newGameObject->init();
+
+    // 3. 목록에 추가하고 반환합니다.
     _gameObjects.push_back(newGameObject);
     _newGameObjects.push(newGameObject);
-    return newGameObject;;
+    return newGameObject;
 }
 
 void ObjectManager::request_destruction(std::shared_ptr<Object> objectToDestroy)
