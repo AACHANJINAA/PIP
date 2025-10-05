@@ -2,6 +2,6 @@
 #include "Component.h"
 
 
-Component::Component() : Object("Component"), _gameObject(nullptr)
+Component::Component() : Object("Component"), _gameObject{}
 {
 }

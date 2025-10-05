@@ -14,24 +14,10 @@ FreeCameraScript::FreeCameraScript()
 // 역할: 이 스크립트가 활성화될 때, 필요한 CameraComponent를 확인하고 설정합니다.
 void FreeCameraScript::awake()
 {
-    // 1. 같은 게임오브젝트에 CameraComponent가 있는지 확인합니다.
+    // RequireComponent 시스템 덕분에 get_component는 항상 성공합니다.
+     // 또한 CameraComponent는 생성자에서 스스로 초기화까지 완료합니다.
+     // 따라서 awake에서는 그저 포인터를 캐싱해두기만 하면 됩니다.
     _cameraComponent = game_object()->get_component<CameraComponent>().get();
-
-    // 2. 만약 CameraComponent가 없다면, 새로 추가합니다.
-    if (!_cameraComponent)
-    {
-        _cameraComponent = game_object()->add_component<CameraComponent>().get();
-    }
-
-    // 3. CameraComponent의 초기화 함수를 호출하여 상수 버퍼 등을 생성합니다.
-    if (_cameraComponent)
-    {
-        _cameraComponent->initialize();
-    }
-    else
-    {
-        CERROR("FreeCameraScript::awake: Failed to get or create CameraComponent.");
-    }
 }
 
 void FreeCameraScript::update(float delta_time)

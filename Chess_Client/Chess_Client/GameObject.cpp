@@ -1,13 +1,15 @@
 #include "stdafx.h"
 #include "GameObject.h"
 #include "Behaviour.h"
+#include "FreeCameraScript.h"
 #include "LayerManager.h"
 #include "TransformComponent.h"
 
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
 {
-		_transform = add_component<TransformComponent>();
+	_transform = add_component<TransformComponent>();
 }
+
 
 void GameObject::awake()
 {

@@ -16,13 +16,10 @@ struct CB_CAMERA_INFO
 class CameraComponent : public Component
 {
 public:
+	using required_components = std::tuple<CameraComponent>; // TransformComponent가 반드시 필요합니다.
+public:
     CameraComponent();
     virtual ~CameraComponent();
-
-    // 역할 이전 (from CCamera::CreateShaderVariables, CCamera::~CCamera):
-    // 상수 버퍼 생성 및 해제
-    void initialize();
-    void release();
 
     // 역할 이전 (from CCamera::UpdateShaderVariables):
     // 셰이더에 뷰/프로젝션 행렬 업데이트

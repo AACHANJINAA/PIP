@@ -247,10 +247,8 @@ void GameFramework::BuildObjects()
 	_scene = std::make_unique<Chess_Scene>(); //초기 씬 설정 TODO: 나중에 씬 매니저로 변경
 	_scene->build_objects(_device.Get(), _commandList.Get());
 
-	// [추가] build_objects에서 생성된 모든 오브젝트의 awake/start를 즉시 호출합니다.
-	ObjectManager::Instance()->process_new_game_objects();
 
-	// 이제 모든 메쉬가 _pending_meshes 목록에 들어갔으므로, GPU에 업로드합니다.
+	// 로드가 끝난 메시는 _pending_meshes 목록에 들어갔으므로, GPU에 업로드합니다.
 	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
 
 	_commandList->Close();
@@ -261,6 +259,9 @@ void GameFramework::BuildObjects()
 
 	// GPU 작업이 완료되었으므로, 임시 업로드 버퍼를 해제합니다.
 	ResourceManager::Instance()->release_upload_buffers();
+
+	// [수정] 모든 리소스 초기화 및 GPU 업로드가 끝났으므로, 이제 스크립트의 awake/start를 호출합니다.
+	ObjectManager::Instance()->process_new_game_objects();
 
 	_gameTimer.Reset();
 }

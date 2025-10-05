@@ -29,14 +29,18 @@ public:
     std::shared_ptr<TransformComponent> transform() const { return _transform; }
 
     // --- Component Management ---
+
     template<typename T, typename... Args>
     std::shared_ptr<T> add_component(Args&&... args)
     {
-        static_assert(std::is_base_of<Component, T>::value, "T must be a descendant of Component");
-        auto newComponent = std::make_shared<T>(std::forward<Args>(args)...);
-        newComponent->set_game_object(this);
-        _components.push_back(newComponent);
-        return newComponent;
+        // 먼저, 이 컴포넌트가 요구하는 다른 컴포넌트들을 재귀적으로 추가합니다.
+        add_required_components(static_cast<typename T::required_components*>(nullptr));
+
+        // 그 다음, 원래 요청된 컴포넌트를 추가하고 반환합니다.
+        auto new_component = std::make_shared<T>(std::forward<Args>(args)...);
+        new_component->set_game_object(shared_from_this());
+        _components.push_back(new_component);
+        return new_component;
     }
 
     template<typename T>
@@ -51,7 +55,49 @@ public:
         }
         return nullptr;
     }
+
     void remove_component(std::shared_ptr<Component> component);
+
+private:
+    // 의존성을 재귀적으로 추가하기 위한 템플릿 도우미 함수
+    template <typename... T>
+    void add_required_components(std::tuple<T...>*)
+    {
+        // 튜플의 0번째 인덱스부터 의존성 추가를 시작합니다.
+        add_required_component_at<0, T...>();
+    }
+
+    // 2. 재귀적으로 호출되며 실제 작업을 수행하는 함수
+    template <size_t I, typename... T>
+    // 템플릿 인자 I가 튜플의 크기보다 작을 때만 이 함수가 선택되도록 합니다. (SFINAE)
+    typename std::enable_if<(I < sizeof...(T))>::type add_required_component_at()
+    {
+        // 현재 인덱스(I)에 해당하는 컴포넌트의 타입을 가져옵니다.
+        using ComponentType = typename std::tuple_element<I, std::tuple<T...>>::type;
+
+        // 해당 타입의 컴포넌트가 이 게임오브젝트에 아직 없으면, 추가합니다.
+        if (!get_component<ComponentType>())
+        {
+            add_component<ComponentType>();
+        }
+
+        // 다음 인덱스(I + 1)의 컴포넌트를 처리하기 위해 재귀 호출합니다.
+        add_required_component_at<I + 1, T...>();
+    }
+
+    // 3. 재귀 호출을 종료하는 함수
+    template <size_t I, typename... T>
+    // 템플릿 인자 I가 튜플의 크기와 같아지면 이 함수가 선택되어 재귀가 멈춥니다.
+    typename std::enable_if<(I == sizeof...(T))>::type add_required_component_at()
+    {
+        // 모든 의존성을 확인했으므로 아무것도 하지 않고 재귀를 종료합니다.
+    }
+
+    // 4. 의존성이 아예 없는 경우를 위한 함수
+    void add_required_components(std::tuple<>*)
+    {
+        // 할 일 없음
+    }
 private:
     std::vector<std::shared_ptr<Component>> _components;
     std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터

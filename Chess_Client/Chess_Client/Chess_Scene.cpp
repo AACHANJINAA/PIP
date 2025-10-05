@@ -20,14 +20,14 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraObject->add_component<FreeCameraScript>();
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
 
-    auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+    /*auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     playerObject->add_component<MainPlayerScript>();
 
     auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
     auto map_renderer = mapObject->add_component<RenderComponent>();
     map_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));
     map_renderer->set_pso_name("skinned");
-    mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));
+    mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));*/
 
     // --- [테스트용 큐브 추가] ---
     auto testCubeObject = ObjectManager::Instance()->create_game_object("TestCube");
