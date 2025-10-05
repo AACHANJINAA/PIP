@@ -25,49 +25,46 @@ CameraComponent::CameraComponent() :
     {
         _mainCamera = this;
     }
+    // --- initialize() 로직 시작 ---
+    ID3D12Device* device = GameFramework::Instance()->device().Get();
+    if (!device)
+    {
+        CERROR("CameraComponent: Device is null.");
+        return;
+    }
+
+    _cbCamera = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_CAMERA_INFO),
+        D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+    if (!_cbCamera)
+    {
+        CERROR("CameraComponent: Failed to create constant buffer.");
+        return;
+    }
+
+    D3D12_RANGE readRange{ 0, 0 };
+    _cbCamera->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbCamera));
+
+    set_lens(_fov, _aspect, _near, _far);
+    // --- initialize() 로직 끝 ---
 }
 CameraComponent::~CameraComponent()
 {
-    // 이 컴포넌트가 파괴될 때, 자신이 메인 카메라였다면 정적 포인터를 null로 설정합니다.
     if (_mainCamera == this)
     {
         _mainCamera = nullptr;
     }
-}
 
-void CameraComponent::initialize()
-{
-    ID3D12Device* device = GameFramework::Instance()->device().Get();
-    if (!device)
-    {
-        CERROR("CameraComponent::initialize: Device is null.");
-        return;
-    }
-
-    // 상수 버퍼 생성
-    _cbCamera = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_CAMERA_INFO),
-        D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
-    // [추가] 리소스 생성 성공 여부 확인
-    if (!_cbCamera)
-    {
-        CERROR("CameraComponent::initialize: Failed to create constant buffer. _cbCamera is null.");
-        return;
-    }
-    // 상수 버퍼 매핑
-    D3D12_RANGE readRange{ 0, 0 };
-    _cbCamera->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbCamera));
-
-    // 렌즈 초기 설정으로 프로젝션 행렬 생성
-    set_lens(_fov, _aspect, _near, _far);
-}
-void CameraComponent::release()
-{
+    // --- release() 로직 시작 ---
     if (_cbCamera)
     {
         _cbCamera->Unmap(0, nullptr);
-        _cbCamera.Reset(); // ComPtr이므로 Reset()으로 리소스 해제
+        // _cbCamera는 ComPtr이므로, 소멸자가 호출될 때 자동으로 Reset()되어 리소스가 해제됩니다.
+        // 따라서 명시적으로 _cbCamera.Reset()을 호출할 필요는 없습니다.
     }
+    // --- release() 로직 끝 ---
 }
+
 void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* commandList)
 {
     if (!_mappedCbCamera) return;

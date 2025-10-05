@@ -9,6 +9,9 @@ class CameraComponent;
 class FreeCameraScript : public ScriptComponent
 {
 public:
+    // 이 스크립트는 CameraComponent가 반드시 필요하다고 시스템에 알립니다.
+    using required_components = std::tuple<CameraComponent>;
+
     FreeCameraScript();
     virtual ~FreeCameraScript() = default;
 
