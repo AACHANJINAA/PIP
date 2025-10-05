@@ -7,9 +7,13 @@
 
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
 {
-	_transform = add_component<TransformComponent>();
 }
 
+
+void GameObject::init()
+{
+	_transform = add_component<TransformComponent>();
+}
 
 void GameObject::awake()
 {

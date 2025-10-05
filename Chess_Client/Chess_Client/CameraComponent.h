@@ -16,8 +16,6 @@ struct CB_CAMERA_INFO
 class CameraComponent : public Component
 {
 public:
-	using required_components = std::tuple<CameraComponent>; // TransformComponent가 반드시 필요합니다.
-public:
     CameraComponent();
     virtual ~CameraComponent();
 

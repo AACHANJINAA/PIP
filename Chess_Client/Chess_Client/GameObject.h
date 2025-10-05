@@ -10,6 +10,8 @@ public:
     GameObject(const std::string& name = "GameObject");
     virtual ~GameObject() = default;
 
+    void init();
+
     void awake();
     void start();
     void update(float deltaTime);
