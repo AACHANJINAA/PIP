@@ -10,34 +10,28 @@ cbuffer cbCamera : register(b1)
     float3 gvCameraPosition;
 };
 
-// 정점 입력 구조체 (위치와 색상만 필요)
+// [수정] 입력 구조체에서 position만 남깁니다.
 struct VS_IN
 {
     float3 position : POSITION;
-    float4 color : COLOR;
 };
 
-// 픽셀 셰이더로 전달할 구조체
+  // 픽셀 셰이더로 전달할 구조체
 struct VS_OUT
 {
     float4 position : SV_POSITION;
-    float4 color : COLOR;
 };
 
 VS_OUT VS_Debug(VS_IN vin)
 {
     VS_OUT vout;
-    // 최종 화면 좌표로 변환
-    vout.position = mul(float4(vin.position, 1.0f), gmtxWorld);
-    vout.position = mul(vout.position, gmtxView);
-    vout.position = mul(vout.position, gmtxProjection);
-    // 정점 색상을 픽셀 셰이더로 그대로 전달
-    vout.color = vin.color;
+      // 강제 출력 코드는 그대로 유지합니다.
+    vout.position = float4(vin.position.x * 0.1f, vin.position.y * 0.1f, 0.5f, 1.0f);
     return vout;
 }
 
+  // [수정] 픽셀 셰이더는 이제 아무것도 받지 않고, 무조건 녹색만 출력합니다.
 float4 PS_Debug(VS_OUT pin) : SV_TARGET
 {
-    // 입력받은 색상을 그대로 최종 출력
-    return pin.color;
+    return float4(0.0, 1.0, 0.0, 1.0);
 }

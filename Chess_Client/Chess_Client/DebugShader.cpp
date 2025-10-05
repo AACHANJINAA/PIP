@@ -10,10 +10,8 @@ D3D12_INPUT_LAYOUT_DESC DebugShader::create_input_layout()
 {
     // Renderer.cpp에 있던 "debug" PSO의 Input Layout 정보를 그대로 가져옵니다.
     static const D3D12_INPUT_ELEMENT_DESC input_layout[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-        	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
-        	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+              D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
     };
     return { input_layout, _countof(input_layout) };
 }
