@@ -19,7 +19,8 @@ public class PIPMap : ModuleRules
                 {
                     "UnrealEd",           // 에디터 기능 전반 (GEditor 등)
                     "EditorSubsystem",    // 에디터 서브시스템
-                    "UnrealEd"            // dds파일을 위한 에디터 기능 추가
+                    "UnrealEd",           // dds파일을 위한 에디터 기능 추가
+                    "GLTFExporter"       // gltf파일을 위한 에디터 기능 추가 
                 }
             );
         }
