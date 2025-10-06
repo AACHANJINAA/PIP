@@ -15,6 +15,9 @@ ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootS
 	pso_desc.BlendState = create_blend_state();
 	pso_desc.DepthStencilState = create_depth_stencil_state();
 
+	// DW추가 : MSAA를 사용하지 않더라도 픽셀당 사용하는 샘플의 개수가 1개는 무조건 있어야 한다. -> 지금은 샘플 전부 사용하겠다는 의미인 UINT_MAX 사용
+	pso_desc.SampleMask = UINT_MAX;
+
 	// [수정] 파생 클래스가 토폴로지를 지정할 수 있도록 가상 함수로 분리하는 것이 좋습니다.
 	// virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive_topology_type() const { return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; }
 	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
