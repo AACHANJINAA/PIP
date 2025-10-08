@@ -1,81 +1,97 @@
 ﻿#pragma once
+#include "stdafx.h"
 #include "Mesh.h"
-struct GltfVertex // GLTF에서 사용하는 정점 구조체 -> DW계획 : 추후 필요없는 구조체는 삭제할 예정
+struct GltfVertex : public Vertex
 {
-	XMFLOAT3 _position;
-	XMFLOAT3 _normal;
-	XMFLOAT4 _tangent;
-	XMFLOAT2 _texCoord;
+public:
+	XMFLOAT3 _normal;      // 법선 벡터
+	XMFLOAT2 _texCoord;    // 텍스처 좌표 (UV)
+	XMFLOAT4 _tangent;     // 탄젠트 벡터 (w 요소는 handedness를 나타냄)
+
+	// 향후 애니메이션 확장 영역
+	// 주석 처리된 이 부분에 스키닝 데이터를 추가할 수 있습니다.
+	// XMFLOAT4 _boneIndices; // 영향을 주는 뼈(Bone)의 인덱스 (최대 4개)
+	// XMFLOAT4 _boneWeights; // 각 뼈로부터 받는 가중치
+
+public:
+	GltfVertex() {
+		_position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		_normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		_texCoord = XMFLOAT2(0.0f, 0.0f);
+		_tangent = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	GltfVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT4 tan) {
+		_position = p;
+		_normal = n;
+		_texCoord = t;
+		_tangent = tan;
+	}
 };
 
-
-struct GltfPrimitiveData
+struct GltfPrimitive
 {
+	// CPU
+	std::vector<GltfVertex> _vertices;
+	std::vector<UINT> _indices;
+
+	// GPU
 	ComPtr<ID3D12Resource> _vertexBuffer;
 	ComPtr<ID3D12Resource> _indexBuffer;
 
 	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView;
 	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
 
+	UINT _vertexCount = 0;
 	UINT _indexCount = 0;
-	int _materialIndex = -1; // 이 프리미티브가 사용할 m_textures 벡터의 인덱스
+	int _materialIndex = -1;
+
+	BoundingOrientedBox _orientedBoundingBox;
+
+	// 임시 업로드 버퍼 로딩이 끝나면 해제
+	ComPtr<ID3D12Resource> _vertexUploadBuffer;
+	ComPtr<ID3D12Resource> _indexUploadBuffer;
 };
 
-struct GltfMeshData
-{
-	std::vector<IlluminatedVertex> _vertices;
-	std::vector<uint32_t> _indices; // 인덱스 타입은 accessor에 따라 달라질 수 있음 -> 이거 경고 막고싶은디...
-};
 class ReadGLTFMesh : public Mesh
 {
 public:
-	ReadGLTFMesh() {};
-	ReadGLTFMesh(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const std::string str, class Scene* pScene);
-
+	ReadGLTFMesh(const std::string& filePath);
 	~ReadGLTFMesh() override;
 
-	void render(ID3D12GraphicsCommandList* pd3dCommandList) override;
+	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
 
-private: // DW생각 : gltf이기 때문에 함수 단위로 분리해서 불러오기
-	// .gltf파일 불러오기 및 .bin파일 읽고, 성공여부를 반환ㅎㅏ기
-	bool can_load_gltf_file(const std::string& filename, json& out_json, std::vector<char>& out_bin_buffer);
-
-	// 거대한 bin 데이서에서 gltf의 accessor정보에 따라 잘라내는 것
-	void copy_data_from_buffer(std::vector<char>& dest, const std::vector<char>& source_bin_buffer, const json& gltf_json, int accessor_index);
-
-	// 데이터 추출
-	bool can_Extract_mesh_data(const json& gltf_json, const std::vector<char>& bin_buffer, GltfMeshData& out_mesh_data);
-
-	// 정점버퍼 및 인덱스버퍼 생성
-	void create_vertex_and_index_buffers(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const GltfMeshData& gltf_mesh_data);
-
-	// 텍스쳐 로드
-	void load_textures(ID3D12Device* d3d_device, ID3D12GraphicsCommandList* d3d_commandList, const json& gltf_json, const std::string& base_path);
+	void render(ID3D12GraphicsCommandList* commandList) override;
+	void release_upload_buffers() override;
 
 private:
-	// json _gltfJson; // .gltf파일의 JSON 데이터를 저장할 json객체
-	// std::vector<char> _binaryData; // .bin파일의 바이너리 데이터를 저장할 벡터
-	// 렌더링 시 사용할 함수
+	bool load_gltf_file(const std::string& filename, json& outJson, std::vector<char>& outBinBuffer);
+	void process_node(const json& gltfJson, const std::vector<char>& binaryBuffer, int nodeIndex, const DirectX::XMFLOAT4X4& parentTransform);
+	void process_mesh(const json& gltfJson, const std::vector<char>& binaryBuffer, const json& mesh, const DirectX::XMFLOAT4X4& transform);
 
+	template<typename T>
+	std::vector<T> get_attribute_data(const json& gltfJson, const std::vector<char>& binaryBuffer, int accessorIndex)
+	{
+		if (accessorIndex < 0) return {};
+
+		const json& accessor = gltfJson["accessors"][accessorIndex];
+		const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"]];
+
+		size_t count = accessor["count"];
+		size_t byteOffset = bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+		size_t elementSize = sizeof(T);
+		size_t byteStride = bufferView.value("byteStride", elementSize);
+
+		std::vector<T> data(count);
+		const char* bufferStart = binaryBuffer.data() + byteOffset;
+
+		for (size_t i = 0; i < count; ++i) {
+			memcpy(&data[i], bufferStart + i * byteStride, elementSize);
+		}
+
+		return data;
+	}
 
 private:
-	// 버퍼 리소스
-	ComPtr<ID3D12Resource> _d3dVertexBuffer = nullptr;
-	ComPtr<ID3D12Resource> _d3dIndexBuffer = nullptr;
-
-	// 버퍼 생성을 위한 임시 업로드 버퍼
-	ComPtr<ID3D12Resource> _d3dVertexUploadBuffer = nullptr;
-	ComPtr<ID3D12Resource> _d3dIndexUploadBuffer = nullptr;
-
-	// 텍스처 리소스 (여러 개일 수 있음)
-	std::vector<ComPtr<ID3D12Resource>> _TextureResources;
-	std::vector<ComPtr<ID3D12Resource>> _TextureUploadBuffers; // 텍스처 업로드용
-
-	// 버퍼 뷰
-	D3D12_VERTEX_BUFFER_VIEW _d3dVertexBufferView;
-	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView;
-
-	// 그릴 인덱스 개수
-	UINT _indexCount = 0;
+	std::vector<std::unique_ptr<GltfPrimitive>> _primitives;
 };
-
