@@ -1,0 +1,129 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 19284,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 7951,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.205521047, -0.624459922, -1.89248657 ],
+			"max": [ 3.57945132, 6.37920237, 1.8924861 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 7951,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 7951,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 7951,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 7951,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "tower_and_castle_walls_0_8F42F975.bin",
+			"byteLength": 483824
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 38568,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 95412,
+			"byteOffset": 38568,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 95412,
+			"byteOffset": 133980,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 127216,
+			"byteOffset": 229392,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 63608,
+			"byteOffset": 356608,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 63608,
+			"byteOffset": 420216,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "Tower",
+			"pbrMetallicRoughness":
+			{
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "tower_and_castle_walls_0_8F42F975",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	]
+}

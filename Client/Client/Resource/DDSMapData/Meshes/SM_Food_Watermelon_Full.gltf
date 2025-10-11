@@ -1,0 +1,130 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 2880,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1984,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.14169845, -0.149299189, -0.141824171 ],
+			"max": [ 0.140724495, 0.149299189, 0.141079873 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1984,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1984,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1984,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1984,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Food_Watermelon_Full.bin",
+			"byteLength": 116864
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 5760,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 23808,
+			"byteOffset": 5760,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 23808,
+			"byteOffset": 29568,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 31744,
+			"byteOffset": 53376,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15872,
+			"byteOffset": 85120,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15872,
+			"byteOffset": 100992,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Prop_01",
+			"pbrMetallicRoughness":
+			{
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Food_Watermelon_Full",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	]
+}

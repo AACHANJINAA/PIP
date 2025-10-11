@@ -1,0 +1,130 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1260,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1146,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.295231462, 0.00020427983, -0.269374818 ],
+			"max": [ 0.286370754, 0.777965605, 0.302136034 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1146,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1146,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1146,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1146,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Sack_01.bin",
+			"byteLength": 66696
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2520,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 13752,
+			"byteOffset": 2520,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 13752,
+			"byteOffset": 16272,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 18336,
+			"byteOffset": 30024,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9168,
+			"byteOffset": 48360,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9168,
+			"byteOffset": 57528,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Prop_01",
+			"pbrMetallicRoughness":
+			{
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Sack_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	]
+}
