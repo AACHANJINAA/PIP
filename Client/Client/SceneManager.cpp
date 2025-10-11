@@ -30,7 +30,9 @@ void SceneManager::change_scene(const std::string& scene_name)
 	_requestedSceneName = scene_name;
 }
 
-void SceneManager::process_scene_change_if_requested()
+void SceneManager::process_scene_change_if_requested(ID3D12Device* device
+	,ID3D12CommandAllocator* command_allocator
+	, ID3D12GraphicsCommandList* command_list)
 {
     // 전환 요청이 없으면 아무것도 하지 않고 즉시 리턴합니다.
     if (_requestedSceneName.empty())
@@ -66,15 +68,12 @@ void SceneManager::process_scene_change_if_requested()
     }
 
     // 4. 새로운 씬의 리소스를 로드하고 GPU에 업로드합니다.
-    ID3D12CommandAllocator* command_allocator = game_framework->command_allocator().Get();
-    ID3D12GraphicsCommandList* command_list = game_framework->command_list().Get();
-    ID3D12Device* device = game_framework->device().Get();
 
     command_allocator->Reset();
     command_list->Reset(command_allocator, nullptr);
 
     _currentScene->build_objects(device, command_list);
-    ResourceManager::Instance()->upload_pending_meshes(command_list);
+    ResourceManager::Instance()->upload_pending_meshes(device, command_list);
 
     // 5. 리소스 업로드 커맨드를 실행하고 완료될 때까지 기다립니다.
     command_list->Close();

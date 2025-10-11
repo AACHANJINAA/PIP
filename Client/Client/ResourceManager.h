@@ -18,7 +18,7 @@ public:
     std::shared_ptr<Mesh> load_mesh(const std::string& file_path);
 
     // [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
-    void upload_pending_meshes(ID3D12GraphicsCommandList* command_list);
+    void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
 	// [추가] 업로드에 사용된 임시 버퍼들을 해제하는 함수
     void release_upload_buffers();
@@ -36,8 +36,6 @@ private:
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
     std::vector<std::shared_ptr<Mesh>> _pending_meshes;
 
-    // 리소스 생성에 필요한 DX12 객체 포인터
-    ID3D12Device* _device = nullptr;
 
     // [추가] SRV 디스크립터 힙 관련 멤버
     ComPtr<ID3D12DescriptorHeap> _srvDescriptorHeap;
