@@ -36,12 +36,6 @@
     <Filter Include="소스 파일\Manager\MapDataManager">
       <UniqueIdentifier>{8b6bc8f8-6074-4542-ab85-ccb5baed8929}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Manager\Time">
-      <UniqueIdentifier>{491b1f11-b7bf-42eb-a27f-fd0697c04c16}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Manager\AIManager">
-      <UniqueIdentifier>{ba659bec-0424-44d2-a563-c4f85fc9adb2}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -68,14 +62,8 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>소스 파일\Manager\Time</Filter>
-    </ClCompile>
     <ClCompile Include="NPC.cpp">
       <Filter>소스 파일\NPC</Filter>
-    </ClCompile>
-    <ClCompile Include="AIManager.cpp">
-      <Filter>소스 파일\Manager\AIManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,15 +72,6 @@
     </ClInclude>
     <ClInclude Include="PacketManager.h">
       <Filter>소스 파일\Packet</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Common\Vector3.h">
-      <Filter>소스 파일\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Common\Packet.h">
-      <Filter>소스 파일\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Common\PacketStream.h">
-      <Filter>소스 파일\Common</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">
       <Filter>소스 파일\JSON</Filter>
@@ -115,14 +94,17 @@
     <ClInclude Include="ServerCore.h">
       <Filter>소스 파일\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>소스 파일\Manager\Time</Filter>
-    </ClInclude>
     <ClInclude Include="NPC.h">
       <Filter>소스 파일\NPC</Filter>
     </ClInclude>
-    <ClInclude Include="AIManager.h">
-      <Filter>소스 파일\Manager\AIManager</Filter>
+    <ClInclude Include="..\..\Common\Packet.h">
+      <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\PacketStream.h">
+      <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\Vector3.h">
+      <Filter>소스 파일\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

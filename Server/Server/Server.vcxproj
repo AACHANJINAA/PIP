@@ -136,7 +136,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AIManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapDataManager.cpp" />
     <ClCompile Include="NPC.cpp" />
@@ -149,13 +148,11 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
-    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Common\Packet.h" />
-    <ClInclude Include="..\..\..\Common\PacketStream.h" />
-    <ClInclude Include="..\..\..\Common\Vector3.h" />
-    <ClInclude Include="AIManager.h" />
+    <ClInclude Include="..\..\Common\Packet.h" />
+    <ClInclude Include="..\..\Common\PacketStream.h" />
+    <ClInclude Include="..\..\Common\Vector3.h" />
     <ClInclude Include="json.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -169,7 +166,6 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />
-    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
