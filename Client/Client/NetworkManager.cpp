@@ -1,36 +1,42 @@
 ﻿#include "stdafx.h"
-#include "ClientPacketManager.h"
+#include "NetworkManager.h"
 #include "GameFramework.h"
 #include "LayerManager.h"
 #include "MainPlayerScript.h"
 #include "ObjectManager.h"
 #include "OtherPlayerScript.h"
 
-// 외부 전역 변수 (Chess_Client.cpp에 정의된 g_hwnd)
-extern HWND g_hwnd;
-extern void error_display(const char* msg, int err_no);
-
-
-void ClientPacketManager::Initialize(SOCKET client_socket)
+void error_display(const char* msg, int err_no)
 {
-	_socket = client_socket;
-
-	// 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_MOVE, std::bind(&ClientPacketManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
-	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE, std::bind(&ClientPacketManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
-	RegisterHandler(common::packet::PacketType::S2C_P_ATTACK, std::bind(&ClientPacketManager::HANDLE_S2C_ATTACK, this, std::placeholders::_1));
-	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK, std::bind(&ClientPacketManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
-	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK, std::bind(&ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
-	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER, std::bind(&ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
-	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK, std::bind(&ClientPacketManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
+	WCHAR* lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, err_no,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf, 0, NULL);
+	MessageBox(GameFramework::Instance()->hWnd(), lpMsgBuf, (LPCWSTR)msg, MB_OK);
+	LocalFree(lpMsgBuf);
 }
+//void NetworkManager::Initialize(SOCKET client_socket)
+//{
+//	_socket = client_socket;
+//
+//	// 패킷 핸들러 등록
+//	RegisterHandler(common::packet::PacketType::S2C_P_MOVE, std::bind(&NetworkManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
+//	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE, std::bind(&NetworkManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
+//	RegisterHandler(common::packet::PacketType::S2C_P_ATTACK, std::bind(&NetworkManager::HANDLE_S2C_ATTACK, this, std::placeholders::_1));
+//	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK, std::bind(&NetworkManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
+//	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK, std::bind(&NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
+//	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER, std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
+//	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK, std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
+//}
 
-void ClientPacketManager::SendPacket(const char* data, size_t size)
+void NetworkManager::SendPacket(const char* data, size_t size)
 {
 	send(_socket, data, static_cast<int>(size), 0);
 }
 
-void ClientPacketManager::ProcessReceivedData(char* data, int size)
+void NetworkManager::ProcessReceivedData(char* data, int size)
 {
 	_recvBuffer.insert(_recvBuffer.end(), data, data + size);
 	
@@ -56,7 +62,7 @@ void ClientPacketManager::ProcessReceivedData(char* data, int size)
 	}
 }
 
-void ClientPacketManager::SendLoginPacket(const std::string& name)
+void NetworkManager::SendLoginPacket(const std::string& name)
 {
 	common::packet::PacketStream stream;
 	common::packet::CS_PACKET_LOGIN login_packet;
@@ -72,20 +78,20 @@ void ClientPacketManager::SendLoginPacket(const std::string& name)
 	SendPacket(stream.mutable_data(), stream.Size());
 }
 
-void ClientPacketManager::SendMovePacket(common::Vec3 direction)
+void NetworkManager::SendMovePacket(common::Vec3 position)
 {
 	// 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
 	common::packet::CS_PACKET_MOVE packet;
 	packet._type = common::packet::PacketType::C2S_P_MOVE;
 	packet._size = sizeof(packet);
-	packet._direction = direction;
+	packet._position = position;
 
 	// 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
 	// 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
 	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
-void ClientPacketManager::SendAttackPacket()
+void NetworkManager::SendAttackPacket()
 {
 	common::packet::CS_PACKET_ATTACK packet;
 	packet._type = common::packet::PacketType::C2S_P_ATTACK;
@@ -94,14 +100,14 @@ void ClientPacketManager::SendAttackPacket()
 	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
-void ClientPacketManager::SendRoomListPacket()
+void NetworkManager::SendRoomListPacket()
 {
 	common::packet::CS_PACKET_ROOM_LIST packet;
 	packet._type = common::packet::PacketType::C2S_P_ROOM_LIST;
 	packet._size = sizeof(packet);
 	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
-void ClientPacketManager::SendEnterRoomPacket(int room_id_to_enter)
+void NetworkManager::SendEnterRoomPacket(int room_id_to_enter)
 {
 	common::packet::CS_PACKET_ENTER_ROOM packet;
 	packet._type = common::packet::PacketType::C2S_P_ENTER_ROOM;
@@ -111,15 +117,15 @@ void ClientPacketManager::SendEnterRoomPacket(int room_id_to_enter)
 	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
-void ClientPacketManager::RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler)
+void NetworkManager::RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler)
 {
 	// 내부적으로 핸들러 등록하기 위해서 사용
 	_handlers[packet_type] = packet_handler;
 }
 
-void ClientPacketManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
 {
-	common::packet::S2C_P_LOGIN_ACK ack_packet;
+	common::packet::SC_PACKET_LOGIN_ACK ack_packet;
 	stream >> ack_packet;
 
 	if (ack_packet._success)
@@ -130,11 +136,11 @@ void ClientPacketManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& str
 	else
 	{
 		CLOG("[S->C] Login failed!");
-		MessageBox(g_hwnd, L"Login failed.", L"Login Error", MB_OK);
+		MessageBox(GameFramework::Instance()->hWnd(), L"Login failed.", L"Login Error", MB_OK);
 	}
 }
 
-void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& stream)
 {
 	// [수정] SC_PACKET_SPAWN_PLAYER 구조체 변수를 선언하고 스트림에서 읽어옵니다.
 	common::packet::SC_PACKET_SPAWN_PLAYER spawn_data;
@@ -204,7 +210,7 @@ void ClientPacketManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& 
 	}
 }
 
-void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 {
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
 	common::packet::SC_PACKET_MOVE move_packet;
@@ -229,7 +235,7 @@ void ClientPacketManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	}
 }
 
-void ClientPacketManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_LEAVE leave_packet;
 	stream >> leave_packet; // id만 읽습니다.
@@ -244,7 +250,7 @@ void ClientPacketManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 	}
 }
 
-void ClientPacketManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
 {
 	// SC_PACKET_ATTACK은 헤더 외에 여러 멤버를 가집니다.
 	common::packet::SC_PACKET_ATTACK attack_packet;
@@ -271,7 +277,7 @@ void ClientPacketManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream
 	}
 }
 
-void ClientPacketManager::HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_ROOM_LIST_ACK room_list_ack;
 	stream >> room_list_ack; // room_count만 읽습니다.
@@ -285,7 +291,7 @@ void ClientPacketManager::HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream&
 		//CLOG(L"  - Room ID: %d, Players: %u", room_info._room_id, static_cast<unsigned int>(room_info._player_count));
 	}
 }
-void ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& stream)
 {
 	extern HWND g_hwnd;
 
@@ -303,3 +309,119 @@ void ClientPacketManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream
 		MessageBox(g_hwnd, L"Failed to enter room.", L"Room Entry Error", MB_OK);
 	}
 }
+
+bool NetworkManager::init_network()
+{
+	WSADATA wsaData;
+	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (result != 0) {
+		error_display("WSAStartup failed", result);
+		return false;
+	}
+	return true;
+}
+
+void NetworkManager::cleanup_network()
+{
+	WSACleanup();
+}
+
+bool NetworkManager::connect_to_server(std::string_view server_addr, const int& port)
+{
+	_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_socket == INVALID_SOCKET)
+	{
+		error_display("socket", WSAGetLastError());
+		return false;
+	}
+
+	SOCKADDR_IN addr;
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+	inet_pton(AF_INET, server_addr.data(), &addr.sin_addr);
+
+	if (SOCKET_ERROR == connect(_socket, (SOCKADDR*)(&addr), sizeof(addr)))
+	{
+		error_display("connect", WSAGetLastError());
+		disconnect();
+		return false;
+	}
+	u_long on = 1;
+	if (SOCKET_ERROR == ioctlsocket(_socket, FIONBIO, &on)) // 논블로킹 모드 설정
+	{
+		error_display("ioctlsocket", WSAGetLastError());
+		disconnect();
+		return false;
+	}
+
+	RegisterHandler(common::packet::PacketType::S2C_P_MOVE, 
+		std::bind(&NetworkManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE,
+		std::bind(&NetworkManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_ATTACK,
+		std::bind(&NetworkManager::HANDLE_S2C_ATTACK, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK,
+		std::bind(&NetworkManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK,
+		std::bind(&NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER,
+		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK,
+		std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
+
+	return true;
+}
+
+void NetworkManager::disconnect()
+{
+	if (_socket != INVALID_SOCKET)
+	{
+		closesocket(_socket);
+		_socket = INVALID_SOCKET;
+	}
+}
+
+void NetworkManager::receive_packets()
+{
+	if (_socket == INVALID_SOCKET)
+	{
+		return;
+	}
+
+	char recv_buffer[4096];
+	int retval = recv(_socket, recv_buffer, sizeof(recv_buffer), 0);
+
+	if (retval == SOCKET_ERROR)
+	{
+		if (WSAGetLastError() == WSAEWOULDBLOCK)
+		{
+			// 데이터가 없는 정상적인 상황이므로 아무것도 하지 않음
+			return;
+		}
+
+		// WSAEWOULDBLOCK 이외의 소켓 오류 발생
+		error_display("recv failed", WSAGetLastError());
+		disconnect(); // 소켓 정리
+		// PostQuitMessage(0); // 앱 종료는 상위 레벨(예: 메인 루프)에서 결정
+		return;
+	}
+
+	if (retval == 0)
+	{
+		// 서버가 연결을 정상적으로 종료함
+		std::cout << "Server disconnected." << std::endl;
+		disconnect();
+		// PostQuitMessage(0);
+		return;
+	}
+
+	// 받은 데이터를 처리 함수로 넘김
+	ProcessReceivedData(recv_buffer, retval);
+}
+

@@ -113,7 +113,7 @@
     <ClInclude Include="Chess_Scene.h">
       <Filter>1. Game\1. Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="ClientPacketManager.h">
+    <ClInclude Include="NetworkManager.h">
       <Filter>0. Engine\6. Network</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
@@ -241,7 +241,7 @@
     <ClCompile Include="Chess_Scene.cpp">
       <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="ClientPacketManager.cpp">
+    <ClCompile Include="NetworkManager.cpp">
       <Filter>0. Engine\6. Network</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
