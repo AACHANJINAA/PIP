@@ -61,7 +61,7 @@ namespace PIP::packet
 
 		// 아바타 정보 전송 로직 제거
 
-		packet::S2C_P_LOGIN_ACK login_ack_packet;
+		packet::SC_PACKET_LOGIN_ACK login_ack_packet;
 		login_ack_packet._type = PacketType::S2C_P_LOGIN_ACK;
 		login_ack_packet._size = sizeof(login_ack_packet);
 		login_ack_packet._my_session_id = session->_id; // 클라이언트 자신의 ID를 알려줍니다.
@@ -74,6 +74,7 @@ namespace PIP::packet
 	void Handle_C2S_MOVE(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
+
 		server::Room * room = server::Server::Instance()->GetRoom(session->_room_id);
 		if (room == nullptr) return;
 
@@ -85,35 +86,38 @@ namespace PIP::packet
 		catch (...)
 		{
 			MYERROR("이동 패킷 읽는중 오류남 (패킷에러)");
+			return;;
 		}
+		common::Vec3 targetPos = move_packet._position;
 
-		const float MOVE_SPEED = 10.0f; // 캐릭터의 이동 속도. 서버에서 상수로 관리합니다.
+		common::Vec3 player_extents = { 1.f, 1.8f, 1.f }; // TODO: 플레이어 크기 받을 필요도 있을듯
+		// TODO: 향후 이동 속도를 검증하여 스피드핵 방지 로직 추가 필요
 
-		common::Vec3 targetPos;
-		targetPos.x = session->GetPlayer()->_position.x + move_packet._direction.x * MOVE_SPEED;
-		targetPos.y = session->GetPlayer()->_position.y + move_packet._direction.y * MOVE_SPEED;
-		targetPos.z = session->GetPlayer()->_position.z + move_packet._direction.z * MOVE_SPEED;
-		//TODO: deltaTime를 고려한 이동 로직 추가 필요
-		//TODO: 클라이언트에서 이동하고 이상 위치면 서버에서 보정하는 형태로 바꿔야됨
-		//LOG("[Move] Session " << session->_id << " in Room " << session->_room_id << " moved to(" << session->_x << ", " << session->_y << ")");
-
-		common::Vec3 player_extents = { 1.f, 1.8f, 1.f };
-
-		// 충돌 검사
-		if (false == MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
+		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
 		{
-			// 충돌이 없으면 위치 업데이트 및 브로드캐스팅
+			// 4-A. 유효하지 않은 이동: 클라이언트 위치를 서버의 마지막 위치로 강제 보정
+			packet::SC_PACKET_MOVE correction_packet;
+			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			correction_packet._size = sizeof(correction_packet);
+			correction_packet._id = session->_id;
+			correction_packet._position = session->GetPlayer()->_position; // 서버가 아는 마지막
+
+			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+		}
+		else
+		{
+			// 4-B. 유효한 이동: 서버에 위치를 갱신하고 다른 클라이언트들에게 브로드캐스팅
 			session->GetPlayer()->_position = targetPos;
 
 			packet::SC_PACKET_MOVE sync_packet;
 			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			sync_packet._size = sizeof(sync_packet);
 			sync_packet._id = session->_id;
-			sync_packet._position = session->GetPlayer()->_position;
-
-			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
-			session->do_send(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet));
+			sync_packet._position = targetPos; // 검증된 새 위치
+			// 자기 자신을 제외한 방 안의 모든 사람에게 동기화 패킷 전송
+			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
 		}
+
 	}
 
 	void Handle_C2S_ATTACK(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
