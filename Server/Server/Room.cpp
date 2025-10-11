@@ -1,14 +1,15 @@
 ﻿#include "pch.h"
 #include "Room.h"
-#include "AIManager.h"
 #include "Player.h"
 #include "PacketHandlers.h"
-#include "Timer.h"
 
 namespace PIP::server
 {
 	constexpr int MAX_ROOM_PLAYERS = 4; // 최대 플레이어 수
 
+	std::random_device Room::_rd {};
+	std::mt19937 Room::_gen{ _rd() };
+	std::uniform_real_distribution<> Room::_npcURD{ -1.0, 1.0 };
 	Room::Room(int room_id, int logic_thread_idx)
 		: _room_id{ room_id }, _logic_thread_idx{ logic_thread_idx }, _max_players{ MAX_ROOM_PLAYERS }, _room_state{ RoomState::WAITING }
 	{
@@ -17,10 +18,10 @@ namespace PIP::server
 
 	void Room::Initialize()
 	{
-		for (int i = 0; i < 5; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
-			int npcId = AIManager::Instance()->GetNewNpcId();
+			int npcId = _next_npc_id++;
 			common::Vec3 randomPos = { static_cast<float>(rand() % 50), 4.0f, static_cast<float>(rand() % 50)
 			};
 
@@ -28,10 +29,10 @@ namespace PIP::server
 			AddNPC(std::move(npc));
 
 			// 생성된 NPC의 AI를 1초 뒤에 처음으로 실행하도록 타이머에 등록
-			// AI 로직은 AIManager에 위임하고, Room과 NPC 정보를 넘겨줍니다.
-			Timer::Instance()->AddTimerJob(std::chrono::milliseconds(10), [this, npcId]() {
-				AIManager::Instance()->UpdateNPC(this, npcId);
-			}); 
+			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
+			{
+				UpdateNPC(npcId);
+			});
 		}
 	}
 
@@ -42,6 +43,12 @@ namespace PIP::server
 	}
 	void Room::LeavePlayer(long long player_id)
 	{
+		// 다른 클라이언트에게 퇴장 사실을 알림
+		packet::SC_PACKET_LEAVE leave_packet;
+		leave_packet._type = packet::PacketType::S2C_P_LEAVE;
+		leave_packet._size = sizeof(leave_packet);
+		leave_packet._id = player_id;
+		this->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof(leave_packet), player_id);
 		_players.erase(player_id);
 	}
 
@@ -96,9 +103,9 @@ namespace PIP::server
 		}
 
 		// 2. 방에 있는 모든 NPC들의 정보를 새 플레이어에게 전송
-		for (auto& pair : _npcs)
+		for (auto& val : _npcs | std::views::values)
 		{
-			NPC* npc = pair.second.get();
+			NPC* npc = val.get();
 			common::packet::SC_PACKET_NPC_SPAWN spawnPacket;
 			spawnPacket._size = sizeof(spawnPacket);
 			spawnPacket._type = common::packet::PacketType::S2C_NPC_SPAWN;
@@ -160,6 +167,37 @@ namespace PIP::server
 				Broadcast(reinterpret_cast<const char*>(&attackPacket), sizeof(attackPacket));
 			}
 		}
+	}
+
+	void Room::UpdateNPC(int npcId)
+	{
+		NPC* npc = GetNPC(npcId);
+		if (!npc)
+		{
+			return;
+		}
+		// 랜덤이동
+		common::Vec3 oldPos = npc->GetPosition();
+		common::Vec3 newPos = oldPos;
+		newPos.x += static_cast<float>(_npcURD(_gen)) * 2.0f;
+		newPos.z += static_cast<float>(_npcURD(_gen)) * 2.0f;
+
+		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
+		npc->SetPosition(newPos);
+
+		// 이동 패킷 브로드캐스팅
+		common::packet::SC_PACKET_NPC_MOVE movePacket;
+		movePacket._size = sizeof(movePacket);
+		movePacket._type = common::packet::PacketType::S2C_NPC_MOVE;
+		movePacket.npcId = npcId;
+		movePacket.position = newPos;
+		Broadcast(reinterpret_cast<const char*>(&movePacket), sizeof(movePacket));
+
+		// 다음 업데이트 예약
+		Server::Instance()->AddTimerJob(_logic_thread_idx,std::chrono::milliseconds(200),[this, npcId]()
+		{
+				this->UpdateNPC(npcId);
+		});
 	}
 }
 

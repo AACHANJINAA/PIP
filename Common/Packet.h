@@ -4,7 +4,7 @@
 
 namespace common::packet
 {
-    constexpr short SERVER_PORT = 3000;
+    constexpr short SERVER_PORT = 7000;
 
 	enum class PacketType : uint16_t {
 		error = 0,

@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <random>
+
 #include "Server.h"
 #include "NPC.h"
 
@@ -13,6 +15,9 @@ namespace PIP::server
 	class SESSION;
 	class Room
 	{
+		static std::random_device _rd;
+		static std::mt19937 _gen;
+		static std::uniform_real_distribution<> _npcURD;
 	public:
 		Room(int room_id, int logic_thread_idx);
 		void Initialize();
@@ -46,7 +51,8 @@ namespace PIP::server
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
 		RoomState GetRoomState() const { return _room_state; }
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
-		
+	private:
+		void UpdateNPC(int npcId);
 	private:
 		int _room_id;
 		int _logic_thread_idx; // 이 방을 담당하는 로직 스레드의 인덱스
@@ -56,5 +62,6 @@ namespace PIP::server
 		// 이 방에 속한 플레이어들의 목록
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
 		std::unordered_map<int, std::unique_ptr<NPC>> _npcs;
+		int _next_npc_id = 20000; // NPC ID는 플레이어 ID와 겹치지 않도록 높은 수에서 시작
 	};
 }

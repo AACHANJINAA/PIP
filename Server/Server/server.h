@@ -71,20 +71,30 @@ namespace PIP::server
 
 		std::shared_ptr<PIP::Player> GetPlayer() const { return _player; }
 	};
+
+
+
+
+	struct TimerJob
+	{
+		std::chrono::steady_clock::time_point	_execute_time;
+		std::function<void()>					_task;
+		int										_owner_thread_idx;
+		bool operator>(const TimerJob& other) const
+		{
+			return _execute_time > other._execute_time;
+		}
+	};
 	struct LogicJob
 	{
 		std::function<void()> _task;
-	};
-	struct LogicPacket // 로직 스레드에 전달될 패킷 구조체
-	{
-		std::shared_ptr<SESSION> session; // 이 세션이
-		common::packet::PacketStream packet_stream; // 그냥 스트림을 가져오도록 변경
 	};
 
 	struct LogicWorker
 	{
 		std::thread thread;
 		concurrency::concurrent_queue<LogicJob> queue;
+		std::priority_queue<TimerJob, std::vector<TimerJob>, std::greater<TimerJob>> _timer_queue;
 
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
@@ -106,6 +116,9 @@ namespace PIP::server
 
 		void Start(int io_threads, int worker_thread);
 		void Stop();
+
+		// Room에서 타이머 잡을 추가할 수 있도록 헬퍼 함수 추가
+		void AddTimerJob(int worker_idx, std::chrono::milliseconds delay, std::function<void()> task);
 
 		// 로직 큐를 얻어오기 위한 public 메소드
 		concurrency::concurrent_queue<LogicJob>* get_logic_queue(int worker_idx);
@@ -137,7 +150,7 @@ namespace PIP::server
 		// [추가] 서버가 관리하는 룸 목록
 		std::vector<std::unique_ptr<Room>> _rooms;
 
-		concurrency::concurrent_unordered_map<long long, std::shared_ptr<SESSION>> _sessions;
+		concurrency::concurrent_unordered_map<long long, std::shared_ptr<SESSION>> _sessions; // 임시 세션 저장소
 	};
 
 

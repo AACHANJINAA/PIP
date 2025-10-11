@@ -78,7 +78,8 @@ namespace PIP::server
 			if (_recv_buffer.size() - processed_bytes < header->_size) break;
 
 			auto task = 
-				[session = shared_from_this(), stream = packet::PacketStream(_recv_buffer.data() + processed_bytes, header->_size)]
+				[session = shared_from_this(),
+				stream = packet::PacketStream(_recv_buffer.data() + processed_bytes, header->_size)]
 			() mutable
 			{
 				packet::PacketManager::Instance()->Dispatch(session, stream);
@@ -154,12 +155,17 @@ namespace PIP::server
 		SOCKADDR_IN server_addr;
 		ZeroMemory(&server_addr, sizeof(server_addr));
 		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(packet::SERVER_PORT); // 포트 번호, 필요시 수정
+		server_addr.sin_port = htons(common::packet::SERVER_PORT); // 포트 번호, 필요시 수정
 		server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		
-		bind(_listen_socket, reinterpret_cast<SOCKADDR*>(&server_addr), sizeof(server_addr));
+		int retval = bind(_listen_socket, reinterpret_cast<SOCKADDR*>(&server_addr), sizeof(server_addr));
+		if (retval == SOCKET_ERROR)
+		{
+			print_error("bind", WSAGetLastError());
+			exit(-1);
+		}
 		listen(_listen_socket, SOMAXCONN);
-		MYLOG("Server listening on port " << packet::SERVER_PORT << "...");
+		MYLOG("Server listening on port " << common::packet::SERVER_PORT << "...");
 
 		do_accept();
 	}
@@ -202,6 +208,22 @@ namespace PIP::server
 
 		MYLOG("Server stopped.");
 	}
+
+	void Server::AddTimerJob(int worker_idx, std::chrono::milliseconds delay, std::function<void()> task)
+	{
+		if (worker_idx < 0 || worker_idx >= _logic_workers.size()) return;
+
+		TimerJob newJob;
+		newJob._execute_time = std::chrono::steady_clock::now() + delay;
+		newJob._task = std::move(task);
+
+		// ※주의: 이 함수는 다른 스레드에서 호출될 수 있으므로,
+		// LogicWorker의 _timer_queue가 스레드 안전하지 않다면 락이 필요합니다.
+		// 하지만 지금 구조에서는 Room 로직(같은 스레드)에서만 호출되므로 일단 락 없이진행합니다.
+		// 만약 다른 스레드에서 호출할 가능성이 있다면, 이 부분은 다시 논의해야 합니다.
+		_logic_workers[worker_idx]._timer_queue.push(std::move(newJob));
+	}
+
 	concurrency::concurrent_queue<LogicJob>* Server::get_logic_queue(int worker_idx)
 	{
 		if (worker_idx < 0 || worker_idx >= _logic_workers.size())
@@ -283,16 +305,14 @@ namespace PIP::server
 							Room* room = GetRoom(s->_room_id);
 							if (room)
 							{
+								// 방에서 플레이어 제거
 								room->LeavePlayer(s->_id);
 								MYLOG("[Logic_worker] Processed disconnect for session " << s->_id << " from room " << room->GetRoomId());
 							}
 						}
 						RemoveSession(session_id);
 					}; 
-
 					get_logic_queue(session->_logic_thread_idx)->push({std::move(task)});
-
-					RemoveSession(key); // 이제 g_users에서 제거하는 것이 아니라 Server의 멤버에서 제거
 				}
 				if (eo->_io_op == IO_SEND)
 					delete eo;
@@ -328,20 +348,31 @@ namespace PIP::server
 	void Server::Logic_worker(int thread_idx)
 	{
 		MYLOG("[Thread] Logic worker thread #" << thread_idx << " started. ID: " << std::this_thread::get_id());
+		auto& worker = _logic_workers[thread_idx];
 		LogicJob job_to_process;
 		while (_is_running)
 		{
-			while (true) {
-				if (true == _logic_workers[thread_idx].queue.try_pop(job_to_process))
-					break;
-				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 큐가 비어있으면 잠시 대기	
+			while (not worker._timer_queue.empty() && 
+				worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
+			{
+
+				TimerJob timer_job = std::move(const_cast<TimerJob&>(worker._timer_queue.top()));
+				worker._timer_queue.pop();
+				worker.queue.push({ std::move(timer_job._task) });
 			}
 
-			if (!job_to_process._task)
+			// 2. 일반 큐에서 작업 처리
+			if (worker.queue.try_pop(job_to_process))
 			{
-				continue;
+				if (job_to_process._task)
+				{
+					job_to_process._task();
+				}
 			}
-			job_to_process._task();
+			else
+			{
+				std::this_thread::sleep_for(std::chrono::microseconds(1));
+			}
 		}
 	}
 	void Server::register_new_session(SOCKET client_socket)
