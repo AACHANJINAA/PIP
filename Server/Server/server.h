@@ -104,7 +104,7 @@ namespace PIP::server
 		~Server();
 	public:
 
-		void Start(int io_threads, int logic_threads);
+		void Start(int io_threads, int worker_thread);
 		void Stop();
 
 		// 로직 큐를 얻어오기 위한 public 메소드
