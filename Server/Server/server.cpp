@@ -110,7 +110,7 @@ namespace PIP::server
 		Stop();
 		CloseHandle(g_iocp);
 	}
-	void Server::Start(int io_threads, int logic_threads)
+	void Server::Start(int io_threads, int worker_thread)
 	{
 		MYLOG("=========================================");
 		MYLOG("          Server Initializing...         ");
@@ -119,8 +119,8 @@ namespace PIP::server
 		_is_running = true;
 		
 		// 로직 워커 생성
-		_logic_workers.reserve(logic_threads); // 미리 공간을 할당하여 불필요한 재할당 방지
-		for (int i = 0; i < logic_threads; ++i)
+		_logic_workers.reserve(worker_thread); // 미리 공간을 할당하여 불필요한 재할당 방지
+		for (int i = 0; i < worker_thread; ++i)
 		{
 			// LogicWorker 생성자에 std::thread 객체를 이동시켜 전달합니다.
 			_logic_workers.emplace_back(std::thread(&Server::Logic_worker, this, i));
@@ -137,7 +137,7 @@ namespace PIP::server
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
 		//MYLOG("[SERVER] Loading Map...");
-		MapDataManager::Instance()->LoadMapData("..\\..\\..\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
+		MapDataManager::Instance()->LoadMapData("..\\..\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)
