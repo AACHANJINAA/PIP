@@ -35,7 +35,8 @@ public:
 	Scene* current_scene() const { return _currentScene.get(); }
 
 	// [역할] GameFramework가 매 프레임 시작 시 호출하여, 씬 전환 요청이 있다면 처리합니다.
-	void process_scene_change_if_requested();
+	void process_scene_change_if_requested(ID3D12Device* device, 
+		ID3D12CommandAllocator* command_allocator, ID3D12GraphicsCommandList* command_list);
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // 현재 씬
 	std::string _requestedSceneName;

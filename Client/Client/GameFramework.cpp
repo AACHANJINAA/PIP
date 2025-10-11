@@ -249,7 +249,7 @@ void GameFramework::BuildObjects()
 
 
 	// 로드가 끝난 메시는 _pending_meshes 목록에 들어갔으므로, GPU에 업로드합니다.
-	ResourceManager::Instance()->upload_pending_meshes(_commandList.Get());
+	ResourceManager::Instance()->upload_pending_meshes(_device.Get(), _commandList.Get());
 
 	_commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
@@ -314,7 +314,8 @@ void GameFramework::MoveToNextFrame()
 void GameFramework::FrameAdvance()
 {
 	// [핵심] 실제 렌더링이나 업데이트 시작 전에 씬 전환을 먼저 처리합니다. 한프레임 지연
-	SceneManager::Instance()->process_scene_change_if_requested();
+	SceneManager::Instance()->process_scene_change_if_requested(_device.Get(),
+		_commandAllocator.Get(), _commandList.Get());
 
 	// 1. 타이머 틱 및 기본 처리
 	_gameTimer.Tick(0.0f);

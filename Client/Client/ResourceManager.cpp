@@ -8,7 +8,6 @@
 
 void ResourceManager::initialize(ID3D12Device* device)
 {
-    _device = device;
 
     // --- 기존 Scene::MakeSrv 로직이 여기로 이전 ---
     D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
@@ -16,10 +15,10 @@ void ResourceManager::initialize(ID3D12Device* device)
     srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
-    _device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvDescriptorHeap));
+    device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvDescriptorHeap));
 
     _srvDescriptorIncrementSize =
-        _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     _allocatedSrvCount = 0;
 }
 
@@ -84,14 +83,14 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     return new_mesh;
 }
 
-void ResourceManager::upload_pending_meshes(ID3D12GraphicsCommandList* command_list)
+void ResourceManager::upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
     // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.
     for (const auto& mesh : _pending_meshes)
     {
         if (!mesh->is_uploaded())
         {
-            mesh->upload_to_gpu(_device, command_list);
+            mesh->upload_to_gpu(device, command_list);
         }
     }
     // 업로드가 끝났으므로 대기 목록을 비웁니다.
