@@ -55,9 +55,10 @@ private:
 
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
-public:
+
 	GameFramework();
 	~GameFramework();
+public:
 
 
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);
@@ -94,6 +95,7 @@ public:
 	ComPtr<ID3D12Device>& device() { return _device; }
 	ComPtr<ID3D12CommandAllocator>& command_allocator() { return _commandAllocator; }
 	ComPtr<ID3D12CommandQueue>& command_queue() { return _commandQueue; }
+	HWND hWnd() const { return _hWnd; }
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 

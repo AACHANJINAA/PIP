@@ -2,8 +2,8 @@
 #include "GameFramework.h"
 #include "ObjectManager.h"
 #include "Chess_Scene.h"
-#include "ClientPacketManager.h"
 #include "InputManager.h"
+#include "NetworkManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
@@ -273,9 +273,7 @@ void GameFramework::ReleaseObjects()
 
 void GameFramework::ProcessNetwork()
 {
-	extern SOCKET c_socket;
-	extern void recv_and_process_packets();
-	recv_and_process_packets();
+	NetworkManager::Instance()->receive_packets();
 }
 
 void GameFramework::ProcessInput()

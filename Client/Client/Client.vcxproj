@@ -157,7 +157,7 @@
     <ClInclude Include="MainPlayerScript.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="ClientPacketManager.h" />
+    <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="FreeCamera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameObject.h" />
@@ -202,7 +202,7 @@
     <ClCompile Include="MainPlayerScript.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ClientPacketManager.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="FreeCamera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameObject.cpp" />

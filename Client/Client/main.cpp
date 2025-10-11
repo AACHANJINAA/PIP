@@ -3,15 +3,17 @@
 
 #include "stdafx.h"
 #include "main.h"
-#include "ClientPacketManager.h"
+#include "NetworkManager.h"
 #include "GameFramework.h"
 #include "resource1.h"
 #include "InputManager.h"
 
+namespace
+{
+    std::string SERVER_ADDR = "127.0.0.1";
+    std::string PLAYER_NAME = "MyPlayer"; // 플레이어 이름 저장용
+}
 
-SOCKET c_socket;
-std::wstring SERVER_ADDR_W = L"127.0.0.1";
-std::wstring PLAYER_NAME_W = L"MyPlayer"; // 플레이어 이름 저장용
 
 // std::vector<char> g_recvBuffer; // 서버로부터 받은 데이터를 쌓아두는 수신 버퍼 (ClientPacketManager 내부로 이동)
 
@@ -33,35 +35,8 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-void error_display(const char* msg, int err_no)
-{
-    WCHAR* lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, err_no,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf, 0, NULL);
-    MessageBox(g_hwnd, lpMsgBuf, (LPCWSTR)msg, MB_OK);
-    LocalFree(lpMsgBuf);
-}
 
-void recv_and_process_packets()
-{
-    char recvBuffer[4096];
-    int retval = recv(c_socket, recvBuffer, sizeof(recvBuffer), 0);
-    if (retval == SOCKET_ERROR)
-    {
-        if (WSAGetLastError() == WSAEWOULDBLOCK) return;
-        error_display("recv", WSAGetLastError());
-        closesocket(c_socket);
-        PostQuitMessage(0);
-        return;
-    }
-    if (retval == 0) return; // 정상 종료
 
-    // ClientPacketManager를 통해 데이터 처리
-    ClientPacketManager::Instance()->ProcessReceivedData(recvBuffer, retval);
-}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -75,10 +50,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return 0; // 사용자가 취소를 누르면 프로그램 종료
     }
-
-	WSAData wsadata;
-    WSAStartup(MAKEWORD(2, 2), &wsadata);
-    c_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	// 네트워크 Startup
+    if (!NetworkManager::Instance()->init_network())
+    {
+        error_display("WSAStartup failed", WSAGetLastError());
+        return FALSE;
+    }
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -88,55 +65,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance(hInstance, nCmdShow))
     {
+        NetworkManager::Instance()->cleanup_network();
         return FALSE;
     }
-
+	// 주소구조체 설정 및 서버 연결
+    if (!NetworkManager::Instance()->connect_to_server(SERVER_ADDR, common::packet::SERVER_PORT))
+    {
+        NetworkManager::Instance()->cleanup_network();
+        return FALSE;
+    }
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CHESSCLIENT));
 
-    SOCKADDR_IN addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(common::packet::SERVER_PORT);
-    std::string server_addr_mb;
-    server_addr_mb.assign(SERVER_ADDR_W.begin(), SERVER_ADDR_W.end());
-    inet_pton(AF_INET, server_addr_mb.c_str(), &addr.sin_addr);
 
-    if (connect(c_socket, (SOCKADDR*)&addr, sizeof(addr)) == SOCKET_ERROR)
-    {
-        error_display("connect", WSAGetLastError());
-        return 0;
-    }
-
-    u_long on = 1;
-    if (ioctlsocket(c_socket, FIONBIO, &on) == SOCKET_ERROR)
-    {
-        error_display("ioctlsocket", WSAGetLastError());
-        closesocket(c_socket);
-        return 0;
-    }
-
-    // ClientPacketManager 초기화
-    ClientPacketManager::Instance()->Initialize(c_socket);
-
-
-    /*WSAEVENT hEvent = WSACreateEvent();
-    if (hEvent == WSA_INVALID_EVENT)
-    {
-        error_display("WSACreateEvent", WSAGetLastError());
-        return 0;
-    }
-    if (WSAEventSelect(c_socket, hEvent, FD_READ | FD_CLOSE) == SOCKET_ERROR)
-    {
-        error_display("WSAEventSelect", WSAGetLastError());
-        WSACloseEvent(hEvent);
-        return 0;
-    }*/
     // 최초 로그인 패킷 전송 (플레이어 이름 사용)
-    std::string player_name_mb(PLAYER_NAME_W.begin(), PLAYER_NAME_W.end());
-    ClientPacketManager::Instance()->SendLoginPacket(player_name_mb); // 호출 변경
+    NetworkManager::Instance()->SendLoginPacket(PLAYER_NAME);
 
     int room_to_enter = 1;
     CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
-    ClientPacketManager::Instance()->SendEnterRoomPacket(room_to_enter);
+    NetworkManager::Instance()->SendEnterRoomPacket(room_to_enter);
 
     // 기본 메시지 루프입니다:
     MSG msg;
@@ -157,9 +103,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
     GameFramework::Instance()->OnDestroy();
 
-
-    closesocket(c_socket);
-    WSACleanup();
+	// 네트워크 Cleanup
+    NetworkManager::Instance()->disconnect();
+    NetworkManager::Instance()->cleanup_network();
     return (int)msg.wParam;
 }
 
@@ -240,18 +186,18 @@ INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
         case WM_INITDIALOG:
-            SetDlgItemText(hWnd, IDC_EDIT1, SERVER_ADDR_W.c_str());
-            SetDlgItemText(hWnd, IDC_EDIT3, PLAYER_NAME_W.c_str());
+            SetDlgItemTextA(hWnd, IDC_EDIT1, SERVER_ADDR.c_str());
+            SetDlgItemTextA(hWnd, IDC_EDIT3, PLAYER_NAME.c_str());
             return (INT_PTR)TRUE;
         case WM_COMMAND:
             if (LOWORD(wParam) == IDOK)
             {
-                wchar_t buffer1[256];
-                wchar_t buffer2[256];
-                GetDlgItemText(hWnd, IDC_EDIT1, buffer1, 256);
-                GetDlgItemText(hWnd, IDC_EDIT3, buffer2, 256);
-                SERVER_ADDR_W = buffer1;
-                PLAYER_NAME_W = buffer2;
+                char buffer1[256];
+                char buffer2[256];
+                GetDlgItemTextA(hWnd, IDC_EDIT1, buffer1, 256);
+                GetDlgItemTextA(hWnd, IDC_EDIT3, buffer2, 256);
+                SERVER_ADDR.assign(buffer1);
+                PLAYER_NAME.assign(buffer2);
                 EndDialog(hWnd, IDOK);
                 return (INT_PTR)TRUE;
             }

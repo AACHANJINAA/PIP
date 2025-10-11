@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "MainPlayerScript.h"
-#include "ClientPacketManager.h"
 #include "GameFramework.h"
 #include "InputManager.h"
+#include "NetworkManager.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 
@@ -23,7 +23,7 @@ void MainPlayerScript::update(float deltaTime)
         move_pos(common::packet::MOVE_TYPE::MOVE_LEFT);
     }
     if (InputManager::Instance()->IsKeyDown('F')) {
-        ClientPacketManager::Instance()->SendAttackPacket();
+        NetworkManager::Instance()->SendAttackPacket();
     }
 }
 
@@ -70,7 +70,7 @@ void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)
         return; // 정의되지 않은 타입이면 아무것도 하지 않음
     }
     // 계산된 방향으로 이동 패킷을 서버에 전송합니다.
-    ClientPacketManager::Instance()->SendMovePacket(direction);
+    NetworkManager::Instance()->SendMovePacket(direction);
 }
 
 //MainPlayer::MainPlayer(int x, int y, int z)
