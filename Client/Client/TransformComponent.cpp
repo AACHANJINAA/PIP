@@ -159,6 +159,8 @@ void TransformComponent::set_parent(std::shared_ptr<TransformComponent> newParen
     set_hierarchy_dirty();
 }
 
+
+
 void TransformComponent::add_child(std::shared_ptr<TransformComponent> child)
 {
     if (child) { _children.push_back(child); }

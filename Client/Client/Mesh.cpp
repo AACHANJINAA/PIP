@@ -75,11 +75,11 @@ void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandLis
 
 void Mesh::	upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-	if (_isUploaded || _vertexDataBuffer.empty()) return;
-	if (0 == _vertexStride)
-	{
-		CERROR("stride 설정 안됨")
-	}
+	//if (_isUploaded || _vertexDataBuffer.empty()) return;
+	//if (0 == _vertexStride)
+	//{
+	//	CERROR("stride 설정 안됨")
+	//}
 	upload_to_gpu_internal(device, commandList);
 	// 이거 중요!
 	_isUploaded = true;

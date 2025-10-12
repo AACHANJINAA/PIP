@@ -61,7 +61,7 @@ public:
 
 	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
 
-	void render(ID3D12GraphicsCommandList* commandList) override;
+	virtual void render(ID3D12GraphicsCommandList* commandList) override;
 	void release_upload_buffers() override;
 
 private:
@@ -75,7 +75,7 @@ private:
 		if (accessorIndex < 0) return {};
 
 		const json& accessor = gltfJson["accessors"][accessorIndex];
-		const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"]];
+		const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
 
 		size_t count = accessor["count"];
 		size_t byteOffset = bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);

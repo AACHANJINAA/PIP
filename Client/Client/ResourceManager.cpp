@@ -4,7 +4,7 @@
 #include "ReadFBXMesh.h"
 #include "ReadGlbMesh.h"
 #include "ReadOBJMesh.h"
-#include "ReadFBXMesh.h"
+#include "ReadGLTFMesh.h"
 
 void ResourceManager::initialize(ID3D12Device* device)
 {
@@ -58,6 +58,10 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     else if (extension == ".fbx") 
     {
         new_mesh = std::make_shared<ReadFBXMesh>(file_path);
+    }
+    else if (extension == ".gltf")
+    {
+        new_mesh = std::make_shared<ReadGLTFMesh>(file_path);
     }
     // else if (extension == ".fbx")
     // {
