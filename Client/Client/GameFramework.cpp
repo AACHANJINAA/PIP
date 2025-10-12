@@ -420,10 +420,10 @@ void GameFramework::update_game_logic(float deltaTime)
 {
 	// Awake와 Start가 먼저 호출되도록 순서 변경
 	ObjectManager::Instance()->process_new_game_objects();
-
+	 
 	const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
 
-	// FreeCameraScript가 입력을 받아 자신의 Transform을 업데이트
+	// .FreeCameraScript가 입력을 받아 자신의 Transform을 업데이트
 	for (const auto& gameObject : allGameObjects)
 	{
 		if (gameObject && !gameObject->is_destroyed())
