@@ -418,19 +418,12 @@ void GameFramework::ChangeSwapChainState()
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
-	// [추가] 다른 로직 전에 메인 카메라의 뷰 행렬을 업데이트합니다.
-	if (auto main_cam = CameraComponent::get_main())
-	{
-		main_cam->recalculate_view_matrix();
-	}
-	// --- [추가] Awake 및 Start 단계 ---
-	// ObjectManager가 관리하는 새로운 객체들의 초기화 함수를 호출합니다.
+	// Awake와 Start가 먼저 호출되도록 순서 변경
 	ObjectManager::Instance()->process_new_game_objects();
-
 
 	const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
 
-	// Update
+	// FreeCameraScript가 입력을 받아 자신의 Transform을 업데이트
 	for (const auto& gameObject : allGameObjects)
 	{
 		if (gameObject && !gameObject->is_destroyed())
@@ -439,7 +432,13 @@ void GameFramework::update_game_logic(float deltaTime)
 		}
 	}
 
-	// LateUpdate
+	// 메인 카메라의 뷰 행렬 계산
+	if (auto main_cam = CameraComponent::get_main())
+	{
+		main_cam->recalculate_view_matrix();
+	}
+
+	// LateUpdate는 뷰 행렬 계산 후에도 ㄱㅊ
 	for (const auto& gameObject : allGameObjects)
 	{
 		if (gameObject && !gameObject->is_destroyed())
