@@ -86,7 +86,7 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	return(pd3dBuffer);
 }
 
-//TODO: 오류 있을 확률 5만 2천 퍼센트
+//TODO: 오류 있을 확률 5만 2천 퍼센트 <- 이상없는거 같은디?
 inline void UpdateSubresources(
 	ID3D12GraphicsCommandList* pCmdList,
 	ID3D12Resource* pDestinationResource,
