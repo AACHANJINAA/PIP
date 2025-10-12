@@ -209,6 +209,12 @@
     <ClInclude Include="FreeCameraScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
+    <ClInclude Include="GltfShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="GltfTestScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -328,6 +334,12 @@
     <ClCompile Include="FreeCameraScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="GltfShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="GltfTestScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -357,6 +369,9 @@
     </None>
     <None Include="packages.config">
       <Filter>4. External</Filter>
+    </None>
+    <None Include="Gltf_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -234,8 +234,8 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 		}
 
 		if (primitiveJson.contains("indices")) {
-			const json& accessor = gltfJson["accessors"][primitiveJson["indices"]];
-			const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"]];
+			const json& accessor = gltfJson["accessors"][primitiveJson["indices"].get<size_t>()];
+			const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
 			const char* data_ptr = binaryBuffer.data() + bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);
 			primitive->_indexCount = accessor["count"];
 			primitive->_indices.resize(primitive->_indexCount);

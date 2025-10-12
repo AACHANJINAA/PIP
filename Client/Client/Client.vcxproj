@@ -151,6 +151,8 @@
     <ClInclude Include="DefaultObjectShader.h" />
     <ClInclude Include="FreeCameraScript.h" />
     <ClInclude Include="GlbShader.h" />
+    <ClInclude Include="GltfShader.h" />
+    <ClInclude Include="GltfTestScript.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LayerManager.h" />
     <ClInclude Include="main.h" />
@@ -195,6 +197,8 @@
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="FreeCameraScript.cpp" />
+    <ClCompile Include="GltfShader.cpp" />
+    <ClCompile Include="GltfTestScript.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
@@ -241,6 +245,12 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Gltf_Shader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="packages.config" />
     <None Include="Shaders.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

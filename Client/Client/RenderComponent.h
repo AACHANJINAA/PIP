@@ -59,7 +59,7 @@ public:
     const std::string& pso_name() const { return _psoName; }
     bool is_visible(const BoundingFrustum& frustum) const;
 
-private:
+protected:
     std::shared_ptr<Mesh> _mesh;
     std::shared_ptr<Shader> _shader; // 셰이더 또는 머티리얼
     std::string _psoName = "default"; // 사용할 PSO의 이름 (기본값 "default")
@@ -69,3 +69,13 @@ private:
     CbGameObjectInfo* _mappedCbGameObjectInfo = nullptr;
 };
 
+class GltfRenderComponent : public RenderComponent
+{
+public:
+    GltfRenderComponent() {};
+    virtual ~GltfRenderComponent() {};
+
+
+public:
+    virtual void render(ID3D12GraphicsCommandList* commandList) override;
+};

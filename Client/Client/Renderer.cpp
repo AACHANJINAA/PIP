@@ -6,6 +6,7 @@
 #include "DefaultObjectShader.h"
 #include "GameObject.h"
 #include "GlbShader.h"
+#include "GltfShader.h"
 #include "Shader.h"
 #include "ObjectManager.h"
 #include "PlayerShader.h"
@@ -19,6 +20,7 @@ void Renderer::initialize(ID3D12Device* device)
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<GltfRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -34,6 +36,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto glb_shader = std::make_shared<GlbShader>();
     _shaderPrototypes[glb_shader->pso_name()] = glb_shader;
+
+    auto gltf_shader = std::make_shared<GltfShader>();
+    _shaderPrototypes[gltf_shader->pso_name()] = gltf_shader;
     // 앞으로 새로운 셰이더를 추가할 땐 이 목록에 한 줄만 추가하면 됩니다.
 
     create_root_signatures(device);
