@@ -63,7 +63,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
         cannon_renderer->set_pso_name("gltf");
 
         // 위치
-        test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
+        test_cannon_object->transform()->set_local_position(XMFLOAT3(3.0f, 0.0f, 6.0f));
         test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
     }
     {
