@@ -215,6 +215,9 @@
     <ClInclude Include="GltfTestScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
+    <ClInclude Include="GltfMaterial.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -339,6 +342,9 @@
     </ClCompile>
     <ClCompile Include="GltfTestScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="GltfMaterial.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

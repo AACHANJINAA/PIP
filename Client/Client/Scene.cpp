@@ -3,17 +3,23 @@
 
 #include "BoardCubeScript.h"
 #include "ObjectManager.h"
-#include "ReadGlbMesh.h"
+
+#include "ResourceManager.h"
+#include "Renderer.h"
+#include "GameObject.h"
+#include "TransformComponent.h"
+#include "RenderComponent.h"
+#include "GltfMaterial.h"
+
 
 // load_scene_from_file의 기본 구현 (파생 클래스에서 필요시 오버라이드)
 void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,
     ID3D12GraphicsCommandList* commandList)
 {
-    // 이 함수는 이제 Chess_Scene과 같은 구체적인 씬 클래스에서
-    // ObjectManager를 사용하여 객체를 생성하도록 재구현되어야 합니다.
+    // Json 파일 읽기 및 파싱
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Fatal Error: Failed to open scene file: " << filename << std::endl;
+        CERROR("Failed to open scene file: " << filename);
         return;
     }
 
@@ -21,44 +27,44 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
     try
     {
-        // 2. JSON 파싱
         file >> sceneJson; // 이 부분에서 JSON 형식이 아니면 예외 발생
         file.close();
     }
     catch (const json::exception& e)
     {
         // JSON 파싱 또는 데이터 접근 중 발생하는 모든 종류의 에러를 여기서 처리
-        std::cerr << "Scene file load error: " << e.what() << std::endl;
+        CERROR("Scene file load error: " << e.what());
         return;
     }
 
-    // 3. JSON 배열 순회
+    std::string base_path = "Resource/DDSMapData/";
+
+    // 2. JSON 데이터를 기반으로 실제 GameObject 생성
     std::vector<SceneObjectData> loadedObjects;
     for (const auto& objectJson : sceneJson)
     {
         SceneObjectData data;
         data.name = objectJson.value("Name", "");
-        // JSON 파일의 "MeshFile" 키를 사용
         data.meshFile = objectJson.value("MeshFile", "");
 
         // Transform 정보 파싱 <- JSON 데이터를 SceneObjectData 구조체로 직접 파싱
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
-            if (transformJson.contains("Location")) {
-                data.transform.location.x = transformJson["Location"].value("x", 0.0f);
-                data.transform.location.y = transformJson["Location"].value("y", 0.0f);
-                data.transform.location.z = transformJson["Location"].value("z", 0.0f);
-            }
-            if (transformJson.contains("Rotation")) {
-                data.transform.rotation.x = transformJson["Rotation"].value("x", 0.0f);
-                data.transform.rotation.y = transformJson["Rotation"].value("y", 0.0f);
-                data.transform.rotation.z = transformJson["Rotation"].value("z", 0.0f);
-            }
-            if (transformJson.contains("Scale")) {
-                data.transform.scale.x = transformJson["Scale"].value("x", 1.0f);
-                data.transform.scale.y = transformJson["Scale"].value("y", 1.0f);
-                data.transform.scale.z = transformJson["Scale"].value("z", 1.0f);
-            }
+            data.transform.location = {
+				transformJson["Location"].value("x", 0.0f),
+				transformJson["Location"].value("y", 0.0f),
+				transformJson["Location"].value("z", 0.0f)
+            };
+            data.transform.rotation = {
+                transformJson["Rotation"].value("Pitch", 0.0f),
+                transformJson["Rotation"].value("Yaw", 0.0f),
+                transformJson["Rotation"].value("Roll", 0.0f)
+            };
+            data.transform.scale = {
+				transformJson["Scale"].value("x", 1.0f),
+				transformJson["Scale"].value("y", 1.0f),
+				transformJson["Scale"].value("z", 1.0f)
+            };
         }
 
         // 텍스처 정보 파싱 (선택적일 수 있으므로 .contains로 확인)
@@ -67,28 +73,47 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 data.textureFiles.push_back(texturePath.get<std::string>());
             }
         }
-		loadedObjects.push_back(data);
+
+        if (data.meshFile.empty()) {
+            CLOG("Skipping object with empty MeshFile name: " << data.name);
+            continue;
+        }
+
+        // 메시 로드
+        // JSON에 명시된 파일 경로 -> ResourceManager에게 요청
+		std::string mesh_path = base_path + data.meshFile;
+		std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
+        if (!mesh) {
+            CLOG("Failed to load mesh : " << mesh_path);
+            continue;
+        }
+
+        // 머터리얼 생성 및 텍스처 로드/설정
+		auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+		material->set_shader(Renderer::Instance()->get_shader("gltf"));
+
+        if (!data.textureFiles.empty()) {
+			std::string texture_path = base_path + data.textureFiles[0];
+			auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
+            if (texture) {
+				material->set_texture(texture, 0); // 인덱스 0에 텍스처 설정
+            }
+        }
+
+		// 게임 오브젝트 생성 및 컴포넌트 설정
+		std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
+
+        auto transformComp = gameObject->transform();
+		transformComp->set_local_position(data.transform.location);
+		transformComp->rotate(data.transform.rotation.x, data.transform.rotation.y, data.transform.rotation.z);
+		transformComp->set_local_scale(data.transform.scale);
+
+        auto renderComp = gameObject->add_component<RenderComponent>();
+        renderComp->set_mesh(mesh);
+        renderComp->set_material(material);
     }
-
-	// 파싱된 데이터를 기반으로 실제 GameObject 생성
-    for (const auto& data : loadedObjects)
-    {
-		// TODO: ObjectManager를 사용하여 메시와 텍스쳐 로드
-        // std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->LoadMesh(data.meshFile);
-        // std::vector<std::shared_ptr<Texture>> textures = ResourceManager::Instance()->LoadTextures(data.textureFiles);
-
-         // TODO: 로드된 메시와 텍스처로 GameObject를 생성하고 설정
-        std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
-
-        gameObject->transform()->set_local_position(data.transform.location);
-        gameObject->transform()->rotate(data.transform.rotation.x, -data.transform.rotation.y, data.transform.rotation.z);
-        gameObject->transform()->set_local_scale(data.transform.scale);
-
-		// TODO: RenderComponent를 추가하고 메시와 텍스처 설정
-        // auto renderComp = gameObject->add_component<RenderComponent>();
-        // renderComp->set_mesh(mesh);
-		// renderComp->set_textures(textures);
-    }
+	// 로드된 모든 리소스를 GPU에 업로드
+    ResourceManager::Instance()->upload_pending_meshes(device, commandList);
 }
 
 //Scene::Scene()

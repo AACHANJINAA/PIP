@@ -47,6 +47,8 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     std::filesystem::path path(file_path);
     std::string extension = path.extension().string();
 
+    CINFO("Loading mesh: " << file_path << " | Detected extension: [" << extension << "]");
+
     if (extension == ".obj")
     {
         new_mesh = std::make_shared<ReadOBJMesh>(file_path);
@@ -224,7 +226,7 @@ std::shared_ptr<Texture> ResourceManager::load_texture(const std::string& file_p
     srv_desc.Format = metadata.format;
 	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srv_desc.Texture2D.MostDetailedMip = 0; // 가장 높은 해상도 맵맵 0
-    srv_desc.Texture2D.MipLevels = metadata.mipLevels;
+    srv_desc.Texture2D.MipLevels = metadata.mipLevels; // 전체 밉맵 개수
 
     device->CreateShaderResourceView(new_texture->resource.Get(), &srv_desc, new_texture->cpuSrvHandle);
 

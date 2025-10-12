@@ -20,6 +20,8 @@ public:
     ID3D12RootSignature* get_root_signature(const std::string& name) const;
     ID3D12PipelineState* get_pso(const std::string& name) const;
 
+	std::shared_ptr<Shader> get_shader(const std::string& name) const;
+
 private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);

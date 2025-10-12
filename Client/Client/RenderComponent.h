@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "Mesh.h"
+#include "GltfMaterial.h"
 
 class Shader;
 
@@ -50,19 +51,17 @@ public:
     virtual void render(ID3D12GraphicsCommandList* commandList);
     // --- Getters & Setters ---
     void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
-    void set_shader(const std::shared_ptr<Shader>& shader) { _shader = shader; }
-    void set_pso_name(const std::string& name) { _psoName = name; }
-    BoundingOrientedBox get_world_bounding_box() const;
+    void set_material(const std::shared_ptr<GltfMaterial>& material) { _material = material; }
 
+    BoundingOrientedBox get_world_bounding_box() const;
     std::shared_ptr<Mesh> mesh() const { return _mesh; }
-    std::shared_ptr<Shader> shader() const { return _shader; }
-    const std::string& pso_name() const { return _psoName; }
+    const std::string& pso_name() const;
+
     bool is_visible(const BoundingFrustum& frustum) const;
 
 protected:
     std::shared_ptr<Mesh> _mesh;
-    std::shared_ptr<Shader> _shader; // 셰이더 또는 머티리얼
-    std::string _psoName = "default"; // 사용할 PSO의 이름 (기본값 "default")
+    std::shared_ptr<GltfMaterial> _material; // 셰이더 또는 머티리얼
 
     // [추가] 이 RenderComponent만의 고유한 상수 버퍼 관련 멤버들
     ComPtr<ID3D12Resource> _cbGameObjectInfo;

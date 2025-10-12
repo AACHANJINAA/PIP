@@ -154,6 +154,7 @@ void Renderer::build_render_list(CameraComponent* camera)
         if (!gameObject || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
+
         if (renderComp && renderComp->is_enabled() /*&& renderComp->is_visible(frustum)*/ )
         {
             _renderMap[renderComp->pso_name()].push_back(gameObject);
@@ -163,8 +164,6 @@ void Renderer::build_render_list(CameraComponent* camera)
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
 {
-    
-
     // 조명 상수 버퍼 업데이트
     // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
     // ---------------------------------------------------------
@@ -254,6 +253,16 @@ ID3D12PipelineState* Renderer::get_pso(const std::string& name) const
     if (it != _pipelineStates.end())
     {
         return it->second.Get();
+    }
+    return nullptr;
+}
+
+std::shared_ptr<Shader> Renderer::get_shader(const std::string& name) const
+{
+    auto it = _shaderPrototypes.find(name);
+    if (it != _shaderPrototypes.end())
+    {
+		return it->second;
     }
     return nullptr;
 }

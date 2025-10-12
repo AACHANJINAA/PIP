@@ -26,6 +26,8 @@ struct Material
     float4 m_xmf4Emissive;
 };
 
+Texture2D g_txDiffuse : register(t0);
+SamplerState g_samLinear : register(s0);
 
 // 객체별 월드 행렬
 cbuffer cbWorldMatrix : register(b0)
@@ -90,66 +92,70 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     return Out;
 }
 
-//-- 픽셀 셰이더 (로직은 이전과 동일) --//
+//-- 픽셀 셰이더 수정 --//
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 {
-    float4 cFinalColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    // 텍스처에서 Albedo (기본 색상) 샘플링
+    float4 cAlbedo = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
     
-    float4 cAlbedo = g_Material.m_xmf4Diffuse;
+    // 조명 계산을 위해 초기화
+    float4 cFinalColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    cFinalColor += (g_Material.m_xmf4Ambient * cAlbedo);
+    // Ambient와 Emissive를 더함
+    cFinalColor += g_Material.m_xmf4Ambient * cAlbedo;
     cFinalColor += g_Material.m_xmf4Emissive;
     
     float3 N = normalize(In.WorldNormal);
     float3 V = normalize(g_xmf3CameraPosition - In.WorldPosition);
-
+    
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
-        if (!g_Lights[i].m_bEnable)
-            continue;
-
+        if (!g_Lights[i].m_bEnable) continue;
+        
         float3 L;
         float fAttenuation = 1.0f;
         float fIntensity = 1.0f;
-
-        if (g_Lights[i].m_nType == 0) // Directional
+        
+        if (g_Lights[i].m_nType == 0) // Directional Light
         {
-            L = -normalize(g_Lights[i].m_xmf3Direction);
+            L = normalize(-g_Lights[i].m_xmf3Direction);
         }
-        else // Point or Spot
+        else // Point or Spot Light
         {
             L = g_Lights[i].m_xmf3Position - In.WorldPosition;
             float fDistance = length(L);
             L = normalize(L);
-            fAttenuation = 1.0f / (g_Lights[i].m_xmf3Attenuation.x + g_Lights[i].m_xmf3Attenuation.y * fDistance + g_Lights[i].m_xmf3Attenuation.z * fDistance * fDistance);
             
-            if (g_Lights[i].m_nType == 2) // Spot
+            fAttenuation = 1.0f / (g_Lights[i].m_xmf3Attenuation.x +
+                                  g_Lights[i].m_xmf3Attenuation.y * fDistance +
+                                  g_Lights[i].m_xmf3Attenuation.z * fDistance * fDistance);
+            
+            if (g_Lights[i].m_nType == 2) // Spot Light
             {
                 float rho = dot(L, -normalize(g_Lights[i].m_xmf3Direction));
                 if (rho < g_Lights[i].m_fPhi)
                     fIntensity = 0.0f;
                 else
-                    fIntensity = pow(saturate((rho - g_Lights[i].m_fPhi) / (g_Lights[i].m_fTheta - g_Lights[i].m_fPhi)), 2.0);
+                    fIntensity = pow(saturate((rho - g_Lights[i].m_fPhi) / (g_Lights[i].m_fTheta - g_Lights[i].m_fPhi)), 2.0f);
             }
         }
         
         if (fIntensity > 0.0f && fAttenuation > 0.0f)
         {
+            // Diffuse (난반사)
             float fNDotL = saturate(dot(N, L));
             float4 cDiffuse = fNDotL * g_Lights[i].m_xmf4Diffuse * cAlbedo;
-
+                
+            // Specular (정반사)
             float3 H = normalize(L + V);
             float fNDotH = saturate(dot(N, H));
             float fSpecularPower = g_Material.m_xmf4Specular.a;
             float4 cSpecular = float4(pow(fNDotH, fSpecularPower) * g_Lights[i].m_xmf4Specular.xyz * g_Material.m_xmf4Specular.rgb, 1.0f);
-
+                
             cFinalColor.rgb += (cDiffuse.rgb + cSpecular.rgb) * fIntensity * fAttenuation;
         }
     }
+    cFinalColor.a = cAlbedo.a;
     
-    // 임시로 추가
-    //cFinalColor.a = 1.0f;
-    cFinalColor.rgba = (0.5f, 0.5f, 0.5f, 1.f);
-
     return cFinalColor;
 }

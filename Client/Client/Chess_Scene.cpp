@@ -20,7 +20,9 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // --- 기존 코드 (카메라, 플레이어, 맵 등 생성) ---
     auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 20.0f, -30.0f));
+
+	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 
     /*auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     playerObject->add_component<MainPlayerScript>();
@@ -31,57 +33,57 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     map_renderer->set_pso_name("skinned");
     mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));*/
 
-    // --- [테스트용 큐브 추가] ---
-    auto testCubeObject = ObjectManager::Instance()->create_game_object("TestCube");
-    
-    // 1. 렌더 컴포넌트 추가
-    auto cube_renderer = testCubeObject->add_component<RenderComponent>();
-    
-    // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
-    cube_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Cube_Normal.obj"));
-    
-    // 3. .obj 파일이므로 "default" 셰이더(PSO)를 사용하도록 설정
-    cube_renderer->set_pso_name("debug");
-    
-    // 4. 큐브 위치 설정 (카메라에 잘 보이도록)
-    testCubeObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
-    testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // 크기를 키워 잘 보이게 함
+    //// --- [테스트용 큐브 추가] ---
+    //auto testCubeObject = ObjectManager::Instance()->create_game_object("TestCube");
+    //
+    //// 1. 렌더 컴포넌트 추가
+    //auto cube_renderer = testCubeObject->add_component<RenderComponent>();
+    //
+    //// 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
+    //cube_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Cube_Normal.obj"));
+    //
+    //// 3. .obj 파일이므로 "default" 셰이더(PSO)를 사용하도록 설정
+    //cube_renderer->set_pso_name("debug");
+    //
+    //// 4. 큐브 위치 설정 (카메라에 잘 보이도록)
+    //testCubeObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
+    //testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // 크기를 키워 잘 보이게 함
 
 
 
-    // --- [테스트용 큐브 추가] ---
-    {
-        auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
+    //// --- [테스트용 큐브 추가] ---
+    //{
+    //    auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-        // 1. 렌더 컴포넌트 추가
-        auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
-        test_cannon_object->add_component<GltfTestScript>();
-        // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
-        cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+    //    // 1. 렌더 컴포넌트 추가
+    //    auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
+    //    test_cannon_object->add_component<GltfTestScript>();
+    //    // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
+    //    cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
 
-        // gltf
-        cannon_renderer->set_pso_name("gltf");
+    //    // gltf
+    //    cannon_renderer->set_pso_name("gltf");
 
-        // 위치
-        test_cannon_object->transform()->set_local_position(XMFLOAT3(3.0f, 0.0f, 6.0f));
-        test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
-    }
-    {
-        auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
+    //    // 위치
+    //    test_cannon_object->transform()->set_local_position(XMFLOAT3(3.0f, 0.0f, 6.0f));
+    //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
+    //}
+    //{
+    //    auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-        // 1. 렌더 컴포넌트 추가
-        auto cannon_renderer = test_cannon_object->add_component<GltfRenderComponent>();
+    //    // 1. 렌더 컴포넌트 추가
+    //    auto cannon_renderer = test_cannon_object->add_component<GltfRenderComponent>();
 
-        // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
-        cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+    //    // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
+    //    cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
 
-        // gltf
-        cannon_renderer->set_pso_name("gltf");
+    //    // gltf
+    //    cannon_renderer->set_pso_name("gltf");
 
-        // 위치
-        test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
-        test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
-    }
+    //    // 위치
+    //    test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
+    //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
+    //}
 
  //   // [추가] 씬에 카메라를 생성합니다.
  //   auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
@@ -108,7 +110,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void Chess_Scene::release_upload_buffers()
 {
-
+    ResourceManager::Instance()->release_upload_buffers();
 }
 
 // =================================================================
