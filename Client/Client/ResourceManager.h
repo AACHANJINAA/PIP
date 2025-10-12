@@ -1,5 +1,9 @@
 ﻿#pragma once
+
 class Mesh;
+
+struct Texture;
+
 class ResourceManager : public Singleton<ResourceManager>
 {
 	friend class Singleton<ResourceManager>; // 싱글톤 접근 허용
@@ -25,8 +29,9 @@ public:
 
 	// [추가] 사용되지 않는 메시들을 메모리에서 해제하는 함수
     void unload_unused_meshes();
-    // (향후 확장) 텍스처 로드 함수
-    // std::shared_ptr<Texture> load_texture(const std::string& filePath);
+
+	// 파일 경로를 기반으로 텍스처를 로드하거나, 이미 로드되었다면 캐시된 텍스처를 반환
+    std::shared_ptr<Texture> load_texture(const std::string& file_path, ID3D12Device* device,ID3D12GraphicsCommandList* command_list);
 
 private:
     // 로드된 리소스들을 파일 경로를 키로 하여 저장하는 맵
@@ -41,4 +46,7 @@ private:
     ComPtr<ID3D12DescriptorHeap> _srvDescriptorHeap;
     UINT _srvDescriptorIncrementSize = 0;
     UINT _allocatedSrvCount = 0;
+
+	// 로드된 텍스처들을 파일 경로를 키로 하여 저장하는 맵
+    std::unordered_map<std::string, std::shared_ptr<Texture>> _textures;
 };
