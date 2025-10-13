@@ -47,7 +47,7 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     std::filesystem::path path(file_path);
     std::string extension = path.extension().string();
 
-    CINFO("Loading mesh: " << file_path << " | Detected extension: [" << extension << "]");
+    //CINFO("Loading mesh: " << file_path << " | Detected extension: [" << extension << "]");
 
     if (extension == ".obj")
     {
@@ -133,7 +133,7 @@ void ResourceManager::unload_unused_meshes()
         // Mesh 객체의 소멸자가 호출되고, GPU 리소스(ComPtr)도 자동으로 해제됩니다.
 
         // 로그를 남겨서 확인하면 좋습니다.
-        CINFO("Unloaded unused mesh: " << key);
+        //CINFO("Unloaded unused mesh: " << key);
     }
 }
 
@@ -233,6 +233,6 @@ std::shared_ptr<Texture> ResourceManager::load_texture(const std::string& file_p
     // 캐시 저장 후 반환
 	_textures[file_path] = new_texture;
 
-	CINFO("Loaded texture: " << file_path);
+	//CINFO("Loaded texture: " << file_path);
 	return new_texture;
 }

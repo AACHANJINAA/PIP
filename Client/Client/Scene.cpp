@@ -51,9 +51,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
             data.transform.location = {
-				transformJson["Location"].value("x", 0.0f),
-				transformJson["Location"].value("y", 0.0f),
-				transformJson["Location"].value("z", 0.0f)
+                transformJson["Location"].value("x", 0.0f),
+                transformJson["Location"].value("y", 0.0f),
+                transformJson["Location"].value("z", 0.0f)
             };
             data.transform.rotation = {
                 transformJson["Rotation"].value("Pitch", 0.0f),
@@ -61,9 +61,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 transformJson["Rotation"].value("Roll", 0.0f)
             };
             data.transform.scale = {
-				transformJson["Scale"].value("x", 1.0f),
-				transformJson["Scale"].value("y", 1.0f),
-				transformJson["Scale"].value("z", 1.0f)
+                transformJson["Scale"].value("x", 1.0f),
+                transformJson["Scale"].value("y", 1.0f),
+                transformJson["Scale"].value("z", 1.0f)
             };
         }
 
@@ -81,8 +81,8 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         // 메시 로드
         // JSON에 명시된 파일 경로 -> ResourceManager에게 요청
-		std::string mesh_path = base_path + data.meshFile;
-		std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
+        std::string mesh_path = base_path + data.meshFile;
+        std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
         if (!mesh) {
             CLOG("Failed to load mesh : " << mesh_path);
             continue;
@@ -91,27 +91,27 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         CLOG("Loaded mesh. Type: " << typeid(*mesh).name());
 
         // 머터리얼 생성 및 텍스처 로드/설정
-		auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+        auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
         CLOG("Assigning shader: 'gltf'");
-		material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        material->set_shader(Renderer::Instance()->get_shader("gltf"));
 
         if (!data.textureFiles.empty()) {
-			std::string texture_path = base_path + data.textureFiles[0];
-			auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
+            std::string texture_path = base_path + data.textureFiles[0];
+            auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
             if (texture) {
-				material->set_texture(texture, 0); // 인덱스 0에 텍스처 설정
+                material->set_texture(texture, 0); // 인덱스 0에 텍스처 설정
             }
         }
 
-		// 게임 오브젝트 생성 및 컴포넌트 설정
-		std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
+        // 게임 오브젝트 생성 및 컴포넌트 설정
+        std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
 
         auto transformComp = gameObject->transform();
-		transformComp->set_local_position(data.transform.location);
+        transformComp->set_local_position(data.transform.location);
 		transformComp->set_local_rotation(data.transform.rotation.x, data.transform.rotation.y, data.transform.rotation.z);
 		transformComp->set_local_scale(data.transform.scale);
 
-        auto renderComp = gameObject->add_component<RenderComponent>();
+        auto renderComp = gameObject->add_component<GltfRenderComponent>();
         renderComp->set_mesh(mesh);
         renderComp->set_material(material);
         CLOG("Added RenderComponent for object: " << data.name);
