@@ -28,6 +28,7 @@ public:
     // --- Setters ---
     void set_local_position(const XMFLOAT3& position);
     void set_local_rotation(const XMFLOAT4& rotation);
+    void set_local_rotation(float pitch, float yaw, float roll);
     void set_local_scale(const XMFLOAT3& scale);
 
     // [추가] 현재 회전에 pitch, yaw, roll을 추가로 적용합니다. (각도는 degree 단위)

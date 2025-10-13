@@ -110,6 +110,20 @@ void TransformComponent::set_local_rotation(const XMFLOAT4& rotation)
     set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
 }
 
+void TransformComponent::set_local_rotation(float pitch, float yaw, float roll)
+{
+    XMVECTOR rotationQuat = XMQuaternionRotationRollPitchYaw(
+        XMConvertToRadians(pitch),
+        XMConvertToRadians(yaw),
+        XMConvertToRadians(roll)
+    );
+
+    XMFLOAT4 localRotation;
+    XMStoreFloat4(&localRotation, rotationQuat);
+
+    set_local_rotation(localRotation);
+}
+
 void TransformComponent::set_local_scale(const XMFLOAT3& scale)
 {
     _localScale = scale;
