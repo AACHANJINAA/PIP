@@ -88,8 +88,11 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             continue;
         }
 
+        CLOG("Loaded mesh. Type: " << typeid(*mesh).name());
+
         // 머터리얼 생성 및 텍스처 로드/설정
 		auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+        CLOG("Assigning shader: 'gltf'");
 		material->set_shader(Renderer::Instance()->get_shader("gltf"));
 
         if (!data.textureFiles.empty()) {
@@ -111,6 +114,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         auto renderComp = gameObject->add_component<RenderComponent>();
         renderComp->set_mesh(mesh);
         renderComp->set_material(material);
+        CLOG("Added RenderComponent for object: " << data.name);
     }
 	// 로드된 모든 리소스를 GPU에 업로드
     ResourceManager::Instance()->upload_pending_meshes(device, commandList);
