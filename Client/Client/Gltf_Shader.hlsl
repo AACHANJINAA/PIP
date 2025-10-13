@@ -40,7 +40,7 @@ cbuffer cbCamera : register(b1)
 {
     matrix g_matView;
     matrix g_matProjection;
-    float3 g_xmf3CameraPosition;
+    float4 g_xmf3CameraPosition;
 };
 
 // 재질 정보
@@ -75,19 +75,27 @@ struct VS_INPUT
 
 
 //-- 정점 셰이더 (로직은 이전과 동일) --//
+//-- 정점 셰이더 (수정된 버전) --//
 VS_OUTPUT VS_GLTF(VS_INPUT input)
 {
     VS_OUTPUT Out;
 
+    // 월드 변환 (이 부분은 문제가 없어 보입니다)
     Out.WorldPosition = mul(g_matWorld, float4(input.Position, 1.0f)).xyz;
     Out.WorldNormal = mul((matrix) g_matWorld, float4(input.Normal, 0.0f)).xyz;
     Out.WorldNormal = normalize(Out.WorldNormal);
 
     Out.TexCoord = input.TexCoord0;
     
-    float4x4 matWVP = mul(g_matProjection, g_matView);
-    matWVP = mul(matWVP, g_matWorld);
-    Out.Position = mul(matWVP, float4(input.Position, 1.0f));
+    // WVP 행렬 계산 순서 수정
+    // float4x4 matWVP = mul(g_matView, g_matProjection); // 기존 코드 (불필요)
+    // matWVP = mul(g_matWorld, g_matView);              // 기존 코드 (순서 오류)
+    // matWVP = mul(matWVP, g_matProjection);            // 기존 코드 (순서 오류)
+    
+    float4 positionW4 = mul(g_matWorld, float4(input.Position, 1.0f));
+
+// 최종 좌표 계산
+    Out.Position = mul(mul(positionW4, g_matView), g_matProjection);
 
     return Out;
 }
