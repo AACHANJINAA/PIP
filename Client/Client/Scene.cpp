@@ -108,7 +108,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         auto transformComp = gameObject->transform();
 		transformComp->set_local_position(data.transform.location);
-		transformComp->rotate(data.transform.rotation.x, data.transform.rotation.y, data.transform.rotation.z);
+		transformComp->set_local_rotation(data.transform.rotation.x, data.transform.rotation.y, data.transform.rotation.z);
 		transformComp->set_local_scale(data.transform.scale);
 
         auto renderComp = gameObject->add_component<RenderComponent>();
