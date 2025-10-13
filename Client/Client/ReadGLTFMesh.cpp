@@ -233,6 +233,16 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 		}
 
+		// 정점 확인 디버깅 
+		//CLOG("--- Primitive Vertex Data Check ---");
+		//CLOG("Total Vertices Loaded: " << primitive->_vertexCount);
+		//// 불러온 정점 데이터의 첫 5개 위치 값을 출력해봅니다.
+		//for (size_t i = 0; i < min((size_t)5, (size_t)primitive->_vertexCount); ++i)
+		//{
+		//	const auto& v = primitive->_vertices[i];
+		//	CLOG("V[" << i << "] Position: (" << v._position.x << ", " << v._position.y << ", " << v._position.z << ")");
+		//}
+
 		if (primitiveJson.contains("indices")) {
 			const json& accessor = gltfJson["accessors"][primitiveJson["indices"].get<size_t>()];
 			const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];

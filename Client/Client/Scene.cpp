@@ -12,11 +12,11 @@
 #include "GltfMaterial.h"
 
 
-// load_scene_from_fileÀÇ ±âº» ±¸Çö (ÆÄ»ý Å¬·¡½º¿¡¼­ ÇÊ¿ä½Ã ¿À¹ö¶óÀÌµå)
+// load_scene_from_fileï¿½ï¿½ ï¿½âº» ï¿½ï¿½ï¿½ï¿½ (ï¿½Ä»ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½)
 void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,
     ID3D12GraphicsCommandList* commandList)
 {
-    // Json ÆÄÀÏ ÀÐ±â ¹× ÆÄ½Ì
+    // Json ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ ï¿½Ä½ï¿½
     std::ifstream file(filename);
     if (!file.is_open()) {
         CERROR("Failed to open scene file: " << filename);
@@ -27,19 +27,19 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
     try
     {
-        file >> sceneJson; // ÀÌ ºÎºÐ¿¡¼­ JSON Çü½ÄÀÌ ¾Æ´Ï¸é ¿¹¿Ü ¹ß»ý
+        file >> sceneJson; // ï¿½ï¿½ ï¿½ÎºÐ¿ï¿½ï¿½ï¿½ JSON ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
         file.close();
     }
     catch (const json::exception& e)
     {
-        // JSON ÆÄ½Ì ¶Ç´Â µ¥ÀÌÅÍ Á¢±Ù Áß ¹ß»ýÇÏ´Â ¸ðµç Á¾·ùÀÇ ¿¡·¯¸¦ ¿©±â¼­ Ã³¸®
+        // JSON ï¿½Ä½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ß»ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ Ã³ï¿½ï¿½
         CERROR("Scene file load error: " << e.what());
         return;
     }
 
     std::string base_path = "Resource/DDSMapData/";
 
-    // 2. JSON µ¥ÀÌÅÍ¸¦ ±â¹ÝÀ¸·Î ½ÇÁ¦ GameObject »ý¼º
+    // 2. JSON ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GameObject ï¿½ï¿½ï¿½ï¿½
     std::vector<SceneObjectData> loadedObjects;
     for (const auto& objectJson : sceneJson)
     {
@@ -47,7 +47,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         data.name = objectJson.value("Name", "");
         data.meshFile = objectJson.value("MeshFile", "");
 
-        // Transform Á¤º¸ ÆÄ½Ì <- JSON µ¥ÀÌÅÍ¸¦ SceneObjectData ±¸Á¶Ã¼·Î Á÷Á¢ ÆÄ½Ì
+        // Transform ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½ <- JSON ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ SceneObjectData ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
             data.transform.location = {
@@ -67,7 +67,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             };
         }
 
-        // ÅØ½ºÃ³ Á¤º¸ ÆÄ½Ì (¼±ÅÃÀûÀÏ ¼ö ÀÖÀ¸¹Ç·Î .contains·Î È®ÀÎ)
+        // ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ .containsï¿½ï¿½ È®ï¿½ï¿½)
         if (objectJson.contains("Textures")) {
             for (const auto& texturePath : objectJson["Textures"]) {
                 data.textureFiles.push_back(texturePath.get<std::string>());
@@ -79,8 +79,8 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             continue;
         }
 
-        // ¸Þ½Ã ·Îµå
-        // JSON¿¡ ¸í½ÃµÈ ÆÄÀÏ °æ·Î -> ResourceManager¿¡°Ô ¿äÃ»
+        // ï¿½Þ½ï¿½ ï¿½Îµï¿½
+        // JSONï¿½ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ -> ResourceManagerï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»
         std::string mesh_path = base_path + data.meshFile;
         std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
         if (!mesh) {
@@ -88,22 +88,22 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             continue;
         }
 
-        CLOG("Loaded mesh. Type: " << typeid(*mesh).name());
+        //CLOG("Loaded mesh. Type: " << typeid(*mesh).name());
 
-        // ¸ÓÅÍ¸®¾ó »ý¼º ¹× ÅØ½ºÃ³ ·Îµå/¼³Á¤
+        // ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½Îµï¿½/ï¿½ï¿½ï¿½ï¿½
         auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-        CLOG("Assigning shader: 'gltf'");
+        //CLOG("Assigning shader: 'gltf'");
         material->set_shader(Renderer::Instance()->get_shader("gltf"));
 
         if (!data.textureFiles.empty()) {
             std::string texture_path = base_path + data.textureFiles[0];
             auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
             if (texture) {
-                material->set_texture(texture, 0); // ÀÎµ¦½º 0¿¡ ÅØ½ºÃ³ ¼³Á¤
+                material->set_texture(texture, 0); // ï¿½Îµï¿½ï¿½ï¿½ 0ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½
             }
         }
 
-        // °ÔÀÓ ¿ÀºêÁ§Æ® »ý¼º ¹× ÄÄÆ÷³ÍÆ® ¼³Á¤
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
         std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
 
         auto transformComp = gameObject->transform();
@@ -114,9 +114,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         auto renderComp = gameObject->add_component<GltfRenderComponent>();
         renderComp->set_mesh(mesh);
         renderComp->set_material(material);
-        CLOG("Added RenderComponent for object: " << data.name);
+        //CLOG("Added RenderComponent for object: " << data.name);
     }
-	// ·ÎµåµÈ ¸ðµç ¸®¼Ò½º¸¦ GPU¿¡ ¾÷·Îµå
+	// ï¿½Îµï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ò½ï¿½ï¿½ï¿½ GPUï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½
     ResourceManager::Instance()->upload_pending_meshes(device, commandList);
 }
 
@@ -132,11 +132,11 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 //{
 //
-//    // ÀÌ ÇÔ¼ö´Â ¸¶¿ì½º¸¦ ÀÔ·ÂÇÏ¸é ¹Ù·Î ½ÇÇàµÊ
+//    // ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ì½ºï¿½ï¿½ ï¿½Ô·ï¿½ï¿½Ï¸ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 //
 //    switch (nMessageID)
 //    {
-//    case WM_LBUTTONDOWN: // ¿ÞÂÊ ¸¶¿ì½º ÀÔ·Â
+//    case WM_LBUTTONDOWN: // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ì½º ï¿½Ô·ï¿½
 //        GameObject* m_pLockedObject;
 //
 //        m_pLockedObject = PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam));
@@ -159,7 +159,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //
 //void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 //{
-//    // 1. ÆÄÀÏ ½ºÆ®¸² ¿­±â
+//    // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    std::ifstream file(filename);
 //    if (!file.is_open()) {
 //        std::cerr << "Fatal Error: Failed to open scene file: " << filename << std::endl;
@@ -168,31 +168,31 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //
 //    try
 //    {
-//        // 2. JSON ÆÄ½Ì
+//        // 2. JSON ï¿½Ä½ï¿½
 //        json sceneJson;
-//        file >> sceneJson; // ÀÌ ºÎºÐ¿¡¼­ JSON Çü½ÄÀÌ ¾Æ´Ï¸é ¿¹¿Ü ¹ß»ý
+//        file >> sceneJson; // ï¿½ï¿½ ï¿½ÎºÐ¿ï¿½ï¿½ï¿½ JSON ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
 //        file.close();
 //
-//        // 3. JSON ¹è¿­ ¼øÈ¸
+//        // 3. JSON ï¿½è¿­ ï¿½ï¿½È¸
 //        for (const auto& objectData : sceneJson)
 //        {
-//            // .at() ÇÔ¼ö¸¦ »ç¿ëÇÏ¸é Å°°¡ ¾øÀ» ¶§ ¿¹¿Ü°¡ ¹ß»ýÇÏ¿© catch¿¡¼­ Ã³¸® °¡´É
+//            // .at() ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ü°ï¿½ ï¿½ß»ï¿½ï¿½Ï¿ï¿½ catchï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //            std::string name = objectData.at("Name");
 //            std::string meshName = objectData.at("Mesh");
 //
-//            // Transform Á¤º¸ ÆÄ½Ì
+//            // Transform ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½
 //            const auto& transformData = objectData.at("Transform");
 //            XMFLOAT3 location = JsonHelper::ParseVector3(transformData.at("Location"));
 //            XMFLOAT3 rotation = JsonHelper::ParseRotation(transformData.at("Rotation"));
 //            XMFLOAT3 scale = JsonHelper::ParseVector3(transformData.at("Scale"));
 //
-//            // ÅØ½ºÃ³ Á¤º¸ ÆÄ½Ì (¼±ÅÃÀûÀÏ ¼ö ÀÖÀ¸¹Ç·Î .contains·Î È®ÀÎ)
+//            // ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ .containsï¿½ï¿½ È®ï¿½ï¿½)
 //            if (objectData.contains("Textures")) {
 //                for (const auto& texturePath : objectData["Textures"]) {
-//                    // TODO: ÅØ½ºÃ³ °æ·Î Ã³¸® ·ÎÁ÷
+//                    // TODO: ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //                }
 //            }
-//            // TODO: °ÔÀÓ ¿ÀºêÁ§Æ® »ý¼º ¹× ¹èÄ¡ ·ÎÁ÷
+//            // TODO: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 //
 //            std::shared_ptr<GameObject> Board = std::make_shared<BoardCube>();
 //            std::shared_ptr<Mesh> BoardMesh;
@@ -211,7 +211,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //                auto materialShader = std::make_shared<Material_Shader>();
 //                Board_Render->set_material(materialShader);
 //
-//                Board_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // »ó¼ö ¹öÆÛ »ý¼º ·ÎÁ÷ Ãß°¡
+//                Board_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 //                Board_Render->set_mesh(BoardMesh);
 //                Board_Render->set_shader(_AllShaders[1]); // GLB
 //                Board_Render->get_material_shader()->set_shader_root_signature(_AllRootSignature[1].Get());
@@ -229,38 +229,38 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    }
 //    catch (const json::exception& e)
 //    {
-//        // JSON ÆÄ½Ì ¶Ç´Â µ¥ÀÌÅÍ Á¢±Ù Áß ¹ß»ýÇÏ´Â ¸ðµç Á¾·ùÀÇ ¿¡·¯¸¦ ¿©±â¼­ Ã³¸®
+//        // JSON ï¿½Ä½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ß»ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ Ã³ï¿½ï¿½
 //        std::cerr << "Scene file load error: " << e.what() << std::endl;
 //        return;
 //    }
 //}
 //
-//// (¼öÁ¤) ¸ÓÅÍ¸®¾ó + Á¶¸í ÆÄ¶ó¹ÌÅÍÃß°¡
+//// (ï¿½ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½ß°ï¿½
 //ID3D12RootSignature* Scene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
 //{
 //    ID3D12RootSignature* pd3dGraphicsRootSignature = NULL;
 //    D3D12_ROOT_PARAMETER pd3dRootParameters[4];
-//    // [¼öÁ¤] 0¹ø ÆÄ¶ó¹ÌÅÍ: ¿ùµå Çà·Ä¿ë CBV
+//    // [ï¿½ï¿½ï¿½ï¿½] 0ï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¿ï¿½ CBV
 //    pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 //    pd3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
 //    pd3dRootParameters[0].Descriptor.RegisterSpace = 0;
 //    pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
-//    // [¼öÁ¤] 1¹ø ÆÄ¶ó¹ÌÅÍ: Ä«¸Þ¶ó¿ë CBV
+//    // [ï¿½ï¿½ï¿½ï¿½] 1ï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½: Ä«ï¿½Þ¶ï¿½ï¿½ CBV
 //    pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 //    pd3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
 //    pd3dRootParameters[1].Descriptor.RegisterSpace = 0;
 //    pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
-//    // ¸ÓÅÍ¸®¾ó Á¤º¸¸¦ À§ÇÑ »ó¼ö ¹öÆÛ ºä(CBV) Ãß°¡
+//    // ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(CBV) ï¿½ß°ï¿½
 //    pd3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    pd3dRootParameters[2].Descriptor.ShaderRegister = 2; // ¼ÎÀÌ´õÀÇ b2 ·¹Áö½ºÅÍ
+//    pd3dRootParameters[2].Descriptor.ShaderRegister = 2; // ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ b2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    pd3dRootParameters[2].Descriptor.RegisterSpace = 0;
 //    pd3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
-//    // Á¶¸í Á¤º¸¸¦ À§ÇÑ »ó¼ö ¹öÆÛ ºä(CBV) Ãß°¡
+//    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(CBV) ï¿½ß°ï¿½
 //    pd3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    pd3dRootParameters[3].Descriptor.ShaderRegister = 3; // ¼ÎÀÌ´õÀÇ b3 ·¹Áö½ºÅÍ
+//    pd3dRootParameters[3].Descriptor.ShaderRegister = 3; // ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ b3 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    pd3dRootParameters[3].Descriptor.RegisterSpace = 0;
 //    pd3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
@@ -269,7 +269,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //        D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 //        D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 //        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-//    // ÀÌ ºÎºÐ¿¡ ÇÈ¼¿ ½¦ÀÌ´õ Á¢±Ù¾ÈµÇ°Ô ÇÏ´Â°Å Áö¿ò
+//    // ï¿½ï¿½ ï¿½ÎºÐ¿ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½Ù¾ÈµÇ°ï¿½ ï¿½Ï´Â°ï¿½ ï¿½ï¿½ï¿½ï¿½
 //
 //    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
 //    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
@@ -295,55 +295,55 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
 //    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 //
-//    // 1. ÅØ½ºÃ³(SRV)¸¦ À§ÇÑ µð½ºÅ©¸³ÅÍ Å×ÀÌºí ¼³Á¤
+//    // 1. ï¿½Ø½ï¿½Ã³(SRV)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½
 //    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
 //    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-//    d3dDescriptorRanges[0].NumDescriptors = 1; // ÅØ½ºÃ³´Â 1°³
-//    d3dDescriptorRanges[0].BaseShaderRegister = 0; // ¼ÎÀÌ´õÀÇ t0 ·¹Áö½ºÅÍ¿¡ ¿¬°á
+//    d3dDescriptorRanges[0].NumDescriptors = 1; // ï¿½Ø½ï¿½Ã³ï¿½ï¿½ 1ï¿½ï¿½
+//    d3dDescriptorRanges[0].BaseShaderRegister = 0; // ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ t0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    d3dDescriptorRanges[0].RegisterSpace = 0;
 //    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 //
-//    // 2. ¼ÎÀÌ´õ°¡ »ç¿ëÇÒ ÀüÃ¼ ÆÄ¶ó¹ÌÅÍ ¸ñ·ÏÀ» Á¤ÀÇ (ÃÑ 6°³)
+//    // 2. ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ 6ï¿½ï¿½)
 //    D3D12_ROOT_PARAMETER d3dRootParameters[6];
 //
-//    // [¼öÁ¤] 0¹ø ÆÄ¶ó¹ÌÅÍ: ¿ùµå Çà·Ä¿ë CBV
+//    // [ï¿½ï¿½ï¿½ï¿½] 0ï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¿ï¿½ CBV
 //    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 //    d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
 //    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
 //    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
-//    // [¼öÁ¤] 1¹ø ÆÄ¶ó¹ÌÅÍ: Ä«¸Þ¶ó¿ë CBV
+//    // [ï¿½ï¿½ï¿½ï¿½] 1ï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½: Ä«ï¿½Þ¶ï¿½ï¿½ CBV
 //    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 //    d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
 //    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
 //    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
 //    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: ÀçÁú
+//    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: ï¿½ï¿½ï¿½ï¿½
 //    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
 //    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
 //    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: Á¶¸í
+//    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: ï¿½ï¿½ï¿½ï¿½
 //    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
 //    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 //
-//    // [»õ·Î¿î ÆÄ¶ó¹ÌÅÍ] ½ºÅ°´× »ó¼ö ¹öÆÛ
+//    // [ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: ½ºÅ°´× »À Çà·Ä
+//    d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
 //    d3dRootParameters[4].Descriptor.RegisterSpace = 0;
-//    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // ¹öÅØ½º ¼ÎÀÌ´õ¿¡¼­¸¸ ÇÊ¿ä
+//    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // ï¿½ï¿½ï¿½Ø½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
 //
-//    // [»õ·Î¿î ÆÄ¶ó¹ÌÅÍ] ÅØ½ºÃ³ µð½ºÅ©¸³ÅÍ Å×ÀÌºí
+//    // [ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½] ï¿½Ø½ï¿½Ã³ ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½
 //    d3dRootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 //    d3dRootParameters[5].DescriptorTable.NumDescriptorRanges = 1;
 //    d3dRootParameters[5].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[0];
-//    d3dRootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ÇÈ¼¿ ¼ÎÀÌ´õ¿¡¼­¸¸ ÇÊ¿ä
+//    d3dRootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ï¿½È¼ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
 //
 //    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
 //    d3dRootSignatureDesc.pParameters = d3dRootParameters;
 //
-//    // 3. ÅØ½ºÃ³ »ùÇÃ·¯ ¼³Á¤
+//    // 3. ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
 //    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 //    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -354,14 +354,14 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 //    d3dStaticSamplerDesc.MinLOD = 0;
 //    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-//    d3dStaticSamplerDesc.ShaderRegister = 0; // ¼ÎÀÌ´õÀÇ s0 ·¹Áö½ºÅÍ¿¡ ¿¬°á
+//    d3dStaticSamplerDesc.ShaderRegister = 0; // ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ s0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    d3dStaticSamplerDesc.RegisterSpace = 0;
 //    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 //
 //    d3dRootSignatureDesc.NumStaticSamplers = 1;
 //    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
 //
-//    // 4. ·çÆ® ¼­¸í »ý¼º
+//    // 4. ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    ID3D12RootSignature* pd3dGraphicsRootSignature = nullptr;
 //    ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
 //    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
@@ -376,7 +376,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    return (nullptr);
 //}
 //
-//// ÇÚµé ÇÒ´ç ÇÔ¼ö ±¸Çö
+//// ï¿½Úµï¿½ ï¿½Ò´ï¿½ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 //void Scene::AllocateNextSrvDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE& outCpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& outGpuHandle)
 //{
 //    outCpuHandle = _SrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -385,7 +385,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    outGpuHandle = _SrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 //    outGpuHandle.ptr += (_SrvDescriptorIncrementSize * _AllocatedSrvCount);
 //
-//    _AllocatedSrvCount++; // Ä«¿îÅÍ Áõ°¡
+//    _AllocatedSrvCount++; // Ä«ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //}
 //
 //GameObject* Scene::PickObjectPointedByCursor(int xClient, int yClient)
@@ -434,11 +434,11 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    UINT nBoneCount = 128;
 //    UINT nBufferSize = sizeof(XMFLOAT4X4) * nBoneCount;
 //
-//    // UPLOAD Èü¿¡ »ý¼ºÇÏ¿© CPU°¡ Ç×»ó Á¢±Ù °¡´ÉÇÏµµ·Ï ÇÕ´Ï´Ù.
-//    // ³»¿ëÀº ºñ¾îÀÖ¾îµµ µÇÁö¸¸, 0À¸·Î ÃÊ±âÈ­ÇØµÎ¸é ´õ ¾ÈÁ¤ÀûÀÔ´Ï´Ù.
+//    // UPLOAD ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ CPUï¿½ï¿½ ï¿½×»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö¾îµµ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½ØµÎ¸ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
 //    m_pd3dcbDummyBoneTransforms = ::CreateBufferResource(pd3dDevice, pd3dCommandList, nullptr, nBufferSize, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 //
-//    // ¹öÆÛÀÇ ³»¿ëÀ» 0À¸·Î ÃÊ±âÈ­ (¼±ÅÃ »çÇ×ÀÌÁö¸¸ ±ÇÀå)
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 //    UINT8* pMappedData = nullptr;
 //    D3D12_RANGE readRange{ 0, 0 };
 //    m_pd3dcbDummyBoneTransforms->Map(0, &readRange, reinterpret_cast<void**>(&pMappedData));
@@ -457,23 +457,23 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //
 //void Scene::MakeSrv(ID3D12Device* pd3dDevice)
 //{
-//    // ¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å SRV µð½ºÅ©¸³ÅÍ Èü »ý¼º ¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å¡å
-//    // ÅØ½ºÃ³¿Í °°Àº ¼ÎÀÌ´õ ¸®¼Ò½º ºä(SRV)µéÀ» ´ãÀ» µð½ºÅ©¸³ÅÍ ÈüÀ» »ý¼ºÇÕ´Ï´Ù.
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SRV ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//    // ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½ï¿½(SRV)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 //    D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-//    srvHeapDesc.NumDescriptors = 1024; // ÀÌ ¾À¿¡¼­ »ç¿ëÇÒ ÃÖ´ë ÅØ½ºÃ³ °³¼ö (ÀÓÀÇ·Î 128·Î ¼³Á¤, ÇÊ¿ä½Ã Á¶Àý)
+//    srvHeapDesc.NumDescriptors = 1024; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ç·ï¿½ 128ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½Ê¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 //    srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-//    srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // **¸Å¿ì Áß¿ä**: ¼ÎÀÌ´õ°¡ Á¢±Ù °¡´ÉÇØ¾ß ÇÔ
+//    srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // **ï¿½Å¿ï¿½ ï¿½ß¿ï¿½**: ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½
 //    srvHeapDesc.NodeMask = 0;
 //
-//    // µð½ºÅ©¸³ÅÍ Èü »ý¼º
+//    // ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    pd3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_SrvDescriptorHeap));
 //
-//    // SRV µð½ºÅ©¸³ÅÍÀÇ Å©±â¸¦ ÀúÀåÇØ µÓ´Ï´Ù. ÇÚµé ÁÖ¼Ò¸¦ °è»êÇÒ ¶§ ÇÊ¿äÇÕ´Ï´Ù.
+//    // SRV ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ó´Ï´ï¿½. ï¿½Úµï¿½ ï¿½Ö¼Ò¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Õ´Ï´ï¿½.
 //    _SrvDescriptorIncrementSize = pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 //
-//    // ÇÒ´çµÈ µð½ºÅ©¸³ÅÍ °³¼ö Ä«¿îÅÍ¸¦ 0À¸·Î ÃÊ±âÈ­ÇÕ´Ï´Ù.
+//    // ï¿½Ò´ï¿½ï¿½ ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½ï¿½ï¿½Í¸ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Õ´Ï´ï¿½.
 //    _AllocatedSrvCount = 0;
-//    // ¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã¡ã
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //}
 //
 //void Scene::ReleaseUploadBuffers()
@@ -495,7 +495,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    ::ZeroMemory(m_pLights, sizeof(LIGHTS));
 //    m_pLights->m_xmf4GlobalAmbient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 //
-//    // ¹é»ö ¹æÇâ¼º Á¶¸í
+//    // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¼º ï¿½ï¿½ï¿½ï¿½
 //    m_pLights->m_pLights[0].m_bEnable = true;
 //    m_pLights->m_pLights[0].m_nType = DIRECTIONAL_LIGHT; 
 //    m_pLights->m_pLights[0].m_xmf4Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
@@ -506,7 +506,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //    m_pMaterials = new MATERIALS;
 //    ::ZeroMemory(m_pMaterials, sizeof(MATERIALS));
 //
-//    // Èò»ö ÇÃ¶ó½ºÆ½ ´À³¦
+//    // ï¿½ï¿½ï¿½ ï¿½Ã¶ï¿½Æ½ ï¿½ï¿½ï¿½ï¿½
 //    m_pMaterials->m_pReflections[0]._ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 //    m_pMaterials->m_pReflections[0]._diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 //    m_pMaterials->m_pReflections[0]._specular = XMFLOAT4(1.f, 1.f, 1.f, 16.0f);
@@ -515,12 +515,12 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //
 //void Scene::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 //{
-//    UINT ncbElementBytes = ((sizeof(LIGHTS) + 255) & ~255); // 256ÀÇ ¹è¼ö
+//    UINT ncbElementBytes = ((sizeof(LIGHTS) + 255) & ~255); // 256ï¿½ï¿½ ï¿½ï¿½ï¿½
 //    m_pd3dcbLights = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, 
 //        D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 //    m_pd3dcbLights->Map(0, NULL, (void**)&m_pcbMappedLights);
 //
-//    ncbElementBytes = ((sizeof(MATERIALS) + 255) & ~255); // 256ÀÇ ¹è¼ö
+//    ncbElementBytes = ((sizeof(MATERIALS) + 255) & ~255); // 256ï¿½ï¿½ ï¿½ï¿½ï¿½
 //    m_pd3dcbMaterials = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, 
 //        D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 //    m_pd3dcbMaterials->Map(0, NULL, (void**)&m_pcbMappedMaterials);
