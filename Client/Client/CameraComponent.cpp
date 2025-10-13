@@ -72,7 +72,7 @@ void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* command
     // 뷰와 프로젝션 행렬을 셰이더가 사용할 수 있도록 Transpose하여 상수 버퍼에 복사합니다.
     XMStoreFloat4x4(&_mappedCbCamera->_view, XMMatrixTranspose(XMLoadFloat4x4(&_viewMatrix)));
     XMStoreFloat4x4(&_mappedCbCamera->_projection,
-        XMMatrixTranspose(XMLoadFloat4x4(&_projectionMatrix)));
+    XMMatrixTranspose(XMLoadFloat4x4(&_projectionMatrix)));
 
     // 카메라의 월드 위치를 상수 버퍼에 복사합니다.
     if (game_object() && game_object()->transform())
@@ -81,8 +81,23 @@ void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* command
         _mappedCbCamera->_position = XMFLOAT4(pos.x, pos.y, pos.z, 1.0f);
     }
 
-    // 루트 시그니처의 1번 파라미터(b1)에 카메라 상수 버퍼를 바인딩합니다.
-    D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera->GetGPUVirtualAddress();
+    auto print_matrix = [](const char* name, const XMFLOAT4X4& matrix) {
+        CLOG("--- " << name << " ---");
+        CLOG(matrix.m[0][0] << ", " << matrix.m[0][1] << ", " << matrix.m[0][2] << ", " << matrix.m[0][3]);
+        CLOG(matrix.m[1][0] << ", " << matrix.m[1][1] << ", " << matrix.m[1][2] << ", " << matrix.m[1][3]);
+        CLOG(matrix.m[2][0] << ", " << matrix.m[2][1] << ", " << matrix.m[2][2] << ", " << matrix.m[2][3]);
+        CLOG(matrix.m[3][0] << ", " << matrix.m[3][1] << ", " << matrix.m[3][2] << ", " << matrix.m[3][3]);
+        CLOG("--------------------");
+    };
+    
+     // 매 프레임 행렬 값을 출력합니다.
+     static int frame_count = 0;
+    if (frame_count < 10) { // 처음 10프레임만 출력
+       print_matrix("View Matrix", _viewMatrix);
+       print_matrix("Projection Matrix", _projectionMatrix);
+       frame_count++;
+    }    // 루트 시그니처의 1번 파라미터(b1)에 카메라 상수 버퍼를 바인딩합니다.
+   D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera->GetGPUVirtualAddress();
     commandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress);
 }
 void CameraComponent::set_viewports_and_scissor_rects(ID3D12GraphicsCommandList* commandList)
