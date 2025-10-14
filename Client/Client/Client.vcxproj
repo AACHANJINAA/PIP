@@ -115,8 +115,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../d3dx12.h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,6 +146,7 @@
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="DebugShader.h" />
     <ClInclude Include="DefaultObjectShader.h" />
     <ClInclude Include="FreeCameraScript.h" />
@@ -195,6 +195,7 @@
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="FreeCameraScript.cpp" />
