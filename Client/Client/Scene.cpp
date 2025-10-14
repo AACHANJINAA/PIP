@@ -12,11 +12,10 @@
 #include "GltfMaterial.h"
 
 
-// load_scene_from_file�� �⺻ ���� (�Ļ� Ŭ�������� �ʿ�� �������̵�)
+// load_scene_from_file load scene dataa from a JSON file
 void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,
     ID3D12GraphicsCommandList* commandList)
 {
-    // Json ���� �б� �� �Ľ�
     std::ifstream file(filename);
     if (!file.is_open()) {
         CERROR("Failed to open scene file: " << filename);
@@ -27,19 +26,17 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
     try
     {
-        file >> sceneJson; // �� �κп��� JSON ������ �ƴϸ� ���� �߻�
+        file >> sceneJson; 
         file.close();
     }
     catch (const json::exception& e)
     {
-        // JSON �Ľ� �Ǵ� ������ ���� �� �߻��ϴ� ��� ������ ������ ���⼭ ó��
         CERROR("Scene file load error: " << e.what());
         return;
     }
 
     std::string base_path = "Resource/DDSMapData/";
 
-    // 2. JSON �����͸� ������� ���� GameObject ����
     std::vector<SceneObjectData> loadedObjects;
     for (const auto& objectJson : sceneJson)
     {
@@ -47,7 +44,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         data.name = objectJson.value("Name", "");
         data.meshFile = objectJson.value("MeshFile", "");
 
-        // Transform ���� �Ľ� <- JSON �����͸� SceneObjectData ����ü�� ���� �Ľ�
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
             data.transform.location = {
@@ -67,7 +63,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             };
         }
 
-        // �ؽ�ó ���� �Ľ� (�������� �� �����Ƿ� .contains�� Ȯ��)
+		// if, object includes textures we load them
         if (objectJson.contains("Textures")) {
             for (const auto& texturePath : objectJson["Textures"]) {
                 data.textureFiles.push_back(texturePath.get<std::string>());
@@ -79,8 +75,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             continue;
         }
 
-        // �޽� �ε�
-        // JSON�� ���õ� ���� ��� -> ResourceManager���� ��û
+		// JSON base_path + meshFile
         std::string mesh_path = base_path + data.meshFile;
         std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
         if (!mesh) {
@@ -90,7 +85,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         //CLOG("Loaded mesh. Type: " << typeid(*mesh).name());
 
-        // ���͸��� ���� �� �ؽ�ó �ε�/����
         auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
         //CLOG("Assigning shader: 'gltf'");
         material->set_shader(Renderer::Instance()->get_shader("gltf"));
@@ -99,11 +93,10 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             std::string texture_path = base_path + data.textureFiles[0];
             auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
             if (texture) {
-                material->set_texture(texture, 0); // �ε��� 0�� �ؽ�ó ����
+                material->set_texture(texture, 0);
             }
         }
 
-        // ���� ������Ʈ ���� �� ������Ʈ ����
         std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
 
         auto transformComp = gameObject->transform();
@@ -116,7 +109,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         renderComp->set_material(material);
         //CLOG("Added RenderComponent for object: " << data.name);
     }
-	// �ε�� ��� ���ҽ��� GPU�� ���ε�
     ResourceManager::Instance()->upload_pending_meshes(device, commandList);
 }
 
@@ -132,11 +124,10 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 //{
 //
-//    // �� �Լ��� ���콺�� �Է��ϸ� �ٷ� �����
 //
 //    switch (nMessageID)
 //    {
-//    case WM_LBUTTONDOWN: // ���� ���콺 �Է�
+//    case WM_LBUTTONDOWN: 
 //        GameObject* m_pLockedObject;
 //
 //        m_pLockedObject = PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam));
@@ -159,7 +150,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 //
 //void Scene::LoadSceneFromFile(const std::string& filename, ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 //{
-//    // 1. ���� ��Ʈ�� ����
 //    std::ifstream file(filename);
 //    if (!file.is_open()) {
 //        std::cerr << "Fatal Error: Failed to open scene file: " << filename << std::endl;
