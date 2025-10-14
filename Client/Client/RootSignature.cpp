@@ -162,7 +162,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
     d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 1; // 텍스처는 1개
+    d3dDescriptorRanges[0].NumDescriptors = 4; // 텍스처는 1개
     d3dDescriptorRanges[0].BaseShaderRegister = 0; // 셰이더의 t0 레지스터에 연결
     d3dDescriptorRanges[0].RegisterSpace = 0;
     d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;

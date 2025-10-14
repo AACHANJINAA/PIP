@@ -51,7 +51,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 
 
-    //// --- [테스트용 큐브 추가] ---
+    //// --- [테스트용 캐논 추가] --- <- 하나씩 띄워볼때 이거쓰기
     //{
     //    auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
@@ -68,8 +68,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     //    test_cannon_object->transform()->set_local_position(XMFLOAT3(3.0f, 0.0f, 6.0f));
     //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
     //}
-    //{
-    //    auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
+   // {
+        //auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
     //    // 1. 렌더 컴포넌트 추가
     //    auto cannon_renderer = test_cannon_object->add_component<GltfRenderComponent>();
