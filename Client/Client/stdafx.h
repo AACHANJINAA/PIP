@@ -28,6 +28,8 @@
 #include <DirectXCollision.h>
 #include <dxgidebug.h>
 
+#include "d3dx12.h"
+
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
@@ -126,14 +128,14 @@ struct Texture
 extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pData, UINT nBytes, 
 	D3D12_HEAP_TYPE d3dHeapType = D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 	ID3D12Resource** ppd3dUploadBuffer = NULL);
-extern void UpdateSubresources(
-	ID3D12GraphicsCommandList* pCmdList,
-	ID3D12Resource* pDestinationResource,
-	ID3D12Resource* pIntermediate,
-	UINT64 IntermediateOffset,
-	UINT FirstSubresource,
-	UINT NumSubresources,
-	D3D12_SUBRESOURCE_DATA* pSrcData);
+//extern void UpdateSubresources(
+//	ID3D12GraphicsCommandList* pCmdList,
+//	ID3D12Resource* pDestinationResource,
+//	ID3D12Resource* pIntermediate,
+//	UINT64 IntermediateOffset,
+//	UINT FirstSubresource,
+//	UINT NumSubresources,
+//	D3D12_SUBRESOURCE_DATA* pSrcData);
 
 // ==================================================
 // 디버그 로그 매크로

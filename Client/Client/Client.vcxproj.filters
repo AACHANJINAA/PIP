@@ -218,6 +218,9 @@
     <ClInclude Include="GltfMaterial.h">
       <Filter>0. Engine\3. Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="DDSTextureLoader12.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -345,6 +348,9 @@
     </ClCompile>
     <ClCompile Include="GltfMaterial.cpp">
       <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader12.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
