@@ -90,10 +90,28 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         material->set_shader(Renderer::Instance()->get_shader("gltf"));
 
         if (!data.textureFiles.empty()) {
-            std::string texture_path = base_path + data.textureFiles[0];
-            auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
-            if (texture) {
-                material->set_texture(texture, 0);
+            for (const auto& textureFile : data.textureFiles)
+            {
+                std::string texture_path = base_path + textureFile;
+                auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
+
+                if (texture)
+                {
+                    int slot = 0; // 0번 슬롯: BaseColor (기본값)
+
+                    if (textureFile.find("_N.dds") != std::string::npos) {
+                        slot = 1; // 1번 슬롯: Normal Map
+                    }
+                    else if (textureFile.find("_ORM.dds") != std::string::npos || textureFile.find("_MRA.dds") != std::string::npos) {
+                        slot = 2; // 2번 슬롯: ORM (Occlusion, Roughness, Metallic) Map
+                    }
+                    else if (textureFile.find("_E.dds") != std::string::npos || textureFile.find("_Emissive.dds") != std::string::npos) {
+                        slot = 3; // 3번 슬롯: Emissive Map
+                    }
+
+                    material->set_texture(texture, slot);
+                    CLOG("Texture '" << textureFile << "' loaded and set to slot " << slot);
+                }
             }
         }
 

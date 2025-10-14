@@ -133,7 +133,7 @@ const std::string& RenderComponent::pso_name() const
 
 void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 {
-    if (!_mesh || !_material)
+    if (!_mesh)
 	{
 		CERROR("메쉬가 렌더 컴포넌트에 없음");
 		return;
@@ -150,7 +150,8 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
 
 	// 4. (추가 베이비) 4번 슬롯에 머티리얼 셰이더를 바인딩합니다.
-    _material->bind(commandList);
+    if(_material)
+        _material->bind(commandList);
 
 	// 5. 메시를 그립니다.
 	_mesh->render(commandList);
@@ -180,6 +181,10 @@ void GltfRenderComponent::render(ID3D12GraphicsCommandList* commandList)
     // 3. [추가] 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 직접 바인딩합니다.
     // (루트 시그니처 0번 슬롯은 월드 행렬용 CBV로 미리 약속되어 있습니다)
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
+
+    if (_material) {
+        _material->bind(commandList);
+     }
 
     // 4. 메시를 그립니다.
     _mesh->render(commandList);
