@@ -1,6 +1,6 @@
 ﻿#include "stdafx.h"
 #include "ReadGlbMesh.h"
-#include "ResourceManager.h" // SRV 할당을 위해 포함
+#include "DescriptorManager.h"
 
 // [변경] 생성자: 파일 파싱 및 CPU 데이터 저장만 담당
 ReadGlbMesh::ReadGlbMesh(const std::string& file_path)
@@ -281,7 +281,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
 
                     D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle{};
                     D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
-                    ResourceManager::Instance()->allocate_srv_descriptor(cpu_handle, gpu_handle);
+                    DescriptorManager::Instance()->allocate_descriptor(cpu_handle, gpu_handle);
 
                     device->CreateShaderResourceView(gpu_primitive->m_pTexture, &srv_desc, cpu_handle);
                     gpu_primitive->m_d3dGpuSrvHandle = gpu_handle;

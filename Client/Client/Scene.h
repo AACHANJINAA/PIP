@@ -35,6 +35,16 @@ struct MATERIALS
 	Material m_pReflections[MAX_MATERIALS];
 };
 
+struct SceneObjectData {
+	std::string name;
+	std::string meshFile;
+	struct {
+		XMFLOAT3 location;
+		XMFLOAT3 rotation;
+		XMFLOAT3 scale;
+	} transform;;
+};
+
 // 전방 선언
 struct ID3D12Device;
 struct ID3D12GraphicsCommandList;

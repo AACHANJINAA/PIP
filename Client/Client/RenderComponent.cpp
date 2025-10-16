@@ -123,10 +123,9 @@ bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 
 const std::string& RenderComponent::pso_name() const
 {
-    if (_material && _material->shader())
-    {
-        return _material->shader()->pso_name();
-    }
+    if (_material)
+		return _material->shader()->pso_name();
+    // 재질이 없으면 기본값 "default"를 반환
     static const std::string default_pso = "default";
     return default_pso;
 }
@@ -150,42 +149,10 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
 
 	// 4. (추가 베이비) 4번 슬롯에 머티리얼 셰이더를 바인딩합니다.
-    if(_material)
+    if (_material) 
+    {
         _material->bind(commandList);
-
+    }
 	// 5. 메시를 그립니다.
 	_mesh->render(commandList);
-}
-
-void GltfRenderComponent::render(ID3D12GraphicsCommandList* commandList)
-{
-    // _shader 검사는 더 이상 필요 없습니다.
-    if (!_mesh)
-    {
-        CERROR("메쉬가 렌더 컴포넌트에 없음");
-        return;
-    }
-
-    // 1. 이 GameObject의 월드 행렬을 가져옵니다.
-    const XMFLOAT4X4& worldMatrix = game_object()->transform()->world_matrix();
-    XMMATRIX world = XMLoadFloat4x4(&worldMatrix) * XMMatrixScaling(1.0f, 1.0f, -1.0f);
-    XMMatrixTranspose(world);
-
-    XMFLOAT4X4 ia_world;
-    XMStoreFloat4x4(&ia_world, world);
-
-    // 2. [변경] 이 RenderComponent가 소유한 상수 버퍼의 내용을 월드 행렬로 업데이트합니다.
-    memcpy(&_mappedCbGameObjectInfo->_world, &ia_world, sizeof(XMFLOAT4X4));
-
-
-    // 3. [추가] 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 직접 바인딩합니다.
-    // (루트 시그니처 0번 슬롯은 월드 행렬용 CBV로 미리 약속되어 있습니다)
-    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
-
-    if (_material) {
-        _material->bind(commandList);
-     }
-
-    // 4. 메시를 그립니다.
-    _mesh->render(commandList);
 }

@@ -1,17 +1,23 @@
 ﻿#include "stdafx.h"
+
 #include "Renderer.h"
-#include "Camera.h"
-#include "CameraComponent.h"
+
+#include "Shader.h"
 #include "DebugShader.h"
 #include "DefaultObjectShader.h"
-#include "GameObject.h"
 #include "GlbShader.h"
 #include "GltfShader.h"
-#include "Shader.h"
-#include "ObjectManager.h"
 #include "PlayerShader.h"
+
+#include "GameObject.h"
+#include "ObjectManager.h"
+
+#include "Camera.h"
+#include "CameraComponent.h"
 #include "RenderComponent.h"
+
 #include "ResourceManager.h"
+#include "DescriptorManager.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -169,8 +175,9 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     // ---------------------------------------------------------
 
     // --- [추가] ResourceManager로부터 SRV 힙을 가져와 설정 ---
-    ID3D12DescriptorHeap* ppHeaps[] = { ResourceManager::Instance()->get_srv_heap() };
-    commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+    ID3D12DescriptorHeap* heaps[] = { DescriptorManager::Instance()->get_descriptor_heap() };
+
+    commandList->SetDescriptorHeaps(_countof(heaps), heaps);
     // ---------------------------------------------------------
     for (auto const& [psoName, gameObjects] : _renderMap)
     {

@@ -7,9 +7,13 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "GameObject.h"
+#include "TextureManager.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 #include "GltfMaterial.h"
+
+#include "json.hpp"
+#include <fstream>
 
 
 // load_scene_from_file load scene dataa from a JSON file
@@ -22,11 +26,11 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         return;
     }
 
-	nlohmann::json sceneJson;
+    nlohmann::json sceneJson;
 
     try
     {
-        file >> sceneJson; 
+        file >> sceneJson;
         file.close();
     }
     catch (const json::exception& e)
@@ -35,14 +39,56 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         return;
     }
 
-    std::string base_path = "Resource/DDSMapData/";
+    std::filesystem::path basePath = std::filesystem::path(filename).parent_path();
 
-    std::vector<SceneObjectData> loadedObjects;
     for (const auto& objectJson : sceneJson)
     {
         SceneObjectData data;
         data.name = objectJson.value("Name", "");
         data.meshFile = objectJson.value("MeshFile", "");
+
+        if (data.meshFile.empty())
+        {
+            CLOG("Skipping object with empty MeshFile name: " << data.name);
+            continue;
+        }
+
+        // 메쉬 로드
+        std::string mesh_path = (basePath / data.meshFile).string();
+        std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
+        if (!mesh) {
+            CLOG("Failed to load mesh : " << mesh_path);
+            continue;
+        }
+
+        // 게임 오브젝트 생성 및 컴포넌트 추가
+        std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
+        auto renderComp = gameObject->add_component<RenderComponent>();
+        renderComp->set_mesh(mesh);
+
+        // MaterialOverrides 파싱 및 재질 생성
+        if (objectJson.contains("MaterialOverrides"))
+        {
+            auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+            const auto& overrides = objectJson["MaterialOverrides"];
+
+            auto add_texture = [&](const std::string& key, int slot) {
+                if (overrides.contains(key)) {
+                    std::string textureFile = overrides[key];
+                    std::string texture_path = (basePath / textureFile).string();
+                    
+					auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    if (texture) material->set_texture(texture, slot);
+                }
+            };
+
+            add_texture("baseColorTexture", 0); // BaseColor
+            add_texture("normalTexture", 1);    // Normal Map
+            add_texture("ormTexture", 2);       // ORM Map
+            add_texture("emissiveTexture", 3);  // Emissive Map
+
+            renderComp->set_material(material);
+        }
 
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
@@ -62,70 +108,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 transformJson["Scale"].value("z", 1.0f)
             };
         }
-
-		// if, object includes textures we load them
-        if (objectJson.contains("Textures")) {
-            for (const auto& texturePath : objectJson["Textures"]) {
-                data.textureFiles.push_back(texturePath.get<std::string>());
-            }
-        }
-
-        if (data.meshFile.empty()) {
-            CLOG("Skipping object with empty MeshFile name: " << data.name);
-            continue;
-        }
-
-		// JSON base_path + meshFile
-        std::string mesh_path = base_path + data.meshFile;
-        std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
-        if (!mesh) {
-            CLOG("Failed to load mesh : " << mesh_path);
-            continue;
-        }
-
-        //CLOG("Loaded mesh. Type: " << typeid(*mesh).name());
-
-        auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-        //CLOG("Assigning shader: 'gltf'");
-        material->set_shader(Renderer::Instance()->get_shader("gltf"));
-
-        if (!data.textureFiles.empty()) {
-            for (const auto& textureFile : data.textureFiles)
-            {
-                std::string texture_path = base_path + textureFile;
-                auto texture = ResourceManager::Instance()->load_texture(texture_path, device, commandList);
-
-                if (texture)
-                {
-                    int slot = 0; // 0번 슬롯: BaseColor (기본값)
-
-                    if (textureFile.find("_N.dds") != std::string::npos) {
-                        slot = 1; // 1번 슬롯: Normal Map
-                    }
-                    else if (textureFile.find("_ORM.dds") != std::string::npos || textureFile.find("_MRA.dds") != std::string::npos) {
-                        slot = 2; // 2번 슬롯: ORM (Occlusion, Roughness, Metallic) Map
-                    }
-                    else if (textureFile.find("_E.dds") != std::string::npos || textureFile.find("_Emissive.dds") != std::string::npos) {
-                        slot = 3; // 3번 슬롯: Emissive Map
-                    }
-
-                    material->set_texture(texture, slot);
-                    CLOG("Texture '" << textureFile << "' loaded and set to slot " << slot);
-                }
-            }
-        }
-
-        std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
-
-        auto transformComp = gameObject->transform();
-        transformComp->set_local_position(data.transform.location);
-		transformComp->set_local_rotation(data.transform.rotation.x, data.transform.rotation.y, data.transform.rotation.z);
-		transformComp->set_local_scale(data.transform.scale);
-
-        auto renderComp = gameObject->add_component<GltfRenderComponent>();
-        renderComp->set_mesh(mesh);
-        renderComp->set_material(material);
-        //CLOG("Added RenderComponent for object: " << data.name);
     }
     ResourceManager::Instance()->upload_pending_meshes(device, commandList);
 }

@@ -3,7 +3,7 @@
 
 class Object;
 class GameObject;
-struct GameObjectHandle;
+//struct GameObjectHandle;
 class ObjectManager : public Singleton<ObjectManager>
 {
     friend Singleton<ObjectManager>;
