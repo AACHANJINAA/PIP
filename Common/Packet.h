@@ -4,7 +4,7 @@
 
 namespace common::packet
 {
-    constexpr short SERVER_PORT = 7000;
+    constexpr short SERVER_PORT = 9000;
 
 	enum class PacketType : uint16_t {
 		error = 0,
@@ -31,8 +31,6 @@ namespace common::packet
         S2C_NPC_SPAWN = 501,
 		S2C_NPC_MOVE = 502,
 	};
-
-    
 
 
     constexpr char MAX_ID_LENGTH = 20;
