@@ -7,7 +7,49 @@
 
 namespace PIP::server
 {
-	
+	using packet::PacketType;
+	std::string PacketTypeToString(PacketType type)
+	{
+		switch (type)
+		{
+		case PacketType::error:
+			return "error";
+		case PacketType::C2S_P_LOGIN:
+			return "C2S_P_LOGIN";
+		case PacketType::S2C_P_LOGIN_ACK:
+			return "S2C_P_LOGIN_ACK";
+		case PacketType::S2C_P_LEAVE:
+			return "S2C_P_LEAVE";
+		case PacketType::S2C_P_SPAWN_PLAYER:
+			return "S2C_P_SPAWN_PLAYER";
+		case PacketType::S2C_P_MOVE:
+			return "S2C_P_MOVE";
+		case PacketType::C2S_P_MOVE:
+			return "C2S_P_MOVE";
+		case PacketType::C2S_P_ATTACK:
+			return "C2S_P_ATTACK";
+		case PacketType::S2C_P_ATTACK:
+			return "S2C_P_ATTACK";
+		case PacketType::C2S_P_ENTER_ROOM:
+			return "C2S_P_ENTER_ROOM";
+		case PacketType::S2C_P_ENTER_ROOM_ACK:
+			return "S2C_P_ENTER_ROOM_ACK";
+		case PacketType::C2S_P_ROOM_LIST:
+			return "C2S_P_ROOM_LIST";
+		case PacketType::S2C_P_ROOM_LIST_ACK:
+			return "S2C_P_ROOM_LIST_ACK";
+		case PacketType::C2S_P_CHAT_IN_ROOM:
+			return "C2S_P_CHAT_IN_ROOM";
+		case PacketType::S2C_P_CHAT_IN_ROOM:
+			return "S2C_P_CHAT_IN_ROOM";
+		case PacketType::S2C_NPC_SPAWN:
+			return "S2C_NPC_SPAWN";
+		case PacketType::S2C_NPC_MOVE:
+			return "S2C_NPC_MOVE";
+		default:
+			return "Unknown";
+		}
+	}
 
 	SESSION::SESSION() : _state{ SESSION_STATE::ST_FREE }
 	{
@@ -55,8 +97,8 @@ namespace PIP::server
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 		DWORD size_sent;
 
-		MYLOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << static_cast<int>(reinterpret_cast<const packet::PacketHeader*>(data)->_type));
-		//(enum을 바로 출력하기 위해 int로 캐스팅)
+		/*MYLOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << 
+			PacketTypeToString(reinterpret_cast<const packet::PacketHeader*>(data)->_type));*/
 
 		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL);
 	}

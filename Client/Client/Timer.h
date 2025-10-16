@@ -2,8 +2,9 @@
 const ULONG MAX_SAMPLE_COUNT = 50; // 50회의 프레임 처리시간을 누적하여 평균한다.
 
 
-class GameTimer
+class GameTimer : public Singleton<GameTimer>
 {
+	friend class Singleton<GameTimer>;
 public:
 	GameTimer();
 	virtual ~GameTimer();
