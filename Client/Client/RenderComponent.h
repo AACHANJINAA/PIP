@@ -68,14 +68,3 @@ protected:
     ComPtr<ID3D12Resource> _cbGameObjectInfo;
     CbGameObjectInfo* _mappedCbGameObjectInfo = nullptr;
 };
-
-class GltfRenderComponent : public RenderComponent
-{
-public:
-    GltfRenderComponent() {};
-    virtual ~GltfRenderComponent() {};
-
-
-public:
-    virtual void render(ID3D12GraphicsCommandList* commandList) override;
-};

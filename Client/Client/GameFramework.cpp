@@ -1,13 +1,18 @@
 #include "stdafx.h"
 #include "GameFramework.h"
-#include "ObjectManager.h"
+
 #include "Chess_Scene.h"
+#include "Renderer.h"
+
+#include "TransformComponent.h"
+
+#include "DescriptorManager.h"
 #include "InputManager.h"
 #include "NetworkManager.h"
-#include "Renderer.h"
+#include "ObjectManager.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
-#include "TransformComponent.h"
+#include "TextureManager.h"
 
 
 GameFramework::GameFramework()
@@ -48,6 +53,8 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	SceneManager::Instance()->initialize();
 	Renderer::Instance()->initialize(_device.Get());
 	ResourceManager::Instance()->initialize(_device.Get());
+	DescriptorManager::Instance()->initialize(_device.Get());
+	TextureManager::Instance()->initialize(_device.Get());
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
