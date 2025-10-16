@@ -121,6 +121,8 @@ struct Texture
     ComPtr<ID3D12Resource> resource = nullptr;
     ComPtr<ID3D12Resource> uploadHeap = nullptr;
 
+	std::unique_ptr<uint8_t[]> ddsData;
+
 	D3D12_CPU_DESCRIPTOR_HANDLE cpuSrvHandle{};
     D3D12_GPU_DESCRIPTOR_HANDLE gpuSrvHandle{};
 };
@@ -136,7 +138,7 @@ extern ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12Grap
 //	UINT FirstSubresource,
 //	UINT NumSubresources,
 //	D3D12_SUBRESOURCE_DATA* pSrcData);
-
+ID3D12Resource* CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, wchar_t* pszFileName, ID3D12Resource** ppd3dUploadBuffer, D3D12_RESOURCE_STATES d3dResourceStates);
 // ==================================================
 // 디버그 로그 매크로
 // ==================================================

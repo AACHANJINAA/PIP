@@ -21,8 +21,24 @@ void GltfMaterial::set_texture(std::shared_ptr<Texture> texture, UINT index)
 
 void GltfMaterial::bind(ID3D12GraphicsCommandList* command_list) const
 {
-	if (_textures.empty() || !_textures[0]) return;
+	if (_textures.empty()) return;
+
+	D3D12_GPU_DESCRIPTOR_HANDLE firstGpuHandle = {};
+    bool bFoundFirst = false;
+    for (int i = 0; i < 4; ++i) // 텍스처 슬롯은 4개라고 가정
+    { 
+        if (_textures[i] && _textures.at(i)) // 맵에 키가 존재하고, 텍스처가 유효한지 확인
+        {
+            firstGpuHandle = _textures.at(i)->gpuSrvHandle;
+            bFoundFirst = true;
+            break;
+        }
+    }
 
 	// GltfRootSignatureGenerator에서 4번 파라미터에 넣어줬으니까
-	command_list->SetGraphicsRootDescriptorTable(4, _textures[0]->gpuSrvHandle);
+    if (bFoundFirst)
+    {
+        // GltfRootSignatureGenerator에서 4번 파라미터에 테이블을 설정했으므로 인덱스 4를 사용
+        command_list->SetGraphicsRootDescriptorTable(4, firstGpuHandle);
+    }
 }

@@ -170,8 +170,11 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         TransformObject->SetObjectField(TEXT("Scale"), VectorToJsonObject(UnrealScale));
         ActorJsonObject->SetObjectField(TEXT("Transform"), TransformObject);
 
-        // --- 텍스처 정보 저장 로직 (PNG로 추출) ---
+        // -- - 텍스처 정보 저장 로직(버그 수정 버전) -- -
         TArray<TSharedPtr<FJsonValue>> TexturesJsonArray;
+        // 각 액터별로 사용된 텍스처 경로를 중복 없이 저장하기 위한 로컬 Set
+        TSet<FString> ActorTexturePaths;
+
         int32 NumMaterials = MeshComponent->GetNumMaterials();
         for (int32 MaterialIndex = 0; MaterialIndex < NumMaterials; ++MaterialIndex)
         {
@@ -180,30 +183,48 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
             {
                 TArray<UTexture*> UsedTextures;
                 Material->GetUsedTextures(UsedTextures, EMaterialQualityLevel::High, true, ERHIFeatureLevel::SM5, true);
+
                 for (UTexture* Texture : UsedTextures)
                 {
                     UTexture2D* Texture2D = Cast<UTexture2D>(Texture);
-                    if (Texture2D && !ExportedTextures.Contains(Texture2D))
+                    if (Texture2D)
                     {
-                        FString TextureFileName = Texture2D->GetName() + TEXT(".png");
-                        FString TextureFullFilePath = TextureExportDir + TextureFileName;
-                        UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("PNG"));
-                        if (Exporter)
+                        // 1. (항상 실행) 현재 액터가 어떤 텍스처를 사용하는지 기록합니다.
+                        //    Set을 사용하므로 동일한 텍스처가 여러번 추가되는 것을 방지합니다.
+                        FString RelativeDdsPath = TEXT("Textures/") + Texture2D->GetName() + TEXT(".dds");
+                        ActorTexturePaths.Add(RelativeDdsPath);
+
+                        // 2. (최초 한 번만 실행) 이 텍스처를 아직 파일로 추출한 적이 없는지 확인합니다.
+                        if (!ExportedTextures.Contains(Texture2D))
                         {
-                            int32 ExportResult = UExporter::ExportToFile(Texture2D, Exporter, *TextureFullFilePath, false, false);
-                            if (ExportResult == 1)
+                            // 파일로 추출한 적이 없다면, .png 파일을 생성합니다.
+                            FString TextureFileName = Texture2D->GetName() + TEXT(".png");
+                            FString TextureFullFilePath = TextureExportDir + TextureFileName;
+                            UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("PNG"));
+                            if (Exporter)
                             {
-                                FString RelativeDdsPath = TEXT("Textures/") + Texture2D->GetName() + TEXT(".dds");
-                                TexturesJsonArray.Add(MakeShareable(new FJsonValueString(RelativeDdsPath)));
-                                UE_LOG(LogTemp, Log, TEXT("Exported Source Texture: %s"), *TextureFullFilePath);
+                                int32 ExportResult = UExporter::ExportToFile(Texture2D, Exporter, *TextureFullFilePath, false, false);
+                                if (ExportResult == 1)
+                                {
+                                    UE_LOG(LogTemp, Log, TEXT("Exported New Source Texture: %s"), *TextureFullFilePath);
+                                }
                             }
+
+                            // 파일 추출을 완료했으므로, 전체 기록부에 추가합니다.
+                            ExportedTextures.Add(Texture2D);
                         }
-                        ExportedTextures.Add(Texture2D);
                     }
                 }
             }
         }
+
+        // 현재 액터가 사용하는 모든 텍스처 경로들을 JSON 배열에 추가합니다.
+        for (const FString& Path : ActorTexturePaths)
+        {
+            TexturesJsonArray.Add(MakeShareable(new FJsonValueString(Path)));
+        }
         ActorJsonObject->SetArrayField(TEXT("Textures"), TexturesJsonArray);
+
         ActorJsonArray.Add(MakeShareable(new FJsonValueObject(ActorJsonObject)));
     }
 
