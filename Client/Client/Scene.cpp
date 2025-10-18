@@ -70,6 +70,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         if (objectJson.contains("MaterialOverrides"))
         {
             auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+            material->set_shader(Renderer::Instance()->get_shader("gltf"));
             const auto& overrides = objectJson["MaterialOverrides"];
 
             auto add_texture = [&](const std::string& key, int slot) {
@@ -92,21 +93,24 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
-            data.transform.location = {
-                transformJson["Location"].value("x", 0.0f),
-                transformJson["Location"].value("y", 0.0f),
-                transformJson["Location"].value("z", 0.0f)
-            };
-            data.transform.rotation = {
-                transformJson["Rotation"].value("Pitch", 0.0f),
-                transformJson["Rotation"].value("Yaw", 0.0f),
-                transformJson["Rotation"].value("Roll", 0.0f)
-            };
-            data.transform.scale = {
-                transformJson["Scale"].value("x", 1.0f),
-                transformJson["Scale"].value("y", 1.0f),
-                transformJson["Scale"].value("z", 1.0f)
-            };
+            auto transformComp = gameObject->transform();
+            transformComp->set_local_position({
+                transformJson["Location"].value("X", 0.0f),
+                transformJson["Location"].value("Y", 0.0f),
+                transformJson["Location"].value("Z", 0.0f)
+            });
+            transformComp->set_local_rotation(XMFLOAT4{
+                transformJson["Rotation"].value("X", 0.0f),
+                transformJson["Rotation"].value("Y", 0.0f),
+                transformJson["Rotation"].value("Z", 0.0f),
+                transformJson["Rotation"].value("W", 1.0f)
+                }
+            );
+            transformComp->set_local_scale({
+                transformJson["Scale"].value("X", 1.0f),
+                transformJson["Scale"].value("Y", 1.0f),
+                transformJson["Scale"].value("Z", 1.0f)
+            });
         }
     }
     ResourceManager::Instance()->upload_pending_meshes(device, commandList);
