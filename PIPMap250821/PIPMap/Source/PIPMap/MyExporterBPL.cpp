@@ -151,12 +151,18 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         TransformObject->SetObjectField(TEXT("Scale"), VectorToJsonObject(ExportedScale));
         ActorJsonObject->SetObjectField(TEXT("Transform"), TransformObject);
 
-        TMap<FString, FString> AllMaterialTexturesMap;
-        int32 NumMaterials = MeshComponent->GetNumMaterials();
+        // --- 텍스처 정보 저장 (최종 수정: 머티리얼 슬롯 지원) ---
+// 1. 최종 MaterialOverrides 배열을 담을 JsonArray를 선언합니다.
+        TArray<TSharedPtr<FJsonValue>> MaterialOverridesArray;
 
+        int32 NumMaterials = MeshComponent->GetNumMaterials();
+        // 2. 머티리얼 '슬롯' 개수만큼 루프를 돕니다. (0번, 1번, 2번...)
         for (int32 MaterialIndex = 0; MaterialIndex < NumMaterials; ++MaterialIndex)
         {
+            // 각 슬롯별로 텍스처 정보를 담을 TMap을 새로 생성합니다.
+            TMap<FString, FString> CurrentSlotTexturesMap;
             UMaterialInterface* Material = MeshComponent->GetMaterial(MaterialIndex);
+
             if (Material)
             {
                 TArray<UTexture*> UsedTextures;
@@ -170,26 +176,28 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
                         FString TextureName = Texture2D->GetName();
                         FString RelativeDdsPath = TEXT("Textures/") + TextureName + TEXT(".dds");
 
+                        // 텍스처 이름 분석 후 역할에 맞는 Key와 함께 Map에 저장
                         if (TextureName.EndsWith(TEXT("_N"), ESearchCase::IgnoreCase)) {
-                            AllMaterialTexturesMap.Add(TEXT("normalTexture"), RelativeDdsPath);
+                            CurrentSlotTexturesMap.Add(TEXT("normalTexture"), RelativeDdsPath);
                         }
                         else if (TextureName.EndsWith(TEXT("_ORM"), ESearchCase::IgnoreCase) || TextureName.EndsWith(TEXT("_MRA"), ESearchCase::IgnoreCase)) {
-                            AllMaterialTexturesMap.Add(TEXT("ormTexture"), RelativeDdsPath);
+                            CurrentSlotTexturesMap.Add(TEXT("ormTexture"), RelativeDdsPath);
                         }
                         else if (TextureName.EndsWith(TEXT("_E"), ESearchCase::IgnoreCase) || TextureName.EndsWith(TEXT("_Emissive"), ESearchCase::IgnoreCase)) {
-                            AllMaterialTexturesMap.Add(TEXT("emissiveTexture"), RelativeDdsPath);
+                            CurrentSlotTexturesMap.Add(TEXT("emissiveTexture"), RelativeDdsPath);
                         }
                         else {
-                            AllMaterialTexturesMap.Add(TEXT("baseColorTexture"), RelativeDdsPath);
+                            CurrentSlotTexturesMap.Add(TEXT("baseColorTexture"), RelativeDdsPath);
                         }
 
+                        // PNG 파일 익스포트 로직은 기존과 동일
                         if (!ExportedTextures.Contains(Texture2D))
                         {
                             FString TextureFileName = TextureName + TEXT(".png");
                             FString TextureFullFilePath = TextureExportDir + TextureFileName;
-                            UExporter* PngExporter = UExporter::FindExporter(Texture2D, TEXT("PNG"));
-                            if (PngExporter) {
-                                if (UExporter::ExportToFile(Texture2D, PngExporter, *TextureFullFilePath, false, false) == 1) {
+                            UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("PNG"));
+                            if (Exporter) {
+                                if (UExporter::ExportToFile(Texture2D, Exporter, *TextureFullFilePath, false, false) == 1) {
                                     UE_LOG(LogTemp, Log, TEXT("Exported New Source Texture: %s"), *TextureFullFilePath);
                                 }
                             }
@@ -198,18 +206,20 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
                     }
                 }
             }
-        }
 
-        if (AllMaterialTexturesMap.Num() > 0)
-        {
-            TSharedPtr<FJsonObject> MaterialOverridesObject = MakeShareable(new FJsonObject());
-            for (const TPair<FString, FString>& Pair : AllMaterialTexturesMap)
+            // 3. 현재 슬롯의 텍스처 맵(TMap)을 JsonObject로 변환합니다.
+            TSharedPtr<FJsonObject> SlotMaterialObject = MakeShareable(new FJsonObject());
+            for (const TPair<FString, FString>& Pair : CurrentSlotTexturesMap)
             {
-                MaterialOverridesObject->SetStringField(Pair.Key, Pair.Value);
+                SlotMaterialObject->SetStringField(Pair.Key, Pair.Value);
             }
-            ActorJsonObject->SetObjectField(TEXT("MaterialOverrides"), MaterialOverridesObject);
+
+            // 4. 변환된 JsonObject를 최종 배열에 추가합니다.
+            MaterialOverridesArray.Add(MakeShareable(new FJsonValueObject(SlotMaterialObject)));
         }
 
+        // 5. 완성된 배열을 ActorJsonObject에 추가합니다.
+        ActorJsonObject->SetArrayField(TEXT("MaterialOverrides"), MaterialOverridesArray);
         ActorJsonArray.Add(MakeShareable(new FJsonValueObject(ActorJsonObject)));
     }
 
