@@ -6,7 +6,6 @@
 #include "Exporters/Exporter.h"
 #include "HAL/PlatformFileManager.h"
 #include "Exporters/GLTFExporter.h"
-// GLTFExportOptions.h는 이 방식에서 필요 없습니다.
 #endif
 
 #include "Components/StaticMeshComponent.h"
@@ -42,7 +41,6 @@ TSharedPtr<FJsonObject> RotatorToJsonObject(const FRotator& InRotator)
 // ExportServerData 함수 (기존과 동일)
 void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
 {
-    // ... (서버 데이터 익스포트 코드는 여기에 그대로 둡니다)
 #if WITH_EDITOR
     TArray<TSharedPtr<FJsonValue>> ActorJsonArray;
     UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
@@ -55,14 +53,17 @@ void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
         TSharedPtr<FJsonObject> ActorJsonObject = MakeShareable(new FJsonObject());
         ActorJsonObject->SetStringField(TEXT("Name"), Actor->GetActorLabel());
         ActorJsonObject->SetStringField(TEXT("Mesh"), MeshComponent->GetStaticMesh()->GetName());
+
         FVector UnrealLocation = MeshComponent->GetComponentLocation() / 100.0f;
-        FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Y, UnrealLocation.Z);
+        FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Z, UnrealLocation.Y);
         ActorJsonObject->SetObjectField(TEXT("Location"), VectorToJsonObject(ExportedLocation));
+
         FBox WorldBounds = MeshComponent->Bounds.GetBox();
         FVector UnrealMin = WorldBounds.Min / 100.0f;
         FVector UnrealMax = WorldBounds.Max / 100.0f;
-        FVector ExportedMin(UnrealMin.X, UnrealMin.Y, UnrealMin.Z);
-        FVector ExportedMax(UnrealMax.X, UnrealMax.Y, UnrealMax.Z);
+        FVector ExportedMin(UnrealMin.X, UnrealMin.Z, UnrealMin.Y);
+        FVector ExportedMax(UnrealMax.X, UnrealMax.Z, UnrealMax.Y);
+
         TSharedPtr<FJsonObject> AABBObject = MakeShareable(new FJsonObject());
         AABBObject->SetObjectField(TEXT("Min"), VectorToJsonObject(ExportedMin));
         AABBObject->SetObjectField(TEXT("Max"), VectorToJsonObject(ExportedMax));
@@ -78,8 +79,17 @@ void UMyExporterBPL::ExportServerData(UObject* WorldContextObject)
 #endif
 }
 
+// Quaternion을 { "X": 값, "Y": 값, "Z": 값, "W": 값 } 형태의 FJsonObject로 변환하는 헬퍼 함수
+TSharedPtr<FJsonObject> QuaternionToJsonObject(const FQuat& InQuat)
+{
+    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+    JsonObject->SetNumberField(TEXT("X"), InQuat.X);
+    JsonObject->SetNumberField(TEXT("Y"), InQuat.Y);
+    JsonObject->SetNumberField(TEXT("Z"), InQuat.Z);
+    JsonObject->SetNumberField(TEXT("W"), InQuat.W);
+    return JsonObject;
+}
 
-// ExportClientData 함수 (모든 버그가 수정된 최종 버전)
 void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
 {
 #if WITH_EDITOR
@@ -130,23 +140,28 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         FVector UnrealLocation = MeshComponent->GetComponentLocation() / 100.0f;
         FQuat UnrealQuat = MeshComponent->GetComponentQuat();
         FVector UnrealScale = MeshComponent->GetComponentScale();
-        FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Y, UnrealLocation.Z);
+        FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Z, UnrealLocation.Y);
+        FVector ExportedScale(UnrealScale.X, UnrealScale.Z, UnrealScale.Y);
+
+        FQuat ExportedQuat = FQuat(UnrealQuat.X, UnrealQuat.Z, UnrealQuat.Y, -UnrealQuat.W);
+
         TSharedPtr<FJsonObject> TransformObject = MakeShareable(new FJsonObject());
         TransformObject->SetObjectField(TEXT("Location"), VectorToJsonObject(ExportedLocation));
-        TransformObject->SetObjectField(TEXT("Rotation"), RotatorToJsonObject(UnrealQuat.Rotator()));
-        TransformObject->SetObjectField(TEXT("Scale"), VectorToJsonObject(UnrealScale));
+        TransformObject->SetObjectField(TEXT("Rotation"), QuaternionToJsonObject(ExportedQuat));
+        TransformObject->SetObjectField(TEXT("Scale"), VectorToJsonObject(ExportedScale));
         ActorJsonObject->SetObjectField(TEXT("Transform"), TransformObject);
 
-        TArray<TSharedPtr<FJsonValue>> MaterialOverridesArray;
+        TMap<FString, FString> AllMaterialTexturesMap;
         int32 NumMaterials = MeshComponent->GetNumMaterials();
+
         for (int32 MaterialIndex = 0; MaterialIndex < NumMaterials; ++MaterialIndex)
         {
-            TMap<FString, FString> CurrentSlotTexturesMap;
             UMaterialInterface* Material = MeshComponent->GetMaterial(MaterialIndex);
             if (Material)
             {
                 TArray<UTexture*> UsedTextures;
                 Material->GetUsedTextures(UsedTextures, EMaterialQualityLevel::High, true, ERHIFeatureLevel::SM5, true);
+
                 for (UTexture* Texture : UsedTextures)
                 {
                     UTexture2D* Texture2D = Cast<UTexture2D>(Texture);
@@ -154,17 +169,18 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
                     {
                         FString TextureName = Texture2D->GetName();
                         FString RelativeDdsPath = TEXT("Textures/") + TextureName + TEXT(".dds");
+
                         if (TextureName.EndsWith(TEXT("_N"), ESearchCase::IgnoreCase)) {
-                            CurrentSlotTexturesMap.Add(TEXT("normalTexture"), RelativeDdsPath);
+                            AllMaterialTexturesMap.Add(TEXT("normalTexture"), RelativeDdsPath);
                         }
                         else if (TextureName.EndsWith(TEXT("_ORM"), ESearchCase::IgnoreCase) || TextureName.EndsWith(TEXT("_MRA"), ESearchCase::IgnoreCase)) {
-                            CurrentSlotTexturesMap.Add(TEXT("ormTexture"), RelativeDdsPath);
+                            AllMaterialTexturesMap.Add(TEXT("ormTexture"), RelativeDdsPath);
                         }
                         else if (TextureName.EndsWith(TEXT("_E"), ESearchCase::IgnoreCase) || TextureName.EndsWith(TEXT("_Emissive"), ESearchCase::IgnoreCase)) {
-                            CurrentSlotTexturesMap.Add(TEXT("emissiveTexture"), RelativeDdsPath);
+                            AllMaterialTexturesMap.Add(TEXT("emissiveTexture"), RelativeDdsPath);
                         }
                         else {
-                            CurrentSlotTexturesMap.Add(TEXT("baseColorTexture"), RelativeDdsPath);
+                            AllMaterialTexturesMap.Add(TEXT("baseColorTexture"), RelativeDdsPath);
                         }
 
                         if (!ExportedTextures.Contains(Texture2D))
@@ -182,18 +198,20 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
                     }
                 }
             }
-            TSharedPtr<FJsonObject> SlotMaterialObject = MakeShareable(new FJsonObject());
-            for (const TPair<FString, FString>& Pair : CurrentSlotTexturesMap)
-            {
-                SlotMaterialObject->SetStringField(Pair.Key, Pair.Value);
-            }
-            MaterialOverridesArray.Add(MakeShareable(new FJsonValueObject(SlotMaterialObject)));
         }
-        ActorJsonObject->SetArrayField(TEXT("MaterialOverrides"), MaterialOverridesArray);
 
-        // ★★★ 이 줄이 계속 빠져서 문제가 되었습니다. ★★★
+        if (AllMaterialTexturesMap.Num() > 0)
+        {
+            TSharedPtr<FJsonObject> MaterialOverridesObject = MakeShareable(new FJsonObject());
+            for (const TPair<FString, FString>& Pair : AllMaterialTexturesMap)
+            {
+                MaterialOverridesObject->SetStringField(Pair.Key, Pair.Value);
+            }
+            ActorJsonObject->SetObjectField(TEXT("MaterialOverrides"), MaterialOverridesObject);
+        }
+
         ActorJsonArray.Add(MakeShareable(new FJsonValueObject(ActorJsonObject)));
-    } // 액터 루프 끝
+    }
 
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
