@@ -145,7 +145,7 @@ float3 FresnelSchlick(float cosTheta, float3 F0)
 
 
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
-{
+{   
     // 1. 모든 텍스처에서 서피스(표면) 속성 샘플링
     float4 albedoMap = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
     float3 normalMap = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
