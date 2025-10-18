@@ -123,8 +123,14 @@ bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 
 const std::string& RenderComponent::pso_name() const
 {
-    if (_material)
-		return _material->shader()->pso_name();
+    // 복수 재질이 있으면 첫 번째 기준으로 pso
+    if (!_materials.empty() && _materials[0]->shader())
+		return _materials[0]->shader()->pso_name();
+
+    // 단일 재질이면 해당 재질 기준으로 pso
+    if (_material && _material->shader())
+        return _material->shader()->pso_name();
+
     // 재질이 없으면 기본값 "default"를 반환
     static const std::string default_pso = "default";
     return default_pso;
@@ -149,10 +155,17 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
 
 	// 4. (추가 베이비) 4번 슬롯에 머티리얼 셰이더를 바인딩합니다.
-    if (_material) 
+    
+    if (!_materials.empty())
     {
-        _material->bind(commandList);
+        _mesh->render(commandList, _materials);
     }
-	// 5. 메시를 그립니다.
-	_mesh->render(commandList);
+    else 
+    {
+        if (_material)
+        {
+            _material->bind(commandList);
+        }
+        _mesh->render(commandList);
+    }
 }
