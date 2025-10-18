@@ -20,7 +20,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // --- 기존 코드 (카메라, 플레이어, 맵 등 생성) ---
     auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 20.0f, -30.0f));
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 

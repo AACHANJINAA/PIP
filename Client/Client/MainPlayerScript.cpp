@@ -10,19 +10,19 @@
 void MainPlayerScript::update(float deltaTime)
 {
     // --- 기존 MainPlayer::process_input의 로직이 여기로 완전히 이전되었습니다 ---
-    if (InputManager::Instance()->IsKeyDown('W')) {
+    if (InputManager::Instance()->IsKeyPress('W')) {
         move_pos(common::packet::MOVE_TYPE::MOVE_UP);
     }
-    if (InputManager::Instance()->IsKeyDown('S')) {
+    if (InputManager::Instance()->IsKeyPress('S')) {
         move_pos(common::packet::MOVE_TYPE::MOVE_DOWN);
     }
-    if (InputManager::Instance()->IsKeyDown('D')) {
+    if (InputManager::Instance()->IsKeyPress('D')) {
         move_pos(common::packet::MOVE_TYPE::MOVE_RIGHT);
     }
-    if (InputManager::Instance()->IsKeyDown('A')) {
+    if (InputManager::Instance()->IsKeyPress('A')) {
         move_pos(common::packet::MOVE_TYPE::MOVE_LEFT);
     }
-    if (InputManager::Instance()->IsKeyDown('F')) {
+    if (InputManager::Instance()->IsKeyPress('F')) {
         NetworkManager::Instance()->SendAttackPacket();
     }
 }

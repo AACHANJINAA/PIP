@@ -119,6 +119,10 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList, const std::vec
 		{
 			materials[primitive->_materialIndex]->bind(commandList);
 		}
+		else if (!materials.empty())
+		{
+			materials[0]->bind(commandList);
+		}
 
 		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
 		if (primitive->_indexCount > 0) {
@@ -242,6 +246,11 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 		std::vector<XMFLOAT3> positions = get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitiveJson["attributes"]["POSITION"]);
 		std::vector<XMFLOAT3> normals = primitiveJson["attributes"].contains("NORMAL") ? get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitiveJson["attributes"]["NORMAL"]) : std::vector<XMFLOAT3>();
 		std::vector<XMFLOAT2> texcoords = primitiveJson["attributes"].contains("TEXCOORD_0") ? get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitiveJson["attributes"]["TEXCOORD_0"]) : std::vector<XMFLOAT2>();
+		if (texcoords.empty())
+		{
+			std::string meshName = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
+			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + meshName + "' has no texture coordinates(TEXCOORD_0)."); 
+		}
 		std::vector<XMFLOAT4> tangents = primitiveJson["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitiveJson["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
 
 		primitive->_vertexCount = (UINT)positions.size();

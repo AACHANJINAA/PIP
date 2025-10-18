@@ -160,12 +160,13 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
     {
         _mesh->render(commandList, _materials);
     }
-    else 
+    else if (_material)
     {
-        if (_material)
-        {
-            _material->bind(commandList);
-        }
+        std::vector<std::shared_ptr<GltfMaterial>> singleMaterial = { _material };
+        _mesh->render(commandList, singleMaterial);
+    }
+    else
+    {
         _mesh->render(commandList);
     }
 }

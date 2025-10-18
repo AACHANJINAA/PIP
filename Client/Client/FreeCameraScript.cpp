@@ -64,8 +64,7 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     }
     if (InputManager::Instance()->IsKeyPress('S'))
     {
-        move_direction = Vector3::Add(move_direction, Vector3::ScalarProduct(trans->forward(), -1.0f,
-            false));
+        move_direction = Vector3::Add(move_direction, Vector3::ScalarProduct(trans->forward(), -1.0f, false));
     }
     if (InputManager::Instance()->IsKeyPress('D'))
     {
@@ -73,8 +72,7 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     }
     if (InputManager::Instance()->IsKeyPress('A'))
     {
-        move_direction = Vector3::Add(move_direction, Vector3::ScalarProduct(trans->right(), -1.0f,
-            false));
+        move_direction = Vector3::Add(move_direction, Vector3::ScalarProduct(trans->right(), -1.0f, false));
     }
     if (InputManager::Instance()->IsKeyPress(VK_SPACE))
     {
@@ -88,8 +86,7 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     if (Vector3::Length(move_direction) > 0.0f)
     {
         XMFLOAT3 normalized_direction = Vector3::Normalize(move_direction);
-        XMFLOAT3 new_position = Vector3::Add(trans->local_position(), normalized_direction, _moveSpeed *
-            delta_time);
+        XMFLOAT3 new_position = Vector3::Add(trans->local_position(), normalized_direction, _moveSpeed * delta_time);
         trans->set_local_position(new_position);
     }
 }
