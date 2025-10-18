@@ -106,6 +106,31 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
 	}
 }
 
+
+void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList, const std::vector<std::shared_ptr<GltfMaterial>>& materials)
+{
+	if (!_isUploaded) return;
+
+	commandList->IASetPrimitiveTopology(_primitiveTopology);
+
+	for (const auto& primitive : _primitives)
+	{
+		if (primitive->_materialIndex >= 0 && primitive->_materialIndex < materials.size())
+		{
+			materials[primitive->_materialIndex]->bind(commandList);
+		}
+
+		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
+		if (primitive->_indexCount > 0) {
+			commandList->IASetIndexBuffer(&primitive->_indexBufferView);
+			commandList->DrawIndexedInstanced(primitive->_indexCount, 1, 0, 0, 0);
+		}
+		else if (primitive->_vertexCount > 0) {
+			commandList->DrawInstanced(primitive->_vertexCount, 1, 0, 0);
+		}
+	}
+}
+
 void ReadGLTFMesh::release_upload_buffers()
 {
 	for (auto& primitive : _primitives)

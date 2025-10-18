@@ -69,26 +69,60 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         // MaterialOverrides 파싱 및 재질 생성
         if (objectJson.contains("MaterialOverrides"))
         {
-            auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-            material->set_shader(Renderer::Instance()->get_shader("gltf"));
-            const auto& overrides = objectJson["MaterialOverrides"];
+            const auto& overridesArray = objectJson["MaterialOverrides"];
 
-            auto add_texture = [&](const std::string& key, int slot) {
-                if (overrides.contains(key)) {
-                    std::string textureFile = overrides[key];
-                    std::string texture_path = (basePath / textureFile).string();
-                    
-					auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
-                    if (texture) material->set_texture(texture, slot);
+            if (overridesArray.size() == 1)
+            {
+                auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+                material->set_shader(Renderer::Instance()->get_shader("gltf"));
+                const auto& overrides = objectJson["MaterialOverrides"];
+
+                auto add_texture = [&](const std::string& key, int slot) {
+                    if (overrides.contains(key)) {
+                        std::string textureFile = overrides[key];
+                        std::string texture_path = (basePath / textureFile).string();
+
+                        auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                        if (texture) material->set_texture(texture, slot);
+                    }
+                    };
+
+                add_texture("baseColorTexture", 0); // BaseColor
+                add_texture("normalTexture", 1);    // Normal Map
+                add_texture("ormTexture", 2);       // ORM Map
+                add_texture("emissiveTexture", 3);  // Emissive Map
+
+                renderComp->set_material(material);
+            }
+            else if (overridesArray.size() > 1)
+            {
+                std::vector<std::shared_ptr<GltfMaterial>> materials;
+
+                for (const auto& overrideItem : overridesArray)
+                {
+                    auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
+                    material->set_shader(Renderer::Instance()->get_shader("gltf"));
+
+                    // overrideItem은 {"baseColorTexture", "path"} 형태의 객체
+
+                    for (auto& [key, val] : overrideItem.items())
+                    {
+                        std::string textureFile = val.get<std::string>();
+                        std::string texture_path = (basePath / textureFile).string();
+                        auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+
+                        if (texture)
+                        {
+                            if (key == "baseColorTexture") material->set_texture(texture, 0);
+                            else if (key == "normalTexture") material->set_texture(texture, 0);
+                            else if (key == "ormTexture") material->set_texture(texture, 0);
+                            else if (key == "emissiveTexture") material->set_texture(texture, 0);
+                        }
+                    }
+                    materials.push_back(material);
                 }
-            };
-
-            add_texture("baseColorTexture", 0); // BaseColor
-            add_texture("normalTexture", 1);    // Normal Map
-            add_texture("ormTexture", 2);       // ORM Map
-            add_texture("emissiveTexture", 3);  // Emissive Map
-
-            renderComp->set_material(material);
+                renderComp->set_materials(materials);
+            }
         }
 
         if (objectJson.contains("Transform")) {

@@ -62,6 +62,7 @@ public:
 	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
 
 	virtual void render(ID3D12GraphicsCommandList* commandList) override;
+	virtual void render(ID3D12GraphicsCommandList* commandList, const std::vector<std::shared_ptr<GltfMaterial>>& materials) override;
 	void release_upload_buffers() override;
 
 private:
