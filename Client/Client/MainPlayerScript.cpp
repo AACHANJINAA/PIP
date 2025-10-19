@@ -30,9 +30,9 @@ void MainPlayerScript::update(float deltaTime)
 void MainPlayerScript::awake()
 {
 	_renderComponent = this->game_object()->get_component<RenderComponent>().get();
-	auto character_mesh = ResourceManager::Instance()->load_mesh("\Resource\Character\Character.obj");
+	auto character_mesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
     _renderComponent->set_mesh(character_mesh);
-    _renderComponent->set_pso_name("default");
+    _renderComponent->set_pso_name("gltf");
 }
 
 void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)

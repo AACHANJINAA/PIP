@@ -24,38 +24,41 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // --- 기존 코드 (카메라, 플레이어, 맵 등 생성) ---
     auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+    //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 2.0f, 20.0f));
+	cameraObject->transform()->set_local_rotation(0.f, 180.f, 0.f);
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
-    ResourceManager::Instance()->load_mesh("\Resource\Character\Character.obj");
-    //auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
-    //
-    // // 1. RenderComponent를 먼저 추가합니다.
-    // auto renderer = playerObject->add_component<RenderComponent>();
-    //
-    // // 2. 메시를 로드하고 렌더러에 설정합니다.
-    // auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/Untitled.gltf");
-    // renderer->set_mesh(playerMesh);
-    // renderer->set_pso_name("gltf");
-    //
-    //// 3. 재질과 텍스처를 설정합니다.
-    //auto material = std::make_shared<GltfMaterial>("player_material");
-    // material->set_shader(Renderer::Instance()->get_shader("gltf"));
-    // auto texture = TextureManager::Instance()->load_texture(
-    //         "Resource/Character/tripo_image_bcd92247-4811-4638-8423-8e0b70612c6a_0.dds",
-    //         commandList
-    //);
-    // if (texture)
-    //     {
-    //         material->set_texture(texture, 0);
-    //     }
-    // renderer->set_material(material);
-    //
-    //// 4. MainPlayerScript를 추가합니다. (이제 렌더링 설정은 하지 않음)
-    //playerObject->add_component<MainPlayerScript>();
-    //
-    //// 5. 초기 위치를 설정합니다.
-    //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
+
+
+    // DW설명 : 플레이어 생성 부분
+    {
+        auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+
+        // RenderComponent를 먼저 추가
+        auto renderer = playerObject->add_component<RenderComponent>();
+
+        auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+
+        // 재질 및 쉐이더 설정
+        auto material = std::make_shared<GltfMaterial>("test_Material");
+        material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        renderer->set_material(material);
+
+        // gltf
+        renderer->set_pso_name("gltf");
+
+        // 위치
+        playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f); // 이건 누워있어서 세움^^;
+        playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // 크기를 키워 잘 보이게 함
+
+        // MainPlayerScript를 추가
+        playerObject->add_component<MainPlayerScript>();
+
+        // 5. 초기 위치를 설정합니다.
+        //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
+       // ResourceManager::Instance()->upload_pending_meshes(device, commandList);
+    }
 
     /*auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     playerObject->add_component<MainPlayerScript>();
@@ -83,24 +86,30 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     //testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // 크기를 키워 잘 보이게 함
 
 
+    // DW설명 : 앞으로 테스트용 뭐 띄우고 싶으면 여기 안에 gltf 파일 바꿔서 띄우면 됨
+    {
+        auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-    //// --- [테스트용 캐논 추가] --- <- 하나씩 띄워볼때 이거쓰기
-    //{
-    //    auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
+        // 1. 렌더 컴포넌트 추가
+        auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
+        test_cannon_object->add_component<GltfTestScript>();
+        // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
+        //cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+        cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf"));
 
-    //    // 1. 렌더 컴포넌트 추가
-    //    auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
-    //    test_cannon_object->add_component<GltfTestScript>();
-    //    // 2. 리소스 매니저를 통해 큐브 메쉬 로드 및 설정
-    //    cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+        // 재질 및 쉐이더 설정
+        auto material = std::make_shared<GltfMaterial>("test_Material");
+        material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        cannon_renderer->set_material(material);
 
-    //    // gltf
-    //    cannon_renderer->set_pso_name("gltf");
+        // gltf
+        cannon_renderer->set_pso_name("gltf");
 
-    //    // 위치
-    //    test_cannon_object->transform()->set_local_position(XMFLOAT3(3.0f, 0.0f, 6.0f));
-    //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // 크기를 키워 잘 보이게 함
-    //}
+        // 위치
+        test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+        test_cannon_object->transform()->set_local_rotation(-90.f,0.f,0.f);
+        test_cannon_object->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // 크기를 키워 잘 보이게 함
+    }
    // {
         //auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
