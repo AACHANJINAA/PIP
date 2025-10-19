@@ -4,6 +4,7 @@
 #include "InputManager.h"
 #include "NetworkManager.h"
 #include "RenderComponent.h"
+#include "Renderer.h"
 #include "ResourceManager.h"
 #include "TransformComponent.h"
 #include "TimerManager.h"
@@ -19,26 +20,26 @@ void MainPlayerScript::update(float deltaTime)
     bool is_moving = false;
 
     if (InputManager::Instance()->IsKeyPress('W')) {
-        move_direction = move_direction + common::Vec3Forward;
+        move_direction = Vector3::Add(move_direction, common::Vec3Forward);
         is_moving = true;
     }
     if (InputManager::Instance()->IsKeyPress('S')) {
-        move_direction = move_direction + common::Vec3Backward;
+        move_direction = Vector3::Add(move_direction,common::Vec3Backward);
         is_moving = true;
     }
     if (InputManager::Instance()->IsKeyPress('D')) {
-        move_direction = move_direction + common::Vec3Right;
+        move_direction = Vector3::Add(move_direction ,common::Vec3Right);
         is_moving = true;
     }
     if (InputManager::Instance()->IsKeyPress('A')) {
-        move_direction = move_direction + common::Vec3Left;
+        move_direction = Vector3::Add(move_direction ,common::Vec3Left);
         is_moving = true;
     }
 
     if (is_moving) {
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
         const float speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
-        auto new_pos = current_transform->local_position() + (move_direction * speed * deltaTime);
+        auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, speed * deltaTime));
         current_transform->set_local_position(new_pos);
     }
 
@@ -52,10 +53,21 @@ void MainPlayerScript::update(float deltaTime)
 
 void MainPlayerScript::awake()
 {
-	_renderComponent = this->game_object()->get_component<RenderComponent>().get();
-	auto character_mesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
-    _renderComponent->set_mesh(character_mesh);
+	_renderComponent = this->game_object()->add_component<RenderComponent>().get();
+    auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+
+    // 재질 및 쉐이더 설정
+    auto material = std::make_shared<GltfMaterial>("test_Material");
+    material->set_shader(Renderer::Instance()->get_shader("gltf"));
+    _renderComponent->set_material(material);
+	_renderComponent->set_mesh(playerMesh);
+
+    // gltf
     _renderComponent->set_pso_name("gltf");
+
+    // 위치, 회전 정보
+    transform()->set_local_rotation(-90.f, 0.f, 0.f);
+    transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
 }
 
 void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)

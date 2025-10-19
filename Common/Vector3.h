@@ -27,15 +27,4 @@ namespace common
 		if (len <= FLT_EPSILON) return Vec3Zero;
 		return { v.x / len, v.y / len, v.z / len };
 	}
-	inline Vec3 operator*(const Vec3& v, float scalar)
-	{
-		return { v.x * scalar, v.y * scalar, v.z * scalar };
-	}
-	inline Vec3 operator+(const Vec3& a, const Vec3& b)
-	{
-		XMFLOAT3 xmf3Result;
-		XMStoreFloat3(&xmf3Result, XMLoadFloat3(&xmf3Vector1) + XMLoadFloat3(&xmf3Vector2));
-		return(xmf3Result);
-	}
-
 }
