@@ -1,5 +1,5 @@
 #pragma once
-#include "Timer.h"
+#include "TimerManager.h"
 #include "Scene.h"
 static constexpr UINT SWAP_CHAIN_BUFFERS = 2;
 
@@ -46,7 +46,7 @@ private:
 	std::array<UINT64, SWAP_CHAIN_BUFFERS> _fenceValues;
 	HANDLE _fenceEvent;
 
-	GameTimer _gameTimer;
+	TimerManager _gameTimer;
 	_TCHAR _frameRate[50];
 
 	std::unique_ptr<Scene> _scene;

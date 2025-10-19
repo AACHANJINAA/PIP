@@ -5,6 +5,8 @@
 #include "NetworkManager.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
+#include "TransformComponent.h"
+#include "TimerManager.h"
 
 
 void MainPlayerScript::update(float deltaTime)
@@ -30,7 +32,7 @@ void MainPlayerScript::update(float deltaTime)
 void MainPlayerScript::awake()
 {
 	_renderComponent = this->game_object()->get_component<RenderComponent>().get();
-	auto character_mesh = ResourceManager::Instance()->load_mesh("\Resource\Character\Character.obj");
+	auto character_mesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
     _renderComponent->set_mesh(character_mesh);
     _renderComponent->set_pso_name("default");
 }
@@ -55,8 +57,15 @@ void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)
     default:
         return; // 정의되지 않은 타입이면 아무것도 하지 않음
     }
-    // 계산된 방향으로 이동 패킷을 서버에 전송합니다.
-    NetworkManager::Instance()->SendMovePacket(direction);
+
+    this->game_object()->get_component<TransformComponent>()->set_local_position(
+        {
+            this->position().x + direction.x * TimerManager::Instance()->GetTimeElapsed(),
+            this->position().y + direction.y * TimerManager::Instance()->GetTimeElapsed(),
+            this->position().z + direction.z * TimerManager::Instance()->GetTimeElapsed()
+        }
+	);
+	// 서버로 이동 명령 전송은 정해진 타임에 전송되도록 함
 }
 
 //MainPlayer::MainPlayer(int x, int y, int z)
