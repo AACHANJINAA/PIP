@@ -75,23 +75,35 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             {
                 auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
                 material->set_shader(Renderer::Instance()->get_shader("gltf"));
-                const auto& overrides = objectJson["MaterialOverrides"];
+                const auto& overrides = overridesArray[0];
 
-                auto add_texture = [&](const std::string& key, int slot) {
-                    if (overrides.contains(key)) {
-                        std::string textureFile = overrides[key];
-                        std::string texture_path = (basePath / textureFile).string();
+                if (overrides.contains("baseColorTexture")) {
+                    std::string textureFile = overrides["baseColorTexture"];
+                    std::string texture_path = (basePath / textureFile).string();
+                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    if (texture) material->set_texture(texture, 0);
+                }
 
-                        auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
-                        if (texture) material->set_texture(texture, slot);
-                    }
-                    };
+                if (overrides.contains("normalTexture")) {
+                    std::string textureFile = overrides["normalTexture"];
+                    std::string texture_path = (basePath / textureFile).string();
+                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    if (texture) material->set_texture(texture, 1);
+                }
 
-                add_texture("baseColorTexture", 0); // BaseColor
-                add_texture("normalTexture", 1);    // Normal Map
-                add_texture("ormTexture", 2);       // ORM Map
-                add_texture("emissiveTexture", 3);  // Emissive Map
+                if (overrides.contains("ormTexture")) {
+                    std::string textureFile = overrides["ormTexture"];
+                    std::string texture_path = (basePath / textureFile).string();
+                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    if (texture) material->set_texture(texture, 2);
+                }
 
+                if (overrides.contains("emissiveTexture")) {
+                    std::string textureFile = overrides["emissiveTexture"];
+                    std::string texture_path = (basePath / textureFile).string();
+                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    if (texture) material->set_texture(texture, 3);
+                }
                 renderComp->set_material(material);
             }
             else if (overridesArray.size() > 1)
@@ -114,9 +126,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                         if (texture)
                         {
                             if (key == "baseColorTexture") material->set_texture(texture, 0);
-                            else if (key == "normalTexture") material->set_texture(texture, 0);
-                            else if (key == "ormTexture") material->set_texture(texture, 0);
-                            else if (key == "emissiveTexture") material->set_texture(texture, 0);
+                            else if (key == "normalTexture") material->set_texture(texture, 1);
+                            else if (key == "ormTexture") material->set_texture(texture, 2);
+                            else if (key == "emissiveTexture") material->set_texture(texture, 3);
                         }
                     }
                     materials.push_back(material);

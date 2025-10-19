@@ -197,7 +197,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     // 5. 최종 색상 조합
     // Ambient Occlusion 적용, Emissive(자체 발광) 추가
-    float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
+    float3 ambient = float3(0.1, 0.1, 0.1) * albedo * ao;
     float3 color = ambient + Lo + emissiveMap;
     
     // HDR to LDR, 감마 보정 등 추가적인 톤 매핑이 필요할 수 있음
