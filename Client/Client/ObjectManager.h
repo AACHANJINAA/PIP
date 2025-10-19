@@ -27,9 +27,15 @@ public:
 
     // [추가] 영속성(persistent) 플래그가 없는 모든 게임 오브젝트를 파괴 요청 목록에 추가합니다.
     void clear_non_persistent_objects();
+
+	// [추가] 이름 또는 고유 ID로 게임 오브젝트를 찾는 함수
+    std::shared_ptr<GameObject> find_object(const std::string& name);
+    std::shared_ptr<GameObject> find_object(const int& id);
+    // TODO: 찾기 성능을 높이기 위해서 map이나 트리 구조를 사용해야함 -> 추후에 개선 필요
+
 private:
     
-    std::vector<std::shared_ptr<GameObject>> _gameObjects; // tODO : 순회 속도보다 삽입삭제 속도가 더 중요해 질 가능성 농후함 -> 트리 구조로 바꿔야할 가능성 있음
+    std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : 순회 속도보다 삽입삭제 속도가 더 중요해 질 가능성 농후함 -> 트리 구조로 바꿔야할 가능성 있음
     std::vector<std::shared_ptr<Object>>     _destructionQueue;
     std::queue<std::shared_ptr<GameObject>>  _newGameObjects;
 };

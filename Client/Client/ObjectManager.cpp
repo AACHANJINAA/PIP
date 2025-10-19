@@ -165,3 +165,19 @@ void ObjectManager::clear_non_persistent_objects()
 
     // process_destructions()가 다음 프레임에 실제로 메모리에서 제거할 것입니다.
 }
+
+std::shared_ptr<GameObject> ObjectManager::find_object(const std::string& name)
+{
+    return *std::find_if(_gameObjects.begin(), _gameObjects.end(), [name](const std::shared_ptr<GameObject>& object)
+    {
+            return object->name() == name;
+    });
+}
+
+std::shared_ptr<GameObject> ObjectManager::find_object(const int& id)
+{
+	return *std::find_if(_gameObjects.begin(), _gameObjects.end(), [id](const std::shared_ptr<GameObject>& object)
+	{
+            return object->unique_id() == id;
+	});
+}

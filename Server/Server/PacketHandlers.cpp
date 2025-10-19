@@ -197,13 +197,16 @@ namespace PIP::packet
 
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
-		session->_logic_thread_idx = room->GetLogicThreadIndex();
-		session->GetPlayer()->_position.x = 4;
-		session->GetPlayer()->_position.y = 4;
+		session->_logic_thread_idx = room->GetLogicThreadIndex(); 
+		session->GetPlayer()->_position.x = 0;
+		session->GetPlayer()->_position.y = 70;
+		session->GetPlayer()->_position.z = -150;
 		session->GetPlayer()->_level = 1;
 		session->GetPlayer()->_hp = 100;
 		session->GetPlayer()->_exp = 0;
-		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (4,4)");
+
+		
+		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 70, -150)");
 
 		SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;

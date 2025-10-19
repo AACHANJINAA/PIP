@@ -22,8 +22,7 @@ namespace PIP::server
 		{
 			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
 			int npcId = _next_npc_id++;
-			common::Vec3 randomPos = { static_cast<float>(rand() % 50), 4.0f, static_cast<float>(rand() % 50)
-			};
+			common::Vec3 randomPos = { static_cast<float>(rand() % 500), 4.0f, static_cast<float>(rand() % 500)};
 
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos);
 			AddNPC(std::move(npc));
@@ -106,18 +105,30 @@ namespace PIP::server
 		for (auto& val : _npcs | std::views::values)
 		{
 			NPC* npc = val.get();
-			common::packet::SC_PACKET_NPC_SPAWN spawnPacket;
-			spawnPacket._size = sizeof(spawnPacket);
-			spawnPacket._type = common::packet::PacketType::S2C_NPC_SPAWN;
-			spawnPacket._npc_id = npc->GetNpcId();
-			spawnPacket._npc_type = npc->GetNpcType();
-			spawnPacket._position = npc->GetPosition();
-			new_player->do_send(reinterpret_cast<const char*>(&spawnPacket), sizeof(spawnPacket));
+			const std::string& npc_name = npc->GetName();
+
+			packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
+			spawn_packet_data._type = common::packet::PacketType::S2C_NPC_SPAWN;
+			spawn_packet_data._size = 0; // 임시 크기, 나중에 덮어씀
+			spawn_packet_data._npc_id = npc->GetNpcId();
+			spawn_packet_data._npc_type = npc->GetNpcType();
+			spawn_packet_data._position = npc->GetPosition();
+
+			packet::PacketStream finalStream;
+			finalStream << spawn_packet_data; // 1. 구조체를 스트림에 쓴다
+			finalStream << npc_name;          // 2. 이름(가변 데이터)을 스트림에 쓴다
+
+			// 3. 최종 크기를 계산하여 패킷 헤더에 덮어쓴다
+			auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
+			final_header->_size = static_cast<uint16_t>(finalStream.Size());
+
+			new_player->do_send(finalStream.constable_data(), finalStream.Size());
 		}
 	}
 
 	void Room::HandleAttack(std::shared_ptr<SESSION> attacker)
 	{
+		//TODO: float로 바뀐 게임 좌표에 맞게 수정 필요
 		if (attacker == nullptr) return;
 
 		// 4방향 좌표 (상, 하, 좌, 우)
@@ -185,18 +196,29 @@ namespace PIP::server
 		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
 		npc->SetPosition(newPos);
 
-		// 이동 패킷 브로드캐스팅
-		common::packet::SC_PACKET_NPC_MOVE movePacket;
-		movePacket._size = sizeof(movePacket);
-		movePacket._type = common::packet::PacketType::S2C_NPC_MOVE;
-		movePacket.npcId = npcId;
-		movePacket.position = newPos;
-		Broadcast(reinterpret_cast<const char*>(&movePacket), sizeof(movePacket));
+		const std::string& npc_name = npc->GetName();
+
+		packet::SC_PACKET_NPC_MOVE move_packet_data;
+		move_packet_data._type = common::packet::PacketType::S2C_NPC_MOVE;
+		move_packet_data._size = 0; // 임시
+		move_packet_data._npc_id = npcId;
+		move_packet_data._position = newPos;
+
+		packet::PacketStream finalStream;
+		finalStream << move_packet_data;
+		finalStream << npc_name;
+
+		// 최종 크기를 계산하여 패킷 헤더에 덮어쓰기
+		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
+		final_header->_size = static_cast<uint16_t>(finalStream.Size());
+
+		Broadcast(finalStream.constable_data(), finalStream.Size());
+
 
 		// 다음 업데이트 예약
 		Server::Instance()->AddTimerJob(_logic_thread_idx,std::chrono::milliseconds(200),[this, npcId]()
 		{
-				this->UpdateNPC(npcId);
+			this->UpdateNPC(npcId);
 		});
 	}
 }
