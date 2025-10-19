@@ -8,9 +8,9 @@
 #include "MainPlayerScript.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
-#include "Mesh.h" // ¸Ş½Ã Å¬·¡½º°¡ ÇÊ¿äÇÒ ¼ö ÀÖÀ½
+#include "Mesh.h"
 #include "ResourceManager.h"
-// #include "PlayerScript.h" // ¾ÕÀ¸·Î ¸¸µé ½ºÅ©¸³Æ®µé
+// #include "PlayerScript.h"
 
 #include "GltfTestScript.h"
 
@@ -21,41 +21,44 @@
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 
-    // --- ±âÁ¸ ÄÚµå (Ä«¸Ş¶ó, ÇÃ·¹ÀÌ¾î, ¸Ê µî »ı¼º) ---
+    // ì¹´ë©”ë¼ ìƒì„±
     auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+    //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 2.0f, 20.0f));
+	cameraObject->transform()->set_local_rotation(0.f, 180.f, 0.f);
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
-    ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
-    //auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
-    //
-    // // 1. RenderComponent¸¦ ¸ÕÀú Ãß°¡ÇÕ´Ï´Ù.
-    // auto renderer = playerObject->add_component<RenderComponent>();
-    //
-    // // 2. ¸Ş½Ã¸¦ ·ÎµåÇÏ°í ·»´õ·¯¿¡ ¼³Á¤ÇÕ´Ï´Ù.
-    // auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/Untitled.gltf");
-    // renderer->set_mesh(playerMesh);
-    // renderer->set_pso_name("gltf");
-    //
-    //// 3. ÀçÁú°ú ÅØ½ºÃ³¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-    //auto material = std::make_shared<GltfMaterial>("player_material");
-    // material->set_shader(Renderer::Instance()->get_shader("gltf"));
-    // auto texture = TextureManager::Instance()->load_texture(
-    //         "Resource/Character/tripo_image_bcd92247-4811-4638-8423-8e0b70612c6a_0.dds",
-    //         commandList
-    //);
-    // if (texture)
-    //     {
-    //         material->set_texture(texture, 0);
-    //     }
-    // renderer->set_material(material);
-    //
-    //// 4. MainPlayerScript¸¦ Ãß°¡ÇÕ´Ï´Ù. (ÀÌÁ¦ ·»´õ¸µ ¼³Á¤Àº ÇÏÁö ¾ÊÀ½)
-    //playerObject->add_component<MainPlayerScript>();
-    //
-    //// 5. ÃÊ±â À§Ä¡¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-    //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
+
+
+	// DWì„¤ëª… : í”Œë ˆì´ì–´ ì˜¤ë¸Œì íŠ¸ ìƒì„±
+    {
+        auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+
+        // RenderComponent
+        auto renderer = playerObject->add_component<RenderComponent>();
+
+        auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+
+        // ì¬ì§ˆ ë° ì‰ì´ë” ì„¤ì •
+        auto material = std::make_shared<GltfMaterial>("test_Material");
+        material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        renderer->set_material(material);
+
+        // gltf
+        renderer->set_pso_name("gltf");
+
+        // ìœ„ì¹˜, íšŒì „ ì •ë³´
+        playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);  
+        playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); 
+
+        // MainPlayerScriptì¶”ê°€
+        playerObject->add_component<MainPlayerScript>();
+
+        //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
+       // ResourceManager::Instance()->upload_pending_meshes(device, commandList);
+    }
+
 
     /*auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     playerObject->add_component<MainPlayerScript>();
@@ -66,77 +69,83 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     map_renderer->set_pso_name("skinned");
     mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));*/
 
-    //// --- [Å×½ºÆ®¿ë Å¥ºê Ãß°¡] ---
+    //// --- [ï¿½×½ï¿½Æ®ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ß°ï¿½] ---
     //auto testCubeObject = ObjectManager::Instance()->create_game_object("TestCube");
     //
-    //// 1. ·»´õ ÄÄÆ÷³ÍÆ® Ãß°¡
+    //// 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
     //auto cube_renderer = testCubeObject->add_component<RenderComponent>();
     //
-    //// 2. ¸®¼Ò½º ¸Å´ÏÀú¸¦ ÅëÇØ Å¥ºê ¸Ş½¬ ·Îµå ¹× ¼³Á¤
+    //// 2. ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½Ş½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     //cube_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Cube_Normal.obj"));
     //
-    //// 3. .obj ÆÄÀÏÀÌ¹Ç·Î "default" ¼ÎÀÌ´õ(PSO)¸¦ »ç¿ëÇÏµµ·Ï ¼³Á¤
+    //// 3. .obj ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ "default" ï¿½ï¿½ï¿½Ì´ï¿½(PSO)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     //cube_renderer->set_pso_name("debug");
     //
-    //// 4. Å¥ºê À§Ä¡ ¼³Á¤ (Ä«¸Ş¶ó¿¡ Àß º¸ÀÌµµ·Ï)
+    //// 4. Å¥ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ (Ä«ï¿½Ş¶ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½)
     //testCubeObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
-    //testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // Å©±â¸¦ Å°¿ö Àß º¸ÀÌ°Ô ÇÔ
+    //testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // Å©ï¿½â¸¦ Å°ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½
 
 
+    // DWì„¤ëª… : í…ŒìŠ¤íŠ¸ í•˜ê³ ì‹¶ì€ gltf íŒŒì¼ ìˆìœ¼ë©´ ì´ í˜•ì‹ ì°¸ê³ í•´ì„œ ë¡œë“œí•´ë³´ê¸°
+    {
+        auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-    //// --- [Å×½ºÆ®¿ë Ä³³í Ãß°¡] --- <- ÇÏ³ª¾¿ ¶ç¿öº¼¶§ ÀÌ°Å¾²±â
-    //{
-    //    auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-    //    // 1. ·»´õ ÄÄÆ÷³ÍÆ® Ãß°¡
-    //    auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
-    //    test_cannon_object->add_component<GltfTestScript>();
-    //    // 2. ¸®¼Ò½º ¸Å´ÏÀú¸¦ ÅëÇØ Å¥ºê ¸Ş½¬ ·Îµå ¹× ¼³Á¤
-    //    cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+        auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
+        test_cannon_object->add_component<GltfTestScript>();
 
-    //    // gltf
-    //    cannon_renderer->set_pso_name("gltf");
+        //cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+        cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf"));
 
-    //    // À§Ä¡
-    //    test_cannon_object->transform()->set_local_position(XMFLOAT3(3.0f, 0.0f, 6.0f));
-    //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // Å©±â¸¦ Å°¿ö Àß º¸ÀÌ°Ô ÇÔ
-    //}
+        
+        auto material = std::make_shared<GltfMaterial>("test_Material");
+        material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        cannon_renderer->set_material(material);
+
+        // gltf
+        cannon_renderer->set_pso_name("gltf");
+
+        // ìœ„ì¹˜ íšŒì „ í¬ê¸° ìˆ˜ì •
+        test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+        test_cannon_object->transform()->set_local_rotation(-90.f,0.f,0.f);
+        test_cannon_object->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // ìºë¦­í„° ëª¨ë¸ ì‘ì•„ì„œ í‚¤ì›Œì•¼í•¨ ã…‹ã…‹
+    }
    // {
         //auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-    //    // 1. ·»´õ ÄÄÆ÷³ÍÆ® Ãß°¡
+    //    // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
     //    auto cannon_renderer = test_cannon_object->add_component<GltfRenderComponent>();
 
-    //    // 2. ¸®¼Ò½º ¸Å´ÏÀú¸¦ ÅëÇØ Å¥ºê ¸Ş½¬ ·Îµå ¹× ¼³Á¤
+    //    // 2. ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½Ş½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     //    cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
 
     //    // gltf
     //    cannon_renderer->set_pso_name("gltf");
 
-    //    // À§Ä¡
+    //    // ï¿½ï¿½Ä¡
     //    test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 6.0f));
-    //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // Å©±â¸¦ Å°¿ö Àß º¸ÀÌ°Ô ÇÔ
+    //    test_cannon_object->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f }); // Å©ï¿½â¸¦ Å°ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½
     //}
 
- //   // [Ãß°¡] ¾À¿¡ Ä«¸Ş¶ó¸¦ »ı¼ºÇÕ´Ï´Ù.
+ //   // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Ş¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
  //   auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
- //   cameraObject->add_component<FreeCameraScript>(); // ½ºÅ©¸³Æ®°¡ CameraComponent¸¦ ÀÚµ¿À¸·Î Ãß°¡ÇÏ°í ÃÊ±âÈ­ÇÕ´Ï´Ù.
+ //   cameraObject->add_component<FreeCameraScript>(); // ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ CameraComponentï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ï°ï¿½ ï¿½Ê±ï¿½È­ï¿½Õ´Ï´ï¿½.
 	//cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 5.0f, -10.0f));
- //   // --- Á¶¸í »ı¼º (¿¹½Ã) ---
-	//// Á¶¸íÀº º¸Åë º¸ÀÌÁö ¾ÊÀ¸¹Ç·Î RenderComponent°¡ ÇÊ¿ä ¾ø½À´Ï´Ù.
+ //   // --- ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½) ---
+	//// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ RenderComponentï¿½ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
  //   //auto lightObject = ObjectManager::Instance()->create_game_object("DirectionalLight");
- //   //lightObject->add_component<LightComponent>(); // TODO: LightComponent¸¦ ¸¸µç´Ù¸é ºÎÂø
+ //   //lightObject->add_component<LightComponent>(); // TODO: LightComponentï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 
- //   // --- ÇÃ·¹ÀÌ¾î »ı¼º ---
+ //   // --- ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ---
  //   auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
- //   playerObject->add_component<MainPlayerScript>(); // ½ºÅ©¸³Æ®¸¦ ºÎÂøÇÏ¸é awake()¿¡¼­ ¸ğµç ¼³Á¤ÀÌ ÀÚµ¿À¸·Î ÀÌ·ç¾îÁı´Ï´Ù.
+ //   playerObject->add_component<MainPlayerScript>(); // ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ awake()ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì·ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
 
-	//// --- ¸Ê ¿ÀºêÁ§Æ® »ı¼º (JSON ¶Ç´Â ÆÄÀÏ ·Îµù ·ÎÁ÷ÀÌ ¿©±â·Î ¿Ã ¼ö ÀÖ½À´Ï´Ù) ---
+	//// --- ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ (JSON ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½) ---
 	//auto mapObject = ObjectManager::Instance()->create_game_object("Crate");
  //   auto renderer = mapObject->add_component<RenderComponent>();
 
  //   renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb"));
- //   renderer->set_pso_name("skinned"); // GLB ÆÄÀÏÀÌ¹Ç·Î skinned PSO »ç¿ë
+ //   renderer->set_pso_name("skinned"); // GLB ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ skinned PSO ï¿½ï¿½ï¿½
 
  //   mapObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 5.0f));
 }
@@ -147,14 +156,14 @@ void Chess_Scene::release_upload_buffers()
 }
 
 // =================================================================
-// [Á¦°ÅµÈ ÇÔ¼ö ±¸Çö]
+// [ï¿½ï¿½ï¿½Åµï¿½ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½]
 // - Chess_Scene::ProcessInput()
 // - Chess_Scene::AnimateObjects()
 // - Chess_Scene::Render()
 // - Chess_Scene::Collision()
 // - Chess_Scene::CreateGraphicsRootSignature()
-// - µîµî...
-// À§ ÇÔ¼öµéÀÇ ±¸ÇöºÎ´Â ÀÌÁ¦ ¸ğµÎ Á¦°ÅµË´Ï´Ù.
+// - ï¿½ï¿½ï¿½...
+// ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÅµË´Ï´ï¿½.
 // =================================================================
 //
 //Chess_Scene::Chess_Scene(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
@@ -169,7 +178,7 @@ void Chess_Scene::release_upload_buffers()
 //
 //void Chess_Scene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 //{
-//    // ¸¶¿ì½º Ã³À½¿¡ ¼û±â±â
+//    // ï¿½ï¿½ï¿½ì½º Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 //    if (InputManager::Instance()->GetIsShowCusor())
 //    {
 //        InputManager::Instance()->ChangeShowCusor();
@@ -178,26 +187,26 @@ void Chess_Scene::release_upload_buffers()
 //    _SignatureNum = 2;
 //    _AllRootSignature.resize(_SignatureNum);
 //   
-//    _AllRootSignature[0] = CreateGraphicsRootSignature(pd3dDevice); // ÀÏ¹İ
+//    _AllRootSignature[0] = CreateGraphicsRootSignature(pd3dDevice); // ï¿½Ï¹ï¿½
 //    _AllRootSignature[1] = CreateSkinnedGraphicsRootSignature(pd3dDevice); // GLB
 //
-//    MakeSrv(pd3dDevice); // Srv µğ½ºÅ©¸³ÅÍ »ı¼º
-//    MakeDummyBonebuffer(pd3dDevice, pd3dCommandList); // ´õ¹Ì »ı¼º
-//    // ¼ÎÀÌ´õ »ı¼º
+//    MakeSrv(pd3dDevice); // Srv ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//    MakeDummyBonebuffer(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//    // ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½ï¿½
 //
-//    // ±âÁ¸ ¿ÀºêÁ§Æ® ¼ÎÀÌ´õ
+//    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½Ì´ï¿½
 //    _AllShaders.push_back(std::make_shared<CObjectsShader>());
 //    _AllShaders.back()->CreateShader(pd3dDevice, _AllRootSignature[0].Get());
 //
 //    _AllShaders.push_back(std::make_shared<GlbShader>());
 //    _AllShaders.back()->CreateShader(pd3dDevice, _AllRootSignature[1].Get());
-//    // ´ë¿ø Àß¾µ°Ô~
+//    // ï¿½ï¿½ï¿½ ï¿½ß¾ï¿½ï¿½ï¿½~
 //    _AllShaders.push_back(std::make_shared<DebugShader>());
-//    _AllShaders.back()->CreateShader(pd3dDevice, _AllRootSignature[0].Get()); // µğ¹ö±× ¼ÎÀÌ´õ´Â ÀÏ¹İ ·çÆ® ½Ã±×´ÏÃ³ »ç¿ë
+//    _AllShaders.back()->CreateShader(pd3dDevice, _AllRootSignature[0].Get()); // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½Ï¹ï¿½ ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½Ã³ ï¿½ï¿½ï¿½
 //
-//    m_pDebugShader = _AllShaders.back().get(); // ¸â¹ö º¯¼ö¿¡ Æ÷ÀÎÅÍ ÀúÀå
+//    m_pDebugShader = _AllShaders.back().get(); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 // 
-//    // Ä«¸Ş¶ó »ı¼º
+//    // Ä«ï¿½Ş¶ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    m_ChessCamera = new FreeCamera{};
 //    m_pCamera = m_ChessCamera;
 //    m_ChessCamera->SetCameraMode(CAMERA_MODE::CAMERA_THIRD_PERSON);
@@ -213,17 +222,17 @@ void Chess_Scene::release_upload_buffers()
 //
 //    LoadSceneFromFile("Resource/MapData/ExportedClientData.json", pd3dDevice, pd3dCommandList);
 //
-//    // º¸µåÆÇ »ı¼º
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    std::shared_ptr<GameObject> Board{};
 //    std::shared_ptr<Mesh> BoardMesh{};
 //    float MoveDistance{};
 //
-//    //for (int i = 0; i < 8; ++i) // ¼¼·Î
+//    //for (int i = 0; i < 8; ++i) // ï¿½ï¿½ï¿½ï¿½
 //    //{
-//    //    for (int j = 0; j < 8; ++j) // °¡·Î
+//    //    for (int j = 0; j < 8; ++j) // ï¿½ï¿½ï¿½ï¿½
 //    //    {
 //    //        Board = std::make_shared<BoardCube>();
-//    //        Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // »ó¼ö ¹öÆÛ »ı¼º ·ÎÁ÷ Ãß°¡
+//    //        Board->CreateShaderVariables(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 //    //        BoardMesh = new ReadObjMesh{ pd3dDevice,pd3dCommandList,"Resource/Cube_Normal.obj" };
 //    //        if ((j + i) % 2)
 //    //        {
@@ -271,14 +280,14 @@ void Chess_Scene::release_upload_buffers()
 //    Board->_posY = 0;
 //    ObjectManager::Instance()->PushFloorObject(Board);
 //
-//    // ¾ğ¸®¾ó¿¡¼­ »ÌÀº FBX Å×½ºÆ®
+//    // ï¿½ğ¸®¾ó¿¡¼ï¿½ ï¿½ï¿½ï¿½ï¿½ FBX ï¿½×½ï¿½Æ®
 //    _fbxObject = std::make_shared<BoardCube>();
 //	auto fbxObject_Render = _fbxObject->get_component<RenderComponent>();
 //    _collisionMesh = std::make_shared<ReadFbxMesh>(pd3dDevice,pd3dCommandList,"Resource/Test/TestCollision.fbx");
 //
 //    if (fbxObject_Render)
 //    {
-//        fbxObject_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // »ó¼ö ¹öÆÛ »ı¼º ·ÎÁ÷ Ãß°¡
+//        fbxObject_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 //        fbxObject_Render->set_mesh(_collisionMesh);
 //    }
 //    XMFLOAT3 Scale = XMFLOAT3(0.01f, 0.01f, 0.01f);
@@ -295,25 +304,25 @@ void Chess_Scene::release_upload_buffers()
 //    ObjectManager::Instance()->PushFloorObject(_fbxObject);
 //
 //    // ----------------------------------------------------------------------------------------------------------------------------------------------
-//    // collision µğ¹ö±ë ÄÚµå
+//    // collision ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½
 //
 //    std::shared_ptr<ReadFbxMesh> fbxMesh = dynamic_pointer_cast<ReadFbxMesh>(_collisionMesh);
 //
 //    if (_collisionMesh)
 //    {
 //        const auto& collisionPrimitives = _collisionMesh->GetCollisionPrimitives();
-//        debugObjects.clear(); // ÀÌÀü µ¥ÀÌÅÍ Å¬¸®¾î
+//        debugObjects.clear(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 //
-//        // CollisionPrimitive °³¼ö¸¸Å­ µğ¹ö±× ¿ÀºêÁ§Æ®¸¦ ¹Ì¸® »ı¼º
+//        // CollisionPrimitive ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 //        for (const auto& primitive : collisionPrimitives)
 //        {
-//            // OBB, AABB, Wireframe ¿ÀºêÁ§Æ® 3°³¸¦ »ı¼º¸¸ ÇÏ°í º¤ÅÍ¿¡ Ãß°¡
-//            // À§Ä¡ °è»êÀº Render ÇÔ¼ö¿¡¼­ ¸Å ÇÁ·¹ÀÓ ¼öÇàÇÏ¹Ç·Î ¿©±â¼­´Â ¾ÈÇÔ
+//            // OBB, AABB, Wireframe ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® 3ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½ß°ï¿½
+//            // ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ Render ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½â¼­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //            auto debugOOBBObject = std::make_shared<BoardCube>();
 //			auto debugOOBB_Render = debugOOBBObject->get_component<RenderComponent>();
 //            if (debugOOBB_Render)
 //            {
-//                debugOOBB_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // »ó¼ö ¹öÆÛ »ı¼º ·ÎÁ÷ Ãß°¡
+//                debugOOBB_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 //                debugOOBB_Render->set_mesh(std::make_shared<DebugCollisionBox>(pd3dDevice, pd3dCommandList, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));
 //            }
 //            debugObjects.push_back(debugOOBBObject);
@@ -322,7 +331,7 @@ void Chess_Scene::release_upload_buffers()
 //			auto debugAABB_Render = debugAABBObject->get_component<RenderComponent>();
 //            if (debugOOBB_Render)
 //            {
-//                debugAABB_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // »ó¼ö ¹öÆÛ »ı¼º ·ÎÁ÷ Ãß°¡
+//                debugAABB_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 //                debugAABB_Render->set_mesh(std::make_shared<DebugCollisionBox>(pd3dDevice, pd3dCommandList, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));
 //            }
 //            debugObjects.push_back(debugAABBObject);
@@ -331,7 +340,7 @@ void Chess_Scene::release_upload_buffers()
 //			auto debugWireframe_Render = debugWireframeObject->get_component<RenderComponent>();
 //            if (debugWireframe_Render)
 //            {
-//                debugWireframe_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // »ó¼ö ¹öÆÛ »ı¼º ·ÎÁ÷ Ãß°¡
+//                debugWireframe_Render->CreateShaderVariables(pd3dDevice, pd3dCommandList); // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 //                debugWireframe_Render->set_mesh(std::make_shared<DebugWireframeMesh>(pd3dDevice, pd3dCommandList, primitive._vertices, primitive._indices, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));
 //            }
 //            debugObjects.push_back(debugWireframeObject);
@@ -341,27 +350,27 @@ void Chess_Scene::release_upload_buffers()
 //    // ----------------------------------------------------------------------------------------------------------------------------------------------
 //
 //    //{
-//    //    // ÇÃ·¹ÀÌ¾î »ı¼º
+//    //    // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    //    std::shared_ptr<GameObject> Player = std::make_shared<CChess_King>(0, 0);
 //    //    Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
 //    //    Chess_Mesh->ChangeColor(pd3dCommandList, 1.0f, 1.0f, 1.0f, 1.f);
 //    //    Player.get()->SetMesh(Chess_Mesh);
-//    //    // ÀÌµ¿ °Å¸® ¼³Á¤
+//    //    // ï¿½Ìµï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    //    static_cast<CChess_King*>(Player.get())->SetDistance(MoveDistance);
 //    //    Player.get()->SetScale(1.f, 1.f, 1.f);
-//    //    // ¸Å´ÏÀú¿¡ ³Ö±â
+//    //    // ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±ï¿½
 //    //    ObjectManager::Instance()->PushObject(Player);
 //    //}
 //    //{
-//    //    // »ó´ë¹æ »ı¼º
+//    //    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    //    std::shared_ptr<GameObject> Other = std::make_shared<OtherPlayer>(7, 7);
 //    //    Mesh* Chess_Mesh = new ReadObjMesh{ pd3dDevice, pd3dCommandList, "Resource/Chess_King.obj" };
 //    //    Chess_Mesh->ChangeColor(pd3dCommandList, 0.0f, 0.0f, 0.0f, 1.f);
 //    //    Other.get()->SetMesh(Chess_Mesh);
-//    //    // ÀÌµ¿ °Å¸® ¼³Á¤
+//    //    // ï¿½Ìµï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    //    static_cast<OtherPlayer*>(Other.get())->SetDistance(MoveDistance);
 //    //    Other.get()->SetScale(1.f, 1.f, 1.f);
-//    //    // ¸Å´ÏÀú¿¡ ³Ö±â
+//    //    // ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±ï¿½
 //    //    ObjectManager::Instance()->PushObject(Other);
 //    //}
 //
@@ -392,7 +401,7 @@ void Chess_Scene::release_upload_buffers()
 //
 //	MainPlayer* Player = nullptr;
 //
-//    // ESC ´©¸£¸é Ä¿¼­ Å°°í ²ø ¼ö ÀÖµµ·Ï ¼öÁ¤
+//    // ESC ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä¿ï¿½ï¿½ Å°ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //    if (InputManager::Instance()->IsKeyDown(VK_ESCAPE))
 //    {
 //        InputManager::Instance()->ChangeShowCusor();
@@ -472,20 +481,20 @@ void Chess_Scene::release_upload_buffers()
 //
 //    ObjectManager::Instance()->MakeRenderMap(m_pCamera);
 //
-//    // ±âº» ·çÆ® ½Ã±×´ÏÃ³ ¼³Á¤ (ÅØ½ºÃ³ ¾ø´Â ÀÏ¹İ °´Ã¼¿ë)
+//    // ï¿½âº» ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¹ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½)
 //    {
 //        pd3dCommandList->SetGraphicsRootSignature(_AllRootSignature[0].Get());
-//        // ±âº» ¼ÎÀÌ´õ PSO
+//        // ï¿½âº» ï¿½ï¿½ï¿½Ì´ï¿½ PSO
 //        _AllShaders[0]->OnPrepareRender(pd3dCommandList);
 //
-//        // Àü¿ª µ¥ÀÌÅÍ ¼³Á¤ (¸ğµç °´Ã¼°¡ ÀÌ Á¶¸í°ú ÀçÁú Á¤º¸¸¦ °øÀ¯)
-//        UpdateShaderVariables(pd3dCommandList); // Á¶¸í/¸ÓÅÍ¸®¾ó µ¥ÀÌÅÍ CPU->GPU º¹»ç
+//        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+//        UpdateShaderVariables(pd3dCommandList); // ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ CPU->GPU ï¿½ï¿½ï¿½ï¿½
 //        D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
 //        pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress);
 //        d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
 //        pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress);
 //
-//        // SRV µğ½ºÅ©¸³ÅÍ Èü ¼³Á¤ (¸ğµç °´Ã¼°¡ ÀÌ ÈüÀ» °øÀ¯)
+//        // SRV ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 //        if (_SrvDescriptorHeap)
 //        {
 //            ID3D12DescriptorHeap* ppd3dDescriptorHeaps[] = { _SrvDescriptorHeap.Get() };
@@ -495,55 +504,55 @@ void Chess_Scene::release_upload_buffers()
 //    size_t ShaderNum{};
 //    for (auto const& [shader, objectGroup] : ObjectManager::Instance()->GetRenderMap())
 //    {
-//        // ¼ÎÀÌ´õ ±×·ìÀÌ ¹Ù²ğ ¶§ ÇÑ ¹ø¸¸ »óÅÂ¸¦ ¼³Á¤
-//        // °°Àº ±×·ìÀÇ Ã¹¹øÂ° ¿ø¼Ò¸¦ ±âÁØÀ¸·Î ¼³Á¤
+//        // ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½×·ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+//        // ï¿½ï¿½ï¿½ï¿½ ï¿½×·ï¿½ï¿½ï¿½ Ã¹ï¿½ï¿½Â° ï¿½ï¿½ï¿½Ò¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //		auto objectGroup_Render = objectGroup[0]->get_component<RenderComponent>();
-//        if(objectGroup_Render) objectGroup_Render->on_prepare_render(pd3dCommandList); // PSO¿Í ·çÆ® ½Ã±×´ÏÃ³¸¦ ¿©±â¼­ ¼³Á¤
+//        if(objectGroup_Render) objectGroup_Render->on_prepare_render(pd3dCommandList); // PSOï¿½ï¿½ ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½ï¿½ï¿½
 //
 //
-//        // ÇöÀç ±×·ì(°°Àº ¼ÎÀÌ´õ »ç¿ë ÇÏ´Â ±×·ì)ÀÇ ¸ğµç ¿ÀºêÁ§Æ®¸¦ ·»´õ¸µ
+//        // ï¿½ï¿½ï¿½ï¿½ ï¿½×·ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½×·ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //        for (const std::shared_ptr<GameObject>& Object : objectGroup)
 //        {
 //			auto Object_Render = Object->get_component<RenderComponent>();
 //
 //            if (ShaderNum == 1) // Glb
 //            {
-//                // Àü¿ª µ¥ÀÌÅÍ ¼³Á¤ (¸ğµç °´Ã¼°¡ ÀÌ Á¶¸í°ú ÀçÁú Á¤º¸¸¦ °øÀ¯)
-//                UpdateShaderVariables(pd3dCommandList); // Á¶¸í/¸ÓÅÍ¸®¾ó µ¥ÀÌÅÍ CPU->GPU º¹»ç
+//                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+//                UpdateShaderVariables(pd3dCommandList); // ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ CPU->GPU ï¿½ï¿½ï¿½ï¿½
 //                D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
 //                pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dGpuVirtualAddress);
 //                d3dGpuVirtualAddress = m_pd3dcbMaterials->GetGPUVirtualAddress();
 //                pd3dCommandList->SetGraphicsRootConstantBufferView(2, d3dGpuVirtualAddress);
 //
-//                // A. »À Çà·Ä »ó¼ö ¹öÆÛ ¹ÙÀÎµù (¾Ö´Ï¸ŞÀÌ¼Ç¿ë, ¾ÆÁ÷ ÀÛµ¿X)
-//                // ReadGlbMesh°¡ ¾Ö´Ï¸ŞÀÌ¼Ç µ¥ÀÌÅÍ¸¦ ´ã°íÀÖ´Â »ó¼ö ¹öÆÛÀÇ ÁÖ¼Ò¸¦ ¹İÈ¯ÇØ¾ß ÇÕ´Ï´Ù.
+//                // A. ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ (ï¿½Ö´Ï¸ï¿½ï¿½Ì¼Ç¿ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ûµï¿½X)
+//                // ReadGlbMeshï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼Ò¸ï¿½ ï¿½ï¿½È¯ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½.
 //
 //                auto readGlbMesh = std::dynamic_pointer_cast<ReadGlbMesh>(Object_Render->get_mesh());
 //
 //                if (readGlbMesh)
 //                {
 //                    D3D12_GPU_VIRTUAL_ADDRESS boneTransformAddress = readGlbMesh->GetBoneTransformsBufferAddress();
-//                    // [¼öÁ¤] ÁÖ¼Ò°¡ À¯È¿ÇÏ¸é ½ÇÁ¦ ¹öÆÛ¸¦, ¾Æ´Ï¸é ´õ¹Ì ¹öÆÛ¸¦ ¹ÙÀÎµù
+//                    // [ï¿½ï¿½ï¿½ï¿½] ï¿½Ö¼Ò°ï¿½ ï¿½ï¿½È¿ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½, ï¿½Æ´Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½Îµï¿½
 //                    if (boneTransformAddress != 0)
 //                    {
 //                        pd3dCommandList->SetGraphicsRootConstantBufferView(4, boneTransformAddress);
 //                    }
 //                    else
 //                    {
-//                        // m_pDummyBoneBuffer´Â SceneÀÌ³ª ·»´õ·¯°¡ ÇÏ³ªÂë °¡Áö°í ÀÖÀ¸¸é ÁÁÀ½
+//                        // m_pDummyBoneBufferï¿½ï¿½ Sceneï¿½Ì³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //                        pd3dCommandList->SetGraphicsRootConstantBufferView(4, GetDummyBoneBufferAddress());
 //                    }
 //
-//                    // B. ÅØ½ºÃ³ SRV Å×ÀÌºí ¹ÙÀÎµù
-//                    // ReadGlbMesh°¡ ·Îµù ½Ã »ı¼ºÇÑ SRVÀÇ GPU ÇÚµéÀ» ¹İÈ¯ÇØ¾ß ÇÕ´Ï´Ù.
+//                    // B. ï¿½Ø½ï¿½Ã³ SRV ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½Îµï¿½
+//                    // ReadGlbMeshï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SRVï¿½ï¿½ GPU ï¿½Úµï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½.
 //                    D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandle = readGlbMesh->GetSrvGpuHandle();
 //                    if (textureSrvHandle.ptr != 0)
 //                    {
-//                        // ·çÆ® ½Ã±×´ÏÃ³¿¡ Á¤ÀÇµÈ SRV Å×ÀÌºí ½½·Ô(¿¹: 5¹ø)¿¡ ÅØ½ºÃ³¸¦ ¹ÙÀÎµùÇÕ´Ï´Ù.
-//                        // ÀÌ ¼ıÀÚ(5)´Â CreateSkinnedGraphicsRootSignature¿¡¼­ SRV Å×ÀÌºíÀ» ¼³Á¤ÇÑ ÀÎµ¦½º¿Í ÀÏÄ¡ÇØ¾ß ÇÕ´Ï´Ù.
+//                        // ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½Çµï¿½ SRV ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½: 5ï¿½ï¿½)ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½Õ´Ï´ï¿½.
+//                        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(5)ï¿½ï¿½ CreateSkinnedGraphicsRootSignatureï¿½ï¿½ï¿½ï¿½ SRV ï¿½ï¿½ï¿½Ìºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½.
 //                        pd3dCommandList->SetGraphicsRootDescriptorTable(5, textureSrvHandle);
 //                    }
-//                    //Object->Render(pd3dCommandList, m_pCamera); // µğ¹ö±ë¿ë
+//                    //Object->Render(pd3dCommandList, m_pCamera); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                }
 //                else
 //                {
@@ -583,19 +592,19 @@ void Chess_Scene::release_upload_buffers()
 //            std::shared_ptr<GameObject>& debugAABBObject = debugObjects[i * 3 + 1];
 //            std::shared_ptr<GameObject>& debugWireframeObject = debugObjects[i * 3 + 2];
 //
-//            // 1. OBB À§Ä¡ °»½Å
+//            // 1. OBB ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 //            XMMATRIX oobb_S = XMMatrixScaling(primitive.oobb.Extents.x * 2.0f, primitive.oobb.Extents.y * 2.0f, primitive.oobb.Extents.z * 2.0f);
 //            XMVECTOR oobb_quat = XMQuaternionNormalize(XMLoadFloat4(&primitive.oobb.Orientation));
 //            XMMATRIX oobb_R = XMMatrixRotationQuaternion(oobb_quat);
 //            XMMATRIX oobb_T = XMMatrixTranslation(primitive.oobb.Center.x, primitive.oobb.Center.y, primitive.oobb.Center.z);
 //            XMStoreFloat4x4(&debugOOBBObject->get_component<TransformComponent>()->get_world_matrix(), (oobb_S * oobb_R * oobb_T) * parentWorld);
 //
-//            // 2. AABB À§Ä¡ °»½Å
+//            // 2. AABB ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 //            XMMATRIX aabb_S = XMMatrixScaling(primitive.aabb.Extents.x * 2.0f, primitive.aabb.Extents.y * 2.0f, primitive.aabb.Extents.z * 2.0f);
 //            XMMATRIX aabb_T = XMMatrixTranslation(primitive.aabb.Center.x, primitive.aabb.Center.y, primitive.aabb.Center.z);
 //            XMStoreFloat4x4(&debugAABBObject->get_component<TransformComponent>()->get_world_matrix(), (aabb_S * aabb_T) * parentWorld);
 //
-//            // 3. ¿ÍÀÌ¾îÇÁ·¹ÀÓ À§Ä¡ °»½Å
+//            // 3. ï¿½ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 //            debugWireframeObject->get_component<TransformComponent>()->get_world_matrix() = _fbxObject->get_component<TransformComponent>()->get_world_matrix();
 //
 //            debugObjects[i * 3 + 0]->get_component<RenderComponent>()->render(pd3dCommandList, m_pCamera); // OBB
