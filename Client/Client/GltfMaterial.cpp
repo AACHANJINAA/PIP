@@ -29,34 +29,12 @@ void GltfMaterial::set_texture(std::shared_ptr<Texture> texture, UINT index)
 
 void GltfMaterial::bind(ID3D12GraphicsCommandList* command_list) const
 {
-    // 첫 번째 유효한 텍스쳐의 GPU 핸들을 찾아서 바인딩
-    // Gltf 셰이더는 여러 텍스쳐를 DescriptorTable로 한 번에 받습니다.
-    // 테이블의 시작 주소만 넘겨줘랑
-
-	/*D3D12_GPU_DESCRIPTOR_HANDLE first_gpu_handle = {};
-	bool found_first = false;
-
-    for (const auto& tex : _textures)
-    {
-        if (tex)
-        {
-			first_gpu_handle = tex->gpu_srv_handle;
-            found_first = true;
-            break;
-        }
-	}
-
-    if (found_first)
-    {
-        command_list->SetGraphicsRootDescriptorTable(4, first_gpu_handle);
-	}*/
-
     for (UINT i = 0; i < _textures.size(); ++i)
     {
          if (_textures[i] && _textures[i]->gpu_srv_handle.ptr != 0)
          {
              // 루트 파라미터 4번부터 텍스처 테이블이 시작됩니다.
-         command_list->SetGraphicsRootDescriptorTable(4 + i, _textures[i]->gpu_srv_handle);
+            command_list->SetGraphicsRootDescriptorTable(4 + i, _textures[i]->gpu_srv_handle);
          }
      }
 }
