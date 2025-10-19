@@ -1,9 +1,12 @@
 #pragma once
 #include "ScriptComponent.h"
 
+class RenderComponent;
 class MainPlayerScript : public ScriptComponent
 {
 public:
+	using required_components = std::tuple<RenderComponent>;
+
     MainPlayerScript() = default;
     virtual ~MainPlayerScript() = default;
 
@@ -36,6 +39,7 @@ private:
     // (예시: 플레이어의 상태 변수들)
     int _hp;
     int64_t _playerId;
+	RenderComponent* _renderComponent{ nullptr };
 };
 
 
