@@ -160,15 +160,17 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
-    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 4; // 텍스처는 1개
-    d3dDescriptorRanges[0].BaseShaderRegister = 0; // 셰이더의 t0 레지스터에 연결
-    d3dDescriptorRanges[0].RegisterSpace = 0;
-    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
+    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
+    for (int i = 0; i < 4; ++i)
+    {
+        d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        d3dDescriptorRanges[i].NumDescriptors = 1; // 텍스처는 1개
+        d3dDescriptorRanges[i].BaseShaderRegister = i; // 셰이더의 t0 레지스터에 연결
+        d3dDescriptorRanges[i].RegisterSpace = 0;
+        d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    }
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
-	D3D12_ROOT_PARAMETER d3dRootParameters[5]; // CBV 4개 + SRV 테이블 1개 = 5개
+	D3D12_ROOT_PARAMETER d3dRootParameters[8]; // CBV 4개 + SRV 테이블 1개 = 5개
 
     // 0번 월드 행렬용 CBV
     d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -201,10 +203,13 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 버텍스 셰이더에서만 필요
 
 	// 4번 텍스처 디스크립터 테이블
-    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[0];
-    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
+    for (int i = 0; i < 4; ++i)
+    {
+        d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
+        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
+        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
+    }
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;

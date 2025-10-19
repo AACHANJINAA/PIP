@@ -74,7 +74,6 @@ public:
     // 단, 내부 구현은 새로운 아키텍처에 맞게 변경되어야 합니다. (Chess_Scene에서 재정의)
     virtual void load_scene_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
-
 protected:
     // [제거] _AllRootSignature, _AllShaders, m_pCamera, m_pLights 등
     // Scene이 직접 관리하던 모든 멤버 변수들을 제거합니다.
