@@ -162,8 +162,7 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
     }
     else if (_material)
     {
-        std::vector<std::shared_ptr<GltfMaterial>> singleMaterial = { _material };
-        _mesh->render(commandList, singleMaterial);
+        _mesh->render(commandList, { _material });
     }
     else
     {
