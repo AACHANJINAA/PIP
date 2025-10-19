@@ -32,7 +32,11 @@ public:
     void set_local_scale(const XMFLOAT3& scale);
 
     // [추가] 현재 회전에 pitch, yaw, roll을 추가로 적용합니다. (각도는 degree 단위)
+	// DW설명 : 마지막 인자는 카메라 회전용인지 구분하는 플래그
     void rotate(float pitch, float yaw, float roll);
+
+	// DW설명 : 카메라 전용 회전 함수
+    void camera_rotate(float pitch, float yaw, float roll);
 
     // --- Hierarchy Management ---
     void set_parent(std::shared_ptr<TransformComponent> parent);
@@ -41,7 +45,7 @@ public:
     const std::vector<std::shared_ptr<TransformComponent>>& children() const { return _children; }
     int child_count() const { return static_cast<int>(_children.size()); }
 
-private:
+protected:
     // [추가] 자신과 모든 자식의 isDirty 플래그를 true로 설정하는 재귀 함수
     void set_hierarchy_dirty();
 
@@ -64,4 +68,3 @@ private:
     std::weak_ptr<TransformComponent> _parent;
     std::vector<std::shared_ptr<TransformComponent>> _children;
 };
-

@@ -24,7 +24,7 @@ public:
 private:
     // 역할 이전 (from FreeCamera):
     // 마우스 입력을 처리하여 카메라를 회전시킵니다.
-    void process_mouse_input();
+    void process_mouse_input(float delta_time);
 
     // 역할 이전 (from FreeCamera):
     // 키보드 입력을 처리하여 카메라를 이동시킵니다.

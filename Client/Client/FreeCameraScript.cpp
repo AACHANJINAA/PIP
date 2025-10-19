@@ -7,7 +7,7 @@
 #include "GameFramework.h"
 
 FreeCameraScript::FreeCameraScript()
-    : _moveSpeed(10.0f), _rotationSpeed(0.3f), _cameraComponent(nullptr)
+    : _moveSpeed(10.0f), _rotationSpeed(15.0f), _cameraComponent(nullptr)
 {
 }
 
@@ -25,7 +25,7 @@ void FreeCameraScript::update(float delta_time)
     // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
     if (GameFramework::Instance()->m_bIsWindowActive && !InputManager::Instance()->GetIsShowCusor())
     {
-        process_mouse_input();
+        process_mouse_input(delta_time);
         process_keyboard_input(delta_time);
     }
 
@@ -37,16 +37,16 @@ void FreeCameraScript::update(float delta_time)
 }
 
 // 역할 이전 (from FreeCamera::ProcessInput - mouse part)
-void FreeCameraScript::process_mouse_input()
+void FreeCameraScript::process_mouse_input(float delta_time)
 {
     POINT mouse_delta = InputManager::Instance()->GetMouseDelta();
 
     if (mouse_delta.x != 0 || mouse_delta.y != 0)
     {
-        float yaw = static_cast<float>(mouse_delta.x) * _rotationSpeed;
-        float pitch = static_cast<float>(mouse_delta.y) * _rotationSpeed;
+        float yaw = static_cast<float>(mouse_delta.x) * delta_time * _rotationSpeed;
+        float pitch = static_cast<float>(mouse_delta.y) * delta_time * _rotationSpeed;
 
-        transform()->rotate(pitch, yaw, 0.0f);
+        transform()->camera_rotate(pitch, yaw, 0.0f);
     }
 }
 

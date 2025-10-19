@@ -132,21 +132,57 @@ void TransformComponent::set_local_scale(const XMFLOAT3& scale)
 
 void TransformComponent::rotate(float pitch, float yaw, float roll)
 {
-    // 입력받은 오일러 각(degree)을 쿼터니언으로 변환합니다.
-    XMVECTOR delta_rotation_quat = XMQuaternionRotationRollPitchYaw(
-        XMConvertToRadians(pitch),
-        XMConvertToRadians(yaw),
-        XMConvertToRadians(roll)
+        XMVECTOR delta_rotation_quat = XMQuaternionRotationRollPitchYaw(
+            XMConvertToRadians(pitch),
+            XMConvertToRadians(yaw),
+            XMConvertToRadians(roll)
+        );
+
+        // 기존 로컬 회전 쿼터니언을 가져옵니다.
+        XMVECTOR current_local_quat = XMLoadFloat4(&_localRotation);
+
+        // 두 쿼터니언을 곱하여 회전을 누적합니다. (순서 중요: new * old)
+        XMVECTOR new_local_quat = XMQuaternionMultiply(delta_rotation_quat, current_local_quat);
+
+        // 결과를 정규화하고 다시 저장합니다.
+        XMStoreFloat4(&_localRotation, XMQuaternionNormalize(new_local_quat));
+
+        // 행렬이 더럽혀졌음을 표시합니다.
+        set_hierarchy_dirty();
+}
+
+void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
+{
+    static float total_yaw_rad = 0.f; 
+    static float total_pitch_rad = 0.f; 
+
+    total_yaw_rad += XMConvertToRadians(yaw);
+    total_pitch_rad += XMConvertToRadians(pitch);
+
+    if (XMConvertToDegrees(total_pitch_rad) > 89.f)
+    {
+        total_pitch_rad = XMConvertToRadians(89.f);
+    }
+    else if (XMConvertToDegrees(total_pitch_rad) < -89.f)
+    {
+        total_pitch_rad = XMConvertToRadians(-89.f);
+    }
+
+    // Yaw는 항상 월드 Y축(0,1,0)을 기준으로 합니다.
+    XMVECTOR yaw_quat = XMQuaternionRotationAxis(
+        XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+        total_yaw_rad
     );
 
-    // 기존 로컬 회전 쿼터니언을 가져옵니다.
-    XMVECTOR current_local_quat = XMLoadFloat4(&_localRotation);
+    // Pitch는 로컬 X축(1,0,0)을 기준으로 합니다.
+    XMVECTOR pitch_quat = XMQuaternionRotationAxis(
+        XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
+        total_pitch_rad
+    );
 
-    // 두 쿼터니언을 곱하여 회전을 누적합니다. (순서 중요: new * old)
-    XMVECTOR new_local_quat = XMQuaternionMultiply(delta_rotation_quat, current_local_quat);
-
-    // 결과를 정규화하고 다시 저장합니다.
-    XMStoreFloat4(&_localRotation, XMQuaternionNormalize(new_local_quat));
+    // 최종 회전을 계산하여 _localRotation에 '덮어씁니다'. (곱하는 게 아님!)
+    XMVECTOR final_quat = XMQuaternionMultiply(pitch_quat, yaw_quat);
+    XMStoreFloat4(&_localRotation, XMQuaternionNormalize(final_quat));
 
     // 행렬이 더럽혀졌음을 표시합니다.
     set_hierarchy_dirty();
