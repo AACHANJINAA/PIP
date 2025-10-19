@@ -8,9 +8,9 @@
 #include "MainPlayerScript.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
-#include "Mesh.h" // �޽� Ŭ������ �ʿ��� �� ����
+#include "Mesh.h"
 #include "ResourceManager.h"
-// #include "PlayerScript.h" // ������ ���� ��ũ��Ʈ��
+// #include "PlayerScript.h"
 
 #include "GltfTestScript.h"
 
@@ -21,7 +21,7 @@
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 
-    // --- ���� �ڵ� (ī�޶�, �÷��̾�, �� �� ����) ---
+    // 카메라 생성
     auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
     //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
@@ -31,16 +31,16 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 
 
-    // DW���� : �÷��̾� ���� �κ�
+	// DW설명 : 플레이어 오브젝트 생성
     {
         auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
 
-        // RenderComponent�� ���� �߰�
+        // RenderComponent
         auto renderer = playerObject->add_component<RenderComponent>();
 
         auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
-        // ���� �� ���̴� ����
+        // 재질 및 쉐이더 설정
         auto material = std::make_shared<GltfMaterial>("test_Material");
         material->set_shader(Renderer::Instance()->get_shader("gltf"));
         renderer->set_material(material);
@@ -48,14 +48,13 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
         // gltf
         renderer->set_pso_name("gltf");
 
-        // ��ġ
-        playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f); // �̰� �����־ ����^^;
-        playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // ũ�⸦ Ű�� �� ���̰� ��
+        // 위치, 회전 정보
+        playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);  
+        playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); 
 
-        // MainPlayerScript�� �߰�
+        // MainPlayerScript추가
         playerObject->add_component<MainPlayerScript>();
 
-        // 5. �ʱ� ��ġ�� �����մϴ�.
         //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
        // ResourceManager::Instance()->upload_pending_meshes(device, commandList);
     }
@@ -87,18 +86,18 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     //testCubeObject->transform()->set_local_scale({2.0f, 2.0f, 2.0f}); // ũ�⸦ Ű�� �� ���̰� ��
 
 
-    // DW���� : ������ �׽�Ʈ�� �� ���� ������ ���� �ȿ� gltf ���� �ٲ㼭 ���� ��
+    // DW설명 : 테스트 하고싶은 gltf 파일 있으면 이 형식 참고해서 로드해보기
     {
         auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
 
-        // 1. ���� ������Ʈ �߰�
+
         auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
         test_cannon_object->add_component<GltfTestScript>();
-        // 2. ���ҽ� �Ŵ����� ���� ť�� �޽� �ε� �� ����
+
         //cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
         cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf"));
 
-        // ���� �� ���̴� ����
+        
         auto material = std::make_shared<GltfMaterial>("test_Material");
         material->set_shader(Renderer::Instance()->get_shader("gltf"));
         cannon_renderer->set_material(material);
@@ -106,10 +105,10 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
         // gltf
         cannon_renderer->set_pso_name("gltf");
 
-        // ��ġ
+        // 위치 회전 크기 수정
         test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
         test_cannon_object->transform()->set_local_rotation(-90.f,0.f,0.f);
-        test_cannon_object->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // ũ�⸦ Ű�� �� ���̰� ��
+        test_cannon_object->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // 캐릭터 모델 작아서 키워야함 ㅋㅋ
     }
    // {
         //auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
