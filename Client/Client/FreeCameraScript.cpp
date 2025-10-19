@@ -57,6 +57,16 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     if (!trans) return;
 
     XMFLOAT3 move_direction = { 0.0f, 0.0f, 0.0f };
+   
+
+    if (InputManager::Instance()->IsKeyPress(VK_ADD))
+    {
+        _moveSpeed += 2.0f;
+    }
+    if (InputManager::Instance()->IsKeyPress(VK_SUBTRACT))
+    {
+        _moveSpeed -= 2.0f;
+    }
 
     if (InputManager::Instance()->IsKeyPress('W'))
     {
@@ -82,7 +92,8 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     {
         move_direction.y -= 1.0f;
     }
-
+    
+           
     if (Vector3::Length(move_direction) > 0.0f)
     {
         XMFLOAT3 normalized_direction = Vector3::Normalize(move_direction);
