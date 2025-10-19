@@ -233,6 +233,15 @@
     <ClInclude Include="TextureManager.h">
       <Filter>0. Engine\4. Resource</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\Packet.h">
+      <Filter>4. External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\PacketStream.h">
+      <Filter>4. External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\Vector3.h">
+      <Filter>4. External</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">

@@ -11,21 +11,42 @@
 
 void MainPlayerScript::update(float deltaTime)
 {
-    // --- 기존 MainPlayer::process_input의 로직이 여기로 완전히 이전되었습니다 ---
+    // --- 이동 입력 처리 및 로컬 위치 업데이트 ---
+    auto current_transform = this->transform();
+    if (!current_transform) return;
+
+    common::Vec3 move_direction{};
+    bool is_moving = false;
+
     if (InputManager::Instance()->IsKeyPress('W')) {
-        move_pos(common::packet::MOVE_TYPE::MOVE_UP);
+        move_direction = move_direction + common::Vec3Forward;
+        is_moving = true;
     }
     if (InputManager::Instance()->IsKeyPress('S')) {
-        move_pos(common::packet::MOVE_TYPE::MOVE_DOWN);
+        move_direction = move_direction + common::Vec3Backward;
+        is_moving = true;
     }
     if (InputManager::Instance()->IsKeyPress('D')) {
-        move_pos(common::packet::MOVE_TYPE::MOVE_RIGHT);
+        move_direction = move_direction + common::Vec3Right;
+        is_moving = true;
     }
     if (InputManager::Instance()->IsKeyPress('A')) {
-        move_pos(common::packet::MOVE_TYPE::MOVE_LEFT);
+        move_direction = move_direction + common::Vec3Left;
+        is_moving = true;
     }
-    if (InputManager::Instance()->IsKeyPress('F')) {
-        NetworkManager::Instance()->SendAttackPacket();
+
+    if (is_moving) {
+        move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
+        const float speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
+        auto new_pos = current_transform->local_position() + (move_direction * speed * deltaTime);
+        current_transform->set_local_position(new_pos);
+    }
+
+    // --- 50ms 마다 위치 정보 전송 ---
+    _sendTimer += deltaTime;
+    if (_sendTimer >= _sendInterval) {
+        _sendTimer = 0.f;
+        NetworkManager::Instance()->SendMovePacket(current_transform->local_position());
     }
 }
 
