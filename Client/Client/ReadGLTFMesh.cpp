@@ -85,6 +85,18 @@ void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCo
 			primitive->_indexBufferView.SizeInBytes = sizeof(UINT) * primitive->_indexCount;
 		}
 	}
+
+	// 첫 번째 프리미티브의 버퍼 정보를 기본 클래스의 멤버에 복사합니다.
+	if (!_primitives.empty())
+	{
+		const auto& first_primitive = _primitives[0];
+	    _vertexBufferView = first_primitive->_vertexBufferView;
+        _indexBufferView = first_primitive->_indexBufferView;
+	
+	 // 기본 클래스의 render 함수가 사용할 수 있도록 인덱스 카운트도 복사합니다.
+		 _indices.resize(first_primitive->_indexCount);
+		 memcpy(_indices.data(), first_primitive->_indices.data(), sizeof(UINT) * first_primitive->_indexCount);
+	}
 }
 
 //void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)

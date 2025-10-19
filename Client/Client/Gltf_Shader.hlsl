@@ -152,16 +152,22 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float3 ormMap = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
     float3 emissiveMap = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
 
+    float3 N = In.Normal;
     // 2. 노멀맵 계산 (탄젠트 공간 -> 월드 공간)
-    float3 N_tangent = normalMap * 2.0 - 1.0; // [0, 1] 범위를 [-1, 1] 범위로 변환
-    float3x3 TBN = float3x3(normalize(In.Tangent), normalize(In.Bitangent), normalize(In.Normal));
-    float3 N = normalize(mul(N_tangent, TBN)); // 최종적으로 사용할 표면 법선 벡터
+    if (dot(normalMap, normalMap) > 0.01)
+    {
+        float3 N_tangent = normalMap * 2.0 - 1.0; // [0, 1] 범위를 [-1, 1] 범위로 변환
+        float3x3 TBN = float3x3(normalize(In.Tangent), normalize(In.Bitangent), normalize(In.Normal));
+        N = normalize(mul(N_tangent, TBN)); // 최종적으로 사용할 표면 법선 벡터
+
+    }
 
     // 3. PBR 변수 준비
     float3 albedo = albedoMap.rgb;
-    float ao = ormMap.r; // Ambient Occlusion
-    float roughness = ormMap.g; // Roughness
-    float metallic = ormMap.b; // Metallic
+    
+    float ao = (dot(ormMap, ormMap) > 0.001) ? ormMap.r : 1.0f;
+    float roughness = (dot(ormMap, ormMap) > 0.001) ? ormMap.g : 0.8f;
+    float metallic = (dot(ormMap, ormMap) > 0.001) ? ormMap.b : 0.1f;
 
     float3 V = normalize(g_xmf3CameraPosition.xyz - In.WorldPosition);
     float3 F0 = lerp(0.04, albedo, metallic); // Fresnel 반사율 F0 계산
@@ -197,7 +203,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     // 5. 최종 색상 조합
     // Ambient Occlusion 적용, Emissive(자체 발광) 추가
-    float3 ambient = float3(0.1, 0.1, 0.1) * albedo * ao;
+    float3 ambient = float3(0.7, 0.7, 0.7) * albedo * ao;
     float3 color = ambient + Lo + emissiveMap;
     
     // HDR to LDR, 감마 보정 등 추가적인 톤 매핑이 필요할 수 있음

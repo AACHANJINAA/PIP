@@ -14,6 +14,10 @@
 
 #include "GltfTestScript.h"
 
+#include "GltfMaterial.h"   
+#include "TextureManager.h" 
+#include "Renderer.h"       
+
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 
@@ -23,6 +27,35 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
+
+    //auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+    //
+    // // 1. RenderComponent를 먼저 추가합니다.
+    // auto renderer = playerObject->add_component<RenderComponent>();
+    //
+    // // 2. 메시를 로드하고 렌더러에 설정합니다.
+    // auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/Untitled.gltf");
+    // renderer->set_mesh(playerMesh);
+    // renderer->set_pso_name("gltf");
+    //
+    //// 3. 재질과 텍스처를 설정합니다.
+    //auto material = std::make_shared<GltfMaterial>("player_material");
+    // material->set_shader(Renderer::Instance()->get_shader("gltf"));
+    // auto texture = TextureManager::Instance()->load_texture(
+    //         "Resource/Character/tripo_image_bcd92247-4811-4638-8423-8e0b70612c6a_0.dds",
+    //         commandList
+    //);
+    // if (texture)
+    //     {
+    //         material->set_texture(texture, 0);
+    //     }
+    // renderer->set_material(material);
+    //
+    //// 4. MainPlayerScript를 추가합니다. (이제 렌더링 설정은 하지 않음)
+    //playerObject->add_component<MainPlayerScript>();
+    //
+    //// 5. 초기 위치를 설정합니다.
+    //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
 
     /*auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     playerObject->add_component<MainPlayerScript>();
