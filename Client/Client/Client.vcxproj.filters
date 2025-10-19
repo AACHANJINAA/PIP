@@ -89,7 +89,7 @@
     <ClInclude Include="ObjectManager.h">
       <Filter>0. Engine\0. Core</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h">
+    <ClInclude Include="TimerManager.h">
       <Filter>0. Engine\0. Core</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
@@ -241,7 +241,7 @@
     <ClCompile Include="ObjectManager.cpp">
       <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
+    <ClCompile Include="TimerManager.cpp">
       <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">

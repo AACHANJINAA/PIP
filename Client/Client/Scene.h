@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "Timer.h"
+#include "TimerManager.h"
 #include "Shader.h"
 #include "Camera.h"
 #include "RenderComponent.h"

@@ -1,13 +1,13 @@
 #pragma once
-const ULONG MAX_SAMPLE_COUNT = 50; // 50회의 프레임 처리시간을 누적하여 평균한다.
+const ULONG MAX_SAMPLE_COUNT = 60; // 60회의 프레임 처리시간을 누적하여 평균한다.
 
 
-class GameTimer : public Singleton<GameTimer>
+class TimerManager : public Singleton<TimerManager>
 {
-	friend class Singleton<GameTimer>;
+	friend class Singleton<TimerManager>;
 public:
-	GameTimer();
-	virtual ~GameTimer();
+	TimerManager();
+	virtual ~TimerManager();
 
 
 	void Start() {}
