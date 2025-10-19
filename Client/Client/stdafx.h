@@ -161,9 +161,9 @@ constexpr f3 F3_FORWARD = f3(0.0f, 0.0f, 1.0f);
 constexpr f3 F3_BACKWARD = f3(0.0f, 0.0f, -1.0f);
 
 constexpr f4x4 F4X4_IDENTIFY = f4x4(1.0f, 0.0f, 0.0f, 0.0f,
-								0.0f, 1.0f, 0.0f, 0.0f,
-								0.0f, 0.0f, 1.0f, 0.0f,
-								0.0f, 0.0f, 0.0f, 1.0f);
+									0.0f, 1.0f, 0.0f, 0.0f,
+									0.0f, 0.0f, 1.0f, 0.0f,
+									0.0f, 0.0f, 0.0f, 1.0f);
 
 // ==================================================
 template <typename T>
@@ -207,8 +207,8 @@ namespace Vector3
 	inline XMFLOAT3 Add(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2)
 	{
 		XMFLOAT3 xmf3Result;
-		XMStoreFloat3(&xmf3Result, XMLoadFloat3(&xmf3Vector1) +
-			XMLoadFloat3(&xmf3Vector2)); return(xmf3Result);
+		XMStoreFloat3(&xmf3Result, XMLoadFloat3(&xmf3Vector1) + XMLoadFloat3(&xmf3Vector2));
+		return(xmf3Result);
 	}
 	inline XMFLOAT3 Add(const XMFLOAT3& xmf3Vector1, const XMFLOAT3& xmf3Vector2, float fScalar)
 	{
