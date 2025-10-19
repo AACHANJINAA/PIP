@@ -34,26 +34,26 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	// DW설명 : 플레이어 오브젝트 생성
     {
         auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
-
-        // RenderComponent
-        auto renderer = playerObject->add_component<RenderComponent>();
-
-        auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
-
-        // 재질 및 쉐이더 설정
-        auto material = std::make_shared<GltfMaterial>("test_Material");
-        material->set_shader(Renderer::Instance()->get_shader("gltf"));
-        renderer->set_material(material);
-
-        // gltf
-        renderer->set_pso_name("gltf");
-
-        // 위치, 회전 정보
-        playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);  
-        playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); 
-
         // MainPlayerScript추가
         playerObject->add_component<MainPlayerScript>();
+        //// RenderComponent
+        //auto renderer = playerObject->add_component<RenderComponent>();
+
+        //auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+
+        //// 재질 및 쉐이더 설정
+        //auto material = std::make_shared<GltfMaterial>("test_Material");
+        //material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        //renderer->set_material(material);
+
+        //// gltf
+        //renderer->set_pso_name("gltf");
+
+        //// 위치, 회전 정보
+        //playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);  
+        //playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); 
+
+        
 
         //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
        // ResourceManager::Instance()->upload_pending_meshes(device, commandList);
