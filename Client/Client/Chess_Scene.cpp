@@ -27,7 +27,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
-
+    ResourceManager::Instance()->load_mesh("\Resource\Character\Character.obj");
     //auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
     //
     // // 1. RenderComponent를 먼저 추가합니다.

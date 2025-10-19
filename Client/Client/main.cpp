@@ -1,7 +1,4 @@
-﻿// DWLABPROJECT03.cpp : 애플리케이션에 대한 진입점을 정의합니다.
-//
-
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "main.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
@@ -13,11 +10,6 @@ namespace
     std::string SERVER_ADDR = "127.0.0.1";
     std::string PLAYER_NAME = "MyPlayer"; // 플레이어 이름 저장용
 }
-
-
-// std::vector<char> g_recvBuffer; // 서버로부터 받은 데이터를 쌓아두는 수신 버퍼 (ClientPacketManager 내부로 이동)
-
-//TODO: 창에서 포커스가 벗어났을때 키입력 받지않도록 설정 요망
 
 
 #define MAX_LOADSTRING 100

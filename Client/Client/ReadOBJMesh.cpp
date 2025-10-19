@@ -10,6 +10,7 @@ ReadOBJMesh::ReadOBJMesh(const std::string& filePath)
 	// --- 아래는 기존의 파싱 로직을 거의 그대로 사용합니다 ---
 	std::ifstream in{ filePath };
 	if (!in) {
+		CERROR("OBJ파일 읽기 오류")
 		return;
 	}
 
