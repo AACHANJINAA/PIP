@@ -35,6 +35,11 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<T> add_component(Args&&... args)
     {
+        // 이미 해당 타입의 컴포넌트가 있으면 추가하지 않고 기존 것을 반환
+        auto existing = get_component<T>();
+        if (existing)
+            return existing;
+
         // 먼저, 이 컴포넌트가 요구하는 다른 컴포넌트들을 재귀적으로 추가합니다.
         add_required_components(static_cast<typename T::required_components*>(nullptr));
 
