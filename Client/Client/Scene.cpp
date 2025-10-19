@@ -79,6 +79,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
                 if (overrides.contains("baseColorTexture")) {
                     std::string textureFile = overrides["baseColorTexture"];
+
+                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
+
                     std::string texture_path = (basePath / textureFile).string();
                     auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 0);
@@ -86,6 +89,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
                 if (overrides.contains("normalTexture")) {
                     std::string textureFile = overrides["normalTexture"];
+
+                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
+
                     std::string texture_path = (basePath / textureFile).string();
                     auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 1);
@@ -93,6 +99,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
                 if (overrides.contains("ormTexture")) {
                     std::string textureFile = overrides["ormTexture"];
+
+                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
+
                     std::string texture_path = (basePath / textureFile).string();
                     auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 2);
@@ -100,6 +109,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
                 if (overrides.contains("emissiveTexture")) {
                     std::string textureFile = overrides["emissiveTexture"];
+
+                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
+
                     std::string texture_path = (basePath / textureFile).string();
                     auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 3);
@@ -125,6 +137,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
                         if (texture)
                         {
+                            //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
                             if (key == "baseColorTexture") material->set_texture(texture, 0);
                             else if (key == "normalTexture") material->set_texture(texture, 1);
                             else if (key == "ormTexture") material->set_texture(texture, 2);

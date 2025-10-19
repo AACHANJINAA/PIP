@@ -87,24 +87,24 @@ void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCo
 	}
 }
 
-void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
-{
-	if (!_isUploaded) return;
-
-	commandList->IASetPrimitiveTopology(_primitiveTopology);
-
-	for (const auto& primitive : _primitives)
-	{
-		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
-		if (primitive->_indexCount > 0) {
-			commandList->IASetIndexBuffer(&primitive->_indexBufferView);
-			commandList->DrawIndexedInstanced(primitive->_indexCount, 1, 0, 0, 0);
-		}
-		else if (primitive->_vertexCount > 0) {
-			commandList->DrawInstanced(primitive->_vertexCount, 1, 0, 0);
-		}
-	}
-}
+//void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
+//{
+//	if (!_isUploaded) return;
+//
+//	commandList->IASetPrimitiveTopology(_primitiveTopology);
+//
+//	for (const auto& primitive : _primitives)
+//	{
+//		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
+//		if (primitive->_indexCount > 0) {
+//			commandList->IASetIndexBuffer(&primitive->_indexBufferView);
+//			commandList->DrawIndexedInstanced(primitive->_indexCount, 1, 0, 0, 0);
+//		}
+//		else if (primitive->_vertexCount > 0) {
+//			commandList->DrawInstanced(primitive->_vertexCount, 1, 0, 0);
+//		}
+//	}
+//}
 
 
 void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList, const std::vector<std::shared_ptr<GltfMaterial>>& materials)
@@ -115,23 +115,23 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList, const std::vec
 
 	for (const auto& primitive : _primitives)
 	{
+		int material_index = primitive->_materialIndex;
+		std::shared_ptr<GltfMaterial> material = nullptr;
+
 		if (primitive->_materialIndex >= 0 && primitive->_materialIndex < materials.size())
 		{
-			materials[primitive->_materialIndex]->bind(commandList);
-		}
-		else if (!materials.empty())
-		{
-			materials[0]->bind(commandList);
+			material = materials[material_index];
 		}
 
+		if (material)
+		{
+			material->bind(commandList);
+		}
+
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
-		if (primitive->_indexCount > 0) {
-			commandList->IASetIndexBuffer(&primitive->_indexBufferView);
-			commandList->DrawIndexedInstanced(primitive->_indexCount, 1, 0, 0, 0);
-		}
-		else if (primitive->_vertexCount > 0) {
-			commandList->DrawInstanced(primitive->_vertexCount, 1, 0, 0);
-		}
+		commandList->IASetIndexBuffer(&primitive->_indexBufferView);
+		commandList->DrawIndexedInstanced(primitive->_indexCount, 1, 0, 0, 0);
 	}
 }
 
