@@ -57,8 +57,8 @@
 		},
 		"MaterialOverrides": [
 			{
-				"normalTexture": "Textures/T_Brick_Clay_Old_N.dds",
-				"baseColorTexture": "Textures/T_Brick_Clay_Old_D.dds"
+				"baseColorTexture": "Textures/T_Brick_Clay_Old_D.dds",
+				"normalTexture": "Textures/T_Brick_Clay_Old_N.dds"
 			}
 		]
 	},
@@ -89,8 +89,8 @@
 		},
 		"MaterialOverrides": [
 			{
-				"normalTexture": "Textures/T_Rock_Sandstone_N.dds",
-				"baseColorTexture": "Textures/T_Rock_Sandstone_D.dds"
+				"baseColorTexture": "Textures/T_Rock_Sandstone_D.dds",
+				"normalTexture": "Textures/T_Rock_Sandstone_N.dds"
 			}
 		]
 	},
@@ -5553,21 +5553,31 @@
 		},
 		"MaterialOverrides": [
 			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
+				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
+				"normalTexture": "Textures/old_cannon_texture_2.dds",
+				"ormTexture": "Textures/old_cannon_texture_8.dds"
 			},
 			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
+				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
+				"normalTexture": "Textures/old_cannon_texture_2.dds",
+				"ormTexture": "Textures/old_cannon_texture_8.dds"
 			},
 			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
+				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
+				"normalTexture": "Textures/old_cannon_texture_2.dds",
+				"ormTexture": "Textures/old_cannon_texture_8.dds"
 			},
 			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
+				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
+				"normalTexture": "Textures/old_cannon_texture_2.dds",
+				"ormTexture": "Textures/old_cannon_texture_8.dds"
 			},
 			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
+				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
+				"normalTexture": "Textures/old_cannon_texture_2.dds",
+				"ormTexture": "Textures/old_cannon_texture_8.dds"
 			}
-		]
+			]
 	},
 	{
 		"Name": "old_cannon2",
