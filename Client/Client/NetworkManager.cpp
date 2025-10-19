@@ -5,6 +5,8 @@
 #include "MainPlayerScript.h"
 #include "ObjectManager.h"
 #include "OtherPlayerScript.h"
+#include "Renderer.h"
+#include "ResourceManager.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -131,7 +133,7 @@ void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
 	if (ack_packet._success)
 	{
 		_my_session_id = ack_packet._my_session_id; // [핵심] 자신의 ID 저장
-		CLOG("[S->C] Login successful! My Session ID is now: %lld" << _my_session_id);
+		CLOG("[S->C] Login successful! My Session ID is now: " << _my_session_id);
 	}
 	else
 	{
@@ -163,16 +165,36 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	{
 		CLOG("[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
-		auto main_player = ObjectManager::Instance()->create_game_object("MainPlayer");
+		{
+			auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+			// MainPlayerScript추가
+			playerObject->set_layer("Player");
 
-		main_player->set_layer("Player");
-		auto main_player_logic = main_player->add_component<MainPlayerScript>();
+			auto player_logic = playerObject->add_component<MainPlayerScript>();
+			player_logic->set_name(name);
+			player_logic->set_hp(spawn_data._hp);
+			player_logic->set_id(spawn_data._id);
+			player_logic->set_position(spawn_data._position);
+			
 
-		if (main_player_logic)
-			main_player_logic->set_position(spawn_data._position);
+			// RenderComponent
+			auto renderer = playerObject->add_component<RenderComponent>();
 
-		main_player_logic->set_hp(spawn_data._hp);
+			auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+			renderer->set_mesh(playerMesh);
 
+			// 재질 및 쉐이더 설정
+			auto material = std::make_shared<GltfMaterial>("player_Material"); // 이름 중복을 피하기위해 이름 변경
+			material->set_shader(Renderer::Instance()->get_shader("gltf"));
+			renderer->set_material(material);
+
+			// gltf
+			renderer->set_pso_name("gltf");
+
+			// 위치, 회전 정보
+			playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
+			playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+		}
 		
 
 		// 매니저에 넣기
@@ -310,6 +332,69 @@ void NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& str
 	}
 }
 
+void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_NPC_SPAWN npc_spawn_packet;
+	stream >> npc_spawn_packet;
+
+	std::string npc_name;
+	stream >> npc_name;
+
+	if (npc_spawn_packet._npc_type == 1)
+	{
+		auto npc_object = ObjectManager::Instance()->create_game_object(npc_name);
+		auto npc_mesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+		npc_object->set_layer("Enemy");
+		npc_object->transform()->set_local_position(npc_spawn_packet._position);
+		npc_object->set_name(npc_name);
+
+		auto render_comp = npc_object->add_component<RenderComponent>();
+		render_comp->set_mesh(npc_mesh);
+		auto material = std::make_shared<GltfMaterial>("test_Material");
+		material->set_shader(Renderer::Instance()->get_shader("gltf"));
+
+		render_comp->set_material(material);
+		render_comp->set_pso_name("gltf");
+
+		CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
+			<< " Name: " << npc_name
+			<< " Type: " << npc_spawn_packet._npc_type
+			<< " Position: " << npc_spawn_packet._position.x << "," << npc_spawn_packet._position.y);
+	}
+}
+
+void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
+{
+	// [수정] 이름까지 읽도록 전체 로직 수정
+	common::packet::SC_PACKET_NPC_MOVE move_packet;
+	
+
+	std::string npc_name;
+	try
+	{
+		stream >> move_packet;
+		stream >> npc_name;
+	}
+	catch (const std::runtime_error& e)
+	{
+		CERROR("npc 이동 패킷 읽기 오류" << e.what());
+	}
+	
+
+	// 받은 이름으로 게임 오브젝트를 찾아서 위치를 업데이트합니다.
+	// ObjectManager에 이름으로 오브젝트를 찾는 기능(find_object)이 있다고 가정합니다.
+	auto npc_object = ObjectManager::Instance()->find_object(npc_name);
+	if (npc_object)
+	{
+		npc_object->transform()->set_local_position(move_packet._position);
+	}
+	else
+	{
+		// 디버깅을 위한 로그
+		CLOG("[S->C] Move NPC Error: Object not found with name: " << npc_name);
+	}
+}
+
 bool NetworkManager::init_network()
 {
 	WSADATA wsaData;
@@ -354,26 +439,40 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 		return false;
 	}
 
+	// 이동 응답 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_MOVE, 
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
 
+	// 퇴장 응답 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE,
 		std::bind(&NetworkManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
 
+	// 공격 응답 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_ATTACK,
 		std::bind(&NetworkManager::HANDLE_S2C_ATTACK, this, std::placeholders::_1));
 
+	// 방 목록 응답 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK,
 		std::bind(&NetworkManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
 
+	// 방 입장 응답 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK,
 		std::bind(&NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
 
+	// 플레이어 스폰 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER,
 		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
 
+	// 로그인 응답 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK,
 		std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
+
+	// NPC 스폰 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_NPC_SPAWN,
+		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_NPC, this, std::placeholders::_1));
+	// NPC 이동 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE,
+		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC, this, std::placeholders::_1));
 
 	return true;
 }

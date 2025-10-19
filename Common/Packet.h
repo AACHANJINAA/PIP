@@ -169,8 +169,9 @@ namespace common::packet
 
     struct SC_PACKET_NPC_MOVE : PacketHeader
     {
-        int64_t     npcId;
-        Vec3        position;
+        int64_t     _npc_id;
+        Vec3        _position;
+		// 뒤에 가변 크기 name
     };
 
     struct SC_PACKET_CHAT_IN_ROOM : PacketHeader
