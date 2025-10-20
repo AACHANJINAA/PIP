@@ -43,7 +43,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return 0; // 사용자가 취소를 누르면 프로그램 종료
     }
 	// 네트워크 Startup
-    if (!NetworkManager::Instance()->init_network())
+    if (!NetworkManager::instance()->init_network())
     {
         error_display("WSAStartup failed", WSAGetLastError());
         return FALSE;
@@ -57,24 +57,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance(hInstance, nCmdShow))
     {
-        NetworkManager::Instance()->cleanup_network();
+        NetworkManager::instance()->cleanup_network();
         return FALSE;
     }
 	// 주소구조체 설정 및 서버 연결
-    if (!NetworkManager::Instance()->connect_to_server(SERVER_ADDR, common::packet::SERVER_PORT))
+    if (!NetworkManager::instance()->connect_to_server(SERVER_ADDR, common::packet::SERVER_PORT))
     {
-        NetworkManager::Instance()->cleanup_network();
+        NetworkManager::instance()->cleanup_network();
         return FALSE;
     }
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CHESSCLIENT));
 
 
     // 최초 로그인 패킷 전송 (플레이어 이름 사용)
-    NetworkManager::Instance()->SendLoginPacket(PLAYER_NAME);
+    NetworkManager::instance()->SendLoginPacket(PLAYER_NAME);
 
     int room_to_enter = 1;
     CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
-    NetworkManager::Instance()->SendEnterRoomPacket(room_to_enter);
+    NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
 
     // 기본 메시지 루프입니다:
     MSG msg;
@@ -90,14 +90,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         else
         {
             // 메시지 큐가 비어있을 때, 우리의 게임 로직을 실행합니다.
-        	GameFramework::Instance()->FrameAdvance();
+        	GameFramework::instance()->FrameAdvance();
         }
 	}
-    GameFramework::Instance()->OnDestroy();
+    GameFramework::instance()->OnDestroy();
 
 	// 네트워크 Cleanup
-    NetworkManager::Instance()->disconnect();
-    NetworkManager::Instance()->cleanup_network();
+    NetworkManager::instance()->disconnect();
+    NetworkManager::instance()->cleanup_network();
     return (int)msg.wParam;
 }
 
@@ -162,7 +162,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
-    GameFramework::Instance()->OnCreate(hInstance, hMainWnd);
+    GameFramework::instance()->OnCreate(hInstance, hMainWnd);
 
     ShowWindow(hMainWnd, nCmdShow);
     UpdateWindow(hMainWnd);
@@ -223,10 +223,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
         case WA_ACTIVE:      // 창이 활성화됨 (다른 창을 클릭했다가 다시 우리 창을 클릭)
         case WA_CLICKACTIVE: // 마우스 클릭으로 창이 활성화됨
-            GameFramework::Instance()->m_bIsWindowActive = true;
+            GameFramework::instance()->m_bIsWindowActive = true;
             break;
         case WA_INACTIVE:    // 창이 비활성화됨 (다른 창을 클릭)
-            GameFramework::Instance()->m_bIsWindowActive = false;
+            GameFramework::instance()->m_bIsWindowActive = false;
             // 여기에 게임 일시정지, 사운드 음소거 등의 로직을 넣을 수도 있습니다.
             break;
         }

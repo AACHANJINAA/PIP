@@ -63,7 +63,7 @@ std::shared_ptr<Texture> TextureManager::load_texture(const std::string& file_pa
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     command_list->ResourceBarrier(1, &barrier);
 
-    if (!DescriptorManager::Instance()->allocate_descriptor(new_texture->cpu_srv_handle, new_texture->gpu_srv_handle))
+    if (!DescriptorManager::instance()->allocate_descriptor(new_texture->cpu_srv_handle, new_texture->gpu_srv_handle))
     {
 		return nullptr;
     }

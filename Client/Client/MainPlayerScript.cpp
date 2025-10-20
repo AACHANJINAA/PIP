@@ -19,19 +19,19 @@ void MainPlayerScript::update(float deltaTime)
     common::Vec3 move_direction{};
     bool is_moving = false;
 
-    if (InputManager::Instance()->IsKeyPress('W')) {
+    if (InputManager::instance()->IsKeyPress('W')) {
         move_direction = Vector3::Add(move_direction, common::Vec3Forward);
         is_moving = true;
     }
-    if (InputManager::Instance()->IsKeyPress('S')) {
+    if (InputManager::instance()->IsKeyPress('S')) {
         move_direction = Vector3::Add(move_direction,common::Vec3Backward);
         is_moving = true;
     }
-    if (InputManager::Instance()->IsKeyPress('D')) {
+    if (InputManager::instance()->IsKeyPress('D')) {
         move_direction = Vector3::Add(move_direction ,common::Vec3Right);
         is_moving = true;
     }
-    if (InputManager::Instance()->IsKeyPress('A')) {
+    if (InputManager::instance()->IsKeyPress('A')) {
         move_direction = Vector3::Add(move_direction ,common::Vec3Left);
         is_moving = true;
     }
@@ -47,20 +47,20 @@ void MainPlayerScript::update(float deltaTime)
     _sendTimer += deltaTime;
     if (_sendTimer >= _sendInterval) {
         _sendTimer = 0.f;
-        NetworkManager::Instance()->SendMovePacket(current_transform->local_position());
+        NetworkManager::instance()->SendMovePacket(current_transform->local_position());
     }
 }
 
 void MainPlayerScript::awake()
 {
-	_renderComponent = this->game_object()->add_component<RenderComponent>().get();
-    auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+	_renderComponent = game_object()->add_component<RenderComponent>().get();
+    auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
     // 재질 및 쉐이더 설정
+    _renderComponent->set_mesh(playerMesh);
     auto material = std::make_shared<GltfMaterial>("test_Material");
-    material->set_shader(Renderer::Instance()->get_shader("gltf"));
+    material->set_shader(Renderer::instance()->get_shader("gltf"));
     _renderComponent->set_material(material);
-	_renderComponent->set_mesh(playerMesh);
 
     // gltf
     _renderComponent->set_pso_name("gltf");
@@ -93,9 +93,9 @@ void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)
 
     this->game_object()->get_component<TransformComponent>()->set_local_position(
         {
-            this->position().x + direction.x * TimerManager::Instance()->GetTimeElapsed(),
-            this->position().y + direction.y * TimerManager::Instance()->GetTimeElapsed(),
-            this->position().z + direction.z * TimerManager::Instance()->GetTimeElapsed()
+            this->position().x + direction.x * TimerManager::instance()->GetTimeElapsed(),
+            this->position().y + direction.y * TimerManager::instance()->GetTimeElapsed(),
+            this->position().z + direction.z * TimerManager::instance()->GetTimeElapsed()
         }
 	);
 	// 서버로 이동 명령 전송은 정해진 타임에 전송되도록 함

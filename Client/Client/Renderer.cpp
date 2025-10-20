@@ -153,7 +153,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
 void Renderer::build_render_list(CameraComponent* camera)
 {
     _renderMap.clear();
-    const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
+    const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
     const BoundingFrustum& frustum = camera->frustum();
     for (const auto& gameObject : allGameObjects)
     {
@@ -175,7 +175,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     // ---------------------------------------------------------
 
     // --- [추가] ResourceManager로부터 SRV 힙을 가져와 설정 ---
-    ID3D12DescriptorHeap* heaps[] = { DescriptorManager::Instance()->get_descriptor_heap() };
+    ID3D12DescriptorHeap* heaps[] = { DescriptorManager::instance()->get_descriptor_heap() };
 
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
     // ---------------------------------------------------------

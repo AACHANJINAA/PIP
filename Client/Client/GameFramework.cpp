@@ -36,7 +36,7 @@ GameFramework::~GameFramework()
 
 }
 
-//다음 함수는 응용 프로그램이 실행되어 주 윈도우가 생성되면 호출된다는 것에 유의하라. 
+//다음 함수는 응용 프로그램이 실행되어 주 윈도우가 생성되면 호출된다는 것에 유의하라.
 bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	_hInstance = hInstance;
@@ -49,12 +49,12 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateSwapChain(); 
 	CreateDepthStencilView();
 
-	InputManager::Instance()->initialize(hMainWnd);
-	SceneManager::Instance()->initialize();
-	Renderer::Instance()->initialize(_device.Get());
-	ResourceManager::Instance()->initialize(_device.Get());
-	DescriptorManager::Instance()->initialize(_device.Get());
-	TextureManager::Instance()->initialize(_device.Get());
+	InputManager::instance()->initialize(hMainWnd);
+	SceneManager::instance()->initialize();
+	Renderer::instance()->initialize(_device.Get());
+	ResourceManager::instance()->initialize(_device.Get());
+	DescriptorManager::instance()->initialize(_device.Get());
+	TextureManager::instance()->initialize(_device.Get());
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
@@ -74,7 +74,8 @@ void GameFramework::OnDestroy()
 	DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pdxgiDebug));
 	if (pdxgiDebug) pdxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
 #endif
-
+	SceneManager::instance()->release();
+	ResourceManager::instance()->release();
 }
 
 void GameFramework::CreateSwapChain()
@@ -256,7 +257,7 @@ void GameFramework::BuildObjects()
 
 
 	// 로드가 끝난 메시는 _pending_meshes 목록에 들어갔으므로, GPU에 업로드합니다.
-	ResourceManager::Instance()->upload_pending_meshes(_device.Get(), _commandList.Get());
+	ResourceManager::instance()->upload_pending_meshes(_device.Get(), _commandList.Get());
 
 	_commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
@@ -265,10 +266,10 @@ void GameFramework::BuildObjects()
 	WaitForGpuComplete();
 
 	// GPU 작업이 완료되었으므로, 임시 업로드 버퍼를 해제합니다.
-	ResourceManager::Instance()->release_upload_buffers();
+	ResourceManager::instance()->release_upload_buffers();
 
 	// [수정] 모든 리소스 초기화 및 GPU 업로드가 끝났으므로, 이제 스크립트의 awake/start를 호출합니다.
-	ObjectManager::Instance()->process_new_game_objects();
+	ObjectManager::instance()->process_new_game_objects();
 
 	_gameTimer.Reset();
 }
@@ -280,12 +281,12 @@ void GameFramework::ReleaseObjects()
 
 void GameFramework::ProcessNetwork()
 {
-	NetworkManager::Instance()->receive_packets();
+	NetworkManager::instance()->receive_packets();
 }
 
 void GameFramework::ProcessInput()
 {
-	InputManager::Instance()->Update();
+	InputManager::instance()->Update();
 }
 
 //void GameFramework::AnimateObjects()
@@ -321,7 +322,7 @@ void GameFramework::MoveToNextFrame()
 void GameFramework::FrameAdvance()
 {
 	// [핵심] 실제 렌더링이나 업데이트 시작 전에 씬 전환을 먼저 처리합니다. 한프레임 지연
-	SceneManager::Instance()->process_scene_change_if_requested(_device.Get(),
+	SceneManager::instance()->process_scene_change_if_requested(_device.Get(),
 		_commandAllocator.Get(), _commandList.Get());
 
 	// 1. 타이머 틱 및 기본 처리
@@ -361,7 +362,7 @@ void GameFramework::FrameAdvance()
 
 
 	// [수정] 렌더러 호출 시 더 이상 카메라를 넘기지 않습니다.
-	Renderer::Instance()->render(_commandList.Get());
+	Renderer::instance()->render(_commandList.Get());
 	
 
 	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.
@@ -390,7 +391,7 @@ void GameFramework::FrameAdvance()
 	WaitForGpuComplete();
 	MoveToNextFrame();
 	// 5. 파괴 예정 객체 정리
-	ObjectManager::Instance()->process_destructions();
+	ObjectManager::instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 12, 37);
 	::SetWindowText(_hWnd, _frameRate);
 }
@@ -426,9 +427,9 @@ void GameFramework::ChangeSwapChainState()
 void GameFramework::update_game_logic(float deltaTime)
 {
 	// Awake와 Start가 먼저 호출되도록 순서 변경
-	ObjectManager::Instance()->process_new_game_objects();
+	ObjectManager::instance()->process_new_game_objects();
 	 
-	const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
+	const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
 
 	// .FreeCameraScript가 입력을 받아 자신의 Transform을 업데이트
 	for (const auto& gameObject : allGameObjects)
@@ -462,7 +463,7 @@ void GameFramework::update_physics(float elapsedTime)
 
 	while (_physicsTimeAccumulator >= fixedTimeStep)
 	{
-		const auto& allGameObjects = ObjectManager::Instance()->get_all_game_objects();
+		const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
 		for (const auto& gameObject : allGameObjects)
 		{
 			if (gameObject && !gameObject->is_destroyed())

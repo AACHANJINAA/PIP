@@ -53,7 +53,7 @@ class Scene
 {
 public:
     Scene() = default;
-    virtual ~Scene() = default;
+    virtual ~Scene();
 
     // =================================================================
     // 1. ¾ÀÀÇ »õ·Î¿î ÇÙ½É ¿ªÇÒ

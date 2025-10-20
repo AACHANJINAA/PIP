@@ -281,7 +281,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
 
                     D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle{};
                     D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
-                    DescriptorManager::Instance()->allocate_descriptor(cpu_handle, gpu_handle);
+                    DescriptorManager::instance()->allocate_descriptor(cpu_handle, gpu_handle);
 
                     device->CreateShaderResourceView(gpu_primitive->m_pTexture, &srv_desc, cpu_handle);
                     gpu_primitive->m_d3dGpuSrvHandle = gpu_handle;

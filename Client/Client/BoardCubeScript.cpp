@@ -26,12 +26,12 @@ void BoardCubeScript::awake()
 
     // 2. 메쉬 설정 (자신의 모양 결정)
     // TODO: 메쉬를 동적으로 설정할 수 있도록 개선해야 합니다. 현재는 기본값을 사용합니다.
-    auto board_mesh = ResourceManager::Instance()->load_mesh("Resource/MapData/SM_Crate_01.glb");
+    auto board_mesh = ResourceManager::instance()->load_mesh("Resource/MapData/SM_Crate_01.glb");
     render_component->set_mesh(board_mesh);
 
 	auto material = std::make_shared<GltfMaterial>("board_cube_material");
 
-    material->set_shader(Renderer::Instance()->get_shader("gltf"));
+    material->set_shader(Renderer::instance()->get_shader("gltf"));
     // 3. 셰이더(PSO) 설정 (자신을 어떻게 그릴지 결정)
     // .glb 파일의 경우 "skinned" PSO를 사용하는 것이 일반적입니다.
     render_component->set_material(material);

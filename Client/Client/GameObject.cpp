@@ -96,12 +96,12 @@ void GameObject::destroy()
 
 void GameObject::set_layer(const std::string& name)
 {
-	_layerMask = LayerManager::Instance()->get_layer_value(name);
+	_layerMask = LayerManager::instance()->get_layer_value(name);
 }
 
 bool GameObject::is_in_layer(const std::string& name) const
 {
-	uint32_t layerValue = LayerManager::Instance()->get_layer_value(name);
+	uint32_t layerValue = LayerManager::instance()->get_layer_value(name);
 	return (_layerMask & layerValue) != 0;
 }
 

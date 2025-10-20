@@ -6,6 +6,11 @@
 #include "ReadOBJMesh.h"
 #include "ReadGLTFMesh.h"
 
+void ResourceManager::release()
+{
+    unload_unused_meshes();
+}
+
 void ResourceManager::initialize(ID3D12Device* device)
 {
 }

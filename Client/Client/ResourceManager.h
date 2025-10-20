@@ -8,6 +8,9 @@ class ResourceManager : public Singleton<ResourceManager>
 	ResourceManager() = default;
 	~ResourceManager() = default;
 public:
+    // release()
+	virtual void release() override;
+
     // GameFramework가 OnCreate에서 호출하여 DX12 객체들을 설정합니다.
     void initialize(ID3D12Device* device);
 

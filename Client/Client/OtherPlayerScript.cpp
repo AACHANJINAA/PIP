@@ -25,10 +25,10 @@ void OtherPlayerScript::awake()
 {
 	// --- 이 스크립트가 부착된 GameObject에 필요한 모든 설정을 여기서 수행 ---
 	auto render_comp = game_object()->add_component<RenderComponent>();
-    render_comp->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Monster/test_monster.obj"));
+    render_comp->set_mesh(ResourceManager::instance()->load_mesh("Resource/Monster/test_monster.obj"));
 
     auto material = std::make_shared<GltfMaterial>("other_player_material");
-    material->set_shader(Renderer::Instance()->get_shader("default"));
+    material->set_shader(Renderer::instance()->get_shader("default"));
 
 	render_comp->set_material(material);
 }
