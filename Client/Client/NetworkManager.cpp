@@ -16,7 +16,7 @@ void error_display(const char* msg, int err_no)
 		NULL, err_no,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPTSTR)&lpMsgBuf, 0, NULL);
-	MessageBox(GameFramework::Instance()->hWnd(), lpMsgBuf, (LPCWSTR)msg, MB_OK);
+	MessageBox(GameFramework::instance()->hWnd(), lpMsgBuf, (LPCWSTR)msg, MB_OK);
 	LocalFree(lpMsgBuf);
 }
 //void NetworkManager::Initialize(SOCKET client_socket)
@@ -138,7 +138,7 @@ void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
 	else
 	{
 		CLOG("[S->C] Login failed!");
-		MessageBox(GameFramework::Instance()->hWnd(), L"Login failed.", L"Login Error", MB_OK);
+		MessageBox(GameFramework::instance()->hWnd(), L"Login failed.", L"Login Error", MB_OK);
 	}
 }
 
@@ -166,7 +166,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 		CLOG("[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
 		{
-			auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+			auto playerObject = ObjectManager::instance()->create_game_object("MainPlayer");
 			// MainPlayerScript추가
 			playerObject->set_layer("Player");
 
@@ -180,12 +180,12 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			// RenderComponent
 			auto renderer = playerObject->add_component<RenderComponent>();
 
-			auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 			renderer->set_mesh(playerMesh);
 
 			// 재질 및 쉐이더 설정
 			auto material = std::make_shared<GltfMaterial>("player_Material"); // 이름 중복을 피하기위해 이름 변경
-			material->set_shader(Renderer::Instance()->get_shader("gltf"));
+			material->set_shader(Renderer::instance()->get_shader("gltf"));
 			renderer->set_material(material);
 
 			// gltf
@@ -212,7 +212,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	{
 		CLOG("[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
-		auto other_player = ObjectManager::Instance()->create_game_object(name);
+		auto other_player = ObjectManager::instance()->create_game_object(name);
 		auto other_player_logic = other_player->add_component<OtherPlayerScript>();
 		other_player->transform()->set_local_position(spawn_data._position);
 		other_player->set_layer("Enemy");
@@ -237,7 +237,7 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
 	common::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
-	auto player = ObjectManager::Instance()->find_by_name("MainPlayer");
+	auto player = ObjectManager::instance()->find_by_name("MainPlayer");
 	auto player_Trasnform = player->get_component<TransformComponent>();
 	if (player && move_packet._id == _my_session_id && player_Trasnform) // 읽어온 id 사용
 	{
@@ -245,8 +245,8 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	}
 	else
 	{
-		auto enemy_layer = LayerManager::Instance()->get_layer_value("Enemy");
-		auto other_players = ObjectManager::Instance()->find_by_layer(enemy_layer);
+		auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
 			return move_packet._id == other->get_component<OtherPlayerScript>()->id();
 		});
@@ -261,8 +261,8 @@ void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_LEAVE leave_packet;
 	stream >> leave_packet; // id만 읽습니다.
-	auto enemy_layer = LayerManager::Instance()->get_layer_value("Enemy");
-	auto other_players = ObjectManager::Instance()->find_by_layer(enemy_layer);
+	auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+	auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
 	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
 		return leave_packet._id == other->get_component<OtherPlayerScript>()->id();
 	});
@@ -279,7 +279,7 @@ void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
 	stream >> attack_packet; // 구조체 전체를 읽습니다.
 
 
-	auto player = ObjectManager::Instance()->find_by_name("MainPlayer");
+	auto player = ObjectManager::instance()->find_by_name("MainPlayer");
 	auto player_logic = player->get_component<MainPlayerScript>();
 	if (player && attack_packet._target_id == player_logic->id()) // 읽어온 target_id 사용
 	{
@@ -287,8 +287,8 @@ void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
 	}
 	else
 	{
-		auto enemy_layer = LayerManager::Instance()->get_layer_value("Enemy");
-		auto other_players = ObjectManager::Instance()->find_by_layer(enemy_layer);
+		auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
 			return attack_packet._target_id == other->get_component<OtherPlayerScript>()->id(); // 읽어온 target_id 사용
 		});
@@ -342,8 +342,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 	if (npc_spawn_packet._npc_type == 1)
 	{
-		auto npc_object = ObjectManager::Instance()->create_game_object(npc_name);
-		auto npc_mesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+		auto npc_object = ObjectManager::instance()->create_game_object(npc_name);
+		auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 		npc_object->set_layer("Enemy");
 		npc_object->transform()->set_local_position(npc_spawn_packet._position);
 		npc_object->set_name(npc_name);
@@ -351,7 +351,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		auto render_comp = npc_object->add_component<RenderComponent>();
 		render_comp->set_mesh(npc_mesh);
 		auto material = std::make_shared<GltfMaterial>("test_Material");
-		material->set_shader(Renderer::Instance()->get_shader("gltf"));
+		material->set_shader(Renderer::instance()->get_shader("gltf"));
 
 		render_comp->set_material(material);
 		render_comp->set_pso_name("gltf");
@@ -383,7 +383,7 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 
 	// 받은 이름으로 게임 오브젝트를 찾아서 위치를 업데이트합니다.
 	// ObjectManager에 이름으로 오브젝트를 찾는 기능(find_object)이 있다고 가정합니다.
-	auto npc_object = ObjectManager::Instance()->find_object(npc_name);
+	auto npc_object = ObjectManager::instance()->find_object(npc_name);
 	if (npc_object)
 	{
 		npc_object->transform()->set_local_position(move_packet._position);

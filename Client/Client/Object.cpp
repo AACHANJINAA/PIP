@@ -26,5 +26,5 @@ void Object::destroy(std::shared_ptr<Object> obj_to_destroy, float delay)
     obj_to_destroy->set_destroyed(true);
 
     // ObjectManager에 파괴 요청을 전달하는 것은 동일합니다.
-    ObjectManager::Instance()->request_destruction(obj_to_destroy);
+    ObjectManager::instance()->request_destruction(obj_to_destroy);
 }

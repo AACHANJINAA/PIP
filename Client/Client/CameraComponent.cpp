@@ -26,7 +26,7 @@ CameraComponent::CameraComponent() :
         _mainCamera = this;
     }
     // --- initialize() 로직 시작 ---
-    ID3D12Device* device = GameFramework::Instance()->device().Get();
+    ID3D12Device* device = GameFramework::instance()->device().Get();
     if (!device)
     {
         CERROR("CameraComponent: Device is null.");

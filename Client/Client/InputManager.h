@@ -25,7 +25,7 @@ private:
     BOOL _isShowCusor = TRUE;
 
 public:
-    static InputManager* Instance()
+    static InputManager* instance()
     {
         static InputManager instance;
         return &instance;

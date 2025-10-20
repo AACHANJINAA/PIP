@@ -40,7 +40,7 @@ RenderComponent::RenderComponent()
 {
 	set_name("RenderComponent");
 
-    ComPtr<ID3D12Device> device = GameFramework::Instance()->device();
+    ComPtr<ID3D12Device> device = GameFramework::instance()->device();
     if (!device)
     {
         CERROR("RenderComponent::awake: Device를 가져올 수 없습니다.");

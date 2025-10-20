@@ -20,12 +20,19 @@
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+	// =========================필요한 메시 로드==================================
+
+    ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+
+	// =====================================================================
+
+
 
     // 카메라 생성
-    auto cameraObject = ObjectManager::Instance()->create_game_object("FreeCamera");
+    auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
     //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 2.0f, 20.0f));
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
 	cameraObject->transform()->set_local_rotation(0.f, 180.f, 0.f);
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
@@ -33,10 +40,10 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
-        auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
-        // MainPlayerScript추가
-        playerObject->add_component<MainPlayerScript>();
-        //// RenderComponent
+        //auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
+        //// MainPlayerScript추가
+        //playerObject->add_component<MainPlayerScript>();
+        ////// RenderComponent
         //auto renderer = playerObject->add_component<RenderComponent>();
 
         //auto playerMesh = ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
@@ -53,10 +60,10 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
         //playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);  
         //playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); 
 
-        
+        //
 
         //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
-       // ResourceManager::Instance()->upload_pending_meshes(device, commandList);
+        //ResourceManager::Instance()->upload_pending_meshes(device, commandList);
     }
 
 
@@ -88,27 +95,27 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     // DW설명 : 테스트 하고싶은 gltf 파일 있으면 이 형식 참고해서 로드해보기
     {
-        auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
+        //auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
+        //
+        //
+        //auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
+        //test_cannon_object->add_component<GltfTestScript>();
+
+        ////cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
+        //cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf"));
 
 
-        auto cannon_renderer = test_cannon_object->add_component<RenderComponent>();
-        test_cannon_object->add_component<GltfTestScript>();
-
-        //cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/DDSMapData/Meshes/old_cannon.gltf"));
-        cannon_renderer->set_mesh(ResourceManager::Instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf"));
-
-        
-        auto material = std::make_shared<GltfMaterial>("test_Material");
-        material->set_shader(Renderer::Instance()->get_shader("gltf"));
-        cannon_renderer->set_material(material);
-
-        // gltf
-        cannon_renderer->set_pso_name("gltf");
-
-        // 위치 회전 크기 수정
-        test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
-        test_cannon_object->transform()->set_local_rotation(-90.f,0.f,0.f);
-        test_cannon_object->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // 캐릭터 모델 작아서 키워야함 ㅋㅋ
+        //auto material = std::make_shared<GltfMaterial>("test_Material");
+        //material->set_shader(Renderer::Instance()->get_shader("gltf"));
+        //cannon_renderer->set_material(material);
+        //
+        //// gltf
+        //cannon_renderer->set_pso_name("gltf");
+        //
+        //// 위치 회전 크기 수정
+        //test_cannon_object->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
+        //test_cannon_object->transform()->set_local_rotation(-90.f,0.f,0.f);
+        //test_cannon_object->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // 캐릭터 모델 작아서 키워야함 ㅋㅋ
     }
    // {
         //auto test_cannon_object = ObjectManager::Instance()->create_game_object("TestCannon");
@@ -152,7 +159,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void Chess_Scene::release_upload_buffers()
 {
-    ResourceManager::Instance()->release_upload_buffers();
+    ResourceManager::instance()->release_upload_buffers();
 }
 
 // =================================================================

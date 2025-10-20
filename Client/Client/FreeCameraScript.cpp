@@ -23,23 +23,23 @@ void FreeCameraScript::awake()
 void FreeCameraScript::update(float delta_time)
 {
     // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
-    if (GameFramework::Instance()->m_bIsWindowActive && !InputManager::Instance()->GetIsShowCusor())
+    if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
         process_mouse_input(delta_time);
         process_keyboard_input(delta_time);
     }
 
     // ESC 키를 누르면 커서를 보이거나 숨깁니다.
-    if (InputManager::Instance()->IsKeyDown(VK_ESCAPE))
+    if (InputManager::instance()->IsKeyDown(VK_ESCAPE))
     {
-        InputManager::Instance()->ChangeShowCusor();
+        InputManager::instance()->ChangeShowCusor();
     }
 }
 
 // 역할 이전 (from FreeCamera::ProcessInput - mouse part)
 void FreeCameraScript::process_mouse_input(float delta_time)
 {
-    POINT mouse_delta = InputManager::Instance()->GetMouseDelta();
+    POINT mouse_delta = InputManager::instance()->GetMouseDelta();
 
     if (mouse_delta.x != 0 || mouse_delta.y != 0)
     {
@@ -59,36 +59,36 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     XMFLOAT3 move_direction = { 0.0f, 0.0f, 0.0f };
    
 
-    if (InputManager::Instance()->IsKeyPress(VK_ADD))
+    if (InputManager::instance()->IsKeyPress(VK_ADD))
     {
         _moveSpeed += 2.0f;
     }
-    if (InputManager::Instance()->IsKeyPress(VK_SUBTRACT))
+    if (InputManager::instance()->IsKeyPress(VK_SUBTRACT))
     {
         _moveSpeed -= 2.0f;
     }
 
-    if (InputManager::Instance()->IsKeyPress('W'))
+    if (InputManager::instance()->IsKeyPress('W'))
     {
         move_direction = Vector3::Add(move_direction, trans->forward());
     }
-    if (InputManager::Instance()->IsKeyPress('S'))
+    if (InputManager::instance()->IsKeyPress('S'))
     {
         move_direction = Vector3::Add(move_direction, Vector3::ScalarProduct(trans->forward(), -1.0f, false));
     }
-    if (InputManager::Instance()->IsKeyPress('D'))
+    if (InputManager::instance()->IsKeyPress('D'))
     {
         move_direction = Vector3::Add(move_direction, trans->right());
     }
-    if (InputManager::Instance()->IsKeyPress('A'))
+    if (InputManager::instance()->IsKeyPress('A'))
     {
         move_direction = Vector3::Add(move_direction, Vector3::ScalarProduct(trans->right(), -1.0f, false));
     }
-    if (InputManager::Instance()->IsKeyPress(VK_SPACE))
+    if (InputManager::instance()->IsKeyPress(VK_SPACE))
     {
         move_direction.y += 1.0f;
     }
-    if (InputManager::Instance()->IsKeyPress(VK_LCONTROL))
+    if (InputManager::instance()->IsKeyPress(VK_LCONTROL))
     {
         move_direction.y -= 1.0f;
     }

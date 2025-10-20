@@ -17,6 +17,7 @@ class SceneManager : public Singleton<SceneManager>
 	~SceneManager() override;
 public:
 	void initialize();
+	virtual void release() override;
 
 	// [추가] 템플릿을 사용하여 새로운 씬 생성 방법을 등록합니다.
 	template<typename T>

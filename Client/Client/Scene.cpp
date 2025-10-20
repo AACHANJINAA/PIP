@@ -17,6 +17,12 @@
 
 
 // load_scene_from_file load scene dataa from a JSON file
+
+Scene::~Scene()
+{
+   
+}
+
 void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,
     ID3D12GraphicsCommandList* commandList)
 {
@@ -55,14 +61,14 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         // 메쉬 로드
         std::string mesh_path = (basePath / data.meshFile).string();
-        std::shared_ptr<Mesh> mesh = ResourceManager::Instance()->load_mesh(mesh_path);
+        std::shared_ptr<Mesh> mesh = ResourceManager::instance()->load_mesh(mesh_path);
         if (!mesh) {
             CLOG("Failed to load mesh : " << mesh_path);
             continue;
         }
 
         // 게임 오브젝트 생성 및 컴포넌트 추가
-        std::shared_ptr<GameObject> gameObject = ObjectManager::Instance()->create_game_object(data.name);
+        std::shared_ptr<GameObject> gameObject = ObjectManager::instance()->create_game_object(data.name);
         auto renderComp = gameObject->add_component<RenderComponent>();
         renderComp->set_mesh(mesh);
 
@@ -74,7 +80,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             if (overridesArray.size() == 1)
             {
                 auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-                material->set_shader(Renderer::Instance()->get_shader("gltf"));
+                material->set_shader(Renderer::instance()->get_shader("gltf"));
                 const auto& overrides = overridesArray[0];
 
                 if (overrides.contains("baseColorTexture")) {
@@ -83,7 +89,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                     //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
 
                     std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 0);
                 }
 
@@ -93,7 +99,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                     //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
 
                     std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 1);
                 }
 
@@ -103,7 +109,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                     //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
 
                     std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 2);
                 }
 
@@ -113,7 +119,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                     //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
 
                     std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
                     if (texture) material->set_texture(texture, 3);
                 }
                 renderComp->set_material(material);
@@ -125,7 +131,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 for (const auto& overrideItem : overridesArray)
                 {
                     auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-                    material->set_shader(Renderer::Instance()->get_shader("gltf"));
+                    material->set_shader(Renderer::instance()->get_shader("gltf"));
 
                     // overrideItem은 {"baseColorTexture", "path"} 형태의 객체
 
@@ -133,7 +139,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                     {
                         std::string textureFile = val.get<std::string>();
                         std::string texture_path = (basePath / textureFile).string();
-                        auto texture = TextureManager::Instance()->load_texture(texture_path, commandList);
+                        auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
 
                         if (texture)
                         {
@@ -172,7 +178,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             });
         }
     }
-    ResourceManager::Instance()->upload_pending_meshes(device, commandList);
+    ResourceManager::instance()->upload_pending_meshes(device, commandList);
 }
 
 //Scene::Scene()

@@ -25,6 +25,13 @@ void SceneManager::initialize()
     change_scene("ChessScene");
 }
 
+void SceneManager::release()
+{
+	_currentScene.reset();
+    _requestedSceneName.clear();
+	_scene_creators.clear();
+}
+
 void SceneManager::change_scene(const std::string& scene_name)
 {
 	_requestedSceneName = scene_name;
@@ -45,14 +52,16 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     std::string scene_to_load = _requestedSceneName;
     _requestedSceneName.clear();
 
-	auto game_framework = GameFramework::Instance();
+	auto game_framework = GameFramework::instance();
     // 1. GPU가 이전 프레임의 모든 작업을 마칠 때까지 기다립니다.
     game_framework->WaitForGpuComplete();
 
     // 2. 현재 씬의 영속성 없는 모든 오브젝트를 파괴 목록으로 옮깁니다.
-    ObjectManager::Instance()->clear_non_persistent_objects();
+    ObjectManager::instance()->clear_non_persistent_objects();
     // 파괴 목록에 있는 오브젝트들을 실제로 소멸시킵니다.
-    ObjectManager::Instance()->process_destructions();
+    ObjectManager::instance()->process_destructions();
+
+    ResourceManager::instance()->unload_unused_meshes();
 
     // 3. 새로운 씬을 생성합니다.
     auto it = _scene_creators.find(scene_to_load);
@@ -73,7 +82,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     command_list->Reset(command_allocator, nullptr);
 
     _currentScene->build_objects(device, command_list);
-    ResourceManager::Instance()->upload_pending_meshes(device, command_list);
+    ResourceManager::instance()->upload_pending_meshes(device, command_list);
 
     // 5. 리소스 업로드 커맨드를 실행하고 완료될 때까지 기다립니다.
     command_list->Close();
@@ -85,5 +94,5 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     //ResourceManager::Instance()->release_upload_buffers();
     // --- [추가] 모든 씬 전환 작업이 끝난 후 ---
 	// 이제 더 이상 사용되지 않는 이전 씬의 메시들을 메모리에서 완전히 해제합니다.
-    ResourceManager::Instance()->unload_unused_meshes();
+    //ResourceManager::Instance()->unload_unused_meshes();
 }
