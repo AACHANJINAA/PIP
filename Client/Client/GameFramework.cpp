@@ -250,28 +250,7 @@ void GameFramework::CreateDepthStencilView()
 
 void GameFramework::BuildObjects()
 {
-	_commandList->Reset(_commandAllocator.Get(), NULL);
-
-	_scene = std::make_unique<Chess_Scene>(); //초기 씬 설정 TODO: 나중에 씬 매니저로 변경
-	_scene->build_objects(_device.Get(), _commandList.Get());
-
-
-	// 로드가 끝난 메시는 _pending_meshes 목록에 들어갔으므로, GPU에 업로드합니다.
-	ResourceManager::instance()->upload_pending_meshes(_device.Get(), _commandList.Get());
-
-	_commandList->Close();
-	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
-	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
-
-	WaitForGpuComplete();
-
-	// GPU 작업이 완료되었으므로, 임시 업로드 버퍼를 해제합니다.
-	ResourceManager::instance()->release_upload_buffers();
-
-	// [수정] 모든 리소스 초기화 및 GPU 업로드가 끝났으므로, 이제 스크립트의 awake/start를 호출합니다.
-	ObjectManager::instance()->process_new_game_objects();
-
-	_gameTimer.Reset();
+	// 비워두자?
 }
 
 void GameFramework::ReleaseObjects()

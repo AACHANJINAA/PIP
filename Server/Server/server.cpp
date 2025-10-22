@@ -213,7 +213,7 @@ namespace PIP::server
 	}
 	void Server::Stop()
 	{
-		if (!_is_running.exchange(false))
+		if (not _is_running.exchange(false))
 		{
 			return; // 이미 Stop이 호출된 경우 중복 실행 방지
 		}
@@ -384,6 +384,9 @@ namespace PIP::server
 					}
 					break;
 				}
+			default:
+				MYERROR("[IO_WORKER] Unknown IO_OP received: " << static_cast<int>(eo->_io_op));
+				break;
 			}
 		}
 	}
