@@ -38,6 +38,7 @@ namespace PIP::server
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
 		_players.emplace(new_player->_id, new_player);
+		new_player->_logic_thread_idx = _logic_thread_idx;
 		SendRoomInfoToNewPlayer(new_player);
 	}
 	void Room::LeavePlayer(long long player_id)

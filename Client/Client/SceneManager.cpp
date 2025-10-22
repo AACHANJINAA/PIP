@@ -60,7 +60,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     ObjectManager::instance()->clear_non_persistent_objects();
     // 파괴 목록에 있는 오브젝트들을 실제로 소멸시킵니다.
     ObjectManager::instance()->process_destructions();
-
+	// 이제 더 이상 사용되지 않는 이전 씬의 메시들을 메모리에서 완전히 해제합니다.
     ResourceManager::instance()->unload_unused_meshes();
 
     // 3. 새로운 씬을 생성합니다.
@@ -69,7 +69,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
         CERROR("등록되지 않은 씬: " << scene_to_load);
         return;
     }
-    _currentScene = it->second();
+    _currentScene = it->second(); // 이때 씬 생성 및 삭제
     if (!_currentScene) 
     {
         CERROR("씬이 널 포인터임")

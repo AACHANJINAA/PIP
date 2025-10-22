@@ -33,7 +33,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraObject->add_component<FreeCameraScript>();
     //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
-	cameraObject->transform()->set_local_rotation(0.f, 180.f, 0.f);
+	cameraObject->transform()->set_local_rotation(0.f, 0, 0.f);
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 
