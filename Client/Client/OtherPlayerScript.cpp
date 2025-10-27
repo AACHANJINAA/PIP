@@ -23,12 +23,19 @@ void OtherPlayerScript::update(float deltaTime)
 
 void OtherPlayerScript::awake()
 {
-	// --- 이 스크립트가 부착된 GameObject에 필요한 모든 설정을 여기서 수행 ---
-	auto render_comp = game_object()->add_component<RenderComponent>();
-    render_comp->set_mesh(ResourceManager::instance()->load_mesh("Resource/Monster/test_monster.obj"));
+    auto render_comp = game_object()->add_component<RenderComponent>().get();
+    auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
-    auto material = std::make_shared<GltfMaterial>("other_player_material");
-    material->set_shader(Renderer::instance()->get_shader("default"));
+    // 재질 및 쉐이더 설정
+    render_comp->set_mesh(playerMesh);
+    auto material = std::make_shared<GltfMaterial>("test_Material");
+    material->set_shader(Renderer::instance()->get_shader("gltf"));
+    render_comp->set_material(material);
 
-	render_comp->set_material(material);
+    // gltf
+    render_comp->set_pso_name("gltf");
+
+    // 위치, 회전 정보
+    transform()->set_local_rotation(-90.f, 0.f, 0.f);
+    transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
 }
