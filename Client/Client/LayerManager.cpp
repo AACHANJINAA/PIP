@@ -6,6 +6,7 @@ LayerManager::LayerManager()
     // 게임 시작 시 기본적으로 필요한 레이어들을 미리 등록합니다.
     add_layer("Default");
     add_layer("Player");
+    add_layer("OtherPlayer");
     add_layer("Enemy");
     add_layer("Environment");
     add_layer("PlayerWeapon");

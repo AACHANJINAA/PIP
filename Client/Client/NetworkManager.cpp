@@ -173,7 +173,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			auto player_logic = playerObject->add_component<MainPlayerScript>();
 			player_logic->set_name(name);
 			player_logic->set_hp(spawn_data._hp);
-			player_logic->set_id(spawn_data._id);
+			player_logic->set_id(_my_session_id);
 			player_logic->set_position(spawn_data._position);
 			
 
@@ -215,7 +215,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 		auto other_player = ObjectManager::instance()->create_game_object(name);
 		auto other_player_logic = other_player->add_component<OtherPlayerScript>();
 		other_player->transform()->set_local_position(spawn_data._position);
-		other_player->set_layer("Enemy");
+		other_player->set_layer("OtherPlayer");
 
 		other_player_logic->set_hp(spawn_data._hp);
 		other_player_logic->set_id(spawn_data._id);
@@ -223,7 +223,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 
 
 
-		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
+		CLOG("[S->C] OtherPlayer spawned/updated: ID=" << spawn_data._id
 			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
 			<< "HP=" << spawn_data._hp
 			<< "Level=" << spawn_data._level
@@ -245,10 +245,11 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	}
 	else
 	{
-		auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+		auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
 		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-			return move_packet._id == other->get_component<OtherPlayerScript>()->id();
+			auto other_script = other->get_component<OtherPlayerScript>();
+			return other_script && move_packet._id == other_script->id();
 		});
 		if (it != other_players.end())
 		{
@@ -261,10 +262,11 @@ void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_LEAVE leave_packet;
 	stream >> leave_packet; // id만 읽습니다.
-	auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+	auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
 	auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
 	auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-		return leave_packet._id == other->get_component<OtherPlayerScript>()->id();
+		auto other_script = other->get_component<OtherPlayerScript>();
+		return other_script && leave_packet._id == other_script->id();
 	});
 	if (it != other_players.end())
 	{
@@ -287,10 +289,11 @@ void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
 	}
 	else
 	{
-		auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+		auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
 		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
 		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-			return attack_packet._target_id == other->get_component<OtherPlayerScript>()->id(); // 읽어온 target_id 사용
+			auto other_script = other->get_component<OtherPlayerScript>();
+			return other_script && attack_packet._target_id == other_script->id();
 		});
 		if (it != other_players.end())
 		{
