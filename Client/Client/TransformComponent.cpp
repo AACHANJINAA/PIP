@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TransformComponent.h"
 #include "GameObject.h"
+#include "RenderComponent.h"
 
 TransformComponent::TransformComponent() : _isDirty(true)
 {
@@ -128,6 +129,70 @@ void TransformComponent::set_local_scale(const XMFLOAT3& scale)
 {
     _localScale = scale;
     set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
+}
+
+void TransformComponent::move_forward(float distance)
+{
+	world_matrix(); // 최신 행렬 보장
+
+	_localPosition.x += forward().x * distance;
+	_localPosition.y += forward().y * distance;
+	_localPosition.z += forward().z * distance;
+
+    set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
+}
+
+void TransformComponent::move_right(float distance)
+{
+    world_matrix(); // 최신 행렬 보장
+
+	_localPosition.x += right().x * distance;
+	_localPosition.y += right().y * distance;
+	_localPosition.z += right().z * distance;
+
+    set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
+}
+
+void TransformComponent::move_up(float distance)
+{
+    world_matrix(); // 최신 행렬 보장
+
+	_localPosition.x += up().x * distance;
+	_localPosition.y += up().y * distance;
+	_localPosition.z += up().z * distance;
+
+    set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
+}
+
+XMFLOAT3 TransformComponent::get_world_scale()
+{
+    auto gameObject = _gameObject.lock();
+    auto render_component = gameObject.get()->get_component<RenderComponent>();
+
+    if (render_component)
+    {
+        BoundingOrientedBox local_bounding_box = render_component->mesh()->bounding_box();
+        XMFLOAT3 local_min = local_bounding_box.Center;
+        XMFLOAT3 local_max = local_bounding_box.Extents;
+        XMFLOAT3 world_min;
+        XMFLOAT3 world_max;
+        XMMATRIX worldMat = XMLoadFloat4x4(&world_matrix());
+        // 로컬 최소점과 최대점을 월드 공간으로 변환
+        XMVECTOR localMinVec = XMLoadFloat3(&local_min);
+        XMVECTOR localMaxVec = XMLoadFloat3(&local_max);
+        XMVECTOR worldMinVec = XMVector3Transform(localMinVec, worldMat);
+        XMVECTOR worldMaxVec = XMVector3Transform(localMaxVec, worldMat);
+        XMStoreFloat3(&world_min, worldMinVec);
+        XMStoreFloat3(&world_max, worldMaxVec);
+        // 월드 공간에서의 크기 계산
+        XMFLOAT3 world_scale;
+        world_scale.x = fabs(world_max.x - world_min.x);
+        world_scale.y = fabs(world_max.y - world_min.y);
+        world_scale.z = fabs(world_max.z - world_min.z);
+        return world_scale;
+	}
+
+    return XMFLOAT3();
 }
 
 void TransformComponent::rotate(float pitch, float yaw, float roll)

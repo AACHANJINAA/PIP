@@ -31,6 +31,15 @@ public:
     void set_local_rotation(float pitch, float yaw, float roll);
     void set_local_scale(const XMFLOAT3& scale);
 
+	// DW설명 : 현재 위치에서 forward, right, up 방향으로 오프셋만큼 이동
+	void move_forward(float distance);
+	void move_right(float distance);
+	void move_up(float distance);
+
+
+	// DW설명 : 월드 크기 함수 mehs의 바운딩 박스를 가져와 월드공간으로 이전 후 max-min하여 실제 가로 세로 높이 값을 반환
+    XMFLOAT3 get_world_scale();
+
     // [추가] 현재 회전에 pitch, yaw, roll을 추가로 적용합니다. (각도는 degree 단위)
 	// DW설명 : 마지막 인자는 카메라 회전용인지 구분하는 플래그
     void rotate(float pitch, float yaw, float roll);
