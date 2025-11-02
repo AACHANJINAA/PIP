@@ -3,9 +3,11 @@
 #if WITH_EDITOR
 #include "Editor.h"
 #include "Subsystems/EditorActorSubsystem.h"
-#include "Exporters/Exporter.h"
 #include "HAL/PlatformFileManager.h"
+#include "Exporters/Exporter.h"
 #include "Exporters/GLTFExporter.h"
+#include "Options/GLTFExportOptions.h"
+#include "AssetExportTask.h"
 #endif
 
 #include "Components/StaticMeshComponent.h"
@@ -17,7 +19,6 @@
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
 #include "GameFramework/Actor.h"
-
 // FVector 헬퍼 함수
 TSharedPtr<FJsonObject> VectorToJsonObject(const FVector& InVector)
 {
@@ -96,19 +97,29 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
     TArray<TSharedPtr<FJsonValue>> ActorJsonArray;
 
     const FString BaseExportDir = FPaths::ProjectSavedDir() + TEXT("MapData/");
-    const FString TextureExportDir = BaseExportDir + TEXT("Textures/");
     const FString MeshExportDir = BaseExportDir + TEXT("Meshes/");
 
+    // --- 폴더 생성 로직 (Meshes만) ---
     IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-    if (!PlatformFile.DirectoryExists(*TextureExportDir)) PlatformFile.CreateDirectoryTree(*TextureExportDir);
     if (!PlatformFile.DirectoryExists(*MeshExportDir)) PlatformFile.CreateDirectoryTree(*MeshExportDir);
+    // Textures 폴더 생성 로직도 제거
 
     UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
     TArray<AActor*> FoundActors;
     if (EditorActorSubsystem) FoundActors = EditorActorSubsystem->GetAllLevelActors();
 
     TSet<UStaticMesh*> ExportedMeshes;
-    TSet<UTexture*> ExportedTextures;
+
+    // --- [1. 전역 옵션 설정] ---
+    UGLTFExportOptions* Options = GetMutableDefault<UGLTFExportOptions>();
+    const EGLTFTextureImageFormat OldTextureFormat = Options->TextureImageFormat;
+    const bool bOldAdjustNormalmaps = Options->bAdjustNormalmaps;
+    const bool bOldExportUnlitMaterials = Options->bExportUnlitMaterials;
+
+    // .png 파일이 .gltf와 같은 폴더(Meshes/)에 생성되도록 설정
+    Options->TextureImageFormat = EGLTFTextureImageFormat::PNG;
+    Options->bAdjustNormalmaps = true;
+    Options->bExportUnlitMaterials = true;
 
     for (AActor* Actor : FoundActors)
     {
@@ -117,32 +128,48 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
 
         if (!StaticMesh) continue;
 
+        // --- [2. 자동화된 익스포트] (파일이 Meshes/ 폴더에 모두 생성됨) ---
         if (!ExportedMeshes.Contains(StaticMesh))
         {
             FString MeshFileName = StaticMesh->GetName() + TEXT(".gltf");
             FString MeshFullFilePath = MeshExportDir + MeshFileName;
-            UExporter* Exporter = UExporter::FindExporter(StaticMesh, TEXT("gltf"));
-            if (Exporter)
+
+            UAssetExportTask* ExportTask = NewObject<UAssetExportTask>();
+            ExportTask->Object = StaticMesh;
+            ExportTask->Exporter = UExporter::FindExporter(StaticMesh, TEXT("gltf"));
+            ExportTask->Filename = MeshFullFilePath;
+            ExportTask->bSelected = false;
+            ExportTask->bReplaceIdentical = true;
+            ExportTask->bPrompt = false;
+            ExportTask->bAutomated = true;
+            ExportTask->bUseFileArchive = false;
+            ExportTask->bWriteEmptyFiles = false;
+
+            if (UExporter::RunAssetExportTask(ExportTask))
             {
-                if (UExporter::ExportToFile(StaticMesh, Exporter, *MeshFullFilePath, false, false) == 1)
-                {
-                    UE_LOG(LogTemp, Log, TEXT("Exported Mesh: %s"), *MeshFullFilePath);
-                    ExportedMeshes.Add(StaticMesh);
-                }
+                UE_LOG(LogTemp, Log, TEXT("Exported asset to: %s"), *MeshFullFilePath);
+                ExportedMeshes.Add(StaticMesh);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("Automated Export FAILED for: %s"), *MeshFullFilePath);
             }
         }
 
+        // --- [3. 씬(MapData) JSON 구성] ---
         TSharedPtr<FJsonObject> ActorJsonObject = MakeShareable(new FJsonObject());
         ActorJsonObject->SetStringField(TEXT("Name"), Actor->GetActorLabel());
+
+        // ★★★ 원본 상태 유지: 씬 파일은 Meshes/의 gltf를 가리킵니다. ★★★
         FString RelativeMeshPath = TEXT("Meshes/") + StaticMesh->GetName() + TEXT(".gltf");
         ActorJsonObject->SetStringField(TEXT("MeshFile"), RelativeMeshPath);
 
+        // (트랜스폼 정보 ... 동일)
         FVector UnrealLocation = MeshComponent->GetComponentLocation() / 100.0f;
         FQuat UnrealQuat = MeshComponent->GetComponentQuat();
         FVector UnrealScale = MeshComponent->GetComponentScale();
         FVector ExportedLocation(UnrealLocation.X, UnrealLocation.Z, UnrealLocation.Y);
         FVector ExportedScale(UnrealScale.X, UnrealScale.Z, UnrealScale.Y);
-
         FQuat ExportedQuat = FQuat(UnrealQuat.X, UnrealQuat.Z, UnrealQuat.Y, -UnrealQuat.W);
 
         TSharedPtr<FJsonObject> TransformObject = MakeShareable(new FJsonObject());
@@ -151,83 +178,24 @@ void UMyExporterBPL::ExportClientData(UObject* WorldContextObject)
         TransformObject->SetObjectField(TEXT("Scale"), VectorToJsonObject(ExportedScale));
         ActorJsonObject->SetObjectField(TEXT("Transform"), TransformObject);
 
-        // --- 텍스처 정보 저장 (최종 수정: 머티리얼 슬롯 지원) ---
-// 1. 최종 MaterialOverrides 배열을 담을 JsonArray를 선언합니다.
-        TArray<TSharedPtr<FJsonValue>> MaterialOverridesArray;
-
-        int32 NumMaterials = MeshComponent->GetNumMaterials();
-        // 2. 머티리얼 '슬롯' 개수만큼 루프를 돕니다. (0번, 1번, 2번...)
-        for (int32 MaterialIndex = 0; MaterialIndex < NumMaterials; ++MaterialIndex)
-        {
-            // 각 슬롯별로 텍스처 정보를 담을 TMap을 새로 생성합니다.
-            TMap<FString, FString> CurrentSlotTexturesMap;
-            UMaterialInterface* Material = MeshComponent->GetMaterial(MaterialIndex);
-
-            if (Material)
-            {
-                TArray<UTexture*> UsedTextures;
-                Material->GetUsedTextures(UsedTextures, EMaterialQualityLevel::High, true, ERHIFeatureLevel::SM5, true);
-
-                for (UTexture* Texture : UsedTextures)
-                {
-                    UTexture2D* Texture2D = Cast<UTexture2D>(Texture);
-                    if (Texture2D)
-                    {
-                        FString TextureName = Texture2D->GetName();
-                        FString RelativeDdsPath = TEXT("Textures/") + TextureName + TEXT(".dds");
-
-                        // 텍스처 이름 분석 후 역할에 맞는 Key와 함께 Map에 저장
-                        if (TextureName.EndsWith(TEXT("_N"), ESearchCase::IgnoreCase)) {
-                            CurrentSlotTexturesMap.Add(TEXT("normalTexture"), RelativeDdsPath);
-                        }
-                        else if (TextureName.EndsWith(TEXT("_ORM"), ESearchCase::IgnoreCase) || TextureName.EndsWith(TEXT("_MRA"), ESearchCase::IgnoreCase)) {
-                            CurrentSlotTexturesMap.Add(TEXT("ormTexture"), RelativeDdsPath);
-                        }
-                        else if (TextureName.EndsWith(TEXT("_E"), ESearchCase::IgnoreCase) || TextureName.EndsWith(TEXT("_Emissive"), ESearchCase::IgnoreCase)) {
-                            CurrentSlotTexturesMap.Add(TEXT("emissiveTexture"), RelativeDdsPath);
-                        }
-                        else {
-                            CurrentSlotTexturesMap.Add(TEXT("baseColorTexture"), RelativeDdsPath);
-                        }
-
-                        // PNG 파일 익스포트 로직은 기존과 동일
-                        if (!ExportedTextures.Contains(Texture2D))
-                        {
-                            FString TextureFileName = TextureName + TEXT(".png");
-                            FString TextureFullFilePath = TextureExportDir + TextureFileName;
-                            UExporter* Exporter = UExporter::FindExporter(Texture2D, TEXT("PNG"));
-                            if (Exporter) {
-                                if (UExporter::ExportToFile(Texture2D, Exporter, *TextureFullFilePath, false, false) == 1) {
-                                    UE_LOG(LogTemp, Log, TEXT("Exported New Source Texture: %s"), *TextureFullFilePath);
-                                }
-                            }
-                            ExportedTextures.Add(Texture2D);
-                        }
-                    }
-                }
-            }
-
-            // 3. 현재 슬롯의 텍스처 맵(TMap)을 JsonObject로 변환합니다.
-            TSharedPtr<FJsonObject> SlotMaterialObject = MakeShareable(new FJsonObject());
-            for (const TPair<FString, FString>& Pair : CurrentSlotTexturesMap)
-            {
-                SlotMaterialObject->SetStringField(Pair.Key, Pair.Value);
-            }
-
-            // 4. 변환된 JsonObject를 최종 배열에 추가합니다.
-            MaterialOverridesArray.Add(MakeShareable(new FJsonValueObject(SlotMaterialObject)));
-        }
-
-        // 5. 완성된 배열을 ActorJsonObject에 추가합니다.
-        ActorJsonObject->SetArrayField(TEXT("MaterialOverrides"), MaterialOverridesArray);
         ActorJsonArray.Add(MakeShareable(new FJsonValueObject(ActorJsonObject)));
     }
 
+    // --- [4. 전역 옵션 복원] ---
+    Options->TextureImageFormat = OldTextureFormat;
+    Options->bAdjustNormalmaps = bOldAdjustNormalmaps;
+    Options->bExportUnlitMaterials = bOldExportUnlitMaterials;
+
+    // --- [6. 최종 씬(MapData) JSON 저장] ---
     FString OutputString;
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(ActorJsonArray, Writer);
     FString FilePath = BaseExportDir + TEXT("ExportedClientData.json");
     FFileHelper::SaveStringToFile(OutputString, *FilePath);
-    UE_LOG(LogTemp, Warning, TEXT("Export Complete! File saved to: %s"), *FilePath);
+
+    UE_LOG(LogTemp, Warning, TEXT("--- Base Export Complete! ---"));
+    UE_LOG(LogTemp, Warning, TEXT("Scene file saved to: %s"), *FilePath);
+    UE_LOG(LogTemp, Warning, TEXT("Meshes/Textures saved to: %s"), *MeshExportDir);
+    UE_LOG(LogTemp, Warning, TEXT("Textures are embedded/referenced relative to the gltf file in %s."), *MeshExportDir);
 #endif
 }

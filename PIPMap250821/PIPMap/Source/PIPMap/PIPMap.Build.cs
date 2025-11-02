@@ -19,17 +19,10 @@ public class PIPMap : ModuleRules
                 {
                     "UnrealEd",           // 에디터 기능 전반 (GEditor 등)
                     "EditorSubsystem",    // 에디터 서브시스템
-                    "UnrealEd",           // dds파일을 위한 에디터 기능 추가
-                    "GLTFExporter"       // gltf파일을 위한 에디터 기능 추가 
+                    "AssetTools",
+                    "glTFExporter"       // gltf파일을 위한 에디터 기능 추가 
                 }
             );
         }
-        // Uncomment if you are using Slate UI
-        // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-
-        // Uncomment if you are using online features
-        // PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-        // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
     }
 }
