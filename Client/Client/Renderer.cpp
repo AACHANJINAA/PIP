@@ -23,8 +23,9 @@ void Renderer::initialize(ID3D12Device* device)
 {
     _device = device;
     
-    _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); // [추가]
-    create_dynamic_descriptor_heap(); // [추가]
+    _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); 
+
+    create_dynamic_descriptor_heap(8192); 
 
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
@@ -177,10 +178,14 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
     // ---------------------------------------------------------
 
-    // --- [추가] ResourceManager로부터 SRV 힙을 가져와 설정 ---
+    // --- ResourceManager로부터 SRV 힙을 가져와 설정 ---
     ID3D12DescriptorHeap* heaps[] = { DescriptorManager::instance()->get_descriptor_heap() };
 
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+    // [추가] 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋합니다.
+    _current_dynamic_descriptor_index = 0;
+
     // ---------------------------------------------------------
     for (auto const& [psoName, gameObjects] : _renderMap)
     {
@@ -283,14 +288,19 @@ void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT 
     
     UINT num_descriptors = static_cast<UINT>(cpu_handles.size());
     
-    if (_current_dynamic_descriptor_index + num_descriptors > _dynamic_descriptor_heap_capacity) {
-        _current_dynamic_descriptor_index = 0;
+    // [수정] 힙이 가득 찼는지 확인하는 로직으로 변경
+    if (_current_dynamic_descriptor_index + num_descriptors > _dynamic_descriptor_heap_capacity)
+    {
+     // 이 에러가 발생하면 create_dynamic_descriptor_heap의 capacity를 늘려야 합니다.
+        CERROR("Dynamic descriptor heap is full! Increase capacity.");
+        return;
     }
     
-    CD3DX12_CPU_DESCRIPTOR_HANDLE dest_cpu_handle_start(_dynamic_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), _current_dynamic_descriptor_index, _descriptor_size);
-    CD3DX12_GPU_DESCRIPTOR_HANDLE dest_gpu_handle_start(_dynamic_descriptor_heap->GetGPUDescriptorHandleForHeapStart(), _current_dynamic_descriptor_index, _descriptor_size);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dest_cpu_handle_start(_dynamic_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+    _current_dynamic_descriptor_index, _descriptor_size);
+    CD3DX12_GPU_DESCRIPTOR_HANDLE dest_gpu_handle_start(_dynamic_descriptor_heap->GetGPUDescriptorHandleForHeapStart(),
+    _current_dynamic_descriptor_index, _descriptor_size);
     
-    // [핵심] 디스크립터를 하나씩 복사
     for (UINT i = 0; i < num_descriptors; ++i)
     {
         D3D12_CPU_DESCRIPTOR_HANDLE dest_handle = dest_cpu_handle_start;
@@ -301,6 +311,7 @@ void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT 
     command_list->SetGraphicsRootDescriptorTable(root_parameter_index, dest_gpu_handle_start);
     
     _current_dynamic_descriptor_index += num_descriptors;
+    
 }
 
 void Renderer::create_dynamic_descriptor_heap(UINT capacity)
