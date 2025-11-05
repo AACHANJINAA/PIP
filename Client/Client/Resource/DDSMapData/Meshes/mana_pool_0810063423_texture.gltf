@@ -76,11 +76,34 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri": "mana_pool_0810063423_texture_texture_0.png"
+		},
+		{
+			"uri": "mana_pool_0810063423_texture_texture_1.png"
+		},
+		{
+			"uri": "mana_pool_0810063423_texture_texture_2.png"
+		}
+	],
 	"materials": [
 		{
-			"name": "mana_pool_0810063423_texture_material_0",
+			"name": "mana_pool_0810063423_texture_material_0_mana_pool_0810063423_texture",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
 			},
 			"doubleSided": true
 		}
@@ -108,9 +131,32 @@
 			"mesh": 0
 		}
 	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
 	"scenes": [
 		{
 			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "mana_pool_0810063423_texture_texture_0",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "mana_pool_0810063423_texture_texture_1",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "mana_pool_0810063423_texture_texture_2",
+			"sampler": 0,
+			"source": 2
 		}
 	]
 }

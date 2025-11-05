@@ -23,12 +23,7 @@
 				"Y": 500,
 				"Z": 50
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/mana_pool_0810063423_texture_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_FLOOR2",
@@ -54,13 +49,7 @@
 				"Y": 500,
 				"Z": 75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_Brick_Clay_Old_D.dds",
-				"normalTexture": "Textures/T_Brick_Clay_Old_N.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_FLOOR3",
@@ -86,13 +75,7 @@
 				"Y": 500,
 				"Z": 100
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_Rock_Sandstone_D.dds",
-				"normalTexture": "Textures/T_Rock_Sandstone_N.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket",
@@ -118,15 +101,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket2",
@@ -152,15 +127,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket3",
@@ -186,15 +153,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket4",
@@ -220,15 +179,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket5",
@@ -254,15 +205,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket6",
@@ -288,15 +231,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket7",
@@ -322,15 +257,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket8",
@@ -356,15 +283,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket9",
@@ -390,15 +309,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket10",
@@ -424,15 +335,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket11",
@@ -458,15 +361,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket12",
@@ -492,15 +387,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket13",
@@ -526,15 +413,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket14",
@@ -560,15 +439,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket15",
@@ -594,15 +465,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket16",
@@ -628,15 +491,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket17",
@@ -662,15 +517,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket18",
@@ -696,15 +543,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket19",
@@ -730,15 +569,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket20",
@@ -764,15 +595,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket21",
@@ -798,15 +621,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket22",
@@ -832,15 +647,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket23",
@@ -866,15 +673,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket24",
@@ -900,15 +699,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket25",
@@ -934,15 +725,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket26",
@@ -968,15 +751,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Cart_01",
@@ -1002,12 +777,7 @@
 				"Y": 1.75,
 				"Z": 1.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full",
@@ -1033,12 +803,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full2",
@@ -1064,12 +829,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full3",
@@ -1095,12 +855,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full4",
@@ -1126,12 +881,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full5",
@@ -1157,12 +907,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full6",
@@ -1188,12 +933,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Cart_2",
@@ -1219,12 +959,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full7",
@@ -1250,12 +985,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full8",
@@ -1281,12 +1011,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full9",
@@ -1312,12 +1037,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full10",
@@ -1343,12 +1063,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full11",
@@ -1374,12 +1089,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full12",
@@ -1405,12 +1115,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sack_01",
@@ -1436,12 +1141,7 @@
 				"Y": 2.25,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sack_2",
@@ -1467,12 +1167,7 @@
 				"Y": 2.25,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sack_3",
@@ -1498,12 +1193,7 @@
 				"Y": 2.25,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Barrell_Closed_01",
@@ -1529,12 +1219,7 @@
 				"Y": 1.25,
 				"Z": 1.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Barrell_Closed_2",
@@ -1560,12 +1245,7 @@
 				"Y": 1.25,
 				"Z": 1.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Crate_01",
@@ -1591,12 +1271,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Crate_2",
@@ -1622,12 +1297,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Crate_3",
@@ -1653,12 +1323,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Cart_3",
@@ -1684,12 +1349,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full13",
@@ -1715,12 +1375,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full14",
@@ -1746,12 +1401,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full15",
@@ -1777,12 +1427,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full16",
@@ -1808,12 +1453,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full17",
@@ -1839,12 +1479,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full18",
@@ -1870,12 +1505,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Cart_4",
@@ -1901,12 +1531,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full19",
@@ -1932,12 +1557,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full20",
@@ -1963,12 +1583,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full21",
@@ -1994,12 +1609,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full22",
@@ -2025,12 +1635,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full23",
@@ -2056,12 +1661,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Food_Watermelon_Full24",
@@ -2087,12 +1687,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Box_3",
@@ -2118,12 +1713,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Box_4",
@@ -2149,12 +1739,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_17",
@@ -2180,12 +1765,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_18",
@@ -2211,12 +1791,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_19",
@@ -2242,12 +1817,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_20",
@@ -2273,12 +1843,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_21",
@@ -2304,12 +1869,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_22",
@@ -2335,12 +1895,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_23",
@@ -2366,12 +1921,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_24",
@@ -2397,12 +1947,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_25",
@@ -2428,12 +1973,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_26",
@@ -2459,12 +1999,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_27",
@@ -2490,12 +2025,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_28",
@@ -2521,12 +2051,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_29",
@@ -2552,12 +2077,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_30",
@@ -2583,12 +2103,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_31",
@@ -2614,12 +2129,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_32",
@@ -2645,12 +2155,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Box_01",
@@ -2676,12 +2181,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Box_2",
@@ -2707,12 +2207,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_03",
@@ -2738,12 +2233,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_4",
@@ -2769,12 +2259,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_5",
@@ -2800,12 +2285,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_6",
@@ -2831,12 +2311,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_7",
@@ -2862,12 +2337,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_8",
@@ -2893,12 +2363,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_9",
@@ -2924,12 +2389,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_10",
@@ -2955,12 +2415,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_02",
@@ -2986,12 +2441,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_3",
@@ -3017,12 +2467,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_11",
@@ -3048,12 +2493,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_12",
@@ -3079,12 +2519,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_13",
@@ -3110,12 +2545,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_14",
@@ -3141,12 +2571,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_15",
@@ -3172,12 +2597,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Bottle_16",
@@ -3203,12 +2623,7 @@
 				"Y": 3,
 				"Z": 3
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sack_4",
@@ -3234,12 +2649,7 @@
 				"Y": 2.25,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sack_5",
@@ -3265,12 +2675,7 @@
 				"Y": 2.25,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sack_6",
@@ -3296,12 +2701,7 @@
 				"Y": 2.25,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Barrell_Closed_3",
@@ -3327,12 +2727,7 @@
 				"Y": 1.25,
 				"Z": 1.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Barrell_Closed_4",
@@ -3358,12 +2753,7 @@
 				"Y": 1.25,
 				"Z": 1.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Mace_01",
@@ -3389,12 +2779,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sword_01",
@@ -3420,12 +2805,7 @@
 				"Y": 1.75,
 				"Z": 1.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket27",
@@ -3451,15 +2831,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket28",
@@ -3485,15 +2857,7 @@
 				"Y": 1.5,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket29",
@@ -3519,15 +2883,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket30",
@@ -3553,15 +2909,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket31",
@@ -3587,15 +2935,7 @@
 				"Y": 1.5,
 				"Z": 2.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket32",
@@ -3621,15 +2961,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Table_01",
@@ -3655,12 +2987,7 @@
 				"Y": 1,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sword_2",
@@ -3686,12 +3013,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sword_3",
@@ -3717,12 +3039,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket33",
@@ -3748,15 +3065,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket34",
@@ -3782,15 +3091,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket35",
@@ -3816,15 +3117,7 @@
 				"Y": 1.5,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket36",
@@ -3850,15 +3143,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket37",
@@ -3884,15 +3169,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Mace_2",
@@ -3918,12 +3195,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Mace_3",
@@ -3949,12 +3221,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sword_4",
@@ -3980,12 +3247,7 @@
 				"Y": 1.75,
 				"Z": 1.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket38",
@@ -4011,15 +3273,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket39",
@@ -4045,15 +3299,7 @@
 				"Y": 1.5,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket40",
@@ -4079,15 +3325,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket41",
@@ -4113,15 +3351,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket42",
@@ -4147,15 +3377,7 @@
 				"Y": 1.5,
 				"Z": 2.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket43",
@@ -4181,15 +3403,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Table_2",
@@ -4215,12 +3429,7 @@
 				"Y": 1,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sword_5",
@@ -4246,12 +3455,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Sword_6",
@@ -4277,12 +3481,7 @@
 				"Y": 3.75,
 				"Z": 3.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket44",
@@ -4308,15 +3507,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket45",
@@ -4342,15 +3533,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket46",
@@ -4376,15 +3559,7 @@
 				"Y": 1.5,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket47",
@@ -4410,15 +3585,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket48",
@@ -4444,15 +3611,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Mace_4",
@@ -4478,12 +3637,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket49",
@@ -4509,15 +3663,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket50",
@@ -4543,15 +3689,7 @@
 				"Y": 1.5,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket51",
@@ -4577,15 +3715,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "SM_Mace_5",
@@ -4611,12 +3741,7 @@
 				"Y": 3.5,
 				"Z": 3.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket52",
@@ -4642,15 +3767,7 @@
 				"Y": 1.5,
 				"Z": 1.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "BP_PurpleMarket53",
@@ -4676,15 +3793,7 @@
 				"Y": 1.5,
 				"Z": 2.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/T_PropColorMap.dds"
-			},
-			{
-				"baseColorTexture": "Textures/T_CleanFloorGrunge_01_D.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall",
@@ -4710,12 +3819,7 @@
 				"Y": 2,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall2",
@@ -4741,12 +3845,7 @@
 				"Y": 2,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Door",
@@ -4772,15 +3871,7 @@
 				"Y": 7.25,
 				"Z": 5.5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_7.dds"
-			},
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_10.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall3",
@@ -4806,12 +3897,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall4",
@@ -4837,12 +3923,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall5",
@@ -4868,12 +3949,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall6",
@@ -4899,12 +3975,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall7",
@@ -4930,12 +4001,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall8",
@@ -4961,12 +4027,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall9",
@@ -4992,12 +4053,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall10",
@@ -5023,12 +4079,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall11",
@@ -5054,12 +4105,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall12",
@@ -5085,12 +4131,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall13",
@@ -5116,12 +4157,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall14",
@@ -5147,12 +4183,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall15",
@@ -5178,12 +4209,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Wall16",
@@ -5209,12 +4235,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower",
@@ -5240,12 +4261,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower2",
@@ -5271,12 +4287,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower4",
@@ -5302,12 +4313,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower5",
@@ -5333,12 +4339,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower6",
@@ -5364,12 +4365,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower3",
@@ -5395,12 +4391,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower7",
@@ -5426,12 +4417,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower8",
@@ -5457,12 +4443,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower9",
@@ -5488,12 +4469,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "Castle_Tower10",
@@ -5519,12 +4495,7 @@
 				"Y": 1.5,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/tower_and_castle_walls_texture_1.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon",
@@ -5550,34 +4521,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
-				"normalTexture": "Textures/old_cannon_texture_2.dds",
-				"ormTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
-				"normalTexture": "Textures/old_cannon_texture_2.dds",
-				"ormTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
-				"normalTexture": "Textures/old_cannon_texture_2.dds",
-				"ormTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
-				"normalTexture": "Textures/old_cannon_texture_2.dds",
-				"ormTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_0.dds",
-				"normalTexture": "Textures/old_cannon_texture_2.dds",
-				"ormTexture": "Textures/old_cannon_texture_1.dds"
-			}
-			]
+		}
 	},
 	{
 		"Name": "old_cannon2",
@@ -5603,24 +4547,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon3",
@@ -5646,24 +4573,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon4",
@@ -5689,24 +4599,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon5",
@@ -5732,24 +4625,7 @@
 				"Y": 2,
 				"Z": 2
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon6",
@@ -5775,24 +4651,7 @@
 				"Y": 2,
 				"Z": 2
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon7",
@@ -5818,24 +4677,7 @@
 				"Y": 3.25,
 				"Z": 3.25
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon8",
@@ -5861,24 +4703,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon9",
@@ -5904,24 +4729,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon10",
@@ -5947,24 +4755,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "old_cannon11",
@@ -5990,24 +4781,7 @@
 				"Y": 1,
 				"Z": 1
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/old_cannon_texture_12.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "cc0_switch",
@@ -6033,15 +4807,7 @@
 				"Y": 10.75,
 				"Z": 10.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/cc0_switch_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/cc0_switch_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "cc0_switch2",
@@ -6067,15 +4833,7 @@
 				"Y": 10.75,
 				"Z": 10.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/cc0_switch_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/cc0_switch_texture_4.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "medieval_church",
@@ -6101,45 +4859,7 @@
 				"Y": 2.75,
 				"Z": 2.75
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_6.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_9.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_10.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_11.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_7.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_4.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_8.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_5.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_3.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_1.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_2.dds"
-			},
-			{
-				"baseColorTexture": "Textures/medieval_church_texture_0.dds"
-			}
-		]
+		}
 	},
 	{
 		"Name": "mana_pool_0810063423_texture",
@@ -6165,11 +4885,6 @@
 				"Y": 5,
 				"Z": 5
 			}
-		},
-		"MaterialOverrides": [
-			{
-				"baseColorTexture": "Textures/mana_pool_0810063423_texture_texture_1.dds"
-			}
-		]
+		}
 	}
 ]

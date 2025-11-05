@@ -7,10 +7,8 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "GameObject.h"
-#include "TextureManager.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
-#include "GltfMaterial.h"
 
 #include "json.hpp"
 #include <fstream>
@@ -23,8 +21,7 @@ Scene::~Scene()
    
 }
 
-void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,
-    ID3D12GraphicsCommandList* commandList)
+void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,ID3D12GraphicsCommandList* commandList)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -59,103 +56,29 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             continue;
         }
 
-        // 메쉬 로드
+        // 1. 메쉬 로드 (GLTF 파일 파싱 및 재질 정보 포함)
         std::string mesh_path = (basePath / data.meshFile).string();
-        std::shared_ptr<Mesh> mesh = ResourceManager::instance()->load_mesh(mesh_path);
+
+        // ★★★ 핵심 변경: 메쉬 로드 시, 메쉬 내부에서 GLTF 표준 재질 정보를 로드했다고 가정 ★★★
+        std::shared_ptr<Mesh> mesh = ResourceManager::instance()->load_mesh(mesh_path); // device, commandList 인수가 필요할 수 있습니다.
         if (!mesh) {
             CLOG("Failed to load mesh : " << mesh_path);
             continue;
         }
 
-        // 게임 오브젝트 생성 및 컴포넌트 추가
+        // 2. 게임 오브젝트 생성 및 컴포넌트 추가
         std::shared_ptr<GameObject> gameObject = ObjectManager::instance()->create_game_object(data.name);
         auto renderComp = gameObject->add_component<RenderComponent>();
+
+        // 메쉬에 바인딩
         renderComp->set_mesh(mesh);
 
-        // MaterialOverrides 파싱 및 재질 생성
-        if (objectJson.contains("MaterialOverrides"))
-        {
-            const auto& overridesArray = objectJson["MaterialOverrides"];
+        // ★★★ MaterialOverrides 파싱 및 재질 생성 로직 제거 ★★★
+        // 재질은 이제 mesh->get_materials() 또는 메쉬 로드 시점에 RenderComponent에 직접 설정되어야 합니다.
+        // 현재 로직은 renderComp->set_mesh(mesh)가 메쉬 내부의 재질을 자동으로 바인딩한다고 가정합니다.
 
-            if (overridesArray.size() == 1)
-            {
-                auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-                material->set_shader(Renderer::instance()->get_shader("gltf"));
-                const auto& overrides = overridesArray[0];
 
-                if (overrides.contains("baseColorTexture")) {
-                    std::string textureFile = overrides["baseColorTexture"];
-
-                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
-
-                    std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
-                    if (texture) material->set_texture(texture, 0);
-                }
-
-                if (overrides.contains("normalTexture")) {
-                    std::string textureFile = overrides["normalTexture"];
-
-                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
-
-                    std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
-                    if (texture) material->set_texture(texture, 1);
-                }
-
-                if (overrides.contains("ormTexture")) {
-                    std::string textureFile = overrides["ormTexture"];
-
-                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
-
-                    std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
-                    if (texture) material->set_texture(texture, 2);
-                }
-
-                if (overrides.contains("emissiveTexture")) {
-                    std::string textureFile = overrides["emissiveTexture"];
-
-                    //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
-
-                    std::string texture_path = (basePath / textureFile).string();
-                    auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
-                    if (texture) material->set_texture(texture, 3);
-                }
-                renderComp->set_material(material);
-            }
-            else if (overridesArray.size() > 1)
-            {
-                std::vector<std::shared_ptr<GltfMaterial>> materials;
-
-                for (const auto& overrideItem : overridesArray)
-                {
-                    auto material = std::make_shared<GltfMaterial>(data.name + "_Material");
-                    material->set_shader(Renderer::instance()->get_shader("gltf"));
-
-                    // overrideItem은 {"baseColorTexture", "path"} 형태의 객체
-
-                    for (auto& [key, val] : overrideItem.items())
-                    {
-                        std::string textureFile = val.get<std::string>();
-                        std::string texture_path = (basePath / textureFile).string();
-                        auto texture = TextureManager::instance()->load_texture(texture_path, commandList);
-
-                        if (texture)
-                        {
-                            //CLOG("Mesh: " << data.meshFile << " -> Texture: " << textureFile);
-                            if (key == "baseColorTexture") material->set_texture(texture, 0);
-                            else if (key == "normalTexture") material->set_texture(texture, 1);
-                            else if (key == "ormTexture") material->set_texture(texture, 2);
-                            else if (key == "emissiveTexture") material->set_texture(texture, 3);
-                        }
-                    }
-                    materials.push_back(material);
-                }
-                renderComp->set_materials(materials);
-            }
-        }
-
+        // 3. 트랜스폼 파싱 (기존과 동일)
         if (objectJson.contains("Transform")) {
             const auto& transformJson = objectJson["Transform"];
             auto transformComp = gameObject->transform();
@@ -163,7 +86,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 transformJson["Location"].value("X", 0.0f),
                 transformJson["Location"].value("Y", 0.0f),
                 transformJson["Location"].value("Z", 0.0f)
-            });
+                });
             transformComp->set_local_rotation(XMFLOAT4{
                 transformJson["Rotation"].value("X", 0.0f),
                 transformJson["Rotation"].value("Y", 0.0f),
@@ -175,9 +98,10 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 transformJson["Scale"].value("X", 1.0f),
                 transformJson["Scale"].value("Y", 1.0f),
                 transformJson["Scale"].value("Z", 1.0f)
-            });
+                });
         }
     }
+    // 리소스 업로드 (메쉬 로드 시점에 텍스처 업로드도 포함된다고 가정)
     ResourceManager::instance()->upload_pending_meshes(device, commandList);
 }
 

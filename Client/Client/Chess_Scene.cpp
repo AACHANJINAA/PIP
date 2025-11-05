@@ -14,8 +14,6 @@
 
 #include "GltfTestScript.h"
 
-#include "GltfMaterial.h"   
-#include "TextureManager.h" 
 #include "Renderer.h"       
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

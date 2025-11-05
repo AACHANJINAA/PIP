@@ -12,7 +12,6 @@
 #include "ObjectManager.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
-#include "TextureManager.h"
 
 
 GameFramework::GameFramework()
@@ -52,9 +51,8 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	InputManager::instance()->initialize(hMainWnd);
 	SceneManager::instance()->initialize();
 	Renderer::instance()->initialize(_device.Get());
-	ResourceManager::instance()->initialize(_device.Get());
+	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	DescriptorManager::instance()->initialize(_device.Get());
-	TextureManager::instance()->initialize(_device.Get());
 
 	BuildObjects();
 	//·»´õ¸µÇÒ °ÔÀÓ °´Ã¼¸¦ »ý¼ºÇÑ´Ù.
@@ -368,6 +366,9 @@ void GameFramework::FrameAdvance()
 	
 	_swapChain->Present(0, 0);
 	WaitForGpuComplete();
+
+	ResourceManager::instance()->release_upload_buffers();
+
 	MoveToNextFrame();
 	// 5. ÆÄ±« ¿¹Á¤ °´Ã¼ Á¤¸®
 	ObjectManager::instance()->process_destructions();

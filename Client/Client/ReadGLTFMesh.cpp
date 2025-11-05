@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "ReadGLTFMesh.h"
+#include "ResourceManager.h"
 
 
 ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath)
@@ -16,6 +17,9 @@ ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath)
 		return;
 	}
 
+	// [추가] ResourceManager를 통해 재질 로드 및 이름 목록 채우기
+	_material_names = ResourceManager::instance()->load_materials_from_gltf(filePath);
+
 	int sceneIdx = gltfJson.value("scene", 0);
 	const json& scene = gltfJson["scenes"][sceneIdx];
 
@@ -28,7 +32,7 @@ ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath)
 	}
 
 	// 전체 모델의 바운딩 박스를 모든 프리미티브의 바운딩 박스를 병합하여 계산
-	// DW설명 : 모든 프리미티브의 OBB를 병합하여 메쉬 전체의 OBB를 계싼함
+	// DW설명 : 모든 프리미티브의 OBB를 병합하여 메쉬 전체의 OBB를 계산함
 	if (!_primitives.empty())
 	{
 		BoundingOrientedBox mergedObb = _primitives[0]->_orientedBoundingBox;
@@ -119,7 +123,7 @@ void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCo
 //}
 
 
-void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList, const std::vector<std::shared_ptr<GltfMaterial>>& materials)
+void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
 {
 	if (!_isUploaded) return;
 
@@ -127,18 +131,17 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList, const std::vec
 
 	for (const auto& primitive : _primitives)
 	{
-		int material_index = primitive->_materialIndex;
-		std::shared_ptr<GltfMaterial> material = nullptr;
-
-		if (primitive->_materialIndex >= 0 && primitive->_materialIndex < materials.size())
+		if (primitive->_materialIndex >= 0 && primitive->_materialIndex < _material_names.size());
 		{
-			material = materials[material_index];
+			ResourceManager::instance()->bind_material(_material_names[primitive->_materialIndex], commandList);
 		}
 
-		if (material)
-		{
-			material->bind(commandList);
-		}
+		//else
+		//{
+			// 유효하지 않은 재질 인덱스 또는 재질 이름이 없는 경우 기본 재질 등을 바인딩할 수 있습니다.
+			//CWARNING("Invalid material index or no material name for primitive.");
+			// TODO: 기본 재질 바인딩 로직 추가 (예: ResourceManager::instance()->bind_default_material(commandList);)
+		//}
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);

@@ -6,7 +6,6 @@
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "Mesh.h"
-#include "GltfMaterial.h"
 
 class Shader;
 
@@ -52,8 +51,8 @@ public:
     // --- Getters & Setters ---
     void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
 
-    void set_material(std::shared_ptr<GltfMaterial> material) { _material = material; };
-    void set_materials(const std::vector<std::shared_ptr<GltfMaterial>>& materials) { _materials = materials; }
+    //void set_material(std::shared_ptr<GltfMaterial> material) { _material = material; };
+    //void set_materials(const std::vector<std::shared_ptr<GltfMaterial>>& materials) { _materials = materials; }
    
     void set_pso_name(const std::string& name) { _psoName = name; }
 
@@ -65,8 +64,8 @@ public:
 
 protected:
     std::shared_ptr<Mesh> _mesh;
-    std::shared_ptr<GltfMaterial> _material;                // 셰이더 또는 머티리얼
-    std::vector<std::shared_ptr<GltfMaterial>> _materials;  // 서브 리소스를 이용한 다중 텍스쳐링을 위한 변수
+    //std::shared_ptr<GltfMaterial> _material;                // 셰이더 또는 머티리얼
+    //std::vector<std::shared_ptr<GltfMaterial>> _materials;  // 서브 리소스를 이용한 다중 텍스쳐링을 위한 변수
     std::string _psoName = "default";
     // [추가] 이 RenderComponent만의 고유한 상수 버퍼 관련 멤버들
     ComPtr<ID3D12Resource> _cbGameObjectInfo;

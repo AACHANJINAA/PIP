@@ -186,18 +186,70 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri": "cc0_switch_texture_0.png"
+		},
+		{
+			"uri": "cc0_switch_texture_1.png"
+		},
+		{
+			"uri": "cc0_switch_texture_2.png"
+		},
+		{
+			"uri": "cc0_switch_texture_3.png"
+		},
+		{
+			"uri": "cc0_switch_texture_4.png"
+		},
+		{
+			"uri": "cc0_switch_texture_5.png"
+		}
+	],
 	"materials": [
 		{
-			"name": "SwitchMain",
+			"name": "SwitchMain_cc0_switch",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "SwitchHandle",
+			"name": "SwitchHandle_cc0_switch",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
+			},
+			"occlusionTexture":
+			{
+				"index": 4
 			},
 			"doubleSided": true
 		}
@@ -240,9 +292,47 @@
 			"mesh": 0
 		}
 	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
 	"scenes": [
 		{
 			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "cc0_switch_texture_0",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "cc0_switch_texture_1",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "cc0_switch_texture_2",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "cc0_switch_texture_3",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "cc0_switch_texture_4",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "cc0_switch_texture_5",
+			"sampler": 0,
+			"source": 5
 		}
 	]
 }

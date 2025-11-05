@@ -902,25 +902,81 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri": "medieval_church_texture_6.png"
+		},
+		{
+			"uri": "medieval_church_texture_9.png"
+		},
+		{
+			"uri": "medieval_church_texture_10.png"
+		},
+		{
+			"uri": "medieval_church_texture_11.png"
+		},
+		{
+			"uri": "medieval_church_texture_7.png"
+		},
+		{
+			"uri": "medieval_church_texture_4.png"
+		},
+		{
+			"uri": "medieval_church_texture_8.png"
+		},
+		{
+			"uri": "medieval_church_texture_5.png"
+		},
+		{
+			"uri": "medieval_church_texture_3.png"
+		},
+		{
+			"uri": "medieval_church_texture_1.png"
+		},
+		{
+			"uri": "medieval_church_texture_2.png"
+		},
+		{
+			"uri": "medieval_church_texture_0.png"
+		}
+	],
 	"materials": [
 		{
-			"name": "Wood",
+			"name": "Wood_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "LogEdgeWeathered",
+			"name": "LogEdgeWeathered_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 1
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "DoorType1_2",
+			"name": "DoorType1_2_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 2
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
@@ -928,62 +984,114 @@
 			"name": "RustedMetal",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Marble",
+			"name": "Marble_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 4
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Stone",
+			"name": "Stone_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 5
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "ChurchDoor1",
+			"name": "ChurchDoor1_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 6
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "WroughtIron",
+			"name": "WroughtIron_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 7
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "GreyBrick2",
+			"name": "GreyBrick2_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 8
+				},
+				"metallicFactor": 0
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Metal",
+			"name": "Metal_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 9
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "RoofTiles3",
+			"name": "RoofTiles3_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 10
+				},
+				"roughnessFactor": 0.751714945
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Black",
+			"name": "Black_medieval_church",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 11
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
 			},
 			"doubleSided": true
 		}
@@ -1144,9 +1252,77 @@
 			"mesh": 0
 		}
 	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
 	"scenes": [
 		{
 			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "medieval_church_texture_6",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "medieval_church_texture_9",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "medieval_church_texture_10",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "medieval_church_texture_11",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "medieval_church_texture_7",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "medieval_church_texture_4",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "medieval_church_texture_8",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "medieval_church_texture_5",
+			"sampler": 0,
+			"source": 7
+		},
+		{
+			"name": "medieval_church_texture_3",
+			"sampler": 0,
+			"source": 8
+		},
+		{
+			"name": "medieval_church_texture_1",
+			"sampler": 0,
+			"source": 9
+		},
+		{
+			"name": "medieval_church_texture_2",
+			"sampler": 0,
+			"source": 10
+		},
+		{
+			"name": "medieval_church_texture_0",
+			"sampler": 0,
+			"source": 11
 		}
 	]
 }

@@ -2,7 +2,6 @@
 #include "stdafx.h"
 
 #include "Object.h"
-#include "GltfMaterial.h"
 
 // nlohmann/json 헤더 // json 파싱 위해 추가
 using json = nlohmann::json;
@@ -151,11 +150,6 @@ public:
 
 	// 렌더링 함수는 VBV/IBV를 설정하고 DrawInstanced를 호출합니다.
 	virtual void render(ID3D12GraphicsCommandList* commandList);
-	virtual void render(ID3D12GraphicsCommandList* commandList, const std::vector<std::shared_ptr<GltfMaterial>>& materials) {
-		if (!materials.empty() && materials[0])
-			materials[0]->bind(commandList);
-		render(commandList);
-	}
 
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
 protected:

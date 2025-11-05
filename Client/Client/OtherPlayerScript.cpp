@@ -4,7 +4,6 @@
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
-#include "GltfMaterial.h"
 
 void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
 {
@@ -28,9 +27,11 @@ void OtherPlayerScript::awake()
 
     // 재질 및 쉐이더 설정
     render_comp->set_mesh(playerMesh);
-    auto material = std::make_shared<GltfMaterial>("test_Material");
-    material->set_shader(Renderer::instance()->get_shader("gltf"));
-    render_comp->set_material(material);
+
+	// ResourceManager을 통해 재질 생성 및 셰이더 할당
+	std::string material_name = "other_player_material_" + std::to_string(_playerId);
+	ResourceManager::instance()->create_material(material_name);
+	ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 
     // gltf
     render_comp->set_pso_name("gltf");
