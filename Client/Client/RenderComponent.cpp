@@ -123,17 +123,7 @@ bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 
 const std::string& RenderComponent::pso_name() const
 {
-    // 복수 재질이 있으면 첫 번째 기준으로 pso
-    if (!_materials.empty() && _materials[0]->shader())
-		return _materials[0]->shader()->pso_name();
-
-    // 단일 재질이면 해당 재질 기준으로 pso
-    if (_material && _material->shader())
-        return _material->shader()->pso_name();
-
-    // 재질이 없으면 기본값 "default"를 반환
-    static const std::string default_pso = "default";
-    return default_pso;
+    return _psoName;
 }
 
 void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
@@ -153,19 +143,6 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 	// 3. [추가] 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 직접 바인딩합니다.
 	// (루트 시그니처 0번 슬롯은 월드 행렬용 CBV로 미리 약속되어 있습니다)
 	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
-
-	// 4. (추가 베이비) 4번 슬롯에 머티리얼 셰이더를 바인딩합니다.
     
-    if (!_materials.empty())
-    {
-        _mesh->render(commandList, _materials);
-    }
-    else if (_material)
-    {
-        _mesh->render(commandList, { _material });
-    }
-    else
-    {
-        _mesh->render(commandList);
-    }
+    _mesh->render(commandList);
 }

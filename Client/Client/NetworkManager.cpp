@@ -183,10 +183,10 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 			renderer->set_mesh(playerMesh);
 
-			// 재질 및 쉐이더 설정
-			auto material = std::make_shared<GltfMaterial>("player_Material"); // 이름 중복을 피하기위해 이름 변경
-			material->set_shader(Renderer::instance()->get_shader("gltf"));
-			renderer->set_material(material);
+			// ResourceManager을 통해 재질 생성 및 쉐이더 할당
+			std::string material_name = "player_material"; // player는 고정된 재질
+			ResourceManager::instance()->create_material(material_name);
+			ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 
 			// gltf
 			renderer->set_pso_name("gltf");
@@ -353,10 +353,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 		auto render_comp = npc_object->add_component<RenderComponent>();
 		render_comp->set_mesh(npc_mesh);
-		auto material = std::make_shared<GltfMaterial>("test_Material");
-		material->set_shader(Renderer::instance()->get_shader("gltf"));
 
-		render_comp->set_material(material);
+		std::string material_name = "npc_material_" + std::to_string(npc_spawn_packet._npc_id);
+		ResourceManager::instance()->create_material(material_name);
+		ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+
 		render_comp->set_pso_name("gltf");
 
 		CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id

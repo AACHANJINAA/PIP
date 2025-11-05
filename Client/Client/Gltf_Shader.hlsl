@@ -18,12 +18,21 @@ struct Light
     float padding;
 };
 
-struct Material
+cbuffer cbMaterial : register(b2)
 {
-    float4 m_xmf4Ambient;
-    float4 m_xmf4Diffuse;
-    float4 m_xmf4Specular; //(r,g,b,a=power)
-    float4 m_xmf4Emissive;
+    float4 BaseColorFactor;
+    float3 EmissiveFactor;
+    float MetallicFactor;
+    float RoughnessFactor;
+    float NormalTextureScale;
+    float AlphaCutoff;
+    int AlphaMode; // 0 = OPAQUE, 1 = MASK, 2 = BLEND
+    int DoubleSided; // 0 = false, 1 = true
+    int HasBaseColorTexture;
+    int HasMetallicRoughnessTexture;
+    int HasNormalTexture;
+    int HasEmissiveTexture;
+    float2 Padding; // 16바이트 정렬을 위한 패딩
 };
 
 Texture2D g_txDiffuse : register(t0);
@@ -44,12 +53,6 @@ cbuffer cbCamera : register(b1)
     matrix g_matView;
     matrix g_matProjection;
     float4 g_xmf3CameraPosition;
-};
-
-// 재질 정보
-cbuffer cbMaterial : register(b2)
-{
-    Material g_Material;
 };
 
 // 조명 정보
@@ -82,20 +85,20 @@ struct VS_OUTPUT
 //-- 정점 셰이더 (수정된 버전) --//
 VS_OUTPUT VS_GLTF(VS_INPUT input)
 {
-        VS_OUTPUT Out;
+    VS_OUTPUT Out;
 
-        Out.WorldPosition = mul(float4(input.Position, 1.0f), g_matWorld).xyz;
-        Out.Position = mul(float4(Out.WorldPosition, 1.0f), g_matView);
-        Out.Position = mul(Out.Position, g_matProjection);
+    Out.WorldPosition = mul(float4(input.Position, 1.0f), g_matWorld).xyz;
+    Out.Position = mul(float4(Out.WorldPosition, 1.0f), g_matView);
+    Out.Position = mul(Out.Position, g_matProjection);
     
-        Out.TexCoord = input.TexCoord0;
+    Out.TexCoord = input.TexCoord0;
 
     // 월드 공간 기준으로 Normal, Tangent, Bitangent를 계산하여 전달
-        Out.Normal = normalize(mul((float3x3) g_matWorld, input.Normal));
-        Out.Tangent = normalize(mul((float3x3) g_matWorld, input.Tangent.xyz));
-        Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
+    Out.Normal = normalize(mul((float3x3) g_matWorld, input.Normal));
+    Out.Tangent = normalize(mul((float3x3) g_matWorld, input.Tangent.xyz));
+    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
 
-        return Out;
+    return Out;
 }
 
 

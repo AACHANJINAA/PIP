@@ -88,11 +88,20 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri": "MI_Prop_01_BaseColor.png"
+		}
+	],
 	"materials": [
 		{
 			"name": "MI_Prop_01",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
 				"metallicFactor": 0,
 				"roughnessFactor": 0.5
 			}
@@ -122,9 +131,22 @@
 			"mesh": 0
 		}
 	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
 	"scenes": [
 		{
 			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Prop_01_BaseColor",
+			"sampler": 0,
+			"source": 0
 		}
 	]
 }

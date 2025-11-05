@@ -162,18 +162,63 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri": "tower_and_castle_walls_texture_6.png"
+		},
+		{
+			"uri": "tower_and_castle_walls_texture_7.png"
+		},
+		{
+			"uri": "tower_and_castle_walls_texture_8.png"
+		},
+		{
+			"uri": "tower_and_castle_walls_texture_9.png"
+		},
+		{
+			"uri": "tower_and_castle_walls_texture_10.png"
+		},
+		{
+			"uri": "tower_and_castle_walls_texture_11.png"
+		}
+	],
 	"materials": [
 		{
-			"name": "Wall01",
+			"name": "Wall01_Combined_DEC539CE",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0,
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Door",
+			"name": "Door_Combined_DEC539CE",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
 			},
 			"doubleSided": true
 		}
@@ -214,9 +259,47 @@
 			"mesh": 0
 		}
 	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
 	"scenes": [
 		{
 			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "tower_and_castle_walls_texture_6",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "tower_and_castle_walls_texture_7",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "tower_and_castle_walls_texture_8",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "tower_and_castle_walls_texture_9",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "tower_and_castle_walls_texture_10",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "tower_and_castle_walls_texture_11",
+			"sampler": 0,
+			"source": 5
 		}
 	]
 }

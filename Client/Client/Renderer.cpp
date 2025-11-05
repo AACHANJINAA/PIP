@@ -23,6 +23,9 @@ void Renderer::initialize(ID3D12Device* device)
 {
     _device = device;
     
+    _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); // [추가]
+    create_dynamic_descriptor_heap(); // [추가]
+
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
@@ -272,4 +275,41 @@ std::shared_ptr<Shader> Renderer::get_shader(const std::string& name) const
 		return it->second;
     }
     return nullptr;
+}
+
+void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& cpu_handles)
+{
+    if (cpu_handles.empty()) return;
+    
+    UINT num_descriptors = static_cast<UINT>(cpu_handles.size());
+    
+    if (_current_dynamic_descriptor_index + num_descriptors > _dynamic_descriptor_heap_capacity) {
+        _current_dynamic_descriptor_index = 0;
+    }
+    
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dest_cpu_handle_start(_dynamic_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), _current_dynamic_descriptor_index, _descriptor_size);
+    CD3DX12_GPU_DESCRIPTOR_HANDLE dest_gpu_handle_start(_dynamic_descriptor_heap->GetGPUDescriptorHandleForHeapStart(), _current_dynamic_descriptor_index, _descriptor_size);
+    
+    // [핵심] 디스크립터를 하나씩 복사
+    for (UINT i = 0; i < num_descriptors; ++i)
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE dest_handle = dest_cpu_handle_start;
+        dest_handle.ptr += i * _descriptor_size;
+        _device->CopyDescriptorsSimple(1, dest_handle, cpu_handles[i], D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    }
+    
+    command_list->SetGraphicsRootDescriptorTable(root_parameter_index, dest_gpu_handle_start);
+    
+    _current_dynamic_descriptor_index += num_descriptors;
+}
+
+void Renderer::create_dynamic_descriptor_heap(UINT capacity)
+{
+    D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
+    heap_desc.NumDescriptors = capacity;
+    heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&_dynamic_descriptor_heap));
+    _dynamic_descriptor_heap_capacity = capacity;
+    _current_dynamic_descriptor_index = 0;
 }

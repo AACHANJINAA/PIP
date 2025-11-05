@@ -221,16 +221,7 @@
     <ClInclude Include="FreeCamera.h">
       <Filter>0. Engine\3. Renderer\3. Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GltfMaterial.h">
-      <Filter>0. Engine\4. Resource</Filter>
-    </ClInclude>
     <ClInclude Include="DescriptorManager.h">
-      <Filter>0. Engine\4. Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>0. Engine\4. Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureManager.h">
       <Filter>0. Engine\4. Resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\Packet.h">
@@ -369,12 +360,6 @@
     </ClCompile>
     <ClCompile Include="FreeCamera.cpp">
       <Filter>0. Engine\3. Renderer\3. Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="GltfMaterial.cpp">
-      <Filter>0. Engine\4. Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>0. Engine\4. Resource</Filter>
     </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
       <Filter>0. Engine\4. Resource</Filter>

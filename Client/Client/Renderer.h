@@ -22,6 +22,9 @@ public:
 
 	std::shared_ptr<Shader> get_shader(const std::string& name) const;
 
+    // [추가] 텍스처 디스크립터 테이블을 동적으로 할당하고 파이프라인에 바인딩합니다.
+    void bind_texture_table(ID3D12GraphicsCommandList * command_list, UINT root_parameter_index, const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>&cpu_handles);
+
 private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);
@@ -42,4 +45,13 @@ private:
     std::vector<std::unique_ptr<IRootSignatureGenerator>> _rootSignatureGenerators; 
     // [추가] GPU 업로드에 사용하기 위해 Device 포인터를 저장합니다.
     ID3D12Device* _device = nullptr;
+
+    // [추가] 동적 디스크립터 힙 생성을 위한 헬퍼 함수
+    void create_dynamic_descriptor_heap(UINT capacity = 2048);
+   
+    // [추가] 동적 바인딩을 위한 멤버 변수
+    ComPtr<ID3D12DescriptorHeap> _dynamic_descriptor_heap;
+    UINT _dynamic_descriptor_heap_capacity = 0;
+    UINT _current_dynamic_descriptor_index = 0;
+    UINT _descriptor_size = 0;
 };

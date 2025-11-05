@@ -58,9 +58,11 @@ void MainPlayerScript::awake()
 
     // 재질 및 쉐이더 설정
     _renderComponent->set_mesh(playerMesh);
-    auto material = std::make_shared<GltfMaterial>("test_Material");
-    material->set_shader(Renderer::instance()->get_shader("gltf"));
-    _renderComponent->set_material(material);
+
+	// ResourceManager을 통해 재질 생성 및 셰이더 할당
+    std::string material_name = "player_material";
+	ResourceManager::instance()->create_material(material_name);
+	ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 
     // gltf
     _renderComponent->set_pso_name("gltf");

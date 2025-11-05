@@ -4,9 +4,7 @@
 #include "ReadGlbMesh.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
-
-#include "Renderer.h"      
-#include "GltfMaterial.h" 
+#include "Renderer.h"
 
 BoardCubeScript::BoardCubeScript()
 {
@@ -29,12 +27,13 @@ void BoardCubeScript::awake()
     auto board_mesh = ResourceManager::instance()->load_mesh("Resource/MapData/SM_Crate_01.glb");
     render_component->set_mesh(board_mesh);
 
-	auto material = std::make_shared<GltfMaterial>("board_cube_material");
+	// CJ 설명 : ResourceManager을 통해 재질 생성 및 셰이더 할당
+	std::string material_name = "board_cube_material";
+	ResourceManager::instance()->create_material(material_name);
+	ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 
-    material->set_shader(Renderer::instance()->get_shader("gltf"));
-    // 3. 셰이더(PSO) 설정 (자신을 어떻게 그릴지 결정)
-    // .glb 파일의 경우 "skinned" PSO를 사용하는 것이 일반적입니다.
-    render_component->set_material(material);
+	// RenderComponent에는 PSO 이름만 설정
+	render_component->set_pso_name("gltf");
 }
 
 void BoardCubeScript::update(float delta_time)

@@ -384,39 +384,159 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri": "old_cannon_texture_0.png"
+		},
+		{
+			"uri": "old_cannon_texture_1.png"
+		},
+		{
+			"uri": "old_cannon_texture_2.png"
+		},
+		{
+			"uri": "old_cannon_texture_3.png"
+		},
+		{
+			"uri": "old_cannon_texture_4.png"
+		},
+		{
+			"uri": "old_cannon_texture_5.png"
+		},
+		{
+			"uri": "old_cannon_texture_6.png"
+		},
+		{
+			"uri": "old_cannon_texture_7.png"
+		},
+		{
+			"uri": "old_cannon_texture_8.png"
+		},
+		{
+			"uri": "old_cannon_texture_9.png"
+		},
+		{
+			"uri": "old_cannon_texture_10.png"
+		},
+		{
+			"uri": "old_cannon_texture_11.png"
+		},
+		{
+			"uri": "old_cannon_texture_12.png"
+		},
+		{
+			"uri": "old_cannon_texture_13.png"
+		}
+	],
 	"materials": [
 		{
-			"name": "Wood",
+			"name": "Wood_old_cannon",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Metal-1",
+			"name": "Metal-1_old_cannon",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 4
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Rope",
+			"name": "Rope_old_cannon",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 5
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 6
+				}
+			},
+			"normalTexture":
+			{
+				"index": 7
+			},
+			"occlusionTexture":
+			{
+				"index": 6
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Stage",
+			"name": "Stage_old_cannon",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 8
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 9
+				}
+			},
+			"normalTexture":
+			{
+				"index": 10
+			},
+			"occlusionTexture":
+			{
+				"index": 9
 			},
 			"doubleSided": true
 		},
 		{
-			"name": "Metal-2",
+			"name": "Metal-2_old_cannon",
 			"pbrMetallicRoughness":
 			{
+				"baseColorTexture":
+				{
+					"index": 11
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 12
+				}
+			},
+			"normalTexture":
+			{
+				"index": 13
+			},
+			"occlusionTexture":
+			{
+				"index": 12
 			},
 			"doubleSided": true
 		}
@@ -493,9 +613,87 @@
 			"mesh": 0
 		}
 	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
 	"scenes": [
 		{
 			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "old_cannon_texture_0",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "old_cannon_texture_1",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "old_cannon_texture_2",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "old_cannon_texture_3",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "old_cannon_texture_4",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "old_cannon_texture_5",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "old_cannon_texture_6",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "old_cannon_texture_7",
+			"sampler": 0,
+			"source": 7
+		},
+		{
+			"name": "old_cannon_texture_8",
+			"sampler": 0,
+			"source": 8
+		},
+		{
+			"name": "old_cannon_texture_9",
+			"sampler": 0,
+			"source": 9
+		},
+		{
+			"name": "old_cannon_texture_10",
+			"sampler": 0,
+			"source": 10
+		},
+		{
+			"name": "old_cannon_texture_11",
+			"sampler": 0,
+			"source": 11
+		},
+		{
+			"name": "old_cannon_texture_12",
+			"sampler": 0,
+			"source": 12
+		},
+		{
+			"name": "old_cannon_texture_13",
+			"sampler": 0,
+			"source": 13
 		}
 	]
 }
