@@ -76,14 +76,25 @@
 			"target": 34962
 		}
 	],
+	"images": [
+		{
+			"uri" : "medieval_church_texture_11.png"
+		}
+	],
+	"textures": [
+		{
+			"source" : 0
+		}
+	],
 	"materials": [
 		{
 			"name": "M_AssetPlatform",
 			"pbrMetallicRoughness":
 			{
-				"baseColorFactor": [ 0.300000012, 0.300000012, 0.300000012, 1 ],
+				"baseColorTexture" : {"index": 0},
+				"baseColorFactor": [ 1, 1, 1, 1 ],
 				"metallicFactor": 0,
-				"roughnessFactor": 0.300000012
+				"roughnessFactor": 0.8
 			}
 		}
 	],
