@@ -146,8 +146,11 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     
     auto it = _textures.find(file_path);
     if (it != _textures.end()) {
+        CLOG("Texture cache hit for: " << file_path);
         return &it->second;
     }
+
+    CINFO("Loading texture (cache miss): " << file_path);
 
     TextureInfo new_texture_info;
     new_texture_info.name = file_path;

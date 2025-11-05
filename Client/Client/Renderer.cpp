@@ -178,8 +178,8 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
     // ---------------------------------------------------------
 
-    // --- ResourceManager로부터 SRV 힙을 가져와 설정 ---
-    ID3D12DescriptorHeap* heaps[] = { DescriptorManager::instance()->get_descriptor_heap() };
+    // 렌더링에 실제 사용될 '동적 힙'을 커맨드 리스트에 설정합니다
+    ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
 
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
