@@ -141,6 +141,7 @@ ID3D12Resource* CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D1
 #else
 	#define CLOG(expr)
 	#define CERROR(expr)
+	#define CINFO(expr)
 #endif
 
 #include "Packet.h"
