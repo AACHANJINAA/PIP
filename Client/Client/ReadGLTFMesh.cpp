@@ -3,56 +3,16 @@
 #include "ResourceManager.h"
 
 
-ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath)
+ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath, bool ishave_animate)
 {
-	// DW설명 : 파일 경로를 이름으로 설정
-	set_name(filePath);
-
-	json gltfJson;
-	std::vector<char> binaryBuffer;
-
-	if (!load_gltf_file(filePath, gltfJson, binaryBuffer)) 
+	if (ishave_animate)
 	{
-		CERROR("glTF 파일 로딩에 실패했습니다.");
-		return;
+		ReadSkinnedAnimationMesh(filePath);
 	}
-
-	// [추가] ResourceManager를 통해 재질 로드 및 이름 목록 채우기
-	_material_names = ResourceManager::instance()->load_materials_from_gltf(filePath);
-
-	int sceneIdx = gltfJson.value("scene", 0);
-	const json& scene = gltfJson["scenes"][sceneIdx];
-
-	XMFLOAT4X4 identityMatrix;
-	XMStoreFloat4x4(&identityMatrix, XMMatrixIdentity());
-
-	for (const auto& nodeIdx : scene["nodes"]) 
+	else
 	{
-		process_node(gltfJson, binaryBuffer, nodeIdx.get<int>(), identityMatrix);
+		ReadStaticMesh(filePath);
 	}
-
-	// 전체 모델의 바운딩 박스를 모든 프리미티브의 바운딩 박스를 병합하여 계산
-	// DW설명 : 모든 프리미티브의 OBB를 병합하여 메쉬 전체의 OBB를 계산함
-	if (!_primitives.empty())
-	{
-		BoundingOrientedBox mergedObb = _primitives[0]->_orientedBoundingBox;
-		for (size_t i = 1; i < _primitives.size(); ++i)
-		{
-			std::array<XMFLOAT3, 8> cornersA, cornersB;
-			mergedObb.GetCorners(cornersA.data());
-			_primitives[i]->_orientedBoundingBox.GetCorners(cornersB.data());
-
-			std::vector<XMFLOAT3> allPoints;
-			allPoints.reserve(16);
-			allPoints.insert(allPoints.end(), cornersA.begin(), cornersA.end());
-			allPoints.insert(allPoints.end(), cornersB.begin(), cornersB.end());
-
-			BoundingOrientedBox::CreateFromPoints(mergedObb, allPoints.size(), allPoints.data(), sizeof(XMFLOAT3));
-		}
-		_orientedBoundingBox = mergedObb;
-	}
-
-	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 
 ReadGLTFMesh::~ReadGLTFMesh()
@@ -159,44 +119,101 @@ void ReadGLTFMesh::release_upload_buffers()
 	}
 }
 
+void ReadGLTFMesh::ReadStaticMesh(const std::string& filePath)
+{
+	// DW설명 : 파일 경로를 이름으로 설정
+	set_name(filePath);
+
+	json gltf_json;
+	std::vector<char> binary_buffer;
+
+	if (!load_gltf_file(filePath, gltf_json, binary_buffer))
+	{
+		CERROR("glTF 파일 로딩에 실패했습니다.");
+		return;
+	}
+
+	// [추가] ResourceManager를 통해 재질 로드 및 이름 목록 채우기
+	_material_names = ResourceManager::instance()->load_materials_from_gltf(filePath);
+
+	int scene_idx = gltf_json.value("scene", 0);
+	const json& scene = gltf_json["scenes"][scene_idx];
+
+	XMFLOAT4X4 identity_matrix;
+	XMStoreFloat4x4(&identity_matrix, XMMatrixIdentity());
+
+	for (const auto& node_idx : scene["nodes"])
+	{
+		process_node(gltf_json, binary_buffer, node_idx.get<int>(), identity_matrix);
+	}
+
+	// 전체 모델의 바운딩 박스를 모든 프리미티브의 바운딩 박스를 병합하여 계산
+	// DW설명 : 모든 프리미티브의 OBB를 병합하여 메쉬 전체의 OBB를 계산함
+	if (!_primitives.empty())
+	{
+		BoundingOrientedBox merged_obb = _primitives[0]->_orientedBoundingBox;
+		for (size_t i = 1; i < _primitives.size(); ++i)
+		{
+			std::array<XMFLOAT3, 8> cornersA, cornersB;
+			merged_obb.GetCorners(cornersA.data());
+			_primitives[i]->_orientedBoundingBox.GetCorners(cornersB.data());
+
+			std::vector<XMFLOAT3> all_points;
+			all_points.reserve(16);
+			all_points.insert(all_points.end(), cornersA.begin(), cornersA.end());
+			all_points.insert(all_points.end(), cornersB.begin(), cornersB.end());
+
+			BoundingOrientedBox::CreateFromPoints(merged_obb, all_points.size(), all_points.data(), sizeof(XMFLOAT3));
+		}
+		_orientedBoundingBox = merged_obb;
+	}
+
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+}
+
+void ReadGLTFMesh::ReadSkinnedAnimationMesh(const std::string& filePath)
+{
+
+}
+
 bool ReadGLTFMesh::load_gltf_file(const std::string& filename, json& outJson, std::vector<char>& outBinBuffer)
 {
 	namespace fs = std::filesystem;
 
-	std::ifstream gltfFile(filename);
-	if (!gltfFile.is_open()) {
+	std::ifstream gltf_file(filename);
+	if (!gltf_file.is_open()) {
 		std::cerr << "Error: Failed to open " << filename << std::endl;
 		return false;
 	}
 	try {
-		gltfFile >> outJson;
+		gltf_file >> outJson;
 	}
 	catch (json::parse_error& e) {
 		std::cerr << "JSON parse error: " << e.what() << std::endl;
 		return false;
 	}
-	gltfFile.close();
+	gltf_file.close();
 
 	if (outJson.contains("buffers") && !outJson["buffers"].empty() && outJson["buffers"][0].contains("uri")) {
-		std::string binUri = outJson["buffers"][0]["uri"];
-		fs::path gltfPath = filename;
-		fs::path binPath = gltfPath.parent_path() / binUri;
+		std::string bin_uri = outJson["buffers"][0]["uri"];
+		fs::path gltf_path = filename;
+		fs::path bin_path = gltf_path.parent_path() / bin_uri;
 
-		std::ifstream binFile(binPath, std::ios::binary | std::ios::ate);
-		if (!binFile.is_open()) {
-			std::cerr << "Error: Failed to open binary file " << binPath << std::endl;
+		std::ifstream bin_file(bin_path, std::ios::binary | std::ios::ate);
+		if (!bin_file.is_open()) {
+			std::cerr << "Error: Failed to open binary file " << bin_path << std::endl;
 			return false;
 		}
 
-		std::streamsize size = binFile.tellg();
-		binFile.seekg(0, std::ios::beg);
+		std::streamsize size = bin_file.tellg();
+		bin_file.seekg(0, std::ios::beg);
 
 		outBinBuffer.resize(size);
-		if (!binFile.read(outBinBuffer.data(), size)) {
-			std::cerr << "Error: Failed to read binary data from " << binPath << std::endl;
+		if (!bin_file.read(outBinBuffer.data(), size)) {
+			std::cerr << "Error: Failed to read binary data from " << bin_path << std::endl;
 			return false;
 		}
-		binFile.close();
+		bin_file.close();
 	}
 	else {
 		std::cerr << "Error: No buffer URI found in glTF file." << std::endl;
@@ -210,47 +227,47 @@ void ReadGLTFMesh::process_node(const json& gltfJson, const std::vector<char>& b
 {
 	const json& node = gltfJson["nodes"][nodeIndex];
 
-	XMMATRIX localMatrix = XMMatrixIdentity();
+	XMMATRIX local_matrix = XMMatrixIdentity();
 	if (node.contains("matrix")) {
 		float mat[16];
 		for (int i = 0; i < 16; ++i) mat[i] = node["matrix"][i].get<float>();
-		localMatrix = XMLoadFloat4x4(&XMFLOAT4X4(mat));
+		local_matrix = XMLoadFloat4x4(&XMFLOAT4X4(mat));
 	}
 	else {
-		XMMATRIX translationMatrix = XMMatrixIdentity();
+		XMMATRIX translation_matrix = XMMatrixIdentity();
 		if (node.contains("translation")) {
-			translationMatrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
+			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
 		}
-		XMMATRIX rotationMatrix = XMMatrixIdentity();
+		XMMATRIX rotation_matrix = XMMatrixIdentity();
 		if (node.contains("rotation")) {
-			rotationMatrix = XMMatrixRotationQuaternion(XMVectorSet(node["rotation"][0].get<float>(), node["rotation"][1].get<float>(), node["rotation"][2].get<float>(), node["rotation"][3].get<float>()));
+			rotation_matrix = XMMatrixRotationQuaternion(XMVectorSet(node["rotation"][0].get<float>(), node["rotation"][1].get<float>(), node["rotation"][2].get<float>(), node["rotation"][3].get<float>()));
 		}
-		XMMATRIX scaleMatrix = XMMatrixIdentity();
+		XMMATRIX scale_matrix = XMMatrixIdentity();
 		if (node.contains("scale")) {
-			scaleMatrix = XMMatrixScaling(node["scale"][0].get<float>(), node["scale"][1].get<float>(), node["scale"][2].get<float>());
+			scale_matrix = XMMatrixScaling(node["scale"][0].get<float>(), node["scale"][1].get<float>(), node["scale"][2].get<float>());
 		}
-		localMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+		local_matrix = scale_matrix * rotation_matrix * translation_matrix;
 	}
 
-	XMMATRIX worldMatrix = localMatrix * XMLoadFloat4x4(&parentTransform);
-	XMFLOAT4X4 worldTransform;
-	XMStoreFloat4x4(&worldTransform, worldMatrix);
+	XMMATRIX world_matrix = local_matrix * XMLoadFloat4x4(&parentTransform);
+	XMFLOAT4X4 world_transform;
+	XMStoreFloat4x4(&world_transform, world_matrix);
 
 	if (node.contains("mesh")) {
 		const json& mesh = gltfJson["meshes"][node["mesh"].get<int>()];
-		process_mesh(gltfJson, binaryBuffer, mesh, worldTransform);
+		process_mesh(gltfJson, binaryBuffer, mesh, world_transform);
 	}
 
 	if (node.contains("children")) {
-		for (const auto& childIndex : node["children"]) {
-			process_node(gltfJson, binaryBuffer, childIndex.get<int>(), worldTransform);
+		for (const auto& child_index : node["children"]) {
+			process_node(gltfJson, binaryBuffer, child_index.get<int>(), world_transform);
 		}
 	}
 }
 
 void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& binaryBuffer, const json& mesh, const DirectX::XMFLOAT4X4& transform)
 {
-	for (const auto& primitiveJson : mesh["primitives"])
+	for (const auto& primitive_json : mesh["primitives"])
 	{
 
 		_primitives.emplace_back(std::make_unique<GltfPrimitive>());
@@ -258,23 +275,23 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 		auto& primitive = _primitives.back();
 
 
-		std::vector<XMFLOAT3> positions = get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitiveJson["attributes"]["POSITION"]);
-		std::vector<XMFLOAT3> normals = primitiveJson["attributes"].contains("NORMAL") ? get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitiveJson["attributes"]["NORMAL"]) : std::vector<XMFLOAT3>();
-		std::vector<XMFLOAT2> texcoords = primitiveJson["attributes"].contains("TEXCOORD_0") ? get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitiveJson["attributes"]["TEXCOORD_0"]) : std::vector<XMFLOAT2>();
+		std::vector<XMFLOAT3> positions = get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitive_json["attributes"]["POSITION"]);
+		std::vector<XMFLOAT3> normals = primitive_json["attributes"].contains("NORMAL") ? get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitive_json["attributes"]["NORMAL"]) : std::vector<XMFLOAT3>();
+		std::vector<XMFLOAT2> texcoords = primitive_json["attributes"].contains("TEXCOORD_0") ? get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"]["TEXCOORD_0"]) : std::vector<XMFLOAT2>();
 		if (texcoords.empty())
 		{
-			std::string meshName = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
-			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + meshName + "' has no texture coordinates(TEXCOORD_0)."); 
+			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
+			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates(TEXCOORD_0)."); 
 		}
-		std::vector<XMFLOAT4> tangents = primitiveJson["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitiveJson["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
+		std::vector<XMFLOAT4> tangents = primitive_json["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitive_json["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
 
 		primitive->_vertexCount = (UINT)positions.size();
 		primitive->_vertices.resize(primitive->_vertexCount);
-		XMMATRIX worldMat = XMLoadFloat4x4(&transform);
+		XMMATRIX world_mat = XMLoadFloat4x4(&transform);
 
 		for (size_t i = 0; i < primitive->_vertexCount; ++i) {
 			XMVECTOR pos = XMLoadFloat3(&positions[i]);
-			pos = XMVector3Transform(pos, worldMat);
+			pos = XMVector3Transform(pos, world_mat);
 			XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
 			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
@@ -292,8 +309,8 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 		//	CLOG("V[" << i << "] Position: (" << v._position.x << ", " << v._position.y << ", " << v._position.z << ")");
 		//}
 
-		if (primitiveJson.contains("indices")) {
-			const json& accessor = gltfJson["accessors"][primitiveJson["indices"].get<size_t>()];
+		if (primitive_json.contains("indices")) {
+			const json& accessor = gltfJson["accessors"][primitive_json["indices"].get<size_t>()];
 			const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
 			const char* data_ptr = binaryBuffer.data() + bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);
 			primitive->_indexCount = accessor["count"];
@@ -312,7 +329,7 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 
 		BoundingOrientedBox::CreateFromPoints(primitive->_orientedBoundingBox, primitive->_vertices.size(), &primitive->_vertices[0]._position, sizeof(GltfVertex));
 
-		primitive->_materialIndex = primitiveJson.value("material", -1);
+		primitive->_materialIndex = primitive_json.value("material", -1);
 
 	}
 }
