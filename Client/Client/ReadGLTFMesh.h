@@ -29,6 +29,12 @@ public:
 	}
 };
 
+struct GltfSkinnedVertex : public GltfVertex
+{
+	UINT   _boneIndices[4]; // BONEINDICES (JOINTS_0)
+	float  _boneWeights[4]; // BONEWEIGHTS (WEIGHTS_0)
+};
+
 struct GltfPrimitive
 {
 	// CPU
@@ -56,7 +62,7 @@ struct GltfPrimitive
 class ReadGLTFMesh : public Mesh
 {
 public:
-	ReadGLTFMesh(const std::string& filePath);
+	ReadGLTFMesh(const std::string& filePath, bool ishave_animate = false);
 	~ReadGLTFMesh() override;
 
 	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
@@ -66,6 +72,10 @@ public:
 	void release_upload_buffers() override;
 
 private:
+
+	void ReadStaticMesh(const std::string& filePath);
+	void ReadSkinnedAnimationMesh(const std::string& filePath);
+
 	bool load_gltf_file(const std::string& filename, json& outJson, std::vector<char>& outBinBuffer);
 	void process_node(const json& gltfJson, const std::vector<char>& binaryBuffer, int nodeIndex, const DirectX::XMFLOAT4X4& parentTransform);
 	void process_mesh(const json& gltfJson, const std::vector<char>& binaryBuffer, const json& mesh, const DirectX::XMFLOAT4X4& transform);
