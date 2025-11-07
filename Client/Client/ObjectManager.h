@@ -35,7 +35,7 @@ public:
 
 private:
     
-    std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : 순회 속도보다 삽입삭제 속도가 더 중요해 질 가능성 농후함 -> 트리 구조로 바꿔야할 가능성 있음
+    std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : 트리 구조로 바꿔야할 가능성 있음
     std::vector<std::shared_ptr<Object>>     _destructionQueue;
     std::queue<std::shared_ptr<GameObject>>  _newGameObjects;
 };
