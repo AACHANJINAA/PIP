@@ -82,6 +82,7 @@ std::shared_ptr<GameObject> ObjectManager::find_by_name(const std::string& name)
         [&name](const std::shared_ptr<GameObject>& obj) {
             return obj && obj->name() == name && !obj->is_destroyed();
         });
+	// O(N) 탐색 결과 반환
 	return (it != _gameObjects.end()) ? *it : nullptr;
 }
 
