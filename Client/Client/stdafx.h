@@ -65,13 +65,13 @@ using Microsoft::WRL::ComPtr;
 #include <numeric>
 #include <random>
 #include <queue>
-#include <vector>
 #include <unordered_map>
 #include <functional>
 #include <concepts>
 #include <string>
 #include <atomic>
 #include <mutex>
+#include <stack>
 
 
 
