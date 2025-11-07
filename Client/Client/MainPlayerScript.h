@@ -43,7 +43,7 @@ private:
 
     // 50ms 마다 서버에 위치 정보를 전송하기 위한 타이머
     float _sendTimer{ 0.f };
-    const float _sendInterval{ 0.05f };
+    const float _sendInterval{ 0.02f };
 };
 
 
