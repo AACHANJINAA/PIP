@@ -22,7 +22,9 @@ namespace PIP::server
 		{
 			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
 			int npcId = _next_npc_id++;
-			common::Vec3 randomPos = { static_cast<float>(rand() % 500), 4.0f, static_cast<float>(rand() % 500)};
+			common::Vec3 randomPos = {
+				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
+			};
 
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos);
 			AddNPC(std::move(npc));
@@ -190,8 +192,8 @@ namespace PIP::server
 		// 랜덤이동
 		common::Vec3 oldPos = npc->GetPosition();
 		common::Vec3 newPos = oldPos;
-		newPos.x += static_cast<float>(_npcURD(_gen)) * 2.0f;
-		newPos.z += static_cast<float>(_npcURD(_gen)) * 2.0f;
+		newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
+		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;
 
 		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
 		npc->SetPosition(newPos);

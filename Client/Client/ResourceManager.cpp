@@ -429,12 +429,12 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     // 3. 텍스처 핸들 수집 및 Renderer를 통해 바인딩
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
     auto add_texture_handle = [&](const std::string& path) {
-    if (!path.empty()) {
-        auto tex_it = _textures.find(path);
-            if (tex_it != _textures.end()) {
-                texture_handles.push_back(tex_it->second.cpu_handle);
-            }
-        }
+	    if (!path.empty()) {
+	        auto tex_it = _textures.find(path);
+	            if (tex_it != _textures.end()) {
+	                texture_handles.push_back(tex_it->second.cpu_handle);
+	            }
+	        }
     };
     
     add_texture_handle(mat_info.base_color_texture_path);

@@ -233,6 +233,9 @@
     <ClInclude Include="..\..\Common\Vector3.h">
       <Filter>4. External</Filter>
     </ClInclude>
+    <ClInclude Include="NPCScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -363,6 +366,9 @@
     </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
       <Filter>0. Engine\4. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

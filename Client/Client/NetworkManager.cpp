@@ -3,6 +3,7 @@
 #include "GameFramework.h"
 #include "LayerManager.h"
 #include "MainPlayerScript.h"
+#include "NPCScript.h"
 #include "ObjectManager.h"
 #include "OtherPlayerScript.h"
 #include "Renderer.h"
@@ -220,9 +221,6 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 		other_player_logic->set_hp(spawn_data._hp);
 		other_player_logic->set_id(spawn_data._id);
 		
-
-
-
 		CLOG("[S->C] OtherPlayer spawned/updated: ID=" << spawn_data._id
 			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
 			<< "HP=" << spawn_data._hp
@@ -231,7 +229,6 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			<< "Name=" << name.c_str());
 	}
 }
-
 void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 {
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
@@ -257,7 +254,6 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 		}
 	}
 }
-
 void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_LEAVE leave_packet;
@@ -273,7 +269,6 @@ void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 		(*it)->destroy();
 	}
 }
-
 void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
 {
 	// SC_PACKET_ATTACK은 헤더 외에 여러 멤버를 가집니다.
@@ -301,7 +296,6 @@ void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
 		}
 	}
 }
-
 void NetworkManager::HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_ROOM_LIST_ACK room_list_ack;
@@ -334,7 +328,6 @@ void NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& str
 		MessageBox(g_hwnd, L"Failed to enter room.", L"Room Entry Error", MB_OK);
 	}
 }
-
 void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_NPC_SPAWN npc_spawn_packet;
@@ -345,19 +338,24 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 	if (npc_spawn_packet._npc_type == 1)
 	{
-		auto npc_object = ObjectManager::instance()->create_game_object(npc_name);
-		auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
-		npc_object->set_layer("Enemy");
-		npc_object->transform()->set_local_position(npc_spawn_packet._position);
-		npc_object->set_name(npc_name);
+		CLOG("[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
+		// 다른 플레이어 (적) 생성 또는 업데이트
+		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
+		auto NPC_logic = NPC->add_component<NPCScript>();
+		NPC_logic->set_position(npc_spawn_packet._position);
+		NPC->set_layer("Enemy");
 
-		auto render_comp = npc_object->add_component<RenderComponent>();
+		auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+
+		auto render_comp = NPC->add_component<RenderComponent>();
 		render_comp->set_mesh(npc_mesh);
 
-		std::string material_name = "npc_material_" + std::to_string(npc_spawn_packet._npc_id);
+		// ResourceManager을 통해 재질 생성 및 쉐이더 할당
+		std::string material_name = "npc_material"; // player는 고정된 재질
 		ResourceManager::instance()->create_material(material_name);
 		ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 
+		// gltf
 		render_comp->set_pso_name("gltf");
 
 		CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
@@ -366,7 +364,6 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 			<< " Position: " << npc_spawn_packet._position.x << "," << npc_spawn_packet._position.y);
 	}
 }
-
 void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 {
 	// [수정] 이름까지 읽도록 전체 로직 수정
@@ -398,7 +395,6 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 		CLOG("[S->C] Move NPC Error: Object not found with name: " << npc_name);
 	}
 }
-
 bool NetworkManager::init_network()
 {
 	WSADATA wsaData;
@@ -409,12 +405,10 @@ bool NetworkManager::init_network()
 	}
 	return true;
 }
-
 void NetworkManager::cleanup_network()
 {
 	WSACleanup();
 }
-
 bool NetworkManager::connect_to_server(std::string_view server_addr, const int& port)
 {
 	_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -480,7 +474,6 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 
 	return true;
 }
-
 void NetworkManager::disconnect()
 {
 	if (_socket != INVALID_SOCKET)
@@ -489,7 +482,6 @@ void NetworkManager::disconnect()
 		_socket = INVALID_SOCKET;
 	}
 }
-
 void NetworkManager::receive_packets()
 {
 	if (_socket == INVALID_SOCKET)
@@ -527,4 +519,3 @@ void NetworkManager::receive_packets()
 	// 받은 데이터를 처리 함수로 넘김
 	ProcessReceivedData(recv_buffer, retval);
 }
-

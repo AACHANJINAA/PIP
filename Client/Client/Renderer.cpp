@@ -238,7 +238,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
                 mesh->upload_to_gpu(_device, commandList);
             }*/
             // ------------------------------------
-
+            
             renderComp->render(commandList);
         }
     }
