@@ -8,6 +8,7 @@
 #include "Renderer.h"
 #include "DescriptorManager.h"
 #include "DDSTextureLoader12.h"
+#include "WICTextureLoader12.h"
 
 
 void ResourceManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -134,9 +135,6 @@ void ResourceManager::unload_unused_meshes()
     }
 }
 
-
-// --- 1단계 리팩토링 구현부 ---
-
 // 내부 헬퍼 함수: 텍스처를 로드하고 GPU에 업로드합니다.
 ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path)
 {
@@ -144,67 +142,100 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
         return nullptr;
     }
     
+	// 1. 항상 원본 파일 경로를 키로 사용하여 캐시를 확인
     auto it = _textures.find(file_path);
     if (it != _textures.end()) {
         CLOG("Texture cache hit for: " << file_path);
         return &it->second;
     }
 
-    CINFO("Loading texture (cache miss): " << file_path);
+    //CINFO("Loading texture (cache miss): " << file_path);
+
+    HRESULT hr = E_FAIL;
+    bool is_dds = false; // DDS인지 WIC인지 구분하는 플래그
 
     TextureInfo new_texture_info;
     new_texture_info.name = file_path;
-    std::wstring w_file_path(file_path.begin(), file_path.end());
-    
-    std::unique_ptr<uint8_t[]> ddsData;
+
+    // 2. DDS 경로 생성
+    std::filesystem::path original_path(file_path);
+    std::filesystem::path dds_path = original_path;
+    // 확장자 대체
+    dds_path.replace_extension(".dds");
+    // DDS 파일에서 텍스처 데이터를 메모리로 로드합니다.
+    std::unique_ptr<uint8_t[]> dds_data;
     std::vector<D3D12_SUBRESOURCE_DATA> subresources;
-    // 1. DDS 파일에서 텍스처 데이터를 메모리로 로드합니다.
-    HRESULT hr = DirectX::LoadDDSTextureFromFile(_device, w_file_path.c_str(), &new_texture_info.resource, ddsData, subresources);
+   
+    // 3. DDS 우선 로드 시도
+    if (std::filesystem::exists(dds_path))
+    {
+        std::wstring w_dds_path = dds_path.wstring();
+         hr = DirectX::LoadDDSTextureFromFile(_device, w_dds_path.c_str(), &new_texture_info.resource, dds_data, subresources);
+        if (SUCCEEDED(hr)) {
+                is_dds = true;
+        }
+    }
+
+    // 4. DDS 로드 실패 시, 원본 파일(PNG, JPG 등) 로드 시도
+    if (FAILED(hr))
+    {
+        if (!std::filesystem::exists(original_path))
+        {
+             CERROR("Texture file does not exist: " << file_path);
+             return nullptr;
+        }
     
+        // CINFO("DDS not found or failed to load, falling back to WIC: " << file_path);
+        std::wstring w_original_path = original_path.wstring();
+  
+        // WIC 로더는 DDS 로더처럼 subresource 데이터를 반환합니다.
+        // 이 데이터를 담을 변수가 필요합니다.
+        std::unique_ptr<uint8_t[]> wic_decoded_data;
+        D3D12_SUBRESOURCE_DATA wic_subresource_data;
+        
+        hr = DirectX::LoadWICTextureFromFile(
+            _device,
+            w_original_path.c_str(),
+            &new_texture_info.resource, // 최종 리소스 (Default Heap)
+            wic_decoded_data,           // 디코딩된 이미지 데이터
+            wic_subresource_data        // 서브리소스 정보
+        );
+
+        if (SUCCEEDED(hr)) {
+           is_dds = false; // WIC 로드임을 명시
+           // subresources 벡터에 WIC에서 얻은 서브리소스를 추가
+           // (LoadWICTextureFromFile은 밉맵을 생성하지 않으므로, 서브리소스는 1개입니다)
+           subresources.push_back(wic_subresource_data);
+        }
+    }
+    
+    // 5. 모두 실패 시 에러 처리
     if (FAILED(hr)) {
         CERROR("Failed to load texture file: " << file_path);
         return nullptr;
     }
     
-    // 2. 최종 텍스처가 저장될 기본 힙(Default Heap) 리소스를 생성합니다.
-    ComPtr<ID3D12Resource> texture_resource_default_heap;
-    D3D12_RESOURCE_DESC texture_desc = new_texture_info.resource->GetDesc();
-    auto default_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-    
-    hr = _device->CreateCommittedResource(&default_heap_props, D3D12_HEAP_FLAG_NONE, &texture_desc,
-             D3D12_RESOURCE_STATE_COPY_DEST, // 복사 대상으로 초기 상태 설정
-             nullptr,
-             IID_PPV_ARGS(&texture_resource_default_heap));
-    
-    if (FAILED(hr)) {
-        CERROR("Failed to create committed resource for texture: " << file_path);
-        return nullptr;
-    }
-    
-    // 3. 데이터 복사를 위한 중간 업로드 힙(Upload Heap) 리소스를 생성합니다.
-    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(texture_resource_default_heap.Get(), 0, static_cast
+    // 6. GPU 업로드 및 리소스 상태 전이 (DDS와 WIC 경우 둘다 공통으로 사용)
+    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(new_texture_info.resource.Get(), 0, static_cast
     <UINT>(subresources.size()));
     auto upload_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     auto upload_buffer_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
-    
-    hr = _device->CreateCommittedResource(&upload_heap_props, D3D12_HEAP_FLAG_NONE, &upload_buffer_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&new_texture_info.upload_heap));
-    
-    if (FAILED(hr)) {
-        CERROR("Failed to create upload heap for texture: " << file_path);
-        return nullptr;
-    }
-    
-    // 4. UpdateSubresources 헬퍼 함수를 사용해 메모리의 텍스처 데이터를 업로드 힙을 거쳐 기본 힙으로 복사합니다.
-    UpdateSubresources(_command_list, texture_resource_default_heap.Get(), new_texture_info.upload_heap.Get(), 0, 0,
-    static_cast<UINT>(subresources.size()), subresources.data());
-    
-    // 5. 텍스처 리소스의 상태를 셰이더에서 읽을 수 있도록 변경합니다.
-    auto transition = CD3DX12_RESOURCE_BARRIER::Transition(texture_resource_default_heap.Get(),
-    D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+   
+    hr = _device->CreateCommittedResource(
+        &upload_heap_props, D3D12_HEAP_FLAG_NONE, &upload_buffer_desc,
+        D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+        IID_PPV_ARGS(&new_texture_info.upload_heap));
+   
+    if (FAILED(hr)) { CERROR("Failed to create upload heap for DDS texture."); return nullptr; }
+   
+    UpdateSubresources(
+        _command_list, new_texture_info.resource.Get(), new_texture_info.upload_heap.Get(),
+        0, 0, static_cast<UINT>(subresources.size()), subresources.data());
+   
+    auto transition = CD3DX12_RESOURCE_BARRIER::Transition(
+        new_texture_info.resource.Get(),
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     _command_list->ResourceBarrier(1, &transition);
-    
-    // 6. 최종적으로 생성된 기본 힙의 리소스를 저장합니다.
-    new_texture_info.resource = texture_resource_default_heap;
     
     // 7. 셰이더 리소스 뷰(SRV)를 생성합니다.
     if (!DescriptorManager::instance()->allocate_descriptor(new_texture_info.cpu_handle, new_texture_info.gpu_handle))
@@ -217,14 +248,13 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srv_desc.Format = new_texture_info.resource->GetDesc().Format;
     srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srv_desc.Texture2D.MostDetailedMip = 0;
     srv_desc.Texture2D.MipLevels = new_texture_info.resource->GetDesc().MipLevels;
+    srv_desc.Texture2D.MostDetailedMip = 0;
     srv_desc.Texture2D.ResourceMinLODClamp = 0.0f;
     
     _device->CreateShaderResourceView(new_texture_info.resource.Get(), &srv_desc, new_texture_info.cpu_handle);
     
     _textures[file_path] = std::move(new_texture_info);
-    
     return &_textures[file_path];
 }
 
@@ -245,40 +275,25 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
     gltf_file.close();
     
     std::filesystem::path base_path = std::filesystem::path(file_path).parent_path();
-    std::vector<std::string> processed_image_paths;
     
+    std::vector<std::string> images_uris;
     if (gltf_json.contains("images")) {
         for (const auto& image_json : gltf_json["images"]) {
             std::string uri = image_json.value("uri", "");
-            if (uri.empty()) {
-                processed_image_paths.push_back("");
-                continue;
-            }
-
-            std::filesystem::path original_path = base_path / uri;
-            std::filesystem::path dds_path = original_path;
-            dds_path.replace_extension(".dds");
-            
-            if (std::filesystem::exists(dds_path)) {
-                processed_image_paths.push_back(dds_path.string());
-                // CINFO("DDS texture found and will be used: " << dds_path.string());
-            }
-            else {
-                processed_image_paths.push_back(original_path.string());
-            }
+            images_uris.push_back(uri);
         }
     }
     
-    std::vector<std::string> texture_source_paths;
+    std::vector<std::string> texture_source_uris;
     if (gltf_json.contains("textures")) {
         for (const auto& texture_json : gltf_json["textures"]) {
             int source_idx = texture_json.value("source", -1);
-            if (source_idx != -1 && source_idx < processed_image_paths.size()) {
+            if (source_idx != -1 && source_idx < images_uris.size()) {
                 // glTF URI는 상대 경로일 수 있으므로 base_path와 결합
-                texture_source_paths.push_back(processed_image_paths[source_idx]);
+                texture_source_uris.push_back(images_uris[source_idx]);
             }
             else {
-                 texture_source_paths.push_back(""); // 텍스처 소스 없음
+                texture_source_uris.push_back(""); // 텍스처 소스 없음
             }
         }
     }
@@ -305,9 +320,13 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             auto assign_texture = [&](const json& texture_info, std::string& path_member) {
                     if (texture_info.contains("index")) {
                             int tex_idx = texture_info["index"];
-                            if (tex_idx < texture_source_paths.size() && !texture_source_paths[tex_idx].empty()) {
-                                    path_member = texture_source_paths[tex_idx];
-                                    load_texture(path_member);
+                            if (tex_idx < texture_source_uris.size() && !texture_source_uris[tex_idx].empty()) {
+                                //gltf의 상대 경로 및 기본 경로를 조합하여 전체 경로로 만듦
+                                std::filesystem::path full_texture_path = base_path / texture_source_uris[tex_idx];
+                                path_member = full_texture_path.string();
+
+								// 이제 DDS 우선 로드 및 실패 시 WIC 로드를 수행
+                                load_texture(path_member);
                             }
                     }
             };
