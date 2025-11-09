@@ -152,7 +152,6 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     //CINFO("Loading texture (cache miss): " << file_path);
 
     HRESULT hr = E_FAIL;
-    bool is_dds = false; // DDS인지 WIC인지 구분하는 플래그
 
     TextureInfo new_texture_info;
     new_texture_info.name = file_path;
@@ -164,6 +163,7 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     dds_path.replace_extension(".dds");
     // DDS 파일에서 텍스처 데이터를 메모리로 로드합니다.
     std::unique_ptr<uint8_t[]> dds_data;
+    std::unique_ptr<uint8_t[]> wic_data;
     std::vector<D3D12_SUBRESOURCE_DATA> subresources;
    
     // 3. DDS 우선 로드 시도
@@ -171,9 +171,6 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     {
         std::wstring w_dds_path = dds_path.wstring();
          hr = DirectX::LoadDDSTextureFromFile(_device, w_dds_path.c_str(), &new_texture_info.resource, dds_data, subresources);
-        if (SUCCEEDED(hr)) {
-                is_dds = true;
-        }
     }
 
     // 4. DDS 로드 실패 시, 원본 파일(PNG, JPG 등) 로드 시도
@@ -185,26 +182,19 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
              return nullptr;
         }
     
-        // CINFO("DDS not found or failed to load, falling back to WIC: " << file_path);
         std::wstring w_original_path = original_path.wstring();
-  
-        // WIC 로더는 DDS 로더처럼 subresource 데이터를 반환합니다.
-        // 이 데이터를 담을 변수가 필요합니다.
-        std::unique_ptr<uint8_t[]> wic_decoded_data;
         D3D12_SUBRESOURCE_DATA wic_subresource_data;
         
         hr = DirectX::LoadWICTextureFromFile(
             _device,
             w_original_path.c_str(),
             &new_texture_info.resource, // 최종 리소스 (Default Heap)
-            wic_decoded_data,           // 디코딩된 이미지 데이터
+            wic_data,           // 디코딩된 이미지 데이터
             wic_subresource_data        // 서브리소스 정보
         );
 
         if (SUCCEEDED(hr)) {
-           is_dds = false; // WIC 로드임을 명시
            // subresources 벡터에 WIC에서 얻은 서브리소스를 추가
-           // (LoadWICTextureFromFile은 밉맵을 생성하지 않으므로, 서브리소스는 1개입니다)
            subresources.push_back(wic_subresource_data);
         }
     }
@@ -216,8 +206,8 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     }
     
     // 6. GPU 업로드 및 리소스 상태 전이 (DDS와 WIC 경우 둘다 공통으로 사용)
-    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(new_texture_info.resource.Get(), 0, static_cast
-    <UINT>(subresources.size()));
+
+    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(new_texture_info.resource.Get(), 0, static_cast<UINT>(subresources.size()));
     auto upload_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     auto upload_buffer_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
    
