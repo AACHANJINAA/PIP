@@ -81,6 +81,9 @@
     <Filter Include="0. Engine\3. Renderer\3. Camera">
       <UniqueIdentifier>{4f139754-ab8e-4f12-a9da-5bcc2288c9b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\3. Renderer\4. TextureLoader">
+      <UniqueIdentifier>{43c5fdd3-2872-4f44-945b-40cbed081f81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -212,9 +215,6 @@
     <ClInclude Include="GltfTestScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
-    <ClInclude Include="DDSTextureLoader12.h">
-      <Filter>0. Engine\3. Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>0. Engine\3. Renderer\3. Camera</Filter>
     </ClInclude>
@@ -235,6 +235,12 @@
     </ClInclude>
     <ClInclude Include="NPCScript.h">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader12.h">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader12.h">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -355,9 +361,6 @@
     <ClCompile Include="GltfTestScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="DDSTextureLoader12.cpp">
-      <Filter>0. Engine\3. Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>0. Engine\3. Renderer\3. Camera</Filter>
     </ClCompile>
@@ -369,6 +372,12 @@
     </ClCompile>
     <ClCompile Include="NPCScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader12.cpp">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader12.cpp">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

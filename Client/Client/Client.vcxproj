@@ -192,6 +192,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Behaviour.cpp" />
@@ -243,6 +244,7 @@
     </ClCompile>
     <ClCompile Include="TimerManager.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
+    <ClCompile Include="WICTextureLoader12.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc" />
