@@ -35,6 +35,16 @@ void MainPlayerScript::update(float deltaTime)
         move_direction = Vector3::Add(move_direction ,common::Vec3Left);
         is_moving = true;
     }
+    // 나중에 점프로 변경
+    if (InputManager::instance()->IsKeyPress('Q')) {
+        move_direction = Vector3::Add(move_direction ,common::Vec3Up);
+        is_moving = true;
+    }
+    if (InputManager::instance()->IsKeyPress('E')) {
+        move_direction = Vector3::Add(move_direction ,common::Vec3Down);
+        is_moving = true;
+	}
+
 
     if (is_moving) {
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
