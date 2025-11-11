@@ -1,0 +1,110 @@
+서버 딜레이 측정을 위한 코드 수정 가이드
+
+### 1. `server.h` 파일 수정
+
+`LogicJob` 구조체에 작업 생성 시간을 기록할 멤버를 추가해야 합니다.
+
+```cpp
+// C:\Users\MSI\Documents\GitHub\PIP\Server\Server\server.h
+
+// ... (다른 코드)
+
+struct TimerJob
+{
+    // ... (기존과 동일)
+};
+
+// ▼▼▼ 수정 대상 ▼▼▼
+// 여기에 _creation_time 멤버를 추가하여 작업 생성 시간을 기록할 수 있습니다.
+struct LogicJob
+{
+    std::function<void()> _task;
+    // 예: std::chrono::steady_clock::time_point _creation_time;
+};
+
+struct LogicWorker
+{
+// ... (기존과 동일)
+```
+
+### 2. `server.cpp` 파일 수정
+
+작업을 큐에 넣는 부분과 큐에서 꺼내 처리하는 부분을 수정해야 합니다.
+
+#### 작업 생성 시 타임스탬프 기록
+
+```cpp
+// C:\Users\MSI\Documents\GitHub\PIP\Server\Server\server.cpp
+
+// ▼▼▼ 수정 대상 (SESSION::OnRecv 함수 내부) ▼▼▼
+// 패킷을 수신하여 로직 큐에 작업을 넣는 부분
+void SESSION::OnRecv(size_t len, Server* server_ptr)
+{
+    // ... (생략)
+    while (true)
+    {
+        // ... (생략)
+        auto task = 
+            [session = shared_from_this(),
+            stream = packet::PacketStream(_recv_buffer.data() + processed_bytes, header->_size)]
+        () mutable
+        {
+            packet::PacketManager::Instance()->Dispatch(session, stream);
+        };
+
+        // 이 부분에서 LogicJob을 생성할 때 현재 시간을 함께 기록해야 합니다.
+        // 예: server_ptr->get_logic_queue(_logic_thread_idx)->push({ std::move(task), std::chrono::steady_clock::now() });
+        server_ptr->get_logic_queue(_logic_thread_idx)->push({ std::move(task) });
+
+        processed_bytes += header->_size;
+    }
+    // ... (생략)
+}
+```
+
+#### 지연 시간 측정 및 로그 출력
+
+```cpp
+// C:\Users\MSI\Documents\GitHub\PIP\Server\Server\server.cpp
+
+// ▼▼▼ 수정 대상 (Server::Logic_worker 함수 내부) ▼▼▼
+void Server::Logic_worker(int thread_idx)
+{
+    // ... (생략)
+    while (_is_running)
+    {
+        // 1. 타이머 큐 처리
+        while (not worker._timer_queue.empty() && 
+            worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
+        {
+            // 이 부분에서 타이머 작업이 얼마나 지연되었는지 측정하고 로그를 남길 수 있습니다.
+            // auto& timer_job = worker._timer_queue.top();
+            // auto delay = std::chrono::steady_clock::now() - timer_job._execute_time;
+            // MYLOG << "Timer job delay: " << ...
+
+            TimerJob timer_job = std::move(const_cast<TimerJob&>(worker._timer_queue.top()));
+            worker._timer_queue.pop();
+            
+            // 타이머 잡을 로직 큐로 옮길 때도 생성 시간을 기록해줍니다.
+            worker.queue.push({ std::move(timer_job._task) });
+        }
+
+        // 2. 일반 큐(로직 잡) 처리
+        if (worker.queue.try_pop(job_to_process))
+        {
+            // 이 부분에서 LogicJob이 큐에 들어온 후 실제 처리까지 얼마나 걸렸는지 측정합니다.
+            // auto now = std::chrono::steady_clock::now();
+            // auto delay = now - job_to_process._creation_time;
+            // if (delay > 10ms) { MYLOG << "Logic job delay: " << ... }
+
+            if (job_to_process._task)
+            {
+                job_to_process._task();
+            }
+        }
+        else
+        {
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
+        }
+    }
+}
