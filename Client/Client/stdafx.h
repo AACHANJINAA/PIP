@@ -1,10 +1,12 @@
-﻿// header.h: 표준 시스템 포함 파일
-// 또는 프로젝트 특정 포함 파일이 들어 있는 포함 파일입니다.
-//
-
+﻿#pragma once
 //#define _WITH_SWAPCHAIN_FULLSCREEN_STATE
+// assmip
+#include <assimp/Importer.hpp>      // Assimp 로더
+#include <assimp/scene.h>           // Assimp scene 객체
+#include <assimp/postprocess.h>     // Assimp 후처리 옵션
+#include <assimp/material.h> // AI_MATKEY_TEXTURE_DIFFUSE, AI_MATKEY_COLOR_DIFFUSE 정의 포함
 
-#pragma once
+
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
@@ -41,17 +43,15 @@ using Microsoft::WRL::ComPtr;
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "winmm.lib")
 
+
 // 필요한 것들 추가
 #include "json.hpp"
 
 // DirectXTex
 #include "DirectXTex.h"
 
-// assmip
-#include <assimp/Importer.hpp>      // Assimp 로더
-#include <assimp/scene.h>           // Assimp scene 객체
-#include <assimp/postprocess.h>     // Assimp 후처리 옵션
-#include <assimp/material.h> // AI_MATKEY_TEXTURE_DIFFUSE, AI_MATKEY_COLOR_DIFFUSE 정의 포함
+
+
 // 
 // C++ 표준 라이브러리 헤더
 #include <iostream>

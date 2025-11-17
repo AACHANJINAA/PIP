@@ -1,0 +1,859 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E2212733-A6FA-357B-B12B-B8399D3B4B40}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>Client</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Client.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/Client/Client</LocalDebuggerWorkingDirectory>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Client.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/Client/Client</LocalDebuggerWorkingDirectory>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Client.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/Client/Client</LocalDebuggerWorkingDirectory>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Client.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Client</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/Client/Client</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)..\Client\Client</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <IncludePath>$(SolutionDir)..\Client\Client</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)..\Client\Client</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <IncludePath>$(SolutionDir)..\Client\Client</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Common;$(SolutionDir)_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NOMINMAX;UNICODE;_UNICODE;_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;NOMINMAX;UNICODE;_UNICODE;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>Copying Assimp DLL to output directory</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different C:/Users/MSI/Documents/GitHub/PIP/Client/packages/AssimpCpp.5.0.1.6/build/native/bin/Debug/assimp-vc142-mtd.dll C:/Users/MSI/Documents/GitHub/PIP/build/Debug
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>_deps\joltphysics-build\Debug\Jolt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
+      <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Common;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>Copying Assimp DLL to output directory</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different C:/Users/MSI/Documents/GitHub/PIP/Client/packages/AssimpCpp.5.0.1.6/build/native/bin/Release/assimp-vc142-mt.dll C:/Users/MSI/Documents/GitHub/PIP/build/Release
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>_deps\joltphysics-build\Release\Jolt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
+      <ImportLibrary>
+      </ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
+      <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Common;$(SolutionDir)..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;$(SolutionDir)..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>Copying Assimp DLL to output directory</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different C:/Users/MSI/Documents/GitHub/PIP/Client/packages/AssimpCpp.5.0.1.6/build/native/bin/Release/assimp-vc142-mt.dll C:/Users/MSI/Documents/GitHub/PIP/build/MinSizeRel
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>_deps\joltphysics-build\MinSizeRel\Jolt.lib;../Client/packages/directxtex_desktop_win10.2025.7.10.1/native/lib/x64/Release/DirectXTex.lib.lib;../Client/packages/AssimpCpp.5.0.1.6/build/native/lib/Release/assimp-vc142-mt.lib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
+      <ImportLibrary>
+      </ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
+      <ProgramDataBaseFile>C:/Users/MSI/Documents/GitHub/PIP/build/MinSizeRel/Client.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Common;$(SolutionDir)..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;$(SolutionDir)..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MinimalRebuild>
+      </MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>Copying Assimp DLL to output directory</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different C:/Users/MSI/Documents/GitHub/PIP/Client/packages/AssimpCpp.5.0.1.6/build/native/bin/Release/assimp-vc142-mt.dll C:/Users/MSI/Documents/GitHub/PIP/build/RelWithDebInfo
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>_deps\joltphysics-build\RelWithDebInfo\Jolt.lib;../Client/packages/directxtex_desktop_win10.2025.7.10.1/native/lib/x64/Release/DirectXTex.lib.lib;../Client/packages/AssimpCpp.5.0.1.6/build/native/lib/Release/assimp-vc142-mt.lib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
+      <ImportLibrary>
+      </ImportLibrary>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
+      <ProgramDataBaseFile>C:/Users/MSI/Documents/GitHub/PIP/build/RelWithDebInfo/Client.pdb</ProgramDataBaseFile>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\MSI\Documents\GitHub\PIP\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/MSI/Documents/GitHub/PIP/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MSI/Documents/GitHub/PIP -BC:/Users/MSI/Documents/GitHub/PIP/build --check-stamp-file C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\CMake\share\cmake-4.2\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeCXXCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeRCCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/MSI/Documents/GitHub/PIP/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MSI/Documents/GitHub/PIP -BC:/Users/MSI/Documents/GitHub/PIP/build --check-stamp-file C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\CMake\share\cmake-4.2\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeCXXCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeRCCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/MSI/Documents/GitHub/PIP/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MSI/Documents/GitHub/PIP -BC:/Users/MSI/Documents/GitHub/PIP/build --check-stamp-file C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\CMake\share\cmake-4.2\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeCXXCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeRCCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/MSI/Documents/GitHub/PIP/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MSI/Documents/GitHub/PIP -BC:/Users/MSI/Documents/GitHub/PIP/build --check-stamp-file C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\CMake\share\cmake-4.2\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeCXXCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeRCCompiler.cmake;C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\4.2.0-rc3\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameFramework.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ObjectManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TimerManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Scene.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\SceneManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\InputManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Shader.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\json.hpp" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Scene.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NetworkManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\main.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Renderer.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Resource.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\resource1.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\stdafx.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\targetver.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\MainPlayerScript.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\OtherPlayerScript.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ResourceManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\BoardCubeScript.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DebugShader.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DefaultObjectShader.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\PlayerShader.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RootSignature.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GlbShader.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLBMesh.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Object.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Behaviour.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameObject.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Component.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TransformComponent.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ScriptComponent.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RenderComponent.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ColiderComponent.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\LayerManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Mesh.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\CameraComponent.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadFBXMesh.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLTFMesh.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadOBJMesh.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCameraScript.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfShader.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfTestScript.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Camera.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCamera.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DescriptorManager.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NPCScript.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DDSTextureLoader12.h" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\WICTextureLoader12.h" />
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameFramework.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ObjectManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TimerManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Scene.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\SceneManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\InputManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Shader.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Scene.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NetworkManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\main.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Renderer.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\MainPlayerScript.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\OtherPlayerScript.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ResourceManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\BoardCubeScript.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DebugShader.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DefaultObjectShader.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\PlayerShader.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RootSignature.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GlbShader.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLBMesh.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Object.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Behaviour.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameObject.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Component.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TransformComponent.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ScriptComponent.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RenderComponent.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ColiderComponent.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\LayerManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Mesh.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\CameraComponent.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadFBXMesh.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLTFMesh.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadOBJMesh.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCameraScript.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfShader.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfTestScript.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Camera.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCamera.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DescriptorManager.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NPCScript.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DDSTextureLoader12.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\WICTextureLoader12.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Debug/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/Release/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <None Include="packages.config" />
+    <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.rc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">NotUsing</PrecompiledHeader>
+    </ResourceCompile>
+    <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Resource.rc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">NotUsing</PrecompiledHeader>
+    </ResourceCompile>
+    <None Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.ico">
+    </None>
+    <None Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\small.ico">
+    </None>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GLB_Shader.hlsl" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Debug.hlsl" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Shaders.hlsl" />
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Gltf_Shader.hlsl" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\MSI\Documents\GitHub\PIP\build\ZERO_CHECK.vcxproj">
+      <Project>{14008A15-AF67-37B8-831B-8A7FBB09CC92}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\MSI\Documents\GitHub\PIP\build\_deps\joltphysics-build\Jolt.vcxproj">
+      <Project>{9C1B0828-5975-3260-BE9B-F0488CF81258}</Project>
+      <Name>Jolt</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" />
+    <Import Project="packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets" Condition="Exists('packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets'))" />
+    <Error Condition="!Exists('packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets'))" />
+  </Target>
+</Project>
