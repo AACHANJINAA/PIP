@@ -135,6 +135,7 @@ void ReadGLTFMesh::read_static_mesh(const std::string& filePath)
 	json gltf_json;
 	std::vector<char> binary_buffer;
 
+	CLOG("현재 디렉토리: " << std::filesystem::current_path() << std::endl);
 	if (!load_gltf_file(filePath, gltf_json, binary_buffer))
 	{
 		CERROR("glTF 파일 로딩에 실패했습니다.");
@@ -410,7 +411,13 @@ void ReadGLTFMesh::process_node(const json& gltfJson, const std::vector<char>& b
 	if (node.contains("matrix")) {
 		float mat[16];
 		for (int i = 0; i < 16; ++i) mat[i] = node["matrix"][i].get<float>();
-		local_matrix = XMLoadFloat4x4(&XMFLOAT4X4(mat));
+		XMFLOAT4X4 mat4x4 = XMFLOAT4X4(
+			mat[0], mat[1], mat[2], mat[3],
+			mat[4], mat[5], mat[6], mat[7],
+			mat[8], mat[9], mat[10], mat[11],
+			mat[12], mat[13], mat[14], mat[15]
+		);
+		local_matrix = XMLoadFloat4x4(&mat4x4);
 	}
 	else {
 		XMMATRIX translation_matrix = XMMatrixIdentity();

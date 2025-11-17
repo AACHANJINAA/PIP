@@ -180,7 +180,7 @@ namespace PIP::server
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
 		//MYLOG("[SERVER] Loading Map...");
-		MapDataManager::Instance()->LoadMapData("..\\..\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
+		MapDataManager::Instance()->LoadMapData("C:\\Users\\MSI\\Documents\\GitHub\\PIP\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)
@@ -263,6 +263,7 @@ namespace PIP::server
 		// LogicWorker의 _timer_queue가 스레드 안전하지 않다면 락이 필요합니다.
 		// 하지만 지금 구조에서는 Room 로직(같은 스레드)에서만 호출되므로 일단 락 없이진행합니다.
 		// 만약 다른 스레드에서 호출할 가능성이 있다면, 이 부분은 다시 논의해야 합니다.
+		// TODO: 데이터 레이스 문제 있음 스레드 세이프 하게 만들어야할듯
 		_logic_workers[worker_idx]._timer_queue.push(std::move(newJob));
 	}
 

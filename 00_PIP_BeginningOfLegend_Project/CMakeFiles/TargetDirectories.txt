@@ -1,0 +1,8 @@
+C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Client.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/Server.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/INSTALL.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-build/CMakeFiles/Jolt.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-build/CMakeFiles/INSTALL.dir
+C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-build/CMakeFiles/ALL_BUILD.dir

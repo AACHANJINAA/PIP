@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameFramework.cpp">
+      <Filter>0. Engine\0. Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ObjectManager.cpp">
+      <Filter>0. Engine\0. Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TimerManager.cpp">
+      <Filter>0. Engine\0. Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Scene.cpp">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\SceneManager.cpp">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\InputManager.cpp">
+      <Filter>0. Engine\5. Input</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Shader.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Scene.cpp">
+      <Filter>1. Game\1. Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NetworkManager.cpp">
+      <Filter>0. Engine\6. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\main.cpp">
+      <Filter>5. App</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Renderer.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\stdafx.cpp">
+      <Filter>5. App</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\MainPlayerScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\OtherPlayerScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ResourceManager.cpp">
+      <Filter>0. Engine\4. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\BoardCubeScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DebugShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DefaultObjectShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\PlayerShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RootSignature.cpp">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GlbShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLBMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Object.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\0. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Behaviour.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\1. Behaviour</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameObject.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Component.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TransformComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ScriptComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ColiderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\LayerManager.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Mesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\CameraComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadFBXMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLTFMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadOBJMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCameraScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfTestScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Camera.cpp">
+      <Filter>0. Engine\3. Renderer\3. Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCamera.cpp">
+      <Filter>0. Engine\3. Renderer\3. Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DescriptorManager.cpp">
+      <Filter>0. Engine\4. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NPCScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DDSTextureLoader12.cpp">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\WICTextureLoader12.cpp">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameFramework.h">
+      <Filter>0. Engine\0. Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ObjectManager.h">
+      <Filter>0. Engine\0. Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TimerManager.h">
+      <Filter>0. Engine\0. Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Scene.h">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\SceneManager.h">
+      <Filter>0. Engine\2. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\InputManager.h">
+      <Filter>0. Engine\5. Input</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Shader.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\json.hpp">
+      <Filter>4. External</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Scene.h">
+      <Filter>1. Game\1. Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NetworkManager.h">
+      <Filter>0. Engine\6. Network</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\main.h">
+      <Filter>5. App</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Renderer.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Resource.h">
+      <Filter>3. Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\resource1.h">
+      <Filter>3. Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\stdafx.h">
+      <Filter>5. App</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\targetver.h">
+      <Filter>5. App</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\MainPlayerScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\OtherPlayerScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ResourceManager.h">
+      <Filter>0. Engine\4. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\BoardCubeScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DebugShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DefaultObjectShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\PlayerShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RootSignature.h">
+      <Filter>0. Engine\3. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GlbShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLBMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Object.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\0. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Behaviour.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\1. Behaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameObject.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Component.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\TransformComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ScriptComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\RenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ColiderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\LayerManager.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Mesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\CameraComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadFBXMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadGLTFMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\ReadOBJMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCameraScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GltfTestScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Camera.h">
+      <Filter>0. Engine\3. Renderer\3. Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\FreeCamera.h">
+      <Filter>0. Engine\3. Renderer\3. Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DescriptorManager.h">
+      <Filter>0. Engine\4. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\NPCScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\DDSTextureLoader12.h">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\WICTextureLoader12.h">
+      <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GLB_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Debug.hlsl">
+      <Filter>2. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Shaders.hlsl">
+      <Filter>2. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Gltf_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\MSI\Documents\GitHub\PIP\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.ico">
+      <Filter>3. Resources</Filter>
+    </None>
+    <None Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\small.ico">
+      <Filter>3. Resources</Filter>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.rc">
+      <Filter>3. Resources</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Resource.rc">
+      <Filter>3. Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="0. Engine">
+      <UniqueIdentifier>{A7FD4429-F26A-33ED-BB34-20A823A5262C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\0. Core">
+      <UniqueIdentifier>{CF9C1DB9-11A3-3C95-BA37-0CB3EB5A4976}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components">
+      <UniqueIdentifier>{49674EDE-0C4F-3D85-B4C2-CF87DDBDF339}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\0. Object">
+      <UniqueIdentifier>{CCC6DF28-B8EF-3837-BDF8-479C63F6321E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\1. Behaviour">
+      <UniqueIdentifier>{084278B2-2823-3B6D-BDEC-F5F4C8417A03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\2. GameObject">
+      <UniqueIdentifier>{C1471324-0A00-39E3-B127-31BD75847C5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components">
+      <UniqueIdentifier>{006F8541-853D-3EBD-B062-87251446B9D3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\2. Scene">
+      <UniqueIdentifier>{01F7E3BE-3093-34CD-BDCB-171F706CBA69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer">
+      <UniqueIdentifier>{00E2B560-F79D-31D5-B145-AA30CD8C75A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\1. Shaders">
+      <UniqueIdentifier>{E0D9EF6E-42C8-39BE-B07B-46140E266CE2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\2. Meshes">
+      <UniqueIdentifier>{AFAD6D6F-72FA-335C-872E-233DDF4FF00E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\3. Camera">
+      <UniqueIdentifier>{74904731-1BC8-36BE-A5B7-826ADEECA26D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\4. TextureLoader">
+      <UniqueIdentifier>{BD54CAEC-1691-3803-9584-EDE4A7093F27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\4. Resource">
+      <UniqueIdentifier>{12767799-E6C4-37F1-9C57-2AC5B483ECB0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\5. Input">
+      <UniqueIdentifier>{A1AE1763-E0A4-302F-A2D4-415E2DC422C8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\6. Network">
+      <UniqueIdentifier>{8846B2AF-FF35-3AC6-B07A-CE155E2E9C93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game">
+      <UniqueIdentifier>{09278773-3936-3473-9F55-2AA606671D49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\1. Scenes">
+      <UniqueIdentifier>{792D07BE-4BD6-3341-9B8D-E3F379A8CCBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts">
+      <UniqueIdentifier>{6E913A71-80CB-3FCE-BAE0-5E976F8E635F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2. Shaders">
+      <UniqueIdentifier>{6D465759-F109-313D-B0BB-07D19F8CA0FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3. Resources">
+      <UniqueIdentifier>{FF74DD6B-6840-3472-A978-82B96EE90522}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4. External">
+      <UniqueIdentifier>{BD6B9074-44B3-3784-9E7B-3BF715A60681}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="5. App">
+      <UniqueIdentifier>{FD07314F-9AD4-3A35-82F9-6DCAE80B0B91}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

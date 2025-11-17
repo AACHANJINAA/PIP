@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\cmake_pch.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\PacketHandlers.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\PacketManager.cpp">
+      <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\MapDataManager.cpp">
+      <Filter>소스 파일\Manager\MapDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\Room.cpp">
+      <Filter>소스 파일\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\server.cpp">
+      <Filter>소스 파일\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\Player.cpp">
+      <Filter>소스 파일\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\main.cpp">
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\pch.cpp">
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\NPC.cpp">
+      <Filter>소스 파일\NPC</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\PacketHandlers.h">
+      <Filter>소스 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\PacketManager.h">
+      <Filter>소스 파일\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\json.hpp">
+      <Filter>소스 파일\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\MapDataManager.h">
+      <Filter>소스 파일\Manager\MapDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\Room.h">
+      <Filter>소스 파일\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\server.h">
+      <Filter>소스 파일\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\Player.h">
+      <Filter>소스 파일\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\pch.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\ServerCore.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\NPC.h">
+      <Filter>소스 파일\NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\Debug\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\Release\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\MinSizeRel\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\RelWithDebInfo\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\MSI\Documents\GitHub\PIP\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Precompile Header File">
+      <UniqueIdentifier>{E97FD83E-A4D9-34AB-BBA4-9E9185EDD990}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{963EDC46-E1E6-312B-8567-5E947269044A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{5994D89B-748D-3D05-8A7A-A9AD608349B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Core">
+      <UniqueIdentifier>{9BF5577C-9B74-3B72-A31F-C2A5659E3972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\JSON">
+      <UniqueIdentifier>{45FEF0DA-73F9-386F-A0FF-5EFB21A2495F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Manager">
+      <UniqueIdentifier>{4131F7E7-390B-3112-B98A-E01D82B4EA49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Manager\MapDataManager">
+      <UniqueIdentifier>{ADD717C4-55FF-3232-9AFE-013EE8A944E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\NPC">
+      <UniqueIdentifier>{65E5AD1C-12F6-3BA6-B843-91C13260B406}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Packet">
+      <UniqueIdentifier>{B0CF38F8-00EC-38DF-99C1-B346724810E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Player">
+      <UniqueIdentifier>{3BE5A24F-736B-3AE3-B13D-130A53C40783}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Server">
+      <UniqueIdentifier>{914DF86D-0230-3558-A4F9-B6A16D22991A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

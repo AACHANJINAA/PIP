@@ -120,9 +120,13 @@ void CameraComponent::recalculate_view_matrix()
     TransformComponent* transform = this->game_object()->transform().get();
     if (!transform) return;
 
-    XMVECTOR pos = XMLoadFloat3(&transform->position());
-    XMVECTOR look = XMLoadFloat3(&transform->forward());
-    XMVECTOR up = XMLoadFloat3(&transform->up());
+	f3 f3pos = transform->position();
+	f3 f3look = transform->forward();
+	f3 f3up = transform->up();
+
+    XMVECTOR pos = XMLoadFloat3(&f3pos);
+    XMVECTOR look = XMLoadFloat3(&f3look);
+    XMVECTOR up = XMLoadFloat3(&f3up);
 
     XMStoreFloat4x4(&_viewMatrix, XMMatrixLookToLH(pos, look, up));
 
