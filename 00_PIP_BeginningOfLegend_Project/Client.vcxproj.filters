@@ -323,6 +323,7 @@
     <None Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\small.ico">
       <Filter>3. Resources</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.rc">
