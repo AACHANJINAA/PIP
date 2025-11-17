@@ -28,8 +28,8 @@ set_property(GLOBAL PROPERTY _CMAKE_FindGit_GIT_EXECUTABLE_VERSION
 include(ExternalProject)
 ExternalProject_Add(joltphysics-populate
                      "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/jrouwe/JoltPhysics.git" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR" "GIT_TAG" "v5.4.0"
-                    SOURCE_DIR          "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-src"
-                    BINARY_DIR          "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-build"
+                    SOURCE_DIR          "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-src"
+                    BINARY_DIR          "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

@@ -3,9 +3,9 @@
 # No other meaning or use of this file is supported.
 
 method=git
-command=C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/tmp/joltphysics-populate-gitclone.cmake
-source_dir=C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-src
-work_dir=C:/Users/MSI/Documents/GitHub/PIP/build/_deps
+command=C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/tmp/joltphysics-populate-gitclone.cmake
+source_dir=C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-src
+work_dir=C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps
 repository=https://github.com/jrouwe/JoltPhysics.git
 remote=origin
 init_submodules=TRUE

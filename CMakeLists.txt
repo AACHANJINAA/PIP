@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 # 1. 프로젝트 정의
-project(MY_GAME_PROJECT CXX)
+project(PIP_TBOL CXX)
 set(CMAKE_USE_RELATIVE_PATHS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -196,31 +196,8 @@ target_include_directories(Client PRIVATE
 # --- Libraries (Forced Relative) ---
 target_link_libraries(Client PRIVATE Jolt::Jolt)
 
-# DirectXTex
-set(DIRECTXTEX_PATH_ABS ${CMAKE_SOURCE_DIR}/Client/packages/directxtex_desktop_win10.2025.7.10.1)
-file(RELATIVE_PATH REL_DXTEX_LIB_DEBUG ${CMAKE_BINARY_DIR} ${DIRECTXTEX_PATH_ABS}/native/lib/x64/Debug/DirectXTex.lib)
-file(RELATIVE_PATH REL_DXTEX_LIB_RELEASE ${CMAKE_BINARY_DIR} ${DIRECTXTEX_PATH_ABS}/native/lib/x64/Release/DirectXTex.lib)
-target_link_libraries(Client PRIVATE
-    debug ${REL_DXTEX_LIB_DEBUG}
-    optimized ${REL_DXTEX_LIB_RELEASE}
-)
 
-# Assimp
-set(ASSIMP_PATH_ABS ${CMAKE_SOURCE_DIR}/Client/packages/AssimpCpp.5.0.1.6)
-file(RELATIVE_PATH REL_ASSIMP_LIB_DEBUG ${CMAKE_BINARY_DIR} ${ASSIMP_PATH_ABS}/build/native/lib/Debug/assimp-vc142-mtd.lib)
-file(RELATIVE_PATH REL_ASSIMP_LIB_RELEASE ${CMAKE_BINARY_DIR} ${ASSIMP_PATH_ABS}/build/native/lib/Release/assimp-vc142-mt.lib)
-target_link_libraries(Client PRIVATE
-    debug ${REL_ASSIMP_LIB_DEBUG}
-    optimized ${REL_ASSIMP_LIB_RELEASE}
-)
 
-# --- Post-Build Command ---
-add_custom_command(TARGET Client POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "$<IF:$<CONFIG:Debug>,${ASSIMP_PATH_ABS}/build/native/bin/Debug/assimp-vc142-mtd.dll,${ASSIMP_PATH_ABS}/build/native/bin/Release/assimp-vc142-mt.dll>"
-    $<TARGET_FILE_DIR:Client>
-    COMMENT "Copying Assimp DLL to output directory"
-)
 
 # ===================================================================
 # 서버 프로젝트 (Server)

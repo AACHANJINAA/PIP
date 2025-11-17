@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\cmake_pch.cxx">
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Server.dir\cmake_pch.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\PacketHandlers.cpp">
@@ -63,16 +63,16 @@
     <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Server\Server\NPC.h">
       <Filter>소스 파일\NPC</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\Debug\cmake_pch.hxx">
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Server.dir\Debug\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\Release\cmake_pch.hxx">
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Server.dir\Release\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\MinSizeRel\cmake_pch.hxx">
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Server.dir\MinSizeRel\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\Server.dir\RelWithDebInfo\cmake_pch.hxx">
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Server.dir\RelWithDebInfo\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
   </ItemGroup>
@@ -81,37 +81,37 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Precompile Header File">
-      <UniqueIdentifier>{E97FD83E-A4D9-34AB-BBA4-9E9185EDD990}</UniqueIdentifier>
+      <UniqueIdentifier>{CE9E23EC-7C86-33D5-BB58-D0A29D969476}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{963EDC46-E1E6-312B-8567-5E947269044A}</UniqueIdentifier>
+      <UniqueIdentifier>{F5630B78-B36A-3748-BF35-5453626F73FD}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일">
-      <UniqueIdentifier>{5994D89B-748D-3D05-8A7A-A9AD608349B8}</UniqueIdentifier>
+      <UniqueIdentifier>{2298F63B-BC17-358F-9AD0-164B2F3BA278}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Core">
-      <UniqueIdentifier>{9BF5577C-9B74-3B72-A31F-C2A5659E3972}</UniqueIdentifier>
+      <UniqueIdentifier>{77D3B05B-4226-3315-BB03-A5784D7B9F9C}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\JSON">
-      <UniqueIdentifier>{45FEF0DA-73F9-386F-A0FF-5EFB21A2495F}</UniqueIdentifier>
+      <UniqueIdentifier>{7DBE7AD7-C19D-3EF6-A5A1-1174BADBD3E6}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Manager">
-      <UniqueIdentifier>{4131F7E7-390B-3112-B98A-E01D82B4EA49}</UniqueIdentifier>
+      <UniqueIdentifier>{58AED77A-BF06-36A5-A749-A145993B9D25}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Manager\MapDataManager">
-      <UniqueIdentifier>{ADD717C4-55FF-3232-9AFE-013EE8A944E4}</UniqueIdentifier>
+      <UniqueIdentifier>{811447CD-6C32-37F8-A423-5B9C468FE78B}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\NPC">
-      <UniqueIdentifier>{65E5AD1C-12F6-3BA6-B843-91C13260B406}</UniqueIdentifier>
+      <UniqueIdentifier>{6B48C524-F7A2-3C81-8994-4658FF480248}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Packet">
-      <UniqueIdentifier>{B0CF38F8-00EC-38DF-99C1-B346724810E6}</UniqueIdentifier>
+      <UniqueIdentifier>{211D07EE-ED0A-3BCA-AA72-D2A64FEA8389}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Player">
-      <UniqueIdentifier>{3BE5A24F-736B-3AE3-B13D-130A53C40783}</UniqueIdentifier>
+      <UniqueIdentifier>{78215B2C-C094-3FCA-996A-EA9A44D2D536}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Server">
-      <UniqueIdentifier>{914DF86D-0230-3558-A4F9-B6A16D22991A}</UniqueIdentifier>
+      <UniqueIdentifier>{D124D4CA-0B7C-33F1-9AF9-E60207B71697}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

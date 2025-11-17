@@ -6,22 +6,22 @@ cmake_minimum_required(VERSION ${CMAKE_VERSION}) # this file comes with cmake
 # If CMAKE_DISABLE_SOURCE_CHANGES is set to true and the source directory is an
 # existing directory in our source tree, calling file(MAKE_DIRECTORY) on it
 # would cause a fatal error, even though it would be a no-op.
-if(NOT EXISTS "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-src")
-  file(MAKE_DIRECTORY "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-src")
+if(NOT EXISTS "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-src")
+  file(MAKE_DIRECTORY "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-src")
 endif()
 file(MAKE_DIRECTORY
-  "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-build"
-  "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix"
-  "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/tmp"
-  "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp"
-  "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src"
-  "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp"
+  "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-build"
+  "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix"
+  "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/tmp"
+  "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp"
+  "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src"
+  "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp"
 )
 
 set(configSubDirs Debug)
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp/${subDir}")
+    file(MAKE_DIRECTORY "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "C:/Users/MSI/Documents/GitHub/PIP/build/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-subbuild/joltphysics-populate-prefix/src/joltphysics-populate-stamp${cfgdir}") # cfgdir has leading slash
 endif()
