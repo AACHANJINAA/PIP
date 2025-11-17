@@ -90,27 +90,35 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <BufferSecurityCheck></BufferSecurityCheck>
-      <CallingConvention></CallingConvention>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <FloatingPointModel></FloatingPointModel>
-      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <MinimalRebuild></MinimalRebuild>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir/Debug/cmake_pch.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Client.dir/Debug//cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <SupportJustMyCode></SupportJustMyCode>
-      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NOMINMAX;UNICODE;_UNICODE;_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -132,14 +140,18 @@
       <AdditionalDependencies>_deps\joltphysics-build\Debug\Jolt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <DataExecutionPrevention></DataExecutionPrevention>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Debug/Client.lib</ImportLibrary>
-      <LinkErrorReporting></LinkErrorReporting>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Debug/Client.pdb</ProgramDataBaseFile>
-      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -151,23 +163,31 @@
       <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <BufferSecurityCheck></BufferSecurityCheck>
-      <CallingConvention></CallingConvention>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <FloatingPointModel></FloatingPointModel>
-      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <MinimalRebuild></MinimalRebuild>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir/Release/cmake_pch.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Client.dir/Release//cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <SupportJustMyCode></SupportJustMyCode>
-      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -191,14 +211,18 @@
       <AdditionalDependencies>_deps\joltphysics-build\Release\Jolt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <DataExecutionPrevention></DataExecutionPrevention>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Release/Client.lib</ImportLibrary>
-      <LinkErrorReporting></LinkErrorReporting>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Release/Client.pdb</ProgramDataBaseFile>
-      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -210,23 +234,31 @@
       <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <BufferSecurityCheck></BufferSecurityCheck>
-      <CallingConvention></CallingConvention>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <FloatingPointModel></FloatingPointModel>
-      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <MinimalRebuild></MinimalRebuild>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <Optimization>MinSpace</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Client.dir/MinSizeRel//cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <SupportJustMyCode></SupportJustMyCode>
-      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -250,14 +282,18 @@
       <AdditionalDependencies>_deps\joltphysics-build\MinSizeRel\Jolt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <DataExecutionPrevention></DataExecutionPrevention>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/MinSizeRel/Client.lib</ImportLibrary>
-      <LinkErrorReporting></LinkErrorReporting>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/MinSizeRel/Client.pdb</ProgramDataBaseFile>
-      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -269,24 +305,32 @@
       <AdditionalIncludeDirectories>C:\Users\MSI\Documents\GitHub\PIP\..\Common;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\directxtex_desktop_win10.2025.7.10.1\include;C:\Users\MSI\Documents\GitHub\PIP\..\Client\packages\AssimpCpp.5.0.1.6\build\native\include;C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\_deps\joltphysics-src\Build\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <BufferSecurityCheck></BufferSecurityCheck>
-      <CallingConvention></CallingConvention>
+      <BufferSecurityCheck>
+      </BufferSecurityCheck>
+      <CallingConvention>
+      </CallingConvention>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <FloatingPointModel></FloatingPointModel>
-      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <ForceConformanceInForLoopScope>
+      </ForceConformanceInForLoopScope>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <MinimalRebuild></MinimalRebuild>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/Client.dir/RelWithDebInfo//cmake_pch.pch</PrecompiledHeaderOutputFile>
-      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RemoveUnreferencedCodeData>
+      </RemoveUnreferencedCodeData>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <SupportJustMyCode></SupportJustMyCode>
-      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType>
+      </TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NOMINMAX;UNICODE;_UNICODE;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -308,14 +352,18 @@
       <AdditionalDependencies>_deps\joltphysics-build\RelWithDebInfo\Jolt.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <DataExecutionPrevention></DataExecutionPrevention>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers>
+      </ImageHasSafeExceptionHandlers>
       <ImportLibrary>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/RelWithDebInfo/Client.lib</ImportLibrary>
-      <LinkErrorReporting></LinkErrorReporting>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
       <ProgramDataBaseFile>C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/RelWithDebInfo/Client.pdb</ProgramDataBaseFile>
-      <RandomizedBaseAddress></RandomizedBaseAddress>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -717,6 +765,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir/MinSizeRel/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir/RelWithDebInfo/cmake_pch.hxx;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
+    <None Include="packages.config" />
     <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.rc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -757,5 +806,14 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets" Condition="Exists('packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" />
+    <Import Project="packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets" Condition="Exists('packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets'))" />
+    <Error Condition="!Exists('packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\directxtex_desktop_win10.2025.10.28.1\build\native\directxtex_desktop_win10.targets'))" />
+  </Target>
 </Project>
