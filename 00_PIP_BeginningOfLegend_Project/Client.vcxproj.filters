@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Client.dir\cmake_pch.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\GameFramework.cpp">
       <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
@@ -297,6 +300,18 @@
     <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Gltf_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Client.dir\Debug\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Client.dir\Release\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Client.dir\MinSizeRel\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\Client.dir\RelWithDebInfo\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\MSI\Documents\GitHub\PIP\CMakeLists.txt" />
@@ -308,7 +323,6 @@
     <None Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\small.ico">
       <Filter>3. Resources</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="C:\Users\MSI\Documents\GitHub\PIP\Client\Client\Chess_Client.rc">
@@ -320,73 +334,79 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="0. Engine">
-      <UniqueIdentifier>{A7FD4429-F26A-33ED-BB34-20A823A5262C}</UniqueIdentifier>
+      <UniqueIdentifier>{169B0314-9756-3102-B629-9F59AA11F876}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\0. Core">
-      <UniqueIdentifier>{CF9C1DB9-11A3-3C95-BA37-0CB3EB5A4976}</UniqueIdentifier>
+      <UniqueIdentifier>{E560EB78-0A7E-3B7A-A585-50D8228E1114}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components">
-      <UniqueIdentifier>{49674EDE-0C4F-3D85-B4C2-CF87DDBDF339}</UniqueIdentifier>
+      <UniqueIdentifier>{1B5971AC-A218-3CD6-A886-F977FAF23702}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components\0. Object">
-      <UniqueIdentifier>{CCC6DF28-B8EF-3837-BDF8-479C63F6321E}</UniqueIdentifier>
+      <UniqueIdentifier>{F595A372-301A-32FA-BE79-867E0B66D263}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components\1. Behaviour">
-      <UniqueIdentifier>{084278B2-2823-3B6D-BDEC-F5F4C8417A03}</UniqueIdentifier>
+      <UniqueIdentifier>{ACA45B2F-ABD7-37C4-961B-AD4A6F179631}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components\2. GameObject">
-      <UniqueIdentifier>{C1471324-0A00-39E3-B127-31BD75847C5D}</UniqueIdentifier>
+      <UniqueIdentifier>{60BF0DB9-2397-306C-8A8F-35BDCC27F1F4}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components">
-      <UniqueIdentifier>{006F8541-853D-3EBD-B062-87251446B9D3}</UniqueIdentifier>
+      <UniqueIdentifier>{AD177070-8888-3FD2-BA4F-E7C8504F92AA}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\2. Scene">
-      <UniqueIdentifier>{01F7E3BE-3093-34CD-BDCB-171F706CBA69}</UniqueIdentifier>
+      <UniqueIdentifier>{F3136686-AD2F-3C6D-B03F-8E3D14AB92FD}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\3. Renderer">
-      <UniqueIdentifier>{00E2B560-F79D-31D5-B145-AA30CD8C75A3}</UniqueIdentifier>
+      <UniqueIdentifier>{0AEAF1C7-DA4E-3EDF-AF6D-A4F0D9A443C7}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\3. Renderer\1. Shaders">
-      <UniqueIdentifier>{E0D9EF6E-42C8-39BE-B07B-46140E266CE2}</UniqueIdentifier>
+      <UniqueIdentifier>{76013339-ABF0-3134-B712-9877C0FE7BFA}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\3. Renderer\2. Meshes">
-      <UniqueIdentifier>{AFAD6D6F-72FA-335C-872E-233DDF4FF00E}</UniqueIdentifier>
+      <UniqueIdentifier>{95E14CEA-C149-3802-AC15-4AE21AA67C7B}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\3. Renderer\3. Camera">
-      <UniqueIdentifier>{74904731-1BC8-36BE-A5B7-826ADEECA26D}</UniqueIdentifier>
+      <UniqueIdentifier>{C86C769B-EE61-366B-810F-7CB42EA793BE}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\3. Renderer\4. TextureLoader">
-      <UniqueIdentifier>{BD54CAEC-1691-3803-9584-EDE4A7093F27}</UniqueIdentifier>
+      <UniqueIdentifier>{56F315A5-0BC4-3AD6-BF18-0F30E2C0F9C6}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\4. Resource">
-      <UniqueIdentifier>{12767799-E6C4-37F1-9C57-2AC5B483ECB0}</UniqueIdentifier>
+      <UniqueIdentifier>{5C9A9721-549B-3A92-B365-0AC4E406765F}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\5. Input">
-      <UniqueIdentifier>{A1AE1763-E0A4-302F-A2D4-415E2DC422C8}</UniqueIdentifier>
+      <UniqueIdentifier>{A181D66E-7760-3ECB-BADB-110250A241B1}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\6. Network">
-      <UniqueIdentifier>{8846B2AF-FF35-3AC6-B07A-CE155E2E9C93}</UniqueIdentifier>
+      <UniqueIdentifier>{790CFFF0-5562-3D02-8CFD-0ED637981794}</UniqueIdentifier>
     </Filter>
     <Filter Include="1. Game">
-      <UniqueIdentifier>{09278773-3936-3473-9F55-2AA606671D49}</UniqueIdentifier>
+      <UniqueIdentifier>{615F2C11-BDA3-3C98-AE72-449EFBE3A93E}</UniqueIdentifier>
     </Filter>
     <Filter Include="1. Game\1. Scenes">
-      <UniqueIdentifier>{792D07BE-4BD6-3341-9B8D-E3F379A8CCBD}</UniqueIdentifier>
+      <UniqueIdentifier>{7735E58A-6E68-3666-9590-93F4FBF12AFD}</UniqueIdentifier>
     </Filter>
     <Filter Include="1. Game\2. Scripts">
-      <UniqueIdentifier>{6E913A71-80CB-3FCE-BAE0-5E976F8E635F}</UniqueIdentifier>
+      <UniqueIdentifier>{7624DCB0-7F91-3067-9841-E1BAC684FF36}</UniqueIdentifier>
     </Filter>
     <Filter Include="2. Shaders">
-      <UniqueIdentifier>{6D465759-F109-313D-B0BB-07D19F8CA0FE}</UniqueIdentifier>
+      <UniqueIdentifier>{63B770CD-9FF1-3629-ABD1-6ACEABB09E7D}</UniqueIdentifier>
     </Filter>
     <Filter Include="3. Resources">
-      <UniqueIdentifier>{FF74DD6B-6840-3472-A978-82B96EE90522}</UniqueIdentifier>
+      <UniqueIdentifier>{077EECEB-72FF-374B-AF7C-C9A156949DF7}</UniqueIdentifier>
     </Filter>
     <Filter Include="4. External">
-      <UniqueIdentifier>{BD6B9074-44B3-3784-9E7B-3BF715A60681}</UniqueIdentifier>
+      <UniqueIdentifier>{6F765E59-B2C4-3E8A-BB79-EFB874F60036}</UniqueIdentifier>
     </Filter>
     <Filter Include="5. App">
-      <UniqueIdentifier>{FD07314F-9AD4-3A35-82F9-6DCAE80B0B91}</UniqueIdentifier>
+      <UniqueIdentifier>{F3BB1822-006E-3D40-AEED-650C083ED8C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Precompile Header File">
+      <UniqueIdentifier>{CE9E23EC-7C86-33D5-BB58-D0A29D969476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{F5630B78-B36A-3748-BF35-5453626F73FD}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

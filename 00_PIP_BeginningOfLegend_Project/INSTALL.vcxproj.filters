@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\MSI\Documents\GitHub\PIP\build\CMakeFiles\aa0f587e6a74ce181f9bb375549830f5\INSTALL_force.rule">
+    <CustomBuild Include="C:\Users\MSI\Documents\GitHub\PIP\00_PIP_BeginningOfLegend_Project\CMakeFiles\c130a382d7b5894eebbb9e2d9903cd85\INSTALL_force.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{10A2C39B-66AE-3405-91DA-F03304841B2E}</UniqueIdentifier>
+      <UniqueIdentifier>{A9E56397-DA56-3C74-B1F3-CFBED41492CD}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
