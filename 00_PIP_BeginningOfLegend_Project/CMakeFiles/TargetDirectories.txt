@@ -1,8 +1,0 @@
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Client.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/Server.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/INSTALL.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/ALL_BUILD.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/CMakeFiles/ZERO_CHECK.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-build/CMakeFiles/Jolt.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-build/CMakeFiles/INSTALL.dir
-C:/Users/MSI/Documents/GitHub/PIP/00_PIP_BeginningOfLegend_Project/_deps/joltphysics-build/CMakeFiles/ALL_BUILD.dir
