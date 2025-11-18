@@ -1,7 +1,12 @@
-#pragma once
+﻿#pragma once
 #define NOMINMAX
+// 윈도우 헤더
 #include <WS2tcpip.h>
 #include <MSWSock.h>
+#pragma comment (lib, "WS2_32.lib")
+#pragma comment (lib, "MSWSock.LIB")
+
+// STL 헤더
 #include <iostream>
 #include <atomic>
 #include <unordered_map>
@@ -23,18 +28,26 @@
 #include <chrono>
 #include <queue>
 
+// DirectX 헤더
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
 using namespace DirectX;
 
+// Common 헤더
 #include "Packet.h"
 #include "Vector3.h"
 
-#pragma comment (lib, "WS2_32.lib")
-#pragma comment (lib, "MSWSock.LIB")
-
+// JSON 헤더
 #include "json.hpp"
 
+// Jolt Physics 헤더
+#include <Jolt/Jolt.h>
+#include <Jolt/RegisterTypes.h>
+#include <Jolt/Core/Factory.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 // 1. 로그용 전역 뮤텍스는 그대로 사용합니다.
 inline std::mutex g_log_mutex;
