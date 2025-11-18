@@ -402,8 +402,8 @@ namespace PIP::server
 				worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
 			{
 
-				TimerJob timer_job = std::move(const_cast<TimerJob&>(worker._timer_queue.top()));
-				worker._timer_queue.pop(); // TODO: 멀티스레드 버그!! 재현 불가 버그 발생
+				TimerJob timer_job = worker._timer_queue.top();
+				worker._timer_queue.pop(); 
 				worker.queue.push({ std::move(timer_job._task) });
 			}
 
