@@ -94,7 +94,7 @@ namespace PIP::server
 	{
 		std::thread thread;
 		concurrency::concurrent_queue<LogicJob> queue;
-		std::priority_queue<TimerJob, std::vector<TimerJob>, std::greater<TimerJob>> _timer_queue;
+		concurrency::concurrent_priority_queue<TimerJob, std::greater<TimerJob>> _timer_queue;
 
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
