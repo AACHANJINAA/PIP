@@ -454,9 +454,3 @@ void GameFramework::update_physics(float elapsedTime)
 		_physicsTimeAccumulator -= fixedTimeStep;
 	}
 }
-
-
-
-
-
-
