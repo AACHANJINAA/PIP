@@ -73,6 +73,14 @@ using Microsoft::WRL::ComPtr;
 #include <mutex>
 #include <stack>
 
+// Jolt Physics 헤더
+#include <Jolt/Jolt.h>
+#include <Jolt/RegisterTypes.h>
+#include <Jolt/Core/Factory.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 
 #define EXPLOSION_DEBRISES		240
