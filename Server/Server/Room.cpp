@@ -133,53 +133,50 @@ namespace PIP::server
 		//TODO: float로 바뀐 게임 좌표에 맞게 수정 필요
 		if (attacker == nullptr) return;
 
-		// 4방향 좌표 (상, 하, 좌, 우)
-		int dx[] = { 0, 0, -1, 1 };
-		int dy[] = { 1, -1, 0, 0 };
+		
+		BoundingSphere attackerSphere { attacker->GetPlayer()->_position, 5.0f};
 
-		for (int i = 0; i < 4; ++i)
+		// 방 내부의 플레이어 목록(_players)을 순회하며 공격 대상을 찾습니다.
+		std::shared_ptr<SESSION> target_session = nullptr;
+		for (auto const& [player_id, player] : _players)
 		{
-			int target_x = static_cast<int>(attacker->GetPlayer()->_position.x + dx[i]);
-			int target_y = static_cast<int>(attacker->GetPlayer()->_position.y + dy[i]);
-
-			// 맵 경계 체크는 핸들러에서 이미 했을 수 있지만, 여기서도 한번 더 하는 것이 안전합니다.
-			// (지금은 생략)
-
-			// 방 내부의 플레이어 목록(_players)을 순회하며 공격 대상을 찾습니다.
-			std::shared_ptr<SESSION> target_session = nullptr;
-			for (auto const& [player_id, session] : _players)
+			BoundingSphere targetSphere{ player->GetPlayer()->_position, 5.0f };
+			if (player && player->_id != attacker->_id && attackerSphere.Intersects(targetSphere))
 			{
-				if (session && session->_id != attacker->_id &&
-					session->GetPlayer()->_position.x == target_x && session->GetPlayer()->_position.y == target_y)
-				{
-					target_session = session;
-					break;
-				}
-			}
-
-			if (target_session)
-			{
-				// 데미지 계산 (임시로 10)
-				int16_t damage = 10;
-				target_session->GetPlayer()->_hp -= damage;
-				int32_t new_hp = target_session->GetPlayer()->_hp;
-				if (new_hp < 0) { new_hp = 0; }
-
-				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks " << target_session->_id << ". HP: " << new_hp);
-
-				// 공격 결과 패킷 생성
-				packet::SC_PACKET_ATTACK attackPacket;
-				attackPacket._type = packet::PacketType::S2C_P_ATTACK;
-				attackPacket._size = sizeof(attackPacket);
-				attackPacket._attacker_id = attacker->_id;
-				attackPacket._target_id = target_session->_id;
-				attackPacket._damage = damage;
-				attackPacket._target_current_hp = new_hp;
-
-				// 방 전체에 공격 결과 브로드캐스팅
-				Broadcast(reinterpret_cast<const char*>(&attackPacket), sizeof(attackPacket));
+				player->GetPlayer()->_hp -= 10;
 			}
 		}
+
+		for (auto& [npc_id, npc] : _npcs)
+		{
+			BoundingSphere npcSphere { npc->GetPosition(), 5.0f};
+			if (attackerSphere.Intersects(npcSphere))
+			{
+				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks NPC " << npc->GetNpcId());
+				npc->SetHP(npc->GetHP() - 10.0f);
+			}
+		}
+		//// 데미지 계산 (임시로 10)
+		//int16_t damage = 10;
+		//target_session->GetPlayer()->_hp -= damage;
+		//int32_t new_hp = target_session->GetPlayer()->_hp;
+		//if (new_hp < 0) { new_hp = 0; }
+
+		//MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks " << target_session->_id << ". HP: " << new_hp);
+
+		//// 공격 결과 패킷 생성
+		//packet::SC_PACKET_ATTACK attackPacket;
+		//attackPacket._type = packet::PacketType::S2C_P_ATTACK;
+		//attackPacket._size = sizeof(attackPacket);
+		//attackPacket._attacker_id = attacker->_id;
+		//attackPacket._target_id = target_session->_id;
+		//attackPacket._damage = damage;
+		//attackPacket._target_current_hp = new_hp;
+
+		//// 방 전체에 공격 결과 브로드캐스팅
+		//Broadcast(reinterpret_cast<const char*>(&attackPacket), sizeof(attackPacket));
+			
+		
 	}
 
 	void Room::UpdateNPC(int npcId)

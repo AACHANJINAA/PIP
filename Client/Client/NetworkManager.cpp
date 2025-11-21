@@ -37,7 +37,7 @@ void NetworkManager::process_network_events()
 {
 	if (INVALID_SOCKET == _socket)
 	{
-		error_display("process_network_events", WSAGetLastError());
+
 		return;
 	}
 	fd_set read_set, write_set;
@@ -581,5 +581,6 @@ void NetworkManager::disconnect()
 	{
 		closesocket(_socket);
 		_socket = INVALID_SOCKET;
+		PostQuitMessage(0);
 	}
 }
