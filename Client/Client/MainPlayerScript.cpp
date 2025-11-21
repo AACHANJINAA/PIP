@@ -44,6 +44,10 @@ void MainPlayerScript::update(float deltaTime)
         move_direction = Vector3::Add(move_direction ,common::Vec3Down);
         is_moving = true;
 	}
+	if (InputManager::instance()->IsKeyPress(VK_SPACE))
+	{
+		
+	}
 
 
     if (is_moving) {
