@@ -33,24 +33,123 @@ void error_display(const char* msg, int err_no)
 //	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER, std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
 //	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK, std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
 //}
-
-void NetworkManager::SendPacket(const char* data, size_t size)
+void NetworkManager::process_network_events()
 {
-	send(_socket, data, static_cast<int>(size), 0);
+	if (INVALID_SOCKET == _socket)
+	{
+		error_display("process_network_events", WSAGetLastError());
+		return;
+	}
+	fd_set read_set, write_set;
+	FD_ZERO(&read_set);
+	FD_ZERO(&write_set);
+
+	FD_SET(_socket, &read_set);
+	if (!_sendBuffer.empty())
+	{
+		FD_SET(_socket, &write_set);
+	}
+	timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	int retval = select(0, &read_set, &write_set, NULL, &timeout);
+	if (SOCKET_ERROR == retval)
+	{
+		error_display("select fail", WSAGetLastError());
+		disconnect();
+		return;
+	}
+
+	if (FD_ISSET(_socket, &read_set))
+	{
+		recv_packet();
+	}
+	if (FD_ISSET(_socket, &write_set))
+	{
+		process_send();
+	}
+
+	process_recv();
+
+}
+void NetworkManager::send_packet(const char* data, size_t size)
+{
+	_sendBuffer.insert(_sendBuffer.end(), data, data + size);
+}
+void NetworkManager::process_send()
+{
+	if (_sendBuffer.empty())
+	{
+		return;
+	}
+	int sent_bytes = send(_socket, _sendBuffer.data(), static_cast<int>(_sendBuffer.size()), 0);
+	if (SOCKET_ERROR == sent_bytes)
+	{
+		int err = WSAGetLastError();
+		if (WSAEWOULDBLOCK == err)
+		{
+			return;
+		}
+		error_display("send failed", err);
+		disconnect();
+		return;
+	}
+	if (sent_bytes > 0)
+	{
+		_sendBuffer.erase(_sendBuffer.begin(), _sendBuffer.begin() + sent_bytes);
+	}
 }
 
-void NetworkManager::ProcessReceivedData(char* data, int size)
+
+void NetworkManager::recv_packet()
 {
-	_recvBuffer.insert(_recvBuffer.end(), data, data + size);
-	
+	if (_socket == INVALID_SOCKET)
+	{
+		error_display("client socket Invalid", 0);
+		return;
+	}
+
+	char recv_buffer[4096];
+	int retval = recv(_socket, recv_buffer, sizeof(recv_buffer), 0);
+
+	if (retval == SOCKET_ERROR)
+	{
+		if (WSAGetLastError() == WSAEWOULDBLOCK)
+		{
+			// 데이터가 없는 정상적인 상황이므로 아무것도 하지 않음
+			return;
+		}
+
+		// WSAEWOULDBLOCK 이외의 소켓 오류 발생
+		error_display("recv failed", WSAGetLastError());
+		disconnect(); // 소켓 정리
+		// PostQuitMessage(0); // 앱 종료는 상위 레벨(예: 메인 루프)에서 결정
+		return;
+	}
+
+	if (retval == 0)
+	{
+		// 서버가 연결을 정상적으로 종료함
+		std::cout << "Server disconnected." << std::endl;
+		disconnect();
+		// PostQuitMessage(0);
+		return;
+	}
+	if (retval > 0)
+	{
+		_recvBuffer.insert(_recvBuffer.end(), recv_buffer, recv_buffer + retval);
+	}
+}
+void NetworkManager::process_recv()
+{
 	while (true)
 	{
 		if (_recvBuffer.size() < sizeof(common::packet::PacketHeader))
-			break;
+			return;
 		common::packet::PacketHeader* header = reinterpret_cast<common::packet::PacketHeader*>(_recvBuffer.data());
 
 		if (_recvBuffer.size() < header->_size)
-			break;
+			return;
 
 		// [수정] PacketStream으로 감싸서 핸들러에 전달
 		common::packet::PacketStream stream(_recvBuffer.data(), header->_size);
@@ -65,6 +164,8 @@ void NetworkManager::ProcessReceivedData(char* data, int size)
 	}
 }
 
+
+
 void NetworkManager::SendLoginPacket(const std::string& name)
 {
 	common::packet::PacketStream stream;
@@ -78,7 +179,7 @@ void NetworkManager::SendLoginPacket(const std::string& name)
 	auto* final_header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
 	final_header->_size = static_cast<uint16_t>(stream.Size());
 
-	SendPacket(stream.mutable_data(), stream.Size());
+	send_packet(stream.mutable_data(), stream.Size());
 }
 
 void NetworkManager::SendMovePacket(common::Vec3 position)
@@ -91,7 +192,7 @@ void NetworkManager::SendMovePacket(common::Vec3 position)
 
 	// 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
 	// 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
-	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 void NetworkManager::SendAttackPacket()
@@ -100,7 +201,7 @@ void NetworkManager::SendAttackPacket()
 	packet._type = common::packet::PacketType::C2S_P_ATTACK;
 	packet._size = sizeof(packet);
 
-	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 void NetworkManager::SendRoomListPacket()
@@ -108,7 +209,7 @@ void NetworkManager::SendRoomListPacket()
 	common::packet::CS_PACKET_ROOM_LIST packet;
 	packet._type = common::packet::PacketType::C2S_P_ROOM_LIST;
 	packet._size = sizeof(packet);
-	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 void NetworkManager::SendEnterRoomPacket(int room_id_to_enter)
 {
@@ -117,7 +218,7 @@ void NetworkManager::SendEnterRoomPacket(int room_id_to_enter)
 	packet._size = sizeof(packet);
 	packet._room_id = room_id_to_enter;
 
-	SendPacket(reinterpret_cast<const char*>(&packet), sizeof(packet));
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
 void NetworkManager::RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler)
@@ -481,41 +582,4 @@ void NetworkManager::disconnect()
 		closesocket(_socket);
 		_socket = INVALID_SOCKET;
 	}
-}
-void NetworkManager::receive_packets()
-{
-	if (_socket == INVALID_SOCKET)
-	{
-		return;
-	}
-
-	char recv_buffer[4096];
-	int retval = recv(_socket, recv_buffer, sizeof(recv_buffer), 0);
-
-	if (retval == SOCKET_ERROR)
-	{
-		if (WSAGetLastError() == WSAEWOULDBLOCK)
-		{
-			// 데이터가 없는 정상적인 상황이므로 아무것도 하지 않음
-			return;
-		}
-
-		// WSAEWOULDBLOCK 이외의 소켓 오류 발생
-		error_display("recv failed", WSAGetLastError());
-		disconnect(); // 소켓 정리
-		// PostQuitMessage(0); // 앱 종료는 상위 레벨(예: 메인 루프)에서 결정
-		return;
-	}
-
-	if (retval == 0)
-	{
-		// 서버가 연결을 정상적으로 종료함
-		std::cout << "Server disconnected." << std::endl;
-		disconnect();
-		// PostQuitMessage(0);
-		return;
-	}
-
-	// 받은 데이터를 처리 함수로 넘김
-	ProcessReceivedData(recv_buffer, retval);
 }
