@@ -4,9 +4,10 @@
 
 #define KEY_MAX 256
 
-class InputManager
+class InputManager : public Singleton<InputManager>
 {
 private:
+	friend class Singleton<InputManager>; // ½Ì±ÛÅæ Á¢±Ù Çã¿ë
     InputManager();
     ~InputManager() = default;
 
@@ -25,11 +26,6 @@ private:
     BOOL _isShowCusor = TRUE;
 
 public:
-    static InputManager* instance()
-    {
-        static InputManager instance;
-        return &instance;
-    }
 
     void initialize(HWND hWnd);
     void Update();

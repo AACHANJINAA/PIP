@@ -69,6 +69,9 @@ namespace common::packet
         uint8_t _player_count; // 방의 현재 인원 수
         // 필요하다면 방 제목, 게임 상태 등 추가 정보 포함 가능
     };
+
+
+	// ------------------------------------------ client to server ------------------------------------------ //
     // 클라 -> 서버
 	// 로그인 요청 패킷
     struct CS_PACKET_LOGIN : PacketHeader
@@ -103,7 +106,7 @@ namespace common::packet
         uint16_t _message_length;
     };
     
-
+	// ------------------------------------------ server to client ------------------------------------------ // 
     // 서버 -> 클라
 	// 로그인 결과 패킷
     struct SC_PACKET_LOGIN_ACK : PacketHeader

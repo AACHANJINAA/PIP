@@ -13,9 +13,9 @@ InputManager::InputManager()
 void InputManager::initialize(HWND hWnd)
 {
     m_hWnd = hWnd;
-    for (int i = 0; i < KEY_MAX; ++i)
-    {
-        m_eKeyState[i] = KEY_STATE::NONE;
+    for (auto& i : m_eKeyState)
+	{
+		i = KEY_STATE::NONE;
     }
 }
 
@@ -25,9 +25,9 @@ void InputManager::Update()
     if (!GameFramework::instance()->m_bIsWindowActive)
     {
         // 선택적으로, 포커스를 다시 얻을 때 키가 "고정"되는 것을 방지하기 위해 키 상태 재설정 합니다.
-        for (int i = 0; i < KEY_MAX; ++i)
-        {
-            m_eKeyState[i] = KEY_STATE::NONE;
+        for (auto& i : m_eKeyState)
+		{
+			i = KEY_STATE::NONE;
         }
         return; // 창이 활성화되지 않은 경우 입력 처리를 건너뜁니다.
     }
