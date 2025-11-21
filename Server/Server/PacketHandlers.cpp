@@ -132,6 +132,7 @@ namespace PIP::packet
 		try
 		{
 			stream >> attack_packet;
+			MYLOG("[Attack] Session " << session->_id << " attack packet received.");
 		}
 		catch (const std::runtime_error& e)
 		{
