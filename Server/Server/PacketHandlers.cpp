@@ -18,18 +18,18 @@ namespace PIP::packet
 		spawn_packet_data._size = 0; // 임시 크기 (나중에 다시 계산)
 
 		spawn_packet_data._id = session->_id;
-		spawn_packet_data._position.x = session->GetPlayer()->_position.x;
-		spawn_packet_data._position.y = session->GetPlayer()->_position.y;
-		spawn_packet_data._position.z = session->GetPlayer()->_position.z;
-		spawn_packet_data._hp = session->GetPlayer()->_hp;
-		spawn_packet_data._level = session->GetPlayer()->_level;
-		spawn_packet_data._exp = session->GetPlayer()->_exp;
+		spawn_packet_data._position.x = session->_player._position.x;
+		spawn_packet_data._position.y = session->_player._position.y;
+		spawn_packet_data._position.z = session->_player._position.z;
+		spawn_packet_data._hp = session->_player._hp;
+		spawn_packet_data._level = session->_player._level;
+		spawn_packet_data._exp = session->_player._exp;
 
 		packet::PacketStream finalStream;
 		// [수정] 구조체 자체를 스트림에 씁니다.
 		finalStream << spawn_packet_data;
 		// [추가] 이름(가변 길이)을 스트림에 씁니다.
-		finalStream << session->GetPlayer()->_name;
+		finalStream << session->_player._name;
 
 		// [수정] 최종 크기를 계산하여 패킷 헤더에 덮어씁니다.
 		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
@@ -55,9 +55,9 @@ namespace PIP::packet
 			return;
 		}
 		// 2. 세션 객체에 이름을 저장합니다.
-		session->GetPlayer()->_name = player_name;
+		session->_player._name = player_name;
 		
-		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->GetPlayer()->_name << "'.");
+		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player._name << "'.");
 
 		// 아바타 정보 전송 로직 제거
 
@@ -100,14 +100,14 @@ namespace PIP::packet
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->GetPlayer()->_position; // 서버가 아는 마지막
+			correction_packet._position = session->_player._position; // 서버가 아는 마지막
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 		}
 		else
 		{
 			// 4-B. 유효한 이동: 서버에 위치를 갱신하고 다른 클라이언트들에게 브로드캐스팅
-			session->GetPlayer()->_position = targetPos;
+			session->_player._position = targetPos;
 
 			packet::SC_PACKET_MOVE sync_packet;
 			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
@@ -199,12 +199,12 @@ namespace PIP::packet
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = room->GetLogicThreadIndex(); 
-		session->GetPlayer()->_position.x = 0;
-		session->GetPlayer()->_position.y = 70;
-		session->GetPlayer()->_position.z = -150;
-		session->GetPlayer()->_level = 1;
-		session->GetPlayer()->_hp = 100;
-		session->GetPlayer()->_exp = 0;
+		session->_player._position.x = 0;
+		session->_player._position.y = 70;
+		session->_player._position.z = -150;
+		session->_player._level = 1;
+		session->_player._hp = 100;
+		session->_player._exp = 0;
 
 		
 		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 70, -150)");

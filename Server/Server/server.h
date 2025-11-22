@@ -58,8 +58,7 @@ namespace PIP::server
 		std::vector<char>					_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
 
 		std::atomic<SESSION_STATE>			_state;
-	private:
-		std::shared_ptr<PIP::Player>		_player;
+		Player								_player;
 	public:
 		SESSION();
 		SESSION(long long session_id, SOCKET s, int logic_index);
@@ -69,7 +68,6 @@ namespace PIP::server
 		void do_send(const char* data, size_t size);
 		void OnRecv(size_t len, Server* server_ptr);
 
-		std::shared_ptr<PIP::Player> GetPlayer() const { return _player; }
 	};
 
 

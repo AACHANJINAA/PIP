@@ -11,6 +11,8 @@ namespace PIP
 		_max_hp{ 100 },
 		_level { 0 },
 		_exp { 0 },
+		_damage{ 10 },
+
 		_owner_id{ owner_id }
 	{}
 	Player::Player()
@@ -20,6 +22,8 @@ namespace PIP
 		_max_hp{ 0 },
 		_level{0},
 		_exp{ 0 },
+		_damage{ 0 },
+
 		_owner_id{ -1 }
 	{}
 }

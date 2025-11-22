@@ -23,7 +23,8 @@ private:
     void HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& stream);
     void HANDLE_S2C_MOVE(common::packet::PacketStream& stream);
     void HANDLE_S2C_LEAVE(common::packet::PacketStream& stream);
-    void HANDLE_S2C_ATTACK(common::packet::PacketStream& stream);
+    void HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stream);
+    void HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream);
