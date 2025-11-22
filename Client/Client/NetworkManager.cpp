@@ -370,30 +370,71 @@ void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 		(*it)->destroy();
 	}
 }
-void NetworkManager::HANDLE_S2C_ATTACK(common::packet::PacketStream& stream)
+void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stream)
 {
-	// SC_PACKET_ATTACK은 헤더 외에 여러 멤버를 가집니다.
-	common::packet::SC_PACKET_ATTACK attack_packet;
-	stream >> attack_packet; // 구조체 전체를 읽습니다.
+	common::packet::SC_PACKET_PLAYER_ATTACK attack_header;
+	stream >> attack_header;
 
+	for (uint8_t i = 0; i < attack_header._hit_count; ++i)
+	{
+		common::packet::PlayerHitInfo hit_info;
+		stream >> hit_info;
 
-	auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-	auto player_logic = player->get_component<MainPlayerScript>();
-	if (player && attack_packet._target_id == player_logic->id()) // 읽어온 target_id 사용
-	{
-		player_logic->set_hp(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
-	}
-	else
-	{
+		// 내 플레이어인지 확인
+		if (_my_session_id == hit_info._target_id)
+		{
+			auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+			if (player)
+			{
+				auto player_logic = player->get_component<MainPlayerScript>();
+				if (player_logic && hit_info._target_id == player_logic->id())
+				{
+					player_logic->set_hp(hit_info._target_current_hp);
+					CLOG("나의 플레이어가 맞고 체력이 바뀌었다. SC_PACKET_PLAYER_ATTACK 패킷 처리");
+					continue; // 다음 피격 정보로
+				}
+			}
+		}
+
+		// 다른 플레이어인지 확인
 		auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
 		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
-		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-			auto other_script = other->get_component<OtherPlayerScript>();
-			return other_script && attack_packet._target_id == other_script->id();
-		});
+		auto it = std::ranges::find_if(other_players, 
+			[&](const std::shared_ptr<GameObject>& other) 
+			{
+				auto other_script = other->get_component<OtherPlayerScript>();
+				return other_script && hit_info._target_id == other_script->id();
+			});
 		if (it != other_players.end())
 		{
-			(*it)->get_component<OtherPlayerScript>()->set_hp(attack_packet._target_current_hp); // 읽어온 target_current_hp 사용
+			(*it)->get_component<OtherPlayerScript>()->set_hp(hit_info._target_current_hp);
+			CLOG("다른 플레이어가 맞고 체력이 바뀌었다. SC_PACKET_PLAYER_ATTACK 패킷 처리");
+		}
+	}
+}
+
+void NetworkManager::HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_NPC_ATTACK attack_header;
+	stream >> attack_header;
+
+	for (uint8_t i = 0; i < attack_header._hit_count; ++i)
+	{
+		common::packet::NPCHitInfo hit_info;
+		stream >> hit_info;
+
+		// NPC 찾기 (ID로 찾아야 함)
+		auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
+		auto npcs = ObjectManager::instance()->find_by_layer(enemy_layer);
+		auto it = std::ranges::find_if(npcs, 
+			[&](const std::shared_ptr<GameObject>& npc)
+			{
+				auto npc_script = npc->get_component<NPCScript>();
+				return npc_script && hit_info._target_id == npc_script->id();
+			});
+		if (it != npcs.end())
+		{
+			(*it)->get_component<NPCScript>()->set_hp(hit_info._target_current_hp);
 		}
 	}
 }
@@ -443,8 +484,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
 		auto NPC_logic = NPC->add_component<NPCScript>();
+		NPC_logic->set_id(npc_spawn_packet._npc_id);
+		NPC_logic->set_hp(npc_spawn_packet._hp);
 		NPC_logic->set_position(npc_spawn_packet._position);
 		NPC->set_layer("Enemy");
+
 
 		auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
@@ -498,6 +542,44 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 }
 bool NetworkManager::init_network()
 {
+	// 이동 응답 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_MOVE,
+		std::bind(&NetworkManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
+
+	// 퇴장 응답 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE,
+		std::bind(&NetworkManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
+
+	// 공격 응답 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_PLAYER_ATTACK,
+		std::bind(&NetworkManager::HANDLE_S2C_PLAYER_ATTACK, this, std::placeholders::_1));
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_ATTACK,
+		std::bind(&NetworkManager::HANDLE_S2C_NPC_ATTACK, this, std::placeholders::_1));
+
+	// 방 목록 응답 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK,
+		std::bind(&NetworkManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
+
+	// 방 입장 응답 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK,
+		std::bind(&NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
+
+	// 플레이어 스폰 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER,
+		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
+
+	// 로그인 응답 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK,
+		std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
+
+	// NPC 스폰 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_NPC_SPAWN,
+		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_NPC, this, std::placeholders::_1));
+	// NPC 이동 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE,
+		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC, this, std::placeholders::_1));
+
+
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != 0) {
@@ -537,42 +619,6 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 		disconnect();
 		return false;
 	}
-
-	// 이동 응답 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_MOVE, 
-		std::bind(&NetworkManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
-
-	// 퇴장 응답 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE,
-		std::bind(&NetworkManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
-
-	// 공격 응답 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_ATTACK,
-		std::bind(&NetworkManager::HANDLE_S2C_ATTACK, this, std::placeholders::_1));
-
-	// 방 목록 응답 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK,
-		std::bind(&NetworkManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
-
-	// 방 입장 응답 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK,
-		std::bind(&NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
-
-	// 플레이어 스폰 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER,
-		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
-
-	// 로그인 응답 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK,
-		std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
-
-	// NPC 스폰 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_NPC_SPAWN,
-		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_NPC, this, std::placeholders::_1));
-	// NPC 이동 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE,
-		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC, this, std::placeholders::_1));
-
 	return true;
 }
 void NetworkManager::disconnect()

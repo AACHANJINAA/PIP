@@ -28,8 +28,12 @@ namespace PIP::server
 			return "C2S_P_MOVE";
 		case PacketType::C2S_P_ATTACK:
 			return "C2S_P_ATTACK";
-		case PacketType::S2C_P_ATTACK:
-			return "S2C_P_ATTACK";
+		/*case PacketType::S2C_P_ATTACK:
+			return "S2C_P_ATTACK";*/
+		case PacketType::S2C_P_PLAYER_ATTACK:
+			return "S2C_P_PLAYER_ATTACK";
+		case PacketType::S2C_P_NPC_ATTACK:
+			return "S2C_P_NPC_ATTACK";
 		case PacketType::C2S_P_ENTER_ROOM:
 			return "C2S_P_ENTER_ROOM";
 		case PacketType::S2C_P_ENTER_ROOM_ACK:
@@ -60,11 +64,11 @@ namespace PIP::server
 		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }
 	{
 		_state = SESSION_STATE::ST_LOBBY;
-		_player = std::make_shared<PIP::Player>(session_id);
+		_player = Player(session_id);
 	}
 	SESSION::~SESSION()
 	{
-		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player->_name);
+		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player._name);
 		// TODO: Logic_Worker 에서 세션 종료 패킷을 보내는 로직 추가 필요
 		closesocket(_c_socket);
 	}

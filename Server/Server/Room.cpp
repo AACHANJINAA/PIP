@@ -2,6 +2,7 @@
 #include "Room.h"
 #include "Player.h"
 #include "PacketHandlers.h"
+#include "PacketStream.h"
 
 namespace PIP::server
 {
@@ -26,7 +27,7 @@ namespace PIP::server
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
 			};
 
-			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos);
+			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
 			AddNPC(std::move(npc));
 
 			// 생성된 NPC의 AI를 1초 뒤에 처음으로 실행하도록 타이머에 등록
@@ -112,6 +113,7 @@ namespace PIP::server
 			packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
 			spawn_packet_data._type = common::packet::PacketType::S2C_NPC_SPAWN;
 			spawn_packet_data._size = 0; // 임시 크기, 나중에 덮어씀
+			spawn_packet_data._hp = npc->GetHP();
 			spawn_packet_data._npc_id = npc->GetNpcId();
 			spawn_packet_data._npc_type = npc->GetNpcType();
 			spawn_packet_data._position = npc->GetPosition();
@@ -130,53 +132,92 @@ namespace PIP::server
 
 	void Room::HandleAttack(std::shared_ptr<SESSION> attacker)
 	{
-		//TODO: float로 바뀐 게임 좌표에 맞게 수정 필요
 		if (attacker == nullptr) return;
 
-		
-		BoundingSphere attackerSphere { attacker->GetPlayer()->_position, 5.0f};
+		// 이부분이 공격타입에 따라서 공격범위 같은게 바뀌는 곳일 것 같음
+		BoundingSphere attackerSphere{ attacker->_player._position, 5.0f };
+		const int32_t damage = attacker->_player._damage;
 
-		// 방 내부의 플레이어 목록(_players)을 순회하며 공격 대상을 찾습니다.
-		std::shared_ptr<SESSION> target_session = nullptr;
-		for (auto const& [player_id, player] : _players)
-		{
-			BoundingSphere targetSphere{ player->GetPlayer()->_position, 5.0f };
-			if (player && player->_id != attacker->_id && attackerSphere.Intersects(targetSphere))
-			{
-				player->GetPlayer()->_hp -= 10;
-			}
-		}
 
+		std::vector<packet::NPCHitInfo> npc_hits;
+		std::vector<packet::PlayerHitInfo> player_hits;
+
+		// NPC 공격 판정
 		for (auto& [npc_id, npc] : _npcs)
 		{
-			BoundingSphere npcSphere { npc->GetPosition(), 5.0f};
+			BoundingSphere npcSphere{ npc->GetPosition(), 2.0f };
 			if (attackerSphere.Intersects(npcSphere))
 			{
-				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks NPC " << npc->GetNpcId());
-				npc->SetHP(npc->GetHP() - 10.0f);
+				int32_t new_hp = npc->GetHP() - damage;
+				if (new_hp < 0) new_hp = 0;
+				npc->SetHP(new_hp);
+
+				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks NPC " << npc_id
+						<< "new_hp: " << new_hp);
+
+				npc_hits.emplace_back(npc_id, damage, new_hp);
 			}
 		}
-		//// 데미지 계산 (임시로 10)
-		//int16_t damage = 10;
-		//target_session->GetPlayer()->_hp -= damage;
-		//int32_t new_hp = target_session->GetPlayer()->_hp;
-		//if (new_hp < 0) { new_hp = 0; }
 
-		//MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks " << target_session->_id << ". HP: " << new_hp);
+		// 다른 플레이어 공격 판정
+		for (auto const& [player_id, player_session] : _players)
+		{
+			if (player_session && player_id != attacker->_id)
+			{
+				BoundingSphere targetSphere{ player_session->_player._position, 2.0f };
+				if (attackerSphere.Intersects(targetSphere))
+				{
+					int32_t new_hp = player_session->_player._hp - damage;
+					if (new_hp < 0) new_hp = 0;
+					player_session->_player._hp = new_hp;
 
-		//// 공격 결과 패킷 생성
-		//packet::SC_PACKET_ATTACK attackPacket;
-		//attackPacket._type = packet::PacketType::S2C_P_ATTACK;
-		//attackPacket._size = sizeof(attackPacket);
-		//attackPacket._attacker_id = attacker->_id;
-		//attackPacket._target_id = target_session->_id;
-		//attackPacket._damage = damage;
-		//attackPacket._target_current_hp = new_hp;
+					MYLOG("[ROOM ATTACK] Player:" << attacker->_id << " attacks Player:" << player_id << "'s HP: " << new_hp);
+					player_hits.emplace_back(player_id, damage, new_hp);
+				}
+			}
+		}
 
-		//// 방 전체에 공격 결과 브로드캐스팅
-		//Broadcast(reinterpret_cast<const char*>(&attackPacket), sizeof(attackPacket));
-			
-		
+		// NPC 공격 결과 브로드캐스팅
+		if (!npc_hits.empty())
+		{
+			packet::PacketStream stream;
+			packet::SC_PACKET_NPC_ATTACK packet;
+			packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
+			packet._attacker_id = attacker->_id;
+			packet._hit_count = static_cast<uint8_t>(npc_hits.size());
+
+			stream << packet;
+			for (const auto& hit : npc_hits)
+			{
+				stream << hit;
+			}
+
+			auto* final_packet = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			final_packet->_size = static_cast<uint16_t>(stream.Size());
+
+			Broadcast(stream.constable_data(), stream.Size());
+		}
+
+		// 플레이어 공격 결과 브로드캐스팅
+		if (!player_hits.empty())
+		{
+			packet::PacketStream stream;
+			packet::SC_PACKET_PLAYER_ATTACK header;
+			header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
+			header._attacker_id = attacker->_id;
+			header._hit_count = static_cast<uint8_t>(player_hits.size());
+
+			stream << header;
+			for (const auto& hit : player_hits)
+			{
+				stream << hit;
+			}
+
+			auto* final_header = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			final_header->_size = static_cast<uint16_t>(stream.Size());
+
+			Broadcast(stream.constable_data(), stream.Size());
+		}
 	}
 
 	void Room::UpdateNPC(int npcId)

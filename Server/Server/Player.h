@@ -13,6 +13,7 @@ namespace PIP
 		short						_max_hp;
 		short						_level;
 		uint32_t					_exp;
+		int							_damage;
 	private:
 		long long _owner_id; // 이 플레이어의 소유자 세션 ID	
 	};
