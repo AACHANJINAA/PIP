@@ -8,6 +8,7 @@
 #include "GlbShader.h"
 #include "GltfShader.h"
 #include "PlayerShader.h"
+#include "GltfHpShader.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -49,7 +50,13 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto gltf_shader = std::make_shared<GltfShader>();
     _shaderPrototypes[gltf_shader->pso_name()] = gltf_shader;
+
+    auto gltf_hp_shader = std::make_shared<GltfHpShader>();
+    _shaderPrototypes[gltf_hp_shader->pso_name()] = gltf_shader;
     // 앞으로 새로운 셰이더를 추가할 땐 이 목록에 한 줄만 추가하면 됩니다.
+
+
+
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);

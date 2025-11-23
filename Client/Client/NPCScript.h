@@ -7,6 +7,7 @@ public:
 
 	virtual void awake() override;
 	virtual void update(float deltaTime) override;
+	virtual void late_update(float deltaTime) override;
 
 
 	void set_position(const f3& position);

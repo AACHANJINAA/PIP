@@ -61,6 +61,10 @@ cbuffer cbLights : register(b3)
     Light g_Lights[MAX_LIGHTS];
 };
 
+cbuffer cbHp : register(b4)
+{
+    int g_nHp;
+};
 
 struct VS_INPUT
 {
@@ -213,5 +217,79 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     color = color / (color + float3(1.0, 1.0, 1.0));
     color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
+    return float4(color, albedoMap.a);
+}
+
+
+
+// hp 전용 셰이더
+float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
+{
+    // 1. 모든 텍스처에서 서피스(표면) 속성 샘플링
+    float4 albedoMap = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
+    float3 normalMap = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
+    float3 ormMap = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
+    float3 emissiveMap = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
+
+    float3 N = In.Normal;
+    // 2. 노멀맵 계산 (탄젠트 공간 -> 월드 공간)
+    if (dot(normalMap, normalMap) > 0.01)
+    {
+        float3 N_tangent = normalMap * 2.0 - 1.0; // [0, 1] 범위를 [-1, 1] 범위로 변환
+        float3x3 TBN = float3x3(normalize(In.Tangent), normalize(In.Bitangent), normalize(In.Normal));
+        N = normalize(mul(N_tangent, TBN)); // 최종적으로 사용할 표면 법선 벡터
+
+    }
+
+    // 3. PBR 변수 준비
+    float3 albedo = albedoMap.rgb;
+    
+    float ao = (dot(ormMap, ormMap) > 0.001) ? ormMap.r : 1.0f;
+    float roughness = (dot(ormMap, ormMap) > 0.001) ? ormMap.g : 0.8f;
+    float metallic = (dot(ormMap, ormMap) > 0.001) ? ormMap.b : 0.1f;
+
+    float3 V = normalize(g_xmf3CameraPosition.xyz - In.WorldPosition);
+    float3 F0 = lerp(0.04, albedo, metallic); // Fresnel 반사율 F0 계산
+
+    // 4. 조명 계산 시작 (IBL은 제외하고 직접 조명만 계산)
+    float3 Lo = float3(0.0, 0.0, 0.0); // 최종 반사될 빛의 양
+    for (int i = 0; i < MAX_LIGHTS; ++i)
+    {
+        if (!g_Lights[i].m_bEnable)
+            continue;
+
+        float3 L = normalize(g_Lights[i].m_xmf3Position - In.WorldPosition); // Point Light 기준
+        float3 H = normalize(V + L);
+        float distance = length(g_Lights[i].m_xmf3Position - In.WorldPosition);
+        float attenuation = 1.0 / (distance * distance);
+        float3 radiance = g_Lights[i].m_xmf4Diffuse.rgb * attenuation;
+
+        // Cook-Torrance BRDF 계산
+        float NDF = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        float3 F = FresnelSchlick(saturate(dot(H, V)), F0);
+
+        float3 kD = (1.0 - F) * (1.0 - metallic); // Diffuse 반사율
+        float NdotL = saturate(dot(N, L));
+
+        float3 numerator = NDF * G * F;
+        float denominator = 4.0 * saturate(dot(N, V)) * NdotL + 0.0001; // 0으로 나누는 것 방지
+        float3 specular = numerator / denominator;
+        
+        // 최종 조명 추가
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+    }
+
+    // 5. 최종 색상 조합
+    // Ambient Occlusion 적용, Emissive(자체 발광) 추가
+    float3 ambient = float3(0.5, 0.5, 0.5) * albedo * ao;
+    float3 color = ambient + Lo + emissiveMap;
+    
+    // HDR to LDR, 감마 보정 등 추가적인 톤 매핑이 필요할 수 있음
+    color = color / (color + float3(1.0, 1.0, 1.0));
+    color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
+
+    color *= float3(g_nHp / 100.0f, 0.0f, 0.0f);
+    
     return float4(color, albedoMap.a);
 }

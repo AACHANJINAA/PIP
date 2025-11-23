@@ -73,11 +73,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>../..\Jolt\include;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>../..\Jolt\include;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -162,6 +162,7 @@
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="GltfShader.h" />
     <ClInclude Include="GltfTestScript.h" />
+    <ClInclude Include="GltfHpShader.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LayerManager.h" />
     <ClInclude Include="main.h" />
@@ -212,6 +213,7 @@
     <ClCompile Include="FreeCameraScript.cpp" />
     <ClCompile Include="GltfShader.cpp" />
     <ClCompile Include="GltfTestScript.cpp" />
+    <ClCompile Include="GltfHpShader.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />

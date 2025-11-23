@@ -23,3 +23,9 @@ void NPCScript::update(float deltaTime)
 {
 	ScriptComponent::update(deltaTime);
 }
+
+void NPCScript::late_update(float deltaTime)
+{
+	// hp 상태 셰이더로 전송
+
+}

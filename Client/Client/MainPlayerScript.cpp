@@ -76,7 +76,7 @@ void MainPlayerScript::awake()
 	// ResourceManager을 통해 재질 생성 및 셰이더 할당
     std::string material_name = "player_material";
 	ResourceManager::instance()->create_material(material_name);
-	ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+	ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
 
     // gltf
     _renderComponent->set_pso_name("gltf");
