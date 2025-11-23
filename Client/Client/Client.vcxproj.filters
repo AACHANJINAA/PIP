@@ -209,9 +209,6 @@
     <ClInclude Include="FreeCameraScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
-    <ClInclude Include="GltfShader.h">
-      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="GltfTestScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
@@ -241,6 +238,12 @@
     </ClInclude>
     <ClInclude Include="WICTextureLoader12.h">
       <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="GltfShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="GltfHpShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -378,6 +381,9 @@
     </ClCompile>
     <ClCompile Include="WICTextureLoader12.cpp">
       <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="GltfHpShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
