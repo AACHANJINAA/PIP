@@ -289,7 +289,13 @@ float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
     color = color / (color + float3(1.0, 1.0, 1.0));
     color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
-    color *= float3(g_nHp / 100.0f, 0.0f, 0.0f);
+    
+    float hp_r = (100 - g_nHp) / 100.0f;
+    if (color.r < hp_r)
+    {
+        color.r = hp_r;
+    }
+    // float3(g_nHp / 100.0f, 0.0f, 0.0f);
     
     return float4(color, albedoMap.a);
 }

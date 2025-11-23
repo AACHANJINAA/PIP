@@ -77,6 +77,17 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         // 재질은 이제 mesh->get_materials() 또는 메쉬 로드 시점에 RenderComponent에 직접 설정되어야 합니다.
         // 현재 로직은 renderComp->set_mesh(mesh)가 메쉬 내부의 재질을 자동으로 바인딩한다고 가정합니다.
 
+		// DW비동의 : 나는 위 주석에 동의할 수 없음 왜냐하면 npc는 고정된 재질이 필요하기 때문
+        //          모든 생성은 하나도 통일하는 것이 좋을 것 같다.
+        //          저번에 지형만 렌더링이 검정색으로 나온 경우가 있는 그것도 이 구조 때문이다.
+
+        std::string material_name = "npc_material"; // player는 고정된 재질
+        ResourceManager::instance()->create_material(material_name);
+        ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+        // gltf
+        renderComp->set_pso_name("gltf");
+       
+
 
         // 3. 트랜스폼 파싱 (기존과 동일)
         if (objectJson.contains("Transform")) {

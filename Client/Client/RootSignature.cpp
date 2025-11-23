@@ -329,7 +329,7 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
 
     // 8번 체력용 CBV
     d3dRootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // b3: 조명
+    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // b4: 체력
     d3dRootParameters[8].Descriptor.RegisterSpace = 0;
     d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 쉐이더에서만 볼거임
 

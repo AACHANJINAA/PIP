@@ -84,6 +84,9 @@
     <Filter Include="0. Engine\3. Renderer\4. TextureLoader">
       <UniqueIdentifier>{43c5fdd3-2872-4f44-945b-40cbed081f81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent">
+      <UniqueIdentifier>{c9682bcf-f8f2-4f9a-b3a6-a290036050ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -245,6 +248,9 @@
     <ClInclude Include="GltfHpShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="HPRenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -384,6 +390,9 @@
     </ClCompile>
     <ClCompile Include="GltfHpShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="HPRenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

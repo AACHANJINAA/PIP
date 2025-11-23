@@ -146,3 +146,4 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
     
     _mesh->render(commandList);
 }
+

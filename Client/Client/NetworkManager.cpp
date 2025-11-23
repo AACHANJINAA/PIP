@@ -9,6 +9,8 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 
+#include "HPRenderComponent.h"
+
 void error_display(const char* msg, int err_no)
 {
 	WCHAR* lpMsgBuf;
@@ -492,16 +494,16 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 		auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
-		auto render_comp = NPC->add_component<RenderComponent>();
+		auto render_comp = NPC->add_component<HPRenderComponent>();
 		render_comp->set_mesh(npc_mesh);
 
 		// ResourceManager을 통해 재질 생성 및 쉐이더 할당
 		std::string material_name = "npc_material"; // player는 고정된 재질
 		ResourceManager::instance()->create_material(material_name);
-		ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+		ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
 
 		// gltf
-		render_comp->set_pso_name("gltf");
+		render_comp->set_pso_name("gltf_hp");
 
 		CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
 			<< " Name: " << npc_name

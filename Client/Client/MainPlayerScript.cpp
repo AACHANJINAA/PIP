@@ -49,11 +49,22 @@ void MainPlayerScript::update(float deltaTime)
         NetworkManager::instance()->SendAttackPacket();
 	}
 
+    if (InputManager::instance()->IsKeyDown('P'))
+    {
+        _speed += 1.f;
+    }
+
+    if (InputManager::instance()->IsKeyDown('M')) {
+        if(_speed > 5.f)
+        {
+            _speed -= 1.f;
+        }
+    }
 
     if (is_moving) {
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
-        const float speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
-        auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, speed * deltaTime));
+        // _speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
+        auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, _speed * deltaTime));
         current_transform->set_local_position(new_pos);
     }
 
