@@ -163,6 +163,7 @@
     <ClInclude Include="GltfShader.h" />
     <ClInclude Include="GltfTestScript.h" />
     <ClInclude Include="GltfHpShader.h" />
+    <ClInclude Include="HPRenderComponent.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LayerManager.h" />
     <ClInclude Include="main.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="GltfShader.cpp" />
     <ClCompile Include="GltfTestScript.cpp" />
     <ClCompile Include="GltfHpShader.cpp" />
+    <ClCompile Include="HPRenderComponent.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />

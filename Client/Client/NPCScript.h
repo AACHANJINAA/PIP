@@ -17,6 +17,9 @@ public:
 	void set_id(int64_t npc_id) { _id = npc_id; }
 	int64_t id() const { return _id; }
 
+	// DW설명 : NPC의 현재 체력 가져오기 쉐이더에서 사용할 예정
+	int get_hp() const { return _hp; }
+
 private:
 	int		_hp{};
 	int64_t _id{};

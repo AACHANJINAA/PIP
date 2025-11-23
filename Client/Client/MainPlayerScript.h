@@ -41,6 +41,9 @@ private:
     int64_t _playerId;
 	RenderComponent* _renderComponent{ nullptr };
 
+    // 속도
+    float _speed{5.f};
+
     // 50ms 마다 서버에 위치 정보를 전송하기 위한 타이머
     float _sendTimer{ 0.f };
     const float _sendInterval{ 0.02f };
