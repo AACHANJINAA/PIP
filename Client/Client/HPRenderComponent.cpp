@@ -85,11 +85,6 @@ void HPRenderComponent::render(ID3D12GraphicsCommandList* commandList)
         // 2. [변경] 이 RenderComponent가 소유한 상수 버퍼의 내용을 월드 행렬로 업데이트합니다.
     _mappedCbGameHpInfo->_hp = npc_hp;
 
-    if (_mappedCbGameHpInfo->_hp < 80)
-    {
-        int a = 10;
-    }
-
     // 3. [추가] 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 직접 바인딩합니다.
     // (루트 시그니처 0번 슬롯은 월드 행렬용 CBV로 미리 약속되어 있습니다)
     commandList->SetGraphicsRootConstantBufferView(8, _cbGameHpInfo->GetGPUVirtualAddress());
