@@ -195,6 +195,8 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptComponent.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SkyboxMesh.h" />
+    <ClInclude Include="SkyboxShader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TimerManager.h" />
@@ -245,6 +247,8 @@
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptComponent.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SkyboxMesh.cpp" />
+    <ClCompile Include="SkyboxShader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -290,6 +294,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="SkyBoxShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

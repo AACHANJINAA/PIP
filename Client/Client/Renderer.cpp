@@ -9,6 +9,7 @@
 #include "GltfShader.h"
 #include "PlayerShader.h"
 #include "GltfHpShader.h"
+#include "SkyboxShader.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -54,7 +55,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto gltf_hp_shader = std::make_shared<GltfHpShader>();
     _shaderPrototypes[gltf_hp_shader->pso_name()] = gltf_hp_shader;
-    // 앞으로 새로운 셰이더를 추가할 땐 이 목록에 한 줄만 추가하면 됩니다.
+
+	auto skybox_shader = std::make_shared<SkyboxShader>();
+	_shaderPrototypes[skybox_shader->pso_name()] = skybox_shader;
 
 
 
@@ -69,59 +72,7 @@ void Renderer::create_root_signatures(ID3D12Device* device)
     {
         _rootSignatures[generator->name()] = generator->create(device);
     }
-}
-//void Renderer::create_root_signatures(ID3D12Device* device)
-//{
-//    ID3D12RootSignature* pd3dGraphicsRootSignature = NULL;
-//    D3D12_ROOT_PARAMETER pd3dRootParameters[4];
-//    // [수정] 0번 파라미터: 월드 행렬용 CBV
-//    pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    pd3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
-//    pd3dRootParameters[0].Descriptor.RegisterSpace = 0;
-//    pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-//
-//    // [수정] 1번 파라미터: 카메라용 CBV
-//    pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    pd3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
-//    pd3dRootParameters[1].Descriptor.RegisterSpace = 0;
-//    pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-//
-//    // 머터리얼 정보를 위한 상수 버퍼 뷰(CBV) 추가
-//    pd3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    pd3dRootParameters[2].Descriptor.ShaderRegister = 2; // 셰이더의 b2 레지스터
-//    pd3dRootParameters[2].Descriptor.RegisterSpace = 0;
-//    pd3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-//
-//    // 조명 정보를 위한 상수 버퍼 뷰(CBV) 추가
-//    pd3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-//    pd3dRootParameters[3].Descriptor.ShaderRegister = 3; // 셰이더의 b3 레지스터
-//    pd3dRootParameters[3].Descriptor.RegisterSpace = 0;
-//    pd3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-//
-//    D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags =
-//        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-//        D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-//        D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-//        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-//    // 이 부분에 픽셀 쉐이더 접근안되게 하는거 지움
-//
-//    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
-//    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
-//    d3dRootSignatureDesc.NumParameters = _countof(pd3dRootParameters);
-//    d3dRootSignatureDesc.pParameters = pd3dRootParameters;
-//    d3dRootSignatureDesc.NumStaticSamplers = 0;
-//    d3dRootSignatureDesc.pStaticSamplers = NULL;
-//    d3dRootSignatureDesc.Flags = d3dRootSignatureFlags;
-//
-//    ComPtr<ID3DBlob> pd3dSignatureBlob;
-//    ComPtr<ID3DBlob> pd3dErrorBlob;
-//
-//    ::D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
-//    device->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(),
-//        pd3dSignatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&pd3dGraphicsRootSignature);
-//
-//	_defaultRootSignature = pd3dGraphicsRootSignature;
-//}
+}   
 
 void Renderer::create_pipeline_state_objects(ID3D12Device* device)
 {

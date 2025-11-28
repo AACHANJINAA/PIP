@@ -76,6 +76,31 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path)
     return new_mesh;
 }
 
+void ResourceManager::load_skybox(const std::string& file_path)
+{
+	_skybox_texture_path = file_path;
+
+	load_texture(file_path, D3D12_SRV_DIMENSION_TEXTURECUBE);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv()
+{
+    if (_skybox_texture_path.empty())
+    {
+        CERROR("Skybox texture has not been loaded yet.");
+        return {}; // 유효하지 않은 핸들 반환
+    }
+
+	auto it = _textures.find(_skybox_texture_path);
+    if (it != _textures.end())
+    {
+        return it->second.gpu_handle;
+    }
+
+    CERROR("Skybox texture not found in texture map: " << _skybox_texture_path);
+    return {}; // 유효하지 않은 핸들 반환
+}
+
 void ResourceManager::upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
     // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.
@@ -136,7 +161,7 @@ void ResourceManager::unload_unused_meshes()
 }
 
 // 내부 헬퍼 함수: 텍스처를 로드하고 GPU에 업로드합니다.
-ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path)
+ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension)
 {
     if (file_path.empty()) {
         return nullptr;
@@ -237,11 +262,29 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srv_desc.Format = new_texture_info.resource->GetDesc().Format;
-    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srv_desc.Texture2D.MipLevels = new_texture_info.resource->GetDesc().MipLevels;
-    srv_desc.Texture2D.MostDetailedMip = 0;
-    srv_desc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+    srv_desc.ViewDimension = view_dimension;
+
+    switch (view_dimension)
+    {
+    case D3D12_SRV_DIMENSION_TEXTURE2D:
+            srv_desc.Texture2D.MipLevels = new_texture_info.resource->GetDesc().MipLevels;
+            srv_desc.Texture2D.MostDetailedMip = 0;
+            srv_desc.Texture2D.ResourceMinLODClamp = 0.0f;
+            break;
     
+    case D3D12_SRV_DIMENSION_TEXTURECUBE:
+            srv_desc.TextureCube.MipLevels = new_texture_info.resource->GetDesc().MipLevels;
+            srv_desc.TextureCube.MostDetailedMip = 0;
+            srv_desc.TextureCube.ResourceMinLODClamp = 0.0f;
+            break;
+    
+            // 다른 뷰 차원(Texture2DArray 등)이 필요하면 여기에 case를 추가할 수 있습니다.
+    default:
+            CERROR("Unsupported SRV dimension for texture: " << file_path);
+            return nullptr; // 처리할 수 없는 경우
+    }
+
     _device->CreateShaderResourceView(new_texture_info.resource.Get(), &srv_desc, new_texture_info.cpu_handle);
     
     _textures[file_path] = std::move(new_texture_info);
