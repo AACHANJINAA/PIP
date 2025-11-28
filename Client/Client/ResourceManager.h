@@ -18,6 +18,12 @@ public:
     // 파일 경로를 기반으로 메시를 로드하거나, 이미 로드되었다면 캐시된 메시를 반환합니다.
     std::shared_ptr<Mesh> load_mesh(const std::string& file_path);
 
+
+    // SkyBox Load 함수 추가 및 SRV 핸들러 추가
+    void load_skybox(const std::string& file_path);
+    D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
+
+
     // [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
     void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
@@ -27,7 +33,6 @@ public:
 	// [추가] 사용되지 않는 메시들을 메모리에서 해제하는 함수
     void unload_unused_meshes();
 
-    // ----------------------------------------추가 내용----------------------------------------
     // 1. glTF 파일에서 모든 재질과 텍스처를 로드하고 내부적으로 저장합니다.
     //    성공적으로 로드된 재질들의 이름을 반환합니다.
     std::vector<std::string> load_materials_from_gltf(const std::string & file_path);
@@ -108,9 +113,13 @@ private:
     std::unordered_map<std::string, TextureInfo> _textures;      // Key: 텍스처 파일 경로
     std::unordered_map<std::string, MaterialInfo> _materials;    // Key: 재질 이름
 
+    // skybox 파일 경로
+    std::string _skybox_texture_path;
+
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
     std::vector<std::shared_ptr<Mesh>> _pending_meshes;
 
     // 파일 경로로 텍스처를 로드하고, GPU에 업로드한 뒤, TextureInfo를 반환합니다.
-    TextureInfo * load_texture(const std::string & file_path);
+	// CJ251128 - view_dimension 매개변수를 추가하여 텍스처 뷰의 차원을 지정할 수 있도록 함.
+    TextureInfo * load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension = D3D12_SRV_DIMENSION_TEXTURE2D);
 };

@@ -1,0 +1,40 @@
+#include "stdafx.h"
+#include "SkyboxMesh.h"
+
+SkyboxMesh::SkyboxMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+	// 위치만 필요하기에 Vertex 구조체 사용
+	std::vector<Vertex> vertices = {
+		Vertex(XMFLOAT3(-1.0f,  +1.0f, -1.0f)),
+		Vertex(XMFLOAT3(+1.0f,  +1.0f, -1.0f)),
+		Vertex(XMFLOAT3(+1.0f,  +1.0f, +1.0f)),
+		Vertex(XMFLOAT3(-1.0f,  +1.0f, +1.0f)),
+		Vertex(XMFLOAT3(+1.0f,  -1.0f, -1.0f)),
+		Vertex(XMFLOAT3(+1.0f,  -1.0f, +1.0f)),
+		Vertex(XMFLOAT3(-1.0f,  -1.0f, +1.0f)),
+	};
+
+	// 큐브의 6면에 대한 12개 삼각형을 정의하는 인덱스 데이터입니다.
+	std::vector<UINT> indices = {
+		// Front
+		0, 1, 2, 0, 2, 3,
+		// Back
+		4, 6, 5, 4, 7, 6,
+		// Left
+		4, 5, 1, 4, 1, 0,
+		// Right
+		3, 2, 6, 3, 6, 7,
+		// Top
+		1, 5, 6, 1, 6, 2,
+		// Bottom
+		4, 0, 3, 4, 3, 7 
+	};
+	// 부모 클래스(Mesh)의 함수를 사용하여 정점 데이터를 설정합니다.
+    set_vertex_data_buffer(vertices);
+	// 인덱스 데이터를 설정합니다.
+    _indices = indices;
+	// 프리미티브 토폴로지를 삼각형 리스트로 설정합니다.
+    _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	// GPU에 데이터를 업로드합니다.
+    upload_to_gpu(device, commandList);
+}

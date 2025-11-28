@@ -251,6 +251,12 @@
     <ClInclude Include="HPRenderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent</Filter>
     </ClInclude>
+    <ClInclude Include="SkyboxShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxMesh.h">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -394,6 +400,12 @@
     <ClCompile Include="HPRenderComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent</Filter>
     </ClCompile>
+    <ClCompile Include="SkyboxShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxMesh.cpp">
+      <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -427,5 +439,10 @@
     <None Include="Gltf_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="SkyBoxShader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
