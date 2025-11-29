@@ -1,6 +1,13 @@
 ﻿#pragma once
 #include "stdafx.h"
 #include "Mesh.h"
+
+enum class AnimationInterpolation {
+	Linear,
+	Step,
+	CubicSpline
+};
+
 struct GltfVertex : public Vertex
 {
 public:
@@ -38,7 +45,9 @@ struct GltfSkinnedVertex : public GltfVertex
 struct GltfPrimitive
 {
 	// CPU
-	std::vector<GltfVertex> _vertices;
+	std::vector<GltfVertex> _vertices; // 기존 애니메이션 없는 메쉬용
+	std::vector<GltfSkinnedVertex> _skinned_vertices; // 애니메이션 메쉬용
+
 	std::vector<UINT> _indices;
 
 	// GPU
@@ -80,14 +89,11 @@ struct BoneInfo
 
 
 // glTF의 'sampler'에서 읽어온 단일 키프레임 (시간-값 쌍)
-struct Keyframe
-{
-	// 이 키프레임의 시간 (초)
+struct Keyframe {
 	float _time;
-
-	// 이 시간의 변환 값 (T, R, S)
-	// VEC3(T,S)는 w를 0으로, VEC4(R)는 그대로 저장
-	DirectX::XMFLOAT4 _value;
+	DirectX::XMFLOAT4 _value;      // 기본 값 (Linear/Step/Spline Vertex)에서 모두 사용
+	DirectX::XMFLOAT4 _in_tangent;
+	DirectX::XMFLOAT4 _out_tangent;
 };
 
 
@@ -102,7 +108,7 @@ struct AnimationChannel
 	std::string _path;
 
 	// 보간 방식 "LINEAR", "STEP"
-	std::string _interpolation;
+	AnimationInterpolation _interpolation; // 매번 문자열 비교하는 것을 피하기 위해 enum으로 수정
 
 	// 이 채널(트랙)의 모든 키프레임 목록
 	std::vector<Keyframe> _keyframes;
@@ -160,6 +166,11 @@ private:
 	void load_animations(const json& gltf_json, const std::vector<char>& binary_buffer);
 	void process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh);
 
+	// enum 으로 바꾸는 헬퍼 함수
+	AnimationInterpolation string_to_interpolation(const std::string& str);
+
+	// glTF accessor에서 속성 데이터를 추출하는 템플릿 함수
+	//  T 타입의 데이터를 벡터로 반환
 	template<typename T>
 	std::vector<T> get_attribute_data(const json& gltfJson, const std::vector<char>& binaryBuffer, int accessorIndex)
 	{
@@ -188,7 +199,7 @@ private:
 	std::vector<std::string> _material_names;
 
 private: // DW설명 : 애니메이션 관련 멤버 변수들
-	bool _is_animated;
+	bool _is_animated; // 애니메이션 하는 건지?
 	std::vector<BoneInfo> _skeleton;
 
 	// (GPU 행렬 팔레트 순서와 일치) 뼈대 인덱스 목록
@@ -205,4 +216,35 @@ private: // DW설명 : 애니메이션 관련 멤버 변수들
 
 	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼
 	ComPtr<ID3D12Resource> _bone_palette_buffer;
+
+
+private: // 애니메이션을 위해 필요한 멤버들
+	
+	// glTF 'nodes' 배열의 상태를 관리하기 위한 구조체
+	struct NodeInfo
+	{
+		int _parent_index = -1;
+		std::vector<int> _children;
+
+		// 현재 애니메이션에 의해 변경되는 로컬 변환 값 (T, R, S)
+		DirectX::XMFLOAT3 _translation = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT4 _rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // Quaternion
+		DirectX::XMFLOAT3 _scale = { 1.0f, 1.0f, 1.0f };
+
+		// 계층 구조가 반영된 최종 전역 행렬 (World Transform)
+		DirectX::XMFLOAT4X4 _global_transform;
+	};
+
+	// 모든 노드의 리스트 (glTF node index와 1:1 매칭)
+	std::vector<NodeInfo> _nodes;
+
+	// 현재 재생 중인 애니메이션 시간
+	float _current_animation_time = 0.0f;
+
+	// 헬퍼 함수: 초기 노드 계층 구조 및 TRS 값 설정
+	void load_nodes(const json& gltf_json);
+
+	// 헬퍼 함수: 노드 계층 구조를 순회하며 전역 행렬 갱신
+	void update_node_hierarchy(int node_index, const DirectX::XMMATRIX& parent_transform);
+
 };

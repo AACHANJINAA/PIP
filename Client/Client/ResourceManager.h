@@ -16,7 +16,7 @@ public:
     void initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
     // 파일 경로를 기반으로 메시를 로드하거나, 이미 로드되었다면 캐시된 메시를 반환합니다.
-    std::shared_ptr<Mesh> load_mesh(const std::string& file_path);
+    std::shared_ptr<Mesh> load_mesh(const std::string& file_path, bool _isAnimated = false);
 
 
     // SkyBox Load 함수 추가 및 SRV 핸들러 추가
