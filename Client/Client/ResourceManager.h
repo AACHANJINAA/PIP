@@ -22,6 +22,7 @@ public:
     // SkyBox Load 함수 추가 및 SRV 핸들러 추가
     void load_skybox(const std::string& file_path);
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
+    D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
 
 
     // [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수

@@ -17,5 +17,4 @@ public:
     virtual void release_upload_buffers() override;
 
 private:
-    std::shared_ptr<GameObject> _skyboxObject;
 };

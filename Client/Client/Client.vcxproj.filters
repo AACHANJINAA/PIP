@@ -453,7 +453,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="SkyBoxShader.hlsl">
+    <FxCompile Include="Skybox_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Gltf_Skinned_Shader.hlsl">
