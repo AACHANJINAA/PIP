@@ -67,8 +67,11 @@ private:
     ComPtr<ID3D12Resource> _cbCamera;
     CB_CAMERA_INFO* _mappedCbCamera = nullptr;
 
-    // --- Main Camera ---
-    // 렌더러가 쉽게 접근할 수 있도록 주 카메라를 가리키는 정적 포인터
+    ComPtr<ID3D12Resource> _cbSkybox;
+	XMFLOAT4X4* _mappedCbSkybox = nullptr;
+   
 public:
+    // --- Main Camera ---
+   // 렌더러가 쉽게 접근할 수 있도록 주 카메라를 가리키는 정적 포인터
     static CameraComponent* _mainCamera;
 };

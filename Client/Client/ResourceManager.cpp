@@ -101,6 +101,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv()
     return {}; // 유효하지 않은 핸들 반환
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
+{
+    if (_skybox_texture_path.empty()) return {};
+    auto it = _textures.find(_skybox_texture_path);
+    if (it != _textures.end()) return it->second.cpu_handle;
+    return {};
+}
+
 void ResourceManager::upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
     // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.

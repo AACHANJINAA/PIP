@@ -441,7 +441,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="SkyBoxShader.hlsl">
+    <FxCompile Include="Skybox_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>
