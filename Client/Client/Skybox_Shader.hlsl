@@ -1,10 +1,10 @@
-cbuffer cbPerFrame : register(b0)
+cbuffer cbPerFrame : register(b1)
 {
     float4x4 View;
     float4x4 Projection;
 }
 
-cbuffer cbskybox : register(b1)
+cbuffer cbskybox : register(b2)
 {
     float4x4 ViewNoTranslate;
 }
@@ -40,7 +40,8 @@ VS_Output VS_Main(VS_Input input)
 
 float4 PS_Main(VS_Output input) : SV_TARGET
 {
+    return float4(1.0f, 0.0f, 1.0f, 1.0f);
     float3 texDir = normalize(input.VS_output_PositionL);
-    float4 skyColor = SkyboxTexture.Sample(SkyboxSampler, texDir);
-    return skyColor;
+    float4 skycolor = SkyboxTexture.Sample(SkyboxSampler, texDir);
+    return skycolor;
 }

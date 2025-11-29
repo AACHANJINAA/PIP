@@ -59,7 +59,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         // 1. 메쉬 로드 (GLTF 파일 파싱 및 재질 정보 포함)
         std::string mesh_path = (basePath / data.meshFile).string();
 
-        // ★★★ 핵심 변경: 메쉬 로드 시, 메쉬 내부에서 GLTF 표준 재질 정보를 로드했다고 가정 ★★★
+        // 메쉬 로드 시, 메쉬 내부에서 GLTF 표준 재질 정보를 로드했다고 가정 
         std::shared_ptr<Mesh> mesh = ResourceManager::instance()->load_mesh(mesh_path); // device, commandList 인수가 필요할 수 있습니다.
         if (!mesh) {
             CLOG("Failed to load mesh : " << mesh_path);

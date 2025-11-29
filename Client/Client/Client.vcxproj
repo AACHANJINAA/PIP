@@ -296,7 +296,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="SkyBoxShader.hlsl">
+    <FxCompile Include="Skybox_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
