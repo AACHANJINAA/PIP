@@ -300,12 +300,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Skybox_Shader.hlsl">
     <FxCompile Include="Gltf_Skinned_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="SkyBoxShader.hlsl">
+	 <FxCompile Include="Skybox_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
