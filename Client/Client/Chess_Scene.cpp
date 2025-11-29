@@ -16,8 +16,7 @@
 
 #include "GltfTestScript.h"
 
-#include "Renderer.h"      
-#include "SkyboxMesh.h"
+#include "Renderer.h"    
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -37,6 +36,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	cameraObject->transform()->set_local_rotation(0.f, 0, 0.f);
 
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
+
 	
 	// skybox 생성
     //{

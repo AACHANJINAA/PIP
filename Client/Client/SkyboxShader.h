@@ -10,6 +10,7 @@ public:
 	// 이 pso의 이름은 skybox
 
 	virtual const std::string& pso_name() const override;
+	virtual std::string required_root_signature() const override { return "skybox"; }
 
 protected:
 	virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override;

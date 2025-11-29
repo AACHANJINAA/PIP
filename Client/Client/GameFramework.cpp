@@ -49,7 +49,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateDepthStencilView();
 
 	InputManager::instance()->initialize(hMainWnd);
-	SceneManager::instance()->initialize();
+	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	DescriptorManager::instance()->initialize(_device.Get());

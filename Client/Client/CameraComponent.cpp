@@ -36,6 +36,9 @@ CameraComponent::CameraComponent() :
     _cbCamera = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_CAMERA_INFO),
         D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 
+    _cbSkybox = ::CreateBufferResource(device, nullptr, nullptr, sizeof(XMFLOAT4X4),
+		D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
     if (!_cbCamera)
     {
         CERROR("CameraComponent: Failed to create constant buffer.");
@@ -44,6 +47,7 @@ CameraComponent::CameraComponent() :
 
     D3D12_RANGE readRange{ 0, 0 };
     _cbCamera->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbCamera));
+    _cbSkybox->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbSkybox));
 
     set_lens(_fov, _aspect, _near, _far);
     // --- initialize() 로직 끝 ---
@@ -62,6 +66,13 @@ CameraComponent::~CameraComponent()
         // _cbCamera는 ComPtr이므로, 소멸자가 호출될 때 자동으로 Reset()되어 리소스가 해제됩니다.
         // 따라서 명시적으로 _cbCamera.Reset()을 호출할 필요는 없습니다.
     }
+
+    if (_cbSkybox)
+    {
+        _cbSkybox->Unmap(0, nullptr);
+    }
+
+
     // --- release() 로직 끝 ---
 }
 
@@ -97,8 +108,14 @@ void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* command
        print_matrix("Projection Matrix", _projectionMatrix);
        frame_count++;
     }    // 루트 시그니처의 1번 파라미터(b1)에 카메라 상수 버퍼를 바인딩합니다.
-   D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera->GetGPUVirtualAddress();
+    D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera->GetGPUVirtualAddress();
     commandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress);
+
+    if (_mappedCbSkybox)
+    {
+        D3D12_GPU_VIRTUAL_ADDRESS cbSkyboxGpuAddress = _cbSkybox->GetGPUVirtualAddress();
+        commandList->SetGraphicsRootConstantBufferView(2, cbSkyboxGpuAddress);
+    }
 }
 void CameraComponent::set_viewports_and_scissor_rects(ID3D12GraphicsCommandList* commandList)
 {
@@ -129,6 +146,13 @@ void CameraComponent::recalculate_view_matrix()
     XMVECTOR up = XMLoadFloat3(&f3up);
 
     XMStoreFloat4x4(&_viewMatrix, XMMatrixLookToLH(pos, look, up));
+    // 스카이박스용 뷰 행렬 (이동 성분 제거) 계산 및 상수 버퍼에 복사
+    if (_mappedCbSkybox)
+    {
+        XMMATRIX view_no_translate = XMLoadFloat4x4(&_viewMatrix);
+        view_no_translate.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f); // Translation 부분을 0으로 설정
+        XMStoreFloat4x4(_mappedCbSkybox, XMMatrixTranspose(view_no_translate)); // HLSL을 위해 Transpose
+    }
 
     // [추가] 뷰 행렬이 변경되었으므로 프러스텀도 업데이트합니다.
     XMMATRIX view = XMLoadFloat4x4(&_viewMatrix);

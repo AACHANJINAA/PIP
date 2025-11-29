@@ -19,8 +19,8 @@
 #include "CameraComponent.h"
 #include "RenderComponent.h"
 
+#include "SceneManager.h"
 #include "ResourceManager.h"
-#include "DescriptorManager.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -34,6 +34,8 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<SkyBoxRootSignatureGenerator>());
+
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
@@ -108,6 +110,46 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
         CERROR("렌더시에 카메라 1개이상은 필요함")
         return;
     }
+    auto skybox_object = SceneManager::instance()->get_skybox_object();
+    if (skybox_object)
+    {
+        auto skybox_shader_proto = get_shader("skybox");
+        ID3D12PipelineState* pso = get_pso("skybox");
+
+        if (skybox_shader_proto && pso)
+        {
+            ID3D12RootSignature* root_signature = get_root_signature(skybox_shader_proto->required_root_signature());
+            if (root_signature)
+            {
+                // 파이프라인/루트 시그니처 설정
+                commandList->SetPipelineState(pso);
+                commandList->SetGraphicsRootSignature(root_signature);
+
+                // 동적 디스크립터 힙 설정 (렌더러에서 사용되는 힙)
+                ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
+                commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+                // 카메라 업데이트
+                if (camera)
+                {
+                    camera->update_shader_variables(commandList);
+                    camera->set_viewports_and_scissor_rects(commandList);
+                }
+
+                // ResourceManager가 제공할 CPU SRV 핸들을 동적 힙으로 복사하여 바인딩
+                D3D12_CPU_DESCRIPTOR_HANDLE skybox_srv_cpu = ResourceManager::instance()->get_skybox_srv_cpu();
+                if (skybox_srv_cpu.ptr != 0)
+                {
+                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ skybox_srv_cpu };
+                    bind_texture_table(commandList, 4, cpu_handles);
+                }
+
+                skybox_object->get_component<RenderComponent>()->render(commandList);
+            }
+        }
+    }
+
+
     // 1. 이번 프레임에 그릴 객체들을 추려낸다.
     build_render_list(camera);
 

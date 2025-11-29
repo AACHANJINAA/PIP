@@ -19,12 +19,12 @@ D3D12_INPUT_LAYOUT_DESC SkyboxShader::create_input_layout()
 
 D3D12_SHADER_BYTECODE SkyboxShader::create_vertex_shader(ComPtr<ID3DBlob>& shader_blob)
 {
-	return compile_shader_from_file(L"Skybox_Shader.hlsl", "VS_Skybox", "vs_5_1", shader_blob);
+	return compile_shader_from_file(L"Skybox_Shader.hlsl", "VS_Main", "vs_5_1", shader_blob);
 }
 
 D3D12_SHADER_BYTECODE SkyboxShader::create_pixel_shader(ComPtr<ID3DBlob>& shader_blob)
 {
-	return compile_shader_from_file(L"Skybox_Shader.hlsl", "PS_Skybox", "ps_5_1", shader_blob);
+	return compile_shader_from_file(L"Skybox_Shader.hlsl", "PS_Main", "ps_5_1", shader_blob);
 }
 
 D3D12_RASTERIZER_DESC SkyboxShader::create_rasterizer_state()

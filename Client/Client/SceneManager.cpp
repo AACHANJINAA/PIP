@@ -5,6 +5,7 @@
 #include "GameFramework.h"
 #include "ObjectManager.h"
 #include "ResourceManager.h"
+#include "SkyboxMesh.h"
 
 SceneManager::SceneManager()
 {
@@ -16,13 +17,32 @@ SceneManager::~SceneManager()
 
 }
 
-void SceneManager::initialize()
+void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
+    build_skybox(device, command_list);
+
     register_scene<Chess_Scene>("ChessScene");
     //register_scene<Lobby_Scene>("LobbyScene");
 
     // Ã³À½ ¾À
     change_scene("ChessScene");
+}
+
+void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+{
+    ResourceManager::instance()->load_skybox("C:/Users/USER/Desktop/PIP/Client/Client/Resource/SkyBox/Night.dds");
+
+    _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
+
+    auto rendercomp = _skyboxObject->add_component<RenderComponent>();
+
+    auto skyboxmesh = std::make_shared<SkyboxMesh>(device, command_list);
+
+    rendercomp->set_mesh(skyboxmesh);
+    rendercomp->set_pso_name("skybox");
+
+    _skyboxObject->transform()->set_local_scale({ 5000.0f, 5000.0f, 5000.0f });
+    _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
 }
 
 void SceneManager::release()

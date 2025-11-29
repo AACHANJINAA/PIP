@@ -16,7 +16,7 @@ class SceneManager : public Singleton<SceneManager>
 	SceneManager();
 	~SceneManager() override;
 public:
-	void initialize();
+	void initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 	virtual void release() override;
 
 	// [추가] 템플릿을 사용하여 새로운 씬 생성 방법을 등록합니다.
@@ -38,10 +38,17 @@ public:
 	// [역할] GameFramework가 매 프레임 시작 시 호출하여, 씬 전환 요청이 있다면 처리합니다.
 	void process_scene_change_if_requested(ID3D12Device* device, 
 		ID3D12CommandAllocator* command_allocator, ID3D12GraphicsCommandList* command_list);
+
+	std::shared_ptr<GameObject> get_skybox_object() const { return _skyboxObject; }
+private:
+	void build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // 현재 씬
 	std::string _requestedSceneName;
 	// [추가] 씬의 이름(string)과 씬을 생성하는 함수(function)를 매핑하는 팩토리 맵
 	std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> _scene_creators;
+
+	std::shared_ptr<GameObject> _skyboxObject;
 };
 
