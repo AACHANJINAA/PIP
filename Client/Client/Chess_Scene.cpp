@@ -6,6 +6,8 @@
 #include "GameObject.h"
 
 #include "MainPlayerScript.h"
+#include "GltfAnimationTestScript.h"
+
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 #include "Mesh.h"
@@ -37,22 +39,83 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 	
 	// skybox 생성
-    {
-        ResourceManager::instance()->load_skybox("Resource/Skybox/skybox.dds");
+    //{
+    //    ResourceManager::instance()->load_skybox("Resource/Skybox/skybox.dds");
+    //
+    //    _skyboxObject = ObjectManager::instance()->create_game_object("Skybox");
+    //
+    //    auto rendercomp = _skyboxObject->add_component<RenderComponent>();
+    //
+    //    auto skyboxmesh = std::make_shared<SkyboxMesh>(device, commandList);
+    //
+    //    rendercomp->set_mesh(skyboxmesh);
+    //    rendercomp->set_pso_name("skybox");
+    //
+    //    _skyboxObject->transform()->set_local_scale({ 5000.0f, 5000.0f, 5000.0f });
+    //    _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
+    //}
 
-        _skyboxObject = ObjectManager::instance()->create_game_object("Skybox");
 
-        auto rendercomp = _skyboxObject->add_component<RenderComponent>();
-
-        auto skyboxmesh = std::make_shared<SkyboxMesh>(device, commandList);
-
-        rendercomp->set_mesh(skyboxmesh);
-        rendercomp->set_pso_name("skybox");
-
-        _skyboxObject->transform()->set_local_scale({ 5000.0f, 5000.0f, 5000.0f });
-        _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
-    }
-
+    // DW설명 : 인사 애니메이션 오브젝트 생성
+    //{
+    //    auto hi_brute = ObjectManager::instance()->create_game_object("Hi_animation_brute");
+    //    // GltfAnimationTestScript추가
+    //
+    //    hi_brute->add_component<GltfAnimationTestScript>();
+    //    //// RenderComponent
+    //    auto renderer = hi_brute->add_component<RenderComponent>();
+    //
+    //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/Animation_BruteHi/bruteHi.gltf",true);
+    //    renderer->set_mesh(hi_brute_Mesh);
+    //
+    //    // 재질 및 쉐이더 설정
+    //    std::string material = "skinned_animation_brute";
+    //
+    //    ResourceManager::instance()->create_material(material);
+    //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
+    //
+    //    // gltf
+    //    renderer->set_pso_name("skinned");
+    //
+    //    // 위치, 회전 정보
+    //    hi_brute->transform()->set_local_rotation(0.f, 180.f, 180.f);  
+    //    hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f }); 
+    //
+    //    
+    //
+    //    hi_brute->transform()->set_local_position(XMFLOAT3(0.0f, 100.0f, -100.0f));
+    //    ResourceManager::instance()->upload_pending_meshes(device, commandList);
+    //}
+    //
+    //{
+    //    auto hi_brute = ObjectManager::instance()->create_game_object("Dance_animation_brute");
+    //    // GltfAnimationTestScript추가
+    //
+    //    hi_brute->add_component<GltfAnimationTestScript>();
+    //    //// RenderComponent
+    //    auto renderer = hi_brute->add_component<RenderComponent>();
+    //
+    //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteDance/BruteDance.gltf", true);
+    //    renderer->set_mesh(hi_brute_Mesh);
+    //
+    //    // 재질 및 쉐이더 설정
+    //    std::string material = "skinned_Dance_brute";
+    //
+    //    ResourceManager::instance()->create_material(material);
+    //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
+    //
+    //    // gltf
+    //    renderer->set_pso_name("skinned");
+    //
+    //    // 위치, 회전 정보
+    //    hi_brute->transform()->set_local_rotation(0.f, 180.f, 180.f);
+    //    hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
+    //
+    //
+    //
+    //    hi_brute->transform()->set_local_position(XMFLOAT3(50.0f, 100.0f, -100.0f));
+    //    ResourceManager::instance()->upload_pending_meshes(device, commandList);
+    //}
 
 	// DW설명 : 플레이어 오브젝트 생성
     {

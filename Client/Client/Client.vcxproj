@@ -160,7 +160,9 @@
     <ClInclude Include="DescriptorManager.h" />
     <ClInclude Include="FreeCameraScript.h" />
     <ClInclude Include="GlbShader.h" />
+    <ClInclude Include="GltfAnimationTestScript.h" />
     <ClInclude Include="GltfShader.h" />
+    <ClInclude Include="GltfSkinnedShader.h" />
     <ClInclude Include="GltfTestScript.h" />
     <ClInclude Include="GltfHpShader.h" />
     <ClInclude Include="HPRenderComponent.h" />
@@ -214,7 +216,9 @@
     <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
     <ClCompile Include="FreeCameraScript.cpp" />
+    <ClCompile Include="GltfAnimationTestScript.cpp" />
     <ClCompile Include="GltfShader.cpp" />
+    <ClCompile Include="GltfSkinnedShader.cpp" />
     <ClCompile Include="GltfTestScript.cpp" />
     <ClCompile Include="GltfHpShader.cpp" />
     <ClCompile Include="HPRenderComponent.cpp" />
@@ -296,8 +300,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Gltf_Skinned_Shader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="SkyBoxShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

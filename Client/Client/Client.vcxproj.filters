@@ -257,6 +257,12 @@
     <ClInclude Include="SkyboxMesh.h">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClInclude>
+    <ClInclude Include="GltfSkinnedShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="GltfAnimationTestScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -406,6 +412,12 @@
     <ClCompile Include="SkyboxMesh.cpp">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClCompile>
+    <ClCompile Include="GltfSkinnedShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="GltfAnimationTestScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -442,6 +454,9 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SkyBoxShader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Gltf_Skinned_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

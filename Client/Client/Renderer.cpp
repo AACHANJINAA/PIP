@@ -10,6 +10,7 @@
 #include "PlayerShader.h"
 #include "GltfHpShader.h"
 #include "SkyboxShader.h"
+#include "GltfSkinnedShader.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -31,9 +32,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
-    _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -56,10 +57,11 @@ void Renderer::initialize(ID3D12Device* device)
     auto gltf_hp_shader = std::make_shared<GltfHpShader>();
     _shaderPrototypes[gltf_hp_shader->pso_name()] = gltf_hp_shader;
 
-	auto skybox_shader = std::make_shared<SkyboxShader>();
-	_shaderPrototypes[skybox_shader->pso_name()] = skybox_shader;
+	//auto skybox_shader = std::make_shared<SkyboxShader>();
+	//_shaderPrototypes[skybox_shader->pso_name()] = skybox_shader;
 
-
+    auto gltf_animation_shader = std::make_shared<GltfSkinnedShader>();
+    _shaderPrototypes[gltf_animation_shader->pso_name()] = gltf_animation_shader;
 
 
     create_root_signatures(device);
