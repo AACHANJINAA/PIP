@@ -5,7 +5,7 @@ class ReadFBXMesh : public Mesh
 {
 public:
 	ReadFBXMesh(const std::string& file_path);
-	virtual ~ReadFBXMesh();
+	~ReadFBXMesh() override;
 
 	const std::vector<CollisionPrimitive>& GetCollisionPrimitives() const { return _collisionPrimitives; }
 private:
@@ -15,6 +15,6 @@ private:
 	void ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 private:
-	std::string m_texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
+	std::string _texturePath; // 로드된 텍스처 파일 경로 (단순화를 위해 하나만 저장)
 	std::vector<CollisionPrimitive> _collisionPrimitives;
 };
