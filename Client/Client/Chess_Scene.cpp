@@ -37,66 +37,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 
-    // DW설명 : 인사 애니메이션 오브젝트 생성
-    //{
-    //    auto hi_brute = ObjectManager::instance()->create_game_object("Hi_animation_brute");
-    //    // GltfAnimationTestScript추가
-    //
-    //    hi_brute->add_component<GltfAnimationTestScript>();
-    //    //// RenderComponent
-    //    auto renderer = hi_brute->add_component<RenderComponent>();
-    //
-    //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/Animation_BruteHi/bruteHi.gltf",true);
-    //    renderer->set_mesh(hi_brute_Mesh);
-    //
-    //    // 재질 및 쉐이더 설정
-    //    std::string material = "skinned_animation_brute";
-    //
-    //    ResourceManager::instance()->create_material(material);
-    //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
-    //
-    //    // gltf
-    //    renderer->set_pso_name("skinned");
-    //
-    //    // 위치, 회전 정보
-    //    hi_brute->transform()->set_local_rotation(0.f, 180.f, 180.f);  
-    //    hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f }); 
-    //
-    //    
-    //
-    //    hi_brute->transform()->set_local_position(XMFLOAT3(0.0f, 100.0f, -100.0f));
-    //    ResourceManager::instance()->upload_pending_meshes(device, commandList);
-    //}
-    //
-    //{
-    //    auto hi_brute = ObjectManager::instance()->create_game_object("Dance_animation_brute");
-    //    // GltfAnimationTestScript추가
-    //
-    //    hi_brute->add_component<GltfAnimationTestScript>();
-    //    //// RenderComponent
-    //    auto renderer = hi_brute->add_component<RenderComponent>();
-    //
-    //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteDance/BruteDance.gltf", true);
-    //    renderer->set_mesh(hi_brute_Mesh);
-    //
-    //    // 재질 및 쉐이더 설정
-    //    std::string material = "skinned_Dance_brute";
-    //
-    //    ResourceManager::instance()->create_material(material);
-    //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
-    //
-    //    // gltf
-    //    renderer->set_pso_name("skinned");
-    //
-    //    // 위치, 회전 정보
-    //    hi_brute->transform()->set_local_rotation(0.f, 180.f, 180.f);
-    //    hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
-    //
-    //
-    //
-    //    hi_brute->transform()->set_local_position(XMFLOAT3(50.0f, 100.0f, -100.0f));
-    //    ResourceManager::instance()->upload_pending_meshes(device, commandList);
-    //}
+	// DW설명 : 브루트 소년단 생성 함수 호출
+    SpawnBTS(device, commandList);
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
@@ -131,6 +73,71 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 void Chess_Scene::release_upload_buffers()
 {
     ResourceManager::instance()->release_upload_buffers();
+}
+
+void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    // DW설명 : 인사 애니메이션 오브젝트 생성
+    {
+        auto hi_brute = ObjectManager::instance()->create_game_object("Hi_animation_brute");
+        // GltfAnimationTestScript추가
+
+        hi_brute->add_component<GltfAnimationTestScript>();
+        //// RenderComponent
+        auto renderer = hi_brute->add_component<RenderComponent>();
+
+        auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/Animation_BruteHi/bruteHi.gltf", true);
+        renderer->set_mesh(hi_brute_Mesh);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "skinned_animation_brute";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+        // gltf
+        renderer->set_pso_name("skinned");
+
+        // 위치, 회전 정보
+        hi_brute->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
+
+
+
+        hi_brute->transform()->set_local_position(XMFLOAT3(0.0f, 25.0f, -130.0f));
+        ResourceManager::instance()->upload_pending_meshes(device, commandList);
+    }
+    
+	for (int i = 0; i < 5; ++i)
+    {
+        auto hi_brute = ObjectManager::instance()->create_game_object("Dance_animation_brute");
+        // GltfAnimationTestScript추가
+
+        hi_brute->add_component<GltfAnimationTestScript>();
+        //// RenderComponent
+        auto renderer = hi_brute->add_component<RenderComponent>();
+
+        auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteDance/BruteDance.gltf", true);
+        renderer->set_mesh(hi_brute_Mesh);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "skinned_Dance_brute";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+        // gltf
+        renderer->set_pso_name("skinned");
+
+        // 위치, 회전 정보
+        hi_brute->transform()->set_local_rotation(90.f,(0.f + 45.f*i), 90.f);
+        hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
+
+
+
+        hi_brute->transform()->set_local_position(XMFLOAT3((-100.f + i * 50.f), 50.0f, -80.0f));
+        ResourceManager::instance()->upload_pending_meshes(device, commandList);
+    }
 }
 
 // =================================================================

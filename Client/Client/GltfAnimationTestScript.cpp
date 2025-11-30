@@ -15,6 +15,7 @@ void GltfAnimationTestScript::update(float delta_time)
     if (mesh)
     {
         // 0번 애니메이션 클립 재생
-        mesh->update_animation(delta_time, 0);
+		_animationTime += delta_time;
+        mesh->update_animation(_animationTime, 0);
     }
 }
