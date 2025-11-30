@@ -134,13 +134,13 @@ struct AnimationClip
 class ReadGLTFMesh : public Mesh
 {
 public:
-	ReadGLTFMesh(const std::string& filePath, bool ishave_animate = false);
+	ReadGLTFMesh(const std::string& filePath, bool is_animated = false);
 	~ReadGLTFMesh() override;
 
 	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
 
 	//virtual void render(ID3D12GraphicsCommandList* commandList) override;
-	virtual void render(ID3D12GraphicsCommandList* commandList) override;
+	void render(ID3D12GraphicsCommandList* commandList) override;
 	void release_upload_buffers() override;
 
 
