@@ -41,7 +41,7 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
     rendercomp->set_mesh(skyboxmesh);
     rendercomp->set_pso_name("skybox");
 
-    _skyboxObject->transform()->set_local_scale({ 5000.0f, 5000.0f, 5000.0f });
+    _skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
     _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
 }
 

@@ -48,6 +48,8 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateSwapChain(); 
 	CreateDepthStencilView();
 
+	HRESULT hResult = _commandAllocator->Reset();
+	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
 
 	InputManager::instance()->initialize(hMainWnd);
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
@@ -57,6 +59,16 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
+
+	hResult = _commandList->Close();
+	ID3D12CommandList * ppd3dCommandLists[] = { _commandList.Get() };
+	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
+	
+    // GPU가 모든 초기화 작업을 마칠 때까지 기다립니다.
+    WaitForGpuComplete();
+
+    // GPU에 데이터 전송이 끝났으므로, 임시 업로드 버퍼들을 해제합니다.
+    ResourceManager::instance()->release_upload_buffers();
 
 	return(true);
 }
