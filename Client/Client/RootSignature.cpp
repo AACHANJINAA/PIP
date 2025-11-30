@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "RootSignature.h"
 
 const std::string& DefaultRootSignatureGenerator::name() const
@@ -13,40 +13,40 @@ ComPtr<ID3D12RootSignature> DefaultRootSignatureGenerator::create(ID3D12Device* 
 	::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
 	d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // [¼öÁ¤] 4°³ÀÇ ÅØ½ºÃ³(t0, t1, t2, t3)¸¦ Æ÷ÇÔÇÏ´Â ÇÏ³ªÀÇ Descriptor Range¸¦ Á¤ÀÇÇÕ´Ï´Ù.
+    // [ìˆ˜ì •] 4ê°œì˜ í…ìŠ¤ì²˜(t0, t1, t2, t3)ë¥¼ í¬í•¨í•˜ëŠ” í•˜ë‚˜ì˜ Descriptor Rangeë¥¼ ì •ì˜í•©ë‹ˆë‹¤.
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
     d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 4; // ÅØ½ºÃ³ 4°³¸¦ »ç¿ëÇÕ´Ï´Ù.
-    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0 ·¹Áö½ºÅÍ¿¡¼­ ½ÃÀÛÇÕ´Ï´Ù.
+    d3dDescriptorRanges[0].NumDescriptors = 4; // í…ìŠ¤ì²˜ 4ê°œë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
+    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0 ë ˆì§€ìŠ¤í„°ì—ì„œ ì‹œì‘í•©ë‹ˆë‹¤.
     d3dDescriptorRanges[0].RegisterSpace = 0;
     d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     D3D12_ROOT_PARAMETER d3dRootParameters[5];
-    // [¼öÁ¤] 0¹ø ÆÄ¶ó¹ÌÅÍ: ¿ùµå Çà·Ä¿ë CBV
+    // [ìˆ˜ì •] 0ë²ˆ íŒŒë¼ë¯¸í„°: ì›”ë“œ í–‰ë ¬ìš© CBV
     d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
     d3dRootParameters[0].Descriptor.RegisterSpace = 0;
     d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // [¼öÁ¤] 1¹ø ÆÄ¶ó¹ÌÅÍ: Ä«¸Ş¶ó¿ë CBV
+    // [ìˆ˜ì •] 1ë²ˆ íŒŒë¼ë¯¸í„°: ì¹´ë©”ë¼ìš© CBV
     d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
     d3dRootParameters[1].Descriptor.RegisterSpace = 0;
     d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // ¸ÓÅÍ¸®¾ó Á¤º¸¸¦ À§ÇÑ »ó¼ö ¹öÆÛ ºä(CBV) Ãß°¡
+    // ë¨¸í„°ë¦¬ì–¼ ì •ë³´ë¥¼ ìœ„í•œ ìƒìˆ˜ ë²„í¼ ë·°(CBV) ì¶”ê°€
     d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // ¼ÎÀÌ´õÀÇ b2 ·¹Áö½ºÅÍ
+    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // ì…°ì´ë”ì˜ b2 ë ˆì§€ìŠ¤í„°
     d3dRootParameters[2].Descriptor.RegisterSpace = 0;
     d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // Á¶¸í Á¤º¸¸¦ À§ÇÑ »ó¼ö ¹öÆÛ ºä(CBV) Ãß°¡
+    // ì¡°ëª… ì •ë³´ë¥¼ ìœ„í•œ ìƒìˆ˜ ë²„í¼ ë·°(CBV) ì¶”ê°€
     d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // ¼ÎÀÌ´õÀÇ b3 ·¹Áö½ºÅÍ
+    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // ì…°ì´ë”ì˜ b3 ë ˆì§€ìŠ¤í„°
     d3dRootParameters[3].Descriptor.RegisterSpace = 0;
     d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-     // [¼öÁ¤] ÆÄ¶ó¹ÌÅÍ 4: ÅØ½ºÃ³¸¦ À§ÇÑ ÇÏ³ªÀÇ Descriptor Table
+     // [ìˆ˜ì •] íŒŒë¼ë¯¸í„° 4: í…ìŠ¤ì²˜ë¥¼ ìœ„í•œ í•˜ë‚˜ì˜ Descriptor Table
     d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
     d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
@@ -55,25 +55,25 @@ ComPtr<ID3D12RootSignature> DefaultRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;
 
-    // Á¤Àû »ùÇÃ·¯ ¼³Á¤ (±âÁ¸°ú µ¿ÀÏ)
+    // ì •ì  ìƒ˜í”ŒëŸ¬ ì„¤ì • (ê¸°ì¡´ê³¼ ë™ì¼)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
     d3dStaticSamplerDesc.MipLODBias = 0;
     d3dStaticSamplerDesc.MaxAnisotropy = 16;
     d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     d3dStaticSamplerDesc.MinLOD = 0;
     d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    d3dStaticSamplerDesc.ShaderRegister = 0; // s0 ·¹Áö½ºÅÍ
+    d3dStaticSamplerDesc.ShaderRegister = 0; // s0 ë ˆì§€ìŠ¤í„°
     d3dStaticSamplerDesc.RegisterSpace = 0;
     d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     
     d3dRootSignatureDesc.NumStaticSamplers = 1;
     d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
     
-    // ·çÆ® ½Ã±×´ÏÃ³ »ı¼º (±âÁ¸°ú µ¿ÀÏ)
+    // ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ìƒì„± (ê¸°ì¡´ê³¼ ë™ì¼)
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
     ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
     D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
@@ -94,64 +94,64 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    //// 1. ÅØ½ºÃ³(SRV)¸¦ À§ÇÑ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí ¼³Á¤
+    //// 1. í…ìŠ¤ì²˜(SRV)ë¥¼ ìœ„í•œ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸” ì„¤ì •
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
     for (int i = 0; i < 4; ++i)
     {
         d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        d3dDescriptorRanges[i].NumDescriptors = 1; // ÅØ½ºÃ³´Â 1°³
-        d3dDescriptorRanges[i].BaseShaderRegister = i; // ¼ÎÀÌ´õÀÇ t0 ·¹Áö½ºÅÍ¿¡ ¿¬°á
+        d3dDescriptorRanges[i].NumDescriptors = 1; // í…ìŠ¤ì²˜ëŠ” 1ê°œ
+        d3dDescriptorRanges[i].BaseShaderRegister = i; // ì…°ì´ë”ì˜ t0 ë ˆì§€ìŠ¤í„°ì— ì—°ê²°
         d3dDescriptorRanges[i].RegisterSpace = 0;
         d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     }
-    // 2. ¼ÎÀÌ´õ°¡ »ç¿ëÇÒ ÀüÃ¼ ÆÄ¶ó¹ÌÅÍ ¸ñ·ÏÀ» Á¤ÀÇ <- ÅØ½ºÃÄ Å×ÀÌºíµµ Ãß°¡µÊ
-	D3D12_ROOT_PARAMETER d3dRootParameters[8]; // CBV 4°³ + SRV Å×ÀÌºí 1°³ = 5°³
+    // 2. ì…°ì´ë”ê°€ ì‚¬ìš©í•  ì „ì²´ íŒŒë¼ë¯¸í„° ëª©ë¡ì„ ì •ì˜ <- í…ìŠ¤ì³ í…Œì´ë¸”ë„ ì¶”ê°€ë¨
+	D3D12_ROOT_PARAMETER d3dRootParameters[8]; // CBV 4ê°œ + SRV í…Œì´ë¸” 1ê°œ = 5ê°œ
 
-    // 0¹ø ¿ùµå Çà·Ä¿ë CBV
+    // 0ë²ˆ ì›”ë“œ í–‰ë ¬ìš© CBV
     d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
     d3dRootParameters[0].Descriptor.RegisterSpace = 0;
     d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // 1¹ø Ä«¸Ş¶ó¿ë CBV
+    // 1ë²ˆ ì¹´ë©”ë¼ìš© CBV
     d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
     d3dRootParameters[1].Descriptor.RegisterSpace = 0;
     d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // 2¹ø ÀçÁú¿ë CBV
+    // 2ë²ˆ ì¬ì§ˆìš© CBV
     d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: ÀçÁú
+    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: ì¬ì§ˆ
     d3dRootParameters[2].Descriptor.RegisterSpace = 0;
     d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	// 3¹ø Á¶¸í¿ë CBV
+	// 3ë²ˆ ì¡°ëª…ìš© CBV
     d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: Á¶¸í
+    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: ì¡°ëª…
     d3dRootParameters[3].Descriptor.RegisterSpace = 0;
     d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    //// [»õ·Î¿î ÆÄ¶ó¹ÌÅÍ] ½ºÅ°´× »ó¼ö ¹öÆÛ
+    //// [ìƒˆë¡œìš´ íŒŒë¼ë¯¸í„°] ìŠ¤í‚¤ë‹ ìƒìˆ˜ ë²„í¼
     //d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    //d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: ½ºÅ°´× »À Çà·Ä
+    //d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: ìŠ¤í‚¤ë‹ ë¼ˆ í–‰ë ¬
     //d3dRootParameters[4].Descriptor.RegisterSpace = 0;
-    //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // ¹öÅØ½º ¼ÎÀÌ´õ¿¡¼­¸¸ ÇÊ¿ä
+    //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // ë²„í…ìŠ¤ ì…°ì´ë”ì—ì„œë§Œ í•„ìš”
 
-	// 4¹ø ÅØ½ºÃ³ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí
+	// 4ë²ˆ í…ìŠ¤ì²˜ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸”
     for (int i = 0; i < 4; ++i)
     {
         d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
         d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
-        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ÇÈ¼¿ ¼ÎÀÌ´õ¿¡¼­¸¸ ÇÊ¿ä
+        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // í”½ì…€ ì…°ì´ë”ì—ì„œë§Œ í•„ìš”
     }
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;
 
-    //// 3. ÅØ½ºÃ³ »ùÇÃ·¯ ¼³Á¤
+    //// 3. í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ ì„¤ì •
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
     d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -160,14 +160,14 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     d3dStaticSamplerDesc.MinLOD = 0;
     d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    d3dStaticSamplerDesc.ShaderRegister = 0; // ¼ÎÀÌ´õÀÇ s0 ·¹Áö½ºÅÍ¿¡ ¿¬°á
+    d3dStaticSamplerDesc.ShaderRegister = 0; // ì…°ì´ë”ì˜ s0 ë ˆì§€ìŠ¤í„°ì— ì—°ê²°
     d3dStaticSamplerDesc.RegisterSpace = 0;
     d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     d3dRootSignatureDesc.NumStaticSamplers = 1;
     d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
 
-    // 4. ·çÆ® ¼­¸í »ı¼º
+    // 4. ë£¨íŠ¸ ì„œëª… ìƒì„±
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
     ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
     D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
@@ -188,68 +188,68 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    //// 1. ÅØ½ºÃ³(SRV)¸¦ À§ÇÑ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí ¼³Á¤
+    //// 1. í…ìŠ¤ì²˜(SRV)ë¥¼ ìœ„í•œ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸” ì„¤ì •
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
     for (int i = 0; i < 4; ++i)
     {
         d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        d3dDescriptorRanges[i].NumDescriptors = 1; // ÅØ½ºÃ³´Â 1°³
-        d3dDescriptorRanges[i].BaseShaderRegister = i; // ¼ÎÀÌ´õÀÇ t0 ·¹Áö½ºÅÍ¿¡ ¿¬°á
+        d3dDescriptorRanges[i].NumDescriptors = 1; // í…ìŠ¤ì²˜ëŠ” 1ê°œ
+        d3dDescriptorRanges[i].BaseShaderRegister = i; // ì…°ì´ë”ì˜ t0 ë ˆì§€ìŠ¤í„°ì— ì—°ê²°
         d3dDescriptorRanges[i].RegisterSpace = 0;
         d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     }
-    // 2. ¼ÎÀÌ´õ°¡ »ç¿ëÇÒ ÀüÃ¼ ÆÄ¶ó¹ÌÅÍ ¸ñ·ÏÀ» Á¤ÀÇ <- ÅØ½ºÃÄ Å×ÀÌºíµµ Ãß°¡µÊ
-    D3D12_ROOT_PARAMETER d3dRootParameters[9]; // CBV 4°³ + SRV Å×ÀÌºí 1°³ = 5°³
+    // 2. ì…°ì´ë”ê°€ ì‚¬ìš©í•  ì „ì²´ íŒŒë¼ë¯¸í„° ëª©ë¡ì„ ì •ì˜ <- í…ìŠ¤ì³ í…Œì´ë¸”ë„ ì¶”ê°€ë¨
+    D3D12_ROOT_PARAMETER d3dRootParameters[9]; // CBV 4ê°œ + SRV í…Œì´ë¸” 1ê°œ = 5ê°œ
 
-    // 0¹ø ¿ùµå Çà·Ä¿ë CBV
+    // 0ë²ˆ ì›”ë“œ í–‰ë ¬ìš© CBV
     d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
     d3dRootParameters[0].Descriptor.RegisterSpace = 0;
     d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // 1¹ø Ä«¸Ş¶ó¿ë CBV
+    // 1ë²ˆ ì¹´ë©”ë¼ìš© CBV
     d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
     d3dRootParameters[1].Descriptor.RegisterSpace = 0;
     d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // 2¹ø ÀçÁú¿ë CBV
+    // 2ë²ˆ ì¬ì§ˆìš© CBV
     d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: ÀçÁú
+    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: ì¬ì§ˆ
     d3dRootParameters[2].Descriptor.RegisterSpace = 0;
     d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // 3¹ø Á¶¸í¿ë CBV
+    // 3ë²ˆ ì¡°ëª…ìš© CBV
     d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: Á¶¸í
+    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: ì¡°ëª…
     d3dRootParameters[3].Descriptor.RegisterSpace = 0;
     d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    //// [»õ·Î¿î ÆÄ¶ó¹ÌÅÍ] ½ºÅ°´× »ó¼ö ¹öÆÛ
+    //// [ìƒˆë¡œìš´ íŒŒë¼ë¯¸í„°] ìŠ¤í‚¤ë‹ ìƒìˆ˜ ë²„í¼
     //d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    //d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: ½ºÅ°´× »À Çà·Ä
+    //d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: ìŠ¤í‚¤ë‹ ë¼ˆ í–‰ë ¬
     //d3dRootParameters[4].Descriptor.RegisterSpace = 0;
-    //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // ¹öÅØ½º ¼ÎÀÌ´õ¿¡¼­¸¸ ÇÊ¿ä
+    //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // ë²„í…ìŠ¤ ì…°ì´ë”ì—ì„œë§Œ í•„ìš”
 
-    // 4¹ø ÅØ½ºÃ³ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí
+    // 4ë²ˆ í…ìŠ¤ì²˜ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸”
     for (int i = 0; i < 4; ++i)
     {
         d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
         d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
-        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ÇÈ¼¿ ¼ÎÀÌ´õ¿¡¼­¸¸ ÇÊ¿ä
+        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // í”½ì…€ ì…°ì´ë”ì—ì„œë§Œ í•„ìš”
     }
 
-    // 8¹ø Ã¼·Â¿ë CBV
+    // 8ë²ˆ ì²´ë ¥ìš© CBV
     d3dRootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // b4: Ã¼·Â
+    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // b4: ì²´ë ¥
     d3dRootParameters[8].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ÇÈ¼¿ ½¦ÀÌ´õ¿¡¼­¸¸ º¼°ÅÀÓ
+    d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // í”½ì…€ ì‰ì´ë”ì—ì„œë§Œ ë³¼ê±°ì„
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;
 
-    //// 3. ÅØ½ºÃ³ »ùÇÃ·¯ ¼³Á¤
+    //// 3. í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ ì„¤ì •
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
     d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -260,14 +260,14 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
     d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     d3dStaticSamplerDesc.MinLOD = 0;
     d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    d3dStaticSamplerDesc.ShaderRegister = 0; // ¼ÎÀÌ´õÀÇ s0 ·¹Áö½ºÅÍ¿¡ ¿¬°á
+    d3dStaticSamplerDesc.ShaderRegister = 0; // ì…°ì´ë”ì˜ s0 ë ˆì§€ìŠ¤í„°ì— ì—°ê²°
     d3dStaticSamplerDesc.RegisterSpace = 0;
     d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     d3dRootSignatureDesc.NumStaticSamplers = 1;
     d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
 
-    // 4. ·çÆ® ¼­¸í »ı¼º
+    // 4. ë£¨íŠ¸ ì„œëª… ìƒì„±
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
     ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
     D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
@@ -288,7 +288,7 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // 1. ÅØ½ºÃ³(SRV)¸¦ À§ÇÑ µğ½ºÅ©¸³ÅÍ ¹üÀ§ ¼³Á¤ (t0 ~ t3)
+    // 1. í…ìŠ¤ì²˜(SRV)ë¥¼ ìœ„í•œ ë””ìŠ¤í¬ë¦½í„° ë²”ìœ„ ì„¤ì • (t0 ~ t3)
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
     for (int i = 0; i < 4; ++i)
     {
@@ -299,42 +299,42 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
         d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     }
 
-    // 2. ·çÆ® ÆÄ¶ó¹ÌÅÍ Á¤ÀÇ (ÃÑ 9°³)
-    // [0~3]: °øÅë CBV
-    // [4~7]: °øÅë ÅØ½ºÃ³ Å×ÀÌºí (¼ø¼­ À¯Áö!)
-    // [8]  : [Ãß°¡] ½ºÅ°´× »À´ë Çà·Ä (¸Ç µÚ·Î ÀÌµ¿)
+    // 2. ë£¨íŠ¸ íŒŒë¼ë¯¸í„° ì •ì˜ (ì´ 9ê°œ)
+    // [0~3]: ê³µí†µ CBV
+    // [4~7]: ê³µí†µ í…ìŠ¤ì²˜ í…Œì´ë¸” (ìˆœì„œ ìœ ì§€!)
+    // [8]  : [ì¶”ê°€] ìŠ¤í‚¤ë‹ ë¼ˆëŒ€ í–‰ë ¬ (ë§¨ ë’¤ë¡œ ì´ë™)
     D3D12_ROOT_PARAMETER d3dRootParameters[9];
 
-    // [0] b0: ¿ùµå Çà·Ä
+    // [0] b0: ì›”ë“œ í–‰ë ¬
     d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[0].Descriptor.ShaderRegister = 0;
     d3dRootParameters[0].Descriptor.RegisterSpace = 0;
     d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // [1] b1: Ä«¸Ş¶ó
+    // [1] b1: ì¹´ë©”ë¼
     d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[1].Descriptor.ShaderRegister = 1;
     d3dRootParameters[1].Descriptor.RegisterSpace = 0;
     d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // [2] b2: ÀçÁú
+    // [2] b2: ì¬ì§ˆ
     d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[2].Descriptor.ShaderRegister = 2;
     d3dRootParameters[2].Descriptor.RegisterSpace = 0;
     d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // [3] b3: Á¶¸í
+    // [3] b3: ì¡°ëª…
     d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     d3dRootParameters[3].Descriptor.ShaderRegister = 3;
     d3dRootParameters[3].Descriptor.RegisterSpace = 0;
     d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     // -----------------------------------------------------------------------
-    // [4~7] t0~t3: ÅØ½ºÃ³ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí (GltfRootSignature¿Í À§Ä¡ µ¿ÀÏÇÏ°Ô À¯Áö)
+    // [4~7] t0~t3: í…ìŠ¤ì²˜ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸” (GltfRootSignatureì™€ ìœ„ì¹˜ ë™ì¼í•˜ê²Œ ìœ ì§€)
     // -----------------------------------------------------------------------
     for (int i = 0; i < 4; ++i)
     {
-        // ÆÄ¶ó¹ÌÅÍ ÀÎµ¦½º 4, 5, 6, 7
+        // íŒŒë¼ë¯¸í„° ì¸ë±ìŠ¤ 4, 5, 6, 7
         int rootParamIndex = 4 + i;
         d3dRootParameters[rootParamIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         d3dRootParameters[rootParamIndex].DescriptorTable.NumDescriptorRanges = 1;
@@ -343,17 +343,17 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     }
 
     // -----------------------------------------------------------------------
-    // [8] b4: [Ãß°¡] ½ºÅ°´× »À´ë Çà·Ä (¸Ç µÚ¿¡ Ãß°¡)
+    // [8] b4: [ì¶”ê°€] ìŠ¤í‚¤ë‹ ë¼ˆëŒ€ í–‰ë ¬ (ë§¨ ë’¤ì— ì¶”ê°€)
     // -----------------------------------------------------------------------
     d3dRootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // ·¹Áö½ºÅÍ´Â ¿©ÀüÈ÷ b4
+    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // ë ˆì§€ìŠ¤í„°ëŠ” ì—¬ì „íˆ b4
     d3dRootParameters[8].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VS Àü¿ë
+    d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VS ì „ìš©
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;
 
-    // 3. Á¤Àû »ùÇÃ·¯ ¼³Á¤ (±âÁ¸°ú µ¿ÀÏ)
+    // 3. ì •ì  ìƒ˜í”ŒëŸ¬ ì„¤ì • (ê¸°ì¡´ê³¼ ë™ì¼)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
     d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -371,7 +371,7 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.NumStaticSamplers = 1;
     d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
 
-    // 4. ·çÆ® ¼­¸í »ı¼º
+    // 4. ë£¨íŠ¸ ì„œëª… ìƒì„±
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
     ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
     D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
@@ -393,6 +393,86 @@ const std::string& SkyBoxRootSignatureGenerator::name() const
 
 ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* device)
 {
-    DefaultRootSignatureGenerator defaultGenerator;
-    return defaultGenerator.create(device);
+    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
+    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
+    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    d3dDescriptorRanges[0].NumDescriptors = 1; // í…ìŠ¤ì²˜ 1ê°œ
+    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0 ë ˆì§€ìŠ¤í„°
+    d3dDescriptorRanges[0].RegisterSpace = 0;
+    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    D3D12_ROOT_PARAMETER d3dRootParameters[5];
+
+    // [0] b0: ì›”ë“œ í–‰ë ¬ (CBV)
+    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[0].Descriptor.ShaderRegister = 0;
+    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [1] b1: ì¹´ë©”ë¼ (CBV)
+    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[1].Descriptor.ShaderRegister = 1;
+    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [2] b2: ì¬ì§ˆ (CBV) - ìŠ¤ì¹´ì´ë°•ìŠ¤ëŠ” ì•ˆ ì¨ë„ ì¹¸ì€ ë¹„ì›Œë‘¡ë‹ˆë‹¤ (í˜¸í™˜ì„±)
+    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[2].Descriptor.ShaderRegister = 2;
+    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [3] b3: ì¡°ëª… (CBV) - ë§ˆì°¬ê°€ì§€ë¡œ ì¹¸ ìœ ì§€
+    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[3].Descriptor.ShaderRegister = 3;
+    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [4] t0: í…ìŠ¤ì²˜ í…Œì´ë¸” (Descriptor Table)
+    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
+    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
+    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+
+    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
+
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+
+    // [ì£¼ì†Œ ëª¨ë“œ] ìŠ¤ì¹´ì´ë°•ìŠ¤ëŠ” ëë¶€ë¶„ ì„ (Seam) ë°©ì§€ë¥¼ ìœ„í•´ CLAMPê°€ ì•ˆì „í•¨
+    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+
+    d3dStaticSamplerDesc.MipLODBias = 0;
+    d3dStaticSamplerDesc.MaxAnisotropy = 16; // LINEAR ì“¸ ë• 1, ANISOTROPIC ì“¸ ë• 16
+    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    d3dStaticSamplerDesc.MinLOD = 0;
+    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+
+    // [ë ˆì§€ìŠ¤í„°] ì…°ì´ë”ì˜ register(s0)ì™€ ì—°ê²°
+    d3dStaticSamplerDesc.ShaderRegister = 0;
+    d3dStaticSamplerDesc.RegisterSpace = 0;
+    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    d3dRootSignatureDesc.NumStaticSamplers = 1;
+    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
+
+    ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
+    ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
+
+    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
+
+    if (pd3dErrorBlob)
+    {
+        OutputDebugStringA((char*)pd3dErrorBlob->GetBufferPointer());
+    }
+
+    device->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), pd3dSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&pd3dGraphicsRootSignature));
+
+    return pd3dGraphicsRootSignature;
 }
