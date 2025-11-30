@@ -459,5 +459,8 @@
     <FxCompile Include="Gltf_Skinned_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Tesrrian_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
