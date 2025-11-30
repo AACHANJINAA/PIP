@@ -116,7 +116,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
         DirectX::BoundingBox::CreateFromPoints(primitive.aabb, primitive._vertices.size(),
             &primitive._vertices[0]._position, sizeof(Vertex));
-        DirectX::BoundingOrientedBox::CreateFromPoints(primitive.oobb, primitive._vertices.size(),
+        DirectX::BoundingOrientedBox::CreateFromPoints(primitive.obb, primitive._vertices.size(),
             &primitive._vertices[0]._position, sizeof(Vertex));
 
         _collisionPrimitives.push_back(primitive);
@@ -166,7 +166,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             aiString texturePath;
             if (AI_SUCCESS == material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
             {
-                m_texturePath = texturePath.C_Str();
+                _texturePath = texturePath.C_Str();
             }
             temp_vertices.push_back(vertex);
         }

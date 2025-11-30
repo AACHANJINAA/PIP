@@ -196,7 +196,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
         {
             UINT index_buffer_size = sizeof(UINT) * cpu_primitive.indices.size();
 			void* index_data = const_cast<void*>(static_cast<const void*>(cpu_primitive.indices.data()));
-            gpu_primitive->m_nIndices = cpu_primitive.indices.size();
+            gpu_primitive->_indices = cpu_primitive.indices.size();
             gpu_primitive->_d3dIndexBuffer = ::CreateBufferResource(device, command_list,
                 index_data, index_buffer_size, D3D12_HEAP_TYPE_DEFAULT,
                 D3D12_RESOURCE_STATE_INDEX_BUFFER, index_upload_buffer.GetAddressOf());
@@ -241,7 +241,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
                     heap_props.Type = D3D12_HEAP_TYPE_DEFAULT;
 
                     device->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &texture_desc,
-                        D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&gpu_primitive->m_pTexture));
+                        D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&gpu_primitive->_texture));
 
                     // 텍스처 데이터 업로드를 위한 임시 버퍼 생성 및 데이터 복사
                     UINT64 upload_buffer_size;
@@ -258,13 +258,13 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
                     texture_data.RowPitch = width * 4;
                     texture_data.SlicePitch = texture_data.RowPitch * height;
 
-                    ::UpdateSubresources(command_list, gpu_primitive->m_pTexture,
+                    ::UpdateSubresources(command_list, gpu_primitive->_texture,
                         texture_upload_heap.Get(), 0, 0, 1, &texture_data);
 
                     // 텍스처 리소스의 상태를 셰이더에서 읽을 수 있도록 변경
                     D3D12_RESOURCE_BARRIER barrier = {};
                     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-                    barrier.Transition.pResource = gpu_primitive->m_pTexture;
+                    barrier.Transition.pResource = gpu_primitive->_texture;
                     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
                     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
                     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -283,8 +283,8 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
                     D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
                     DescriptorManager::instance()->allocate_descriptor(cpu_handle, gpu_handle);
 
-                    device->CreateShaderResourceView(gpu_primitive->m_pTexture, &srv_desc, cpu_handle);
-                    gpu_primitive->m_d3dGpuSrvHandle = gpu_handle;
+                    device->CreateShaderResourceView(gpu_primitive->_texture, &srv_desc, cpu_handle);
+                    gpu_primitive->_gpuSrvHandle = gpu_handle;
                 }
             }
         }
@@ -306,16 +306,16 @@ void ReadGlbMesh::render(ID3D12GraphicsCommandList* command_list)
 
     for (const auto& primitive : _primitives)
     {
-        if (primitive->m_pTexture && primitive->m_d3dGpuSrvHandle.ptr != 0)
+        if (primitive->_texture && primitive->_gpuSrvHandle.ptr != 0)
         {
             // [수정] 루트 시그니처에 따라 DescriptorTable 인덱스가 달라질 수 있습니다.
             // 이 부분은 셰이더/루트시그니처 설계와 맞춰야 합니다.
-            command_list->SetGraphicsRootDescriptorTable(3, primitive->m_d3dGpuSrvHandle); // 예시 인덱스
+            command_list->SetGraphicsRootDescriptorTable(3, primitive->_gpuSrvHandle); // 예시 인덱스
         }
 
         command_list->IASetVertexBuffers(0, 1, &primitive->_d3dVertexBufferView);
         command_list->IASetIndexBuffer(&primitive->_d3dIndexBufferView);
-        command_list->DrawIndexedInstanced(primitive->m_nIndices, 1, 0, 0, 0);
+        command_list->DrawIndexedInstanced(primitive->_indices, 1, 0, 0, 0);
     }
 }
 

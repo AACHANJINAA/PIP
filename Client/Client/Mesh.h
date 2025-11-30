@@ -1,6 +1,5 @@
 #pragma once
 #include "stdafx.h"
-
 #include "Object.h"
 
 // nlohmann/json 헤더 // json 파싱 위해 추가
@@ -45,13 +44,13 @@ struct MeshPrimitive
 	ID3D12Resource* _d3dIndexBuffer = nullptr;
 	D3D12_INDEX_BUFFER_VIEW _d3dIndexBufferView{};
 
-	UINT m_nIndices = 0;
+	UINT _indices = 0;
 
 	// 나중에 재질(Material) 인덱스도 여기에 저장할 수 있습니다.
-	int m_nMaterialIndex = -1;
+	int _materialIndex = -1;
 
-	ID3D12Resource* m_pTexture = nullptr; // 텍스처 리소스를 저장할 포인터
-	D3D12_GPU_DESCRIPTOR_HANDLE m_d3dGpuSrvHandle{}; // SRV 핸들을 저장할 변수
+	ID3D12Resource* _texture = nullptr; // 텍스처 리소스를 저장할 포인터
+	D3D12_GPU_DESCRIPTOR_HANDLE _gpuSrvHandle{}; // SRV 핸들을 저장할 변수
 
 	// 소멸자에서 리소스 해제
 	~MeshPrimitive() {
@@ -61,8 +60,8 @@ struct MeshPrimitive
 		if (_d3dIndexBuffer)
 			_d3dIndexBuffer->Release();
 
-		if (m_pTexture)
-			m_pTexture->Release();
+		if (_texture)
+			_texture->Release();
 	}
 };
 
@@ -454,7 +453,7 @@ struct CollisionPrimitive
 	BoundingBox aabb;
 
 	// (추가)협역 단계 및 시각화용 OBB
-	DirectX::BoundingOrientedBox oobb;
+	DirectX::BoundingOrientedBox obb;
 
 	// 월드 변환 행렬
 	XMFLOAT4X4 worldTransform;
