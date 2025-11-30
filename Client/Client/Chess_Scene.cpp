@@ -35,26 +35,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
 	cameraObject->transform()->set_local_rotation(0.f, 0, 0.f);
 
-	load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
-
-	
-	// skybox 생성
-    //{
-    //    ResourceManager::instance()->load_skybox("Resource/Skybox/skybox.dds");
-    //
-    //    _skyboxObject = ObjectManager::instance()->create_game_object("Skybox");
-    //
-    //    auto rendercomp = _skyboxObject->add_component<RenderComponent>();
-    //
-    //    auto skyboxmesh = std::make_shared<SkyboxMesh>(device, commandList);
-    //
-    //    rendercomp->set_mesh(skyboxmesh);
-    //    rendercomp->set_pso_name("skybox");
-    //
-    //    _skyboxObject->transform()->set_local_scale({ 5000.0f, 5000.0f, 5000.0f });
-    //    _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
-    //}
-
+    load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 
     // DW설명 : 인사 애니메이션 오브젝트 생성
     //{

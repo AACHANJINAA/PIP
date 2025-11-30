@@ -27,9 +27,9 @@ VS_Output VS_Main(VS_Input input)
 {
 	VS_Output output;
 
-    float4 worldPosition = mul(float4(input.VS_Input_PositionL, 1.0f), ViewNoTranslate);
+    float4 viewPosition = mul(ViewNoTranslate, float4(input.VS_Input_PositionL, 1.0f));
 		
-    output.Position = mul(worldPosition, Projection);
+    output.Position = mul(Projection, viewPosition);
 
     output.Position.z = output.Position.w;
 
