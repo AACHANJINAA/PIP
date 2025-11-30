@@ -3,9 +3,9 @@
 #include "ResourceManager.h"
 
 
-ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath, bool ishave_animate)
+ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath, bool is_animated)
 {
-	_is_animated = ishave_animate;
+	_is_animated = is_animated;
 
 	if (_is_animated)
 	{
