@@ -20,6 +20,7 @@ public:
 
 
     // SkyBox Load 함수 추가 및 SRV 핸들러 추가
+  // 인자에 device 추가!
     void load_skybox(const std::string& file_path);
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
     D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
@@ -123,4 +124,5 @@ private:
     // 파일 경로로 텍스처를 로드하고, GPU에 업로드한 뒤, TextureInfo를 반환합니다.
 	// CJ251128 - view_dimension 매개변수를 추가하여 텍스처 뷰의 차원을 지정할 수 있도록 함.
     TextureInfo * load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension = D3D12_SRV_DIMENSION_TEXTURE2D);
+    TextureInfo* load_cubemap_from_dds(const std::string& file_path);
 };

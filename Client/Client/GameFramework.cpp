@@ -48,11 +48,12 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateSwapChain(); 
 	CreateDepthStencilView();
 
+
 	InputManager::instance()->initialize(hMainWnd);
-	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
-	Renderer::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
+	Renderer::instance()->initialize(_device.Get());
 	DescriptorManager::instance()->initialize(_device.Get());
+	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.

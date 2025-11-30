@@ -19,7 +19,7 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-    //build_skybox(device, command_list);
+    build_skybox(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
     //register_scene<Lobby_Scene>("LobbyScene");
@@ -30,7 +30,7 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
 
 void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-    ResourceManager::instance()->load_skybox("C:/Users/USER/Desktop/PIP/Client/Client/Resource/SkyBox/Night.dds");
+    ResourceManager::instance()->load_skybox("Resource\\SkyBox\\Night.dds");
 
     _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
 

@@ -76,39 +76,6 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, b
     return new_mesh;
 }
 
-void ResourceManager::load_skybox(const std::string& file_path)
-{
-	_skybox_texture_path = file_path;
-
-	load_texture(file_path, D3D12_SRV_DIMENSION_TEXTURECUBE);
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv()
-{
-    if (_skybox_texture_path.empty())
-    {
-        CERROR("Skybox texture has not been loaded yet.");
-        return {}; // 유효하지 않은 핸들 반환
-    }
-
-	auto it = _textures.find(_skybox_texture_path);
-    if (it != _textures.end())
-    {
-        return it->second.gpu_handle;
-    }
-
-    CERROR("Skybox texture not found in texture map: " << _skybox_texture_path);
-    return {}; // 유효하지 않은 핸들 반환
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
-{
-    if (_skybox_texture_path.empty()) return {};
-    auto it = _textures.find(_skybox_texture_path);
-    if (it != _textures.end()) return it->second.cpu_handle;
-    return {};
-}
-
 void ResourceManager::upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
     // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.
@@ -167,6 +134,7 @@ void ResourceManager::unload_unused_meshes()
         //CINFO("Unloaded unused mesh: " << key);
     }
 }
+
 
 // 내부 헬퍼 함수: 텍스처를 로드하고 GPU에 업로드합니다.
 ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension)
@@ -510,4 +478,134 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     if (!texture_handles.empty()) {
         renderer->bind_texture_table(command_list, 4, texture_handles);
     }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////SkyBox//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ResourceManager::load_skybox(const std::string& file_path)
+{
+    _skybox_texture_path = file_path;
+    load_cubemap_from_dds(file_path);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv()
+{
+    if (_skybox_texture_path.empty())
+    {
+        CERROR("Skybox texture has not been loaded yet.");
+        return {}; // 유효하지 않은 핸들 반환
+    }
+
+    auto it = _textures.find(_skybox_texture_path);
+    if (it != _textures.end())
+    {
+        return it->second.gpu_handle;
+    }
+
+    CERROR("Skybox texture not found in texture map: " << _skybox_texture_path);
+    return {}; // 유효하지 않은 핸들 반환
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
+{
+    if (_skybox_texture_path.empty()) return {};
+    auto it = _textures.find(_skybox_texture_path);
+    if (it != _textures.end()) return it->second.cpu_handle;
+    return {};
+}
+
+ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::string& file_path)
+{
+    // 1. 캐시 확인
+    auto it = _textures.find(file_path);
+    if (it != _textures.end()) {
+        return &it->second;
+    }
+
+    // Debug: 절대 경로 계산 및 존재성 확인
+    std::filesystem::path dds_path = std::filesystem::absolute(file_path);
+    CLOG("Attempting to load cubemap DDS: " << file_path << " -> abs: " << dds_path.string());
+
+    if (!std::filesystem::exists(dds_path)) {
+        CERROR("Cubemap DDS file not found: " << dds_path.string());
+        return nullptr;
+    }
+
+    // 파일 읽기 가능성 확인 (권한/락 체크용)
+    std::ifstream ifs(dds_path, std::ios::binary | std::ios::ate);
+    if (!ifs.is_open()) {
+        CERROR("Cannot open cubemap DDS file (permission/locked?): " << dds_path.string());
+        return nullptr;
+    }
+    auto file_size = ifs.tellg();
+    ifs.close();
+    CLOG("Cubemap DDS file size: " << file_size << " bytes");
+
+    // Device 가 유효한지 확인
+    if (!_device) {
+        CERROR("ResourceManager::_device is null. Ensure initialize() was called with valid device.");
+        return nullptr;
+    }
+
+    TextureInfo new_texture_info;
+    std::unique_ptr<uint8_t[]> dds_data;
+    std::vector<D3D12_SUBRESOURCE_DATA> subresources;
+
+    std::wstring w_dds_path = dds_path.wstring();
+    HRESULT hr = DirectX::LoadDDSTextureFromFile(_device, w_dds_path.c_str(), &new_texture_info.resource, dds_data, subresources);
+
+    if (FAILED(hr)) {
+        CERROR("Failed to load cubemap DDS file: " << dds_path.string() << " HRESULT=0x" << std::hex << hr);
+        CERROR("If this DDS is not a standard DDS or uses an unsupported header, LoadDDSTextureFromFile may fail.");
+        return nullptr;
+    }
+
+    // 3. 큐브맵인지 강력하게 확인
+    auto desc = new_texture_info.resource->GetDesc();
+    if (desc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || desc.DepthOrArraySize != 6) {
+        CERROR("The provided DDS file is not a cubemap (Dimension/ArraySize mismatch): " << dds_path.string());
+        return nullptr; // 큐브맵이 아니면 확실히 실패 처리
+    }
+
+    // 4. GPU 업로드 (load_texture의 로직과 동일)
+    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(new_texture_info.resource.Get(), 0, static_cast<UINT>(subresources.size()));
+    auto upload_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    auto upload_buffer_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
+
+    hr = _device->CreateCommittedResource(
+        &upload_heap_props, D3D12_HEAP_FLAG_NONE, &upload_buffer_desc,
+        D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+        IID_PPV_ARGS(&new_texture_info.upload_heap));
+
+    if (FAILED(hr)) { CERROR("Failed to create upload heap for cubemap."); return nullptr; }
+
+    UpdateSubresources(_command_list, new_texture_info.resource.Get(), new_texture_info.upload_heap.Get(),
+        0, 0, static_cast<UINT>(subresources.size()), subresources.data());
+
+    auto transition = CD3DX12_RESOURCE_BARRIER::Transition(
+        new_texture_info.resource.Get(),
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    _command_list->ResourceBarrier(1, &transition);
+
+    // 5. 큐브맵용 SRV 생성 (load_texture의 로직과 동일)
+    if (!DescriptorManager::instance()->allocate_descriptor(new_texture_info.cpu_handle, new_texture_info.gpu_handle))
+    {
+        CERROR("Failed to allocate descriptor for cubemap: " << file_path);
+        return nullptr;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Format = new_texture_info.resource->GetDesc().Format;
+    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE; // 큐브맵으로 고정
+    srv_desc.TextureCube.MipLevels = new_texture_info.resource->GetDesc().MipLevels;
+    srv_desc.TextureCube.MostDetailedMip = 0;
+    srv_desc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+    _device->CreateShaderResourceView(new_texture_info.resource.Get(), &srv_desc, new_texture_info.cpu_handle);
+
+    _textures[file_path] = std::move(new_texture_info);
+    return &_textures[file_path];
 }
