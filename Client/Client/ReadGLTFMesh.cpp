@@ -157,7 +157,7 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
 {
 	if (!_isUploaded) return;
 
-	if(_is_animated)
+	if (_is_animated) // 애니메이션 메쉬인 경우 스키닝 렌더링 호출
 	{
 		render_skinned(commandList);
 	}
@@ -194,7 +194,7 @@ void ReadGLTFMesh::release_upload_buffers()
 	}
 }
 
-void ReadGLTFMesh::update_animation(float delta_time, int clip_index)
+void ReadGLTFMesh::update_animation(float& delta_time, int clip_index)
 {
 	// 유효하지 않은 클립 인덱스 체크
 	if (clip_index < 0 || clip_index >= _animations.size()) return;
@@ -202,9 +202,9 @@ void ReadGLTFMesh::update_animation(float delta_time, int clip_index)
 	const AnimationClip& clip = _animations[clip_index];
 
 	// 1. 시간 갱신 (Looping 처리)
-	_current_animation_time += delta_time;
+	//_current_animation_time += delta_time;
 	if (clip._duration > 0.0f) {
-		_current_animation_time = fmod(_current_animation_time, clip._duration);
+		delta_time = fmod(delta_time, clip._duration);
 	}
 
 	// 2. 채널별 키프레임 보간 수행
@@ -223,14 +223,14 @@ void ReadGLTFMesh::update_animation(float delta_time, int clip_index)
 		}
 		else {
 			for (size_t i = 0; i < channel._keyframes.size() - 1; ++i) {
-				if (_current_animation_time >= channel._keyframes[i]._time &&
-					_current_animation_time < channel._keyframes[i + 1]._time) {
+				if (delta_time >= channel._keyframes[i]._time &&
+					delta_time < channel._keyframes[i + 1]._time) {
 					prev_idx = i;
 					next_idx = i + 1;
 					break;
 				}
 			}
-			if (_current_animation_time >= channel._keyframes.back()._time) {
+			if (delta_time >= channel._keyframes.back()._time) {
 				prev_idx = next_idx = channel._keyframes.size() - 1;
 			}
 		}
@@ -239,7 +239,7 @@ void ReadGLTFMesh::update_animation(float delta_time, int clip_index)
 		const Keyframe& next_key = channel._keyframes[next_idx];
 
 		float duration = next_key._time - prev_key._time;
-		float t = (duration > 0.0f) ? (_current_animation_time - prev_key._time) / duration : 0.0f;
+		float t = (duration > 0.0f) ? (delta_time - prev_key._time) / duration : 0.0f;
 
 		XMVECTOR final_value;
 
@@ -307,7 +307,7 @@ void ReadGLTFMesh::update_animation(float delta_time, int clip_index)
 
 		// GPU 전송을 위해 Transpose (Row-Major)
 		XMStoreFloat4x4(&_final_bone_transforms[i], XMMatrixTranspose(final_matrix));
-		//XMStoreFloat4x4(&_final_bone_transforms[i], (final_matrix));
+		//XMStoreFloat4x4(&_final_bone_transforms[i], final_matrix);
 	}
 
 	// 6. GPU 상수 버퍼 업로드
@@ -326,7 +326,7 @@ void ReadGLTFMesh::update_animation(float delta_time, int clip_index)
 
 void ReadGLTFMesh::render_skinned(ID3D12GraphicsCommandList* commandList)
 {
-	// 1. 뼈대 상수 버퍼 바인딩
+	// 뼈대 행렬 팔레드 GPU 상수 버퍼에 바인딩
 	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
 	if (_bone_palette_buffer)
 	{
@@ -388,8 +388,7 @@ void ReadGLTFMesh::read_skinned_animation_mesh(const std::string& filePath)
 
 	// --- 2. [신규] 스키닝/애니메이션 데이터 로드 ---
 	// 
-	// skins 배열을 파싱하여 뼈대 계층, joints 목록, 
-	// InverseBindMatrix를 _skeleton, _joints 등의 멤버 변수에 저장
+	// skins 배열을 파싱 -> 뼈대 정보 관련 파싱
 	load_skins(gltf_json, binary_buffer);
 
 	// animations 배열을 파싱하여 키프레임 데이터를
@@ -424,8 +423,7 @@ void ReadGLTFMesh::read_skinned_animation_mesh(const std::string& filePath)
 			// 이 메쉬가 스키닝을 사용하는지 확인 (중요)
 			if (node.contains("skin"))
 			{
-				// T-포즈를 유지하고 JOINTS_0, WEIGHTS_0를 읽는
-				// 헬퍼 함수 (snake_case)
+				// T-포즈를 유지하고 JOINTS_0, WEIGHTS_0를 읽는 헬퍼 함수
 				process_skinned_mesh(gltf_json, binary_buffer, gltf_json["meshes"][node["mesh"].get<int>()]);
 			}
 			// else 
@@ -460,7 +458,7 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 		return;
 	}
 
-	// 우리는 이 예제에서 0번 스킨만 로드한다고 가정 -> 이것도 수정예정
+	// 우리는 이 예제에서 0번 스킨만 로드한다고 가정 -> 이것도 수정예정, 아직 여러개 있는 경우를 못찾음
 	const json& skin = gltf_json["skins"][0];
 
 	// --- 1. 'joints' 배열 로드 (GPU 행렬 팔레트 순서) ---
@@ -476,6 +474,7 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 
 	// --- 2. 뼈대 정보 컨테이너 크기 초기화 ---
 	// _skeleton 멤버 변수의 크기를 뼈대 개수(72개)만큼 설정 -> 여기서 72라는 숫자는 일단 BruteHi가 72개라 적어둔것임
+	// 이제 72개 뿐만 아니라 다르게 불러오기 가능 수정함
 	_skeleton.resize(num_joints);
 	// _final_bone_transforms 멤버 변수의 크기도 뼈대 개수만큼 설정하고,
 	// 모두 단위 행렬로 초기화
@@ -488,8 +487,7 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 	// --- 3. 'inverseBindMatrices' 로드 ---
 	int ibm_accessor_index = skin["inverseBindMatrices"].get<int>();
 	// get_attribute_data 헬퍼 함수를 사용하여 바이너리 데이터 로드
-	std::vector<DirectX::XMFLOAT4X4> inverse_bind_matrices =
-		get_attribute_data<DirectX::XMFLOAT4X4>(gltf_json, binary_buffer, ibm_accessor_index);
+	std::vector<DirectX::XMFLOAT4X4> inverse_bind_matrices = get_attribute_data<DirectX::XMFLOAT4X4>(gltf_json, binary_buffer, ibm_accessor_index);
 
 	// --- 4. 뼈대 계층 구조 (부모-자식 관계) 구축 ---
 	// 뼈대의 부모 인덱스를 찾기 위해 전체 'nodes' 배열을 순회하며 맵을 만든다람쥐
@@ -525,12 +523,29 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 		_skeleton[i]._node_index = node_index;
 		_skeleton[i]._name = node.value("name", "Bone_" + std::to_string(node_index));
 
-		// glTF는 열 우선(Column-Major), DirectX는 행 우선(Row-Major)
-		// 로드한 행렬을 전치(Transpose)하여 저장
-		DirectX::XMMATRIX col_major_matrix = DirectX::XMLoadFloat4x4(&inverse_bind_matrices[i]);
-		DirectX::XMMATRIX row_major_matrix = DirectX::XMMatrixTranspose(col_major_matrix);
-		//DirectX::XMStoreFloat4x4(&_skeleton[i]._inverse_bind_matrix, row_major_matrix);
-		DirectX::XMStoreFloat4x4(&_skeleton[i]._inverse_bind_matrix, col_major_matrix);
+
+		// DW설명 : 이 부분 절대 놓치지 말 것 이거 때문에 후..
+		// 1. 파일에서 읽은 원본 행렬 (오른손 좌표계, Column-Major)
+		// 메모리 레이아웃 상 Translation이 끝에 있으므로, DXMath(Row-Major)로 읽으면 포맷은 맞음
+		DirectX::XMMATRIX gltf_matrix = DirectX::XMLoadFloat4x4(&inverse_bind_matrices[i]);
+
+		// 2. [추가] 좌표계 변환 (Right-Handed -> Left-Handed)
+		// Z축을 반전시키는 스케일 행렬 생성
+		DirectX::XMMATRIX z_flip = DirectX::XMMatrixScaling(1.0f, 1.0f, -1.0f);
+
+		// 변환 공식: LHS_Matrix = Scale(1,1,-1) * RHS_Matrix * Scale(1,1,-1)
+		// 이렇게 하면 Z와 관련된 회전/이동 성분들의 부호가 올바르게 반전됩니다.
+		DirectX::XMMATRIX converted_matrix = z_flip * gltf_matrix * z_flip;
+
+		// 3. 변환된 행렬 저장 (전치 X)
+		DirectX::XMStoreFloat4x4(&_skeleton[i]._inverse_bind_matrix, converted_matrix);
+		
+		//// glTF는 열 우선(Column-Major), DirectX는 행 우선(Row-Major)
+		//// 로드한 행렬을 전치(Transpose)하여 저장
+		//DirectX::XMMATRIX col_major_matrix = DirectX::XMLoadFloat4x4(&inverse_bind_matrices[i]);
+		//DirectX::XMMATRIX row_major_matrix = DirectX::XMMatrixTranspose(col_major_matrix);
+		////DirectX::XMStoreFloat4x4(&_skeleton[i]._inverse_bind_matrix, row_major_matrix);
+		//DirectX::XMStoreFloat4x4(&_skeleton[i]._inverse_bind_matrix, col_major_matrix);	
 
 		// 위에서 만든 맵을 사용하여 부모 뼈대의 인덱스(_skeleton 기준)를 찾는다.
 		if (node_to_parent_map.find(node_index) != node_to_parent_map.end())
@@ -813,7 +828,7 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 		{
 			auto& v = primitive->_skinned_vertices[i];
 
-			// Position: Z 반전 (x, y, -z)
+			// Position: Z 반전 (x, y, -z) -> 왼손 좌표계로 바꾸는 과정임
 			v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
 
 			// Normal: Z 반전
@@ -872,11 +887,11 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 					primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
 				}
 			}
-			else if (accessor["componentType"] == 5125) { // unsigned int
+			else if (accessor["componentType"] == 5125) { // unsigned int -> 너무 헷갈리는데 이거 나중에 enum으로 바꿔야 하나?
 				memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
 			}
 
-			// DX12 Winding Order Flip (0, 1, 2 -> 0, 2, 1)
+			// DX12 Winding Order Flip (0, 1, 2 -> 0, 2, 1) -> gltf가 기본적으로 CCW이므로 CW로 바꿔줘야 함
 			for (size_t i = 0; i < primitive->_indexCount; i += 3) {
 				std::swap(primitive->_indices[i + 1], primitive->_indices[i + 2]);
 			}

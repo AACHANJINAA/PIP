@@ -43,7 +43,7 @@ VS_OUTPUT VS_GLTF_SKINNED(VS_SKINNED_INPUT input)
     
     // 2. 정점 위치 변환 
     // 순서: Local(Bind Pose) -> Skinning Transform -> World Matrix
-    // 주의: mul(vector, matrix) 순서입니다.
+    // 주의: mul(vector, matrix) 순서
     float4 skinnedPos = mul(float4(input.Position, 1.0f), skinTransform);
     
     // 월드 변환 (배치 위치)

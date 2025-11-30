@@ -16,5 +16,8 @@ public:
     virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
     virtual void release_upload_buffers() override;
 
+    // BruTe Sonyeondan 브루트 소년단 생성함수
+    void SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
 private:
 };
