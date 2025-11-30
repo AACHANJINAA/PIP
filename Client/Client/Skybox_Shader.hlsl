@@ -44,8 +44,9 @@ float4 PS_Main(VS_Output input) : SV_TARGET
     //float4 skycolor = SkyboxTexture.Sample(SkyboxSampler, texDir);
 
     float3 texdir = normalize(input.VS_output_PositionL);
-    float3 ddx_val = ddx(texdir);
-    float3 ddy_val = ddy(texdir);
-    float4 skycolor = SkyboxTexture.SampleGrad(SkyboxSampler, texdir, 0, 0);
-    return skycolor;
+    //float3 ddx_val = ddx(texdir);
+    //float3 ddy_val = ddy(texdir);
+    //float4 skycolor = SkyboxTexture.SampleGrad(SkyboxSampler, texdir, 0, 0);
+    //return skycolor;
+    return float4(texdir * 0.5f + 0.5f, 1.0f);
 }
