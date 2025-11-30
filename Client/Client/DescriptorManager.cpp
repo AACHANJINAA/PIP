@@ -8,7 +8,7 @@ void DescriptorManager::initialize(ID3D12Device* device, UINT descriptor_count)
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.NumDescriptors = _capacity; // 충분한 크기로 할당
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	srvHeapDesc.Flags = _isShaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
 	if (FAILED(device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_descriptorHeap)))) {
 		CERROR("Descriptor Heap Create Failed");
@@ -32,8 +32,16 @@ bool DescriptorManager::allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& out_cpu
 	out_cpu_handle.ptr += (_descriptorSize * _currentIndex);
 
 	// GPU handle 계산
-	out_gpu_handle = _descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-	out_gpu_handle.ptr += (_descriptorSize * _currentIndex);
+	// GPU handle은 힙이 shader-visible일 때만 유효하게 계산, 아니면 0으로 둠
+	if (_isShaderVisible)
+	{
+		out_gpu_handle = _descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+		out_gpu_handle.ptr += (_descriptorSize * _currentIndex);
+	}
+	else
+	{
+		out_gpu_handle.ptr = 0; // 명시적으로 무효화 (실수 사용 방지)
+	}
 
 	_currentIndex++;
 

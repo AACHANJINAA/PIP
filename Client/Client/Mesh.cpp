@@ -16,22 +16,18 @@ Mesh::~Mesh()
 {
 	if (_vertexBuffer)
 	{
-		_vertexBuffer->Unmap(0, nullptr);
 		_vertexBuffer.Reset();
 	}
 	if (_vertexUploadBuffer)
 	{
-		_vertexUploadBuffer->Unmap(0, nullptr);
 		_vertexUploadBuffer.Reset();
 	}
 	if (_indexBuffer)
 	{
-		_indexBuffer->Unmap(0, nullptr);
 		_indexBuffer.Reset();
 	}
 	if (_indexUploadBuffer)
 	{
-		_indexUploadBuffer->Unmap(0, nullptr);
 		_indexUploadBuffer.Reset();
 	}
 }

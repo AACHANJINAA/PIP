@@ -52,9 +52,9 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
 
 	InputManager::instance()->initialize(hMainWnd);
+	DescriptorManager::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
-	DescriptorManager::instance()->initialize(_device.Get());
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 
 	BuildObjects();
