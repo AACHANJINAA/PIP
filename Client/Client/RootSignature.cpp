@@ -57,12 +57,12 @@ ComPtr<ID3D12RootSignature> DefaultRootSignatureGenerator::create(ID3D12Device* 
 
     // 정적 샘플러 설정 (기존과 동일)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
     d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.MipLODBias = 0;
-    d3dStaticSamplerDesc.MaxAnisotropy = 1;
+    d3dStaticSamplerDesc.MaxAnisotropy = 16;
     d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     d3dStaticSamplerDesc.MinLOD = 0;
     d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
