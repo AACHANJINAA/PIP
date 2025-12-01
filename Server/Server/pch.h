@@ -37,6 +37,8 @@ using namespace DirectX;
 // Common 헤더
 #include "Packet.h"
 #include "Vector3.h"
+#include "PacketStream.h"
+
 
 // JSON 헤더
 #include "json.hpp"

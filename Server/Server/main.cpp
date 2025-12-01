@@ -2,11 +2,11 @@
 #include "PacketManager.h"
 #include "server.h"
 
-namespace PIP::server
-{
-    HANDLE g_iocp = nullptr;
-    std::atomic<int> g_new_id = 0;
-}
+//namespace PIP::server
+//{
+//    HANDLE g_iocp = nullptr;
+//    std::atomic<int> g_new_id = 0;
+//}
 
 
 using namespace PIP;

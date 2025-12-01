@@ -91,9 +91,6 @@
     <ClInclude Include="pch.h">
       <Filter>소스 파일\Core</Filter>
     </ClInclude>
-    <ClInclude Include="ServerCore.h">
-      <Filter>소스 파일\Core</Filter>
-    </ClInclude>
     <ClInclude Include="NPC.h">
       <Filter>소스 파일\NPC</Filter>
     </ClInclude>
@@ -104,6 +101,9 @@
       <Filter>소스 파일\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\Vector3.h">
+      <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\stb_image.h">
       <Filter>소스 파일\Common</Filter>
     </ClInclude>
   </ItemGroup>

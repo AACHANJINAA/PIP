@@ -1,8 +1,9 @@
 ﻿#include "pch.h"
 #include "Room.h"
+
+#include "MapDataManager.h"
 #include "Player.h"
 #include "PacketHandlers.h"
-#include "PacketStream.h"
 
 namespace PIP::server
 {
@@ -26,7 +27,7 @@ namespace PIP::server
 			common::Vec3 randomPos = {
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
 			};
-
+			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
 			AddNPC(std::move(npc));
 
@@ -234,6 +235,7 @@ namespace PIP::server
 		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;
 
 		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
+		newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
 		npc->SetPosition(newPos);
 
 		const std::string& npc_name = npc->GetName();
