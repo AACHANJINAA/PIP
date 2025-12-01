@@ -54,17 +54,18 @@ PS_Input VS_Main(VS_Input input)
          // 매우 크게 증폭! (높이 차이가 작으므로)
 //    input.PositionL.y += height * HeightScale * 10; // 100배!;
 
-    /* float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
+    float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
 
-         // 정규화
+    //정규화
+
     const float MIN_HEIGHT = 0.498f;
     const float MAX_HEIGHT = 1.0f;
     height = (height - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT);
     height = (height - 0.5f) * 2.0f;
 
-         // JSON의 HeightScale만 사용! (증폭 없음)
+
     input.PositionL.y += height * HeightScale; // ← 서버와 동일!
-    */
+    
 
          // Transform
     float4 positionL = float4(input.PositionL, 1.0f);
