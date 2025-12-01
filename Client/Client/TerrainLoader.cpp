@@ -160,6 +160,18 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 
     CLOG("Terrain Grid Created: " << vertex_count_x << " x " << vertex_count_z
         << " vertices, " << _indices.size() / 3 << " triangles");
+
+    // 첫 번째와 마지막 정점 출력
+    CLOG("First vertex: (" << vertices[0]._position.x << ", "
+        << vertices[0]._position.y << ", " << vertices[0]._position.z << ")");
+    CLOG("Last vertex: (" << vertices.back()._position.x << ", "
+        << vertices.back()._position.y << ", " << vertices.back()._position.z << ")");
+
+    CLOG("First 3 indices: " << _indices[0] << ", " << _indices[1] << ", " << _indices[2]);
+
+    CLOG("_vertexDataBuffer.size(): " << _vertexDataBuffer.size());
+    CLOG("_vertexCount: " << _vertexCount);
+    CLOG("_vertexStride: " << _vertexStride);
 }
 
 void TerrainLoader::load_textures_to_resource_manager(const std::string& material_gltf_path)
@@ -223,10 +235,6 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 
     // 4. Draw Call
     command_list->DrawIndexedInstanced(
-        static_cast<UINT>(_indices.size()),  // Index Count
-        1,                                    // Instance Count
-        0,                                    // Start Index
-        0,                                    // Base Vertex
-        0                                     // Start Instance
+        static_cast<UINT>(_indices.size()), 1, 0, 0, 0
     );
 }

@@ -36,30 +36,29 @@ struct VS_Input
 
 struct PS_Input
 {
-    float4 PositionH : SV_POSITION; // Homogeneous Clip Space Position
-    float2 UV : TEXCOORD0; // UV Coordinates
+    float4 PositionH : SV_POSITION;
+    float3 PositionW : POSITION;
+    float2 UV : TEXCOORD0;
 };
 
 PS_Input VS_Main(VS_Input input)
 {
     PS_Input output = (PS_Input) 0;
 
-         // 1. HeightMap 샘플링 (0.0 ~ 1.0 범위)
-         //    SampleLevel을 사용하여 Vertex Shader에서 텍스처 샘플링
-         //    Mip Level 0 사용 (가장 상세한 레벨)
-    float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
+         // HeightMap 샘플링
+    float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r; // 0 ~ 1
 
-         // 2. Y축 변위 적용 (Displacement Mapping)
-         //    height는 0.0~1.0 범위, HeightScale로 실제 높이로 변환
+         // 중심을 0으로 만들기 (0.5를 빼서 -0.5 ~ +0.5)
+    height = height - 0.5f;
+
+         // Y축 변위 적용
     input.PositionL.y += height * HeightScale;
 
-         // 3. Transform Pipeline: Local → World → View → Projection
+         // Transform
     float4 positionL = float4(input.PositionL, 1.0f);
-    float4 positionW = mul(World, positionL); // Local → World
-    float4 positionV = mul(View, positionW); // World → View
-    output.PositionH = mul(Projection, positionV); // View → Clip
+    output.PositionW = mul(positionL, World).xyz;
+    output.PositionH = mul(mul(float4(output.PositionW, 1.0f), View), Projection);
 
-         // 4. UV 좌표를 Pixel Shader로 전달
     output.UV = input.UV;
 
     return output;
@@ -67,7 +66,6 @@ PS_Input VS_Main(VS_Input input)
 
 float4 PS_Main(PS_Input input) : SV_TARGET
 {
-    return float4(1.0f, 0.0f, 0.0f, 1.0f);
          // 1. 텍스처 타일링 설정
          //    Base Texture: 1배 (원본 크기)
          //    Detail Texture: 4배 (디테일을 위해 반복)
