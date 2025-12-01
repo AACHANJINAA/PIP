@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "PacketHandlers.h"
 
+#include <algorithm>
+
 #include "MapDataManager.h"
 #include "Player.h"
 #include "server.h"
@@ -88,8 +90,11 @@ namespace PIP::packet
 			MYERROR("이동 패킷 읽는중 오류남 (패킷에러)");
 			return;;
 		}
-		common::Vec3 targetPos = MapDataManager::Instance()->AdjustPositionToGround(move_packet._position);
+		common::Vec3 targetPos = move_packet._position;
 
+		// Y축만 지면 높이로 보정 (플레이어가 점프했을 수도 있음)
+		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
+		targetPos.y = std::max(targetPos.y, groundHeight + 0.1f); // 지면 근처에 있을 때만 보정
 		common::Vec3 player_extents = { 1.f, 1.8f, 1.f }; // TODO: 플레이어 크기 받을 필요도 있을듯
 		// TODO: 향후 이동 속도를 검증하여 스피드핵 방지 로직 추가 필요
 
