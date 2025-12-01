@@ -43,6 +43,7 @@ public:
     // --- Main Camera Management ---
 	void set_main_camera() { _mainCamera = this; }
     static CameraComponent* get_main() { return _mainCamera; }
+    ID3D12Resource* get_cb_skybox() const { return _cbSkybox.Get(); }
 
 private:
     // 역할 이전 (from CCamera):

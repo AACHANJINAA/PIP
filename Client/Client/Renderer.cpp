@@ -11,6 +11,7 @@
 #include "GltfHpShader.h"
 #include "SkyboxShader.h"
 #include "GltfSkinnedShader.h"
+#include "TerrainShader.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -36,6 +37,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkyBoxRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<TerrainRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -63,6 +65,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto gltf_animation_shader = std::make_shared<GltfSkinnedShader>();
     _shaderPrototypes[gltf_animation_shader->pso_name()] = gltf_animation_shader;
+
+	auto terrain_shader = std::make_shared<TerrainShader>();
+	_shaderPrototypes[terrain_shader->pso_name()] = terrain_shader;
 
 
     create_root_signatures(device);
@@ -120,11 +125,56 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
             ID3D12RootSignature* root_signature = get_root_signature(skybox_shader_proto->required_root_signature());
             if (root_signature)
             {
-                // 파이프라인/루트 시그니처 설정
                 commandList->SetPipelineState(pso);
                 commandList->SetGraphicsRootSignature(root_signature);
 
-                // 동적 디스크립터 힙 설정 (렌더러에서 사용되는 힙)
+                ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
+                commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+                if (camera)
+                {
+                    camera->update_shader_variables(commandList); // b1만 바인딩
+
+                    // ========== Skybox용 b2 바인딩 추가 ==========
+                    auto cam_comp = camera;
+                    if (cam_comp && cam_comp->get_cb_skybox())
+                    {
+                        D3D12_GPU_VIRTUAL_ADDRESS cbSkyboxGpuAddress = cam_comp->get_cb_skybox()->GetGPUVirtualAddress();
+                        commandList->SetGraphicsRootConstantBufferView(2, cbSkyboxGpuAddress);
+                    }
+
+                    camera->set_viewports_and_scissor_rects(commandList);
+                }
+
+                D3D12_CPU_DESCRIPTOR_HANDLE skybox_srv_cpu = ResourceManager::instance()->get_skybox_srv_cpu();
+                if (skybox_srv_cpu.ptr != 0)
+                {
+                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ skybox_srv_cpu };
+                    bind_texture_table(commandList, 4, cpu_handles);
+                }
+
+                skybox_object->get_component<RenderComponent>()->render(commandList);
+            }
+        }
+    }
+    auto terrain_object = SceneManager::instance()->get_terrain_object();
+    if (terrain_object)
+    {
+        CLOG("=== RENDERING TERRAIN DIRECTLY ===");
+
+        auto terrain_shader_proto = get_shader("terrain");
+        ID3D12PipelineState* pso = get_pso("terrain");
+
+        if (terrain_shader_proto && pso)
+        {
+            ID3D12RootSignature* root_signature = get_root_signature(terrain_shader_proto->required_root_signature());
+            if (root_signature)
+            {
+                // PSO/RootSignature 설정
+                commandList->SetPipelineState(pso);
+                commandList->SetGraphicsRootSignature(root_signature);
+
+                // 동적 디스크립터 힙 설정
                 ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
                 commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
@@ -135,15 +185,50 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                     camera->set_viewports_and_scissor_rects(commandList);
                 }
 
-                // ResourceManager가 제공할 CPU SRV 핸들을 동적 힙으로 복사하여 바인딩
-                D3D12_CPU_DESCRIPTOR_HANDLE skybox_srv_cpu = ResourceManager::instance()->get_skybox_srv_cpu();
-                if (skybox_srv_cpu.ptr != 0)
+                // ========== Terrain 텍스처 바인딩 (CPU → 동적 힙) ==========
+                auto* rm = ResourceManager::instance();
+
+                // [3] t0: HeightMap
+                auto* heightmap = rm->get_texture("Resource\\HeightMap\\Heightmap.r16");
+                if (heightmap && heightmap->cpu_handle.ptr != 0)
                 {
-                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ skybox_srv_cpu };
-                    bind_texture_table(commandList, 4, cpu_handles);
+                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ heightmap->cpu_handle };
+                    bind_texture_table(commandList, 3, cpu_handles);
+                    CLOG("HeightMap bound to slot 3");
+                }
+                else
+                {
+                    CERROR("HeightMap not found!");
                 }
 
-                skybox_object->get_component<RenderComponent>()->render(commandList);
+                // [4] t1: Base Texture
+                auto* base_tex = rm->get_texture("Resource\\HeightMap\\T_ground_Moss_D.png");
+                if (base_tex && base_tex->cpu_handle.ptr != 0)
+                {
+                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
+                    bind_texture_table(commandList, 4, cpu_handles);
+                }
+                else
+                {
+                    CERROR("Base texture not found!");
+                }
+
+                // [5] t2: Detail Texture
+                auto* detail_tex = rm->get_texture("Resource\\HeightMap\\T_Ground_Moss_N.png");
+                if (detail_tex && detail_tex->cpu_handle.ptr != 0)
+                {
+                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
+                    bind_texture_table(commandList, 5, cpu_handles);
+                    CLOG("Detail texture bound to slot 5");
+                }
+                else
+                {
+                    CERROR("Detail texture not found!");
+                }
+
+                CLOG("Calling terrain render()...");
+                terrain_object->get_component<RenderComponent>()->render(commandList);
+                CLOG("Terrain rendered!");
             }
         }
     }
@@ -161,6 +246,7 @@ void Renderer::build_render_list(CameraComponent* camera)
     _renderMap.clear();
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
     const BoundingFrustum& frustum = camera->frustum();
+
     for (const auto& gameObject : allGameObjects)
     {
         if (!gameObject || gameObject->is_destroyed()) continue;

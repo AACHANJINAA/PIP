@@ -201,6 +201,8 @@
     <ClInclude Include="SkyboxShader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TerrainLoader.h" />
+    <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="WICTextureLoader12.h" />
@@ -259,6 +261,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TerrainLoader.cpp" />
+    <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TimerManager.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="WICTextureLoader12.cpp" />
@@ -308,7 +312,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Tesrrian_Shader.hlsl">
+    <FxCompile Include="Terrain_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
