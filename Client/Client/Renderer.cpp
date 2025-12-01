@@ -160,8 +160,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
     auto terrain_object = SceneManager::instance()->get_terrain_object();
     if (terrain_object)
     {
-        CLOG("=== RENDERING TERRAIN DIRECTLY ===");
-
         auto terrain_shader_proto = get_shader("terrain");
         ID3D12PipelineState* pso = get_pso("terrain");
 
@@ -194,11 +192,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                 {
                     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ heightmap->cpu_handle };
                     bind_texture_table(commandList, 3, cpu_handles);
-                    CLOG("HeightMap bound to slot 3");
-                }
-                else
-                {
-                    CERROR("HeightMap not found!");
                 }
 
                 // [4] t1: Base Texture
@@ -208,27 +201,15 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
                     bind_texture_table(commandList, 4, cpu_handles);
                 }
-                else
-                {
-                    CERROR("Base texture not found!");
-                }
-
                 // [5] t2: Detail Texture
                 auto* detail_tex = rm->get_texture("Resource\\HeightMap\\T_Ground_Moss_N.png");
                 if (detail_tex && detail_tex->cpu_handle.ptr != 0)
                 {
                     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
                     bind_texture_table(commandList, 5, cpu_handles);
-                    CLOG("Detail texture bound to slot 5");
-                }
-                else
-                {
-                    CERROR("Detail texture not found!");
                 }
 
-                CLOG("Calling terrain render()...");
                 terrain_object->get_component<RenderComponent>()->render(commandList);
-                CLOG("Terrain rendered!");
             }
         }
     }
