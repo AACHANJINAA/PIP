@@ -1,9 +1,1 @@
-{
-    "bounds":
-    {"min_x":-25200,"max_x":25200,"min_z":-25200,"max_z":25200},
-    "width":504,
-    "height":504,
-    "scale":
-    {"x":100,"y":100,"z":100},
-    "heightmap_file": "Heightmap.r16"
-}
+{"bounds":{"min_x":-3150,"max_x":3150,"min_z":-3150,"max_z":3150},"width":63,"height":63,"scale":{"x":100,"y":100,"z":100},"heightmap_file":"Heightmap.r16"}

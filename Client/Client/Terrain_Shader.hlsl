@@ -46,13 +46,13 @@ PS_Input VS_Main(VS_Input input)
     PS_Input output = (PS_Input) 0;
 
          // HeightMap 샘플링
-    float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
+   // float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
 
          // 0.5 기준으로 중심 이동
-    height = height - 0.5f;
+    //height = height - 0.5f;
 
          // 매우 크게 증폭! (높이 차이가 작으므로)
-    input.PositionL.y += height * HeightScale * 100.0f; // 100배!;
+//    input.PositionL.y += height * HeightScale * 10; // 100배!;
 
     /* float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
 

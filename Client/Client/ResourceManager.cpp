@@ -637,12 +637,6 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
     file.read(reinterpret_cast<char*>(rawData.data()), width * height * 2);
     file.close();
 
-    CLOG("HeightMap sample values:");
-    CLOG("  [0]: " << rawData[0]);
-    CLOG("  [100]: " << rawData[100]);
-    CLOG("  [10000]: " << rawData[10000]);
-    CLOG("  [width*height-1]: " << rawData[width * height - 1]);
-
     // 최소/최대 찾기
     unsigned short minVal = *std::min_element(rawData.begin(), rawData.end());
     unsigned short maxVal = *std::max_element(rawData.begin(), rawData.end());
