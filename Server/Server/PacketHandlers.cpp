@@ -88,7 +88,7 @@ namespace PIP::packet
 			MYERROR("이동 패킷 읽는중 오류남 (패킷에러)");
 			return;;
 		}
-		common::Vec3 targetPos = move_packet._position;
+		common::Vec3 targetPos = MapDataManager::Instance()->AdjustPositionToGround(move_packet._position);
 
 		common::Vec3 player_extents = { 1.f, 1.8f, 1.f }; // TODO: 플레이어 크기 받을 필요도 있을듯
 		// TODO: 향후 이동 속도를 검증하여 스피드핵 방지 로직 추가 필요
@@ -100,7 +100,7 @@ namespace PIP::packet
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->_player._position; // 서버가 아는 마지막
+			correction_packet._position = MapDataManager::Instance()->AdjustPositionToGround(session->_player._position); // 서버가 아는 마지막
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 		}
@@ -198,10 +198,9 @@ namespace PIP::packet
 
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
-		session->_logic_thread_idx = room->GetLogicThreadIndex(); 
-		session->_player._position.x = 0;
-		session->_player._position.y = 70;
-		session->_player._position.z = -150;
+		session->_logic_thread_idx = room->GetLogicThreadIndex();
+		common::Vec3 spawnPos{ 0,70, -150 };
+		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
 		session->_player._level = 1;
 		session->_player._hp = 100;
 		session->_player._exp = 0;

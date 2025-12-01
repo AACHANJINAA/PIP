@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "PacketStream.h"
 #include "Room.h"
 #include "Player.h"
 
@@ -136,14 +135,16 @@ namespace PIP::server
 		void register_new_session(SOCKET client_socket);
 
 	private:
-		SOCKET					 _listen_socket;
-		EXP_OVER				 _accept_over;
+		HANDLE						_iocp;
+		static std::atomic<int>		_new_id;
+		SOCKET						_listen_socket;
+		EXP_OVER					_accept_over;
 
-		std::vector<std::thread> _io_threads;
-		std::vector<LogicWorker> _logic_workers;
+		std::vector<std::thread>	_io_threads;
+		std::vector<LogicWorker>	_logic_workers;
 
-		std::atomic<bool>		 _is_running;
-		std::atomic<int>		 _logic_thread_balancer; // 새 세션을 분배하기 위한 카운터
+		std::atomic<bool>			_is_running;
+		std::atomic<int>			_logic_thread_balancer; // 새 세션을 분배하기 위한 카운터
 
 		// [추가] 서버가 관리하는 룸 목록
 		std::vector<std::unique_ptr<Room>> _rooms;

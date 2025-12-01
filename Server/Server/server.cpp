@@ -3,7 +3,6 @@
 #include "Player.h"
 #include "MapDataManager.h"
 #include "PacketManager.h"
-#include "ServerCore.h"
 
 namespace PIP::server
 {
@@ -143,19 +142,20 @@ namespace PIP::server
 	}
 
 
-	// --------- server class implementation ---------
+	// ---------------------------------------- server class implementation ---------------------------------
+	std::atomic<int> Server::_new_id{ 0 }; // 전역 세션 ID 생성기
 
 	/// <summary>
 	/// Server 생성자: IOCP를 생성하고 초기화합니다.
 	/// </summary>
-	Server::Server() : _accept_over{ IO_ACCEPT }, _is_running{ false }, _logic_thread_balancer{ 0 }
+	Server::Server() : _accept_over{ IO_ACCEPT }, _is_running{ false }, _logic_thread_balancer{ 0 }, _iocp{ nullptr }
 	{
-		g_iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
+		_iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
 	}
 	Server::~Server()
 	{
 		Stop();
-		CloseHandle(g_iocp);
+		CloseHandle(_iocp);
 	}
 	void Server::Start(int io_threads, int worker_thread)
 	{
@@ -185,6 +185,8 @@ namespace PIP::server
 
 		//MYLOG("[SERVER] Loading Map...");
 		MapDataManager::Instance()->LoadMapData("..\\..\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
+		MapDataManager::Instance()->LoadHeightMapDataPNG("HeightMap/test_heightmap.png",
+			-250.0f, 250.0f, -250.0f, 250.0f, 505, 505);
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)
@@ -196,7 +198,7 @@ namespace PIP::server
 
 		// 리슨 소켓 설정 및 Accept 준비
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
-		CreateIoCompletionPort(reinterpret_cast<HANDLE>(_listen_socket), g_iocp, 0, 0);
+		CreateIoCompletionPort(reinterpret_cast<HANDLE>(_listen_socket), _iocp, 0, 0);
 
 		SOCKADDR_IN server_addr;
 		ZeroMemory(&server_addr, sizeof(server_addr));
@@ -231,7 +233,7 @@ namespace PIP::server
 		for (size_t i = 0; i < _io_threads.size(); ++i)
 		{
 			// [추가] GetQueuedCompletionStatus에서 블록된 스레드를 깨우기 위해 더미 이벤트를 보냄
-			PostQueuedCompletionStatus(g_iocp, 0, 0, NULL);
+			PostQueuedCompletionStatus(_iocp, 0, 0, NULL);
 		}
 
 		// 2. 모든 I/O 스레드가 종료될 때까지 대기
@@ -263,11 +265,7 @@ namespace PIP::server
 		newJob._execute_time = std::chrono::steady_clock::now() + delay;
 		newJob._task = std::move(task);
 
-		// ※주의: 이 함수는 다른 스레드에서 호출될 수 있으므로,
-		// LogicWorker의 _timer_queue가 스레드 안전하지 않다면 락이 필요합니다.
-		// 하지만 지금 구조에서는 Room 로직(같은 스레드)에서만 호출되므로 일단 락 없이진행합니다.
-		// 만약 다른 스레드에서 호출할 가능성이 있다면, 이 부분은 다시 논의해야 합니다.
-		// TODO: 데이터 레이스 문제 있음 스레드 세이프 하게 만들어야할듯
+		// 타이머 작업은 경쟁상태가 존재하면 안됨
 		_logic_workers[worker_idx]._timer_queue.push(std::move(newJob));
 	}
 
@@ -324,11 +322,11 @@ namespace PIP::server
 		MYLOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
 		while (_is_running)
 		{
-			DWORD io_size;
-			WSAOVERLAPPED* o;
-			ULONG_PTR key; // Accept의 경우 0, Recv/Send의 경우 Session ID
+			DWORD io_size{};
+			WSAOVERLAPPED* o{};
+			ULONG_PTR key{}; // Accept의 경우 0, Recv/Send의 경우 Session ID
 			
-			BOOL ret = GetQueuedCompletionStatus(g_iocp, &io_size, &key, &o, INFINITE);
+			BOOL ret = GetQueuedCompletionStatus(_iocp, &io_size, &key, &o, INFINITE);
 			EXP_OVER* eo = reinterpret_cast<EXP_OVER*>(o);
 
 			if (o == nullptr)
@@ -428,9 +426,9 @@ namespace PIP::server
 	void Server::register_new_session(SOCKET client_socket)
 	{
 		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_workers.size();
-		long long new_id = g_new_id++;
+		long long new_id = _new_id++;
 		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
-		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), g_iocp, new_id, 0);
+		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), _iocp, new_id, 0);
 		AddSession(new_id, p);
 		p->do_recv();
 		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
