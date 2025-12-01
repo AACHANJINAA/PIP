@@ -28,8 +28,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
     //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
-	cameraObject->transform()->set_local_rotation(0.f, 0, 0.f);
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 20.0f, 0.0f)); // 20m 높이
+    cameraObject->transform()->set_local_rotation(10.0f, 0.0f, 0.0f); // 약간 아래 보기
 
     load_scene_from_file("Resource/DDSMapData/ExportedClientData.json", device, commandList);
 

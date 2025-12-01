@@ -22,7 +22,7 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-    build_skybox(device, command_list);
+   // build_skybox(device, command_list);
     build_terrain(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
@@ -149,6 +149,9 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
     render_comp->set_pso_name("terrain");  // Terrain 전용 PSO 사용
 
     // 5. Transform 설정 (필요시)
-    _terrainObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
-    _terrainObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+    _terrainObject->transform()->set_local_position({ 0.0f, -10.0f, 200.0f }); // 카메라 앞 200m
+    _terrainObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f }); // X, Z를 1/10000로
+
+    auto pos = _terrainObject->transform()->local_position();
+    auto scale = _terrainObject->transform()->local_scale();
 }
