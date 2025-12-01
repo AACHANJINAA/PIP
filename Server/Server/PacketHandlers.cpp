@@ -119,8 +119,8 @@ namespace PIP::packet
 			sync_packet._size = sizeof(sync_packet);
 			sync_packet._id = session->_id;
 			sync_packet._position = targetPos; // 검증된 새 위치
-			// 자기 자신을 제외한 방 안의 모든 사람에게 동기화 패킷 전송
-			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
+			
+			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet)); // 자신한테도 보내야함 지형이동이라서
 		}
 
 	}
@@ -204,7 +204,7 @@ namespace PIP::packet
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = room->GetLogicThreadIndex();
-		common::Vec3 spawnPos{ 0,70, -150 };
+		common::Vec3 spawnPos{ 0, 0, -150 };
 		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
 		session->_player._level = 1;
 		session->_player._hp = 100;

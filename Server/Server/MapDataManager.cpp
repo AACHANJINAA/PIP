@@ -263,7 +263,7 @@ namespace PIP
 			return 0.0f; // 높이 맵이 로드되지 않은 경우 기본값 반환
 		}
 		if (x > _height_map_data._max_x || x < _height_map_data._min_x ||
-			z > _height_map_data._max_z || z < _height_map_data._max_z)
+			z > _height_map_data._max_z || z < _height_map_data._min_z)
 		{
 			return 0.0f; // 범위 밖
 		}
