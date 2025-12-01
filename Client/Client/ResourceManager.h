@@ -125,4 +125,18 @@ private:
 	// CJ251128 - view_dimension 매개변수를 추가하여 텍스처 뷰의 차원을 지정할 수 있도록 함.
     TextureInfo * load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension = D3D12_SRV_DIMENSION_TEXTURE2D);
     TextureInfo* load_cubemap_from_dds(const std::string& file_path);
+
+public:
+    // CJ251201 - 높이맵 관련
+    TextureInfo* get_texture(const std::string& file_path);
+
+    MaterialInfo* get_material_info(const std::string& material_name)
+    {
+        auto it = _materials.find(material_name);
+        if (it != _materials.end())
+            return &it->second;
+        return nullptr;
+    }
+
+    TextureInfo* load_heightmap_from_raw(const std::string& file_path, int width, int height);
 };

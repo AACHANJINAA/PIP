@@ -110,12 +110,6 @@ void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* command
     }    // 루트 시그니처의 1번 파라미터(b1)에 카메라 상수 버퍼를 바인딩합니다.
     D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera->GetGPUVirtualAddress();
     commandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress);
-
-    if (_mappedCbSkybox)
-    {
-        D3D12_GPU_VIRTUAL_ADDRESS cbSkyboxGpuAddress = _cbSkybox->GetGPUVirtualAddress();
-        commandList->SetGraphicsRootConstantBufferView(2, cbSkyboxGpuAddress);
-    }
 }
 void CameraComponent::set_viewports_and_scissor_rects(ID3D12GraphicsCommandList* commandList)
 {
