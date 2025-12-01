@@ -541,7 +541,6 @@ ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::
     }
     auto file_size = ifs.tellg();
     ifs.close();
-    CLOG("Cubemap DDS file size: " << file_size << " bytes");
 
     // Device 가 유효한지 확인
     if (!_device) {
@@ -638,7 +637,16 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
     file.read(reinterpret_cast<char*>(rawData.data()), width * height * 2);
     file.close();
 
-    CLOG("HeightMap file read: " << file_path << " (" << width << "x" << height << ")");
+    CLOG("HeightMap sample values:");
+    CLOG("  [0]: " << rawData[0]);
+    CLOG("  [100]: " << rawData[100]);
+    CLOG("  [10000]: " << rawData[10000]);
+    CLOG("  [width*height-1]: " << rawData[width * height - 1]);
+
+    // 최소/최대 찾기
+    unsigned short minVal = *std::min_element(rawData.begin(), rawData.end());
+    unsigned short maxVal = *std::max_element(rawData.begin(), rawData.end());
+    CLOG("  Min: " << minVal << ", Max: " << maxVal);
 
     // 2. 텍스처 정보 생성
     TextureInfo new_tex_info;
@@ -687,7 +695,6 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
     _command_list->ResourceBarrier(1, &barrier);
 
     // 6. SRV 생성
-    CLOG("Allocating descriptor for HeightMap...");
 
     bool allocated = DescriptorManager::instance()->allocate_descriptor(
         new_tex_info.cpu_handle,
@@ -700,10 +707,6 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
         return nullptr;
     }
 
-    CLOG("HeightMap descriptor allocated:");
-    CLOG("  CPU handle ptr: 0x" << std::hex << new_tex_info.cpu_handle.ptr);
-    CLOG("  GPU handle ptr: 0x" << std::hex << new_tex_info.gpu_handle.ptr);
-
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format = DXGI_FORMAT_R16_UNORM;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -712,14 +715,10 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
 
     _device->CreateShaderResourceView(new_tex_info.resource.Get(), &srvDesc, new_tex_info.cpu_handle);
 
-    CLOG("HeightMap SRV created");
-
     // 7. 맵에 저장 (move 후에도 handle 유지되는지 확인)
     _textures[file_path] = std::move(new_tex_info);
 
-    CLOG("HeightMap stored in map. Verifying...");
     auto* stored = &_textures[file_path];
-    CLOG("  Stored GPU handle ptr: 0x" << std::hex << stored->gpu_handle.ptr);
 
     return stored;
 }
