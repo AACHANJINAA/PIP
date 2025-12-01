@@ -3,8 +3,11 @@
 
 #include "Chess_Scene.h"
 #include "GameFramework.h"
+
 #include "ObjectManager.h"
 #include "ResourceManager.h"
+#include "TerrainLoader.h"
+
 #include "SkyboxMesh.h"
 
 SceneManager::SceneManager()
@@ -20,29 +23,13 @@ SceneManager::~SceneManager()
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
     build_skybox(device, command_list);
+    build_terrain(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
     //register_scene<Lobby_Scene>("LobbyScene");
 
     // 처음 씬
     change_scene("ChessScene");
-}
-
-void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
-{
-    ResourceManager::instance()->load_skybox("Resource\\SkyBox\\Night.dds");
-
-    _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
-
-    auto rendercomp = _skyboxObject->add_component<RenderComponent>();
-
-    auto skyboxmesh = std::make_shared<SkyboxMesh>(device, command_list);
-
-    rendercomp->set_mesh(skyboxmesh);
-    rendercomp->set_pso_name("skybox");
-
-    _skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
-    _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
 }
 
 void SceneManager::release()
@@ -115,4 +102,53 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     // --- [추가] 모든 씬 전환 작업이 끝난 후 ---
 	// 이제 더 이상 사용되지 않는 이전 씬의 메시들을 메모리에서 완전히 해제합니다.
     //ResourceManager::Instance()->unload_unused_meshes();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////skybox, terrain///////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+{
+    ResourceManager::instance()->load_skybox("Resource\\SkyBox\\Night.dds");
+
+    _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
+
+    auto rendercomp = _skyboxObject->add_component<RenderComponent>();
+
+    auto skyboxmesh = std::make_shared<SkyboxMesh>(device, command_list);
+
+    rendercomp->set_mesh(skyboxmesh);
+    rendercomp->set_pso_name("skybox");
+
+    _skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+    _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
+}
+
+void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
+{
+    // 1. Terrain 생성 (Grid Mesh만 생성)
+    auto terrain = std::make_shared<TerrainLoader>(
+        "Resource\\HeightMap\\Heightmap.json"
+    );
+
+    // 2. ResourceManager에 텍스처 로딩 요청
+    terrain->load_textures_to_resource_manager(
+        "Resource\\HeightMap\\HeightMap_Material.gltf"
+    );
+
+    // 3. GPU 업로드
+    terrain->upload_to_gpu(device, cmdList);
+
+    // 4. GameObject 생성 및 컴포넌트 추가
+    _terrainObject = ObjectManager::instance()->create_game_object("terrain");
+
+    auto render_comp = _terrainObject->add_component<RenderComponent>();
+    render_comp->set_mesh(terrain);
+    render_comp->set_pso_name("terrain");  // Terrain 전용 PSO 사용
+
+    // 5. Transform 설정 (필요시)
+    _terrainObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
+    _terrainObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 }

@@ -263,6 +263,12 @@
     <ClInclude Include="GltfAnimationTestScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainLoader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -418,6 +424,12 @@
     <ClCompile Include="GltfAnimationTestScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainLoader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -459,7 +471,7 @@
     <FxCompile Include="Gltf_Skinned_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Tesrrian_Shader.hlsl">
+    <FxCompile Include="Terrain_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

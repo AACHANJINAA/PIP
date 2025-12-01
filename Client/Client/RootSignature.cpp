@@ -381,7 +381,7 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////skybox///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -473,6 +473,95 @@ ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* d
     }
 
     device->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), pd3dSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&pd3dGraphicsRootSignature));
+
+    return pd3dGraphicsRootSignature;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////Terrain//////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const std::string& TerrainRootSignatureGenerator::name() const
+{
+    static const std::string terrainName = "terrain";
+    return terrainName;
+}
+
+ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* device)
+{
+    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
+    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    // Descriptor Range for Textures (t0, t1, t2)
+    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[3];
+    for (int i = 0; i < 3; ++i)
+    {
+        d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        d3dDescriptorRanges[i].NumDescriptors = 1;
+        d3dDescriptorRanges[i].BaseShaderRegister = i; // t0, t1, t2
+        d3dDescriptorRanges[i].RegisterSpace = 0;
+        d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    }
+
+    // Root Parameters
+    D3D12_ROOT_PARAMETER d3dRootParameters[6];
+
+    // [0] b0: World Matrix (cbPerObject)
+    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[0].Descriptor.ShaderRegister = 0;
+    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [1] b1: Camera (cbPerFrame)
+    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[1].Descriptor.ShaderRegister = 1;
+    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [2] b2: Terrain Info (cbTerrain)
+    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+    d3dRootParameters[2].Constants.ShaderRegister = 2;    
+    d3dRootParameters[2].Constants.RegisterSpace = 0;     
+    d3dRootParameters[2].Constants.Num32BitValues = 8;    
+    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // [3~5] t0, t1, t2: Textures (heightMap, baseTexture, detailTexture)
+    for (int i = 0; i < 3; ++i)
+    {
+        d3dRootParameters[3 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        d3dRootParameters[3 + i].DescriptorTable.NumDescriptorRanges = 1;
+        d3dRootParameters[3 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
+        d3dRootParameters[3 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    }
+
+    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
+    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+
+    // Static Sampler (s0)
+    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.MipLODBias = 0;
+    d3dStaticSamplerDesc.MaxAnisotropy = 16;
+    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    d3dStaticSamplerDesc.MinLOD = 0;
+    d3dStaticSamplerDesc.ShaderRegister = 0;
+    d3dStaticSamplerDesc.RegisterSpace = 0;
+    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    d3dRootSignatureDesc.NumStaticSamplers = 1;
+    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
+
+    // Create Root Signature
+    ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
+    ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
+    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
+    device->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), pd3dSignatureBlob->GetBufferSize(),
+        IID_PPV_ARGS(&pd3dGraphicsRootSignature));
 
     return pd3dGraphicsRootSignature;
 }

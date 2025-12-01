@@ -609,3 +609,117 @@ ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::
     _textures[file_path] = std::move(new_texture_info);
     return &_textures[file_path];
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////HeightMap///////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ResourceManager::TextureInfo* ResourceManager::get_texture(const std::string& file_path)
+{
+    auto it = _textures.find(file_path);
+    if (it != _textures.end())
+        return &it->second;
+
+    CERROR("Texture not found: " << file_path);
+    return nullptr;
+}
+
+ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std::string& file_path, int width, int height)
+{
+    // 1. 파일 읽기
+    std::ifstream file(file_path, std::ios::binary);
+    if (!file.is_open())
+    {
+        CERROR("Heightmap raw file not found: " << file_path);
+        return nullptr;
+    }
+
+    std::vector<unsigned short> rawData(width * height);
+    file.read(reinterpret_cast<char*>(rawData.data()), width * height * 2);
+    file.close();
+
+    CLOG("HeightMap file read: " << file_path << " (" << width << "x" << height << ")");
+
+    // 2. 텍스처 정보 생성
+    TextureInfo new_tex_info;
+    new_tex_info.name = file_path;
+
+    // 3. 리소스 생성
+    D3D12_RESOURCE_DESC texDesc = {};
+    texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    texDesc.Width = width;
+    texDesc.Height = height;
+    texDesc.DepthOrArraySize = 1;
+    texDesc.MipLevels = 1;
+    texDesc.Format = DXGI_FORMAT_R16_UNORM;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    auto heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    HRESULT hr = _device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
+        D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&new_tex_info.resource));
+
+    if (FAILED(hr))
+    {
+        CERROR("CreateCommittedResource failed for HeightMap!");
+        return nullptr;
+    }
+
+    // 4. 업로드
+    UINT64 uploadBufferSize = GetRequiredIntermediateSize(new_tex_info.resource.Get(), 0, 1);
+    auto uploadHeapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    auto uploadDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
+
+    _device->CreateCommittedResource(&uploadHeapProps, D3D12_HEAP_FLAG_NONE, &uploadDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&new_tex_info.upload_heap));
+
+    D3D12_SUBRESOURCE_DATA subData = {};
+    subData.pData = rawData.data();
+    subData.RowPitch = width * 2;
+    subData.SlicePitch = subData.RowPitch * height;
+
+    UpdateSubresources(_command_list, new_tex_info.resource.Get(), new_tex_info.upload_heap.Get(), 0, 0, 1, &subData);
+
+    // 5. 상태 전이
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(new_tex_info.resource.Get(),
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    _command_list->ResourceBarrier(1, &barrier);
+
+    // 6. SRV 생성
+    CLOG("Allocating descriptor for HeightMap...");
+
+    bool allocated = DescriptorManager::instance()->allocate_descriptor(
+        new_tex_info.cpu_handle,
+        new_tex_info.gpu_handle
+    );
+
+    if (!allocated)
+    {
+        CERROR("Failed to allocate descriptor for HeightMap!");
+        return nullptr;
+    }
+
+    CLOG("HeightMap descriptor allocated:");
+    CLOG("  CPU handle ptr: 0x" << std::hex << new_tex_info.cpu_handle.ptr);
+    CLOG("  GPU handle ptr: 0x" << std::hex << new_tex_info.gpu_handle.ptr);
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R16_UNORM;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    _device->CreateShaderResourceView(new_tex_info.resource.Get(), &srvDesc, new_tex_info.cpu_handle);
+
+    CLOG("HeightMap SRV created");
+
+    // 7. 맵에 저장 (move 후에도 handle 유지되는지 확인)
+    _textures[file_path] = std::move(new_tex_info);
+
+    CLOG("HeightMap stored in map. Verifying...");
+    auto* stored = &_textures[file_path];
+    CLOG("  Stored GPU handle ptr: 0x" << std::hex << stored->gpu_handle.ptr);
+
+    return stored;
+}
