@@ -18,7 +18,7 @@ namespace PIP
 		friend Singleton<MapDataManager>;
 	public:
 		void LoadMapData(std::string_view mapDataPath);
-		void LoadHeightMapData(std::string_view heightMapDataPath);
+		void LoadHeightMapData(std::string_view heightMapDataJSONPath);
 		void LoadHeightMapData(std::string_view r16FilePath, float minX, float maxX, float minZ, float maxZ, size_t height, size_t width);
 		void LoadHeightMapDataPNG(std::string_view pngFilePath, float minX, float maxX, float minZ, float maxZ, size_t height, size_t width);
 		void LoadHeightMapFromRawFile(std::string_view rawFilePath, float minX, float maxX, float minZ, float maxZ,

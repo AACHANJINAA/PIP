@@ -21,6 +21,9 @@ public:
     // 매 프레임 입력을 처리합니다.
     virtual void update(float delta_time) override;
 
+
+    virtual void late_update(float delta_time) override;
+
 private:
     // 역할 이전 (from FreeCamera):
     // 마우스 입력을 처리하여 카메라를 회전시킵니다.

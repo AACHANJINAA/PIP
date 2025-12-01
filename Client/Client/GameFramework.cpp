@@ -433,12 +433,6 @@ void GameFramework::update_game_logic(float deltaTime)
 		}
 	}
 
-	// 메인 카메라의 뷰 행렬 계산
-	if (auto main_cam = CameraComponent::get_main())
-	{
-		main_cam->recalculate_view_matrix();
-	}
-
 	// LateUpdate는 뷰 행렬 계산 후에도 ㄱㅊ
 	for (const auto& gameObject : allGameObjects)
 	{
@@ -446,6 +440,11 @@ void GameFramework::update_game_logic(float deltaTime)
 		{
 			gameObject->late_update(deltaTime);
 		}
+	}
+	// 메인 카메라의 뷰 행렬 계산
+	if (auto main_cam = CameraComponent::get_main())
+	{
+		main_cam->recalculate_view_matrix();
 	}
 }
 

@@ -33,12 +33,12 @@ namespace PIP
 		}
 	}
 
-	void MapDataManager::LoadHeightMapData(std::string_view heightMapDataPath)
+	void MapDataManager::LoadHeightMapData(std::string_view heightMapDataJSONPath)
 	{
-		std::ifstream file(heightMapDataPath.data());
+		std::ifstream file(heightMapDataJSONPath.data());
 		if (not file)
 		{
-			MYERROR("Failed to open height map data file: " << heightMapDataPath);
+			MYERROR("Failed to open height map data file: " << heightMapDataJSONPath);
 			return;
 		}
 		using namespace nlohmann;
@@ -50,16 +50,44 @@ namespace PIP
 		_height_map_data._max_z = data["bounds"]["max_z"];
 		_height_map_data._width = data["width"];
 		_height_map_data._height = data["height"];
+		
+		// Scale 정보 파싱
+		float scale_y = data["scale"]["y"];
 
 		_height_map_data._heights.clear();
 		_height_map_data._heights.reserve(_height_map_data._width * _height_map_data._height);
 
-		for (const auto& height : data["heights"])
+		std::string raw_file_name = data["heightmap_file"];
+		
+		// JSON 파일과 같은 폴더에 있는 heightmap 파일의 전체 경로 생성
+		std::filesystem::path json_path(heightMapDataJSONPath);
+		std::filesystem::path heightmap_path = json_path.parent_path() / raw_file_name;
+		
+		std::ifstream heightmap_file(heightmap_path, std::ios::binary);
+
+		size_t map_size = _height_map_data._width * _height_map_data._height;
+		if (not heightmap_file)
 		{
-			_height_map_data._heights.emplace_back(height);
+			MYERROR("Failed to open height map raw file: " << heightmap_path);
+			return;
+		}
+		for (size_t i = 0; i < map_size; ++i)
+		{
+			uint16_t height_value;
+			if (not heightmap_file.read((char*)(&height_value), sizeof(uint16_t)))
+			{
+				MYERROR("Failed to read uint16 height at index: " << i);
+				return;
+			}
+			float normalized = static_cast<float>(height_value) / 65535.0f;
+			_height_map_data._heights.emplace_back(normalized * scale_y);
 		}
 		_height_map_data.isLoaded = true;
-		MYLOG("Height map Loaded: " << _height_map_data._width << " * " << _height_map_data._height);
+		MYLOG("Height map Loaded: " << _height_map_data._width << " * " << _height_map_data._height
+			<< ", Scale Y: " << scale_y
+			<< ", Min/Max heights: " << *std::min_element(_height_map_data._heights.begin(),
+				_height_map_data._heights.end())
+			<< "/" << *std::max_element(_height_map_data._heights.begin(), _height_map_data._heights.end()));
 	}
 
 	void MapDataManager::LoadHeightMapData(std::string_view r16FilePath, float minX, float maxX, float minZ, float maxZ, size_t height, size_t width)
