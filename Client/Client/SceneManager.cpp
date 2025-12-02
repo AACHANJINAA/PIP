@@ -22,7 +22,7 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-   // build_skybox(device, command_list);
+   build_skybox(device, command_list);
     build_terrain(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
