@@ -91,37 +91,122 @@ namespace PIP::packet
 			return;;
 		}
 		common::Vec3 targetPos = move_packet._position;
+		common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
 
-		// Y축만 지면 높이로 보정 (플레이어가 점프했을 수도 있음)
+		// 1. 맵 범위 체크 (heightmap 범위 밖으로 나가지 못하게)
 		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
-		targetPos.y = std::max(targetPos.y, groundHeight + 0.1f); // 지면 근처에 있을 때만 보정
-		common::Vec3 player_extents = { 1.f, 1.8f, 1.f }; // TODO: 플레이어 크기 받을 필요도 있을듯
-		// TODO: 향후 이동 속도를 검증하여 스피드핵 방지 로직 추가 필요
 
-		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
+		// groundHeight가 0이면 맵 밖! (GetGroundHeight가 범위 밖에서 0 반환)
+		if (groundHeight == 0.0f)
 		{
-			// 4-A. 유효하지 않은 이동: 클라이언트 위치를 서버의 마지막 위치로 강제 보정
+			// 맵 밖으로 나가려는 시도 - 이전 위치로 되돌림
+			MYLOG("Player trying to go out of map bounds at (" << targetPos.x << ", " << targetPos.z << ")");
+
 			packet::SC_PACKET_MOVE correction_packet;
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = MapDataManager::Instance()->AdjustPositionToGround(session->_player._position); // 서버가 아는 마지막
+			correction_packet._position = session->_player._position;
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+			return;
+		}
+
+		// 2. Y축 지면 아래로 가지 못하게
+		if (targetPos.y < groundHeight + 0.1f)
+		{
+			targetPos.y = groundHeight + player_extents.y; // 플레이어 중심을 지면 위로
+		}
+
+		// 3. 충돌 체크
+		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
+		{
+			// 충돌 발생! 안전한 위치 찾기
+			common::Vec3 safe_pos = session->_player._position;
+
+			// 3-1. 이전 위치가 안전한지 체크
+			if (!MapDataManager::Instance()->CheckForCollision(safe_pos, player_extents))
+			{
+				// 이전 위치가 안전함 - 그대로 사용
+				MYLOG("Collision detected at (" << targetPos.x << ", " << targetPos.y << ", " << targetPos.z
+					<< ") - reverting to previous position");
+			}
+			else
+			{
+				// 3-2. 이전 위치도 충돌! (플레이어가 오브젝트 안에 갇힘)
+				// 방법 1: Y축만 위로 올려보기
+				safe_pos.y = groundHeight + player_extents.y + 2.0f; // 2m 위로
+
+				if (MapDataManager::Instance()->CheckForCollision(safe_pos, player_extents))
+				{
+					// 방법 2: 그래도 충돌이면 스폰 위치 근처로
+					// 랜덤한 안전한 위치 찾기 시도
+					bool found_safe = false;
+					for (int attempt = 0; attempt < 10; ++attempt)
+					{
+						float offset_x = (rand() % 20 - 10) * 0.5f; // -5 ~ +5m
+						float offset_z = (rand() % 20 - 10) * 0.5f;
+
+						common::Vec3 test_pos = {
+							safe_pos.x + offset_x,
+							safe_pos.y,
+							safe_pos.z + offset_z
+						};
+
+						float test_ground = MapDataManager::Instance()->GetGroundHeight(test_pos.x, test_pos.z);
+						if (test_ground > 0.0f) // 맵 안
+						{
+							test_pos.y = test_ground + player_extents.y + 1.0f;
+
+							if (!MapDataManager::Instance()->CheckForCollision(test_pos, player_extents))
+							{
+								safe_pos = test_pos;
+								found_safe = true;
+								MYLOG("Found safe position after " << (attempt + 1) << " attempts");
+								break;
+							}
+						}
+					}
+
+					if (!found_safe)
+					{
+						// 최후의 수단: 맵 중앙 위쪽으로
+						safe_pos = { 0.0f, 50.0f, 0.0f };
+						MYERROR("Player stuck! Teleporting to emergency position (0, 50, 0)");
+					}
+				}
+				else
+				{
+					MYLOG("Player was stuck, moved up to Y=" << safe_pos.y);
+				}
+			}
+
+			// 보정 패킷 전송
+			packet::SC_PACKET_MOVE correction_packet;
+			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			correction_packet._size = sizeof(correction_packet);
+			correction_packet._id = session->_id;
+			correction_packet._position = safe_pos;
+
+			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+
+			// 서버의 플레이어 위치도 안전한 위치로 갱신
+			session->_player._position = safe_pos;
 		}
 		else
 		{
-			// 4-B. 유효한 이동: 서버에 위치를 갱신하고 다른 클라이언트들에게 브로드캐스팅
+			// 4. 유효한 이동: 서버에 위치를 갱신하고 브로드캐스팅
 			session->_player._position = targetPos;
 
 			packet::SC_PACKET_MOVE sync_packet;
 			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			sync_packet._size = sizeof(sync_packet);
 			sync_packet._id = session->_id;
-			sync_packet._position = targetPos; // 검증된 새 위치
-			
-			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet)); // 자신한테도 보내야함 지형이동이라서
+			sync_packet._position = targetPos;
+
+			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet));
 		}
+
 
 	}
 
