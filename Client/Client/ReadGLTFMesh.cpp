@@ -342,7 +342,7 @@ void ReadGLTFMesh::read_static_mesh(const std::string& filePath)
 	json gltf_json;
 	std::vector<char> binary_buffer;
 
-	CLOG("현재 디렉토리: " << std::filesystem::current_path() << std::endl);
+	//CLOG("현재 디렉토리: " << std::filesystem::current_path() << std::endl);
 	if (!load_gltf_file(filePath, gltf_json, binary_buffer))
 	{
 		CERROR("glTF 파일 로딩에 실패했습니다.");
