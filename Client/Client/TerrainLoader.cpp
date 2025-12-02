@@ -7,112 +7,40 @@
 using namespace DirectX;
 
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
-    : m_raw_min_height(0.0f)
-    , m_raw_max_height(0.0f)
 {
-    // 1. JSON ÆÄ½ÌÇÏ¿© Terrain Á¤º¸ ·Îµå
-    parse_heightmap_json(heightmap_json_path);
+    // 1. Common::TerrainDataë¥¼ í†µí•´ ë¡œë“œ
+    if (!m_terrainData.LoadFromJSON(heightmap_json_path))
+    {
+        CERROR("Failed to load terrain data from: " << heightmap_json_path);
+        // ë¡œë“œ ì‹¤íŒ¨ ì²˜ë¦¬ (ì˜ˆì™¸ ë°œìƒ or ë”ë¯¸ ë°ì´í„°)
+        // ì¼ë‹¨ ì§„í–‰
+    }
 
-    // 2. Flat Grid Mesh »ı¼º
-    int grid_width = static_cast<int>(m_terrain_info.size.x) - 1;
-    int grid_height = static_cast<int>(m_terrain_info.size.y) - 1;
+    const auto& info = m_terrainData.GetInfo();
+    m_heightmap_texture_key = m_terrainData.GetHeightMapPath();
+
+    // 2. Flat Grid Mesh ìƒì„±
+    int grid_width = static_cast<int>(info.width) - 1;
+    int grid_height = static_cast<int>(info.height) - 1;
     create_flat_grid(grid_width, grid_height);
-}
-
-void TerrainLoader::parse_heightmap_json(const std::string& json_path)
-{
-    // JSON ÆÄÀÏ ¿­±â
-    std::ifstream file(json_path);
-    if (!file.is_open())
-    {
-        CERROR("Failed to open heightmap JSON: " << json_path);
-        return;
-    }
-
-    // JSON ÆÄ½Ì
-    nlohmann::json config;
-    file >> config;
-    file.close();
-
-    // 1. Bounds Á¤º¸ (¸Ê °æ°è)
-    m_terrain_info.bounds = XMFLOAT4(
-        config["bounds"]["min_x"].get<float>(),
-        config["bounds"]["max_x"].get<float>(),
-        config["bounds"]["min_z"].get<float>(),
-        config["bounds"]["max_z"].get<float>()
-    );
-
-    // 2. Size Á¤º¸ (³Êºñ, ³ôÀÌ)
-    m_terrain_info.size = XMFLOAT2(
-        static_cast<float>(config["width"].get<int>()),
-        static_cast<float>(config["height"].get<int>())
-    );
-
-    // 3. Scale Á¤º¸ (YÃà ½ºÄÉÀÏ)
-    m_terrain_info.height_scale = config["scale"]["y"].get<float>();
-
-    // 4. HeightMap ÆÄÀÏ °æ·Î »ı¼º
-    std::filesystem::path json_dir = std::filesystem::path(json_path).parent_path();
-    std::string heightmap_filename = config["heightmap_file"].get<std::string>();
-    m_heightmap_texture_key = (json_dir / heightmap_filename).string();
-
-    // 5. HeightMap µ¥ÀÌÅÍ¸¦ CPU ¸Ş¸ğ¸®¿¡ ·Îµå (Ãæµ¹ °è»ê¿ë)
-    std::ifstream hm_file(m_heightmap_texture_key, std::ios::binary);
-    if (!hm_file.is_open())
-    {
-        CERROR("Failed to open heightmap file: " << m_heightmap_texture_key);
-        return;
-    }
-
-    int width = static_cast<int>(m_terrain_info.size.x);
-    int height = static_cast<int>(m_terrain_info.size.y);
-    size_t total_pixels = width * height;
-
-    m_cpu_height_data.resize(total_pixels);
-
-    uint16_t min_val = 65535;
-    uint16_t max_val = 0;
-
-    // R16 ÆÄÀÏ ÀĞ±â (16bit unsigned per pixel)
-    for (size_t i = 0; i < total_pixels; ++i)
-    {
-        uint16_t raw_height;
-        if (!hm_file.read(reinterpret_cast<char*>(&raw_height), sizeof(uint16_t)))
-        {
-            CERROR("Failed to read heightmap at index: " << i);
-            return;
-        }
-
-        min_val = min(min_val, raw_height);
-        max_val = max(max_val, raw_height);
-
-        // 0~1·Î Á¤±ÔÈ­
-        float normalized = static_cast<float>(raw_height) / 65535.0f;
-        m_cpu_height_data[i] = normalized * m_terrain_info.height_scale;
-    }
-
-    hm_file.close();
-
-    // ÃÖ¼Ò°ªÀ» ÀúÀå (¼ÎÀÌ´õ¿¡¼­ »ç¿ë)
-    m_raw_min_height = static_cast<float>(min_val) / 65535.0f;
-    m_raw_max_height = static_cast<float>(max_val) / 65535.0f;
-    m_terrain_info.min_height = m_raw_min_height;
 }
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 {
+    const auto& info = m_terrainData.GetInfo();
+
     int vertex_count_x = grid_width + 1;
     int vertex_count_z = grid_height + 1;
 
-    // World Space Å©±â
-    float world_width = m_terrain_info.bounds.y - m_terrain_info.bounds.x;
-    float world_height = m_terrain_info.bounds.w - m_terrain_info.bounds.z;
+    // World Space í¬ê¸°
+    float world_width = info.max_x - info.min_x;
+    float world_height = info.max_z - info.min_z;
 
-    // ¼¿ Å©±â (World Space)
+    // ì…€ í¬ê¸° (World Space)
     float cell_width = world_width / grid_width;
     float cell_height = world_height / grid_height;
 
-    // Á¤Á¡ »ı¼º
+    // ì •ì  ìƒì„±
     std::vector<IlluminatedVertex> vertices;
     vertices.reserve(vertex_count_x * vertex_count_z);
 
@@ -122,17 +50,17 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
         {
             IlluminatedVertex v;
 
-            // À§Ä¡ (World Space, Y=0)
+            // ìœ„ì¹˜ (World Space, Y=0)
             v._position = XMFLOAT3(
-                m_terrain_info.bounds.x + x * cell_width,
-                0.0f,  // Shader¿¡¼­ Displacement·Î ³ôÀÌ Àû¿ë
-                m_terrain_info.bounds.z + z * cell_height
+                info.min_x + x * cell_width,
+                0.0f,  // Shaderì—ì„œ Displacementë¡œ ë†’ì´ ì ìš©
+                info.min_z + z * cell_height
             );
 
-            // Normal (±âº»°ª: À§ÂÊ)
+            // Normal (ê¸°ë³¸ê°’: ìœ„ìª½)
             v._normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
-            // UV ÁÂÇ¥ (0~1 ¹üÀ§·Î Á¤±ÔÈ­)
+            // UV ì¢Œí‘œ (0~1 ë²”ìœ„ë¡œ ì •ê·œí™”)
             v._texCoord = XMFLOAT2(
                 static_cast<float>(x) / grid_width,
                 static_cast<float>(z) / grid_height
@@ -150,7 +78,7 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 
     set_vertex_data_buffer(vertices);
 
-    // ÀÎµ¦½º »ı¼º
+    // ì¸ë±ìŠ¤ ìƒì„±
     _indices.clear();
     _indices.reserve(grid_width * grid_height * 6);
 
@@ -163,12 +91,12 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
             int v2 = (z + 1) * vertex_count_x + x;
             int v3 = v2 + 1;
 
-            // »ï°¢Çü 1
+            // ì‚¼ê°í˜• 1
             _indices.emplace_back(v0);
             _indices.emplace_back(v2);
             _indices.emplace_back(v1);
 
-            // »ï°¢Çü 2
+            // ì‚¼ê°í˜• 2
             _indices.emplace_back(v1);
             _indices.emplace_back(v2);
             _indices.emplace_back(v3);
@@ -178,10 +106,10 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
     _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
     // Bounding Box
-    float max_height = m_terrain_info.height_scale;
+    float max_height = info.height_scale;
     _orientedBoundingBox = CreateOOBB(
-        XMFLOAT3(m_terrain_info.bounds.x, 0.0f, m_terrain_info.bounds.z),
-        XMFLOAT3(m_terrain_info.bounds.y, max_height, m_terrain_info.bounds.w)
+        XMFLOAT3(info.min_x, 0.0f, info.min_z),
+        XMFLOAT3(info.max_x, max_height, info.max_z)
     );
 
     CLOG("Terrain Grid Created: " << vertex_count_x << " x " << vertex_count_z
@@ -190,11 +118,12 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 
 void TerrainLoader::load_textures_to_resource_manager(const std::string& material_gltf_path)
 {
+    const auto& info = m_terrainData.GetInfo();
     auto* rm = ResourceManager::instance();
 
-    // 1. HeightMap ÅØ½ºÃ³ ·Îµå (R16 Çü½Ä)
-    int width = static_cast<int>(m_terrain_info.size.x);
-    int height = static_cast<int>(m_terrain_info.size.y);
+    // 1. HeightMap í…ìŠ¤ì²˜ ë¡œë“œ (R16 í¬ë§·)
+    int width = static_cast<int>(info.width);
+    int height = static_cast<int>(info.height);
 
     auto* heightmap_tex = rm->load_heightmap_from_raw(m_heightmap_texture_key, width, height);
     if (!heightmap_tex)
@@ -206,14 +135,14 @@ void TerrainLoader::load_textures_to_resource_manager(const std::string& materia
         CLOG("HeightMap texture loaded to GPU: " << m_heightmap_texture_key);
     }
 
-    // 2. glTF Material ·Îµå (ResourceManagerÀÇ ÇÔ¼ö »ç¿ë)
+    // 2. glTF Material ë¡œë“œ (ResourceManagerì˜ í•¨ìˆ˜ ì‚¬ìš©)
     auto material_names = rm->load_materials_from_gltf(material_gltf_path);
     if (!material_names.empty())
     {
         m_material_name = material_names[0];
         CLOG("Material loaded from glTF: " << m_material_name);
 
-        // Material Á¤º¸ °¡Á®¿À±â
+        // Material ì •ë³´ ê°€ì ¸ì˜¤ê¸°
         auto* mat_info = rm->get_material_info(m_material_name);
         if (mat_info)
         {
@@ -224,7 +153,7 @@ void TerrainLoader::load_textures_to_resource_manager(const std::string& materia
                 CLOG("  Base Texture: " << m_base_texture_key);
             }
 
-            // Normal Texture¸¦ Detail·Î »ç¿ë (T_Ground_Moss_N.png)
+            // Normal TextureëŠ” Detailë¡œ ì‚¬ìš© (T_Ground_Moss_N.png)
             if (!mat_info->normal_texture_path.empty())
             {
                 m_detail_texture_key = mat_info->normal_texture_path;
@@ -250,14 +179,33 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
         return;
     }
 
-    // Vertex/Index Buffer ¹ÙÀÎµù
+    // Vertex/Index Buffer ë°”ì¸ë”©
     command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
     command_list->IASetIndexBuffer(&_indexBufferView);
     command_list->IASetPrimitiveTopology(_primitiveTopology);
 
-    // Terrain Constant Buffer ¹ÙÀÎµù (Root Parameter 2)
-    // TerrainInfo ±¸Á¶Ã¼ ÀüÃ¼¸¦ 32bit constants·Î Àü¼Û
-    command_list->SetGraphicsRoot32BitConstants(2, 8, &m_terrain_info, 0);
+    // Terrain Constant Buffer ì—…ë°ì´íŠ¸ (Root Parameter 2)
+    // TerrainInfo êµ¬ì¡°ì²´ ì „ì²´ë¥¼ 32bit constantsë¡œ ì „ë‹¬
+    // ì£¼ì˜: Common::TerrainInfoì™€ ì…°ì´ë” CB êµ¬ì¡°ê°€ ì¼ì¹˜í•´ì•¼ í•¨ (float 7ê°œ)
+    // struct TerrainInfo { float min_x, max_x, min_z, max_z, width, height, height_scale, min_height; };
+    // ì…°ì´ë”ëŠ” float4 bounds, float2 size, float height_scale, float min_height
+    // ì…°ì´ë” í˜¸í™˜ì„±ì„ ìœ„í•´ ì„ì‹œ êµ¬ì¡°ì²´ ìƒì„±
+    struct ShaderTerrainInfo
+    {
+        XMFLOAT4 bounds;
+        XMFLOAT2 size;
+        float height_scale;
+        float min_height;
+    };
+
+    const auto& info = m_terrainData.GetInfo();
+    ShaderTerrainInfo cb_info;
+    cb_info.bounds = XMFLOAT4(info.min_x, info.max_x, info.min_z, info.max_z);
+    cb_info.size = XMFLOAT2(info.width, info.height);
+    cb_info.height_scale = info.height_scale;
+    cb_info.min_height = info.min_height;
+
+    command_list->SetGraphicsRoot32BitConstants(2, 8, &cb_info, 0);
 
     // Draw Call
     command_list->DrawIndexedInstanced(
@@ -267,49 +215,6 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 
 float TerrainLoader::get_height_at(float world_x, float world_z) const
 {
-    // ¹üÀ§ Ã¼Å©
-    if (world_x < m_terrain_info.bounds.x || world_x > m_terrain_info.bounds.y ||
-        world_z < m_terrain_info.bounds.z || world_z > m_terrain_info.bounds.w)
-    {
-        return 0.0f;
-    }
-
-    if (m_cpu_height_data.empty())
-    {
-        CERROR("CPU height data not loaded!");
-        return 0.0f;
-    }
-
-    // Á¤±ÔÈ­ (0~1 ¹üÀ§)
-    float norm_x = (world_x - m_terrain_info.bounds.x) /
-        (m_terrain_info.bounds.y - m_terrain_info.bounds.x);
-    float norm_z = (world_z - m_terrain_info.bounds.z) /
-        (m_terrain_info.bounds.w - m_terrain_info.bounds.z);
-
-    // ±×¸®µå ÁÂÇ¥·Î º¯È¯
-    float grid_x = norm_x * (m_terrain_info.size.x - 1);
-    float grid_z = norm_z * (m_terrain_info.size.y - 1);
-
-    // Á¤¼ö/¼Ò¼ö ºÎºĞ ºĞ¸®
-    int x0 = std::clamp(static_cast<int>(std::floor(grid_x)), 0, static_cast<int>(m_terrain_info.size.x) - 1);
-    int z0 = std::clamp(static_cast<int>(std::floor(grid_z)), 0, static_cast<int>(m_terrain_info.size.y) - 1);
-    int x1 = min(x0 + 1, static_cast<int>(m_terrain_info.size.x) - 1);
-    int z1 = min(z0 + 1, static_cast<int>(m_terrain_info.size.y) - 1);
-
-    float fx = grid_x - x0;
-    float fz = grid_z - z0;
-
-    int width = static_cast<int>(m_terrain_info.size.x);
-
-    // ³ôÀÌ°ª °¡Á®¿À±â
-    float h00 = m_cpu_height_data[z0 * width + x0];
-    float h10 = m_cpu_height_data[z0 * width + x1];
-    float h01 = m_cpu_height_data[z1 * width + x0];
-    float h11 = m_cpu_height_data[z1 * width + x1];
-
-    // ÀÌÁß ¼±Çü º¸°£
-    float h0 = h00 * (1.0f - fx) + h10 * fx;
-    float h1 = h01 * (1.0f - fx) + h11 * fx;
-
-    return h0 * (1.0f - fz) + h1 * fz;
+    // Common::TerrainData ìœ„ì„
+    return m_terrainData.GetHeightAt(world_x, world_z);
 }

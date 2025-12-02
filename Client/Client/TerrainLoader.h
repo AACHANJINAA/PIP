@@ -1,66 +1,54 @@
 #pragma once
 #include "Mesh.h"
 #include "json.hpp"
+#include "../../Common/TerrainData.h"
 
-/// Terrain ·»´õ¸µÀ» À§ÇÑ Grid Mesh »ı¼º ¹× °ü¸® Å¬·¡½º
-/// - JSON ÆÄÀÏ¿¡¼­ Terrain ¼³Á¤ ÆÄ½Ì
-/// - ResourceManager¸¦ ÅëÇÑ HeightMap + Material ÅØ½ºÃ³ ·Îµù
-/// - Flat Grid Mesh »ı¼º (Displacement´Â Shader¿¡¼­ Ã³¸®)
+/// Terrain ë Œë”ë§ì„ ìœ„í•œ Grid Mesh ìƒì„± ë° ê´€ë¦¬ í´ë˜ìŠ¤
+/// - JSON íŒŒì¼ì—ì„œ Terrain ì„¤ì • íŒŒì‹±
+/// - ResourceManagerë¥¼ í†µí•œ HeightMap + Material í…ìŠ¤ì²˜ ë¡œë”©
+/// - Flat Grid Mesh ìƒì„± (DisplacementëŠ” Shaderì—ì„œ ì²˜ë¦¬)
 
 class TerrainLoader : public Mesh
 {
 public:
-    struct TerrainInfo
-    {
-        DirectX::XMFLOAT4 bounds;    // x: min_x, y: max_x, z: min_z, w: max_z
-        DirectX::XMFLOAT2 size;      // x: width, y: height
-        float height_scale;          // JSONÀÇ scale.y
-        float min_height;            // ÃÖ¼Ò ³ôÀÌ (Á¤±ÔÈ­µÈ °ª)
-
-        TerrainInfo()
-            : bounds(0.0f, 0.0f, 0.0f, 0.0f)
-            , size(0.0f, 0.0f)
-            , height_scale(0.0f)
-            , min_height(0.0f)
-        {
-        }
-    };
+    // TerrainInfoëŠ” Common::TerrainInfoë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ ë³„ë„ êµ¬ì¡°ì²´ ì •ì˜ ì œê±° ê°€ëŠ¥
+    // í•˜ì§€ë§Œ ê¸°ì¡´ ì½”ë“œ í˜¸í™˜ì„±ì„ ìœ„í•´ using ì‚¬ìš©í•˜ê±°ë‚˜ ê¸°ì¡´ êµ¬ì¡°ì²´ ìœ ì§€ í›„ ë³€í™˜
+    using TerrainInfo = common::TerrainInfo;
 
 public:
     TerrainLoader(const std::string& heightmap_json_path);
     virtual ~TerrainLoader() = default;
 
-    /// ResourceManager¿¡ HeightMap°ú Material ÅØ½ºÃ³ ·Îµå ¿äÃ»
+    /// ResourceManagerì— HeightMapê³¼ Material í…ìŠ¤ì²˜ ë¡œë“œ ìš”ì²­
     void load_textures_to_resource_manager(const std::string& material_gltf_path);
 
-    /// Terrain ·»´õ¸µ
+    /// Terrain ë Œë”ë§
     void render(ID3D12GraphicsCommandList* command_list) override;
 
-    /// Terrain Á¤º¸ ¹İÈ¯
+    /// Terrain ì •ë³´ ë°˜í™˜
     const TerrainInfo& get_terrain_info() const { return m_terrain_info; }
 
-    /// Æ¯Á¤ ¿ùµå ÁÂÇ¥(x, z)¿¡¼­ÀÇ ÁöÇü ³ôÀÌ °è»ê
+    /// íŠ¹ì • ì›”ë“œ ì¢Œí‘œ(x, z)ì—ì„œì˜ ì§€í˜• ë†’ì´ ê³„ì‚°
     float get_height_at(float world_x, float world_z) const;
 
-    /// HeightMap ÅØ½ºÃ³ Å° ¹İÈ¯
+    /// HeightMap í…ìŠ¤ì²˜ í‚¤ ë°˜í™˜
     const std::string& get_heightmap_key() const { return m_heightmap_texture_key; }
 
-    /// Material ÀÌ¸§ ¹İÈ¯
+    /// Material ì´ë¦„ ë°˜í™˜
     const std::string& get_material_name() const { return m_material_name; }
 
 private:
-    void parse_heightmap_json(const std::string& json_path);
     void create_flat_grid(int grid_width, int grid_height);
 
 private:
-    std::string m_heightmap_texture_key;  // HeightMap ÅØ½ºÃ³ Å°
-    std::string m_material_name;           // Material ÀÌ¸§
-    std::string m_base_texture_key;        // Base ÅØ½ºÃ³ Å°
-    std::string m_detail_texture_key;      // Detail ÅØ½ºÃ³ Å°
+    std::string m_heightmap_texture_key;  // HeightMap í…ìŠ¤ì²˜ í‚¤
+    std::string m_material_name;           // Material ì´ë¦„
+    std::string m_base_texture_key;        // Base í…ìŠ¤ì²˜ í‚¤
+    std::string m_detail_texture_key;      // Detail í…ìŠ¤ì²˜ í‚¤
 
-    TerrainInfo m_terrain_info;            // Terrain Á¤º¸
-    std::vector<float> m_cpu_height_data;  // CPU¿¡¼­ ³ôÀÌ Á¶È¸¿ë
+    TerrainInfo m_terrain_info;            // Terrain ì •ë³´
+    std::vector<float> m_cpu_height_data;  // CPUì—ì„œ ë†’ì´ ì¡°íšŒìš©
 
-    float m_raw_min_height;                // Raw µ¥ÀÌÅÍ ÃÖ¼Ò°ª (Á¤±ÔÈ­ Àü)
-    float m_raw_max_height;                // Raw µ¥ÀÌÅÍ ÃÖ´ë°ª (Á¤±ÔÈ­ Àü)
+    // [ìˆ˜ì •] Common::TerrainData ì‚¬ìš©
+    common::TerrainData m_terrainData;
 };

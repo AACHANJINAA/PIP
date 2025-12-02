@@ -12,6 +12,7 @@
 #pragma comment(lib, "ws2_32.lib")
 #include <wincodec.h>
 #pragma comment(lib, "windowscodecs.lib")
+#define NOMINMAX
 
 #include <tchar.h>
 

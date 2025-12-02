@@ -15,9 +15,6 @@
     <Filter Include="소스 파일\Common">
       <UniqueIdentifier>{221db55e-c0d0-4ad9-995d-1f030209a926}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\JSON">
-      <UniqueIdentifier>{6cd71e3b-475b-42bf-9877-81d2ab8acdfa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Server">
       <UniqueIdentifier>{4b20dcfe-da3f-4689-8997-8f10c1de7032}</UniqueIdentifier>
     </Filter>
@@ -73,9 +70,6 @@
     <ClInclude Include="PacketManager.h">
       <Filter>소스 파일\Packet</Filter>
     </ClInclude>
-    <ClInclude Include="json.hpp">
-      <Filter>소스 파일\JSON</Filter>
-    </ClInclude>
     <ClInclude Include="MapDataManager.h">
       <Filter>소스 파일\Manager\MapDataManager</Filter>
     </ClInclude>
@@ -104,6 +98,12 @@
       <Filter>소스 파일\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\stb_image.h">
+      <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\json.hpp">
+      <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TerrainData.h">
       <Filter>소스 파일\Common</Filter>
     </ClInclude>
   </ItemGroup>

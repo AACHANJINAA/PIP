@@ -28,7 +28,7 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
     register_scene<Chess_Scene>("ChessScene");
     //register_scene<Lobby_Scene>("LobbyScene");
 
-    // Ã³À½ ¾À
+    // Ã³ï¿½ï¿½ ï¿½ï¿½
     change_scene("ChessScene");
 }
 
@@ -48,42 +48,42 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 	,ID3D12CommandAllocator* command_allocator
 	, ID3D12GraphicsCommandList* command_list)
 {
-    // ÀüÈ¯ ¿äÃ»ÀÌ ¾øÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö ¾Ê°í Áï½Ã ¸®ÅÏÇÕ´Ï´Ù.
+    // ï¿½ï¿½È¯ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     if (_requestedSceneName.empty())
     {
         return;
     }
 
-    // --- ¿©±â¼­ºÎÅÍ´Â ¸ðµç °ÔÀÓ ·ÎÁ÷ÀÌ ¸ØÃá ¾ÈÀüÇÑ ½ÃÁ¡ÀÔ´Ï´Ù ---
+    // --- ï¿½ï¿½ï¿½â¼­ï¿½ï¿½ï¿½Í´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½ ---
 
     std::string scene_to_load = _requestedSceneName;
     _requestedSceneName.clear();
 
 	auto game_framework = GameFramework::instance();
-    // 1. GPU°¡ ÀÌÀü ÇÁ·¹ÀÓÀÇ ¸ðµç ÀÛ¾÷À» ¸¶Ä¥ ¶§±îÁö ±â´Ù¸³´Ï´Ù.
+    // 1. GPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Û¾ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¥ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ù¸ï¿½ï¿½Ï´ï¿½.
     game_framework->WaitForGpuComplete();
 
-    // 2. ÇöÀç ¾ÀÀÇ ¿µ¼Ó¼º ¾ø´Â ¸ðµç ¿ÀºêÁ§Æ®¸¦ ÆÄ±« ¸ñ·ÏÀ¸·Î ¿Å±é´Ï´Ù.
+    // 2. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ä±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å±ï¿½Ï´ï¿½.
     ObjectManager::instance()->clear_non_persistent_objects();
-    // ÆÄ±« ¸ñ·Ï¿¡ ÀÖ´Â ¿ÀºêÁ§Æ®µéÀ» ½ÇÁ¦·Î ¼Ò¸ê½ÃÅµ´Ï´Ù.
+    // ï¿½Ä±ï¿½ ï¿½ï¿½Ï¿ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò¸ï¿½ï¿½Åµï¿½Ï´ï¿½.
     ObjectManager::instance()->process_destructions();
-	// ÀÌÁ¦ ´õ ÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â ÀÌÀü ¾ÀÀÇ ¸Þ½ÃµéÀ» ¸Þ¸ð¸®¿¡¼­ ¿ÏÀüÈ÷ ÇØÁ¦ÇÕ´Ï´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½Ãµï¿½ï¿½ï¿½ ï¿½Þ¸ð¸®¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     ResourceManager::instance()->unload_unused_meshes();
 
-    // 3. »õ·Î¿î ¾ÀÀ» »ý¼ºÇÕ´Ï´Ù.
+    // 3. ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     auto it = _scene_creators.find(scene_to_load);
     if (it == _scene_creators.end()) {
-        CERROR("µî·ÏµÇÁö ¾ÊÀº ¾À: " << scene_to_load);
+        CERROR("ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½: " << scene_to_load);
         return;
     }
-    _currentScene = it->second(); // ÀÌ¶§ ¾À »ý¼º ¹× »èÁ¦
+    _currentScene = it->second(); // ï¿½Ì¶ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (!_currentScene) 
     {
-        CERROR("¾ÀÀÌ ³Î Æ÷ÀÎÅÍÀÓ")
+        CERROR("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")
         return;
     }
 
-    // 4. »õ·Î¿î ¾ÀÀÇ ¸®¼Ò½º¸¦ ·ÎµåÇÏ°í GPU¿¡ ¾÷·ÎµåÇÕ´Ï´Ù.
+    // 4. ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½Ï°ï¿½ GPUï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ï¿½Õ´Ï´ï¿½.
 
     command_allocator->Reset();
     command_list->Reset(command_allocator, nullptr);
@@ -91,16 +91,16 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     _currentScene->build_objects(device, command_list);
     ResourceManager::instance()->upload_pending_meshes(device, command_list);
 
-    // 5. ¸®¼Ò½º ¾÷·Îµå Ä¿¸Çµå¸¦ ½ÇÇàÇÏ°í ¿Ï·áµÉ ¶§±îÁö ±â´Ù¸³´Ï´Ù.
+    // 5. ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ Ä¿ï¿½Çµå¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ï·ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ù¸ï¿½ï¿½Ï´ï¿½.
     command_list->Close();
     ID3D12CommandList* ppd3dCommandLists[] = { command_list };
     game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
     game_framework->WaitForGpuComplete();
 
-    // TODO: ÀÓ½Ã ¾÷·Îµå ¹öÆÛ ÇØÁ¦ ·ÎÁ÷
+    // TODO: ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     //ResourceManager::Instance()->release_upload_buffers();
-    // --- [Ãß°¡] ¸ðµç ¾À ÀüÈ¯ ÀÛ¾÷ÀÌ ³¡³­ ÈÄ ---
-	// ÀÌÁ¦ ´õ ÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â ÀÌÀü ¾ÀÀÇ ¸Þ½ÃµéÀ» ¸Þ¸ð¸®¿¡¼­ ¿ÏÀüÈ÷ ÇØÁ¦ÇÕ´Ï´Ù.
+    // --- [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Û¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ---
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½Ãµï¿½ï¿½ï¿½ ï¿½Þ¸ð¸®¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     //ResourceManager::Instance()->unload_unused_meshes();
 }
 
@@ -128,27 +128,27 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
 {
-    // 1. Terrain »ý¼º (Grid Mesh¸¸ »ý¼º)
+    // 1. Terrain ï¿½ï¿½ï¿½ï¿½ (Grid Meshï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     auto terrain = std::make_shared<TerrainLoader>(
-        "Resource\\HeightMap\\Heightmap.json"
+        "../../Common/MapData/Heightmap.json"
     );
 
-    // 2. ResourceManager¿¡ ÅØ½ºÃ³ ·Îµù ¿äÃ»
+    // 2. ResourceManagerï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½Îµï¿½ ï¿½ï¿½Ã»
     terrain->load_textures_to_resource_manager(
         "Resource\\HeightMap\\HeightMap_Material.gltf"
     );
 
-    // 3. GPU ¾÷·Îµå
+    // 3. GPU ï¿½ï¿½ï¿½Îµï¿½
     terrain->upload_to_gpu(device, cmdList);
 
-    // 4. GameObject »ý¼º ¹× ÄÄÆ÷³ÍÆ® Ãß°¡
+    // 4. GameObject ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
     _terrainObject = ObjectManager::instance()->create_game_object("terrain");
 
     auto render_comp = _terrainObject->add_component<RenderComponent>();
     render_comp->set_mesh(terrain);
-    render_comp->set_pso_name("terrain");  // Terrain Àü¿ë PSO »ç¿ë
+    render_comp->set_pso_name("terrain");  // Terrain ï¿½ï¿½ï¿½ï¿½ PSO ï¿½ï¿½ï¿½
 
-    // 5. Transform ¼³Á¤ (ÇÊ¿ä½Ã)
+    // 5. Transform ï¿½ï¿½ï¿½ï¿½ (ï¿½Ê¿ï¿½ï¿½)
     _terrainObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f }); 
     _terrainObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f }); 
 

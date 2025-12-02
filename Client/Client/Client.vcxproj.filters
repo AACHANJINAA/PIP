@@ -87,6 +87,9 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent">
       <UniqueIdentifier>{c9682bcf-f8f2-4f9a-b3a6-a290036050ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\3. Renderer\5. TerrainLoader">
+      <UniqueIdentifier>{c4eda412-bb59-4f0e-8ffc-708146f7997e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -109,9 +112,6 @@
     </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>0. Engine\3. Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="json.hpp">
-      <Filter>4. External</Filter>
     </ClInclude>
     <ClInclude Include="Chess_Scene.h">
       <Filter>1. Game\1. Scenes</Filter>
@@ -263,11 +263,17 @@
     <ClInclude Include="GltfAnimationTestScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainLoader.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="TerrainShader.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainLoader.h">
+      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TerrainData.h">
+      <Filter>4. External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\json.hpp">
+      <Filter>4. External</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -424,11 +430,11 @@
     <ClCompile Include="GltfAnimationTestScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainLoader.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainShader.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainLoader.cpp">
+      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
