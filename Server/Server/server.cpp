@@ -185,7 +185,8 @@ namespace PIP::server
 
 		//MYLOG("[SERVER] Loading Map...");
 		MapDataManager::Instance()->LoadMapData("..\\..\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
-		MapDataManager::Instance()->LoadHeightMapData("HeightMap/Heightmap.json");
+		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
+
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)

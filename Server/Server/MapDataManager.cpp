@@ -1,7 +1,10 @@
 ﻿#include "pch.h"
 #include "MapDataManager.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+
+// stb_image는 이제 필요 없을 수 있음 (Common에서 처리하거나 안 쓴다면)
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "stb_image.h"
+
 namespace PIP
 {
 	void MapDataManager::LoadMapData(std::string_view mapDataPath)
@@ -35,291 +38,31 @@ namespace PIP
 
 	void MapDataManager::LoadHeightMapData(std::string_view heightMapDataJSONPath)
 	{
-		std::ifstream file(heightMapDataJSONPath.data());
-		if (not file)
+		// Common::TerrainData 로드
+		if (!m_terrainData.LoadFromJSON(heightMapDataJSONPath.data()))
 		{
-			MYERROR("Failed to open height map data file: " << heightMapDataJSONPath);
-			return;
-		}
-		using namespace nlohmann;
-		json data = json::parse(file);
-
-		_height_map_data._min_x = data["bounds"]["min_x"];
-		_height_map_data._max_x = data["bounds"]["max_x"];
-		_height_map_data._min_z = data["bounds"]["min_z"];
-		_height_map_data._max_z = data["bounds"]["max_z"];
-		_height_map_data._width = data["width"];
-		_height_map_data._height = data["height"];
-		
-		// Scale 정보 파싱
-		float scale_y = data["scale"]["y"];
-
-		_height_map_data._heights.clear();
-		_height_map_data._heights.reserve(_height_map_data._width * _height_map_data._height);
-
-		std::string raw_file_name = data["heightmap_file"];
-		
-		// JSON 파일과 같은 폴더에 있는 heightmap 파일의 전체 경로 생성
-		std::filesystem::path json_path(heightMapDataJSONPath);
-		std::filesystem::path heightmap_path = json_path.parent_path() / raw_file_name;
-		
-		std::ifstream heightmap_file(heightmap_path, std::ios::binary);
-
-		size_t map_size = _height_map_data._width * _height_map_data._height;
-		if (not heightmap_file)
-		{
-			MYERROR("Failed to open height map raw file: " << heightmap_path);
-			return;
-		}
-		for (size_t i = 0; i < map_size; ++i)
-		{
-			uint16_t height_value;
-			if (not heightmap_file.read((char*)(&height_value), sizeof(uint16_t)))
-			{
-				MYERROR("Failed to read uint16 height at index: " << i);
-				return;
-			}
-			float normalized = static_cast<float>(height_value) / 65535.0f;
-			_height_map_data._heights.emplace_back(normalized * scale_y);
-		}
-		_height_map_data.isLoaded = true;
-		MYLOG("Height map Loaded: " << _height_map_data._width << " * " << _height_map_data._height
-			<< ", Scale Y: " << scale_y
-			<< ", Min/Max heights: " << *std::min_element(_height_map_data._heights.begin(),
-				_height_map_data._heights.end())
-			<< "/" << *std::max_element(_height_map_data._heights.begin(), _height_map_data._heights.end()));
-	}
-
-	void MapDataManager::LoadHeightMapData(std::string_view r16FilePath, float minX, float maxX, float minZ, float maxZ, size_t height, size_t width)
-	{
-		std::ifstream file(r16FilePath.data(), std::ios::binary);
-		if (!file)
-		{
-			MYERROR("Failed to open R16 height map file: " << r16FilePath);
-			return;
-		}
-
-		// 파일 크기 확인
-		file.seekg(0, std::ios::end);
-		size_t file_size = file.tellg();
-		file.seekg(0, std::ios::beg);
-
-		size_t expected_size = width * height * sizeof(uint16_t);
-		if (file_size < expected_size)
-		{
-			MYERROR("File too small. Expected: " << expected_size << " bytes, Got: " << file_size << " bytes");
-			return;
-		}
-
-		_height_map_data._min_x = minX;
-		_height_map_data._max_x = maxX;
-		_height_map_data._min_z = minZ;
-		_height_map_data._max_z = maxZ;
-		_height_map_data._width = width;
-		_height_map_data._height = height;
-
-		_height_map_data._heights.clear();
-		size_t map_size = width * height;
-		_height_map_data._heights.reserve(map_size);
-
-		for (size_t i = 0; i < map_size; ++i)
-		{
-			uint16_t height_value;
-			if (!file.read((char*)(&height_value), sizeof(uint16_t)))
-			{
-				MYERROR("Failed to read height data at index: " << i);
-				return;
-			}
-
-			float normalized_height = static_cast<float>(height_value) / 65535.0f;
-			float actual_height = normalized_height * 100.0f;
-			_height_map_data._heights.emplace_back(actual_height);
-		}
-
-		_height_map_data.isLoaded = true;
-		MYLOG("R16 Height map loaded: " << width << " x " << height);
-	}
-
-	void MapDataManager::LoadHeightMapDataPNG(std::string_view pngFilePath, float minX, float maxX, float minZ,
-		float maxZ, size_t height, size_t width)
-	{
-		int img_width, img_height, channels;
-		unsigned char* img_data = stbi_load(pngFilePath.data(), &img_width, &img_height, &channels, 1); // 1채널(그레이스케일)로 로드
-
-		if (!img_data)
-		{
-			MYERROR("Failed to load PNG height map: " << pngFilePath);
-			return;
-		}
-
-		// 이미지 크기와 요청된 크기가 다르면 경고
-		if (img_width != width || img_height != height)
-		{
-			MYERROR("PNG size mismatch. Expected: " << width << "x" << height << ", Got: " << img_width << "x" << img_height);
-			stbi_image_free(img_data);
-			return;
-		}
-
-		_height_map_data._min_x = minX;
-		_height_map_data._max_x = maxX;
-		_height_map_data._min_z = minZ;
-		_height_map_data._max_z = maxZ;
-		_height_map_data._width = width;
-		_height_map_data._height = height;
-
-		_height_map_data._heights.clear();
-		size_t map_size = width * height;
-		_height_map_data._heights.reserve(map_size);
-
-		for (size_t i = 0; i < map_size; ++i)
-		{
-			// PNG 픽셀값 (0-255)을 높이값으로 변환
-			float normalized_height = static_cast<float>(img_data[i]) / 255.0f;
-			float actual_height = normalized_height * 100.0f; // 최대 높이 100 가정
-			_height_map_data._heights.emplace_back(actual_height);
-		}
-
-		stbi_image_free(img_data);
-		_height_map_data.isLoaded = true;
-		MYLOG("PNG Height map loaded: " << _height_map_data._width << " * " << _height_map_data._height);
-	}
-	void MapDataManager::LoadHeightMapFromRawFile(std::string_view rawFilePath, float minX, float maxX, float minZ, float maxZ,
-		size_t width, size_t height, bool isFloat32)
-	{
-		std::ifstream file(rawFilePath.data(), std::ios::binary);
-		if (not file)
-		{
-			MYERROR("Failed to open Raw height map file: " << rawFilePath);
-			return;
-		}
-
-		// 파일 크기 검증
-		size_t file_size = std::filesystem::file_size(rawFilePath.data());
-
-		size_t element_size = isFloat32 ? sizeof(float) : sizeof(uint16_t);
-		size_t expected_size = width * height * element_size;
-
-		if (file_size < expected_size)
-		{
-			MYERROR("Raw file size mismatch. Expected: " << expected_size << " bytes, Got: " << file_size);
-			return;
-		}
-
-		_height_map_data._min_x = minX;
-		_height_map_data._max_x = maxX;
-		_height_map_data._min_z = minZ;
-		_height_map_data._max_z = maxZ;
-		_height_map_data._width = width;
-		_height_map_data._height = height;
-
-		_height_map_data._heights.clear();
-		size_t map_size = width * height;
-		_height_map_data._heights.reserve(map_size);
-
-		if (isFloat32)
-		{
-			// 32비트 float Raw 파일
-			for (size_t i = 0; i < map_size; ++i)
-			{
-				float height_value;
-				if (!file.read((char*)(&height_value), sizeof(float)))
-				{
-					MYERROR("Failed to read float height at index: " << i);
-					return;
-				}
-				_height_map_data._heights.emplace_back(height_value);
-			}
+			MYERROR("Failed to load height map via Common::TerrainData: " << heightMapDataJSONPath);
 		}
 		else
 		{
-			// 16비트 uint Raw 파일 (R16과 동일)
-			for (size_t i = 0; i < map_size; ++i)
-			{
-				uint16_t height_value;
-				if (!file.read((char*)(&height_value), sizeof(uint16_t)))
-				{
-					MYERROR("Failed to read uint16 height at index: " << i);
-					return;
-				}
-				float normalized = static_cast<float>(height_value) / 65535.0f;
-				_height_map_data._heights.emplace_back(normalized * 100.0f);
-			}
+			const auto& info = m_terrainData.GetInfo();
+			MYLOG("Height map Loaded via Common: " << info.width << " * " << info.height
+				<< ", Scale Y: " << info.height_scale);
 		}
-
-		_height_map_data.isLoaded = true;
-		MYLOG("Raw Height map loaded: " << width << " x " << height << " (" << (isFloat32 ? "float32" : "uint16") << ")");
 	}
 
+	// 구버전 로드 함수들 제거 (구현부도 제거)
 
 	common::Vec3 MapDataManager::AdjustPositionToGround(common::Vec3 position)
 	{
 		position.y = GetGroundHeight(position.x, position.z);
 		return position;
 	}
+
 	float MapDataManager::GetGroundHeight(float x, float z)
 	{
-		if (not _height_map_data.isLoaded)
-		{
-			return 0.0f; // 높이 맵이 로드되지 않은 경우 기본값 반환
-		}
-		if (x > _height_map_data._max_x || x < _height_map_data._min_x ||
-			z > _height_map_data._max_z || z < _height_map_data._min_z)
-		{
-			return 0.0f; // 범위 밖
-		}
-
-		return InterpolateHeight(x, z);
-	}
-	float MapDataManager::InterpolateHeight(float x, float z)
-	{
-		float norm_x = (x - _height_map_data._min_x) / (_height_map_data._max_x - _height_map_data._min_x);
-		float norm_z = (z - _height_map_data._min_z) / (_height_map_data._max_z - _height_map_data._min_z);
-
-		// 안전하게 0~1 범위로 클램핑
-		norm_x = std::clamp(norm_x, 0.0f, 1.0f);
-		norm_z = std::clamp(norm_z, 0.0f, 1.0f);
-
-		float grid_x = norm_x * (_height_map_data._width - 1);
-		float grid_z = norm_z * (_height_map_data._height - 1);
-
-		// 정수 소수 부분 분리
-		int x0 = static_cast<int>(std::floor(grid_x));
-		int z0 = static_cast<int>(std::floor(grid_z));
-
-		// 안전하게 범위 제한 (음수 방지 + 상한 체크)
-		x0 = std::clamp(x0, 0, _height_map_data._width - 1);
-		z0 = std::clamp(z0, 0, _height_map_data._height - 1);
-
-		int x1 = std::min(x0 + 1, _height_map_data._width - 1);
-		int z1 = std::min(z0 + 1, _height_map_data._height - 1);
-
-		float fx = grid_x - x0;
-		float fz = grid_z - z0;
-
-		// 배열 접근 전에 인덱스 검증
-		int idx00 = z0 * _height_map_data._width + x0;
-		int idx10 = z0 * _height_map_data._width + x1;
-		int idx01 = z1 * _height_map_data._width + x0;
-		int idx11 = z1 * _height_map_data._width + x1;
-
-		// 안전성 체크 (디버그용)
-		int max_idx = _height_map_data._width * _height_map_data._height;
-		if (idx00 >= max_idx || idx10 >= max_idx || idx01 >= max_idx || idx11 >= max_idx)
-		{
-			MYERROR("HeightMap index out of bounds! x=" << x << ", z=" << z);
-			return 0.0f;
-		}
-
-		float h00 = _height_map_data._heights[idx00];
-		float h10 = _height_map_data._heights[idx10];
-		float h01 = _height_map_data._heights[idx01];
-		float h11 = _height_map_data._heights[idx11];
-
-		// 이중 선형 보간
-		float h0 = h00 * (1.f - fx) + h10 * fx;
-		float h1 = h01 * (1.f - fx) + h11 * fx;
-
-		return h0 * (1.f - fz) + h1 * fz;
+		// Common::TerrainData 위임
+		return m_terrainData.GetHeightAt(x, z);
 	}
 
 	bool MapDataManager::CheckForCollision(common::Vec3 target_pos, common::Vec3 player_extents)

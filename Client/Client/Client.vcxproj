@@ -71,6 +71,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
     <LibraryPath>../..\Jolt\include;$(LibraryPath)</LibraryPath>
@@ -146,8 +152,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\json.hpp" />
     <ClInclude Include="..\..\Common\Packet.h" />
     <ClInclude Include="..\..\Common\PacketStream.h" />
+    <ClInclude Include="..\..\Common\TerrainData.h" />
     <ClInclude Include="..\..\Common\Vector3.h" />
     <ClInclude Include="Behaviour.h" />
     <ClInclude Include="BoardCubeScript.h" />
@@ -176,7 +184,6 @@
     <ClInclude Include="FreeCamera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="json.hpp" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="NPCScript.h" />
     <ClInclude Include="Object.h" />
