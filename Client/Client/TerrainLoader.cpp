@@ -51,12 +51,6 @@ void TerrainLoader::parse_heightmap_json(const std::string& json_path)
     // 3. Scale 정보 (Y축 스케일)
     m_terrain_info.height_scale = config["scale"]["y"].get<float>();
 
-    CLOG("Terrain Config Loaded:");
-    CLOG("  Bounds: (" << m_terrain_info.bounds.x << " ~ " << m_terrain_info.bounds.y
-        << "), (" << m_terrain_info.bounds.z << " ~ " << m_terrain_info.bounds.w << ")");
-    CLOG("  Size: " << m_terrain_info.size.x << " x " << m_terrain_info.size.y);
-    CLOG("  HeightScale: " << m_terrain_info.height_scale);
-
     // 4. HeightMap 파일 경로 생성
     std::filesystem::path json_dir = std::filesystem::path(json_path).parent_path();
     std::string heightmap_filename = config["heightmap_file"].get<std::string>();
@@ -103,13 +97,6 @@ void TerrainLoader::parse_heightmap_json(const std::string& json_path)
     m_raw_min_height = static_cast<float>(min_val) / 65535.0f;
     m_raw_max_height = static_cast<float>(max_val) / 65535.0f;
     m_terrain_info.min_height = m_raw_min_height;
-
-    CLOG("HeightMap Data Loaded:");
-    CLOG("  Raw Min: " << min_val << " (" << m_raw_min_height << ")");
-    CLOG("  Raw Max: " << max_val << " (" << m_raw_max_height << ")");
-    CLOG("  Actual Height Range: "
-        << *std::min_element(m_cpu_height_data.begin(), m_cpu_height_data.end())
-        << " ~ " << *std::max_element(m_cpu_height_data.begin(), m_cpu_height_data.end()));
 }
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
