@@ -7,12 +7,13 @@
 using namespace DirectX;
 
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
+    : m_raw_min_height(0.0f)
+    , m_raw_max_height(0.0f)
 {
     // 1. JSON 파싱하여 Terrain 정보 로드
     parse_heightmap_json(heightmap_json_path);
 
-    // 2. Flat Grid Mesh 생성 (높이는 Shader에서 처리)
-    // JSON의 width가 504라면 503x503 Quad (504x504 정점)
+    // 2. Flat Grid Mesh 생성
     int grid_width = static_cast<int>(m_terrain_info.size.x) - 1;
     int grid_height = static_cast<int>(m_terrain_info.size.y) - 1;
     create_flat_grid(grid_width, grid_height);
@@ -33,50 +34,86 @@ void TerrainLoader::parse_heightmap_json(const std::string& json_path)
     file >> config;
     file.close();
 
-    // Terrain 정보 추출
-    m_terrain_info.bounds = DirectX::XMFLOAT4(
+    // 1. Bounds 정보 (맵 경계)
+    m_terrain_info.bounds = XMFLOAT4(
         config["bounds"]["min_x"].get<float>(),
         config["bounds"]["max_x"].get<float>(),
         config["bounds"]["min_z"].get<float>(),
         config["bounds"]["max_z"].get<float>()
     );
 
-    m_terrain_info.size = DirectX::XMFLOAT2(
+    // 2. Size 정보 (너비, 높이)
+    m_terrain_info.size = XMFLOAT2(
         static_cast<float>(config["width"].get<int>()),
         static_cast<float>(config["height"].get<int>())
     );
 
+    // 3. Scale 정보 (Y축 스케일)
     m_terrain_info.height_scale = config["scale"]["y"].get<float>();
-    m_terrain_info.padding = 0.0f;
 
-    // HeightMap 파일 경로 생성 (JSON과 같은 폴더에 있음)
+    CLOG("Terrain Config Loaded:");
+    CLOG("  Bounds: (" << m_terrain_info.bounds.x << " ~ " << m_terrain_info.bounds.y
+        << "), (" << m_terrain_info.bounds.z << " ~ " << m_terrain_info.bounds.w << ")");
+    CLOG("  Size: " << m_terrain_info.size.x << " x " << m_terrain_info.size.y);
+    CLOG("  HeightScale: " << m_terrain_info.height_scale);
+
+    // 4. HeightMap 파일 경로 생성
     std::filesystem::path json_dir = std::filesystem::path(json_path).parent_path();
     std::string heightmap_filename = config["heightmap_file"].get<std::string>();
     m_heightmap_texture_key = (json_dir / heightmap_filename).string();
 
+    // 5. HeightMap 데이터를 CPU 메모리에 로드 (충돌 계산용)
     std::ifstream hm_file(m_heightmap_texture_key, std::ios::binary);
-    if (hm_file.is_open())
+    if (!hm_file.is_open())
     {
-        int width = static_cast<int>(m_terrain_info.size.x);
-        int height = static_cast<int>(m_terrain_info.size.y);
-
-        m_cpu_height_data.resize(width * height);
-
-        for (int i = 0; i < width * height; ++i)
-        {
-            uint16_t raw_height;
-            hm_file.read((char*)&raw_height, sizeof(uint16_t));
-
-            // 서버와 동일한 변환 (수정 후)
-            float normalized = static_cast<float>(raw_height) / 65535.0f;
-            m_cpu_height_data[i] = normalized * m_terrain_info.height_scale;
-        }
+        CERROR("Failed to open heightmap file: " << m_heightmap_texture_key);
+        return;
     }
+
+    int width = static_cast<int>(m_terrain_info.size.x);
+    int height = static_cast<int>(m_terrain_info.size.y);
+    size_t total_pixels = width * height;
+
+    m_cpu_height_data.resize(total_pixels);
+
+    uint16_t min_val = 65535;
+    uint16_t max_val = 0;
+
+    // R16 파일 읽기 (16bit unsigned per pixel)
+    for (size_t i = 0; i < total_pixels; ++i)
+    {
+        uint16_t raw_height;
+        if (!hm_file.read(reinterpret_cast<char*>(&raw_height), sizeof(uint16_t)))
+        {
+            CERROR("Failed to read heightmap at index: " << i);
+            return;
+        }
+
+        min_val = min(min_val, raw_height);
+        max_val = max(max_val, raw_height);
+
+        // 0~1로 정규화
+        float normalized = static_cast<float>(raw_height) / 65535.0f;
+        m_cpu_height_data[i] = normalized * m_terrain_info.height_scale;
+    }
+
+    hm_file.close();
+
+    // 최소값을 저장 (셰이더에서 사용)
+    m_raw_min_height = static_cast<float>(min_val) / 65535.0f;
+    m_raw_max_height = static_cast<float>(max_val) / 65535.0f;
+    m_terrain_info.min_height = m_raw_min_height;
+
+    CLOG("HeightMap Data Loaded:");
+    CLOG("  Raw Min: " << min_val << " (" << m_raw_min_height << ")");
+    CLOG("  Raw Max: " << max_val << " (" << m_raw_max_height << ")");
+    CLOG("  Actual Height Range: "
+        << *std::min_element(m_cpu_height_data.begin(), m_cpu_height_data.end())
+        << " ~ " << *std::max_element(m_cpu_height_data.begin(), m_cpu_height_data.end()));
 }
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 {
-    // 정점 개수: (grid_width + 1) * (grid_height + 1)
     int vertex_count_x = grid_width + 1;
     int vertex_count_z = grid_height + 1;
 
@@ -88,7 +125,7 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
     float cell_width = world_width / grid_width;
     float cell_height = world_height / grid_height;
 
-    // ========== 정점 생성 ==========
+    // 정점 생성
     std::vector<IlluminatedVertex> vertices;
     vertices.reserve(vertex_count_x * vertex_count_z);
 
@@ -101,7 +138,7 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
             // 위치 (World Space, Y=0)
             v._position = XMFLOAT3(
                 m_terrain_info.bounds.x + x * cell_width,
-                0.0f,  // Shader에서 Displacement로 높이 결정
+                0.0f,  // Shader에서 Displacement로 높이 적용
                 m_terrain_info.bounds.z + z * cell_height
             );
 
@@ -114,21 +151,19 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
                 static_cast<float>(z) / grid_height
             );
 
-            // Tangent (나중에 Normal Mapping 시 필요)
+            // Tangent
             v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 
-            // Diffuse (흰색, Material 텍스처로 덮어씌워짐)
+            // Diffuse
             v._diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
             vertices.emplace_back(v);
         }
     }
 
-    // Mesh 클래스의 템플릿 함수로 정점 데이터 저장
     set_vertex_data_buffer(vertices);
 
-    // ========== 인덱스 생성 ==========
-    // 각 Quad를 2개의 삼각형으로 분할
+    // 인덱스 생성
     _indices.clear();
     _indices.reserve(grid_width * grid_height * 6);
 
@@ -136,96 +171,87 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
     {
         for (int x = 0; x < grid_width; ++x)
         {
-            // 현재 Quad의 네 모서리 인덱스
-            // v0(좌하) --- v1(우하)
-            //   |      /      |
-            // v2(좌상) --- v3(우상)
-
             int v0 = z * vertex_count_x + x;
             int v1 = v0 + 1;
             int v2 = (z + 1) * vertex_count_x + x;
             int v3 = v2 + 1;
 
-            // 삼각형 1 (시계 반대 방향: v0 -> v2 -> v1)
+            // 삼각형 1
             _indices.emplace_back(v0);
             _indices.emplace_back(v2);
             _indices.emplace_back(v1);
 
-            // 삼각형 2 (시계 반대 방향: v1 -> v2 -> v3)
+            // 삼각형 2
             _indices.emplace_back(v1);
             _indices.emplace_back(v2);
             _indices.emplace_back(v3);
         }
     }
 
-    // ========== Topology 설정 ==========
     _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-    // ========== Bounding Box 계산 ==========
-    // Displacement 후 최대 높이를 고려하여 넉넉하게 설정
-    // (실제로는 HeightMap의 최대/최소 높이를 분석해야 정확함)
-    float max_height = m_terrain_info.height_scale;  // 예상 최대 높이
-
+    // Bounding Box
+    float max_height = m_terrain_info.height_scale;
     _orientedBoundingBox = CreateOOBB(
-        XMFLOAT3(m_terrain_info.bounds.x, -max_height * 0.1f, m_terrain_info.bounds.z),
+        XMFLOAT3(m_terrain_info.bounds.x, 0.0f, m_terrain_info.bounds.z),
         XMFLOAT3(m_terrain_info.bounds.y, max_height, m_terrain_info.bounds.w)
     );
 
     CLOG("Terrain Grid Created: " << vertex_count_x << " x " << vertex_count_z
         << " vertices, " << _indices.size() / 3 << " triangles");
-
-    // 첫 번째와 마지막 정점 출력
-    CLOG("First vertex: (" << vertices[0]._position.x << ", "
-        << vertices[0]._position.y << ", " << vertices[0]._position.z << ")");
-    CLOG("Last vertex: (" << vertices.back()._position.x << ", "
-        << vertices.back()._position.y << ", " << vertices.back()._position.z << ")");
-
-    CLOG("First 3 indices: " << _indices[0] << ", " << _indices[1] << ", " << _indices[2]);
-
-    CLOG("_vertexDataBuffer.size(): " << _vertexDataBuffer.size());
-    CLOG("_vertexCount: " << _vertexCount);
-    CLOG("_vertexStride: " << _vertexStride);
 }
 
 void TerrainLoader::load_textures_to_resource_manager(const std::string& material_gltf_path)
 {
     auto* rm = ResourceManager::instance();
 
-    // 1. HeightMap 텍스처 로드 (R16 포맷)
+    // 1. HeightMap 텍스처 로드 (R16 형식)
     int width = static_cast<int>(m_terrain_info.size.x);
     int height = static_cast<int>(m_terrain_info.size.y);
 
     auto* heightmap_tex = rm->load_heightmap_from_raw(m_heightmap_texture_key, width, height);
     if (!heightmap_tex)
     {
-        CERROR("Failed to load heightmap: " << m_heightmap_texture_key);
+        CERROR("Failed to load heightmap texture: " << m_heightmap_texture_key);
     }
     else
     {
-        CLOG("HeightMap loaded: " << m_heightmap_texture_key);
+        CLOG("HeightMap texture loaded to GPU: " << m_heightmap_texture_key);
     }
 
-    // 2. Material 텍스처 로드 (glTF에서 가져옴)
+    // 2. glTF Material 로드 (ResourceManager의 함수 사용)
     auto material_names = rm->load_materials_from_gltf(material_gltf_path);
     if (!material_names.empty())
     {
-        m_material_name = material_names[0];  // 첫 번째 Material 사용
-        CLOG("Material loaded: " << m_material_name);
+        m_material_name = material_names[0];
+        CLOG("Material loaded from glTF: " << m_material_name);
 
-        // Material에서 텍스처 경로 추출
-        auto* mat_info = rm->get_material_info(m_material_name); // 이 함수는 추가 필요
+        // Material 정보 가져오기
+        auto* mat_info = rm->get_material_info(m_material_name);
         if (mat_info)
         {
-            m_base_texture_key = mat_info->base_color_texture_path;
-            m_detail_texture_key = mat_info->normal_texture_path; // Normal을 Detail로 사용
+            // Base Color Texture (T_ground_Moss_D.png)
+            if (!mat_info->base_color_texture_path.empty())
+            {
+                m_base_texture_key = mat_info->base_color_texture_path;
+                CLOG("  Base Texture: " << m_base_texture_key);
+            }
 
-            CLOG("Base Texture: " << m_base_texture_key);
-            CLOG("Detail Texture: " << m_detail_texture_key);
+            // Normal Texture를 Detail로 사용 (T_Ground_Moss_N.png)
+            if (!mat_info->normal_texture_path.empty())
+            {
+                m_detail_texture_key = mat_info->normal_texture_path;
+                CLOG("  Detail Texture: " << m_detail_texture_key);
+            }
+        }
+        else
+        {
+            CERROR("Failed to get material info for: " << m_material_name);
         }
     }
     else
     {
-        CERROR("No materials found in: " << material_gltf_path);
+        CERROR("No materials found in glTF: " << material_gltf_path);
     }
 }
 
@@ -233,20 +259,20 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 {
     if (!is_uploaded())
     {
-        CERROR("TerrainLoader: Mesh not uploaded to GPU yet!");
+        CERROR("TerrainLoader: Mesh not uploaded to GPU!");
         return;
     }
 
-    // 1. Vertex/Index Buffer 바인딩
+    // Vertex/Index Buffer 바인딩
     command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
     command_list->IASetIndexBuffer(&_indexBufferView);
     command_list->IASetPrimitiveTopology(_primitiveTopology);
 
-    // 2. Terrain Constant Buffer 바인딩 (Root Parameter 2)
-    command_list->SetGraphicsRoot32BitConstants(2,  8,  &m_terrain_info, 0);
+    // Terrain Constant Buffer 바인딩 (Root Parameter 2)
+    // TerrainInfo 구조체 전체를 32bit constants로 전송
+    command_list->SetGraphicsRoot32BitConstants(2, 8, &m_terrain_info, 0);
 
-
-    // 4. Draw Call
+    // Draw Call
     command_list->DrawIndexedInstanced(
         static_cast<UINT>(_indices.size()), 1, 0, 0, 0
     );
@@ -261,17 +287,25 @@ float TerrainLoader::get_height_at(float world_x, float world_z) const
         return 0.0f;
     }
 
-    // 정규화
+    if (m_cpu_height_data.empty())
+    {
+        CERROR("CPU height data not loaded!");
+        return 0.0f;
+    }
+
+    // 정규화 (0~1 범위)
     float norm_x = (world_x - m_terrain_info.bounds.x) /
         (m_terrain_info.bounds.y - m_terrain_info.bounds.x);
     float norm_z = (world_z - m_terrain_info.bounds.z) /
         (m_terrain_info.bounds.w - m_terrain_info.bounds.z);
 
+    // 그리드 좌표로 변환
     float grid_x = norm_x * (m_terrain_info.size.x - 1);
     float grid_z = norm_z * (m_terrain_info.size.y - 1);
 
-    int x0 = static_cast<int>(std::floor(grid_x));
-    int z0 = static_cast<int>(std::floor(grid_z));
+    // 정수/소수 부분 분리
+    int x0 = std::clamp(static_cast<int>(std::floor(grid_x)), 0, static_cast<int>(m_terrain_info.size.x) - 1);
+    int z0 = std::clamp(static_cast<int>(std::floor(grid_z)), 0, static_cast<int>(m_terrain_info.size.y) - 1);
     int x1 = min(x0 + 1, static_cast<int>(m_terrain_info.size.x) - 1);
     int z1 = min(z0 + 1, static_cast<int>(m_terrain_info.size.y) - 1);
 
@@ -280,6 +314,7 @@ float TerrainLoader::get_height_at(float world_x, float world_z) const
 
     int width = static_cast<int>(m_terrain_info.size.x);
 
+    // 높이값 가져오기
     float h00 = m_cpu_height_data[z0 * width + x0];
     float h10 = m_cpu_height_data[z0 * width + x1];
     float h01 = m_cpu_height_data[z1 * width + x0];
