@@ -3,10 +3,10 @@
 #include "json.hpp"
 #include "../../Common/TerrainData.h"
 
-/// Terrain 렌더링을 위한 Grid Mesh 생성 및 관리 클래스
-/// - JSON 파일에서 Terrain 설정 파싱
-/// - ResourceManager를 통한 HeightMap + Material 텍스처 로딩
-/// - Flat Grid Mesh 생성 (Displacement는 Shader에서 처리)
+/// Terrain �������� ���� Grid Mesh ���� �� ���� Ŭ����
+/// - JSON ���Ͽ��� Terrain ���� �Ľ�
+/// - ResourceManager�� ���� HeightMap + Material �ؽ�ó �ε�
+/// - Flat Grid Mesh ���� (Displacement�� Shader���� ó��)
 
 class TerrainLoader : public Mesh
 {
@@ -19,36 +19,36 @@ public:
     TerrainLoader(const std::string& heightmap_json_path);
     virtual ~TerrainLoader() = default;
 
-    /// ResourceManager에 HeightMap과 Material 텍스처 로드 요청
+    /// ResourceManager�� HeightMap�� Material �ؽ�ó �ε� ��û
     void load_textures_to_resource_manager(const std::string& material_gltf_path);
 
-    /// Terrain 렌더링
+    /// Terrain ������
     void render(ID3D12GraphicsCommandList* command_list) override;
 
-    /// Terrain 정보 반환
+    /// Terrain ���� ��ȯ
     const TerrainInfo& get_terrain_info() const { return m_terrain_info; }
 
-    /// 특정 월드 좌표(x, z)에서의 지형 높이 계산
+    /// Ư�� ���� ��ǥ(x, z)������ ���� ���� ���
     float get_height_at(float world_x, float world_z) const;
 
-    /// HeightMap 텍스처 키 반환
+    /// HeightMap �ؽ�ó Ű ��ȯ
     const std::string& get_heightmap_key() const { return m_heightmap_texture_key; }
 
-    /// Material 이름 반환
+    /// Material �̸� ��ȯ
     const std::string& get_material_name() const { return m_material_name; }
 
 private:
     void create_flat_grid(int grid_width, int grid_height);
 
 private:
-    std::string m_heightmap_texture_key;  // HeightMap 텍스처 키
-    std::string m_material_name;           // Material 이름
-    std::string m_base_texture_key;        // Base 텍스처 키
-    std::string m_detail_texture_key;      // Detail 텍스처 키
+    std::string m_heightmap_texture_key;  // HeightMap �ؽ�ó Ű
+    std::string m_material_name;           // Material �̸�
+    std::string m_base_texture_key;        // Base �ؽ�ó Ű
+    std::string m_detail_texture_key;      // Detail �ؽ�ó Ű
 
-    TerrainInfo m_terrain_info;            // Terrain 정보
-    std::vector<float> m_cpu_height_data;  // CPU에서 높이 조회용
+    TerrainInfo m_terrain_info;            // Terrain ����
+    std::vector<float> m_cpu_height_data;  // CPU���� ���� ��ȸ��
 
-    // [수정] Common::TerrainData 사용
+    // [����] Common::TerrainData ���
     common::TerrainData m_terrainData;
 };

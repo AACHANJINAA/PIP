@@ -74,7 +74,7 @@ void Chess_Scene::release_upload_buffers()
 void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     float offsetX = 0.0f;
-    float offsetY = 5600.0f;
+    float offsetY = 100.0f;
     float offsetZ = 0.0f;
     // DW설명 : 인사 애니메이션 오브젝트 생성
     {

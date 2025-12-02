@@ -111,6 +111,10 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 
 void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
+    if (_skyboxObject) {
+        return;
+    }
+
     ResourceManager::instance()->load_skybox("Resource\\SkyBox\\Night.dds");
 
     _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
@@ -128,7 +132,12 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
 {
-    // 1. Terrain ���� (Grid Mesh�� ����)
+
+    if (_terrainObject) {
+        return;
+    }
+
+    // 1. Terrain 생성 (Grid Mesh만 생성)
     auto terrain = std::make_shared<TerrainLoader>(
         "../../Common/MapData/Heightmap.json"
     );

@@ -95,7 +95,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             auto transformComp = gameObject->transform();
 
             float offsetX = 0.0f;  // 필요시 조정
-            float offsetY = 5600.0f;
+            float offsetY = 100.0f;
             float offsetZ = 0.0f;
 
             transformComp->set_local_position({
