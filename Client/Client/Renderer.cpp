@@ -237,6 +237,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
             else
             {
                 CERROR("HeightMap texture not found: " << heightmap_key);
+                return;
             }
 
             // Material 정보 가져오기
@@ -254,6 +255,11 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
                         bind_texture_table(commandList, 4, cpu_handles);
                     }
+                    else
+                    {
+                        CERROR("Base texture not found!");
+                        return; 
+                    }
                 }
 
                 // [5] t2: Detail Texture
@@ -265,7 +271,17 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
                         bind_texture_table(commandList, 5, cpu_handles);
                     }
+                    else
+                    {
+                        CERROR("Detail texture not found!");
+                        return;
+                    }
                 }
+            }
+            else
+            {
+                CERROR("Material info not found: " << material_name);
+                return; 
             }
 
             render_comp->render(commandList);
