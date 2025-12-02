@@ -16,6 +16,7 @@ public:
         DirectX::XMFLOAT2 size;      // x: width, y: height
         float height_scale;          // JSON의 scale.y
         float min_height;            // 최소 높이 (정규화된 값)
+		float padding[2];           // 8byte 패딩
 
         TerrainInfo()
             : bounds(0.0f, 0.0f, 0.0f, 0.0f)
