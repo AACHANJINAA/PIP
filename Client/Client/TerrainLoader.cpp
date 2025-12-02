@@ -17,6 +17,12 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
     const auto& info = _terrainData.GetInfo();
     _heightmapTextureKey = _terrainData.GetHeightMapPath();
 
+    // _terrainInfo 값 채우기 (쉐이더로 전달됨)
+    _terrainInfo.bounds = XMFLOAT4(info.min_x, info.max_x, info.min_z, info.max_z);
+    _terrainInfo.size = XMFLOAT2(info.width, info.height);
+    _terrainInfo.height_scale = info.height_scale;
+    _terrainInfo.min_height = info.min_height;
+
     // 2. Flat Grid Mesh 
     int grid_width = static_cast<int>(info.width) - 1;
     int grid_height = static_cast<int>(info.height) - 1;
