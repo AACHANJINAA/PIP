@@ -275,24 +275,47 @@ namespace PIP
 		float norm_x = (x - _height_map_data._min_x) / (_height_map_data._max_x - _height_map_data._min_x);
 		float norm_z = (z - _height_map_data._min_z) / (_height_map_data._max_z - _height_map_data._min_z);
 
+		// 안전하게 0~1 범위로 클램핑
+		norm_x = std::clamp(norm_x, 0.0f, 1.0f);
+		norm_z = std::clamp(norm_z, 0.0f, 1.0f);
+
 		float grid_x = norm_x * (_height_map_data._width - 1);
 		float grid_z = norm_z * (_height_map_data._height - 1);
 
-		//정수 소수 부분 불리
+		// 정수 소수 부분 분리
 		int x0 = static_cast<int>(std::floor(grid_x));
 		int z0 = static_cast<int>(std::floor(grid_z));
+
+		// 안전하게 범위 제한 (음수 방지 + 상한 체크)
+		x0 = std::clamp(x0, 0, _height_map_data._width - 1);
+		z0 = std::clamp(z0, 0, _height_map_data._height - 1);
+
 		int x1 = std::min(x0 + 1, _height_map_data._width - 1);
 		int z1 = std::min(z0 + 1, _height_map_data._height - 1);
 
 		float fx = grid_x - x0;
 		float fz = grid_z - z0;
 
-		float h00 = _height_map_data._heights[z0 * _height_map_data._width + x0];
-		float h10 = _height_map_data._heights[z0 * _height_map_data._width + x1];
-		float h01 = _height_map_data._heights[z1 * _height_map_data._width + x0];
-		float h11 = _height_map_data._heights[z1 * _height_map_data._width + x1];
+		// 배열 접근 전에 인덱스 검증
+		int idx00 = z0 * _height_map_data._width + x0;
+		int idx10 = z0 * _height_map_data._width + x1;
+		int idx01 = z1 * _height_map_data._width + x0;
+		int idx11 = z1 * _height_map_data._width + x1;
 
-		//이중 선형 보간
+		// 안전성 체크 (디버그용)
+		int max_idx = _height_map_data._width * _height_map_data._height;
+		if (idx00 >= max_idx || idx10 >= max_idx || idx01 >= max_idx || idx11 >= max_idx)
+		{
+			MYERROR("HeightMap index out of bounds! x=" << x << ", z=" << z);
+			return 0.0f;
+		}
+
+		float h00 = _height_map_data._heights[idx00];
+		float h10 = _height_map_data._heights[idx10];
+		float h01 = _height_map_data._heights[idx01];
+		float h11 = _height_map_data._heights[idx11];
+
+		// 이중 선형 보간
 		float h0 = h00 * (1.f - fx) + h10 * fx;
 		float h1 = h01 * (1.f - fx) + h11 * fx;
 
