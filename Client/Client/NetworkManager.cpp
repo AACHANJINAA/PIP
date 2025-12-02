@@ -338,10 +338,28 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	common::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
 	auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-	auto player_Trasnform = player->get_component<TransformComponent>();
-	if (player && move_packet._id == _my_session_id && player_Trasnform) // 읽어온 id 사용
+	auto player_Transform = player->get_component<TransformComponent>();
+	if (player && move_packet._id == _my_session_id && player_Transform) // 읽어온 id 사용
 	{
-		player_Trasnform->set_local_position(move_packet._position); // 읽어온 x, y 사용
+		common::Vec3 currentPos = player_Transform->local_position();
+		common::Vec3 serverPos = move_packet._position;
+
+		// 현재 위치와 서버가 보낸 위치 사이의 거리(제곱) 계산
+		float distSq = pow(currentPos.x - serverPos.x, 2) +
+			pow(currentPos.y - serverPos.y, 2) +
+			pow(currentPos.z - serverPos.z, 2);
+
+		// [핵심] 오차가 허용 범위(예: 2.0f)보다 클 때만 위치를 강제 보정합니다.
+		// 네트워크 지연으로 인한 미세한 차이는 무시하여 부드러운 움직임을 유지합니다.
+		// 만약 벽을 뚫거나 심각한 위치 불일치가 발생하면(거리가 멀면) 그때 강제로 텔레포트 시킵니다.
+		const float TOLERANCE_SQ = 2.0f * 2.0f; // 2.0 단위 거리 (필요에 따라 조절)
+
+		if (distSq > TOLERANCE_SQ)
+		{
+			player_Transform->set_local_position(serverPos);
+			// 디버깅용 로그: 큰 오차가 발생했을 때만 출력
+			CLOG("Server Correction Applied! Distance: " << sqrt(distSq));
+		}
 	}
 	else
 	{

@@ -6,6 +6,8 @@
 #include "RenderComponent.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "SceneManager.h"
+#include "TerrainLoader.h"
 #include "TransformComponent.h"
 #include "TimerManager.h"
 
@@ -65,7 +67,28 @@ void MainPlayerScript::update(float deltaTime)
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
         // _speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
         auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, _speed * deltaTime));
-        current_transform->set_local_position(new_pos);
+
+        // [추가됨] 2. 지형 높이(Y) 보정 로직
+		// 클라이언트에서 지형 높이 계산 로직을 서버와 동일하게 적용하여 예측 정확도를 높임.
+		if (const auto scene_manager = SceneManager::instance()) {
+			if (const auto terrain_obj = scene_manager->get_terrain_object()) {
+				if (auto render_comp = terrain_obj->get_component<RenderComponent>()) {
+                    auto mesh = render_comp->mesh();
+                    // Mesh가 TerrainLoader인지 확인 후 캐스팅 (안전하게 dynamic_pointer_cast 사용)
+
+					if (auto terrain_loader = std::dynamic_pointer_cast<TerrainLoader>(mesh)) {
+                        // 해당 X, Z 위치의 정확한 지형 높이를 가져옴
+                        float terrain_height = terrain_loader->get_height_at(new_pos.x, new_pos.z);
+
+                        // 예측된 위치의 Y값을 지형 높이로 강제 설정 (서버 로직과 일치시킴)
+                        new_pos.y = terrain_height;
+                    }
+                }
+            }
+        }
+
+
+    	current_transform->set_local_position(new_pos);
     }
 
     // --- 50ms 마다 위치 정보 전송 ---
