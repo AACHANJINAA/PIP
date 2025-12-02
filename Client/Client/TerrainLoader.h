@@ -47,6 +47,9 @@ public:
     /// Material 이름 얻기
     const std::string& get_material_name() const { return m_material_name; }
 
+    // 특정 월드 좌표(x, z)에서의 지형 높이 계산 (서버 InterpolateHeight와 동일)
+    float get_height_at(float world_x, float world_z) const;
+
 private:
     /// Heightmap.json 파싱
     void parse_heightmap_json(const std::string& json_path);
@@ -69,4 +72,7 @@ private:
 
     // Terrain 범위 정보
     TerrainInfo m_terrain_info;
+
+    // CPU에서 높이 조회용
+    std::vector<float> m_cpu_height_data;
 };

@@ -45,29 +45,12 @@ PS_Input VS_Main(VS_Input input)
 {
     PS_Input output = (PS_Input) 0;
 
-         // HeightMap 샘플링
-   // float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
-
-         // 0.5 기준으로 중심 이동
-    //height = height - 0.5f;
-
-         // 매우 크게 증폭! (높이 차이가 작으므로)
-//    input.PositionL.y += height * HeightScale * 10; // 100배!;
-
     float height = heightMap.SampleLevel(terrainSampler, input.UV, 0).r;
 
-    //정규화
+     // 서버와 동일한 방식: 단순히 normalized * HeightScale
+    input.PositionL.y += height * HeightScale;
 
-    const float MIN_HEIGHT = 0.498f;
-    const float MAX_HEIGHT = 1.0f;
-    height = (height - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT);
-    height = (height - 0.5f) * 2.0f;
-
-
-    input.PositionL.y += height * HeightScale; // ← 서버와 동일!
-    
-
-         // Transform
+	// Transform
     float4 positionL = float4(input.PositionL, 1.0f);
     output.PositionW = mul(positionL, World).xyz;
     output.PositionH = mul(mul(float4(output.PositionW, 1.0f), View), Projection);

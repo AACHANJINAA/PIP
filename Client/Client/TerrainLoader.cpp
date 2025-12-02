@@ -54,11 +54,24 @@ void TerrainLoader::parse_heightmap_json(const std::string& json_path)
     std::string heightmap_filename = config["heightmap_file"].get<std::string>();
     m_heightmap_texture_key = (json_dir / heightmap_filename).string();
 
-    CLOG("Terrain Config Loaded:");
-    CLOG("  Bounds: (" << m_terrain_info.bounds.x << ", " << m_terrain_info.bounds.y
-        << "), (" << m_terrain_info.bounds.z << ", " << m_terrain_info.bounds.w << ")");
-    CLOG("  Size: " << m_terrain_info.size.x << " x " << m_terrain_info.size.y);
-    CLOG("  HeightMap: " << m_heightmap_texture_key);
+    std::ifstream hm_file(m_heightmap_texture_key, std::ios::binary);
+    if (hm_file.is_open())
+    {
+        int width = static_cast<int>(m_terrain_info.size.x);
+        int height = static_cast<int>(m_terrain_info.size.y);
+
+        m_cpu_height_data.resize(width * height);
+
+        for (int i = 0; i < width * height; ++i)
+        {
+            uint16_t raw_height;
+            hm_file.read((char*)&raw_height, sizeof(uint16_t));
+
+            // 서버와 동일한 변환 (수정 후)
+            float normalized = static_cast<float>(raw_height) / 65535.0f;
+            m_cpu_height_data[i] = normalized * m_terrain_info.height_scale;
+        }
+    }
 }
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
@@ -237,4 +250,44 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
     command_list->DrawIndexedInstanced(
         static_cast<UINT>(_indices.size()), 1, 0, 0, 0
     );
+}
+
+float TerrainLoader::get_height_at(float world_x, float world_z) const
+{
+    // 범위 체크
+    if (world_x < m_terrain_info.bounds.x || world_x > m_terrain_info.bounds.y ||
+        world_z < m_terrain_info.bounds.z || world_z > m_terrain_info.bounds.w)
+    {
+        return 0.0f;
+    }
+
+    // 정규화
+    float norm_x = (world_x - m_terrain_info.bounds.x) /
+        (m_terrain_info.bounds.y - m_terrain_info.bounds.x);
+    float norm_z = (world_z - m_terrain_info.bounds.z) /
+        (m_terrain_info.bounds.w - m_terrain_info.bounds.z);
+
+    float grid_x = norm_x * (m_terrain_info.size.x - 1);
+    float grid_z = norm_z * (m_terrain_info.size.y - 1);
+
+    int x0 = static_cast<int>(std::floor(grid_x));
+    int z0 = static_cast<int>(std::floor(grid_z));
+    int x1 = min(x0 + 1, static_cast<int>(m_terrain_info.size.x) - 1);
+    int z1 = min(z0 + 1, static_cast<int>(m_terrain_info.size.y) - 1);
+
+    float fx = grid_x - x0;
+    float fz = grid_z - z0;
+
+    int width = static_cast<int>(m_terrain_info.size.x);
+
+    float h00 = m_cpu_height_data[z0 * width + x0];
+    float h10 = m_cpu_height_data[z0 * width + x1];
+    float h01 = m_cpu_height_data[z1 * width + x0];
+    float h11 = m_cpu_height_data[z1 * width + x1];
+
+    // 이중 선형 보간
+    float h0 = h00 * (1.0f - fx) + h10 * fx;
+    float h1 = h01 * (1.0f - fx) + h11 * fx;
+
+    return h0 * (1.0f - fz) + h1 * fz;
 }

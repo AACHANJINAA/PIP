@@ -80,6 +80,12 @@ void GameFramework::OnDestroy()
 	if (_swapChain) _swapChain->SetFullscreenState(FALSE, NULL);
 	::CloseHandle(_fenceEvent);
 
+	if (_frameLatencyWaitableObject)
+	{
+		::CloseHandle(_frameLatencyWaitableObject);
+		_frameLatencyWaitableObject = nullptr;
+	}
+
 #if defined(_DEBUG)
 	ComPtr<IDXGIDebug1> pdxgiDebug;
 	DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pdxgiDebug));
@@ -109,7 +115,7 @@ void GameFramework::CreateSwapChain()
 	dxgiSwapChainDesc.OutputWindow = _hWnd;
 	dxgiSwapChainDesc.SampleDesc.Count = (_isEnableMsaa) ? 4 : 1; dxgiSwapChainDesc.SampleDesc.Quality = (_isEnableMsaa) ? (_msaa4XQualityLevels - 1) : 0;
 	dxgiSwapChainDesc.Windowed = TRUE;
-	dxgiSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	dxgiSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
 
 	ComPtr<IDXGISwapChain> pSwapChain;
 	HRESULT hResult = _factory->CreateSwapChain(_commandQueue.Get(), &dxgiSwapChainDesc, &pSwapChain);
@@ -117,6 +123,14 @@ void GameFramework::CreateSwapChain()
 
 	hResult = pSwapChain.As(&_swapChain);
 	_ASSERTE(SUCCEEDED(hResult));
+
+	ComPtr<IDXGISwapChain2> swapChain2;
+	hResult = _swapChain.As(&swapChain2);
+	if (SUCCEEDED(hResult) && swapChain2)
+	{
+		swapChain2->SetMaximumFrameLatency(2);
+		_frameLatencyWaitableObject = swapChain2->GetFrameLatencyWaitableObject();
+	}
 
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 	hResult = _factory->MakeWindowAssociation(_hWnd, DXGI_MWA_NO_ALT_ENTER);
@@ -311,6 +325,12 @@ void GameFramework::MoveToNextFrame()
 
 void GameFramework::FrameAdvance()
 {
+	// GPU 레이턴시 대기 (TDR 방지)
+	if (_frameLatencyWaitableObject)
+	{
+		::WaitForSingleObject(_frameLatencyWaitableObject, INFINITE);
+	}
+
 	// [핵심] 실제 렌더링이나 업데이트 시작 전에 씬 전환을 먼저 처리합니다. 한프레임 지연
 	SceneManager::instance()->process_scene_change_if_requested(_device.Get(),
 		_commandAllocator.Get(), _commandList.Get());
@@ -377,7 +397,7 @@ void GameFramework::FrameAdvance()
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get()};
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	
-	_swapChain->Present(1, 0);
+	_swapChain->Present(0, 0);
 	WaitForGpuComplete();
 
 	ResourceManager::instance()->release_upload_buffers();

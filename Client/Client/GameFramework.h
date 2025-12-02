@@ -45,6 +45,7 @@ private:
 	ComPtr<ID3D12Fence> _fence;
 	std::array<UINT64, SWAP_CHAIN_BUFFERS> _fenceValues;
 	HANDLE _fenceEvent;
+	HANDLE _frameLatencyWaitableObject = nullptr; // Frame Latency Waitable Object
 
 	TimerManager _gameTimer;
 	_TCHAR _frameRate[50];
@@ -52,6 +53,7 @@ private:
 	std::unique_ptr<Scene> _scene;
 
 	float _physicsTimeAccumulator = 0.0f; // 물리 업데이트 시간 누적 변수
+
 
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
