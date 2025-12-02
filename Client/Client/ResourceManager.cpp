@@ -625,6 +625,9 @@ ResourceManager::TextureInfo* ResourceManager::get_texture(const std::string& fi
 
 ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std::string& file_path, int width, int height)
 {
+    auto it = _textures.find(file_path);
+    if (it != _textures.end())
+        return &it->second;
     // 1. 파일 읽기
     std::ifstream file(file_path, std::ios::binary);
     if (!file.is_open())

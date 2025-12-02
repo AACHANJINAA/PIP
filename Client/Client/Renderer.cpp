@@ -108,6 +108,8 @@ void Renderer::create_pipeline_state_objects(ID3D12Device* device)
 
 void Renderer::render(ID3D12GraphicsCommandList* commandList)
 {
+    // [추가] 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋합니다.
+    _current_dynamic_descriptor_index = 0;
     CameraComponent* camera = CameraComponent::get_main();
     if (!camera)
     {
@@ -307,9 +309,6 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
 
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-    // [추가] 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋합니다.
-    _current_dynamic_descriptor_index = 0;
 
     // ---------------------------------------------------------
     for (auto const& [psoName, gameObjects] : _renderMap)
