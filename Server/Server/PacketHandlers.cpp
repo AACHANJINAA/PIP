@@ -292,14 +292,14 @@ namespace PIP::packet
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = room->GetLogicThreadIndex();
-		common::Vec3 spawnPos{ 0, 0, -150 };
+		common::Vec3 spawnPos{ 0, 0, 0 };
 		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
 		session->_player._level = 1;
 		session->_player._hp = 100;
 		session->_player._exp = 0;
 
 		
-		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 70, -150)");
+		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 0, 0 )");
 
 		SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
