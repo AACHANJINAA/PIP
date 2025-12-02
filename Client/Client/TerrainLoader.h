@@ -6,8 +6,22 @@
 class TerrainLoader : public Mesh
 {
 public:
-	using TerrainInfo = common::TerrainInfo;
+	struct TerrainInfo
+	{
+		DirectX::XMFLOAT4 bounds;    // x: min_x, y: max_x, z: min_z, w: max_z
+		DirectX::XMFLOAT2 size;      // x: width, y: height
+		float height_scale;          // JSON의 scale.y
+		float min_height;            // 최소 높이 (정규화된 값)
+		float padding[2];           // 8byte 패딩
 
+		TerrainInfo()
+			: bounds(0.0f, 0.0f, 0.0f, 0.0f)
+			, size(0.0f, 0.0f)
+			, height_scale(0.0f)
+			, min_height(0.0f)
+		{
+		}
+	};
 public:
 	TerrainLoader(const std::string& heightmap_json_path);
 	virtual ~TerrainLoader() = default;
@@ -36,7 +50,6 @@ private:
 	std::string _detailTextureKey;      // Detail 
 
 	TerrainInfo _terrainInfo;            // Terrain 
-	std::vector<float> _cpuHeightData;  // CPU
 
 	common::TerrainData _terrainData;
 };
