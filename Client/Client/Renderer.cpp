@@ -165,8 +165,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
         auto terrain_object = SceneManager::instance()->get_terrain_object();
         if (terrain_object)
         {
-            CLOG("=== Terrain Rendering Start ===");
-
             auto terrain_shader_proto = get_shader("terrain");
             ID3D12PipelineState* pso = get_pso("terrain");
 
@@ -175,8 +173,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                 CERROR("Terrain shader or PSO not found!");
                 return;
             }
-
-            CLOG("Terrain shader and PSO found");
 
             commandList->SetPipelineState(pso);
 
@@ -188,12 +184,10 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
             }
 
             commandList->SetGraphicsRootSignature(root_signature);
-            CLOG("Root signature set");
 
             // ========== 중요! Descriptor Heap 바인딩 ==========
             ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
             commandList->SetDescriptorHeaps(1, heaps);
-            CLOG("Descriptor heap bound");
 
             // Camera 설정
             CameraComponent* camera = CameraComponent::get_main();
@@ -201,7 +195,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
             {
                 camera->update_shader_variables(commandList);
                 camera->set_viewports_and_scissor_rects(commandList);
-                CLOG("Camera updated");
             }
 
             // RenderComponent에서 Mesh 가져오기
@@ -227,21 +220,17 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                 return;
             }
 
-            CLOG("TerrainLoader cast successful");
-
             // ========== Terrain 텍스처 바인딩 ==========
             auto* rm = ResourceManager::instance();
 
             // [3] t0: HeightMap
             std::string heightmap_key = terrain_loader->get_heightmap_key();
-            CLOG("HeightMap key: " << heightmap_key);
 
             auto* heightmap = rm->get_texture(heightmap_key);
             if (heightmap && heightmap->cpu_handle.ptr != 0)
             {
                 std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ heightmap->cpu_handle };
                 bind_texture_table(commandList, 3, cpu_handles);
-                CLOG("HeightMap bound to slot 3");
             }
             else
             {
@@ -250,7 +239,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
 
             // Material 정보 가져오기
             std::string material_name = terrain_loader->get_material_name();
-            CLOG("Material name: " << material_name);
 
             auto* mat_info = rm->get_material_info(material_name);
             if (mat_info)
@@ -263,7 +251,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                     {
                         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
                         bind_texture_table(commandList, 4, cpu_handles);
-                        CLOG("Base texture bound to slot 4");
                     }
                 }
 
@@ -275,15 +262,11 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
                     {
                         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
                         bind_texture_table(commandList, 5, cpu_handles);
-                        CLOG("Detail texture bound to slot 5");
                     }
                 }
             }
 
-            // Render 호출
-            CLOG("Calling terrain render...");
             render_comp->render(commandList);
-            CLOG("=== Terrain Rendering End ===");
         }
     }
 
