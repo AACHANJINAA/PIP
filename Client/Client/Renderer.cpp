@@ -22,6 +22,7 @@
 
 #include "SceneManager.h"
 #include "ResourceManager.h"
+#include "TerrainLoader.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -160,57 +161,129 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
     auto terrain_object = SceneManager::instance()->get_terrain_object();
     if (terrain_object)
     {
-        auto terrain_shader_proto = get_shader("terrain");
-        ID3D12PipelineState* pso = get_pso("terrain");
-
-        if (terrain_shader_proto && pso)
+        // Terrain 렌더링 (161번 줄부터)
+        auto terrain_object = SceneManager::instance()->get_terrain_object();
+        if (terrain_object)
         {
-            ID3D12RootSignature* root_signature = get_root_signature(terrain_shader_proto->required_root_signature());
-            if (root_signature)
+            CLOG("=== Terrain Rendering Start ===");
+
+            auto terrain_shader_proto = get_shader("terrain");
+            ID3D12PipelineState* pso = get_pso("terrain");
+
+            if (!terrain_shader_proto || !pso)
             {
-                // PSO/RootSignature 설정
-                commandList->SetPipelineState(pso);
-                commandList->SetGraphicsRootSignature(root_signature);
-
-                // 동적 디스크립터 힙 설정
-                ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
-                commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-                // 카메라 업데이트
-                if (camera)
-                {
-                    camera->update_shader_variables(commandList);
-                    camera->set_viewports_and_scissor_rects(commandList);
-                }
-
-                // ========== Terrain 텍스처 바인딩 (CPU → 동적 힙) ==========
-                auto* rm = ResourceManager::instance();
-
-                // [3] t0: HeightMap
-                auto* heightmap = rm->get_texture("Resource\\HeightMap\\Heightmap.r16");
-                if (heightmap && heightmap->cpu_handle.ptr != 0)
-                {
-                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ heightmap->cpu_handle };
-                    bind_texture_table(commandList, 3, cpu_handles);
-                }
-
-                // [4] t1: Base Texture
-                auto* base_tex = rm->get_texture("Resource\\HeightMap\\T_ground_Moss_D.png");
-                if (base_tex && base_tex->cpu_handle.ptr != 0)
-                {
-                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
-                    bind_texture_table(commandList, 4, cpu_handles);
-                }
-                // [5] t2: Detail Texture
-                auto* detail_tex = rm->get_texture("Resource\\HeightMap\\T_Ground_Moss_N.png");
-                if (detail_tex && detail_tex->cpu_handle.ptr != 0)
-                {
-                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
-                    bind_texture_table(commandList, 5, cpu_handles);
-                }
-
-                terrain_object->get_component<RenderComponent>()->render(commandList);
+                CERROR("Terrain shader or PSO not found!");
+                return;
             }
+
+            CLOG("Terrain shader and PSO found");
+
+            commandList->SetPipelineState(pso);
+
+            ID3D12RootSignature* root_signature = get_root_signature(terrain_shader_proto->required_root_signature());
+            if (!root_signature)
+            {
+                CERROR("Terrain root signature not found!");
+                return;
+            }
+
+            commandList->SetGraphicsRootSignature(root_signature);
+            CLOG("Root signature set");
+
+            // ========== 중요! Descriptor Heap 바인딩 ==========
+            ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
+            commandList->SetDescriptorHeaps(1, heaps);
+            CLOG("Descriptor heap bound");
+
+            // Camera 설정
+            CameraComponent* camera = CameraComponent::get_main();
+            if (camera)
+            {
+                camera->update_shader_variables(commandList);
+                camera->set_viewports_and_scissor_rects(commandList);
+                CLOG("Camera updated");
+            }
+
+            // RenderComponent에서 Mesh 가져오기
+            auto render_comp = terrain_object->get_component<RenderComponent>();
+            if (!render_comp)
+            {
+                CERROR("Terrain RenderComponent not found!");
+                return;
+            }
+
+            auto terrain_mesh_ptr = render_comp->mesh();
+            if (!terrain_mesh_ptr)
+            {
+                CERROR("Terrain mesh is null!");
+                return;
+            }
+
+            // TerrainLoader로 캐스팅
+            TerrainLoader* terrain_loader = dynamic_cast<TerrainLoader*>(terrain_mesh_ptr.get());
+            if (!terrain_loader)
+            {
+                CERROR("Failed to cast Mesh to TerrainLoader!");
+                return;
+            }
+
+            CLOG("TerrainLoader cast successful");
+
+            // ========== Terrain 텍스처 바인딩 ==========
+            auto* rm = ResourceManager::instance();
+
+            // [3] t0: HeightMap
+            std::string heightmap_key = terrain_loader->get_heightmap_key();
+            CLOG("HeightMap key: " << heightmap_key);
+
+            auto* heightmap = rm->get_texture(heightmap_key);
+            if (heightmap && heightmap->cpu_handle.ptr != 0)
+            {
+                std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ heightmap->cpu_handle };
+                bind_texture_table(commandList, 3, cpu_handles);
+                CLOG("HeightMap bound to slot 3");
+            }
+            else
+            {
+                CERROR("HeightMap texture not found: " << heightmap_key);
+            }
+
+            // Material 정보 가져오기
+            std::string material_name = terrain_loader->get_material_name();
+            CLOG("Material name: " << material_name);
+
+            auto* mat_info = rm->get_material_info(material_name);
+            if (mat_info)
+            {
+                // [4] t1: Base Texture
+                if (!mat_info->base_color_texture_path.empty())
+                {
+                    auto* base_tex = rm->get_texture(mat_info->base_color_texture_path);
+                    if (base_tex && base_tex->cpu_handle.ptr != 0)
+                    {
+                        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
+                        bind_texture_table(commandList, 4, cpu_handles);
+                        CLOG("Base texture bound to slot 4");
+                    }
+                }
+
+                // [5] t2: Detail Texture
+                if (!mat_info->normal_texture_path.empty())
+                {
+                    auto* detail_tex = rm->get_texture(mat_info->normal_texture_path);
+                    if (detail_tex && detail_tex->cpu_handle.ptr != 0)
+                    {
+                        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
+                        bind_texture_table(commandList, 5, cpu_handles);
+                        CLOG("Detail texture bound to slot 5");
+                    }
+                }
+            }
+
+            // Render 호출
+            CLOG("Calling terrain render...");
+            render_comp->render(commandList);
+            CLOG("=== Terrain Rendering End ===");
         }
     }
 

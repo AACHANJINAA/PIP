@@ -347,6 +347,7 @@ void GameFramework::FrameAdvance()
 	// 3. 물리 업데이트 (FixedUpdate)
 	update_physics(deltaTime);
 
+	WaitForGpuComplete(); // 먼저 대기
 	HRESULT hResult = _commandAllocator->Reset();
 	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
