@@ -60,12 +60,12 @@ PS_Input VS_Main(VS_Input input)
 
 float4 PS_Main(PS_Input input) : SV_TARGET
 {   
-         // Base Texture (1배 타일링)
-    float2 baseUV = input.UV * 1.0;
+         // Base Texture (5배 타일링)
+    float2 baseUV = input.UV * 5.0;
     float4 baseColor = baseTexture.Sample(terrainSampler, baseUV);
 
-         // Detail Texture (4배 타일링)
-    float2 detailUV = input.UV * 4.0;
+         // Detail Texture (1배 타일링)
+    float2 detailUV = input.UV * 1.0;
     float4 detailColor = detailTexture.Sample(terrainSampler, detailUV);
 
          // 텍스처 블렌딩

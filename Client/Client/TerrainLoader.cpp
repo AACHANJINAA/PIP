@@ -83,6 +83,13 @@ void TerrainLoader::parse_heightmap_json(const std::string& json_path)
             return;
         }
 
+        CINFO("TerrainInfo loaded:");
+        CINFO("  bounds: (" << m_terrain_info.bounds.x << ", " << m_terrain_info.bounds.y
+            << ", " << m_terrain_info.bounds.z << ", " << m_terrain_info.bounds.w << ")");
+        CINFO("  size: (" << m_terrain_info.size.x << ", " << m_terrain_info.size.y << ")");
+        CINFO("  height_scale: " << m_terrain_info.height_scale);
+        CINFO("  min_height: " << m_terrain_info.min_height);
+
         min_val = min(min_val, raw_height);
         max_val = max(max_val, raw_height);
 
@@ -257,7 +264,7 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 
     // Terrain Constant Buffer 바인딩 (Root Parameter 2)
     // TerrainInfo 구조체 전체를 32bit constants로 전송
-    command_list->SetGraphicsRoot32BitConstants(2, 8, &m_terrain_info, 0);
+    command_list->SetGraphicsRoot32BitConstants(2, 12, &m_terrain_info, 0);
 
     // Draw Call
     command_list->DrawIndexedInstanced(

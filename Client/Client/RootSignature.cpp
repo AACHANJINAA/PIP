@@ -524,7 +524,7 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
     d3dRootParameters[2].Constants.ShaderRegister = 2;    
     d3dRootParameters[2].Constants.RegisterSpace = 0;     
-    d3dRootParameters[2].Constants.Num32BitValues = 8;    
+    d3dRootParameters[2].Constants.Num32BitValues = 12;    
     d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     // [3~5] t0, t1, t2: Textures (heightMap, baseTexture, detailTexture)
