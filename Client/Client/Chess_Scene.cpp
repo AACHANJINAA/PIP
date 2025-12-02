@@ -27,7 +27,6 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // 카메라 생성
     auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
-    //cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -200.0f));
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 20.0f, 0.0f)); // 20m 높이
     cameraObject->transform()->set_local_rotation(10.0f, 0.0f, 0.0f); // 약간 아래 보기
 
@@ -74,6 +73,9 @@ void Chess_Scene::release_upload_buffers()
 
 void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    float offsetX = 0.0f;
+    float offsetY = 5600.0f;
+    float offsetZ = 0.0f;
     // DW설명 : 인사 애니메이션 오브젝트 생성
     {
         auto hi_brute = ObjectManager::instance()->create_game_object("Hi_animation_brute");
@@ -100,8 +102,7 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
 
 
-
-        hi_brute->transform()->set_local_position(XMFLOAT3(0.0f, 25.0f, -130.0f));
+        hi_brute->transform()->set_local_position(XMFLOAT3(0.0f + offsetX, 25.0f + offsetY, -130.0f + offsetZ));
         ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
     
@@ -132,7 +133,7 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 
 
-        hi_brute->transform()->set_local_position(XMFLOAT3((-100.f + i * 50.f), 50.0f, -80.0f));
+        hi_brute->transform()->set_local_position(XMFLOAT3((-100.f + i * 50.f) + offsetX, 50.0f + offsetY, -80.0f + offsetZ));
         ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
 }

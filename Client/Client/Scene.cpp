@@ -94,12 +94,8 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             const auto& transformJson = objectJson["Transform"];
             auto transformComp = gameObject->transform();
 
-            float posX = transformJson["Location"].value("X", 0.0f);
-            float posY = transformJson["Location"].value("Y", 0.0f);
-            float posZ = transformJson["Location"].value("Z", 0.0f);
-
             float offsetX = 0.0f;  // 필요시 조정
-            float offsetY = 10000.0f;
+            float offsetY = 5600.0f;
             float offsetZ = 0.0f;
 
             transformComp->set_local_position({
