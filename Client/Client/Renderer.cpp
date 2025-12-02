@@ -327,13 +327,19 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
     // ---------------------------------------------------------
+    CLOG("=== Drawing render list with " << _renderMap.size() << " PSO groups ===");
     for (auto const& [psoName, gameObjects] : _renderMap)
     {
+        CLOG("Processing PSO group: " << psoName << " with " << gameObjects.size() << " objects");
         if (gameObjects.empty()) continue;
 
         // 1. psoName으로 PSO를 가져옵니다.
         ID3D12PipelineState* pso = get_pso(psoName);
-        if (!pso) continue;
+        if (!pso) {
+            CERROR("PSO not found for: " << psoName);
+            continue;
+        }
+        CLOG("PSO found for: " << psoName);
 
         // 2. psoName으로 이 PSO를 만든 셰이더 프로토타입을 찾습니다.
         auto proto_it = _shaderPrototypes.find(psoName);
@@ -349,7 +355,11 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
         // 4. 그 이름으로 실제 루트 시그니처 '객체'를 가져옵니다.
         ID3D12RootSignature* root_signature = get_root_signature(root_sig_name);
-        if (!root_signature) continue;
+        if (!root_signature) {
+            CERROR("Root signature not found for: " << root_sig_name);
+            continue;
+        }
+        CLOG("Root signature found for: " << root_sig_name);
 
         // 5. 가져온 PSO와 루트 시그니처를 설정합니다. (이제 if문이 완전히 사라졌습니다!)
         commandList->SetPipelineState(pso);
@@ -362,13 +372,22 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         }
 
         // 6. 이 PSO 그룹에 속한 모든 오브젝트를 그립니다.
+        CLOG("Rendering " << gameObjects.size() << " objects for PSO: " << psoName);
         for (const auto& gameObject : gameObjects)
         {
             auto renderComp = gameObject->get_component<RenderComponent>();
-            if (!renderComp) continue;
+            if (!renderComp) {
+                CERROR("No RenderComponent for object: " << gameObject->name());
+                continue;
+            }
 
             auto mesh = renderComp->mesh();
-            if (!mesh) continue;
+            if (!mesh) {
+                CERROR("No mesh for object: " << gameObject->name());
+                continue;
+            }
+
+            CLOG("Rendering object: " << gameObject->name());
 
             // --- [추가] GPU 업로드 확인 및 실행 ---
             /*if (!mesh->is_uploaded())
