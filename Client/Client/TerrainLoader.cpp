@@ -8,18 +8,16 @@ using namespace DirectX;
 
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
-    // 1. Common::TerrainData�� ���� �ε�
-    if (!m_terrainData.LoadFromJSON(heightmap_json_path))
+    
+    if (!_terrainData.LoadFromJSON(heightmap_json_path))
     {
         CERROR("Failed to load terrain data from: " << heightmap_json_path);
-        // �ε� ���� ó�� (���� �߻� or ���� ������)
-        // �ϴ� ����
     }
 
-    const auto& info = m_terrainData.GetInfo();
-    m_heightmap_texture_key = m_terrainData.GetHeightMapPath();
+    const auto& info = _terrainData.GetInfo();
+    _heightmapTextureKey = _terrainData.GetHeightMapPath();
 
-    // 2. Flat Grid Mesh ����
+    // 2. Flat Grid Mesh 
     int grid_width = static_cast<int>(info.width) - 1;
     int grid_height = static_cast<int>(info.height) - 1;
     create_flat_grid(grid_width, grid_height);
@@ -27,20 +25,19 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 {
-    const auto& info = m_terrainData.GetInfo();
+    const auto& info = _terrainData.GetInfo();
 
     int vertex_count_x = grid_width + 1;
     int vertex_count_z = grid_height + 1;
 
-    // World Space ũ��
+    // World Space 
     float world_width = info.max_x - info.min_x;
     float world_height = info.max_z - info.min_z;
 
-    // �� ũ�� (World Space)
+    //(World Space)
     float cell_width = world_width / grid_width;
     float cell_height = world_height / grid_height;
 
-    // ���� ����
     std::vector<IlluminatedVertex> vertices;
     vertices.reserve(vertex_count_x * vertex_count_z);
 
@@ -50,17 +47,17 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
         {
             IlluminatedVertex v;
 
-            // ��ġ (World Space, Y=0)
+           
             v._position = XMFLOAT3(
                 info.min_x + x * cell_width,
-                0.0f,  // Shader���� Displacement�� ���� ����
+                0.0f,  
                 info.min_z + z * cell_height
             );
 
-            // Normal (�⺻��: ����)
+           
             v._normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
-            // UV ��ǥ (0~1 ������ ����ȭ)
+            // UV 
             v._texCoord = XMFLOAT2(
                 static_cast<float>(x) / grid_width,
                 static_cast<float>(z) / grid_height
@@ -78,7 +75,6 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 
     set_vertex_data_buffer(vertices);
 
-    // �ε��� ����
     _indices.clear();
     _indices.reserve(grid_width * grid_height * 6);
 
@@ -91,12 +87,12 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
             int v2 = (z + 1) * vertex_count_x + x;
             int v3 = v2 + 1;
 
-            // �ﰢ�� 1
+           
             _indices.emplace_back(v0);
             _indices.emplace_back(v2);
             _indices.emplace_back(v1);
 
-            // �ﰢ�� 2
+            
             _indices.emplace_back(v1);
             _indices.emplace_back(v2);
             _indices.emplace_back(v3);
@@ -118,51 +114,51 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 
 void TerrainLoader::load_textures_to_resource_manager(const std::string& material_gltf_path)
 {
-    const auto& info = m_terrainData.GetInfo();
+    const auto& info = _terrainData.GetInfo();
     auto* rm = ResourceManager::instance();
 
-    // 1. HeightMap �ؽ�ó �ε� (R16 ����)
+    // 1. HeightMap
     int width = static_cast<int>(info.width);
     int height = static_cast<int>(info.height);
 
-    auto* heightmap_tex = rm->load_heightmap_from_raw(m_heightmap_texture_key, width, height);
+    auto* heightmap_tex = rm->load_heightmap_from_raw(_heightmapTextureKey, width, height);
     if (!heightmap_tex)
     {
-        CERROR("Failed to load heightmap texture: " << m_heightmap_texture_key);
+        CERROR("Failed to load heightmap texture: " << _heightmapTextureKey);
     }
     else
     {
-        CLOG("HeightMap texture loaded to GPU: " << m_heightmap_texture_key);
+        CLOG("HeightMap texture loaded to GPU: " << _heightmapTextureKey);
     }
 
-    // 2. glTF Material �ε� (ResourceManager�� �Լ� ���)
+    // 2. glTF Material  (ResourceManager)
     auto material_names = rm->load_materials_from_gltf(material_gltf_path);
     if (!material_names.empty())
     {
-        m_material_name = material_names[0];
-        CLOG("Material loaded from glTF: " << m_material_name);
+        _materialName = material_names[0];
+        CLOG("Material loaded from glTF: " << _materialName);
 
-        // Material ���� ��������
-        auto* mat_info = rm->get_material_info(m_material_name);
+        // Material 
+        auto* mat_info = rm->get_material_info(_materialName);
         if (mat_info)
         {
             // Base Color Texture (T_ground_Moss_D.png)
             if (!mat_info->base_color_texture_path.empty())
             {
-                m_base_texture_key = mat_info->base_color_texture_path;
-                CLOG("  Base Texture: " << m_base_texture_key);
+                _baseTextureKey = mat_info->base_color_texture_path;
+                CLOG("  Base Texture: " << _baseTextureKey);
             }
 
-            // Normal Texture�� Detail�� ��� (T_Ground_Moss_N.png)
+            // Normal Texture Detail (T_Ground_Moss_N.png)
             if (!mat_info->normal_texture_path.empty())
             {
-                m_detail_texture_key = mat_info->normal_texture_path;
-                CLOG("  Detail Texture: " << m_detail_texture_key);
+                _detailTextureKey = mat_info->normal_texture_path;
+                CLOG("  Detail Texture: " << _detailTextureKey);
             }
         }
         else
         {
-            CERROR("Failed to get material info for: " << m_material_name);
+            CERROR("Failed to get material info for: " << _materialName);
         }
     }
     else
@@ -179,14 +175,14 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
         return;
     }
 
-    // Vertex/Index Buffer ���ε�
+    // Vertex/Index Buffer 
     command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
     command_list->IASetIndexBuffer(&_indexBufferView);
     command_list->IASetPrimitiveTopology(_primitiveTopology);
 
-    // Terrain Constant Buffer ���ε� (Root Parameter 2)
-    // TerrainInfo ����ü ��ü�� 32bit constants�� ����
-    command_list->SetGraphicsRoot32BitConstants(2, 8, &m_terrain_info, 0);
+    // Terrain Constant Buffer  (Root Parameter 2)
+    // TerrainInfo 32bit constants
+    command_list->SetGraphicsRoot32BitConstants(2, 8, &_terrainInfo, 0);
 
     // Draw Call
     command_list->DrawIndexedInstanced(
@@ -196,6 +192,6 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 
 float TerrainLoader::get_height_at(float world_x, float world_z) const
 {
-    // Common::TerrainData ����
-    return m_terrainData.GetHeightAt(world_x, world_z);
+    // Common::TerrainData 
+    return _terrainData.GetHeightAt(world_x, world_z);
 }
