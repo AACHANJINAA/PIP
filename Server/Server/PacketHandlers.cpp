@@ -112,11 +112,14 @@ namespace PIP::packet
 			return;
 		}
 
-		// 2. Y축 지면 아래로 가지 못하게
-		if (targetPos.y < groundHeight + 0.1f)
+		// 2. Y축 지면 아래로만 가지 못하게 (위로는 자유롭게)
+		float minAllowedY = groundHeight + player_extents.y;
+
+		if (targetPos.y < minAllowedY)
 		{
-			targetPos.y = groundHeight + player_extents.y; // 플레이어 중심을 지면 위로
+			targetPos.y = minAllowedY; // 지면 밑으로만 못 가게
 		}
+		// 지면 위에 있으면 클라이언트 Y값 그대로 사용 (떨림 방지!)
 
 		// 3. 충돌 체크
 		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
