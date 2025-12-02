@@ -500,8 +500,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 	if (npc_spawn_packet._npc_type == 1)
 	{
-		CLOG("[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
-		// 다른 플레이어 (적) 생성 또는 업데이트
+		//CLOG("[SPAWN_NPC]");
 		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
 		auto NPC_logic = NPC->add_component<NPCScript>();
 		NPC_logic->set_id(npc_spawn_packet._npc_id);
@@ -523,10 +522,10 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		// gltf
 		render_comp->set_pso_name("gltf_hp");
 
-		CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
+		/*CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
 			<< " Name: " << npc_name
 			<< " Type: " << npc_spawn_packet._npc_type
-			<< " Position: " << npc_spawn_packet._position.x << "," << npc_spawn_packet._position.y);
+			<< " Position: " << npc_spawn_packet._position.x << "," << npc_spawn_packet._position.y);*/
 	}
 }
 void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
