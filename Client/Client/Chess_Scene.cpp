@@ -5,7 +5,7 @@
 #include "ObjectManager.h"
 #include "GameObject.h"
 
-#include "GltfAnimationTestScript.h"
+#include "GltfAnimationScript.h"
 
 #include "TransformComponent.h"
 #include "RenderComponent.h"
@@ -35,6 +35,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	// DW설명 : 브루트 소년단 생성 함수 호출
     SpawnBTS(device, commandList);
 
+	// DW설명 : 그래미 워크 생성 함수 호출
+	SpawnGrammy_Walk(device, commandList);
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
@@ -79,9 +81,9 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     // DW설명 : 인사 애니메이션 오브젝트 생성
     {
         auto hi_brute = ObjectManager::instance()->create_game_object("Hi_animation_brute");
-        // GltfAnimationTestScript추가
+        // GltfAnimationScript추가
 
-        hi_brute->add_component<GltfAnimationTestScript>();
+        hi_brute->add_component<GltfAnimationScript>();
         //// RenderComponent
         auto renderer = hi_brute->add_component<RenderComponent>();
 
@@ -109,9 +111,9 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 	for (int i = 0; i < 5; ++i)
     {
         auto hi_brute = ObjectManager::instance()->create_game_object("Dance_animation_brute");
-        // GltfAnimationTestScript추가
+        // GltfAnimationScript추가
 
-        hi_brute->add_component<GltfAnimationTestScript>();
+        hi_brute->add_component<GltfAnimationScript>();
         //// RenderComponent
         auto renderer = hi_brute->add_component<RenderComponent>();
 
@@ -134,6 +136,42 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 
         hi_brute->transform()->set_local_position(XMFLOAT3((-100.f + i * 50.f) + offsetX, 50.0f + offsetY, -80.0f + offsetZ));
+        ResourceManager::instance()->upload_pending_meshes(device, commandList);
+    }
+}
+
+void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    float offsetX = 0.0f;
+    float offsetY = -50.0f;
+    float offsetZ = +200.0f;
+    // DW설명 : 인사 애니메이션 오브젝트 생성
+    {
+        auto hi_brute = ObjectManager::instance()->create_game_object("Grammy_Walk");
+        // GltfAnimationScript추가
+
+        hi_brute->add_component<GltfAnimationScript>();
+        //// RenderComponent
+        auto renderer = hi_brute->add_component<RenderComponent>();
+
+        auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/Gramma_Walk/Gramma_Walk.gltf", true);
+        renderer->set_mesh(hi_brute_Mesh);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "skinned_animation_Gramma_Walk";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+        // gltf
+        renderer->set_pso_name("skinned");
+
+        // 위치, 회전 정보
+        hi_brute->transform()->set_local_rotation(0.f, 180.f, 0.f);
+        hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
+
+
+        hi_brute->transform()->set_local_position(XMFLOAT3(0.0f + offsetX, 25.0f + offsetY, -130.0f + offsetZ));
         ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
 }

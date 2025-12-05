@@ -120,7 +120,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
 
 	render_skybox(commandList, camera);
 
-	render_terrain(commandList, camera);
+	// render_terrain(commandList, camera);
 
     // 1. 이번 프레임에 그릴 객체들을 추려낸다.
     build_render_list(camera);
