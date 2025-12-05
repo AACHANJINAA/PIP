@@ -22,13 +22,12 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-   build_skybox(device, command_list);
+    //build_skybox(device, command_list);
     build_terrain(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
     //register_scene<Lobby_Scene>("LobbyScene");
 
-    // ó�� ��
     change_scene("ChessScene");
 }
 
@@ -142,24 +141,24 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
         "../../Common/MapData/Heightmap.json"
     );
 
-    // 2. ResourceManager�� �ؽ�ó �ε� ��û
+    // 2. ResourceManager
     terrain->load_textures_to_resource_manager(
         "Resource\\HeightMap\\HeightMap_Material.gltf"
     );
 
-    // 3. GPU ���ε�
+    // 3. GPU
     terrain->upload_to_gpu(device, cmdList);
 
-    // 4. GameObject ���� �� ������Ʈ �߰�
+    // 4. GameObject
     _terrainObject = ObjectManager::instance()->create_game_object("terrain");
 
     auto render_comp = _terrainObject->add_component<RenderComponent>();
     render_comp->set_mesh(terrain);
-    render_comp->set_pso_name("terrain");  // Terrain ���� PSO ���
+    render_comp->set_pso_name("terrain");  // Terrain pso
 
-    // 5. Transform ���� (�ʿ��)
-    _terrainObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f }); 
-    _terrainObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f }); 
+    // 5. Transform 설정 (초기화)
+    _terrainObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
+    _terrainObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 
     auto pos = _terrainObject->transform()->local_position();
     auto scale = _terrainObject->transform()->local_scale();

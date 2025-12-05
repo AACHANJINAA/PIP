@@ -74,8 +74,8 @@ void Chess_Scene::release_upload_buffers()
 void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     float offsetX = 0.0f;
-    float offsetY = 100.0f;
-    float offsetZ = 0.0f;
+    float offsetY = -50.0f;
+    float offsetZ = +200.0f;
     // DW설명 : 인사 애니메이션 오브젝트 생성
     {
         auto hi_brute = ObjectManager::instance()->create_game_object("Hi_animation_brute");
@@ -98,7 +98,7 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         renderer->set_pso_name("skinned");
 
         // 위치, 회전 정보
-        hi_brute->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        hi_brute->transform()->set_local_rotation(0.f, 180.f, 0.f);
         hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
 
 

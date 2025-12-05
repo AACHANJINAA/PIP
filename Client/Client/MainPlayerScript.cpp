@@ -80,8 +80,10 @@ void MainPlayerScript::update(float deltaTime)
                         // 해당 X, Z 위치의 정확한 지형 높이를 가져옴
                         float terrain_height = terrain_loader->get_height_at(new_pos.x, new_pos.z);
 
-                        // 예측된 위치의 Y값을 지형 높이로 강제 설정 (서버 로직과 일치시킴)
-                        new_pos.y = terrain_height;
+                        // 지형 아래로만 못가게, 위로는 자유롭게
+                        if (new_pos.y < terrain_height) {
+                            new_pos.y = terrain_height;
+                        }
                     }
                 }
             }

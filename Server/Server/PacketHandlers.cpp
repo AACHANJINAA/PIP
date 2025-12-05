@@ -291,7 +291,7 @@ namespace PIP::packet
 		session->_room_id = enter_packet._room_id;
 		session->_state = server::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = room->GetLogicThreadIndex();
-		common::Vec3 spawnPos{ 0, 0, -150 };
+		common::Vec3 spawnPos{ 0, 10, 10 };
 		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
 		session->_player._level = 1;
 		session->_player._hp = 100;
