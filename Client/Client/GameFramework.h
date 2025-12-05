@@ -7,6 +7,8 @@ class GameFramework : public Singleton<GameFramework>
 {
 	friend Singleton<GameFramework>; // ½Ì±ÛÅæ Á¢±Ù Çã¿ë
 private:
+
+	bool _isRendering = false;
 	
 	HINSTANCE _hInstance = nullptr;
 	HWND _hWnd = nullptr;
