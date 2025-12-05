@@ -48,7 +48,9 @@ private:
 
     // [추가] 동적 디스크립터 힙 생성을 위한 헬퍼 함수
     void create_dynamic_descriptor_heap(UINT capacity = 8192);
-   
+    void render_skybox(ID3D12GraphicsCommandList* commandList, CameraComponent* camera);
+    void render_terrain(ID3D12GraphicsCommandList* commandList, CameraComponent* camera);
+
     // [추가] 동적 바인딩을 위한 멤버 변수
     ComPtr<ID3D12DescriptorHeap> _dynamic_descriptor_heap;
     UINT _dynamic_descriptor_heap_capacity = 0;
