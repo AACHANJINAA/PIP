@@ -107,18 +107,40 @@ RenderComponent::~RenderComponent()
 
 BoundingOrientedBox RenderComponent::get_world_bounding_box() const
 {
-    BoundingOrientedBox obb = _mesh->bounding_box();
+    BoundingOrientedBox localObb = _mesh->bounding_box();
+    BoundingOrientedBox worldObb; // 결과를 담을 별도의 변수
+
     if (game_object() && game_object()->transform())
     {
         XMMATRIX worldMatrix = XMLoadFloat4x4(&game_object()->transform()->world_matrix());
-        obb.Transform(obb, worldMatrix);
+        localObb.Transform(worldObb, worldMatrix); // [수정] 첫 번째와 두 번째 파라미터 분리
     }
-    return obb;
+    else
+    {
+        worldObb = localObb;
+    }
+
+    return worldObb;
 }
 bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 {
     if (!_mesh) return false;
-    return frustum.Intersects(get_world_bounding_box());
+
+    // [추가] 바운딩 박스 유효성 검사
+    BoundingOrientedBox obb = get_world_bounding_box();
+
+    // 바운딩 박스가 유효한지 확인 (크기가 0이거나 NaN이 아닌지)
+    if (obb.Extents.x <= 0.0f || obb.Extents.y <= 0.0f || obb.Extents.z <= 0.0f)
+    {
+        return true; // 바운딩 박스가 유효하지 않으면 일단 그린다
+    }
+
+    if (std::isnan(obb.Center.x) || std::isnan(obb.Center.y) || std::isnan(obb.Center.z))
+    {
+        return true;
+    }
+
+    return frustum.Intersects(obb);
 }
 
 const std::string& RenderComponent::pso_name() const

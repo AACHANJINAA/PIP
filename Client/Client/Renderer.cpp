@@ -135,17 +135,47 @@ void Renderer::build_render_list(CameraComponent* camera)
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
     const BoundingFrustum& frustum = camera->frustum();
 
+    int totalObjects = 0;
+    int visibleObjects = 0;
+    int invalidBoundingBoxCount = 0;
+
     for (const auto& gameObject : allGameObjects)
     {
         if (!gameObject || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
 
-        if (renderComp && renderComp->is_enabled() /*&& renderComp->is_visible(frustum)*/ )
+        if (renderComp && renderComp->is_enabled())
         {
-            _renderMap[renderComp->pso_name()].push_back(gameObject);
+            totalObjects++;
+
+            // [디버깅] 바운딩 박스 확인
+            try
+            {
+                BoundingOrientedBox obb = renderComp->get_world_bounding_box();
+
+                if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
+                {
+                    invalidBoundingBoxCount++;
+                    CERROR("Invalid bounding box for: " << gameObject->name());
+                    continue;
+                }
+
+                if (renderComp->is_visible(frustum))
+                {
+                    visibleObjects++;
+                    _renderMap[renderComp->pso_name()].push_back(gameObject);
+                }
+            }
+            catch (...)
+            {
+                CERROR("Exception during frustum culling for: " << gameObject->name());
+            }
         }
     }
+
+    CLOG("Culling: " << visibleObjects << "/" << totalObjects << " visible, "
+        << invalidBoundingBoxCount << " invalid BB");
 }
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
@@ -205,7 +235,6 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         }
 
         // 6. 이 PSO 그룹에 속한 모든 오브젝트를 그립니다.
-        CLOG("Rendering " << gameObjects.size() << " objects for PSO: " << psoName);
         for (const auto& gameObject : gameObjects)
         {
             auto renderComp = gameObject->get_component<RenderComponent>();
@@ -219,8 +248,6 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
                 CERROR("No mesh for object: " << gameObject->name());
                 continue;
             }
-
-            CLOG("Rendering object: " << gameObject->name());
 
             // --- [추가] GPU 업로드 확인 및 실행 ---
             /*if (!mesh->is_uploaded())
