@@ -280,3 +280,23 @@ Content/Developers/
  - 클라 : 애니메이션 진행 (12월 말)
  - 서버 : 전투 - 다가가서 A키 누르면 HP가 깍여서, 많이 맞으면 사라지기
  - 캐릭터가 땅에 붙어서 이동. (서버에서 높이 정보 관리, 땅의 높이도 서버에서 알아야 한다.)
+
+2025-12-05
+-------------
+1. 진행상황
+ - 애니메이션 구현 => GLTF Skinning animation (GLTF를 분석해서 animation을 구현) (호환성도 충분하다고 생각됨)
+ - 캐릭터가 땅에 붙어서 이동 (서버, 클라 둘다)
+ - 데미지 딜링 확인
+ - 맵제작은 언리얼에서 하고 있음.
+2. 문제
+ - Crash => ID3D12Device::RemoveDevice: Device removal has been triggered for the following reason (DXGI_ERROR_DEVICE_HUNG: The Device took an unreasonable amount of time to execute its commands, or the hardware crashed/hung
+
+3. 종합설계기획발표
+ - 12월 29일 월요일
+ - PPT발표, 데모동영상시연 (1-2분)
+
+4. 다음 미팅
+ - 12월 22일 월요일 오후 1시 30분
+ - 기획서 
+ - 종합설계기획 발표 PPT
+ - 버그수정,  맵을 좀 그럴듯하게 수정하고, PBR이 안되면 Phong이라도 넣자.
