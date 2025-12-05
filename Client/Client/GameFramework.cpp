@@ -311,6 +311,13 @@ void GameFramework::MoveToNextFrame()
 
 void GameFramework::FrameAdvance()
 {
+	// 렌더링 중복 방지
+	if (_isRendering)
+	{
+		CERROR("Skipping frame - already rendering!");
+		return;
+	}
+	_isRendering = true;
 
 	// [핵심] 실제 렌더링이나 업데이트 시작 전에 씬 전환을 먼저 처리합니다. 한프레임 지연
 	SceneManager::instance()->process_scene_change_if_requested(_device.Get(),
@@ -388,6 +395,8 @@ void GameFramework::FrameAdvance()
 	ObjectManager::instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 12, 37);
 	::SetWindowText(_hWnd, _frameRate);
+
+	_isRendering = false;
 }
 
 void GameFramework::ChangeSwapChainState()
