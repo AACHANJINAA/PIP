@@ -190,10 +190,8 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
     // ---------------------------------------------------------
-    CLOG("=== Drawing render list with " << _renderMap.size() << " PSO groups ===");
     for (auto const& [psoName, gameObjects] : _renderMap)
     {
-        CLOG("Processing PSO group: " << psoName << " with " << gameObjects.size() << " objects");
         if (gameObjects.empty()) continue;
 
         // 1. psoName으로 PSO를 가져옵니다.
@@ -222,7 +220,6 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             CERROR("Root signature not found for: " << root_sig_name);
             continue;
         }
-        CLOG("Root signature found for: " << root_sig_name);
 
         // 5. 가져온 PSO와 루트 시그니처를 설정합니다. (이제 if문이 완전히 사라졌습니다!)
         commandList->SetPipelineState(pso);
