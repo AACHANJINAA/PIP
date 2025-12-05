@@ -81,9 +81,7 @@ void MainPlayerScript::update(float deltaTime)
                         float terrain_height = terrain_loader->get_height_at(new_pos.x, new_pos.z);
 
                         // 지형 아래로만 못가게, 위로는 자유롭게
-                        if (new_pos.y < terrain_height) {
-                            new_pos.y = terrain_height;
-                        }
+                        new_pos.y = terrain_height;
                     }
                 }
             }
