@@ -239,7 +239,7 @@ private: // 애니메이션을 위해 필요한 멤버들
 	std::vector<NodeInfo> _nodes;
 
 	// 현재 재생 중인 애니메이션 시간
-	// DW설명 : GltfAnimationTestScript 에서 관리하도록 변경함
+	// DW설명 : GltfAnimationScript 에서 관리하도록 변경함
 	//			그래야 각 오브젝트별로 다른 애니메이션 타임을 가질 수 있음
 	float _current_animation_time = 0.0f;
 

@@ -19,5 +19,7 @@ public:
     // BruTe Sonyeondan 브루트 소년단 생성함수
     void SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
+    void SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
 private:
 };
