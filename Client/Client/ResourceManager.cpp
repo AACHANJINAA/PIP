@@ -11,10 +11,77 @@
 #include "WICTextureLoader12.h"
 
 
+void ResourceManager::create_default_textures(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+{
+    // Helper lambda to create a 1x1 texture with specific pixel data
+    auto create_1x1_texture = [&](const std::string& name, const void* pixel_data)
+    {
+        if (_textures.count(name)) return; // Avoid recreating
+
+        TextureInfo new_tex_info;
+        new_tex_info.name = name;
+
+        D3D12_RESOURCE_DESC tex_desc = {};
+        tex_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        tex_desc.Width = 1;
+        tex_desc.Height = 1;
+        tex_desc.DepthOrArraySize = 1;
+        tex_desc.MipLevels = 1;
+        tex_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        tex_desc.SampleDesc.Count = 1;
+        tex_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        tex_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+        auto default_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        HRESULT hr = device->CreateCommittedResource(&default_heap_props, D3D12_HEAP_FLAG_NONE, &tex_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&new_tex_info.resource));
+        if (FAILED(hr)) { CERROR("Failed to create default texture resource: " + name); return; }
+        new_tex_info.resource->SetName(std::wstring(name.begin(), name.end()).c_str());
+
+        const UINT64 upload_buffer_size = GetRequiredIntermediateSize(new_tex_info.resource.Get(), 0, 1);
+        auto upload_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        auto upload_buffer_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
+
+        hr = device->CreateCommittedResource(&upload_heap_props, D3D12_HEAP_FLAG_NONE, &upload_buffer_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&new_tex_info.upload_heap));
+        if (FAILED(hr)) { CERROR("Failed to create upload heap for default texture: " + name); return; }
+        new_tex_info.upload_heap->SetName((std::wstring(name.begin(), name.end()) + L"_Upload").c_str());
+
+        D3D12_SUBRESOURCE_DATA subresource_data = {};
+        subresource_data.pData = pixel_data;
+        subresource_data.RowPitch = sizeof(uint8_t) * 4;
+        subresource_data.SlicePitch = subresource_data.RowPitch;
+
+        UpdateSubresources(command_list, new_tex_info.resource.Get(), new_tex_info.upload_heap.Get(), 0, 0, 1, &subresource_data);
+
+        auto transition = CD3DX12_RESOURCE_BARRIER::Transition(new_tex_info.resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        command_list->ResourceBarrier(1, &transition);
+
+        if (!DescriptorManager::instance()->allocate_descriptor(new_tex_info.cpu_handle, new_tex_info.gpu_handle)) { CERROR("Failed to allocate descriptor for default texture: " + name); return; }
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Format = tex_desc.Format;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv_desc.Texture2D.MipLevels = 1;
+        device->CreateShaderResourceView(new_tex_info.resource.Get(), &srv_desc, new_tex_info.cpu_handle);
+
+        _textures[name] = std::move(new_tex_info);
+    };
+
+    uint8_t white_pixel[4] = { 0, 0, 0, 255 }; // White
+    uint8_t normal_pixel[4] = { 128, 128, 255, 255 }; // Flat normal (R:128, G:128, B:255)
+    uint8_t black_pixel[4] = { 0, 0, 0, 255 }; // Black  
+
+    create_1x1_texture("__DEFAULT_WHITE__", white_pixel);
+    create_1x1_texture("__DEFAULT_NORMAL__", normal_pixel);
+    create_1x1_texture("__DEFAULT_BLACK__", black_pixel);
+}
+
 void ResourceManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
     _device = device;
     _command_list = command_list;
+
+    create_default_textures(device, command_list);
 }
 
 void ResourceManager::release()
@@ -470,18 +537,23 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
 
     D3D12_CPU_DESCRIPTOR_HANDLE base_color_handle = get_cpu_handle(mat_info.base_color_texture_path);
 
+    D3D12_CPU_DESCRIPTOR_HANDLE default_white_handle = get_cpu_handle("__DEFAULT_WHITE__");
+    D3D12_CPU_DESCRIPTOR_HANDLE default_normal_handle = get_cpu_handle("__DEFAULT_NORMAL__");
+    D3D12_CPU_DESCRIPTOR_HANDLE default_black_handle = get_cpu_handle("__DEFAULT_BLACK__");
+
     // 만약 기본 색상 텍스처조차 없다면, 텍스처를 바인딩하지 않고 종료합니다.
     if (base_color_handle.ptr == 0) {
-        return;
-
+        base_color_handle = default_black_handle;
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE normal_handle = get_cpu_handle(mat_info.normal_texture_path);
-    if (normal_handle.ptr == 0) normal_handle = base_color_handle;
+    if (normal_handle.ptr == 0) normal_handle = default_normal_handle;
+    
     D3D12_CPU_DESCRIPTOR_HANDLE orm_handle = get_cpu_handle(mat_info.metallic_roughness_texture_path);
-    if (orm_handle.ptr == 0) orm_handle = base_color_handle;
+    if (orm_handle.ptr == 0) orm_handle = default_black_handle;
+    
     D3D12_CPU_DESCRIPTOR_HANDLE emissive_handle = get_cpu_handle(mat_info.emissive_texture_path);
-	if (emissive_handle.ptr == 0) emissive_handle = base_color_handle;
+    if (emissive_handle.ptr == 0) emissive_handle = default_black_handle;
 
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
     texture_handles.push_back(base_color_handle);  // 셰이더의 t0

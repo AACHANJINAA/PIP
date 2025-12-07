@@ -25,7 +25,6 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
     D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
 
-
     // [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
     void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
@@ -46,6 +45,8 @@ public:
     void add_texture_to_material(const std::string & material_name, const std::string & texture_path);
     // 5. 이름으로 재질을 찾아, 해당 재질의 셰이더와 텍스처를 렌더링 파이프라인에 바인딩합니다.
     void bind_material(const std::string & material_name, ID3D12GraphicsCommandList * command_list);
+
+	void create_default_textures(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
     void set_current_command_list(ID3D12GraphicsCommandList* command_list){ _command_list = command_list; }
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
+#include "Renderer.h"
 #include <fstream>
 #include <filesystem>
 
@@ -17,7 +18,7 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
     const auto& info = _terrainData.GetInfo();
     _heightmapTextureKey = _terrainData.GetHeightMapPath();
 
-    // _terrainInfo °ª Ã¤¿ì±â (½¦ÀÌ´õ·Î Àü´ŞµÊ)
+    // _terrainInfo ï¿½ï¿½ Ã¤ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Şµï¿½)
     _terrainInfo.bounds = XMFLOAT4(info.min_x, info.max_x, info.min_z, info.max_z);
     _terrainInfo.size = XMFLOAT2(info.width, info.height);
     _terrainInfo.height_scale = info.height_scale;
@@ -42,23 +43,23 @@ namespace
              return DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
          }
 
-         // ÁÖº¯ ÇÈ¼¿ ÀÎµ¦½º (°æ°è Ã³¸®)
+         // ï¿½Öºï¿½ ï¿½È¼ï¿½ ï¿½Îµï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½)
          int x_plus_1 = min(x + 1, width - 1);
 	     int x_minus_1 = max(x - 1, 0);
 	     int z_plus_1 = min(z + 1, length - 1);
 	     int z_minus_1 = max(z - 1, 0);
 
-         // ÁÖº¯ ³ôÀÌ °ª °¡Á®¿À±â
+         // ï¿½Öºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
          float height_y1 = terrainData.GetHeightAt(info.min_x + x * (info.max_x - info.min_x) / (width - 1), info.min_z + z_minus_1 * (info.max_z - info.min_z) / (length - 1));
          float height_y2 = terrainData.GetHeightAt(info.min_x + x * (info.max_x - info.min_x) / (width - 1), info.min_z + z_plus_1 * (info.max_z - info.min_z) / (length - 1));
 		 float height_x1 = terrainData.GetHeightAt(info.min_x + x_minus_1 * (info.max_x - info.min_x) / (width - 1), info.min_z + z * (info.max_z - info.min_z) / (length - 1));
 		 float height_x2 = terrainData.GetHeightAt(info.min_x + x_plus_1 * (info.max_x - info.min_x) / (width - 1), info.min_z + z * (info.max_z - info.min_z) / (length - 1));
  
-		 // µÎ °³ÀÇ Á¢¼± º¤ÅÍ °è»ê
+		 // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		 DirectX::XMFLOAT3 edge1(0.0f, height_y2 - height_y1, 2.0f * (info.max_z - info.min_z) / (length - 1));
 		 DirectX::XMFLOAT3 edge2(2.0f * (info.max_x - info.min_x) / (width - 1), height_x2 - height_x1, 0.0f);
 		 
-		 // ¿ÜÀûÀ» ÅëÇØ ¹ı¼± º¤ÅÍ °è»ê ¹× Á¤±ÔÈ­
+		 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
          DirectX::XMVECTOR normal = DirectX::XMVector3Cross(DirectX::XMLoadFloat3(&edge1), DirectX::XMLoadFloat3(&edge2));
  		 normal = DirectX::XMVector3Normalize(normal);
 
@@ -94,12 +95,10 @@ vertices.reserve(vertex_count_x * vertex_count_z);
 			float world_x_pos = info.min_x + x * cell_width;
 			float world_z_pos = info.min_z + z * cell_height;
 
-	         // CPU¿¡¼­ ³ôÀÌ °è»ê
 	         float height = _terrainData.GetHeightAt(world_x_pos, world_z_pos);
 
 	         v._position = XMFLOAT3(world_x_pos, height, world_z_pos);
 
-	         // CPU¿¡¼­ ¹ı¼± °è»ê
 	         v._normal = get_normal_at(_terrainData, x, z);
 
 	         v._texCoord = XMFLOAT2(
@@ -230,6 +229,28 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
     command_list->DrawIndexedInstanced(
         static_cast<UINT>(_indices.size()), 1, 0, 0, 0
     );
+
+    // [ìˆ˜ì •] í„°ë ˆì¸ ë Œë”ë§ í›„ í…ìŠ¤ì²˜ ìƒíƒœë¥¼ ì¦‰ì‹œ ì´ˆê¸°í™”í•˜ì—¬ ë‹¤ë¥¸ ê°ì²´ì— ì˜í–¥ì„ ì£¼ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤.
+    auto* rm = ResourceManager::instance();
+    auto* renderer = Renderer::instance();
+    
+    // ê¸°ë³¸ í…ìŠ¤ì²˜ í•¸ë“¤ì„ ResourceManagerì—ì„œ ê°€ì ¸ì˜µë‹ˆë‹¤.
+    auto* white_tex_info = rm->get_texture("__DEFAULT_WHITE__");
+    auto* normal_tex_info = rm->get_texture("__DEFAULT_NORMAL__");
+
+    // í•¸ë“¤ì´ ìœ íš¨í•œ ê²½ìš°ì—ë§Œ (ì¦‰, ê¸°ë³¸ í…ìŠ¤ì²˜ê°€ ì„±ê³µì ìœ¼ë¡œ ìƒì„±ëœ ê²½ìš°) ì´ˆê¸°í™”ë¥¼ ì§„í–‰í•©ë‹ˆë‹¤.
+    if (white_tex_info && normal_tex_info)
+    {
+        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
+        texture_handles.push_back(white_tex_info->cpu_handle);  // t0 (Base Color)
+        texture_handles.push_back(normal_tex_info->cpu_handle); // t1 (Normal Map)
+        texture_handles.push_back(white_tex_info->cpu_handle);  // t2 (Metallic/Roughness/AO)
+        texture_handles.push_back(white_tex_info->cpu_handle);  // t3 (Emissive)
+        
+        // GltfShaderì—ì„œ ì‚¬ìš©í•˜ëŠ” í…ìŠ¤ì²˜ í…Œì´ë¸”(ë£¨íŠ¸ íŒŒë¼ë¯¸í„° 4ë²ˆ)ì„ ê¸°ë³¸ í…ìŠ¤ì²˜ë¡œ ë®ì–´ì”ë‹ˆë‹¤.
+        renderer->bind_texture_table(command_list, 4, texture_handles);
+    }
+
 }
 
 float TerrainLoader::get_height_at(float world_x, float world_z) const
