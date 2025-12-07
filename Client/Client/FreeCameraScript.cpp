@@ -28,27 +28,37 @@ void FreeCameraScript::update(float delta_time)
 
 void FreeCameraScript::late_update(float delta_time)
 {
+    if (InputManager::instance()->IsKeyDown('L')) // 'L' 키 입력 감지 (한 번만)
+    {
+        _isFreeCameraMode = !_isFreeCameraMode; // 자유 카메라 모드 토글
+        // 자유 카메라 모드가 켜지면 커서 숨김, 꺼지면 커서 보임
+            InputManager::instance()->ChangeShowCusor();
+    }
+
     // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
     if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
         process_mouse_input(delta_time);
-
-        // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
-        if (nullptr != ObjectManager::instance()->find_by_name("MainPlayer").get())
-        {
-            auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-            // 카메라 위치를 플레이어 위치로 동기화합니다.
-            if (player && player->transform())
-            {
-                XMFLOAT3 playerPos = player->transform()->position();
-                transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 0.5f, playerPos.z });
-                transform()->move_forward(_thirdPersonOffsetDistance_back);
-                transform()->move_up(_thirdPersonOffsetDistance_top);
-            }
-        }
-        else
+	
+        if (_isFreeCameraMode)
         {
             process_keyboard_input(delta_time);
+		}
+        else
+        {
+            // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
+            if (nullptr != ObjectManager::instance()->find_by_name("MainPlayer").get())
+            {
+                auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+                // 카메라 위치를 플레이어 위치로 동기화합니다.
+                if (player && player->transform())
+                {
+                    XMFLOAT3 playerPos = player->transform()->position();
+                    transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 0.5f, playerPos.z });
+                    transform()->move_forward(_thirdPersonOffsetDistance_back);
+                    transform()->move_up(_thirdPersonOffsetDistance_top);
+                }
+            }
         }
     }
 
