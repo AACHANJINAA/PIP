@@ -114,6 +114,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Mesh>> _meshes;
     std::unordered_map<std::string, TextureInfo> _textures;      // Key: 텍스처 파일 경로
     std::unordered_map<std::string, MaterialInfo> _materials;    // Key: 재질 이름
+	std::vector<TextureInfo*> _pending_textures; // 아직 GPU에 업로드되지 않은 텍스처 목록
 
     // skybox 파일 경로
     std::string _skybox_texture_path;
@@ -121,12 +122,14 @@ private:
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
     std::vector<std::shared_ptr<Mesh>> _pending_meshes;
 
+public:
     // 파일 경로로 텍스처를 로드하고, GPU에 업로드한 뒤, TextureInfo를 반환합니다.
-	// CJ251128 - view_dimension 매개변수를 추가하여 텍스처 뷰의 차원을 지정할 수 있도록 함.
-    TextureInfo * load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension = D3D12_SRV_DIMENSION_TEXTURE2D);
+    // CJ251128 - view_dimension 매개변수를 추가하여 텍스처 뷰의 차원을 지정할 수 있도록 함.
+    TextureInfo* load_texture(const std::string& file_path, D3D12_SRV_DIMENSION view_dimension = D3D12_SRV_DIMENSION_TEXTURE2D);
+    void upload_pending_textures(ID3D12GraphicsCommandList* command_list);
+
     TextureInfo* load_cubemap_from_dds(const std::string& file_path);
 
-public:
     // CJ251201 - 높이맵 관련
     TextureInfo* get_texture(const std::string& file_path);
 

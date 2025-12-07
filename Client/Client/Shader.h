@@ -48,6 +48,9 @@ public:
 	// --- 모든 셰이더가 공용으로 사용하는 헬퍼 함수 ---
 	static D3D12_SHADER_BYTECODE compile_shader_from_file(const std::wstring& file_name, LPCSTR
 		shader_name, LPCSTR shader_profile, ComPtr<ID3DBlob>& shader_blob);
+
+	//  [추가] 각 객체를 그리기 직전에 호출될 함수. 셰이더가 객체별 리소스 바인딩을 담당합니다.    
+	virtual void update_per_object(ID3D12GraphicsCommandList* commandList, class Renderer* renderer, GameObject* object) {}
 };
 //셰이더 소스 코드를 컴파일하고 그래픽스 상태 객체를 생성한다. 
 /*class Shader

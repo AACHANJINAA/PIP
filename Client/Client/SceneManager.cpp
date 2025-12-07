@@ -6,9 +6,12 @@
 
 #include "ObjectManager.h"
 #include "ResourceManager.h"
-#include "TerrainLoader.h"
+
 
 #include "SkyboxMesh.h"
+#include "SkyboxRenderComponent.h"
+#include "TerrainLoader.h"
+#include "TerrainRenderComponent.h"
 
 SceneManager::SceneManager()
 {
@@ -110,20 +113,23 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 
 void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-    if (_skyboxObject) {
+    if (_skyboxObject) 
+    {
         return;
     }
 
     ResourceManager::instance()->load_skybox("Resource\\SkyBox\\Night.dds");
 
     _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
+    _skyboxObject->set_persistent(true);
 
-    auto rendercomp = _skyboxObject->add_component<RenderComponent>();
+    auto rendercomp = _skyboxObject->add_component<SkyboxRenderComponent>();
 
     auto skyboxmesh = std::make_shared<SkyboxMesh>(device, command_list);
 
     rendercomp->set_mesh(skyboxmesh);
     rendercomp->set_pso_name("skybox");
+
 
     _skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
     _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
@@ -151,8 +157,9 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 
     // 4. GameObject
     _terrainObject = ObjectManager::instance()->create_game_object("terrain");
+	_terrainObject->set_persistent(true);
 
-    auto render_comp = _terrainObject->add_component<RenderComponent>();
+    auto render_comp = _terrainObject->add_component<TerrainRenderComponent>();
     render_comp->set_mesh(terrain);
     render_comp->set_pso_name("terrain");  // Terrain pso
 
