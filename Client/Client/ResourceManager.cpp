@@ -408,17 +408,15 @@ void ResourceManager::add_texture_to_material(const std::string& material_name, 
 
 void ResourceManager::bind_material(const std::string& material_name, ID3D12GraphicsCommandList* command_list)
 {
-    CLOG("=== bind_material called: " << material_name); // ← 이 로그 추가
-
     auto it = _materials.find(material_name);
     if (it == _materials.end()) {
         CERROR("Attempted to bind non-existent material: " << material_name);
         return;
     }
 
-    MaterialInfo & mat_info = it->second;
+    MaterialInfo& mat_info = it->second;
     auto renderer = Renderer::instance();
-    
+
     // 1. 셰이더 이름으로 Renderer에서 PSO와 Root Signature를 직접 가져와 바인딩
     //    (규칙: PSO와 Root Signature는 같은 이름을 공유)
     auto root_signature = renderer->get_root_signature(mat_info.shader_name);
@@ -427,9 +425,9 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     if (!root_signature || !pso) {
         return;
     }
-    
-	// DW수정 : 아래 두 줄을 주석처리하여 shader_name을 무시한다.
-	//          추후에 프리미티브 단위로 쉐이더의 구조나 루트 시그너처 pso의 구조가 바뀌면 여기서도 수정이 필히 필요할 것이다.
+
+    // DW수정 : 아래 두 줄을 주석처리하여 shader_name을 무시한다.
+    //          추후에 프리미티브 단위로 쉐이더의 구조나 루트 시그너처 pso의 구조가 바뀌면 여기서도 수정이 필히 필요할 것이다.
     //          그래서 아래 두 줄을 지우지는 않고 남겨두는 것이 좋을 것 같다.
     //command_list->SetGraphicsRootSignature(root_signature);
     //command_list->SetPipelineState(pso);
@@ -459,24 +457,40 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     command_list->SetGraphicsRootConstantBufferView(2, mat_info.material_cbuffer_gpu->GetGPUVirtualAddress());
 
     // 3. 텍스처 핸들 수집 및 Renderer를 통해 바인딩
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
-    auto add_texture_handle = [&](const std::string& path) {
-	    if (!path.empty()) {
-	        auto tex_it = _textures.find(path);
-	            if (tex_it != _textures.end()) {
-	                texture_handles.push_back(tex_it->second.cpu_handle);
-	            }
-	        }
-    };
-    
-    add_texture_handle(mat_info.base_color_texture_path);
-    add_texture_handle(mat_info.normal_texture_path);
-    add_texture_handle(mat_info.metallic_roughness_texture_path);
-    add_texture_handle(mat_info.emissive_texture_path);
-    
-    if (!texture_handles.empty()) {
-        renderer->bind_texture_table(command_list, 4, texture_handles);
+
+    auto get_cpu_handle = [&](const std::string& path) -> D3D12_CPU_DESCRIPTOR_HANDLE {
+        if (!path.empty()) {
+            auto tex_it = _textures.find(path);
+            if (tex_it != _textures.end() && tex_it->second.cpu_handle.ptr != 0) {
+                return tex_it->second.cpu_handle;
+            }
+        }
+        return {};
+        };
+
+    D3D12_CPU_DESCRIPTOR_HANDLE base_color_handle = get_cpu_handle(mat_info.base_color_texture_path);
+
+    // 만약 기본 색상 텍스처조차 없다면, 텍스처를 바인딩하지 않고 종료합니다.
+    if (base_color_handle.ptr == 0) {
+        return;
+
     }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE normal_handle = get_cpu_handle(mat_info.normal_texture_path);
+    if (normal_handle.ptr == 0) normal_handle = base_color_handle;
+    D3D12_CPU_DESCRIPTOR_HANDLE orm_handle = get_cpu_handle(mat_info.metallic_roughness_texture_path);
+    if (orm_handle.ptr == 0) orm_handle = base_color_handle;
+    D3D12_CPU_DESCRIPTOR_HANDLE emissive_handle = get_cpu_handle(mat_info.emissive_texture_path);
+	if (emissive_handle.ptr == 0) emissive_handle = base_color_handle;
+
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
+    texture_handles.push_back(base_color_handle);  // 셰이더의 t0
+    texture_handles.push_back(normal_handle);      // 셰이더의 t1
+    texture_handles.push_back(orm_handle);         // 셰이더의 t2
+    texture_handles.push_back(emissive_handle);    // 셰이더의 t3
+    
+    // 이 벡터를 루트 파라미터 4번에 테이블로 바인딩합니다.
+    renderer->bind_texture_table(command_list, 4, texture_handles);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,11 @@
 #include "TerrainLoader.h"
 #include "Mesh.h"
 
+TerrainRenderComponent::TerrainRenderComponent()
+{
+    set_pso_name("terrain");
+}
+
 void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList, Renderer * renderer)
 {
     TerrainLoader * terrain_loader = static_cast<TerrainLoader*>(mesh().get());
