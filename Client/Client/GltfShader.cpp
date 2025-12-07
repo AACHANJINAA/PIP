@@ -42,6 +42,11 @@ D3D12_SHADER_BYTECODE GltfShader::create_pixel_shader(ComPtr<ID3DBlob>& shader_b
     return compile_shader_from_file(L"Gltf_Shader.hlsl", "PS_GLTF", "ps_5_1", shader_blob);
 }
 
+void GltfShader::update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer,GameObject* object)
+{
+	Shader::update_per_object(command_list, renderer, object);
+}
+
 std::string GltfShader::required_root_signature() const
 {
 	return "gltf";

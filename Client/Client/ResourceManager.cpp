@@ -408,6 +408,8 @@ void ResourceManager::add_texture_to_material(const std::string& material_name, 
 
 void ResourceManager::bind_material(const std::string& material_name, ID3D12GraphicsCommandList* command_list)
 {
+    CLOG("=== bind_material called: " << material_name); // ← 이 로그 추가
+
     auto it = _materials.find(material_name);
     if (it == _materials.end()) {
         CERROR("Attempted to bind non-existent material: " << material_name);
@@ -423,15 +425,12 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     auto pso = renderer->get_pso(mat_info.shader_name);
 
     if (!root_signature || !pso) {
-        //렌더러에 해당 이름으로 리소스가 등록되었는지 확인
-        //CERROR("Failed to get RootSignature or PSO from Renderer for shader : " << mat_info.shader_name);
         return;
     }
     
 	// DW수정 : 아래 두 줄을 주석처리하여 shader_name을 무시한다.
 	//          추후에 프리미티브 단위로 쉐이더의 구조나 루트 시그너처 pso의 구조가 바뀌면 여기서도 수정이 필히 필요할 것이다.
     //          그래서 아래 두 줄을 지우지는 않고 남겨두는 것이 좋을 것 같다.
-    
     //command_list->SetGraphicsRootSignature(root_signature);
     //command_list->SetPipelineState(pso);
 

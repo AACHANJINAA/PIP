@@ -12,6 +12,8 @@ public:
 	D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
 	D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
+	void update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer, GameObject* object) override;
+
 	virtual std::string required_root_signature() const override;
 };
 

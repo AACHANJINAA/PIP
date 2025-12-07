@@ -47,6 +47,8 @@ public:
     // 5. 이름으로 재질을 찾아, 해당 재질의 셰이더와 텍스처를 렌더링 파이프라인에 바인딩합니다.
     void bind_material(const std::string & material_name, ID3D12GraphicsCommandList * command_list);
 
+    void set_current_command_list(ID3D12GraphicsCommandList* command_list){ _command_list = command_list; }
+
 private:
     // GlTF PBR 재질 속성을 셰이더로 전달하기 위한 상수 버퍼 구조체
     // 이 구조체는 HLSL의 cbMaterial과 1:1로 매칭됩니다.
@@ -121,6 +123,8 @@ private:
 
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
     std::vector<std::shared_ptr<Mesh>> _pending_meshes;
+
+    TextureInfo _default_white_texture;
 
 public:
     // 파일 경로로 텍스처를 로드하고, GPU에 업로드한 뒤, TextureInfo를 반환합니다.
