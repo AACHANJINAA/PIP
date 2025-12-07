@@ -495,18 +495,15 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // Descriptor Range for Textures (t0, t1, t2)
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[3];
-    for (int i = 0; i < 3; ++i)
-    {
-        d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        d3dDescriptorRanges[i].NumDescriptors = 1;
-        d3dDescriptorRanges[i].BaseShaderRegister = i; // t0, t1, t2
-        d3dDescriptorRanges[i].RegisterSpace = 0;
-        d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-    }
+    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
 
+    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    d3dDescriptorRanges[0].NumDescriptors = 2;
+    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0, t1, t2
+    d3dDescriptorRanges[0].RegisterSpace = 0;
+    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     // Root Parameters
-    D3D12_ROOT_PARAMETER d3dRootParameters[6];
+    D3D12_ROOT_PARAMETER d3dRootParameters[5];
 
     // [0] b0: World Matrix (cbPerObject)
     d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -521,20 +518,20 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     // [2] b2: Terrain Info (cbTerrain)
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    d3dRootParameters[2].Constants.ShaderRegister = 2;    
-    d3dRootParameters[2].Constants.RegisterSpace = 0;     
-    d3dRootParameters[2].Constants.Num32BitValues = 12;    
+    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    d3dRootParameters[2].Descriptor.ShaderRegister = 2;
+    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
     d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    // [3~5] t0, t1, t2: Textures (heightMap, baseTexture, detailTexture)
-    for (int i = 0; i < 3; ++i)
-    {
-        d3dRootParameters[3 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        d3dRootParameters[3 + i].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[3 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
-        d3dRootParameters[3 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-    }
+    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;                                                         
+    d3dRootParameters[3].Descriptor.ShaderRegister = 3;                                                                         
+    d3dRootParameters[3].Descriptor.RegisterSpace = 0;                                                                          
+    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
+    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;
@@ -551,8 +548,7 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dStaticSamplerDesc.MinLOD = 0;
     d3dStaticSamplerDesc.ShaderRegister = 0;
     d3dStaticSamplerDesc.RegisterSpace = 0;
-    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     d3dRootSignatureDesc.NumStaticSamplers = 1;
     d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
 

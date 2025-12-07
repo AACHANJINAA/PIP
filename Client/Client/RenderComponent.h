@@ -2,7 +2,6 @@
 #include "stdafx.h"
 
 #include "Behaviour.h"
-#include "Component.h"
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "Mesh.h"
@@ -62,6 +61,10 @@ public:
 
     virtual bool is_visible(const BoundingFrustum& frustum) const;
 
+    virtual void pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer);
+
+    void set_frustum_culling_enabled(bool enabled) { _frustumCullingEnabled = enabled; }
+
 protected:
     std::shared_ptr<Mesh> _mesh;
     //std::shared_ptr<GltfMaterial> _material;                // 셰이더 또는 머티리얼
@@ -70,5 +73,7 @@ protected:
     // [추가] 이 RenderComponent만의 고유한 상수 버퍼 관련 멤버들
     ComPtr<ID3D12Resource> _cbGameObjectInfo;
     CbGameObjectInfo* _mappedCbGameObjectInfo = nullptr;
+
+    bool _frustumCullingEnabled = true;
 };
 

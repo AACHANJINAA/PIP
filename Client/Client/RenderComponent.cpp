@@ -126,6 +126,11 @@ bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 {
     if (!_mesh) return false;
 
+    if (!_frustumCullingEnabled)
+    {
+        return true;
+    }
+
     // [추가] 바운딩 박스 유효성 검사
     BoundingOrientedBox obb = get_world_bounding_box();
 
@@ -141,6 +146,10 @@ bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
     }
 
     return frustum.Intersects(obb);
+}
+
+void RenderComponent::pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer)
+{
 }
 
 const std::string& RenderComponent::pso_name() const
