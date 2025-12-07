@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include "GltfAnimationTestScript.h"
+#include "GltfAnimationScript.h"
 #include "GameObject.h"
 #include "RenderComponent.h"
 #include "ReadGLTFMesh.h"
 
-void GltfAnimationTestScript::update(float delta_time)
+void GltfAnimationScript::update(float delta_time)
 {
     auto renderComp = game_object()->get_component<RenderComponent>();
     if (!renderComp) return;
