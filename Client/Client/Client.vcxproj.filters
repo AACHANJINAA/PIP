@@ -260,7 +260,7 @@
     <ClInclude Include="GltfSkinnedShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="GltfAnimationTestScript.h">
+    <ClInclude Include="GltfAnimationScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
     <ClInclude Include="TerrainShader.h">
@@ -280,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="TerrainRenderComponent.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MainPlayerAnimationScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -433,7 +436,7 @@
     <ClCompile Include="GltfSkinnedShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="GltfAnimationTestScript.cpp">
+    <ClCompile Include="GltfAnimationScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="TerrainShader.cpp">
@@ -442,11 +445,8 @@
     <ClCompile Include="TerrainLoader.cpp">
       <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
     </ClCompile>
-    <ClCompile Include="SkyboxRenderComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainRenderComponent.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="MainPlayerAnimationScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
