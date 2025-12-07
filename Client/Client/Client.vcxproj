@@ -205,10 +205,12 @@
     <ClInclude Include="ScriptComponent.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SkyboxMesh.h" />
+    <ClInclude Include="SkyboxRenderComponent.h" />
     <ClInclude Include="SkyboxShader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TerrainLoader.h" />
+    <ClInclude Include="TerrainRenderComponent.h" />
     <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="TransformComponent.h" />
@@ -261,6 +263,7 @@
     <ClCompile Include="ScriptComponent.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SkyboxMesh.cpp" />
+    <ClCompile Include="SkyboxRenderComponent.cpp" />
     <ClCompile Include="SkyboxShader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -269,6 +272,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TerrainLoader.cpp" />
+    <ClCompile Include="TerrainRenderComponent.cpp" />
     <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TimerManager.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
@@ -314,6 +318,9 @@
     <FxCompile Include="Gltf_Skinned_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Light.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Skybox_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

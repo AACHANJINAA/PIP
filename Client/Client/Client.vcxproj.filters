@@ -275,6 +275,12 @@
     <ClInclude Include="..\..\Common\json.hpp">
       <Filter>4. External</Filter>
     </ClInclude>
+    <ClInclude Include="SkyboxRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -436,6 +442,12 @@
     <ClCompile Include="TerrainLoader.cpp">
       <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
     </ClCompile>
+    <ClCompile Include="SkyboxRenderComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainRenderComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -478,6 +490,9 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Terrain_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Light.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

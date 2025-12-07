@@ -118,10 +118,6 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
         return;
     }
 
-	render_skybox(commandList, camera);
-
-	render_terrain(commandList, camera);
-
     // 1. 이번 프레임에 그릴 객체들을 추려낸다.
     build_render_list(camera);
 
@@ -149,7 +145,6 @@ void Renderer::build_render_list(CameraComponent* camera)
         {
             totalObjects++;
 
-            // [디버깅] 바운딩 박스 확인
             try
             {
                 BoundingOrientedBox obb = renderComp->get_world_bounding_box();
@@ -255,6 +250,9 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             }*/
             // ------------------------------------
             
+            // 셰이더에게 객체별 리소스 바인딩을 맡김
+            shader_prototype->update_per_object(commandList, this, gameObject.get());
+
             renderComp->render(commandList);
         }
     }
@@ -339,182 +337,4 @@ void Renderer::create_dynamic_descriptor_heap(UINT capacity)
     _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&_dynamic_descriptor_heap));
     _dynamic_descriptor_heap_capacity = capacity;
     _current_dynamic_descriptor_index = 0;
-}
-
-void Renderer::render_skybox(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
-{
-    auto skybox_object = SceneManager::instance()->get_skybox_object();
-    if (skybox_object)
-    {
-        auto skybox_shader_proto = get_shader("skybox");
-        ID3D12PipelineState* pso = get_pso("skybox");
-
-        if (skybox_shader_proto && pso)
-        {
-            ID3D12RootSignature* root_signature = get_root_signature(skybox_shader_proto->required_root_signature());
-            if (root_signature)
-            {
-                commandList->SetPipelineState(pso);
-                commandList->SetGraphicsRootSignature(root_signature);
-
-                ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
-                commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-                if (camera)
-                {
-                    camera->update_shader_variables(commandList); // b1만 바인딩
-
-                    // ========== Skybox용 b2 바인딩 추가 ==========
-                    auto cam_comp = camera;
-                    if (cam_comp && cam_comp->get_cb_skybox())
-                    {
-                        D3D12_GPU_VIRTUAL_ADDRESS cbSkyboxGpuAddress = cam_comp->get_cb_skybox()->GetGPUVirtualAddress();
-                        commandList->SetGraphicsRootConstantBufferView(2, cbSkyboxGpuAddress);
-                    }
-
-                    camera->set_viewports_and_scissor_rects(commandList);
-                }
-
-                D3D12_CPU_DESCRIPTOR_HANDLE skybox_srv_cpu = ResourceManager::instance()->get_skybox_srv_cpu();
-                if (skybox_srv_cpu.ptr != 0)
-                {
-                    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ skybox_srv_cpu };
-                    bind_texture_table(commandList, 4, cpu_handles);
-                }
-
-                skybox_object->get_component<RenderComponent>()->render(commandList);
-            }
-        }
-    }
-}
-
-void Renderer::render_terrain(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
-{
-    auto terrain_object = SceneManager::instance()->get_terrain_object();
-    if (terrain_object)
-    {
-        // Terrain 렌더링 (161번 줄부터)
-        auto terrain_object = SceneManager::instance()->get_terrain_object();
-        if (terrain_object)
-        {
-            auto terrain_shader_proto = get_shader("terrain");
-            ID3D12PipelineState* pso = get_pso("terrain");
-
-            if (!terrain_shader_proto || !pso)
-            {
-                CERROR("Terrain shader or PSO not found!");
-                return;
-            }
-
-            commandList->SetPipelineState(pso);
-
-            ID3D12RootSignature* root_signature = get_root_signature(terrain_shader_proto->required_root_signature());
-            if (!root_signature)
-            {
-                CERROR("Terrain root signature not found!");
-                return;
-            }
-
-            commandList->SetGraphicsRootSignature(root_signature);
-
-            // ========== 중요! Descriptor Heap 바인딩 ==========
-            ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
-            commandList->SetDescriptorHeaps(1, heaps);
-
-            // Camera 설정
-            CameraComponent* camera = CameraComponent::get_main();
-            if (camera)
-            {
-                camera->update_shader_variables(commandList);
-                camera->set_viewports_and_scissor_rects(commandList);
-            }
-
-            // RenderComponent에서 Mesh 가져오기
-            auto render_comp = terrain_object->get_component<RenderComponent>();
-            if (!render_comp)
-            {
-                CERROR("Terrain RenderComponent not found!");
-                return;
-            }
-
-            auto terrain_mesh_ptr = render_comp->mesh();
-            if (!terrain_mesh_ptr)
-            {
-                CERROR("Terrain mesh is null!");
-                return;
-            }
-
-            // TerrainLoader로 캐스팅
-            TerrainLoader* terrain_loader = dynamic_cast<TerrainLoader*>(terrain_mesh_ptr.get());
-            if (!terrain_loader)
-            {
-                CERROR("Failed to cast Mesh to TerrainLoader!");
-                return;
-            }
-
-            // ========== Terrain 텍스처 바인딩 ==========
-            auto* rm = ResourceManager::instance();
-
-            // [3] t0: HeightMap
-            std::string heightmap_key = terrain_loader->get_heightmap_key();
-
-            auto* heightmap = rm->get_texture(heightmap_key);
-            if (heightmap && heightmap->cpu_handle.ptr != 0)
-            {
-                std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ heightmap->cpu_handle };
-                bind_texture_table(commandList, 3, cpu_handles);
-            }
-            else
-            {
-                CERROR("HeightMap texture not found: " << heightmap_key);
-                return;
-            }
-
-            // Material 정보 가져오기
-            std::string material_name = terrain_loader->get_material_name();
-
-            auto* mat_info = rm->get_material_info(material_name);
-            if (mat_info)
-            {
-                // [4] t1: Base Texture
-                if (!mat_info->base_color_texture_path.empty())
-                {
-                    auto* base_tex = rm->get_texture(mat_info->base_color_texture_path);
-                    if (base_tex && base_tex->cpu_handle.ptr != 0)
-                    {
-                        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ base_tex->cpu_handle };
-                        bind_texture_table(commandList, 4, cpu_handles);
-                    }
-                    else
-                    {
-                        CERROR("Base texture not found!");
-                        return;
-                    }
-                }
-
-                // [5] t2: Detail Texture
-                if (!mat_info->normal_texture_path.empty())
-                {
-                    auto* detail_tex = rm->get_texture(mat_info->normal_texture_path);
-                    if (detail_tex && detail_tex->cpu_handle.ptr != 0)
-                    {
-                        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_handles{ detail_tex->cpu_handle };
-                        bind_texture_table(commandList, 5, cpu_handles);
-                    }
-                    else
-                    {
-                        CERROR("Detail texture not found!");
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                CERROR("Material info not found: " << material_name);
-                return;
-            }
-
-            render_comp->render(commandList);
-        }
-    }
 }
