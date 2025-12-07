@@ -58,7 +58,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         // 1. 메쉬 로드 (GLTF 파일 파싱 및 재질 정보 포함)
         std::string mesh_path = (basePath / data.meshFile).string();
-        CLOG("Attempting to load mesh: " << mesh_path);
 
         // 메쉬 로드 시, 메쉬 내부에서 GLTF 표준 재질 정보를 로드했다고 가정 
         std::shared_ptr<Mesh> mesh = ResourceManager::instance()->load_mesh(mesh_path); // device, commandList 인수가 필요할 수 있습니다.
@@ -66,7 +65,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             CERROR("Failed to load mesh : " << mesh_path);
             continue;
         }
-        CLOG("Successfully loaded mesh: " << mesh_path);
 
         // 2. 게임 오브젝트 생성 및 컴포넌트 추가
         std::shared_ptr<GameObject> gameObject = ObjectManager::instance()->create_game_object(data.name);
@@ -74,7 +72,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         // 메쉬에 바인딩
         renderComp->set_mesh(mesh);
-        CLOG("Created GameObject: " << data.name << " with mesh: " << data.meshFile);
 
         // ★★★ MaterialOverrides 파싱 및 재질 생성 로직 제거 ★★★
         // 재질은 이제 mesh->get_materials() 또는 메쉬 로드 시점에 RenderComponent에 직접 설정되어야 합니다.

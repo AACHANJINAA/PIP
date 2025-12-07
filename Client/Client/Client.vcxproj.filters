@@ -275,6 +275,12 @@
     <ClInclude Include="..\..\Common\json.hpp">
       <Filter>4. External</Filter>
     </ClInclude>
+    <ClInclude Include="SkyboxRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="MainPlayerAnimationScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
@@ -484,6 +490,9 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Terrain_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Light.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>
