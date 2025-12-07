@@ -212,14 +212,19 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
         return;
     }
 
-    // Vertex/Index Buffer 
+    if (!_materialName.empty())
+    {
+        ResourceManager::instance()->bind_material(_materialName, command_list);
+    }
+    else
+    {
+        CERROR("TerrainLoader: No material to bind!");
+    }
+
+    // Vertex/Index Buffer
     command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
     command_list->IASetIndexBuffer(&_indexBufferView);
     command_list->IASetPrimitiveTopology(_primitiveTopology);
-
-    // Terrain Constant Buffer  (Root Parameter 2)
-    // TerrainInfo 32bit constants
-   // command_list->SetGraphicsRoot32BitConstants(2, 8, &_terrainInfo, 0);
 
     // Draw Call
     command_list->DrawIndexedInstanced(
