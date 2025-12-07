@@ -43,4 +43,6 @@ private:
 
     // 자주 접근하게 될 CameraComponent에 대한 캐시된 포인터
     CameraComponent* _cameraComponent;
+
+    bool _isFreeCameraMode = false;
 };
