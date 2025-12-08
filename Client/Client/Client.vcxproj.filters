@@ -84,11 +84,11 @@
     <Filter Include="0. Engine\3. Renderer\4. TextureLoader">
       <UniqueIdentifier>{43c5fdd3-2872-4f44-945b-40cbed081f81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent">
-      <UniqueIdentifier>{c9682bcf-f8f2-4f9a-b3a6-a290036050ac}</UniqueIdentifier>
-    </Filter>
     <Filter Include="0. Engine\3. Renderer\5. TerrainLoader">
       <UniqueIdentifier>{c4eda412-bb59-4f0e-8ffc-708146f7997e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents">
+      <UniqueIdentifier>{c9682bcf-f8f2-4f9a-b3a6-a290036050ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -249,7 +249,7 @@
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
     <ClInclude Include="HPRenderComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
     <ClInclude Include="SkyboxShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
@@ -275,14 +275,14 @@
     <ClInclude Include="..\..\Common\json.hpp">
       <Filter>4. External</Filter>
     </ClInclude>
-    <ClInclude Include="SkyboxRenderComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainRenderComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="MainPlayerAnimationScript.h">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxRenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainRenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -425,7 +425,7 @@
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
     <ClCompile Include="HPRenderComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\HPRenderComponent</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClCompile>
     <ClCompile Include="SkyboxShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
@@ -447,6 +447,12 @@
     </ClCompile>
     <ClCompile Include="MainPlayerAnimationScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxRenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainRenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
