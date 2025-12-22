@@ -8,6 +8,7 @@ namespace PIP
 		Player();
 	public:
 		common::Vec3				_position;
+		common::Quat				_rotation;
 		std::string					_name;
 		short						_hp;
 		short						_max_hp;

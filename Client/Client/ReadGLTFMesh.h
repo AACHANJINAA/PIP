@@ -83,8 +83,8 @@ struct BoneInfo
 
 	int _node_index;
 
-	// 디버깅용 뼈대 이름
-	std::string _name; 
+	// 뼈대 이름 (애니메이션 여러가지 할 때 쓰임)
+	std::string _name;
 };
 
 
@@ -145,8 +145,11 @@ public:
 
 
 	// DW설명 : 애니메이션 관련 함수들
-	void update_animation(float& delta_time, int clip_index);
+	void update_animation(float& delta_time, std::string animation_name);
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
+
+	// 애니메이션만 있는 glTF 파일 로더 추가
+	void load_animation_only(const std::string& file_path, const std::string& want_name = "null_name");
 
 private:
 
@@ -165,6 +168,8 @@ private:
 	void load_skins(const json& gltf_json, const std::vector<char>& binary_buffer);
 	void load_animations(const json& gltf_json, const std::vector<char>& binary_buffer);
 	void process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh);
+
+
 
 	// enum 으로 바꾸는 헬퍼 함수
 	AnimationInterpolation string_to_interpolation(const std::string& str);
@@ -205,7 +210,7 @@ private: // DW설명 : 애니메이션 관련 멤버 변수들
 	// (GPU 행렬 팔레트 순서와 일치) 뼈대 인덱스 목록
 	std::vector<int> _joints;
 
-	std::vector<AnimationClip> _animations;
+	std::map<std::string, AnimationClip> _animations;
 
 	// 스킨이 이미 로드되었는지 확인하는 플래그
 	bool _is_skin_loaded;

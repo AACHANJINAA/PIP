@@ -137,17 +137,15 @@ ReadOBJMesh::ReadOBJMesh(const std::string& filePath)
 		// 위 find에서 end가 나왔을 경우엔?(map안에 없다는 거)
 		if (it == vertex_map.end())
 		{
-			// 사용할 색상을 저장할 변수 (기본값은 랜덤 색상)
-			XMFLOAT4 color = RANDOM_COLOR;
-			// 현재 재질 이름(currentMtlName)이 재질 맵(m_mapMaterials)에 있는지 확인
-			if (m_mapMaterials.count(currentMtlName))
-			{
-				// 재질 맵에 있다면 해당 재질의 Kd(확산광) 값을 색상으로 사용
-				color = m_mapMaterials[currentMtlName].Kd;
-			}
+			XMFLOAT3 tangent{};
+			XMVECTOR n_vec = XMLoadFloat3(&normal);
 
-			// 임시 저장소에 있던 실제 위치와 법선 데이터로 새 정점을 생성 + color 추가
-			IlluminatedVertex new_vertex(position, normal, texcoord, color);
+			XMVECTOR up = (abs(normal.y) < 0.99f) ? XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f) : XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+
+			XMVECTOR t_vec = XMVector3Normalize(XMVector3Cross(up, n_vec));
+			XMStoreFloat3(&tangent, t_vec);
+
+			IlluminatedVertex new_vertex(position, normal, texcoord, tangent);
 
 			// 이 새 정점을 최종 정점 목록에 추가
 			temp_vertices.emplace_back(new_vertex);

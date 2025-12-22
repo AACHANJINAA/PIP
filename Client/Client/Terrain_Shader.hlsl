@@ -1,57 +1,24 @@
 #define MAX_LIGHTS 8
 #define MAX_MATERIALS 8
 
-struct MATERIAL
+cbuffer cbCameraInfo : register(b1)
 {
-    float4 m_xmf4Ambient;
-    float4 m_xmf4Diffuse;
-    float4 m_xmf4Specular;
-    float4 m_xmf4Emissive;
+    matrix gmtxView;
+    matrix gmtxProjection;
+    float4 gvCameraPosition; // Camera Position
 };
 
-struct LIGHT
-{
-    float4 m_xmf4Ambient;
-    float4 m_xmf4Diffuse;
-    float4 m_xmf4Specular;
-    float3 m_xmf3Position;
-    float m_fFalloff;
-    float3 m_xmf3Direction;
-    float m_fTheta;
-    float3 m_xmf3Attenuation;
-    float m_fPhi;
-    bool m_bEnable;
-    int m_nType;
-    float m_fRange;
-    float padding;
-};
+#include "Light.hlsl"
 
-// [b0] World Matrix
 cbuffer cbPerObject : register(b0)
 {
     float4x4 World;
 };
 
-cbuffer cbCameraInfo : register(b1)
-{
-    matrix gmtxView;
-    matrix gmtxProjection;
-    float4 gf4Position; // Light
-};
-
-cbuffer cbMaterials : register(b2)
-{
-    MATERIAL gMaterials[MAX_MATERIALS];
-}
-
-cbuffer cbLights : register(b3)
-{
-    LIGHT gLights[MAX_LIGHTS];
-    float4 m_xmf4GlobalAmbient;
-};
-
-Texture2D baseTexture : register(t0);
-Texture2D detailTexture : register(t1);
+Texture2D albedoTexture : register(t0);
+Texture2D normalTexture : register(t1);
+Texture2D ormTexture : register(t2);
+Texture2D emissiveTexture : register(t3);
 SamplerState terrainSampler : register(s0);
 
 struct VS_Input
@@ -59,6 +26,7 @@ struct VS_Input
     float3 PositionL : POSITION;
     float3 NormalL : NORMAL;
 	float2 UV : TEXCOORD;
+    float3 TangentL : TANGENT;
 };
 
 struct PS_Input
@@ -66,6 +34,8 @@ struct PS_Input
     float4 PositionH : SV_POSITION;
     float3 PositionW : POSITION;
     float3 NormalW : NORMAL;
+    float3 TangentW : TANGENT; // Added for normal mapping
+    float3 BitangentW : BITANGENT; // Added for normal mapping
     float2 UV : TEXCOORD0;
 };
 
@@ -76,6 +46,9 @@ PS_Input VS_Main(VS_Input input)
     // 이미 CPU에서 높이가 계산된 정점 위치를 사용
     output.PositionW = mul(float4(input.PositionL, 1.0f), World).xyz;
     output.NormalW = mul(input.NormalL, (float3x3) World);
+    output.TangentW = normalize(mul(input.TangentL, (float3x3) World));
+    output.BitangentW = normalize(cross(output.NormalW, output.TangentW));
+
     output.PositionH = mul(mul(float4(output.PositionW, 1.0f), gmtxView), gmtxProjection);
     output.UV = input.UV;
 
@@ -84,52 +57,36 @@ PS_Input VS_Main(VS_Input input)
 
 float4 PS_Main(PS_Input input) : SV_TARGET
 {
-    float4 sampledColor = baseTexture.Sample(terrainSampler, input.UV);
-
-    if (dot(sampledColor.rgb, float3(1.0, 1.0, 1.0)) < 0.01) // RGB 합이 0.01보다 작으면 검은색으로 간주
-    {
-        return float4(1.0, 0.0, 1.0, 1.0); // 마젠타 (Magenta)
-    }
-
-    return baseTexture.Sample(terrainSampler, input.UV);
-    float4 baseColor = baseTexture.Sample(terrainSampler, input.UV * 10.0); // 타일링 값 조절
-    float4 detailColor = detailTexture.Sample(terrainSampler, input.UV * 5.0);
-    float4 texColor = baseColor * detailColor * 1.5;
-    
-
+    float3 P = input.PositionW;
     float3 N = normalize(input.NormalW);
-    float4 totalColor = float4(0, 0, 0, 1);
-	
-	// 이 재질은 C++에서 cbMaterials의 첫 번째(인덱스 0) 재질로 설정해주어야 합니다.
-    MATERIAL material = gMaterials[0];
-    
-    for (int i = 0; i < MAX_LIGHTS; i++)
-        {
-        
-        if (gLights[i].m_bEnable)
-            {
-            float4 ambient = gLights[i].m_xmf4Ambient * material.m_xmf4Ambient;
-            totalColor += ambient;
-            
-            float3 L = normalize(gLights[i].m_xmf3Direction);
-            float diffuseFactor = max(dot(N, -L), 0.0f);
-            float4 diffuse = diffuseFactor * gLights[i].m_xmf4Diffuse * material.m_xmf4Diffuse;
-            totalColor += diffuse;
-           
-            float3 V = normalize(gf4Position.xyz - input.PositionW);
-      
-            float3 R = reflect(L, N);
-          
-            float specularFactor = pow(max(dot(R, V), 0.0f), material.m_xmf4Specular.w); // w에 shininess 저장 가정
-         
-            float4 specular = specularFactor * gLights[i].m_xmf4Specular * material.m_xmf4Specular;
-           
-            totalColor += specular;
-        }
-    }
+    float3 V = normalize(gvCameraPosition.xyz - P); // View direction
 
-    totalColor += m_xmf4GlobalAmbient;
-    totalColor.a = 1.0f;
+    float3 albedo = albedoTexture.Sample(terrainSampler, input.UV).rgb;
+    float3 sampledNormalMap = normalTexture.Sample(terrainSampler, input.UV).rgb;
+   
+    float3 orm = ormTexture.Sample(terrainSampler, input.UV).rgb;
+    float ao = orm.r; // Red channel for Ambient Occlusion
+    float roughness = orm.g; // Green channel for Roughness
+    float metallic = orm.b; // Blue channel for Metallic
     
-    return texColor * totalColor;
+    float3 emissive = emissiveTexture.Sample(terrainSampler, input.UV).rgb; // Sample emissive
+    
+	// Convert normal from tangent space to world space using TBN matrix
+    float3 N_tangent = sampledNormalMap * 2.0 - 1.0;
+	// Construct TBN matrix
+    float3x3 TBN = float3x3(normalize(input.TangentW), normalize(input.BitangentW), N);
+    N = normalize(mul(N_tangent, TBN));
+
+    // Call the PBR Lighting function
+    float4 litColor = Lighting(P, N, V, albedo, metallic, roughness, ao);
+    
+    float3 finalColor = litColor.rgb + emissive; // Add emissive after lighting
+     
+	// Tone Mapping (HDR -> LDR)
+    finalColor.rgb = finalColor.rgb / (finalColor.rgb + 1.0f);
+    
+	// Gamma Correction
+    finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
+   
+    return float4(finalColor, 1.0f); // Assuming alpha is always 1.0 for terrain
 }

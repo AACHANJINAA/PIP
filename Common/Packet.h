@@ -96,6 +96,7 @@ namespace common::packet
 	struct CS_PACKET_MOVE : PacketHeader
 	{
 		Vec3 _position;
+		common::Quat _rotation;
 	};
 
 	//struct CS_PACKET_MOVE : PacketHeader
@@ -139,6 +140,7 @@ namespace common::packet
 	{
 		int64_t _id; // long long
 		Vec3    _position; // 플레이어의 위치
+		Quat	_rotation;
 		short   _hp;
 		short   _level;
 		int     _exp;
@@ -150,6 +152,7 @@ namespace common::packet
 	{
 		int64_t _id; // long long
 		Vec3 _position;
+		common::Quat _rotation;
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)
@@ -189,6 +192,7 @@ namespace common::packet
 		int64_t _npc_id; // NPC의 고유 ID
 		int32_t _npc_type; // NPC의 타입 (예: 몬스터 종류)
 		Vec3    _position;  // NPC의 초기 위치
+		//Quat	_rotation;
 		int32_t _hp;        // NPC의 초기 HP
 		// 뒤에 가변크기 name
 	};

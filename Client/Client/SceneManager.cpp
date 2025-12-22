@@ -25,7 +25,7 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-    build_skybox(device, command_list);
+    //build_skybox(device, command_list);
     build_terrain(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
@@ -50,42 +50,33 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 	,ID3D12CommandAllocator* command_allocator
 	, ID3D12GraphicsCommandList* command_list)
 {
-    // ��ȯ ��û�� ������ �ƹ��͵� ���� �ʰ� ��� �����մϴ�.
     if (_requestedSceneName.empty())
     {
         return;
     }
 
-    // --- ���⼭���ʹ� ��� ���� ������ ���� ������ �����Դϴ� ---
 
     std::string scene_to_load = _requestedSceneName;
     _requestedSceneName.clear();
 
 	auto game_framework = GameFramework::instance();
-    // 1. GPU�� ���� �������� ��� �۾��� ��ĥ ������ ��ٸ��ϴ�.
     game_framework->WaitForGpuComplete();
 
-    // 2. ���� ���� ���Ӽ� ���� ��� ������Ʈ�� �ı� ������� �ű�ϴ�.
     ObjectManager::instance()->clear_non_persistent_objects();
-    // �ı� ��Ͽ� �ִ� ������Ʈ���� ������ �Ҹ��ŵ�ϴ�.
     ObjectManager::instance()->process_destructions();
-	// ���� �� �̻� ������ �ʴ� ���� ���� �޽õ��� �޸𸮿��� ������ �����մϴ�.
     ResourceManager::instance()->unload_unused_meshes();
 
-    // 3. ���ο� ���� �����մϴ�.
     auto it = _scene_creators.find(scene_to_load);
     if (it == _scene_creators.end()) {
-        CERROR("��ϵ��� ���� ��: " << scene_to_load);
+        CERROR("scene load failed�: " << scene_to_load);
         return;
     }
-    _currentScene = it->second(); // �̶� �� ���� �� ����
+    _currentScene = it->second(); 
     if (!_currentScene) 
     {
-        CERROR("���� �� ��������")
+        CERROR("scene creation failed");
         return;
     }
-
-    // 4. ���ο� ���� ���ҽ��� �ε��ϰ� GPU�� ���ε��մϴ�.
 
     command_allocator->Reset();
     command_list->Reset(command_allocator, nullptr);
@@ -93,16 +84,13 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     _currentScene->build_objects(device, command_list);
     ResourceManager::instance()->upload_pending_meshes(device, command_list);
 
-    // 5. ���ҽ� ���ε� Ŀ�ǵ带 �����ϰ� �Ϸ�� ������ ��ٸ��ϴ�.
     command_list->Close();
     ID3D12CommandList* ppd3dCommandLists[] = { command_list };
     game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
     game_framework->WaitForGpuComplete();
 
-    // TODO: �ӽ� ���ε� ���� ���� ����
+    // TODO: .
     //ResourceManager::Instance()->release_upload_buffers();
-    // --- [�߰�] ��� �� ��ȯ �۾��� ���� �� ---
-	// ���� �� �̻� ������ �ʴ� ���� ���� �޽õ��� �޸𸮿��� ������ �����մϴ�.
     //ResourceManager::Instance()->unload_unused_meshes();
 }
 

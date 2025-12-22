@@ -20,9 +20,8 @@ namespace PIP::packet
 		spawn_packet_data._size = 0; // 임시 크기 (나중에 다시 계산)
 
 		spawn_packet_data._id = session->_id;
-		spawn_packet_data._position.x = session->_player._position.x;
-		spawn_packet_data._position.y = session->_player._position.y;
-		spawn_packet_data._position.z = session->_player._position.z;
+		spawn_packet_data._position = session->_player._position;
+		spawn_packet_data._rotation = session->_player._rotation;
 		spawn_packet_data._hp = session->_player._hp;
 		spawn_packet_data._level = session->_player._level;
 		spawn_packet_data._exp = session->_player._exp;
@@ -91,27 +90,35 @@ namespace PIP::packet
 			return;;
 		}
 		common::Vec3 targetPos = move_packet._position;
+		common::Vec4 targetRotation = move_packet._rotation;
 		common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
 
 		// 1. 맵 범위 체크 (heightmap 범위 밖으로 나가지 못하게)
 		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
-
+		// [로그 추가] 클라이언트가 보낸 Y와 서버 지형 높이 비교
+		if (std::abs(targetPos.y - groundHeight) > 0.1f) {
+			MYLOG("[Move] Height Mismatch! ID: " << session->_id
+				<< " | ClientY: " << targetPos.y
+				<< " | ServerGroundY: " << groundHeight);
+		}
 		// groundHeight가 0이면 맵 밖! (GetGroundHeight가 범위 밖에서 0 반환)
-		if (groundHeight == 0.0f)
+		if (!MapDataManager::Instance()->IsInsideMap(targetPos.x, targetPos.z))
 		{
-			// 맵 밖으로 나가려는 시도 - 이전 위치로 되돌림
-			MYLOG("Player trying to go out of map bounds at (" << targetPos.x << ", " << targetPos.z << ")");
+			MYLOG("[Move] Out of Bounds! ID: " << session->_id << " at (" << targetPos.x << ", " << targetPos.z << ")");
 
+			// 맵 밖으로 나가려는 시도 - 클라이언트에게 위치 보정 패킷 전송 (원위치 또는 안전한 위치)
 			packet::SC_PACKET_MOVE correction_packet;
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->_player._position;
+			correction_packet._position = session->_player._position; // 서버가 알고 있는 마지막 유효 위치
+			correction_packet._rotation = targetRotation;
+			session->_player._rotation = targetRotation; // 회전은 일단 갱신
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 			return;
 		}
-
+		groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
 		// 2. Y축 지면 아래로만 가지 못하게 (위로는 자유롭게)
 		//float minAllowedY = groundHeight /*+ player_extents.y*/;
 
@@ -119,6 +126,8 @@ namespace PIP::packet
 		// 지면 위에 있으면 클라이언트 Y값 그대로 사용 (떨림 방지!)
 
 		targetPos.y = groundHeight; // 클라이언트의 MainPlayerScript와 동일
+		/*float minAllowedY = groundHeight;
+		targetPos.y = std::max(targetPos.y, minAllowedY);*/
 
 		// 3. 충돌 체크
 		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
@@ -189,24 +198,28 @@ namespace PIP::packet
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
 			correction_packet._position = safe_pos;
+			correction_packet._rotation = targetRotation;
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 
 			// 서버의 플레이어 위치도 안전한 위치로 갱신
 			session->_player._position = safe_pos;
+			session->_player._rotation = targetRotation;
 		}
 		else
 		{
 			// 4. 유효한 이동: 서버에 위치를 갱신하고 브로드캐스팅
 			session->_player._position = targetPos;
+			session->_player._rotation = targetRotation;
 
 			packet::SC_PACKET_MOVE sync_packet;
 			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			sync_packet._size = sizeof(sync_packet);
 			sync_packet._id = session->_id;
 			sync_packet._position = targetPos;
+			sync_packet._rotation = targetRotation;
 
-			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet));
+			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
 		}
 
 

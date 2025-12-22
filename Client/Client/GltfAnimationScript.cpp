@@ -16,6 +16,7 @@ void GltfAnimationScript::update(float delta_time)
     {
         // 0번 애니메이션 클립 재생
 		_animationTime += delta_time;
-        mesh->update_animation(_animationTime, 0);
+        mesh->update_animation(_animationTime, "Armature|mixamo.com|Layer0");
+        mesh->update_animation(_animationTime, "Armature|mixamo.com|Layer0");
     }
 }

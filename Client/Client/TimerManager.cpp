@@ -4,6 +4,7 @@
 
 TimerManager::TimerManager()
 {
+	timeBeginPeriod(1);
 	if (::QueryPerformanceFrequency((LARGE_INTEGER*)&m_nPerformanceFrequency))
 	{
 		_hasHardwareHasPerformanceCounter = TRUE;
@@ -24,6 +25,7 @@ TimerManager::TimerManager()
 
 TimerManager::~TimerManager()
 {
+	timeEndPeriod(1);
 }
 
 void TimerManager::Tick(float fLockFPS)

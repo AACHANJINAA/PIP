@@ -7,6 +7,8 @@ using namespace DirectX;
 namespace common
 {
     using Vec3 = DirectX::XMFLOAT3;
+	using Vec4 = DirectX::XMFLOAT4;
+	using Quat = DirectX::XMFLOAT4; // Quaternion도 XMFLOAT4로 표현
 	constexpr Vec3 Vec3One = { 1.0f, 1.0f, 1.0f };
 	constexpr Vec3 Vec3Zero = { 0.0f, 0.0f, 0.0f };
 	constexpr Vec3 Vec3Up = { 0.0f, 1.0f, 0.0f };

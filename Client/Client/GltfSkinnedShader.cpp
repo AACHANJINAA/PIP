@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "GltfSkinnedShader.h"
 
+#include "LightManager.h"
+
 const std::string& GltfSkinnedShader::pso_name() const
 {
 	static const std::string name = "skinned";
@@ -37,4 +39,12 @@ std::string GltfSkinnedShader::required_root_signature() const
 {
 	// RootSignature.cpp에 정의된 SkinnedRootSignatureGenerator의 이름
 	return "skinned";
+}
+
+void GltfSkinnedShader::update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer,
+	GameObject* object)
+{
+	GltfShader::update_per_object(command_list, renderer, object);
+
+	LightManager::instance()->bind(command_list, 3);
 }

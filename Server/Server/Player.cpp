@@ -6,6 +6,7 @@ namespace PIP
 	Player::Player(long long owner_id) 
 		:
 		_position{0.f, 0.f, 0.f},
+		_rotation{},
 		_name {"DefaultName" },
 		_hp { 100 },
 		_max_hp{ 100 },
@@ -17,6 +18,7 @@ namespace PIP
 	{}
 	Player::Player()
 		: _position{ 0.f, 0.f, 0.f },
+		_rotation{},
 		_name{ "InvalidName" },
 		_hp{ 0 },
 		_max_hp{ 0 },

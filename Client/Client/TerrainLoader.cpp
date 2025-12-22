@@ -16,11 +16,12 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
     const auto& info = _terrainData.GetInfo();
     _heightmapTextureKey = _terrainData.GetHeightMapPath();
 
-    // _terrainInfo �� ä��� (���̴��� ���޵�)
+    // _terrainInfo 
     _terrainInfo.bounds = XMFLOAT4(info.min_x, info.max_x, info.min_z, info.max_z);
     _terrainInfo.size = XMFLOAT2(info.width, info.height);
     _terrainInfo.height_scale = info.height_scale;
     _terrainInfo.min_height = info.min_height;
+    _terrainInfo.tiling = XMFLOAT2(32.0f, 32.0f);
 
     // 2. Flat Grid Mesh 
     int grid_width = static_cast<int>(info.width) - 1;
@@ -99,8 +100,18 @@ vertices.reserve(vertex_count_x * vertex_count_z);
 	              static_cast<float>(x) / grid_width,
 	              static_cast<float>(z) / grid_height);
 
-	         v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-			 v._diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+             XMFLOAT3 tangent_candidate = XMFLOAT3(1.0f, 0.0f, 0.0f);
+             XMVECTOR N_vec = XMLoadFloat3(&v._normal);
+             XMVECTOR T_candidate_vec = XMLoadFloat3(&tangent_candidate);  
+        	XMVECTOR dot_product_vec = XMVector3Dot(N_vec, T_candidate_vec);
+            float dot_product = XMVectorGetX(dot_product_vec);
+
+             XMVECTOR T_vec = XMVector3Normalize(
+                 XMVectorSubtract(
+                     T_candidate_vec,
+                     XMVectorScale(N_vec, dot_product))
+			);
+             XMStoreFloat3(&v._tangent, T_vec);
 
 	         vertices.emplace_back(v);
       }
@@ -119,8 +130,8 @@ vertices.reserve(vertex_count_x * vertex_count_z);
         int v1 = v0 + 1;
         int v2 = (z + 1) * vertex_count_x + x;
         int v3 = v2 + 1;
- 
-             _indices.emplace_back(v0);
+        	
+        	_indices.emplace_back(v0);
          _indices.emplace_back(v2);
          _indices.emplace_back(v1);
  
@@ -161,35 +172,14 @@ void TerrainLoader::load_textures_to_resource_manager(const std::string& materia
         CLOG("HeightMap texture loaded to GPU: " << _heightmapTextureKey);
     }
 
-    // 2. glTF Material  (ResourceManager)
+   // 2. glTF Material (ResourceManager handles details)
     auto material_names = rm->load_materials_from_gltf(material_gltf_path);
     if (!material_names.empty())
     {
         _materialName = material_names[0];
         CLOG("Material loaded from glTF: " << _materialName);
-
-        // Material 
-        auto* mat_info = rm->get_material_info(_materialName);
-        if (mat_info)
-        {
-            // Base Color Texture (T_ground_Moss_D.png)
-            if (!mat_info->base_color_texture_path.empty())
-            {
-                _baseTextureKey = mat_info->base_color_texture_path;
-                CLOG("  Base Texture: " << _baseTextureKey);
-            }
-
-            // Normal Texture Detail (T_Ground_Moss_N.png)
-            if (!mat_info->normal_texture_path.empty())
-            {
-                _detailTextureKey = mat_info->normal_texture_path;
-                CLOG("  Detail Texture: " << _detailTextureKey);
-            }
-        }
-        else
-        {
-            CERROR("Failed to get material info for: " << _materialName);
-        }
+        // Individual texture keys are no longer stored in TerrainLoader,
+        // as ResourceManager handles binding them based on _materialName.
     }
     else
     {
@@ -231,16 +221,18 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
     // 기본 텍스처 핸들을 ResourceManager에서 가져옵니다.
     auto* white_tex_info = rm->get_texture("__DEFAULT_WHITE__");
     auto* normal_tex_info = rm->get_texture("__DEFAULT_NORMAL__");
+    auto* orm_tex_info = rm->get_texture("__DEFAULT_ORM__");     // <-- 추가! (ResourceManager에서 만들었어야 함)
+    auto* black_tex_info = rm->get_texture("__DEFAULT_BLACK__"); // <-- 추가!
 
     // 핸들이 유효한 경우에만 (즉, 기본 텍스처가 성공적으로 생성된 경우) 초기화를 진행합니다.
-    if (white_tex_info && normal_tex_info)
+    if (white_tex_info && normal_tex_info && orm_tex_info && black_tex_info)
     {
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
         texture_handles.push_back(white_tex_info->cpu_handle);  // t0 (Base Color)
         texture_handles.push_back(normal_tex_info->cpu_handle); // t1 (Normal Map)
-        texture_handles.push_back(white_tex_info->cpu_handle);  // t2 (Metallic/Roughness/AO)
-        texture_handles.push_back(white_tex_info->cpu_handle);  // t3 (Emissive)
-        
+        texture_handles.push_back(orm_tex_info->cpu_handle);    // t2 (Metallic/Roughness/AO)
+        texture_handles.push_back(black_tex_info->cpu_handle);  // t3 (Emissive)
+
         // GltfShader에서 사용하는 텍스처 테이블(루트 파라미터 4번)을 기본 텍스처로 덮어씁니다.
         renderer->bind_texture_table(command_list, 4, texture_handles);
     }

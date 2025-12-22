@@ -69,10 +69,12 @@ void ResourceManager::create_default_textures(ID3D12Device* device, ID3D12Graphi
 
     uint8_t white_pixel[4] = { 0, 0, 0, 255 }; // White
     uint8_t normal_pixel[4] = { 128, 128, 255, 255 }; // Flat normal (R:128, G:128, B:255)
+    uint8_t orm_pixel[4] = { 255, 255, 0, 255 }; // R(AO)=255, G(Rough)=255, B(Metal)=0, A=255 <- non-roughness + good light receive
     uint8_t black_pixel[4] = { 0, 0, 0, 255 }; // Black  
 
     create_1x1_texture("__DEFAULT_WHITE__", white_pixel);
     create_1x1_texture("__DEFAULT_NORMAL__", normal_pixel);
+    create_1x1_texture("__DEFAULT_ORM__", orm_pixel);
     create_1x1_texture("__DEFAULT_BLACK__", black_pixel);
 }
 
@@ -539,19 +541,20 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
 
     D3D12_CPU_DESCRIPTOR_HANDLE default_white_handle = get_cpu_handle("__DEFAULT_WHITE__");
     D3D12_CPU_DESCRIPTOR_HANDLE default_normal_handle = get_cpu_handle("__DEFAULT_NORMAL__");
+    D3D12_CPU_DESCRIPTOR_HANDLE default_orm_handle = get_cpu_handle("__DEFAULT_ORM__");
     D3D12_CPU_DESCRIPTOR_HANDLE default_black_handle = get_cpu_handle("__DEFAULT_BLACK__");
 
     // 만약 기본 색상 텍스처조차 없다면, 텍스처를 바인딩하지 않고 종료합니다.
     if (base_color_handle.ptr == 0) {
-        base_color_handle = default_black_handle;
+        base_color_handle = default_white_handle;
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE normal_handle = get_cpu_handle(mat_info.normal_texture_path);
     if (normal_handle.ptr == 0) normal_handle = default_normal_handle;
     
     D3D12_CPU_DESCRIPTOR_HANDLE orm_handle = get_cpu_handle(mat_info.metallic_roughness_texture_path);
-    if (orm_handle.ptr == 0) orm_handle = default_black_handle;
-    
+    if (orm_handle.ptr == 0) orm_handle = default_orm_handle;
+
     D3D12_CPU_DESCRIPTOR_HANDLE emissive_handle = get_cpu_handle(mat_info.emissive_texture_path);
     if (emissive_handle.ptr == 0) emissive_handle = default_black_handle;
 

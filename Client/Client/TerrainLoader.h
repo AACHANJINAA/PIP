@@ -12,6 +12,7 @@ public:
 		DirectX::XMFLOAT2 size;      // x: width, y: height
 		float height_scale;          // JSON의 scale.y
 		float min_height;            // 최소 높이 (정규화된 값)
+		XMFLOAT2 tiling;             // Texture Tiling Factor
 		float padding[2];           // 8byte 패딩
 
 		TerrainInfo()
@@ -19,6 +20,7 @@ public:
 			, size(0.0f, 0.0f)
 			, height_scale(0.0f)
 			, min_height(0.0f)
+			, tiling(1.0f, 1.0f)
 		{
 		}
 	};
@@ -44,10 +46,12 @@ private:
 	void create_flat_grid(int grid_width, int grid_height);
 
 private:
-	std::string _heightmapTextureKey;  // HeightMap 
-	std::string _materialName;           // Material 
-	std::string _baseTextureKey;        // Base 
-	std::string _detailTextureKey;      // Detail 
+	std::string _heightmapTextureKey;		  // HeightMap 
+	std::string _materialName;				  // Material 
+	std::string _baseTextureKey;			  // Base 
+	std::string _normalTextureKey;			  // Normal map
+	std::string _metallicRoughnessTextureKey; // Metallic-Roughness map
+	std::string _emissiveTextureKey; // Emissive map
 
 	TerrainInfo _terrainInfo;            // Terrain 
 

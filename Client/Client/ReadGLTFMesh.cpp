@@ -2,8 +2,7 @@
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 
-
-ReadGLTFMesh::ReadGLTFMesh(const std::string& filePath, bool is_animated)
+ReadGLTFMesh::ReadGLTFMesh(const std::string & filePath, bool is_animated)
 {
 	_is_animated = is_animated;
 
@@ -194,12 +193,15 @@ void ReadGLTFMesh::release_upload_buffers()
 	}
 }
 
-void ReadGLTFMesh::update_animation(float& delta_time, int clip_index)
+void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name)
 {
 	// 유효하지 않은 클립 인덱스 체크
-	if (clip_index < 0 || clip_index >= _animations.size()) return;
+	if (!_animations.contains(animation_name))
+	{
+		return;
+	}
 
-	const AnimationClip& clip = _animations[clip_index];
+	const AnimationClip& clip = _animations.find(animation_name)->second;
 
 	// 1. 시간 갱신 (Looping 처리)
 	//_current_animation_time += delta_time;
@@ -539,7 +541,7 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 
 		// 3. 변환된 행렬 저장 (전치 X)
 		DirectX::XMStoreFloat4x4(&_skeleton[i]._inverse_bind_matrix, converted_matrix);
-		
+
 		//// glTF는 열 우선(Column-Major), DirectX는 행 우선(Row-Major)
 		//// 로드한 행렬을 전치(Transpose)하여 저장
 		//DirectX::XMMATRIX col_major_matrix = DirectX::XMLoadFloat4x4(&inverse_bind_matrices[i]);
@@ -577,12 +579,14 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 	if (!gltf_json.contains("animations")) return;
 
 	const json& animations_node = gltf_json["animations"];
-	_animations.resize(animations_node.size());
+	//_animations.resize(animations_node.size());
 
 	for (size_t i = 0; i < animations_node.size(); ++i)
 	{
 		const json& anim_node = animations_node[i];
-		AnimationClip& clip = _animations[i];
+		std::string anim_name = gltf_json["animations"][i]["name"].get<std::string>();
+		//_animations.emplace(anim_name, AnimationClip);
+		AnimationClip clip{};
 
 		clip._name = anim_node.value("name", "anim_" + std::to_string(i));
 		clip._duration = 0.0f;
@@ -739,6 +743,8 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 
 			clip._channels.push_back(channel);
 		}
+		// 정보 다 채우고 넣기
+		_animations.emplace(anim_name, clip);
 	}
 }
 
@@ -814,105 +820,269 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 			}
 		}
 
-		// WEIGHTS_0 읽기
 		if (primitive_json["attributes"].contains("WEIGHTS_0"))
 		{
-			weights_vec = get_attribute_data<XMFLOAT4>(gltf_json, binary_buffer, primitive_json["attributes"]["WEIGHTS_0"]);
-		}
+			int acc_idx = primitive_json["attributes"]["WEIGHTS_0"];
+			int component_type = gltf_json["accessors"][acc_idx]["componentType"];
+			// WEIGHTS_0 읽기
+			// [개선] 만약 파일 데이터가 Unsigned Byte(5121)라면? 
+			if (component_type == 5121)
+			{
+				// 1. 기껏 만든 함수를 사용하되, 4바이트 크기인 XMBYTE4 타입으로 읽습니다!
+				std::vector<XMBYTE4> byte_weights = get_attribute_data<XMBYTE4>(gltf_json, binary_buffer, acc_idx);
 
-		// 3. 정점 조립 및 좌표계 변환 (Right -> Left Handed)
-		primitive->_vertexCount = (UINT)positions.size();
-		primitive->_skinned_vertices.resize(primitive->_vertexCount);
-
-		for (size_t i = 0; i < primitive->_vertexCount; ++i)
-		{
-			auto& v = primitive->_skinned_vertices[i];
-
-			// Position: Z 반전 (x, y, -z) -> 왼손 좌표계로 바꾸는 과정임
-			v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
-
-			// Normal: Z 반전
-			if (i < normals.size())
-				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-			else
-				v._normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
-
-			// Tangent: Z 반전
-			if (i < tangents.size())
-				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w);
-			else
-				v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-
-			// UV
-			if (i < texcoords.size())
-				v._texCoord = texcoords[i];
-			else
-				v._texCoord = XMFLOAT2(0.0f, 0.0f);
-
-			// Skinning Data (배열에 값 대입)
-			if (i < joint_indices_vec.size()) {
-				v._boneIndices[0] = joint_indices_vec[i].x;
-				v._boneIndices[1] = joint_indices_vec[i].y;
-				v._boneIndices[2] = joint_indices_vec[i].z;
-				v._boneIndices[3] = joint_indices_vec[i].w;
-			}
-			else {
-				v._boneIndices[0] = v._boneIndices[1] = v._boneIndices[2] = v._boneIndices[3] = 0;
-			}
-
-			if (i < weights_vec.size()) {
-				v._boneWeights[0] = weights_vec[i].x;
-				v._boneWeights[1] = weights_vec[i].y;
-				v._boneWeights[2] = weights_vec[i].z;
-				v._boneWeights[3] = weights_vec[i].w;
-			}
-			else {
-				v._boneWeights[0] = v._boneWeights[1] = v._boneWeights[2] = v._boneWeights[3] = 0.0f;
-			}
-		}
-
-		// 4. 인덱스 버퍼 처리 (Winding Order Flip 포함)
-		if (primitive_json.contains("indices"))
-		{
-			const json& accessor = gltf_json["accessors"][primitive_json["indices"].get<size_t>()];
-			const json& buffer_view = gltf_json["bufferViews"][accessor["bufferView"].get<size_t>()];
-			const char* data_ptr = binary_buffer.data() + buffer_view.value("byteOffset", 0) + accessor.value("byteOffset", 0);
-
-			primitive->_indexCount = accessor["count"];
-			primitive->_indices.resize(primitive->_indexCount);
-
-			if (accessor["componentType"] == 5123) { // unsigned short
-				const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(data_ptr);
-				for (size_t i = 0; i < primitive->_indexCount; ++i) {
-					primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
+				// 2. 읽어온 데이터를 우리가 쓸 XMFLOAT4(실수) 형식으로 변환
+				weights_vec.resize(byte_weights.size());
+				for (size_t i = 0; i < byte_weights.size(); ++i) {
+					weights_vec[i] = XMFLOAT4(
+						byte_weights[i].x / 255.0f, // 정규화(0~1 사이로 변환)
+						byte_weights[i].y / 255.0f,
+						byte_weights[i].z / 255.0f,
+						byte_weights[i].w / 255.0f
+					);
 				}
 			}
-			else if (accessor["componentType"] == 5125) { // unsigned int -> 너무 헷갈리는데 이거 나중에 enum으로 바꿔야 하나?
-				memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
+			else if (component_type == 5126)
+			{
+				weights_vec = get_attribute_data<XMFLOAT4>(gltf_json, binary_buffer, primitive_json["attributes"]["WEIGHTS_0"]);
 			}
 
-			// DX12 Winding Order Flip (0, 1, 2 -> 0, 2, 1) -> gltf가 기본적으로 CCW이므로 CW로 바꿔줘야 함
-			for (size_t i = 0; i < primitive->_indexCount; i += 3) {
-				std::swap(primitive->_indices[i + 1], primitive->_indices[i + 2]);
+			// 3. 정점 조립 및 좌표계 변환 (Right -> Left Handed)
+			primitive->_vertexCount = (UINT)positions.size();
+			primitive->_skinned_vertices.resize(primitive->_vertexCount);
+
+			for (size_t i = 0; i < primitive->_vertexCount; ++i)
+			{
+				auto& v = primitive->_skinned_vertices[i];
+
+				// Position: Z 반전 (x, y, -z) -> 왼손 좌표계로 바꾸는 과정임
+				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
+
+				// Normal: Z 반전
+				if (i < normals.size())
+					v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
+				else
+					v._normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+				// Tangent: Z 반전
+				if (i < tangents.size())
+					v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w * -1.0f);
+				else
+				{
+					// 노말이 X축이랑 너무 비슷하면 Y축을 선택하고, 아니면 X축을 선택한다.
+					// (절댓값이 0.9 이상이면 거의 평행한 것임)
+					if (std::abs(v._normal.x) > 0.9f)
+						v._tangent = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // Y축으로 피신!
+					else
+						v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // X축 사용
+				}
+
+				// UV
+				if (i < texcoords.size())
+					v._texCoord = XMFLOAT2(texcoords[i].x, 1.0f - texcoords[i].y);
+				else
+					v._texCoord = XMFLOAT2(0.0f, 0.0f);
+
+				// Skinning Data (배열에 값 대입)
+				if (i < joint_indices_vec.size()) {
+					v._boneIndices[0] = joint_indices_vec[i].x;
+					v._boneIndices[1] = joint_indices_vec[i].y;
+					v._boneIndices[2] = joint_indices_vec[i].z;
+					v._boneIndices[3] = joint_indices_vec[i].w;
+				}
+				else {
+					v._boneIndices[0] = v._boneIndices[1] = v._boneIndices[2] = v._boneIndices[3] = 0;
+				}
+
+				if (i < weights_vec.size()) {
+					v._boneWeights[0] = weights_vec[i].x;
+					v._boneWeights[1] = weights_vec[i].y;
+					v._boneWeights[2] = weights_vec[i].z;
+					v._boneWeights[3] = weights_vec[i].w;
+				}
+				else {
+					v._boneWeights[0] = v._boneWeights[1] = v._boneWeights[2] = v._boneWeights[3] = 0.0f;
+				}
 			}
+
+			// 4. 인덱스 버퍼 처리 (Winding Order Flip 포함)
+			if (primitive_json.contains("indices"))
+			{
+				const json& accessor = gltf_json["accessors"][primitive_json["indices"].get<size_t>()];
+				const json& buffer_view = gltf_json["bufferViews"][accessor["bufferView"].get<size_t>()];
+				const char* data_ptr = binary_buffer.data() + buffer_view.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+
+				primitive->_indexCount = accessor["count"];
+				primitive->_indices.resize(primitive->_indexCount);
+
+				if (accessor["componentType"] == 5123) { // unsigned short
+					const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(data_ptr);
+					for (size_t i = 0; i < primitive->_indexCount; ++i) {
+						primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
+					}
+				}
+				else if (accessor["componentType"] == 5125) { // unsigned int -> 너무 헷갈리는데 이거 나중에 enum으로 바꿔야 하나?
+					memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
+				}
+
+				// DX12 Winding Order Flip (0, 1, 2 -> 0, 2, 1) -> gltf가 기본적으로 CCW이므로 CW로 바꿔줘야 함
+				for (size_t i = 0; i < primitive->_indexCount; i += 3) {
+					std::swap(primitive->_indices[i + 1], primitive->_indices[i + 2]);
+				}
+			}
+
+			BoundingOrientedBox::CreateFromPoints(primitive->_orientedBoundingBox, primitive->_skinned_vertices.size(), &primitive->_skinned_vertices[0]._position, sizeof(GltfSkinnedVertex));
+			primitive->_materialIndex = primitive_json.value("material", -1);
+		}
+	}
+}
+
+void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::string& want_name)
+{
+	json gltf_json;
+	std::vector<char> binary_buffer;
+
+	// 1. 파일 로드
+	if (!load_gltf_file(file_path, gltf_json, binary_buffer)) {
+		CERROR("애니메이션 파일 로딩 실패");
+		return;
+	}
+
+	// 2. 임시 노드 이름-인덱스 맵 생성 (애니메이션 파일 기준)
+	std::unordered_map<int, std::string> temp_index_to_name;
+	for (size_t i = 0; i < gltf_json["nodes"].size(); ++i) {
+		temp_index_to_name[(int)i] = gltf_json["nodes"][i].value("name", "");
+	}
+
+	// 3. 현재 내 캐릭터의 이름-인덱스 맵 생성
+	std::unordered_map<std::string, int> my_name_to_index;
+	for (const auto& bone : _skeleton) {
+		my_name_to_index[bone._name] = bone._node_index;
+	}
+
+	// 4. 애니메이션 파싱 시작
+	if (!gltf_json.contains("animations"))
+		return;
+
+	const json& animations_node = gltf_json["animations"];
+	int animation_index = 0;
+	for (const auto& anim_node : animations_node) {
+
+		std::string anim_name = gltf_json["animations"][animation_index]["name"].get<std::string>();
+		if (want_name != "null_name")
+		{
+			anim_name = want_name;
 		}
 
-		BoundingOrientedBox::CreateFromPoints(primitive->_orientedBoundingBox, primitive->_skinned_vertices.size(), &primitive->_skinned_vertices[0]._position, sizeof(GltfSkinnedVertex));
-		primitive->_materialIndex = primitive_json.value("material", -1);
+		AnimationClip clip;
+		clip._name = anim_node.value("name", "extra_anim");
+		clip._duration = 0.0f;
+
+		// Samplers 데이터 미리 로드
+		struct SamplerData {
+			std::vector<float> times;
+			std::vector<float> values;
+			AnimationInterpolation interpolation;
+			int component_count;
+		};
+		std::vector<SamplerData> samplers_temp;
+
+		for (const auto& sampler_json : anim_node["samplers"]) {
+			SamplerData sData;
+			sData.times = get_attribute_data<float>(gltf_json, binary_buffer, sampler_json["input"].get<int>());
+
+			if (!sData.times.empty() && sData.times.back() > clip._duration) {
+				clip._duration = sData.times.back();
+			}
+
+			sData.interpolation = string_to_interpolation(sampler_json.value("interpolation", "LINEAR"));
+
+			int output_idx = sampler_json["output"].get<int>();
+			const json& accessor = gltf_json["accessors"][output_idx];
+			std::string type = accessor["type"].get<std::string>();
+
+			if (type == "VEC3") {
+				sData.component_count = 3;
+				std::vector<XMFLOAT3> vec3s = get_attribute_data<XMFLOAT3>(gltf_json, binary_buffer, output_idx);
+				sData.values.resize(vec3s.size() * 3);
+				memcpy(sData.values.data(), vec3s.data(), vec3s.size() * sizeof(XMFLOAT3));
+			}
+			else if (type == "VEC4") {
+				sData.component_count = 4;
+				std::vector<XMFLOAT4> vec4s = get_attribute_data<XMFLOAT4>(gltf_json, binary_buffer, output_idx);
+				sData.values.resize(vec4s.size() * 4);
+				memcpy(sData.values.data(), vec4s.data(), vec4s.size() * sizeof(XMFLOAT4));
+			}
+			samplers_temp.push_back(sData);
+		}
+
+		// Channels 파싱 및 데이터 매핑
+		for (const auto& channel_node : anim_node["channels"]) {
+			int file_node_idx = channel_node["target"]["node"].get<int>();
+			std::string bone_name = temp_index_to_name[file_node_idx];
+
+			if (my_name_to_index.count(bone_name)) {
+				AnimationChannel channel;
+				channel._node_index = my_name_to_index[bone_name];
+				channel._path = channel_node["target"]["path"].get<std::string>();
+
+				const SamplerData& sampler = samplers_temp[channel_node["sampler"].get<int>()];
+				channel._interpolation = sampler.interpolation;
+
+				size_t keyframe_count = sampler.times.size();
+				int values_per_key = (channel._interpolation == AnimationInterpolation::CubicSpline) ? 3 : 1;
+				int stride = sampler.component_count;
+
+				for (size_t k = 0; k < keyframe_count; ++k) {
+					Keyframe kf;
+					kf._time = sampler.times[k];
+					size_t base_idx = k * values_per_key * stride;
+
+					// 좌표계 변환 함수 (RH -> LH)
+					auto convert = [&](size_t offset) -> XMFLOAT4 {
+						float x = sampler.values[offset + 0];
+						float y = sampler.values[offset + 1];
+						float z = sampler.values[offset + 2];
+						float w = (stride > 3) ? sampler.values[offset + 3] : 0.0f;
+
+						if (channel._path == "translation")
+							return XMFLOAT4(x, y, -z, 0.0f);
+
+						if (channel._path == "rotation")
+							return XMFLOAT4(-x, -y, z, w);
+
+						return XMFLOAT4(x, y, z, w); // scale 등
+						};
+
+					if (channel._interpolation == AnimationInterpolation::CubicSpline) {
+						kf._in_tangent = convert(base_idx + 0 * stride);
+						kf._value = convert(base_idx + 1 * stride);
+						kf._out_tangent = convert(base_idx + 2 * stride);
+					}
+					else {
+						kf._value = convert(base_idx);
+					}
+					channel._keyframes.push_back(kf);
+				}
+				clip._channels.push_back(channel);
+			}
+		}
+		_animations.emplace(anim_name, clip);
+		++animation_index;
 	}
 }
 
 AnimationInterpolation ReadGLTFMesh::string_to_interpolation(const std::string& str)
 {
-	if (str == "LINEAR") 
+	if (str == "LINEAR")
 	{
 		return AnimationInterpolation::Linear;
 	}
-	if (str == "STEP") 
+	if (str == "STEP")
 	{
 		return AnimationInterpolation::Step;
 	}
-	if (str == "CUBICSPLINE") 
+	if (str == "CUBICSPLINE")
 	{
 		return AnimationInterpolation::CubicSpline;
 	}
@@ -992,7 +1162,7 @@ void ReadGLTFMesh::update_node_hierarchy(int node_index, const DirectX::XMMATRIX
 	XMStoreFloat4x4(&node._global_transform, global_transform);
 
 	// 자식 노드들에게 전파
-	for (int child_idx : node._children) 
+	for (int child_idx : node._children)
 	{
 		update_node_hierarchy(child_idx, global_transform);
 	}
@@ -1113,7 +1283,7 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 		if (texcoords.empty())
 		{
 			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
-			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates(TEXCOORD_0)."); 
+			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates(TEXCOORD_0).");
 		}
 		std::vector<XMFLOAT4> tangents = primitive_json["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitive_json["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
 

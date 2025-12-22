@@ -18,4 +18,6 @@ public:
 
 	// 4. 스키닝용 루트 시그니처 사용 ("skinned")
 	std::string required_root_signature() const override;
+
+	void update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer, GameObject* object) override;
 };

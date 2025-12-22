@@ -14,6 +14,15 @@ void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
     }
 }
 
+void OtherPlayerScript::on_sync_rotation(const XMFLOAT4& newRotation)
+{
+    // 서버가 알려준 회전으로 내 GameObject의 회전을 설정
+    if (transform())
+    {
+        transform()->set_local_rotation(newRotation);
+	}
+}
+
 void OtherPlayerScript::update(float deltaTime)
 {
     // OtherPlayer는 클라이언트에서 직접 조작하지 않으므로,

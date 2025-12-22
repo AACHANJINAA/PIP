@@ -157,6 +157,7 @@
     <ClInclude Include="..\..\Common\PacketStream.h" />
     <ClInclude Include="..\..\Common\TerrainData.h" />
     <ClInclude Include="..\..\Common\Vector3.h" />
+    <ClInclude Include="AnimationComponent.h" />
     <ClInclude Include="Behaviour.h" />
     <ClInclude Include="BoardCubeScript.h" />
     <ClInclude Include="CameraComponent.h" />
@@ -176,6 +177,7 @@
     <ClInclude Include="HPRenderComponent.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="LayerManager.h" />
+    <ClInclude Include="LightManager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="MainPlayerAnimationScript.h" />
     <ClInclude Include="MainPlayerScript.h" />
@@ -218,6 +220,7 @@
     <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationComponent.cpp" />
     <ClCompile Include="Behaviour.cpp" />
     <ClCompile Include="BoardCubeScript.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
@@ -235,6 +238,7 @@
     <ClCompile Include="GltfHpShader.cpp" />
     <ClCompile Include="HPRenderComponent.cpp" />
     <ClCompile Include="LayerManager.cpp" />
+    <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -323,6 +327,9 @@
     </FxCompile>
     <FxCompile Include="Light.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Skybox_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

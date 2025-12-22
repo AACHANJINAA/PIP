@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "TerrainShader.h"
 
+#include "LightManager.h"
+
 const std::string& TerrainShader::pso_name() const
 {
     static const std::string name = "terrain";
@@ -20,7 +22,11 @@ D3D12_INPUT_LAYOUT_DESC TerrainShader::create_input_layout()
              D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
          },
          {
-             "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24,  // ← 12에서 24로 변경!
+             "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24,
+             D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+         },
+      {
+             "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32,
              D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
          }
     };
@@ -41,4 +47,13 @@ D3D12_SHADER_BYTECODE TerrainShader::create_pixel_shader(ComPtr<ID3DBlob>& shade
 std::string TerrainShader::required_root_signature() const
 {
     return "terrain";
+}
+
+void TerrainShader::update_per_object(ID3D12GraphicsCommandList* commandList, Renderer* renderer, GameObject* gameObject)
+{
+    // 기본 오브젝트별 업데이트 (Transform, Material 등)
+    Shader::update_per_object(commandList, renderer, gameObject);
+
+    // [조명 바인딩 추가] - RootParameter[3]에 b3로 바인딩
+    LightManager::instance()->bind(commandList, 3);
 }
