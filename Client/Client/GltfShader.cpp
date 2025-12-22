@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "GltfShader.h"
 
+#include "LightManager.h"
+
 const std::string& GltfShader::pso_name() const
 {
 	static const std::string name = "gltf";
@@ -45,6 +47,8 @@ D3D12_SHADER_BYTECODE GltfShader::create_pixel_shader(ComPtr<ID3DBlob>& shader_b
 void GltfShader::update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer,GameObject* object)
 {
 	Shader::update_per_object(command_list, renderer, object);
+
+    LightManager::instance()->bind(command_list, 3);
 }
 
 std::string GltfShader::required_root_signature() const

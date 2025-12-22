@@ -13,4 +13,6 @@ public:
     D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
     virtual std::string required_root_signature() const override;
+
+    void update_per_object(ID3D12GraphicsCommandList* commandList, class Renderer* renderer, GameObject* gameObject) override;
 };

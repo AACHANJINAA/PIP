@@ -20,8 +20,6 @@
 #include "CameraComponent.h"
 #include "RenderComponent.h"
 
-#include "SceneManager.h"
-#include "ResourceManager.h"
 #include "TerrainLoader.h"
 
 void Renderer::initialize(ID3D12Device* device)
@@ -175,10 +173,6 @@ void Renderer::build_render_list(CameraComponent* camera)
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
 {
-    // 조명 상수 버퍼 업데이트
-    // if (LightManager::get_instance()) LightManager::get_instance()->update_shader_variables(commandList);
-    // ---------------------------------------------------------
-
     // 렌더링에 실제 사용될 '동적 힙'을 커맨드 리스트에 설정합니다
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
 

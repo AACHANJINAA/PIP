@@ -4,14 +4,13 @@
 #include "Chess_Scene.h"
 #include "Renderer.h"
 
-#include "TransformComponent.h"
-
 #include "DescriptorManager.h"
 #include "InputManager.h"
 #include "NetworkManager.h"
 #include "ObjectManager.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
+#include "LightManager.h"
 
 
 GameFramework::GameFramework()
@@ -56,6 +55,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
+	LightManager::instance()->initialize(_device.Get());
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
@@ -451,6 +451,9 @@ void GameFramework::update_game_logic(float deltaTime)
 			gameObject->late_update(deltaTime);
 		}
 	}
+	// 조명 매니저 업데이트
+	LightManager::instance()->update();
+
 	// 메인 카메라의 뷰 행렬 계산
 	if (auto main_cam = CameraComponent::get_main())
 	{

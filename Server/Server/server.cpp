@@ -163,14 +163,27 @@ namespace PIP::server
 		MYLOG("          Server Initializing...         ");
 		MYLOG("=========================================");
 
+		// 프로세스 우선순위를 높임
+		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
+		// P-Core만 사용하도록 프로세스 친화도 설정
+		SetProcessAffinityMask(GetCurrentProcess(), GetPCoresMask());
+
 		_is_running = true;
+
+		//MYLOG("[SERVER] Loading Map...");
+		MapDataManager::Instance()->LoadMapData("../../Common/MapData/ExportedServerData.json");
+		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
 		
 		// 로직 워커 생성
 		_logic_workers.reserve(worker_thread); // 미리 공간을 할당하여 불필요한 재할당 방지
 		for (int i = 0; i < worker_thread; ++i)
 		{
-			// LogicWorker 생성자에 std::thread 객체를 이동시켜 전달합니다.
-			_logic_workers.emplace_back(std::thread(&Server::Logic_worker, this, i));
+			_logic_workers.emplace_back(std::thread([this, i]() {
+				// P-Core만 사용하도록 CPU 친화도 설정
+				SetThreadAffinityMask(GetCurrentThread(), GetPCoresMask());
+				Logic_worker(i);
+				}));
 		}
 		MYLOG("Created " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
 
@@ -183,15 +196,16 @@ namespace PIP::server
 		MYLOG("[SERVER] Room count: " << _rooms.size());
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
-		//MYLOG("[SERVER] Loading Map...");
-		MapDataManager::Instance()->LoadMapData("..\\..\\PIPMap250821\\PIPMap\\MapData\\ExportedServerData.json");
-		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
 
 		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
 		for (int i = 0; i < io_threads; ++i)
 		{
-			_io_threads.emplace_back(&Server::IO_worker, this);
+			_io_threads.emplace_back([this]() {
+				// P-Core만 사용하도록 CPU 친화도 설정
+				SetThreadAffinityMask(GetCurrentThread(), GetPCoresMask());
+				IO_worker();
+				});
 		}
 		
 		MYLOG("Server started with " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
@@ -419,7 +433,11 @@ namespace PIP::server
 			}
 			else
 			{
-				std::this_thread::sleep_for(std::chrono::microseconds(1));
+				// 대기 상태를 개선하는 더 나은 방법
+				if (worker.queue.empty())
+				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				}
 			}
 		}
 	}
@@ -429,8 +447,34 @@ namespace PIP::server
 		long long new_id = _new_id++;
 		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), _iocp, new_id, 0);
+		// TCP_NODELAY 설정 추가
+		int nodelay = 1;
+		if (SOCKET_ERROR == setsockopt(client_socket, IPPROTO_TCP, TCP_NODELAY,
+			(const char*)&nodelay, sizeof(nodelay)))
+		{
+			// 로그만 남기고 계속 진행
+			MYERROR("Failed to set TCP_NODELAY for session " << new_id);
+		}
+
 		AddSession(new_id, p);
 		p->do_recv();
 		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
+	}
+
+	DWORD_PTR Server::GetPCoresMask()
+	{
+		SYSTEM_INFO sysInfo;
+		GetSystemInfo(&sysInfo);
+
+		// Intel 12세대 이상: 보통 첫 8개 코어가 P-Core
+		// 시스템에 따라 조정 필요
+		DWORD_PTR pCoreMask = 0;
+		for (int i = 0; i < std::min(8, (int)sysInfo.dwNumberOfProcessors); ++i)
+		{
+			pCoreMask |= (1ULL << i);
+		}
+
+		MYLOG("P-Core mask set to: 0x" << std::hex << pCoreMask);
+		return pCoreMask;
 	}
 }

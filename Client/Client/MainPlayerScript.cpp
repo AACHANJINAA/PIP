@@ -3,7 +3,9 @@
 #include "GameFramework.h"
 #include "InputManager.h"
 #include "NetworkManager.h"
+#include "ObjectManager.h"
 #include "RenderComponent.h"
+#include "Renderer.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
@@ -18,23 +20,34 @@ void MainPlayerScript::update(float deltaTime)
     auto current_transform = this->transform();
     if (!current_transform) return;
 
+    // 모델의 -90도 X축 회전을 고려한 실제 forward 벡터 계산
+    XMFLOAT3 modelForward = Vector3::ScalarProduct(current_transform->up(), -1.f, false);    // 실제 앞 방향
+    XMFLOAT3 modelRight = current_transform->right();   // 실제 오른쪽 방향
     common::Vec3 move_direction{};
     bool is_moving = false;
 
     if (InputManager::instance()->IsKeyPress('W')) {
-        move_direction = Vector3::Add(move_direction, common::Vec3Forward);
-        is_moving = true;
-    }
-    if (InputManager::instance()->IsKeyPress('S')) {
-        move_direction = Vector3::Add(move_direction,common::Vec3Backward);
-        is_moving = true;
-    }
-    if (InputManager::instance()->IsKeyPress('D')) {
-        move_direction = Vector3::Add(move_direction ,common::Vec3Right);
+        // 플레이어의 앞쪽 방향으로 이동
+        move_direction = Vector3::Add(move_direction, modelForward);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('A')) {
-        move_direction = Vector3::Add(move_direction ,common::Vec3Left);
+        // 플레이어의 왼쪽 방향으로 이동
+        XMFLOAT3 playerRight = current_transform->right();
+        XMFLOAT3 playerLeft = Vector3::ScalarProduct(playerRight, -1.0f, false);
+        move_direction = Vector3::Add(move_direction, playerLeft);
+        is_moving = true;
+    }
+    if (InputManager::instance()->IsKeyPress('S')) {
+        // 플레이어의 뒤쪽 방향으로 이동
+        XMFLOAT3 modelBackward = Vector3::ScalarProduct(modelForward, -1.0f, false);
+        move_direction = Vector3::Add(move_direction, modelBackward);
+        is_moving = true;
+    }
+    if (InputManager::instance()->IsKeyPress('D')) {
+        // 플레이어의 오른쪽 방향으로 이동
+        XMFLOAT3 playerRight = current_transform->right();
+        move_direction = Vector3::Add(move_direction, playerRight);
         is_moving = true;
     }
     // 나중에 점프로 변경
@@ -80,13 +93,27 @@ void MainPlayerScript::update(float deltaTime)
                         // 해당 X, Z 위치의 정확한 지형 높이를 가져옴
                         float terrain_height = terrain_loader->get_height_at(new_pos.x, new_pos.z);
 
-                        // 지형 아래로만 못가게, 위로는 자유롭게
+                        // CLOG("Pre-Height Y: " << new_pos.y << " | Terrain Y: " << terrain_height);
+                        
+						// 지형 아래로만 못가게, 위로는 자유롭게
                         new_pos.y = terrain_height;
                     }
                 }
             }
         }
 
+        if (_camera && _camera->transform()) {
+            // 카메라가 보고 있는 방향(forward) 벡터를 가져옴
+            XMFLOAT3 cameraForward = _camera->transform()->forward();
+
+            // XZ 평면에서의 yaw 각도 계산 (Y축 기준 회전)
+            // atan2(x, z)로 forward 벡터의 방향각을 구함
+            float yawRadians = atan2(cameraForward.x, cameraForward.z);
+            float yawDegrees = XMConvertToDegrees(yawRadians);
+
+            // 모델의 기본 -90도 X축 회전 유지하고, yaw만 카메라 방향으로 설정
+            current_transform->set_local_rotation(-90.0f, yawDegrees, 0.0f);
+        }
 
     	current_transform->set_local_position(new_pos);
     }
@@ -95,29 +122,31 @@ void MainPlayerScript::update(float deltaTime)
     _sendTimer += deltaTime;
     if (_sendTimer >= _sendInterval) {
         _sendTimer = 0.f;
-        NetworkManager::instance()->SendMovePacket(current_transform->local_position());
+        NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation());
     }
 }
 
 void MainPlayerScript::awake()
 {
-	_renderComponent = game_object()->add_component<RenderComponent>().get();
-    auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+    _camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
 
-    // 재질 및 쉐이더 설정
-    _renderComponent->set_mesh(playerMesh);
+	//_renderComponent = game_object()->add_component<RenderComponent>().get();
+ //   auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
-	// ResourceManager을 통해 재질 생성 및 셰이더 할당
-    std::string material_name = "player_material";
-	ResourceManager::instance()->create_material(material_name);
-	ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
+ //   // 재질 및 쉐이더 설정
+ //   _renderComponent->set_mesh(playerMesh);
 
-    // gltf
-    _renderComponent->set_pso_name("gltf");
+	//// ResourceManager을 통해 재질 생성 및 셰이더 할당
+ //   std::string material_name = "player_material";
+	//ResourceManager::instance()->create_material(material_name);
+	//ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
 
-    // 위치, 회전 정보
-    transform()->set_local_rotation(-90.f, 0.f, 0.f);
-    transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+ //   // gltf
+ //   _renderComponent->set_pso_name("gltf");
+
+ //   // 위치, 회전 정보
+ //   transform()->set_local_rotation(-90.f, 0.f, 0.f);
+ //   transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
 }
 
 void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)

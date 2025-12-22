@@ -25,6 +25,8 @@ public:
     // [추가] 텍스처 디스크립터 테이블을 동적으로 할당하고 파이프라인에 바인딩합니다.
     void bind_texture_table(ID3D12GraphicsCommandList * command_list, UINT root_parameter_index, const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>&cpu_handles);
 
+    ID3D12Device* get_device() const { return _device; }
+
 private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);

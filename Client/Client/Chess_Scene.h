@@ -21,5 +21,9 @@ public:
 
     void SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
+    void Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
+
+
 private:
 };

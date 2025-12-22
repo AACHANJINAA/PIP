@@ -1,22 +1,8 @@
-#define MAX_LIGHTS 8
-#define MAX_MATERIALS 8
+ #define MAX_LIGHTS 16
 
-struct Light
-{
-    float4 m_xmf4Ambient;
-    float4 m_xmf4Diffuse;
-    float4 m_xmf4Specular;
-    float3 m_xmf3Position;
-    float m_fFalloff;
-    float3 m_xmf3Direction;
-    float m_fTheta; // cos(m_fTheta)
-    float3 m_xmf3Attenuation;
-    float m_fPhi; // cos(m_fPhi)
-    int m_bEnable;
-    int m_nType;
-    float m_fRange;
-    float padding;
-};
+ #define POINT_LIGHT 1
+ #define SPOT_LIGHT 2
+ #define DIRECTIONAL_LIGHT 3
 
 cbuffer cbMaterial : register(b2)
 {
@@ -52,19 +38,28 @@ cbuffer cbCamera : register(b1)
 {
     matrix g_matView;
     matrix g_matProjection;
-    float4 g_xmf3CameraPosition;
+    float4 gvCameraPosition;
 };
 
-// 조명 정보
-cbuffer cbLights : register(b3)
+ // Light.hlsl에서 사용하는 구조체와 동일하게 맞춤
+struct MATERIAL
 {
-    Light g_Lights[MAX_LIGHTS];
+    float4 m_cAmbient;
+    float4 m_cDiffuse;
+    float4 m_cSpecular; // a = power
+    float4 m_cEmissive;
 };
 
-cbuffer cbHp : register(b4)
+ // 임시로 머티리얼 정의 (PBR에서는 사용 안하지만 Light.hlsl 함수에 필요)
+static MATERIAL gMaterial =
 {
-    int g_nHp;
+    float4(0.2, 0.2, 0.2, 1.0), // Ambient
+	 float4(0.8, 0.8, 0.8, 1.0), // Diffuse
+	 float4(1.0, 1.0, 1.0, 32.0), // Specular (a = shininess)
+	 float4(0.0, 0.0, 0.0, 1.0) // Emissive
 };
+
+ #include "Light.hlsl"
 
 struct VS_INPUT
 {
@@ -98,204 +93,151 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     Out.TexCoord = input.TexCoord0;
 
     // 월드 공간 기준으로 Normal, Tangent, Bitangent를 계산하여 전달
-    Out.Normal = normalize(mul((float3x3) g_matWorld, input.Normal));
-    Out.Tangent = normalize(mul((float3x3) g_matWorld, input.Tangent.xyz));
+    float3x3 worldRotScale = (float3x3) g_matWorld;
+    
+    // 각 축의 길이를 구해서 나눠주면 스케일이 제거된 순수 회전값이 됩니다.
+    float3 scale = float3(length(worldRotScale[0]), length(worldRotScale[1]), length(worldRotScale[2]));
+    
+    // 0으로 나누기 방지
+    if (any(scale <= 0.0001))
+        scale = float3(1, 1, 1);
+
+    float3x3 worldRot = float3x3(
+        worldRotScale[0] / scale.x,
+        worldRotScale[1] / scale.y,
+        worldRotScale[2] / scale.z
+    );
+
+    Out.Normal = normalize(mul(worldRot, input.Normal));
+    Out.Tangent = normalize(mul(worldRot, input.Tangent.xyz));
+    
+    // Bitangent는 픽셀 셰이더나 여기서 다시 계산 (w 성분이 중요)
+    // Tangent.w를 곱해주는 것 잊지 마세요! (이미 C++에서 w를 반전시켰다면 여기선 그대로 씀)
     Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
 
     return Out;
-}
-
-
-const float PI = 3.14159265359;
-
-// D: Normal Distribution Function (GGX)
-float DistributionGGX(float3 N, float3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = saturate(dot(N, H));
-    float NdotH2 = NdotH * NdotH;
-
-    float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-
-    return nom / denom;
-}
-
-// G: Geometry Function (Smith's method with Schlick-GGX)
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
-    float nom = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-    return nom / denom;
-}
-
-float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
-{
-    float NdotV = saturate(dot(N, V));
-    float NdotL = saturate(dot(N, L));
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-    return ggx1 * ggx2;
-}
-
-// F: Fresnel Equation (Schlick's approximation)
-float3 FresnelSchlick(float cosTheta, float3 F0)
-{
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-
-// ▲▲▲▲▲ 여기까지 PBR 표준 함수들 ▲▲▲▲▲
-
+}   
 
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
-{   
-    // 1. 모든 텍스처에서 서피스(표면) 속성 샘플링
-    float4 albedoMap = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
-    float3 normalMap = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
-    float3 ormMap = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-    float3 emissiveMap = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
-
-    float3 N = In.Normal;
-    // 2. 노멀맵 계산 (탄젠트 공간 -> 월드 공간)
-    if (dot(normalMap, normalMap) > 0.01)
+{
+    // 1. Albedo (BaseColor) 계산
+    // 공식: FinalBaseColor = TextureSample * BaseColorFactor
+    float4 diffuseSample = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
+    
+    float3 albedo = diffuseSample.rgb;
+    
+    // 만약 텍스처가 로드되지 않아 검은색(0,0,0)이라면 흰색으로 보정 (Factor가 색을 결정하도록)
+    if (length(albedo) < 0.01f)
     {
-        float3 N_tangent = normalMap * 2.0 - 1.0; // [0, 1] 범위를 [-1, 1] 범위로 변환
-        float3x3 TBN = float3x3(normalize(In.Tangent), normalize(In.Bitangent), normalize(In.Normal));
-        N = normalize(mul(N_tangent, TBN)); // 최종적으로 사용할 표면 법선 벡터
+        albedo = float3(1.0, 1.0, 1.0);
+    }
+    
+    // [핵심] C++에서 넘어온 BaseColorFactor 곱하기 (색상 틴트 적용)
+    albedo *= BaseColorFactor.rgb;
 
+    
+    // 2. ORM (Occlusion, Roughness, Metallic) 계산
+    // 공식: Value = TextureSample * Factor
+    float3 ormSample = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
+    
+    //[핵심] 기본값을 C++에서 넘어온 Factor로 설정! (쓰레기 값이 아니므로 믿고 씀)
+    float ao = 1.0f; // AO는 보통 별도 Factor가 없으므로 1.0 시작
+    float roughness = RoughnessFactor; // C++에서 설정한 거칠기 값
+    float metallic = MetallicFactor; // C++에서 설정한 금속성 값
+
+    // ORM 맵이 유효하다면(검은색이 아니라면), 텍스처 값을 Factor에 곱해줌 (PBR 표준)
+    // 예: 텍스처가 없으면 Factor(1.0) 그대로 사용, 텍스처가 있으면 Texture * Factor
+    if (dot(ormSample, float3(1, 1, 1)) > 0.05f)
+    {
+        ao = ormSample.r;
+        roughness *= ormSample.g; // 텍스처(G) * 계수
+        metallic *= ormSample.b; // 텍스처(B) * 계수
+    }
+    
+    // 3. Normal Map
+    float3 N = normalize(In.Normal);
+    float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
+
+    if (length(normalMapSample) > 0.1f)
+    {
+        float3 N_map = normalMapSample * 2.0 - 1.0;
+        float3 T = normalize(In.Tangent);
+        float3 B = normalize(In.Bitangent);
+        N = normalize(T * N_map.x + B * N_map.y + N * N_map.z);
     }
 
-    // 3. PBR 변수 준비
-    float3 albedo = albedoMap.rgb;
     
-    float ao = (dot(ormMap, ormMap) > 0.001) ? ormMap.r : 1.0f;
-    float roughness = (dot(ormMap, ormMap) > 0.001) ? ormMap.g : 0.8f;
-    float metallic = (dot(ormMap, ormMap) > 0.001) ? ormMap.b : 0.1f;
-
-    float3 V = normalize(g_xmf3CameraPosition.xyz - In.WorldPosition);
-    float3 F0 = lerp(0.04, albedo, metallic); // Fresnel 반사율 F0 계산
-
-    // 4. 조명 계산 시작 (IBL은 제외하고 직접 조명만 계산)
-    float3 Lo = float3(0.0, 0.0, 0.0); // 최종 반사될 빛의 양
-    for (int i = 0; i < MAX_LIGHTS; ++i)
-    {
-        if (!g_Lights[i].m_bEnable)
-            continue;
-
-        float3 L = normalize(g_Lights[i].m_xmf3Position - In.WorldPosition); // Point Light 기준
-        float3 H = normalize(V + L);
-        float distance = length(g_Lights[i].m_xmf3Position - In.WorldPosition);
-        float attenuation = 1.0 / (distance * distance);
-        float3 radiance = g_Lights[i].m_xmf4Diffuse.rgb * attenuation;
-
-        // Cook-Torrance BRDF 계산
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        float3 F = FresnelSchlick(saturate(dot(H, V)), F0);
-
-        float3 kD = (1.0 - F) * (1.0 - metallic); // Diffuse 반사율
-        float NdotL = saturate(dot(N, L));
-
-        float3 numerator = NDF * G * F;
-        float denominator = 4.0 * saturate(dot(N, V)) * NdotL + 0.0001; // 0으로 나누는 것 방지
-        float3 specular = numerator / denominator;
-        
-        // 최종 조명 추가
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-    }
-
-    // 5. 최종 색상 조합
-    // Ambient Occlusion 적용, Emissive(자체 발광) 추가
-    float3 ambient = float3(0.5, 0.5, 0.5) * albedo * ao;
-    float3 color = ambient + Lo + emissiveMap;
+    // 4. Emissive (발광)
+    // 공식: FinalEmissive = TextureSample * EmissiveFactor
+    float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
     
-    // HDR to LDR, 감마 보정 등 추가적인 톤 매핑이 필요할 수 있음
-    color = color / (color + float3(1.0, 1.0, 1.0));
-    color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
+    // 텍스처가 없으면 흰색(1,1,1)으로 가정, 있으면 텍스처 사용
+    float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
+    
+    // [핵심] C++에서 넘어온 EmissiveFactor 곱하기
+    float3 finalEmissive = emissiveColor * EmissiveFactor;
 
-    return float4(color, albedoMap.a);
+    
+    // 5. 조명 계산 및 후처리
+    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
+    float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
+
+    float3 finalColor = litColor.rgb + finalEmissive;
+
+    // Tone Mapping (HDR -> LDR)
+    finalColor = finalColor / (finalColor + 1.0f);
+    
+    // Gamma Correction
+    finalColor = pow(finalColor, 1.0f / 2.2f);
+    
+    return float4(finalColor, diffuseSample.a);
 }
 
 
+//////////////////////// HP 효과 픽셀 셰이더 추가 ////////////////////
 
-// hp 전용 셰이더
+cbuffer cbHp : register(b8, space1)
+{
+    int g_nHp;
+};
+
 float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
 {
-    // 1. 모든 텍스처에서 서피스(표면) 속성 샘플링
     float4 albedoMap = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
     float3 normalMap = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
     float3 ormMap = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
     float3 emissiveMap = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
 
     float3 N = In.Normal;
-    // 2. 노멀맵 계산 (탄젠트 공간 -> 월드 공간)
     if (dot(normalMap, normalMap) > 0.01)
     {
-        float3 N_tangent = normalMap * 2.0 - 1.0; // [0, 1] 범위를 [-1, 1] 범위로 변환
+        float3 N_tangent = normalMap * 2.0 - 1.0;
         float3x3 TBN = float3x3(normalize(In.Tangent), normalize(In.Bitangent), normalize(In.Normal));
-        N = normalize(mul(N_tangent, TBN)); // 최종적으로 사용할 표면 법선 벡터
-
+        N = normalize(mul(N_tangent, TBN));
     }
 
-    // 3. PBR 변수 준비
     float3 albedo = albedoMap.rgb;
-    
     float ao = (dot(ormMap, ormMap) > 0.001) ? ormMap.r : 1.0f;
     float roughness = (dot(ormMap, ormMap) > 0.001) ? ormMap.g : 0.8f;
     float metallic = (dot(ormMap, ormMap) > 0.001) ? ormMap.b : 0.1f;
 
-    float3 V = normalize(g_xmf3CameraPosition.xyz - In.WorldPosition);
-    float3 F0 = lerp(0.04, albedo, metallic); // Fresnel 반사율 F0 계산
+    // PBR 라이팅 계산
+    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
+    float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
 
-    // 4. 조명 계산 시작 (IBL은 제외하고 직접 조명만 계산)
-    float3 Lo = float3(0.0, 0.0, 0.0); // 최종 반사될 빛의 양
-    for (int i = 0; i < MAX_LIGHTS; ++i)
-    {
-        if (!g_Lights[i].m_bEnable)
-            continue;
+    // Emissive 추가
+    float3 color = litColor.rgb + emissiveMap;
 
-        float3 L = normalize(g_Lights[i].m_xmf3Position - In.WorldPosition); // Point Light 기준
-        float3 H = normalize(V + L);
-        float distance = length(g_Lights[i].m_xmf3Position - In.WorldPosition);
-        float attenuation = 1.0 / (distance * distance);
-        float3 radiance = g_Lights[i].m_xmf4Diffuse.rgb * attenuation;
-
-        // Cook-Torrance BRDF 계산
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        float3 F = FresnelSchlick(saturate(dot(H, V)), F0);
-
-        float3 kD = (1.0 - F) * (1.0 - metallic); // Diffuse 반사율
-        float NdotL = saturate(dot(N, L));
-
-        float3 numerator = NDF * G * F;
-        float denominator = 4.0 * saturate(dot(N, V)) * NdotL + 0.0001; // 0으로 나누는 것 방지
-        float3 specular = numerator / denominator;
-        
-        // 최종 조명 추가
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-    }
-
-    // 5. 최종 색상 조합
-    // Ambient Occlusion 적용, Emissive(자체 발광) 추가
-    float3 ambient = float3(0.5, 0.5, 0.5) * albedo * ao;
-    float3 color = ambient + Lo + emissiveMap;
-    
-    // HDR to LDR, 감마 보정 등 추가적인 톤 매핑이 필요할 수 있음
+    // HDR to LDR, 감마 보정
     color = color / (color + float3(1.0, 1.0, 1.0));
     color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
-    
+	// HP 효과
     float hp_r = (100 - g_nHp) / 100.0f;
     if (color.r < hp_r)
     {
         color.r = hp_r;
     }
-    // float3(g_nHp / 100.0f, 0.0f, 0.0f);
-    
+
     return float4(color, albedoMap.a);
 }

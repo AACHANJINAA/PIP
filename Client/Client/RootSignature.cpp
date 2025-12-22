@@ -225,12 +225,6 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
     d3dRootParameters[3].Descriptor.RegisterSpace = 0;
     d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    //// [새로운 파라미터] 스키닝 상수 버퍼
-    //d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    //d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: 스키닝 뼈 행렬
-    //d3dRootParameters[4].Descriptor.RegisterSpace = 0;
-    //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 버텍스 셰이더에서만 필요
-
     // 4번 텍스처 디스크립터 테이블
     for (int i = 0; i < 4; ++i)
     {
@@ -242,8 +236,8 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
 
     // 8번 체력용 CBV
     d3dRootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // b4: 체력
-    d3dRootParameters[8].Descriptor.RegisterSpace = 0;
+    d3dRootParameters[8].Descriptor.ShaderRegister = 8; // b4: 체력
+    d3dRootParameters[8].Descriptor.RegisterSpace = 1;
     d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 쉐이더에서만 볼거임
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
@@ -449,7 +443,7 @@ ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* d
     d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 
     d3dStaticSamplerDesc.MipLODBias = 0;
-    d3dStaticSamplerDesc.MaxAnisotropy = 16; // LINEAR 쓸 땐 1, ANISOTROPIC 쓸 땐 16
+    d3dStaticSamplerDesc.MaxAnisotropy = 1; // LINEAR 쓸 땐 1, ANISOTROPIC 쓸 땐 16
     d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     d3dStaticSamplerDesc.MinLOD = 0;
     d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
@@ -498,7 +492,7 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
 
     d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 2;
+    d3dDescriptorRanges[0].NumDescriptors = 4;
     d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0, t1, t2
     d3dDescriptorRanges[0].RegisterSpace = 0;
     d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -531,7 +525,7 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
     d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
-    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
     d3dRootSignatureDesc.pParameters = d3dRootParameters;

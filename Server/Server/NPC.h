@@ -41,4 +41,10 @@ namespace PIP
         common::Vec3    _position;
         NPCState        _state = NPCState::IDLE;
     };
+
+    class WanderingNPC : public NPC
+    {
+
+    };
+
 }

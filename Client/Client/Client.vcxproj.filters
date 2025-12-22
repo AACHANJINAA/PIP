@@ -90,6 +90,9 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents">
       <UniqueIdentifier>{c9682bcf-f8f2-4f9a-b3a6-a290036050ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\3. Renderer\6. Lighting">
+      <UniqueIdentifier>{1be2618d-2734-443a-b0bd-f6a639571e7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -266,9 +269,6 @@
     <ClInclude Include="TerrainShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainLoader.h">
-      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\TerrainData.h">
       <Filter>4. External</Filter>
     </ClInclude>
@@ -283,6 +283,15 @@
     </ClInclude>
     <ClInclude Include="TerrainRenderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="LightManager.h">
+      <Filter>0. Engine\3. Renderer\6. Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainLoader.h">
+      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -442,9 +451,6 @@
     <ClCompile Include="TerrainShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainLoader.cpp">
-      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
-    </ClCompile>
     <ClCompile Include="MainPlayerAnimationScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
@@ -453,6 +459,15 @@
     </ClCompile>
     <ClCompile Include="TerrainRenderComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="LightManager.cpp">
+      <Filter>0. Engine\3. Renderer\6. Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainLoader.cpp">
+      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

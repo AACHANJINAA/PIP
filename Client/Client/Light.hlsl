@@ -26,146 +26,126 @@ struct LIGHT
     float padding;
 };
 
-struct MATERIAL
-{
-    float4 m_cAmbient;
-    float4 m_cDiffuse;
-    float4 m_cSpecular; //a = power
-    float4 m_cEmissive;
-};
-
-cbuffer cbLights : register(b4)
+cbuffer cbLights : register(b3)
 {
     LIGHT gLights[MAX_LIGHTS];
     float4 gcGlobalAmbientLight;
     int gnLights;
 };
 
-float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera){
-	float3 vToLight = -gLights[nIndex].m_vDirection;
-	float fDiffuseFactor = dot(vToLight, vNormal);
-	float fSpecularFactor = 0.0f;
-	if (fDiffuseFactor > 0.0f)
-	{
-		 if (gMaterial.m_cSpecular.a != 0.0f)
-		 {
-			#ifdef _WITH_REFLECT
-			     float3 vReflect = reflect(-vToLight, vNormal);
-			     fSpecularFactor = pow(max(dot(vReflect, vToCamera), 0.0f), gMaterial.m_cSpecular.a);
-			#else
-			#ifdef _WITH_LOCAL_VIEWER_HIGHLIGHTING
-			     float3 vHalf = normalize(vToCamera + vToLight);
-			#else
-			     float3 vHalf = float3(0.0f, 1.0f, 0.0f);
-			#endif
-			     fSpecularFactor = pow(max(dot(vHalf, vNormal), 0.0f), gMaterial.m_cSpecular.a);
-			#endif
-		 }
-	}
+const float PI = 3.14159265359;
 
-	return((gLights[nIndex].m_cAmbient * gMaterial.m_cAmbient) + (gLights[nIndex].m_cDiffuse * fDiffuseFactor * gMaterial.m_cDiffuse) + (gLights[nIndex].m_cSpecular * fSpecularFactor * gMaterial.m_cSpecular));
+// D: Normal Distribution Function (GGX)
+float DistributionGGX(float3 N, float3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = saturate(dot(N, H));
+    float NdotH2 = NdotH * NdotH;
+
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
 }
 
- float4 PointLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
- {
-     float3 vToLight = gLights[nIndex].m_vPosition - vPosition;
-     float fDistance = length(vToLight);
-     if (fDistance <= gLights[nIndex].m_fRange)
-     {
-         float fSpecularFactor = 0.0f;
-         vToLight /= fDistance;
-         float fDiffuseFactor = dot(vToLight, vNormal);
-         if (fDiffuseFactor > 0.0f)
-         {
-             if (gMaterial.m_cSpecular.a != 0.0f)
-             {
-				 #ifdef _WITH_REFLECT
-				                 float3 vReflect = reflect(-vToLight, vNormal);
-				                 fSpecularFactor = pow(max(dot(vReflect, vToCamera), 0.0f), gMaterial.m_cSpecular.a);
-				 #else
-				 #ifdef _WITH_LOCAL_VIEWER_HIGHLIGHTING
-				                 float3 vHalf = normalize(vToCamera + vToLight);
-				 #else
-				                 float3 vHalf = float3(0.0f, 1.0f, 0.0f);
-				 #endif
-				                 fSpecularFactor = pow(max(dot(vHalf, vNormal), 0.0f), gMaterial.m_cSpecular.a);
-				 #endif
-             }
-         }
-         float fAttenuationFactor = 1.0f / dot(gLights[nIndex].m_vAttenuation, float3(1.0f, fDistance, fDistance*fDistance));
+// G: Geometry Function (Smith's method with Schlick-GGX)
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
+    float nom = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+    return nom / denom;
+}
 
-        return(((gLights[nIndex].m_cAmbient * gMaterial.m_cAmbient) + (gLights[nIndex].m_cDiffuse * fDiffuseFactor * gMaterial.m_cDiffuse) +
-				(gLights[nIndex].m_cSpecular * fSpecularFactor * gMaterial.m_cSpecular)) * fAttenuationFactor);
-     }
-     return(float4(0.0f, 0.0f, 0.0f, 0.0f));
- }
+float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+{
+    float NdotV = saturate(dot(N, V));
+    float NdotL = saturate(dot(N, L));
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+    return ggx1 * ggx2;
+}
 
- float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
- {
-     float3 vToLight = gLights[nIndex].m_vPosition - vPosition;
-     float fDistance = length(vToLight);
-     if (fDistance <= gLights[nIndex].m_fRange)
-     {
-         float fSpecularFactor = 0.0f;
-         vToLight /= fDistance;
-         float fDiffuseFactor = dot(vToLight, vNormal);
-         if (fDiffuseFactor > 0.0f)
-         {
-             if (gMaterial.m_cSpecular.a != 0.0f)
-             {
- #ifdef _WITH_REFLECT
-                 float3 vReflect = reflect(-vToLight, vNormal);
-                 fSpecularFactor = pow(max(dot(vReflect, vToCamera), 0.0f), gMaterial.m_cSpecular.a);
- #else
- #ifdef _WITH_LOCAL_VIEWER_HIGHLIGHTING
-                 float3 vHalf = normalize(vToCamera + vToLight);
- #else
-                 float3 vHalf = float3(0.0f, 1.0f, 0.0f);
- #endif
-                 fSpecularFactor = pow(max(dot(vHalf, vNormal), 0.0f), gMaterial.m_cSpecular.a);
- #endif
-             }
-         }
- #ifdef _WITH_THETA_PHI_CONES
-         float fAlpha = max(dot(-vToLight, gLights[nIndex].m_vDirection), 0.0f);
-        float fSpotFactor = pow(max(((fAlpha - gLights[nIndex].m_fPhi) / (gLights[nIndex].m_fTheta - gLights[nIndex].m_fPhi)), 0.0f), gLights[nIndex].m_fFalloff);
- #else
-         float fSpotFactor = pow(max(dot(-vToLight, gLights[i].m_vDirection), 0.0f), gLights[i].m_fFalloff);
- #endif
-         float fAttenuationFactor = 1.0f / dot(gLights[nIndex].m_vAttenuation, float3(1.0f, fDistance, fDistance*fDistance));
+// F: Fresnel Equation (Schlick's approximation)
+float3 FresnelSchlick(float cosTheta, float3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
 
-        return(((gLights[nIndex].m_cAmbient * gMaterial.m_cAmbient) + (gLights[nIndex].m_cDiffuse * fDiffuseFactor * gMaterial.m_cDiffuse) +
-				 (gLights[nIndex].m_cSpecular * fSpecularFactor * gMaterial.m_cSpecular)) * fAttenuationFactor * fSpotFactor);
-     }
-     return(float4(0.0f, 0.0f, 0.0f, 0.0f));
- }
+float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao)
+{
+    float3 F0 = lerp(0.04, albedo, metallic);
+   
+    float3 Lo = float3(0.0, 0.0, 0.0);
 
- float4 Lighting(float3 vPosition, float3 vNormal)
- {
-     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
-     float3 vToCamera = normalize(vCameraPosition - vPosition);
+    [unroll(MAX_LIGHTS)]
+    for (int i = 0; i < gnLights; i++)
+    {
+        
+        if (!gLights[i].m_bEnable)
+            continue;
+        
+        float3 L;
+        float attenuation = 1.0;
+        	
+    	// Directional Light
+        if (gLights[i].m_nType == DIRECTIONAL_LIGHT)
+        {
+            L = normalize(-gLights[i].m_vDirection);
+            attenuation = 1.0;
+        }
 
-     float4 cColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-     [unroll(MAX_LIGHTS)] for (int i = 0; i < gnLights; i++)
-     {
-         if (gLights[i].m_bEnable)
-         {
-             if (gLights[i].m_nType == DIRECTIONAL_LIGHT)
-             {
-                 cColor += DirectionalLight(i, vNormal, vToCamera);
-             }
-             else if (gLights[i].m_nType == POINT_LIGHT)
-             {
-                 cColor += PointLight(i, vPosition, vNormal, vToCamera);
-             }
-             else if (gLights[i].m_nType == SPOT_LIGHT)
-             {
-                 cColor += SpotLight(i, vPosition, vNormal, vToCamera);
-             }
-         }
-     }
-     cColor += (gcGlobalAmbientLight * gMaterial.m_cAmbient);
-     cColor.a = gMaterial.m_cDiffuse.a;
+        // Point Light
+        else if (gLights[i].m_nType == POINT_LIGHT)
+            {
+            L = normalize(gLights[i].m_vPosition - worldPos);
+            
+            float distance = length(gLights[i].m_vPosition - worldPos);
+           
+            if (distance > gLights[i].m_fRange)
+               continue;
+           
+            attenuation = 1.0 / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
+            
+        }
 
-     return(cColor);
- }
+    	// Spot Light
+        else if (gLights[i].m_nType == SPOT_LIGHT)
+            {
+          
+            L = normalize(gLights[i].m_vPosition - worldPos);
+         
+            float distance = length(gLights[i].m_vPosition - worldPos);
+            if (distance > gLights[i].m_fRange)
+            	continue;
+            float fAlpha = max(dot(-L, gLights[i].m_vDirection), 0.0f);
+            float fSpotFactor = pow(max(((fAlpha - gLights[i].m_fPhi) / (gLights[i].m_fTheta - gLights[i].m_fPhi)), 0.0f), gLights[i].m_fFalloff);
+            attenuation = fSpotFactor / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
+        }
+
+        float3 H = normalize(V + L);
+        float3 radiance = gLights[i].m_cDiffuse.rgb * attenuation;
+        
+    	// Cook-Torrance BRDF
+        float NDF = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+        float3 F = FresnelSchlick(saturate(dot(H, V)), F0);
+        float3 kD = (1.0 - F) * (1.0 - metallic);
+        float NdotL = saturate(dot(N, L));
+
+        float3 numerator = NDF * G * F;
+        float denominator = 4.0 * saturate(dot(N, V)) * NdotL + 0.0001;
+    	float3 specular = numerator / denominator;
+       
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+    }
+    
+	// Global Ambient
+    float3 ambient = gcGlobalAmbientLight.rgb * albedo * ao;
+    float3 color = ambient + Lo;
+
+    return float4(color, 1.0);
+}

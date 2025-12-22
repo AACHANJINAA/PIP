@@ -133,7 +133,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             vertex._position.x = mesh->mVertices[i].x;
             vertex._position.y = mesh->mVertices[i].y;
             vertex._position.z = mesh->mVertices[i].z;
-			vertex._position.z = mesh->mVertices[i].z;
+
             if (mesh->HasNormals())
             {
                 vertex._normal.x = mesh->mNormals[i].x;
@@ -150,17 +150,22 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             {
                 vertex._texCoord = XMFLOAT2(0.0f, 0.0f);
             }
-			
 
             aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-            aiColor4D diffuseColor;
-            if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
+            if (mesh->HasTangentsAndBitangents()) // Assimp calculates these with aiProcess_CalcTangentSpace
             {
-                vertex._diffuse = XMFLOAT4(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+                vertex._tangent.x = mesh->mTangents[i].x;
+                vertex._tangent.y = mesh->mTangents[i].y;
+                vertex._tangent.z = mesh->mTangents[i].z;
             }
-            else
-            {
-                vertex._diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+            else {
+                // Fallback: calculate a default tangent if not provided (same logic as OBJ loader)
+                XMVECTOR n_vec = XMLoadFloat3(&vertex._normal);
+                XMVECTOR up = (abs(vertex._normal.y) < 0.99f)
+                    ? XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
+                    : XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+                XMVECTOR t_vec = XMVector3Normalize(XMVector3Cross(up, n_vec));
+                XMStoreFloat3(&vertex._tangent, t_vec);
             }
 
             aiString texturePath;

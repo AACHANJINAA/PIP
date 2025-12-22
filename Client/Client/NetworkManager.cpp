@@ -184,13 +184,14 @@ void NetworkManager::SendLoginPacket(const std::string& name)
 	send_packet(stream.mutable_data(), stream.Size());
 }
 
-void NetworkManager::SendMovePacket(common::Vec3 position)
+void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation)
 {
 	// 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
 	common::packet::CS_PACKET_MOVE packet;
 	packet._type = common::packet::PacketType::C2S_P_MOVE;
 	packet._size = sizeof(packet);
 	packet._position = position;
+	packet._rotation = rotation;
 
 	// 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
 	// 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
@@ -279,6 +280,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			player_logic->set_hp(spawn_data._hp);
 			player_logic->set_id(_my_session_id);
 			player_logic->set_position(spawn_data._position);
+			player_logic->transform()->set_local_rotation(spawn_data._rotation);
 			
 
 			// RenderComponent
@@ -319,6 +321,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 		auto other_player = ObjectManager::instance()->create_game_object(name);
 		auto other_player_logic = other_player->add_component<OtherPlayerScript>();
 		other_player->transform()->set_local_position(spawn_data._position);
+		other_player->transform()->set_local_rotation(spawn_data._rotation);
 		other_player->set_layer("OtherPlayer");
 
 		other_player_logic->set_hp(spawn_data._hp);
@@ -371,7 +374,9 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 		});
 		if (it != other_players.end())
 		{
-			(*it)->get_component<OtherPlayerScript>()->on_sync_position(move_packet._position);
+			auto other_player_script = (*it)->get_component<OtherPlayerScript>();
+			other_player_script->on_sync_position(move_packet._position);
+			other_player_script->on_sync_rotation(move_packet._rotation);
 		}
 	}
 }
@@ -637,6 +642,14 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 		error_display("ioctlsocket", WSAGetLastError());
 		disconnect();
 		return false;
+	}
+	// TCP_NODELAY 설정 추가
+	int nodelay = 1;
+	if (SOCKET_ERROR == setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY,
+		(const char*)&nodelay, sizeof(nodelay)))
+	{
+		error_display("TCP_NODELAY", WSAGetLastError());
+		// 이건 치명적이지 않으므로 연결을 끊지는 않음
 	}
 	return true;
 }

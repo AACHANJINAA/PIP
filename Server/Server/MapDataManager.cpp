@@ -45,7 +45,10 @@ namespace PIP
 		}
 		else
 		{
-			const auto& info = m_terrainData.GetInfo();
+			const auto& info = m_terrainData.GetInfo();	
+			MYLOG("[TerrainData] Info: X[" << info.min_x << " ~ " << info.max_x
+				<< "], Z[" << info.min_z << " ~ " << info.max_z << "]" << std::endl);
+
 			MYLOG("Height map Loaded via Common: " << info.width << " * " << info.height
 				<< ", Scale Y: " << info.height_scale);
 		}
