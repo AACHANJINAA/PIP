@@ -10,6 +10,7 @@
 #include "ResourceManager.h"
 
 #include "HPRenderComponent.h"
+#include "AnimationComponent.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -282,6 +283,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			player_logic->set_position(spawn_data._position);
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
 			
+			// Animationcomponent
+
 
 			// RenderComponent
 			auto renderer = playerObject->add_component<RenderComponent>();

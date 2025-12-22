@@ -134,7 +134,7 @@ struct AnimationClip
 class ReadGLTFMesh : public Mesh
 {
 public:
-	ReadGLTFMesh(const std::string& filePath, bool is_animated = false);
+	ReadGLTFMesh(const std::string& filePath, bool is_animated = false, std::string animation_name = "null_name");
 	~ReadGLTFMesh() override;
 
 	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
@@ -205,6 +205,7 @@ private:
 
 private: // DW설명 : 애니메이션 관련 멤버 변수들
 	bool _is_animated; // 애니메이션 하는 건지?
+	std::string _include_animation_name; // with_skin으로 뽑은 애니메이션의 경우 지정해준 애니메이션 이름
 	std::vector<BoneInfo> _skeleton;
 
 	// (GPU 행렬 팔레트 순서와 일치) 뼈대 인덱스 목록

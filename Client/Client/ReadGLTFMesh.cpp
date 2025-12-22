@@ -2,9 +2,10 @@
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 
-ReadGLTFMesh::ReadGLTFMesh(const std::string & filePath, bool is_animated)
+ReadGLTFMesh::ReadGLTFMesh(const std::string & filePath, bool is_animated, std::string animation_name)
 {
 	_is_animated = is_animated;
+	_include_animation_name = animation_name;
 
 	if (_is_animated)
 	{
@@ -585,6 +586,10 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 	{
 		const json& anim_node = animations_node[i];
 		std::string anim_name = gltf_json["animations"][i]["name"].get<std::string>();
+		if ("null_name" != _include_animation_name)
+		{
+			anim_name = _include_animation_name;
+		}
 		//_animations.emplace(anim_name, AnimationClip);
 		AnimationClip clip{};
 

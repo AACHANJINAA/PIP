@@ -108,7 +108,7 @@ void ResourceManager::release()
     _textures.clear();
 }
 
-std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, bool _isAnimated)
+std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, bool _isAnimated, std::string animation_name)
 {
     // 이미 로드된 메시인지 확인
     auto it = _meshes.find(file_path);
@@ -126,7 +126,7 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, b
     if (extension == ".obj") new_mesh = std::make_shared<ReadOBJMesh>(file_path);
     else if (extension == ".glb") new_mesh = std::make_shared<ReadGlbMesh>(file_path);
     else if (extension == ".fbx") new_mesh = std::make_shared<ReadFBXMesh>(file_path);
-    else if (extension == ".gltf") new_mesh = std::make_shared<ReadGLTFMesh>(file_path, _isAnimated);
+    else if (extension == ".gltf") new_mesh = std::make_shared<ReadGLTFMesh>(file_path, _isAnimated, animation_name);
     else
     {
         CERROR("Unsupported mesh file format: " << file_path);
