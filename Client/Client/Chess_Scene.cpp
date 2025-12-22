@@ -38,7 +38,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	//SpawnBTS(device, commandList);
 
 	// DW설명 : 그래미 워크 생성 함수 호출
-	//SpawnGrammy_Walk(device, commandList);
+	// SpawnGrammy_Walk(device, commandList);
 
     //Spawn_SK_MagicConstruct(device, commandList);
 
@@ -147,12 +147,18 @@ void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandLi
         auto hi_brute = ObjectManager::instance()->create_game_object("Grammy_Walk");
         // GltfAnimationScript추가
 
-        hi_brute->add_component<GltfAnimationScript>();
+        //hi_brute->add_component<GltfAnimationScript>();
+     
         //// RenderComponent
         auto renderer = hi_brute->add_component<RenderComponent>();
 
-        auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/Gramma_Walk/Gramma_Walk.gltf", true);
+        auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/Gramma_Walk/Gramma_Walk.gltf", true,"walk");
         renderer->set_mesh(hi_brute_Mesh);
+
+        auto animaiton_component = hi_brute->add_component<AnimationComponent>();
+        animaiton_component->set_mesh(hi_brute_Mesh);
+        animaiton_component->set_animation("walk");
+
 
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_Gramma_Walk";
