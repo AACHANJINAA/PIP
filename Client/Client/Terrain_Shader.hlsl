@@ -19,7 +19,18 @@ Texture2D albedoTexture : register(t0);
 Texture2D normalTexture : register(t1);
 Texture2D ormTexture : register(t2);
 Texture2D emissiveTexture : register(t3);
+Texture2D detailTexture : register(t4); // 디테일 텍스처
 SamplerState terrainSampler : register(s0);
+
+cbuffer cbTerrainInfo : register(b2)
+{
+    float4 g_bounds;
+    float2 g_size;
+    float g_height_scale;
+    float g_min_height;
+    float2 g_tiling;
+    float2 g_detail_tiling;
+};
 
 struct VS_Input
 {
@@ -61,15 +72,26 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float3 N = normalize(input.NormalW);
     float3 V = normalize(gvCameraPosition.xyz - P); // View direction
 
+    float2 baseUV = input.UV * g_tiling;
     float3 albedo = albedoTexture.Sample(terrainSampler, input.UV).rgb;
-    float3 sampledNormalMap = normalTexture.Sample(terrainSampler, input.UV).rgb;
-   
-    float3 orm = ormTexture.Sample(terrainSampler, input.UV).rgb;
+    
+    // 디테일 텍스처 샘플링 (별도의 타일링 값 사용)
+    float2 detailUV = input.UV * g_detail_tiling;
+    float3 detailColor = detailTexture.Sample(terrainSampler, detailUV).rgb;
+
+    // Multiply Blending: 기본 색상과 디테일 색상을 곱하여 혼합
+    float blend_strength = 0.8; // 블렌딩 강도
+    albedo += (detailColor.r - 0.5) * blend_strength;
+
+    // 나머지 텍스처들은 기본 UV 사용
+    float3 sampledNormalMap = normalTexture.Sample(terrainSampler, baseUV).rgb;
+
+    float3 orm = ormTexture.Sample(terrainSampler, baseUV).rgb;
     float ao = orm.r; // Red channel for Ambient Occlusion
     float roughness = orm.g; // Green channel for Roughness
     float metallic = orm.b; // Blue channel for Metallic
     
-    float3 emissive = emissiveTexture.Sample(terrainSampler, input.UV).rgb; // Sample emissive
+    float3 emissive = emissiveTexture.Sample(terrainSampler, baseUV).rgb; // Sample emissive
     
 	// Convert normal from tangent space to world space using TBN matrix
     float3 N_tangent = sampledNormalMap * 2.0 - 1.0;

@@ -488,12 +488,12 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // Descriptor Range for Textures (t0, t1, t2)
+    // Descriptor Range for Textures (t0, t1, t2, t3, t4)
     D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
 
     d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 4;
-    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0, t1, t2
+    d3dDescriptorRanges[0].NumDescriptors = 5;
+	d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0, t1, t2, t3, t4
     d3dDescriptorRanges[0].RegisterSpace = 0;
     d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
     // Root Parameters
