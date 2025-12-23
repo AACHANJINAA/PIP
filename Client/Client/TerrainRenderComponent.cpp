@@ -82,6 +82,7 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
     texture_handles.push_back(get_tex_handle_or_default(mat_info->normal_texture_path, "__DEFAULT_NORMAL__"));   // t1
     texture_handles.push_back(get_tex_handle_or_default(mat_info->metallic_roughness_texture_path, "__DEFAULT_ORM__")); // t2
     texture_handles.push_back(get_tex_handle_or_default(mat_info->emissive_texture_path, "__DEFAULT_BLACK__"));  // t3
+    texture_handles.push_back(get_tex_handle_or_default(terrain_loader->get_detail_texture_key(), "__DEFAULT_WHITE__")); // t4 - detail
 
     // Bind the table of 4 textures to root parameter 4
     renderer->bind_texture_table(commandList, 4, texture_handles);

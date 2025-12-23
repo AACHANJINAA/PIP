@@ -13,7 +13,7 @@ public:
 		float height_scale;          // JSON의 scale.y
 		float min_height;            // 최소 높이 (정규화된 값)
 		XMFLOAT2 tiling;             // Texture Tiling Factor
-		float padding[2];           // 8byte 패딩
+		XMFLOAT2 detail_tiling;      // Detail Texture Tiling Factor
 
 		TerrainInfo()
 			: bounds(0.0f, 0.0f, 0.0f, 0.0f)
@@ -21,6 +21,7 @@ public:
 			, height_scale(0.0f)
 			, min_height(0.0f)
 			, tiling(1.0f, 1.0f)
+			, detail_tiling(1.0f, 1.0f)
 		{
 		}
 	};
@@ -28,7 +29,7 @@ public:
 	TerrainLoader(const std::string& heightmap_json_path);
 	virtual ~TerrainLoader() = default;
 
-	void load_textures_to_resource_manager(const std::string& material_gltf_path);
+	void load_textures_to_resource_manager(const std::string& material_gltf_path, const std::string& detail_texture_path);
 
 	void render(ID3D12GraphicsCommandList* command_list) override;
 
@@ -41,6 +42,9 @@ public:
 
 	/// Material 
 	const std::string& get_material_name() const { return _materialName; }
+	const std::string& get_base_texture_key() const { return _baseTextureKey; }
+	const std::string& get_detail_texture_key() const { return _detailTextureKey; }
+	const std::string& get_normal_texture_key() const { return _normalTextureKey; }
 
 private:
 	void create_flat_grid(int grid_width, int grid_height);
@@ -49,6 +53,7 @@ private:
 	std::string _heightmapTextureKey;		  // HeightMap 
 	std::string _materialName;				  // Material 
 	std::string _baseTextureKey;			  // Base 
+	std::string _detailTextureKey;			  // Detail
 	std::string _normalTextureKey;			  // Normal map
 	std::string _metallicRoughnessTextureKey; // Metallic-Roughness map
 	std::string _emissiveTextureKey; // Emissive map
