@@ -125,6 +125,12 @@ void TransformComponent::set_local_rotation(float pitch, float yaw, float roll)
     set_local_rotation(localRotation);
 }
 
+void TransformComponent::set_local_rotation(float x, float y, float z, float w)
+{
+	common::Quat q{ x, y, z, w };
+    set_local_rotation(q);
+}
+
 void TransformComponent::set_local_scale(const XMFLOAT3& scale)
 {
     _localScale = scale;
@@ -197,25 +203,25 @@ XMFLOAT3 TransformComponent::get_world_scale()
 
 void TransformComponent::rotate(float pitch, float yaw, float roll)
 {
-        XMVECTOR delta_rotation_quat = XMQuaternionRotationRollPitchYaw(
-            XMConvertToRadians(pitch),
-            XMConvertToRadians(yaw),
-            XMConvertToRadians(roll)
-        );
+    XMVECTOR delta_rotation_quat = XMQuaternionRotationRollPitchYaw(
+        XMConvertToRadians(pitch),
+        XMConvertToRadians(yaw),
+        XMConvertToRadians(roll)
+    );
 
-        // 기존 로컬 회전 쿼터니언을 가져옵니다.
-        XMVECTOR current_local_quat = XMLoadFloat4(&_localRotation);
+    // 기존 로컬 회전 쿼터니언을 가져옵니다.
+    XMVECTOR current_local_quat = XMLoadFloat4(&_localRotation);
 
-        // 두 쿼터니언을 곱하여 회전을 누적합니다. (순서 중요: new * old)
-        XMVECTOR new_local_quat = XMQuaternionMultiply(delta_rotation_quat, current_local_quat);
+    // 두 쿼터니언을 곱하여 회전을 누적합니다. (순서 중요: new * old)
+    XMVECTOR new_local_quat = XMQuaternionMultiply(delta_rotation_quat, current_local_quat);
 
-        // 결과를 정규화하고 다시 저장합니다.
-        XMStoreFloat4(&_localRotation, XMQuaternionNormalize(new_local_quat));
+    // 결과를 정규화하고 다시 저장합니다.
+    XMStoreFloat4(&_localRotation, XMQuaternionNormalize(new_local_quat));
 
-        // 행렬이 더럽혀졌음을 표시합니다.
-        set_hierarchy_dirty();
+    // 행렬이 더럽혀졌음을 표시합니다.
+    set_hierarchy_dirty();
 }
-
+// ---------------------------- Helper Functions ----------------------------
 void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
 {
     static float total_yaw_rad = 0.f; 
@@ -251,6 +257,28 @@ void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
 
     // 행렬이 더럽혀졌음을 표시합니다.
     set_hierarchy_dirty();
+}
+
+common::Quat TransformComponent::apply_offset_rotation(const common::Quat& base_quat, float pitch_offset_deg,
+	float yaw_offset_deg, float roll_offset_deg)
+{
+    // 1. 기본 쿼터니언 로드
+    XMVECTOR base_q_xm = XMLoadFloat4(&base_quat);
+
+    // 2. 오프셋 오일러 각으로부터 쿼터니언 생성
+    XMVECTOR offset_q_xm = XMQuaternionRotationRollPitchYaw(
+        XMConvertToRadians(pitch_offset_deg),
+        XMConvertToRadians(yaw_offset_deg),
+        XMConvertToRadians(roll_offset_deg)
+    );
+
+    // 3. 두 쿼터니언 합성 (오프셋 -> 기본 순서로 적용)
+    XMVECTOR combined_q_xm = XMQuaternionMultiply(offset_q_xm, base_q_xm);
+
+    // 4. 결과 저장 및 반환
+    common::Quat result_quat;
+    XMStoreFloat4(&result_quat, combined_q_xm);
+    return result_quat;
 }
 
 // --- Hierarchy Management ---

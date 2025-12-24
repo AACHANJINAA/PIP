@@ -202,7 +202,7 @@ namespace common::packet
 		int64_t     _npc_id;
 		Vec3        _position;
 		Vec3		_velocity;
-		Vec4		_rotation;
+		Quat		_rotation;
 		uint32_t	_time_stamp;
 		// 뒤에 가변 크기 name
 	};

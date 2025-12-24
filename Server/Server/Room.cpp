@@ -244,17 +244,17 @@ namespace PIP::server
 		velocity.x = (currPos.x - oldPos.x) / deltaTime;
 		velocity.y = (currPos.y - oldPos.y) / deltaTime;
 		velocity.z = (currPos.z - oldPos.z) / deltaTime;
+		npc->SetVelocity(velocity);
 
+		common::Quat rotation = { 0,0,0,1 };
 		if (velocity.x != 0 || velocity.z != 0) {
 			// atan2 등을 이용해 Y축 회전각 계산 가능
-
-
-
-
-			// npc->SetRotation(...);
-			npc->SetVelocity(velocity);
+			float angle_rad = std::atan2(velocity.x, velocity.z); // Z축이 앞쪽인 경우
+			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
+			XMStoreFloat4(&rotation, q);
 
 		}
+		npc->SetRotation(rotation);
 
 		auto newPos = npc->GetPosition();
 		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
@@ -270,14 +270,13 @@ namespace PIP::server
 		move_packet_data._position = newPos;
 		move_packet_data._velocity = npc->GetVelocity();
 		move_packet_data._rotation = npc->GetRotation();
-		move_packet_data._time_stamp = static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
-			std::chrono::system_clock::now().time_since_epoch()).count());
+		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 		packet::PacketStream finalStream;
 		finalStream << move_packet_data;
 		finalStream << npc_name;
 
-		// 최종 크기를 계산하여 패킷 헤더에 덮어쓰기
+		// 최종 크기를 계산하여 패킷 헤더에 덮어쓰기 <중요>
 		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
 		final_header->_size = static_cast<uint16_t>(finalStream.Size());
 

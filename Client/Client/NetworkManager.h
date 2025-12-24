@@ -7,7 +7,7 @@ class NetworkManager : public Singleton<NetworkManager>
 
 private:
     
-    SOCKET _socket; // 클라이언트 소켓
+    SOCKET _socket{ INVALID_SOCKET }; // 클라이언트 소켓
     std::vector<char> _recvBuffer; // 수신 버퍼
 	std::vector<char> _sendBuffer; // 송신 버퍼
 	long long _my_session_id = -1; // 자신의 세션 ID (로그인 후 서버로부터 받음) [TODO: 임시로 여기에 저장하긴 했음]

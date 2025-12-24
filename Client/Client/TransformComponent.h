@@ -16,8 +16,6 @@ public:
     const XMFLOAT3& local_position() const { return _localPosition; }
     const XMFLOAT4& local_rotation() const { return _localRotation; }
     const XMFLOAT3& local_scale() const { return _localScale; }
-
-    // [수정] 계산된 값을 반환하므로, const&가 아닌 값으로 반환합니다.
     const XMFLOAT4X4& world_matrix();
     XMFLOAT3 position();
     XMFLOAT4 rotation();
@@ -29,7 +27,9 @@ public:
     void set_local_position(const XMFLOAT3& position);
     void set_local_rotation(const XMFLOAT4& rotation);
     void set_local_rotation(float pitch, float yaw, float roll);
+    void set_local_rotation(float x, float y, float z, float w);
     void set_local_scale(const XMFLOAT3& scale);
+    
 
 	// DW설명 : 현재 위치에서 forward, right, up 방향으로 오프셋만큼 이동
 	void move_forward(float distance);
@@ -44,10 +44,18 @@ public:
 	// DW설명 : 마지막 인자는 카메라 회전용인지 구분하는 플래그
     void rotate(float pitch, float yaw, float roll);
 
+	// --------------- Helper Functions ---------------
 	// DW설명 : 카메라 전용 회전 함수
     void camera_rotate(float pitch, float yaw, float roll);
+    
+    static common::Quat apply_offset_rotation(const common::Quat& base_quat, 
+        float pitch_offset_deg, 
+        float yaw_offset_deg, 
+        float roll_offset_deg);
 
-    // --- Hierarchy Management ---
+
+
+	// --- Hierarchy Management ---
     void set_parent(std::shared_ptr<TransformComponent> parent);
     std::weak_ptr<TransformComponent> parent() const { return _parent; }
     std::shared_ptr<TransformComponent> child(int index) const;
@@ -65,9 +73,9 @@ protected:
     void remove_child(std::shared_ptr<TransformComponent> child);
 
     // Local space data
-    XMFLOAT3 _localPosition;
-    XMFLOAT4 _localRotation;
-    XMFLOAT3 _localScale;
+    common::Vec3 _localPosition;
+    common::Quat _localRotation;
+    common::Vec3 _localScale;
     bool _isDirty;
 
     // World space data (캐시된 값)
