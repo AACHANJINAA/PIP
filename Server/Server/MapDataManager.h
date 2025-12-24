@@ -27,15 +27,10 @@ namespace PIP
 		~MapDataManager() = default;
 
 		void LoadMapData(std::string_view mapDataPath);
-		
-		// [수정] JSON 로드만 지원하도록 변경 (Common 사용)
 		void LoadHeightMapData(std::string_view heightMapDataJSONPath);
 
-		
-		// [삭제] 구버전 로드 함수들 제거 (혼동 방지)
-		// void LoadHeightMapData(std::string_view r16FilePath, ...);
-		// void LoadHeightMapDataPNG(...);
-		// void LoadHeightMapFromRawFile(...);
+		const common::TerrainData& GetTerrainData() const { return m_terrainData; }
+
 
 		float GetGroundHeight(float x, float z);
 		common::Vec3 AdjustPositionToGround(common::Vec3 position);
@@ -46,17 +41,10 @@ namespace PIP
 			const auto& info = m_terrainData.GetInfo();
 			return (x >= info.min_x && x <= info.max_x && z >= info.min_z && z <= info.max_z);
 		}
-	private:
-		// [수정] 내부 구현이었던 InterpolateHeight는 TerrainData로 이동되었으므로 제거 가능
-		// 하지만 필요하다면 wrapper로 남겨둘 수 있음. (여기선 제거)
 
 	private:
 		std::vector<MapObject> _map_objects;
-		
-		// [수정] Common::TerrainData 사용
 		common::TerrainData m_terrainData;
-
-		// [삭제] _height_map_data 구조체 및 멤버 제거
 	};
 }
 

@@ -33,6 +33,12 @@
     <Filter Include="소스 파일\Manager\MapDataManager">
       <UniqueIdentifier>{8b6bc8f8-6074-4542-ab85-ccb5baed8929}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Manager\LuaManager">
+      <UniqueIdentifier>{61125bd7-59d2-45e3-b78e-7825a322efba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\NPC\LuaScript">
+      <UniqueIdentifier>{973f0247-3f3d-4839-b020-ea0e590e9ba1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -61,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="NPC.cpp">
       <Filter>소스 파일\NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaManager.cpp">
+      <Filter>소스 파일\Manager\LuaManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -106,5 +115,13 @@
     <ClInclude Include="..\..\Common\TerrainData.h">
       <Filter>소스 파일\Common</Filter>
     </ClInclude>
+    <ClInclude Include="LuaManager.h">
+      <Filter>소스 파일\Manager\LuaManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Monster.lua">
+      <Filter>소스 파일\NPC\LuaScript</Filter>
+    </None>
   </ItemGroup>
 </Project>
