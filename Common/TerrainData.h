@@ -103,7 +103,7 @@ namespace common
             _info.width = static_cast<float>(calculated_resolution);
             _info.height = static_cast<float>(calculated_resolution);
 
-            std::cout << "[TerrainData] Auto-detected Resolution: " << _info.width << " x " << _info.height << std::endl;
+            //std::cout << "[TerrainData] Auto-detected Resolution: " << _info.width << " x " << _info.height << std::endl;
 
             // 벡터 리사이즈
             _heights.resize(total_pixels_from_file);
@@ -148,7 +148,7 @@ namespace common
                 _heights[i] = (_heights[i] - min_h) * _info.height_scale;
             }
 
-            std::cout << "[TerrainData] Loaded successfully from " << json_path << std::endl;
+            //std::cout << "[TerrainData] Loaded successfully from " << json_path << std::endl;
             return true;
         }
 

@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "Room.h"
-
+#include "LuaManager.h"
 #include "MapDataManager.h"
 #include "Player.h"
 #include "PacketHandlers.h"
@@ -20,7 +20,7 @@ namespace PIP::server
 
 	void Room::Initialize()
 	{
-		for (int i = 0; i < 100; ++i)
+		for (int i = 0; i < 10; ++i)
 		{
 			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
 			int npcId = _next_npc_id++;
@@ -224,16 +224,39 @@ namespace PIP::server
 	void Room::UpdateNPC(int npcId)
 	{
 		NPC* npc = GetNPC(npcId);
-		if (!npc)
+		if (not npc)
 		{
+			MYERROR("npc not found!!");
 			return;
 		}
 		// 랜덤이동
-		common::Vec3 oldPos = npc->GetPosition();
+		/*common::Vec3 oldPos = npc->GetPosition();
 		common::Vec3 newPos = oldPos;
 		newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
-		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;
+		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
 
+		common::Vec3 oldPos = npc->GetPosition();
+		float deltaTime = 0.2f; // 200ms 마다 업데이트 되므로
+		npc->UpdateAI(0.2f);
+		common::Vec3 currPos = npc->GetPosition();
+
+		common::Vec3 velocity;
+		velocity.x = (currPos.x - oldPos.x) / deltaTime;
+		velocity.y = (currPos.y - oldPos.y) / deltaTime;
+		velocity.z = (currPos.z - oldPos.z) / deltaTime;
+
+		if (velocity.x != 0 || velocity.z != 0) {
+			// atan2 등을 이용해 Y축 회전각 계산 가능
+
+
+
+
+			// npc->SetRotation(...);
+			npc->SetVelocity(velocity);
+
+		}
+
+		auto newPos = npc->GetPosition();
 		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
 		newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
 		npc->SetPosition(newPos);
@@ -245,6 +268,10 @@ namespace PIP::server
 		move_packet_data._size = 0; // 임시
 		move_packet_data._npc_id = npcId;
 		move_packet_data._position = newPos;
+		move_packet_data._velocity = npc->GetVelocity();
+		move_packet_data._rotation = npc->GetRotation();
+		move_packet_data._time_stamp = static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now().time_since_epoch()).count());
 
 		packet::PacketStream finalStream;
 		finalStream << move_packet_data;

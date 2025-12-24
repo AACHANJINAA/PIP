@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "server.h"
+
+#include "LuaManager.h"
 #include "Player.h"
 #include "MapDataManager.h"
 #include "PacketManager.h"
@@ -157,11 +159,21 @@ namespace PIP::server
 		Stop();
 		CloseHandle(_iocp);
 	}
-	void Server::Start(int io_threads, int worker_thread)
+	void Server::Start(int io_thread_count, int logic_thread_count)
 	{
 		MYLOG("=========================================");
 		MYLOG("          Server Initializing...         ");
 		MYLOG("=========================================");
+
+		std::wcout.imbue(std::locale("korean"));
+		WSAData wsadata;
+		if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
+		{
+			MYERROR("WSAStartup 실패\n");
+		}
+
+		PIP::packet::PacketManager::Instance()->Initialize();
+		MYLOG("PacketManager Initialized." << std::endl);
 
 		// 프로세스 우선순위를 높임
 		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -174,32 +186,29 @@ namespace PIP::server
 		//MYLOG("[SERVER] Loading Map...");
 		MapDataManager::Instance()->LoadMapData("../../Common/MapData/ExportedServerData.json");
 		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
-		
-		// 로직 워커 생성
-		_logic_workers.reserve(worker_thread); // 미리 공간을 할당하여 불필요한 재할당 방지
-		for (int i = 0; i < worker_thread; ++i)
-		{
-			_logic_workers.emplace_back(std::thread([this, i]() {
-				// P-Core만 사용하도록 CPU 친화도 설정
-				SetThreadAffinityMask(GetCurrentThread(), GetPCoresMask());
-				Logic_worker(i);
-				}));
-		}
-		MYLOG("Created " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
-
+		MYLOG("[SERVER] Successful Loaded the Map");
+		_logic_workers.resize(logic_thread_count);
 		for (int i = 0; i < 100; ++i)
 		{
-			int logic_idx = i % _logic_workers.size();
+			int logic_idx = i % logic_thread_count;
 			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
 			_rooms.back()->Initialize();
 		}
 		MYLOG("[SERVER] Room count: " << _rooms.size());
-		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_threads << ", Room count: " << _rooms.size());
 
+		// 로직 워커 생성
+		for (int i = 0; i < logic_thread_count; ++i)
+		{
+			// 이미 있는 워커 객체의 thread 멤버에 새 스레드를 대입
+			_logic_workers[i].thread = std::thread([this, i]() {
+				SetThreadAffinityMask(GetCurrentThread(), GetPCoresMask());
+				Logic_worker(i);
+				});
+		}
+		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_thread_count << ", Room count: " << _rooms.size());
 
-		MYLOG("[SERVER] Successful Loaded the Map");
 		// I/O 스레드 생성
-		for (int i = 0; i < io_threads; ++i)
+		for (int i = 0; i < io_thread_count; ++i)
 		{
 			_io_threads.emplace_back([this]() {
 				// P-Core만 사용하도록 CPU 친화도 설정
@@ -207,8 +216,9 @@ namespace PIP::server
 				IO_worker();
 				});
 		}
+		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
 		
-		MYLOG("Server started with " << io_threads << " I/O threads and " << _logic_workers.size() << " logic threads.");
+
 
 		// 리슨 소켓 설정 및 Accept 준비
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -230,6 +240,9 @@ namespace PIP::server
 		MYLOG("Server listening on port " << common::packet::SERVER_PORT << "...");
 
 		do_accept();
+
+		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
+		
 	}
 	void Server::Stop()
 	{

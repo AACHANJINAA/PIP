@@ -93,6 +93,8 @@ namespace PIP::server
 		concurrency::concurrent_queue<LogicJob> queue;
 		//concurrency::concurrent_priority_queue<TimerJob, std::greater<TimerJob>> _timer_queue;
 		std::priority_queue<TimerJob, std::vector<TimerJob>, std::greater<TimerJob>> _timer_queue;
+
+		LogicWorker() = default;
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
 		LogicWorker(LogicWorker&& other) noexcept
 			: thread(std::move(other.thread)), queue(std::move(other.queue))
@@ -111,7 +113,7 @@ namespace PIP::server
 		~Server();
 	public:
 
-		void Start(int io_threads, int worker_thread);
+		void Start(int io_thread_count, int logic_thread_count);
 		void Stop();
 
 		// Room에서 타이머 잡을 추가할 수 있도록 헬퍼 함수 추가

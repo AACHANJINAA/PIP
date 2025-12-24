@@ -201,6 +201,9 @@ namespace common::packet
 	{
 		int64_t     _npc_id;
 		Vec3        _position;
+		Vec3		_velocity;
+		Vec4		_rotation;
+		uint32_t	_time_stamp;
 		// 뒤에 가변 크기 name
 	};
 	// NPC 단일 피격 정보를 담는 구조체
