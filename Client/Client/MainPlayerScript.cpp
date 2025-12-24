@@ -12,6 +12,7 @@
 #include "TerrainLoader.h"
 #include "TransformComponent.h"
 #include "TimerManager.h"
+#include "AnimationComponent.h"
 
 
 void MainPlayerScript::update(float deltaTime)
@@ -20,34 +21,38 @@ void MainPlayerScript::update(float deltaTime)
     auto current_transform = this->transform();
     if (!current_transform) return;
 
+	auto animation_comp = game_object()->get_component<AnimationComponent>();
+
     // 모델의 -90도 X축 회전을 고려한 실제 forward 벡터 계산
-    XMFLOAT3 modelForward = Vector3::ScalarProduct(current_transform->up(), -1.f, false);    // 실제 앞 방향
+    XMFLOAT3 modelForward = Vector3::ScalarProduct(current_transform->forward(), 1.f, false);    // 실제 앞 방향
     XMFLOAT3 modelRight = current_transform->right();   // 실제 오른쪽 방향
     common::Vec3 move_direction{};
     bool is_moving = false;
 
+    XMFLOAT3 camForward = _camera->transform()->forward();
+    XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
+    XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV)); // 카메라 기준 오른쪽
+
     if (InputManager::instance()->IsKeyPress('W')) {
         // 플레이어의 앞쪽 방향으로 이동
-        move_direction = Vector3::Add(move_direction, modelForward);
+        move_direction = Vector3::Add(move_direction, camFwdV);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('A')) {
         // 플레이어의 왼쪽 방향으로 이동
-        XMFLOAT3 playerRight = current_transform->right();
-        XMFLOAT3 playerLeft = Vector3::ScalarProduct(playerRight, -1.0f, false);
+        XMFLOAT3 playerLeft = Vector3::ScalarProduct(camRightV, -1.0f, false);
         move_direction = Vector3::Add(move_direction, playerLeft);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('S')) {
         // 플레이어의 뒤쪽 방향으로 이동
-        XMFLOAT3 modelBackward = Vector3::ScalarProduct(modelForward, -1.0f, false);
+        XMFLOAT3 modelBackward = Vector3::ScalarProduct(camFwdV, -1.0f, false);
         move_direction = Vector3::Add(move_direction, modelBackward);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('D')) {
         // 플레이어의 오른쪽 방향으로 이동
-        XMFLOAT3 playerRight = current_transform->right();
-        move_direction = Vector3::Add(move_direction, playerRight);
+        move_direction = Vector3::Add(move_direction, camRightV);
         is_moving = true;
     }
     // 나중에 점프로 변경
@@ -77,6 +82,12 @@ void MainPlayerScript::update(float deltaTime)
     }
 
     if (is_moving) {
+        if (animation_comp)
+        {
+            animation_comp->change_mesh(ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true, "walk"));
+			animation_comp->change_animation("walk");
+        }
+
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
         // _speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
         auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, _speed * deltaTime));
@@ -103,19 +114,26 @@ void MainPlayerScript::update(float deltaTime)
         }
 
         if (_camera && _camera->transform()) {
-            // 카메라가 보고 있는 방향(forward) 벡터를 가져옴
-            XMFLOAT3 cameraForward = _camera->transform()->forward();
+            XMFLOAT3 camForward = _camera->transform()->forward();
 
-            // XZ 평면에서의 yaw 각도 계산 (Y축 기준 회전)
-            // atan2(x, z)로 forward 벡터의 방향각을 구함
-            float yawRadians = atan2(cameraForward.x, cameraForward.z);
+            float yawRadians = atan2f(camForward.x, camForward.z);
+
             float yawDegrees = XMConvertToDegrees(yawRadians);
-
+            yawDegrees -= 180.f;
             // 모델의 기본 -90도 X축 회전 유지하고, yaw만 카메라 방향으로 설정
-            current_transform->set_local_rotation(-90.0f, yawDegrees, 0.0f);
+			// DW수정 : 기존 코드는 X축 회전을 0으로 설정했으나, 모델의 기본 회전을 유지하도록 수정 애니메이션 적용되면 -90 안해도 문제 없음
+            current_transform->set_local_rotation(0.0f, yawDegrees, 0.0f);
         }
 
     	current_transform->set_local_position(new_pos);
+    }
+    else
+    {
+        if (animation_comp)
+        {
+            animation_comp->change_mesh(ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle"));
+			animation_comp->change_animation("idle");
+        }
     }
 
     // --- 50ms 마다 위치 정보 전송 ---

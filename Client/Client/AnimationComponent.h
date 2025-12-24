@@ -10,12 +10,15 @@ public:
 	virtual ~AnimationComponent();
 
 public:
-	virtual void update(float deltaTime) override;
+	virtual void late_update(float deltaTime) override;
 
 public:
 	void set_animation(std::string name);
 	void set_animation_time(float time);
 	void set_mesh(const std::shared_ptr<Mesh>& want_mesh);
+
+	void change_animation(std::string name);
+	void change_mesh(const std::shared_ptr<Mesh>& want_mesh);
 
 private:
 	float _nowAnimationTime{ 0.f };

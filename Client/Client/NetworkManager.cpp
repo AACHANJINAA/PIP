@@ -284,25 +284,31 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
 			
 			// Animationcomponent
-
+			auto animation_component = playerObject->add_component<AnimationComponent>();
 
 			// RenderComponent
 			auto renderer = playerObject->add_component<RenderComponent>();
 
-			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true, "walk");
+			ResourceManager::instance()->upload_pending_meshes(GameFramework::instance()->device().Get(), GameFramework::instance()->command_list().Get());
 			renderer->set_mesh(playerMesh);
+
+			animation_component->set_mesh(playerMesh);
+			animation_component->set_animation("walk");
 
 			// ResourceManager을 통해 재질 생성 및 쉐이더 할당
 			std::string material_name = "player_material"; // player는 고정된 재질
 			ResourceManager::instance()->create_material(material_name);
-			ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+			ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
 
 			// gltf
-			renderer->set_pso_name("gltf");
+			renderer->set_pso_name("skinned");
 
 			// 위치, 회전 정보
-			playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
-			playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+			//playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
+			//playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
+			//playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+			playerObject->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
 		}
 		
 
