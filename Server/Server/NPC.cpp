@@ -4,7 +4,13 @@
 namespace PIP
 {
     NPC::NPC(int npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp)
-        : _npc_id(npc_id), _npc_type(npc_type), _room_id{ room_id }, _hp{ hp }, _position{ position }
+        :   _npc_id{ npc_id },
+			_npc_type{ npc_type },
+	        _room_id{ room_id },
+	        _hp{ hp },
+	        _position{ position },
+	        _velocity{ 0.0f, 0.0f, 0.0f },
+	        _rotation{ 0.0f, 0.0f, 0.0f, 1.0f }
     {
         _name = "Monster_" + std::to_string(npc_id);
 

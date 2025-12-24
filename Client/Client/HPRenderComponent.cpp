@@ -80,7 +80,7 @@ void HPRenderComponent::render(ID3D12GraphicsCommandList* commandList)
     // 1. 이 GameObject의 월드 행렬을 가져옵니다.
     ScriptComponent* script = game_object()->get_component<ScriptComponent>().get();
 
-	const int& npc_hp = static_cast<NPCScript*>(script)->get_hp();
+	const int& npc_hp = static_cast<NPCScript*>(script)->hp();
 
         // 2. [변경] 이 RenderComponent가 소유한 상수 버퍼의 내용을 월드 행렬로 업데이트합니다.
     _mappedCbGameHpInfo->_hp = npc_hp;

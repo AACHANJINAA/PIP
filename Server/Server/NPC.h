@@ -34,8 +34,8 @@ namespace PIP
 		void SetRoom(int room_id)                       { _room_id = room_id; }
 		void SetName(const std::string& name)           { _name = name; }
 		void SetHP(int new_hp)                          { _hp = new_hp; }
-		void SetVelocity(const common::Vec3& velocity)  { _velocity = velocity; }
-		void SetRotation(const common::Vec4& rotation)  { _rotation = rotation; }
+		void SetVelocity(const common::Vec3& v)         { _velocity = v; }
+		void SetRotation(const common::Quat& r)         { _rotation = r; }
 
     public:
         void UpdateAI(float deltaTime);
@@ -47,7 +47,7 @@ namespace PIP
         std::string     _name;
         common::Vec3    _position;
         common::Vec3    _velocity;
-        common::Vec4    _rotation;
+        common::Quat    _rotation;
         NPCState        _state = NPCState::IDLE;
         lua_State* _L = nullptr;
     };

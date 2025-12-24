@@ -565,7 +565,17 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 	auto npc_object = ObjectManager::instance()->find_object(npc_name);
 	if (npc_object)
 	{
-		npc_object->transform()->set_local_position(move_packet._position);
+		auto script = npc_object->get_component<NPCScript>();
+		if (script)
+		{
+			script->on_server_update(move_packet._position, move_packet._velocity, move_packet._rotation, move_packet._time_stamp);
+		}
+		else
+		{
+			// 디버깅을 위한 로그
+			CLOG("[S->C] Move NPC Error: NPCScript not found on object: " << npc_name);
+			npc_object->transform()->set_local_position(move_packet._position);
+		}
 	}
 	else
 	{
