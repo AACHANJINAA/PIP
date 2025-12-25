@@ -167,8 +167,8 @@ void Renderer::build_render_list(CameraComponent* camera)
         }
     }
 
-    CLOG("Culling: " << visibleObjects << "/" << totalObjects << " visible, "
-        << invalidBoundingBoxCount << " invalid BB");
+    /*CLOG("Culling: " << visibleObjects << "/" << totalObjects << " visible, "
+        << invalidBoundingBoxCount << " invalid BB");*/
 }
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
@@ -189,7 +189,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             CERROR("PSO not found for: " << psoName);
             continue;
         }
-        CLOG("PSO found for: " << psoName);
+        //CLOG("PSO found for: " << psoName);
 
         // 2. psoName으로 이 PSO를 만든 셰이더 프로토타입을 찾습니다.
         auto proto_it = _shaderPrototypes.find(psoName);

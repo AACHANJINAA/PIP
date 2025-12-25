@@ -285,7 +285,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			
 			// Animationcomponent
 			auto animation_component = playerObject->add_component<AnimationComponent>();
-
+			
+			
 			// RenderComponent
 			auto renderer = playerObject->add_component<RenderComponent>();
 
@@ -293,8 +294,17 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			ResourceManager::instance()->upload_pending_meshes(GameFramework::instance()->device().Get(), GameFramework::instance()->command_list().Get());
 			renderer->set_mesh(playerMesh);
 
-			animation_component->set_mesh(playerMesh);
-			animation_component->set_animation("walk");
+			auto idleMesh = 
+				ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,"idle");
+			auto walkMesh = 
+				ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true,"walk");
+
+			animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
+			animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
+			
+			// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
+			animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
+			animation_component->set_state(common::packet::OBJECT_STATE::IDLE); // IDLE로 설정하면 로직이 돕니다.
 
 			// ResourceManager을 통해 재질 생성 및 쉐이더 할당
 			std::string material_name = "player_material"; // player는 고정된 재질

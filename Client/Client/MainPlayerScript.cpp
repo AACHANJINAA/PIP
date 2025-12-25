@@ -80,13 +80,13 @@ void MainPlayerScript::update(float deltaTime)
             _speed -= 1.f;
         }
     }
-
+    auto anim_comp = game_object()->get_component<AnimationComponent>();
     if (is_moving) {
-        if (animation_comp)
-        {
-            animation_comp->change_mesh(ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true, "walk"));
-			animation_comp->change_animation("walk");
-        }
+		if (anim_comp)
+		{
+            anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
+		}
+        
 
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
         // _speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
@@ -131,8 +131,7 @@ void MainPlayerScript::update(float deltaTime)
     {
         if (animation_comp)
         {
-            animation_comp->change_mesh(ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle"));
-			animation_comp->change_animation("idle");
+            anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
         }
     }
 
@@ -148,23 +147,35 @@ void MainPlayerScript::awake()
 {
     _camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
 
-	//_renderComponent = game_object()->add_component<RenderComponent>().get();
- //   auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+    if (_camera) {
+        XMFLOAT3 camForward = _camera->transform()->forward();
+        float yawRadians = atan2f(camForward.x, camForward.z);
+        float yawDegrees = XMConvertToDegrees(yawRadians);
+        yawDegrees -= 180.f; // 모델이 뒤를 보고 있다면 180도 회전 필요        
+        transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
+    }
+    else {
+        // 카메라가 없으면 기본 회전 (필요에 따라 조정)                        
+        transform()->set_local_rotation(0.0f, 0.0f, 0.0f);
+    }
 
- //   // 재질 및 쉐이더 설정
- //   _renderComponent->set_mesh(playerMesh);
+	/*_renderComponent = game_object()->add_component<RenderComponent>().get();
+    auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 
-	//// ResourceManager을 통해 재질 생성 및 셰이더 할당
- //   std::string material_name = "player_material";
-	//ResourceManager::instance()->create_material(material_name);
-	//ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
+    // 재질 및 쉐이더 설정
+    _renderComponent->set_mesh(playerMesh);
 
- //   // gltf
- //   _renderComponent->set_pso_name("gltf");
+	// ResourceManager을 통해 재질 생성 및 셰이더 할당
+    std::string material_name = "player_material";
+	ResourceManager::instance()->create_material(material_name);
+	ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
 
- //   // 위치, 회전 정보
- //   transform()->set_local_rotation(-90.f, 0.f, 0.f);
- //   transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+    // gltf
+    _renderComponent->set_pso_name("gltf");
+
+    // 위치, 회전 정보
+    transform()->set_local_rotation(-90.f, 0.f, 0.f);
+    transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });*/
 }
 
 void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)

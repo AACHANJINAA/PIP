@@ -33,7 +33,6 @@ void NPCScript::awake()
 void NPCScript::update(float deltaTime)
 {
 	ScriptComponent::update(deltaTime);
-	ScriptComponent::update(deltaTime);
 
 	if (!_hasReceivedFirstPacket) {
 		// 첫 패킷 수신 전까지는 아무것도 하지 않음 (또는 초기 위치 고정)
