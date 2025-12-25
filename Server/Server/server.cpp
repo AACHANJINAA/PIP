@@ -142,7 +142,7 @@ namespace PIP::server
 			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
 		}
 	}
-
+	
 
 	// ---------------------------------------- server class implementation ---------------------------------
 	std::atomic<int> Server::_new_id{ 0 }; // 전역 세션 ID 생성기
@@ -335,6 +335,9 @@ namespace PIP::server
 		//		 (Object Pooling 패턴)
 		_sessions[session_id] = nullptr;
 	}
+	/// <summary>
+	/// TODO: session 재사용이 제대로 되는지 검증 필요!!!!!!!!!!!!!!!!
+	/// </summary>
 
 	void Server::do_accept()
 	{

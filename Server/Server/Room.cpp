@@ -20,7 +20,7 @@ namespace PIP::server
 
 	void Room::Initialize()
 	{
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
 			int npcId = _next_npc_id++;
