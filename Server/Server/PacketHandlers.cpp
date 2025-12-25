@@ -25,6 +25,7 @@ namespace PIP::packet
 		spawn_packet_data._hp = session->_player._hp;
 		spawn_packet_data._level = session->_player._level;
 		spawn_packet_data._exp = session->_player._exp;
+		spawn_packet_data._state = session->_player._state;
 
 		packet::PacketStream finalStream;
 		// [수정] 구조체 자체를 스트림에 씁니다.
@@ -92,6 +93,7 @@ namespace PIP::packet
 		common::Vec3 targetPos = move_packet._position;
 		common::Vec4 targetRotation = move_packet._rotation;
 		common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
+		session->_player._state = move_packet._state;
 
 		// 1. 맵 범위 체크 (heightmap 범위 밖으로 나가지 못하게)
 		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
@@ -113,21 +115,15 @@ namespace PIP::packet
 			correction_packet._id = session->_id;
 			correction_packet._position = session->_player._position; // 서버가 알고 있는 마지막 유효 위치
 			correction_packet._rotation = targetRotation;
+			correction_packet._state = session->_player._state;
 			session->_player._rotation = targetRotation; // 회전은 일단 갱신
 
-			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+			room->Broadcast(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 			return;
 		}
 		groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
-		// 2. Y축 지면 아래로만 가지 못하게 (위로는 자유롭게)
-		//float minAllowedY = groundHeight /*+ player_extents.y*/;
 
-		//targetPos.y = std::max(targetPos.y, minAllowedY);
-		// 지면 위에 있으면 클라이언트 Y값 그대로 사용 (떨림 방지!)
-
-		targetPos.y = groundHeight; // 클라이언트의 MainPlayerScript와 동일
-		/*float minAllowedY = groundHeight;
-		targetPos.y = std::max(targetPos.y, minAllowedY);*/
+		targetPos.y = groundHeight;
 
 		// 3. 충돌 체크
 		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
@@ -199,12 +195,14 @@ namespace PIP::packet
 			correction_packet._id = session->_id;
 			correction_packet._position = safe_pos;
 			correction_packet._rotation = targetRotation;
-
-			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+			correction_packet._state = session->_player._state;
 
 			// 서버의 플레이어 위치도 안전한 위치로 갱신
 			session->_player._position = safe_pos;
 			session->_player._rotation = targetRotation;
+
+			room->Broadcast(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+
 		}
 		else
 		{
@@ -218,6 +216,7 @@ namespace PIP::packet
 			sync_packet._id = session->_id;
 			sync_packet._position = targetPos;
 			sync_packet._rotation = targetRotation;
+			sync_packet._state = session->_player._state;
 
 			room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
 		}

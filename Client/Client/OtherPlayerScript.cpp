@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "OtherPlayerScript.h"
+
+#include "AnimationComponent.h"
+#include "BehaviorTree.h"
 #include "gameobject.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
@@ -7,7 +10,7 @@
 
 void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
 {
-    // ¼­¹ö°¡ ¾Ë·ÁÁØ À§Ä¡·Î ³» GameObjectÀÇ À§Ä¡¸¦ ¼³Á¤
+    // ì„œë²„ê°€ ì•Œë ¤ì¤€ ìœ„ì¹˜ë¡œ ë‚´ GameObjectì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •
     if (transform())
     {
         transform()->set_local_position(newPosition);
@@ -16,36 +19,57 @@ void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
 
 void OtherPlayerScript::on_sync_rotation(const XMFLOAT4& newRotation)
 {
-    // ¼­¹ö°¡ ¾Ë·ÁÁØ È¸ÀüÀ¸·Î ³» GameObjectÀÇ È¸ÀüÀ» ¼³Á¤
+    // ì„œë²„ê°€ ì•Œë ¤ì¤€ íšŒì „ìœ¼ë¡œ ë‚´ GameObjectì˜ íšŒì „ì„ ì„¤ì •
     if (transform())
     {
         transform()->set_local_rotation(newRotation);
 	}
 }
 
+void OtherPlayerScript::on_sync_state(common::packet::OBJECT_STATE state)
+{
+    auto anim_comp = game_object()->get_component<AnimationComponent>();
+    if (anim_comp)
+    {
+        anim_comp->set_state(state);
+    }
+}
+
 void OtherPlayerScript::update(float deltaTime)
 {
-    // OtherPlayer´Â Å¬¶óÀÌ¾ðÆ®¿¡¼­ Á÷Á¢ Á¶ÀÛÇÏÁö ¾ÊÀ¸¹Ç·Î,
-    // ÀÌ update ÇÔ¼ö´Â º¸Åë ¾Ö´Ï¸ÞÀÌ¼Ç °»½ÅÀÌ³ª º¸°£(interpolation) ·ÎÁ÷À» Ã³¸®ÇÕ´Ï´Ù.
+    // OtherPlayerëŠ” í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì§ì ‘ ì¡°ìž‘í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
+    // ì´ update í•¨ìˆ˜ëŠ” ë³´í†µ ì• ë‹ˆë©”ì´ì…˜ ê°±ì‹ ì´ë‚˜ ë³´ê°„(interpolation) ë¡œì§ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 }
 
 void OtherPlayerScript::awake()
 {
     auto render_comp = game_object()->add_component<RenderComponent>().get();
-    auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+	auto animation_comp = game_object()->add_component<AnimationComponent>().get();
 
-    // ÀçÁú ¹× ½¦ÀÌ´õ ¼³Á¤
-    render_comp->set_mesh(playerMesh);
+    auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",
+        true,
+        "idle");
+    auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true,
+        "walk");
 
-	// ResourceManagerÀ» ÅëÇØ ÀçÁú »ý¼º ¹× ¼ÎÀÌ´õ ÇÒ´ç
-	std::string material_name = "other_player_material_" + std::to_string(_playerId);
-	ResourceManager::instance()->create_material(material_name);
-	ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+    render_comp->set_mesh(idleMesh);
+
+    animation_comp->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
+    animation_comp->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
+    // ìž¬ì§ˆ ë° ì‰ì´ë” ì„¤ì •
+
+    animation_comp->set_state(common::packet::OBJECT_STATE::WALK);
+    animation_comp->set_state(common::packet::OBJECT_STATE::IDLE);
+
+
+	// ResourceManagerì„ í†µí•´ ìž¬ì§ˆ ìƒì„± ë° ì…°ì´ë” í• ë‹¹
+    std::string material_name = "player_material"; // playerëŠ” ê³ ì •ëœ ìž¬ì§ˆ
+    ResourceManager::instance()->create_material(material_name);
+    ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
 
     // gltf
-    render_comp->set_pso_name("gltf");
+    render_comp->set_pso_name("skinned");
 
-    // À§Ä¡, È¸Àü Á¤º¸
-    transform()->set_local_rotation(-90.f, 0.f, 0.f);
-    transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+    // ìœ„ì¹˜, íšŒì „ ì •ë³´
+    transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
 }

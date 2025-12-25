@@ -50,7 +50,7 @@ public:
 
     // 클라이언트 -> 서버 패킷 전송 함수
     void SendLoginPacket(const std::string& name);
-    void SendMovePacket(common::Vec3 position, common::Quat rotation);
+    void SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state);
     void SendAttackPacket(); // 공격 패킷 전송 함수 추가
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
