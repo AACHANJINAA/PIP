@@ -159,8 +159,7 @@ void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandLi
         renderer->set_mesh(hi_brute_Mesh);
 
         auto animaiton_component = hi_brute->add_component<AnimationComponent>();
-        animaiton_component->set_mesh(hi_brute_Mesh);
-        animaiton_component->set_animation("walk");
+        animaiton_component->add_state_mapping(common::packet::OBJECT_STATE::WALK,"Gramma_walk_mesh", hi_brute_Mesh);
 
 
         // 재질 및 쉐이더 설정
@@ -209,8 +208,7 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         // 애니메이션 컴포넌트 추가
         auto animation_renderer = hi_brute->add_component<AnimationComponent>();
-        animation_renderer->set_mesh(hi_brute_Mesh);
-        animation_renderer->set_animation("attack");
+        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
 
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_SK_MagicConstruct";

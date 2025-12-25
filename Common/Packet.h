@@ -5,7 +5,16 @@
 namespace common::packet
 {
 	constexpr short SERVER_PORT = 9000;
-
+	enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
+		IDLE	= 0,
+		WALK	= 1,
+		RUN		= 2,
+		ATTACK	= 3,
+		JUMP	= 4,
+		LANDING = 5,
+		HOVER	= 6,
+		// 필요 시 추가
+	};
 	enum class PacketType : uint16_t {
 		error = 0,
 
@@ -97,6 +106,7 @@ namespace common::packet
 	{
 		Vec3 _position;
 		common::Quat _rotation;
+		OBJECT_STATE _state;
 	};
 
 	//struct CS_PACKET_MOVE : PacketHeader
@@ -141,6 +151,7 @@ namespace common::packet
 		int64_t _id; // long long
 		Vec3    _position; // 플레이어의 위치
 		Quat	_rotation;
+		OBJECT_STATE _state;
 		short   _hp;
 		short   _level;
 		int     _exp;
@@ -153,6 +164,7 @@ namespace common::packet
 		int64_t _id; // long long
 		Vec3 _position;
 		common::Quat _rotation;
+		OBJECT_STATE _state;
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)
@@ -192,8 +204,8 @@ namespace common::packet
 		int64_t _npc_id; // NPC의 고유 ID
 		int32_t _npc_type; // NPC의 타입 (예: 몬스터 종류)
 		Vec3    _position;  // NPC의 초기 위치
-		//Quat	_rotation;
 		int32_t _hp;        // NPC의 초기 HP
+		OBJECT_STATE _state; // NPC의 초기 상태
 		// 뒤에 가변크기 name
 	};
 
@@ -204,6 +216,7 @@ namespace common::packet
 		Vec3		_velocity;
 		Quat		_rotation;
 		uint32_t	_time_stamp;
+		OBJECT_STATE _state;
 		// 뒤에 가변 크기 name
 	};
 	// NPC 단일 피격 정보를 담는 구조체
