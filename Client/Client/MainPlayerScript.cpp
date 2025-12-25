@@ -80,14 +80,14 @@ void MainPlayerScript::update(float deltaTime)
             _speed -= 1.f;
         }
     }
+
+	
     auto anim_comp = game_object()->get_component<AnimationComponent>();
     if (is_moving) {
 		if (anim_comp)
 		{
             anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
 		}
-        
-
         move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
         // _speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
         auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, _speed * deltaTime));
@@ -139,7 +139,8 @@ void MainPlayerScript::update(float deltaTime)
     _sendTimer += deltaTime;
     if (_sendTimer >= _sendInterval) {
         _sendTimer = 0.f;
-        NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation());
+        common::packet::OBJECT_STATE current_state = animation_comp ? animation_comp->get_state() : common::packet::OBJECT_STATE::IDLE;
+        NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation(), current_state);
     }
 }
 

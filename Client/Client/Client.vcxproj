@@ -97,6 +97,7 @@
     <ClInclude Include="..\..\Common\TerrainData.h" />
     <ClInclude Include="..\..\Common\Vector3.h" />
     <ClInclude Include="AnimationComponent.h" />
+    <ClInclude Include="BehaviorTree.h" />
     <ClInclude Include="Behaviour.h" />
     <ClInclude Include="BoardCubeScript.h" />
     <ClInclude Include="CameraComponent.h" />
@@ -160,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationComponent.cpp" />
+    <ClCompile Include="BehaviorTree.cpp" />
     <ClCompile Include="Behaviour.cpp" />
     <ClCompile Include="BoardCubeScript.cpp" />
     <ClCompile Include="CameraComponent.cpp" />

@@ -185,7 +185,7 @@ void NetworkManager::SendLoginPacket(const std::string& name)
 	send_packet(stream.mutable_data(), stream.Size());
 }
 
-void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation)
+void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state)
 {
 	// 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
 	common::packet::CS_PACKET_MOVE packet;
@@ -193,7 +193,7 @@ void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation
 	packet._size = sizeof(packet);
 	packet._position = position;
 	packet._rotation = rotation;
-
+	packet._state = state;
 	// 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
 	// 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
@@ -335,7 +335,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	}
 	else
 	{
-		CLOG("[SPAWN_PLAYER] ID MISMATCH! Creating OTHER player (OtherPlayer).");
+		CLOG("[OtherPlayer] ID MISMATCH! Creating OTHER player (OtherPlayer).");
 		// 다른 플레이어 (적) 생성 또는 업데이트
 		auto other_player = ObjectManager::instance()->create_game_object(name);
 		auto other_player_logic = other_player->add_component<OtherPlayerScript>();
@@ -387,15 +387,18 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	{
 		auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
 		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
-		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
-			auto other_script = other->get_component<OtherPlayerScript>();
-			return other_script && move_packet._id == other_script->id();
-		});
+		auto it = std::find_if(other_players.begin(), other_players.end(), 
+			[&](const std::shared_ptr<GameObject>& other) 
+			{
+				auto other_script = other->get_component<OtherPlayerScript>();
+				return other_script && move_packet._id == other_script->id();
+			});
 		if (it != other_players.end())
 		{
 			auto other_player_script = (*it)->get_component<OtherPlayerScript>();
 			other_player_script->on_sync_position(move_packet._position);
 			other_player_script->on_sync_rotation(move_packet._rotation);
+			other_player_script->on_sync_state(move_packet._state);
 		}
 	}
 }
