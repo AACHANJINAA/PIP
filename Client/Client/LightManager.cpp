@@ -61,7 +61,7 @@ void LightManager::initialize(ID3D12Device* device)
     Light sun;
     sun.m_bEnable = TRUE;
     sun.m_nType = DIRECTIONAL_LIGHT;
-    sun.m_cDiffuse = { 0.8f, 0.8f, 0.8f, 1.0f }; // 약간 노란빛
+    sun.m_cDiffuse = { 0.5f, 0.5f, 0.0f, 1.0f }; // 약간 노란빛
     sun.m_cSpecular = { 0.8f, 0.8f, 0.8f, 1.0f };
     sun.m_vDirection = { 0.4f, 0.8f, -0.3f }; // 비스듬히 내리쬐는 방향
     add_light(std::move(sun));

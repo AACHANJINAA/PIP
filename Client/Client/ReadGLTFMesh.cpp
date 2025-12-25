@@ -864,29 +864,13 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
 
 				// Normal: Z 반전
-				if (i < normals.size())
-					v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-				else
-					v._normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
 
 				// Tangent: Z 반전
-				if (i < tangents.size())
-					v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w * -1.0f);
-				else
-				{
-					// 노말이 X축이랑 너무 비슷하면 Y축을 선택하고, 아니면 X축을 선택한다.
-					// (절댓값이 0.9 이상이면 거의 평행한 것임)
-					if (std::abs(v._normal.x) > 0.9f)
-						v._tangent = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // Y축으로 피신!
-					else
-						v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // X축 사용
-				}
+				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w);
 
 				// UV
-				if (i < texcoords.size())
-					v._texCoord = XMFLOAT2(texcoords[i].x, 1.0f - texcoords[i].y);
-				else
-					v._texCoord = XMFLOAT2(0.0f, 0.0f);
+				v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
 
 				// Skinning Data (배열에 값 대입)
 				if (i < joint_indices_vec.size()) {
