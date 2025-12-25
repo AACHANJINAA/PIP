@@ -532,7 +532,8 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
 
     // Static Sampler (s0)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    d3dStaticSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
     d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
