@@ -23,7 +23,7 @@ GameFramework::GameFramework()
 	, _dsvDescriptorIncrementSize(0)
 	, _fenceEvent(NULL)
 {
-	_tcscpy_s(_frameRate, _T("LapProject ("));
+	_tcscpy_s(_frameRate, _T("S.T.L ("));
 	_fenceValues.fill(0);
 }
 
@@ -393,7 +393,7 @@ void GameFramework::FrameAdvance()
 	MoveToNextFrame();
 	// 5. ÆÄ±« ¿¹Á¤ °´Ã¼ Á¤¸®
 	ObjectManager::instance()->process_destructions();
-	_gameTimer.GetFrameRate(_frameRate + 12, 37);
+	_gameTimer.GetFrameRate(_frameRate + 7, 42);
 	::SetWindowText(_hWnd, _frameRate);
 
 	_isRendering = false;
