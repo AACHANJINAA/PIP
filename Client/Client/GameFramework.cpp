@@ -382,7 +382,7 @@ void GameFramework::FrameAdvance()
 	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
 
 	hResult = _commandList->Close();
-	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get()};
+	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	
 	_swapChain->Present(1, 0);
