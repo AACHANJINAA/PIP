@@ -22,7 +22,6 @@ namespace PIP::server
 	{
 		for (int i = 0; i < 100; ++i)
 		{
-			// NPC ID는 플레이어와 겹치지 않도록 높은 수에서 시작 (AIManager에서 관리)
 			int npcId = _next_npc_id++;
 			common::Vec3 randomPos = {
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)

@@ -39,6 +39,9 @@
     <Filter Include="소스 파일\NPC\LuaScript">
       <UniqueIdentifier>{973f0247-3f3d-4839-b020-ea0e590e9ba1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Physics">
+      <UniqueIdentifier>{2c0e4804-8e60-475c-a204-ba289b689173}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="LuaManager.cpp">
       <Filter>소스 파일\Manager\LuaManager</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsManager.cpp">
+      <Filter>소스 파일\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -117,6 +123,12 @@
     </ClInclude>
     <ClInclude Include="LuaManager.h">
       <Filter>소스 파일\Manager\LuaManager</Filter>
+    </ClInclude>
+    <ClInclude Include="JoltSetup.h">
+      <Filter>소스 파일\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsManager.h">
+      <Filter>소스 파일\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
