@@ -29,17 +29,19 @@ namespace PIP::server
 		void AddNPC(std::unique_ptr<NPC> npc);
 		NPC* GetNPC(int npc_id);
 
-
+		// 메인 로직
 		// 게임 시작
 		void StartGame();
-		// 공용
 		void Update(float deltaTime); //아직 사용 안함
+
+
+
+
+		void PushJob(std::function<void()> job);
 		// 방에 있는 모든 플레이어에게 패킷을 전송 (브로드캐스팅)
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
-
 		// 정보 전송
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
-
 		// 공격 처리
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
@@ -52,7 +54,13 @@ namespace PIP::server
 	private:
 		void CreatePhysicsTerrain();
 		void PhysicsInitialize();
+
+		void ProcessJobs();
+		void UpdatePhysics();
+		void UpdateAI();
 		void UpdateNPC(int npcId);
+
+
 	private:
 		int _room_id;
 		int _logic_thread_idx; // 이 방을 담당하는 로직 스레드의 인덱스
@@ -60,19 +68,20 @@ namespace PIP::server
 		RoomState _room_state;
 
 		// 이 방에 속한 플레이어들의 목록
+		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
 		std::unordered_map<int, std::unique_ptr<NPC>> _npcs;
 		int _next_npc_id = 20000; // NPC ID는 플레이어 ID와 겹치지 않도록 높은 수에서 시작
 
 		// --- Jolt 물리 객체 ---
-		JPH::PhysicsSystem* _physicsSystem = nullptr;
-		JPH::TempAllocator* _tempAllocator = nullptr;
-		JPH::JobSystem*		_jobSystem = nullptr;
+		JPH::PhysicsSystem*					_physicsSystem = nullptr;
+		JPH::TempAllocator*					_tempAllocator = nullptr;
+		JPH::JobSystem*						_jobSystem = nullptr;
 
 		// 인터페이스 구현체 (JoltSetup.h에 정의한 것들)
-		BPLayerInterfaceImpl            _bpLayerInterface;
-		ObjectVsBroadPhaseLayerFilterImpl _objVsBpLayerFilter;
-		ObjectLayerPairFilterImpl        _objLayerPairFilter;
+		BPLayerInterfaceImpl				_bpLayerInterface;
+		ObjectVsBroadPhaseLayerFilterImpl	_objVsBpLayerFilter;
+		ObjectLayerPairFilterImpl			_objLayerPairFilter;
 
 		// 지형 Body ID 저장 (나중에 삭제 등을 위해)
 		JPH::BodyID _terrainBodyID;

@@ -1,24 +1,23 @@
 ﻿#include "pch.h"
 #include "PhysicsManager.h"
 
-namespace 
+
+static void TraceImpl(const char* inFMT, ...)
 {
-	static void TraceImpl(const char* inFMT, ...)
-	{
-		va_list list;
-		va_start(list, inFMT);
-		char buffer[1024];
-		vsnprintf(buffer, sizeof(buffer), inFMT, list);
-		va_end(list);
-		MYLOG(buffer); // 가변 인자가 적용된 문자열 출력
-	}
-	static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, JPH::uint inLine)
-	{
-		// ASSERT 실패 시 처리
-		MYERROR("Jolt Assert Failed: Expression: {}, Message: {}, File: {}, Line: {}", inExpression, inMessage, inFile, inLine);
-		return true; // true면 브레이크포인트
-	}
+	va_list list;
+	va_start(list, inFMT);
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
+	MYLOG(buffer); // 가변 인자가 적용된 문자열 출력
 }
+static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, JPH::uint inLine)
+{
+	// ASSERT 실패 시 처리
+	MYERROR("Jolt Assert Failed: Expression: {}, Message: {}, File: {}, Line: {}", inExpression, inMessage, inFile, inLine);
+	return true; // true면 브레이크포인트
+}
+
 namespace PIP
 {
 	

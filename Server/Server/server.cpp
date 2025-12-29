@@ -425,35 +425,36 @@ namespace PIP::server
 	}
 	void Server::Logic_worker(int thread_idx)
 	{
-		MYLOG("[Thread] Logic worker thread #" << thread_idx << " started. ID: " << std::this_thread::get_id());
-		auto& worker = _logic_workers[thread_idx];
-		LogicJob job_to_process;
+		MYLOG("Logic worker thread #" << thread_idx << " started.");
+
+		auto lastTick = std::chrono::steady_clock::now();
+		constexpr auto frameDuration = std::chrono::milliseconds(16); // 60fps
+
 		while (_is_running)
 		{
-			while (not worker._timer_queue.empty() && 
-				worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
-			{
+			auto now = std::chrono::steady_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick);
 
-				TimerJob timer_job = worker._timer_queue.top();
-				worker._timer_queue.pop(); 
-				worker.queue.push({ std::move(timer_job._task) });
-			}
-
-			// 2. 일반 큐에서 작업 처리
-			if (worker.queue.try_pop(job_to_process))
+			if (elapsed >= frameDuration)
 			{
-				if (job_to_process._task)
+				float deltaTime = elapsed.count() / 1000.0f;
+				lastTick = now;
+
+				// 1. 이 스레드가 담당하는 모든 방 업데이트
+				for (auto& room : _rooms)
 				{
-					job_to_process._task();
+					if (room->GetLogicThreadIndex() == thread_idx)
+					{
+						room->Update(deltaTime);
+					}
 				}
+
+				// 2. (기존) 타이머 잡 처리 등...
 			}
 			else
 			{
-				// 대기 상태를 개선하는 더 나은 방법
-				if (worker.queue.empty())
-				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				}
+				// 남은 시간 동안 살짝 쉬기 (CPU 과점 방지)
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		}
 	}
