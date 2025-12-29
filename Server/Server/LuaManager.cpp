@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "LuaManager.h"
 
 #include "MapDataManager.h"
@@ -19,7 +19,7 @@ namespace PIP
 
 	NPC* LuaManager::GetOwnerNPC(lua_State* L)
 	{
-        lua_getglobal(L, "__npc_ptr"); // NPC °´Ã¼ Æ÷ÀÎÅÍ °¡Á®¿À±â
+        lua_getglobal(L, "__npc_ptr"); // NPC ê°ì²´ í¬ì¸í„° ê°€ì ¸ì˜¤ê¸°
         if (!lua_islightuserdata(L, -1))
         {
             lua_pop(L, 1);
@@ -57,7 +57,7 @@ namespace PIP
 
     int LuaManager::Lua_GetMapBounds(lua_State* L)
     {
-        // MapDataManager¿¡¼­ ÁöÇü Á¤º¸ °¡Á®¿À±â
+        // MapDataManagerì—ì„œ ì§€í˜• ì •ë³´ ê°€ì ¸ì˜¤ê¸°
         const auto& info = MapDataManager::Instance()->GetTerrainData().GetInfo();
 
         lua_pushnumber(L, info.min_x);

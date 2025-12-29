@@ -4,6 +4,9 @@
 #include "MapDataManager.h"
 #include "Player.h"
 #include "PacketHandlers.h"
+#include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
+#include "Jolt/Physics/Collision/RayCast.h"
+#include <random>
 
 namespace PIP::server
 {
@@ -20,6 +23,8 @@ namespace PIP::server
 
 	void Room::Initialize()
 	{
+		PhysicsInitialize();
+
 		for (int i = 0; i < 100; ++i)
 		{
 			int npcId = _next_npc_id++;
@@ -81,6 +86,28 @@ namespace PIP::server
 		// packet.who_is_white_player_id = ...
 		// packet.who_is_black_player_id = ...
 		// Broadcast(...);
+	}
+
+	void Room::Update(float deltaTime)
+	{
+		if (!_physicsSystem) return;
+
+		// 1단계: 물리 시뮬레이션 전진
+		// 캐릭터 컨트롤러를 쓰거나 동적인 물리 객체가 있다면 여기서 연산이 일어납니다.
+		// (클라 검증용 텔레포트 방식만 쓴다면 아주 짧은 스텝만 돌려도 됩니다.)
+		_physicsSystem->Update(deltaTime, 1, _tempAllocator, _jobSystem);
+
+		// 2단계: 서버 전용 로직 처리
+		// - 몬스터 AI (Behavior Tree) 업데이트
+		// - 쿨타임 감소, 버프/디버프 지속시간 계산
+		// - 환경 기믹 (움직이는 발판 등) 처리
+		for (auto& [id, npc] : _npcs) {
+			npc->UpdateAI(deltaTime);
+		}
+
+		// 3단계: 결과 동기화 및 브로드캐스트
+		// - 물리 연산 결과로 바뀐 위치를 클라에 보낼 패킷으로 묶음
+		// - 몬스터 이동 패킷 등 전송
 	}
 
 	void Room::Broadcast(const char* data, size_t size, long long except_id)
@@ -218,6 +245,85 @@ namespace PIP::server
 
 			Broadcast(stream.constable_data(), stream.Size());
 		}
+	}
+
+	void Room::CreatePhysicsTerrain()
+	{
+		// MapDataManager에서 로드된 지형 정보 가져오기
+		const auto& terrainData = MapDataManager::Instance()->GetTerrainData();
+		const auto& info = terrainData.GetInfo();
+		const auto& heightMap = terrainData.GetHeightData();
+
+		// Jolt HeightFieldShape 생성
+		JPH::HeightFieldShapeSettings settings;
+		settings.mOffset = JPH::Vec3(info.min_x, 0.0f, info.min_z);
+
+		// 간격 계산 (Scale)
+		float dx = (info.max_x - info.min_x) / (info.width - 1);
+		float dz = (info.max_z - info.min_z) / (info.height - 1);
+		settings.mScale = JPH::Vec3(dx, 1.0f, dz);
+		settings.mSampleCount = info.width; // 정사각형 가정
+
+		// 데이터 복사 및 변환 (float -> Jolt 포맷)
+		settings.mHeightSamples.resize(heightMap.size());
+		for (size_t i = 0; i < heightMap.size(); ++i) {
+			settings.mHeightSamples[i] = heightMap[i];
+		}
+
+		auto result = settings.Create();
+		if (result.HasError()) return;
+
+		// Body 생성 (Static: 움직이지 않음)
+		JPH::BodyCreationSettings bodySettings(result.Get(), JPH::RVec3(0, 0, 0), JPH::Quat::sIdentity(),
+			JPH::EMotionType::Static, Layers::NON_MOVING);
+
+		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
+		JPH::Body* terrainBody = bodyInterface.CreateBody(bodySettings);
+
+		_terrainBodyID = terrainBody->GetID();
+		bodyInterface.AddBody(_terrainBodyID, JPH::EActivation::DontActivate);
+
+		// 지형 생성 확인을 위한 간단한 레이캐스트 테스트
+		JPH::RRayCast ray;
+		ray.mOrigin = JPH::Vec3(0, 100, 0); // 맵 중앙 하늘 위
+		ray.mDirection = JPH::Vec3(0, -200, 0); // 바닥 방향으로 쏘기
+
+		JPH::RayCastResult ray_result;
+		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
+			// 성공! 무언가에 부딪혔음.
+			float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
+			MYLOG("Physics Terrain Test Success! Height at (0,0): " << hitY);
+		}
+		else {
+			MYERROR("Physics Terrain NOT FOUND! Ray missed.");
+		}
+	}
+
+	void Room::PhysicsInitialize()
+	{
+		// 1. 물리 시스템 필수 객체 생성
+		// TempAllocator: 물리 연산 중 임시 메모리 할당 (10MB 정도)
+		_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
+
+		// JobSystem: 아까 논의한 대로 '단일 스레드' 모드 사용
+		_jobSystem = new JPH::JobSystemSingleThreaded(JPH::cMaxPhysicsJobs);
+
+		// 2. PhysicsSystem 생성 및 초기화
+		_physicsSystem = new JPH::PhysicsSystem();
+
+		const JPH::uint cMaxBodies = 1024;
+		const JPH::uint cNumBodyMutexes = 0;
+		const JPH::uint cMaxBodyPairs = 1024;
+		const JPH::uint cMaxContactConstraints = 1024;
+
+		_physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
+			_bpLayerInterface, _objVsBpLayerFilter, _objLayerPairFilter);
+
+		// 3. 중력 설정 (Y축 아래 방향)
+		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+
+		// 4. 지형 생성 호출 (예시)
+		CreatePhysicsTerrain();
 	}
 
 	void Room::UpdateNPC(int npcId)

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 // Lua header path updated to match the new location inside Server/Server
 extern "C" {
 #include "lua-5.4.2_Win64_dll17_lib/include/lua.h"
@@ -16,7 +16,7 @@ namespace PIP
 		LuaManager() = default;
 		~LuaManager() = default;
 	public:
-		// Æ¯Á¤ Lua State¿¡ C++ API ÇÔ¼öµéÀ» µî·ÏÇØÁÖ´Â ÇÔ¼ö
+		// íŠ¹ì • Lua Stateì— C++ API í•¨ìˆ˜ë“¤ì„ ë“±ë¡í•´ì£¼ëŠ” í•¨ìˆ˜
 		void RegisterFunctions(lua_State* L);
 	private:
 		static NPC* GetOwnerNPC(lua_State* L);

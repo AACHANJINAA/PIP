@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include <random>
-
+#include "JoltSetup.h"
 #include "Server.h"
 #include "NPC.h"
 
@@ -33,9 +32,8 @@ namespace PIP::server
 
 		// 게임 시작
 		void StartGame();
-
 		// 공용
-		// void Update(); //아직 사용 안함
+		void Update(float deltaTime); //아직 사용 안함
 		// 방에 있는 모든 플레이어에게 패킷을 전송 (브로드캐스팅)
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
 
@@ -52,6 +50,8 @@ namespace PIP::server
 		RoomState GetRoomState() const { return _room_state; }
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
 	private:
+		void CreatePhysicsTerrain();
+		void PhysicsInitialize();
 		void UpdateNPC(int npcId);
 	private:
 		int _room_id;
@@ -63,5 +63,19 @@ namespace PIP::server
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
 		std::unordered_map<int, std::unique_ptr<NPC>> _npcs;
 		int _next_npc_id = 20000; // NPC ID는 플레이어 ID와 겹치지 않도록 높은 수에서 시작
+
+		// --- Jolt 물리 객체 ---
+		JPH::PhysicsSystem* _physicsSystem = nullptr;
+		JPH::TempAllocator* _tempAllocator = nullptr;
+		JPH::JobSystem*		_jobSystem = nullptr;
+
+		// 인터페이스 구현체 (JoltSetup.h에 정의한 것들)
+		BPLayerInterfaceImpl            _bpLayerInterface;
+		ObjectVsBroadPhaseLayerFilterImpl _objVsBpLayerFilter;
+		ObjectLayerPairFilterImpl        _objLayerPairFilter;
+
+		// 지형 Body ID 저장 (나중에 삭제 등을 위해)
+		JPH::BodyID _terrainBodyID;
+
 	};
 }

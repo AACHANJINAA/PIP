@@ -16,6 +16,7 @@ namespace PIP
 		uint32_t					_exp;
 		int							_damage;
 		common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
+		JPH::BodyID _physicsBodyID;
 	private:
 		long long _owner_id; // 이 플레이어의 소유자 세션 ID	
 	};
