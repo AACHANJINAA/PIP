@@ -39,13 +39,13 @@ namespace PIP
 	void MapDataManager::LoadHeightMapData(std::string_view heightMapDataJSONPath)
 	{
 		// Common::TerrainData 로드
-		if (!m_terrainData.LoadFromJSON(heightMapDataJSONPath.data()))
+		if (!_terrainData.LoadFromJSON(heightMapDataJSONPath.data()))
 		{
 			MYERROR("Failed to load height map via Common::TerrainData: " << heightMapDataJSONPath);
 		}
 		else
 		{
-			const auto& info = m_terrainData.GetInfo();	
+			const auto& info = _terrainData.GetInfo();	
 			MYLOG("[TerrainData] Info: X[" << info.min_x << " ~ " << info.max_x
 				<< "], Z[" << info.min_z << " ~ " << info.max_z << "]" << std::endl);
 
@@ -65,7 +65,7 @@ namespace PIP
 	float MapDataManager::GetGroundHeight(float x, float z)
 	{
 		// Common::TerrainData 위임
-		return m_terrainData.GetHeightAt(x, z);
+		return _terrainData.GetHeightAt(x, z);
 	}
 
 	bool MapDataManager::CheckForCollision(common::Vec3 target_pos, common::Vec3 player_extents)

@@ -226,6 +226,7 @@ namespace common
         const TerrainInfo& GetInfo() const { return _info; }
         const std::vector<float>& GetHeightData() const { return _heights; }
         const std::string& GetHeightMapPath() const { return _heightMapPath; }
+        const std::vector<float>& GetRawData() const { return _heights; }
 
     private:
         TerrainInfo _info{};

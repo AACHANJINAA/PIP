@@ -50,6 +50,7 @@ namespace PIP
         common::Quat    _rotation;
         NPCState        _state = NPCState::IDLE;
         lua_State* _L = nullptr;
+        JPH::BodyID _physicsBodyID;
     };
 
 }

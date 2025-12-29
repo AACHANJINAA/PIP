@@ -29,7 +29,7 @@ namespace PIP
 		void LoadMapData(std::string_view mapDataPath);
 		void LoadHeightMapData(std::string_view heightMapDataJSONPath);
 
-		const common::TerrainData& GetTerrainData() const { return m_terrainData; }
+		const common::TerrainData& GetTerrainData() const { return _terrainData; }
 
 
 		float GetGroundHeight(float x, float z);
@@ -38,13 +38,13 @@ namespace PIP
 		bool CheckForCollision(common::Vec3 target_pos, common::Vec3 player_extents);
 		bool IsInsideMap(float x, float z) const
 		{
-			const auto& info = m_terrainData.GetInfo();
+			const auto& info = _terrainData.GetInfo();
 			return (x >= info.min_x && x <= info.max_x && z >= info.min_z && z <= info.max_z);
 		}
 
 	private:
 		std::vector<MapObject> _map_objects;
-		common::TerrainData m_terrainData;
+		common::TerrainData _terrainData;
 	};
 }
 
