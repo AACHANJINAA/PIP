@@ -378,3 +378,8 @@ Content/Developers/
 # Ignore Binaries and Intermediate folders within plugins
 /Plugins/*/Binaries/
 /Plugins/*/Intermediate/
+# Force track Jolt lib folder
+!Jolt/lib/
+
+!Jolt/lib/Debug/
+!Jolt/lib/Release/
