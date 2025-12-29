@@ -45,6 +45,8 @@ namespace PIP::server
 
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
+
+
 		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
 	}
@@ -115,16 +117,58 @@ namespace PIP::server
 		// 고정 스텝 60fps (16.6ms) 업데이트
 		_physicsSystem->Update(1.0f / 60.0f, 1, _tempAllocator, _jobSystem);
 	}
+
+	
+
 	void Room::UpdateAI(float deltaTime)
 	{
 		// 기존에 타이머로 돌던 NPC 업데이트를 여기서 일괄 처리
 		for (auto& [id, npc] : _npcs)
 		{
+			common::Vec3 oldPos = npc->GetPosition();
 			npc->UpdateAI(deltaTime);
-			// 여기서 바뀐 NPC 위치를 동기화 패킷으로 생성할 수 있음
+			common::Vec3 currPos = npc->GetPosition();
+
+			// 속도 계산
+			common::Vec3 velocity = {
+				(currPos.x - oldPos.x) / deltaTime,
+				(currPos.y - oldPos.y) / deltaTime,
+				(currPos.z - oldPos.z) / deltaTime
+			};
+			npc->SetVelocity(velocity);
+
+			// 지형 보정 (기존 로직 유지)
+			common::Vec3 newPos = MapDataManager::Instance()->AdjustPositionToGround(npc->GetPosition());
+			npc->SetPosition(newPos);
+
+			// [중요] 여기서 바뀐 위치를 체크하고 바로 Broadcast 하거나,
+			// 바뀐 리스트만 모았다가 한 번에 보낼 수 있습니다.
+			// 플레이어 시야 반경 안에 있는 npc만 보내도록, 맵 공간을 구획화하고 
+			SendNpcMovePacket(npc.get());
 		}
 	}
+	void Room::SendNpcMovePacket(NPC* npc)
+	{
+		if (!npc) return;
 
+		packet::SC_PACKET_NPC_MOVE move_packet_data;
+		move_packet_data._type = common::packet::PacketType::S2C_NPC_MOVE;
+		move_packet_data._npc_id = npc->GetNpcId();
+		move_packet_data._position = npc->GetPosition();
+		move_packet_data._velocity = npc->GetVelocity();
+		move_packet_data._rotation = npc->GetRotation();
+		move_packet_data._state = common::packet::OBJECT_STATE::WALK; // 일단 임시
+		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+
+		packet::PacketStream finalStream;
+		finalStream << move_packet_data;
+		finalStream << npc->GetName();
+
+		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
+		final_header->_size = static_cast<uint16_t>(finalStream.Size());
+
+		Broadcast(finalStream.constable_data(), finalStream.Size());
+	}
 	void Room::Broadcast(const char* data, size_t size, long long except_id)
 	{
 		for (auto& pair : _players)
@@ -336,6 +380,58 @@ namespace PIP::server
 		*/
 	}
 
+	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session,
+		const common::packet::CS_PACKET_ENTER_ROOM& enter_packet)
+	{
+
+		if (session->_room_id != -1)
+		{
+			server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
+			if (old_room)
+			{
+				packet::SC_PACKET_LEAVE leave_packet;
+				leave_packet._type = packet::PacketType::S2C_P_LEAVE;
+				leave_packet._size = sizeof(leave_packet);
+				leave_packet._id = session->_id;
+				old_room->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof(leave_packet), session->_id);
+
+				old_room->LeavePlayer(session->_id);
+			}
+		}
+
+		session->_room_id = enter_packet._room_id;
+		session->_state = server::SESSION_STATE::ST_INGAME;
+		session->_logic_thread_idx = GetLogicThreadIndex();
+		common::Vec3 spawnPos{ 0, 10, 10 };
+		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
+		session->_player._level = 1;
+		session->_player._hp = 100;
+		session->_player._exp = 0;
+
+
+		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 0, -150)");
+
+		packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
+		ack_packet._type = packet::PacketType::S2C_P_ENTER_ROOM_ACK;
+		ack_packet._size = sizeof(ack_packet);
+		ack_packet._room_id = enter_packet._room_id;
+		ack_packet._success = true;
+		packet::PacketStream ack_stream;
+		ack_stream << ack_packet;
+		session->do_send(ack_stream.constable_data(), ack_stream.Size());
+		MYLOG("[EnterRoom] Sent ENTER_ROOM_ACK(success) to session " << session->_id);
+
+		SendRoomInfoToNewPlayer(session);
+
+		packet::PacketStream self_spawn_stream = packet::MakeSpawnPlayerPacket(session);
+		session->do_send(self_spawn_stream.mutable_data(), self_spawn_stream.Size());
+
+		Broadcast(self_spawn_stream.constable_data(), self_spawn_stream.Size(), session->_id);
+		MYLOG("[EnterRoom] Broadcasted SPAWN_PLAYER of new session " << session->_id << " to other players in room " << GetRoomId());
+
+		EnterPlayer(session);
+	}
+
 	void Room::CreatePhysicsTerrain()
 	{
 		// MapDataManager에서 로드된 지형 정보 가져오기
@@ -415,73 +511,73 @@ namespace PIP::server
 		CreatePhysicsTerrain();
 	}
 
-	void Room::UpdateNPC(int npcId)
-	{
-		NPC* npc = GetNPC(npcId);
-		if (not npc)
-		{
-			MYERROR("npc not found!!");
-			return;
-		}
-		// 랜덤이동
-		/*common::Vec3 oldPos = npc->GetPosition();
-		common::Vec3 newPos = oldPos;
-		newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
-		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
+	//void Room::UpdateNPC(int npcId)
+	//{
+	//	NPC* npc = GetNPC(npcId);
+	//	if (not npc)
+	//	{
+	//		MYERROR("npc not found!!");
+	//		return;
+	//	}
+	//	// 랜덤이동
+	//	/*common::Vec3 oldPos = npc->GetPosition();
+	//	common::Vec3 newPos = oldPos;
+	//	newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
+	//	newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
+	//
+	//	common::Vec3 oldPos = npc->GetPosition();
+	//	float deltaTime = 0.2f; // 200ms 마다 업데이트 되므로
+	//	npc->UpdateAI(0.2f);
+	//	common::Vec3 currPos = npc->GetPosition();
 
-		common::Vec3 oldPos = npc->GetPosition();
-		float deltaTime = 0.2f; // 200ms 마다 업데이트 되므로
-		npc->UpdateAI(0.2f);
-		common::Vec3 currPos = npc->GetPosition();
+	//	common::Vec3 velocity;
+	//	velocity.x = (currPos.x - oldPos.x) / deltaTime;
+	//	velocity.y = (currPos.y - oldPos.y) / deltaTime;
+	//	velocity.z = (currPos.z - oldPos.z) / deltaTime;
+	//	npc->SetVelocity(velocity);
 
-		common::Vec3 velocity;
-		velocity.x = (currPos.x - oldPos.x) / deltaTime;
-		velocity.y = (currPos.y - oldPos.y) / deltaTime;
-		velocity.z = (currPos.z - oldPos.z) / deltaTime;
-		npc->SetVelocity(velocity);
+	//	common::Quat rotation = { 0,0,0,1 };
+	//	if (velocity.x != 0 || velocity.z != 0) {
+	//		// atan2 등을 이용해 Y축 회전각 계산 가능
+	//		float angle_rad = std::atan2(velocity.x, velocity.z); // Z축이 앞쪽인 경우
+	//		DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
+	//		XMStoreFloat4(&rotation, q);
 
-		common::Quat rotation = { 0,0,0,1 };
-		if (velocity.x != 0 || velocity.z != 0) {
-			// atan2 등을 이용해 Y축 회전각 계산 가능
-			float angle_rad = std::atan2(velocity.x, velocity.z); // Z축이 앞쪽인 경우
-			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
-			XMStoreFloat4(&rotation, q);
+	//	}
+	//	npc->SetRotation(rotation);
 
-		}
-		npc->SetRotation(rotation);
+	//	auto newPos = npc->GetPosition();
+	//	// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
+	//	newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
+	//	npc->SetPosition(newPos);
 
-		auto newPos = npc->GetPosition();
-		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
-		newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
-		npc->SetPosition(newPos);
+	//	const std::string& npc_name = npc->GetName();
 
-		const std::string& npc_name = npc->GetName();
+	//	packet::SC_PACKET_NPC_MOVE move_packet_data;
+	//	move_packet_data._type = common::packet::PacketType::S2C_NPC_MOVE;
+	//	move_packet_data._size = 0; // 임시
+	//	move_packet_data._npc_id = npcId;
+	//	move_packet_data._position = newPos;
+	//	move_packet_data._velocity = npc->GetVelocity();
+	//	move_packet_data._rotation = npc->GetRotation();
+	//	move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
-		packet::SC_PACKET_NPC_MOVE move_packet_data;
-		move_packet_data._type = common::packet::PacketType::S2C_NPC_MOVE;
-		move_packet_data._size = 0; // 임시
-		move_packet_data._npc_id = npcId;
-		move_packet_data._position = newPos;
-		move_packet_data._velocity = npc->GetVelocity();
-		move_packet_data._rotation = npc->GetRotation();
-		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+	//	packet::PacketStream finalStream;
+	//	finalStream << move_packet_data;
+	//	finalStream << npc_name;
 
-		packet::PacketStream finalStream;
-		finalStream << move_packet_data;
-		finalStream << npc_name;
+	//	// 최종 크기를 계산하여 패킷 헤더에 덮어쓰기 <중요>
+	//	auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
+	//	final_header->_size = static_cast<uint16_t>(finalStream.Size());
 
-		// 최종 크기를 계산하여 패킷 헤더에 덮어쓰기 <중요>
-		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
-		final_header->_size = static_cast<uint16_t>(finalStream.Size());
-
-		Broadcast(finalStream.constable_data(), finalStream.Size());
+	//	Broadcast(finalStream.constable_data(), finalStream.Size());
 
 
-		// 다음 업데이트 예약
-		Server::Instance()->AddTimerJob(_logic_thread_idx,std::chrono::milliseconds(200),[this, npcId]()
-		{
-			this->UpdateNPC(npcId);
-		});
-	}
+	//	//// 다음 업데이트 예약
+	//	//Server::Instance()->AddTimerJob(_logic_thread_idx,std::chrono::milliseconds(200),[this, npcId]()
+	//	//{
+	//	//	this->UpdateNPC(npcId);
+	//	//});
+	//}
 }
 
