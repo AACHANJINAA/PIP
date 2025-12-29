@@ -90,25 +90,15 @@ namespace PIP::server
 
 	void Room::Update(float deltaTime)
 	{
-		if (!_physicsSystem) return;
-
-		// 1단계: 물리 시뮬레이션 전진
-		// 캐릭터 컨트롤러를 쓰거나 동적인 물리 객체가 있다면 여기서 연산이 일어납니다.
-		// (클라 검증용 텔레포트 방식만 쓴다면 아주 짧은 스텝만 돌려도 됩니다.)
-		_physicsSystem->Update(deltaTime, 1, _tempAllocator, _jobSystem);
-
-		// 2단계: 서버 전용 로직 처리
-		// - 몬스터 AI (Behavior Tree) 업데이트
-		// - 쿨타임 감소, 버프/디버프 지속시간 계산
-		// - 환경 기믹 (움직이는 발판 등) 처리
-		for (auto& [id, npc] : _npcs) {
-			npc->UpdateAI(deltaTime);
-		}
-
-		// 3단계: 결과 동기화 및 브로드캐스트
-		// - 물리 연산 결과로 바뀐 위치를 클라에 보낼 패킷으로 묶음
-		// - 몬스터 이동 패킷 등 전송
+		ProcessJobs();
+		UpdatePhysics();
+		UpdateAI();
 	}
+
+	void Room::PushJob(std::function<void()> job) {}
+	void Room::ProcessJobs() {}
+	void Room::UpdatePhysics() {}
+	void Room::UpdateAI() {}
 
 	void Room::Broadcast(const char* data, size_t size, long long except_id)
 	{

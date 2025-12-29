@@ -1,7 +1,7 @@
 ﻿#pragma once
 namespace PIP
 {
-	class PhysicsManager : Singleton<PhysicsManager> {
+	class PhysicsManager : public Singleton<PhysicsManager> {
 		friend class Singleton<PhysicsManager>;
         PhysicsManager() = default;
 		~PhysicsManager() override = default;
