@@ -12,7 +12,7 @@ namespace PIP
 
         // 2. 메모리 할당기 및 잡 시스템 생성
         _tempAllocator = new TempAllocatorImpl(10 * 1024 * 1024); // 10MB
-        _jobSystem = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrenc - 1);
+        _jobSystem = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
         // 3. 물리 시스템 초기화 (MaxBodies, NumBodyMutexes, MaxBodyPairs, MaxContactConstraints)
         const uint cMaxBodies = 1024;
