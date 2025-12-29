@@ -425,22 +425,23 @@ namespace PIP::server
 	}
 	void Server::Logic_worker(int thread_idx)
 	{
-		MYLOG("Logic worker thread #" << thread_idx << " started.");
-
+		auto& worker = _logic_workers[thread_idx];
 		auto lastTick = std::chrono::steady_clock::now();
-		constexpr auto frameDuration = std::chrono::milliseconds(16); // 60fps
+
+		// 60fps를 맞추기 위한 목표 간격 (약 16.6ms)
+		const auto frameDuration = std::chrono::microseconds(16666);
 
 		while (_is_running)
 		{
 			auto now = std::chrono::steady_clock::now();
-			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick);
+			auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - lastTick);
 
 			if (elapsed >= frameDuration)
 			{
-				float deltaTime = elapsed.count() / 1000.0f;
+				float deltaTime = elapsed.count() / 1000000.0f; // 초 단위 변환
 				lastTick = now;
 
-				// 1. 이 스레드가 담당하는 모든 방 업데이트
+				// 1. 이 스레드가 담당하는 모든 방을 업데이트 (중앙 통제)
 				for (auto& room : _rooms)
 				{
 					if (room->GetLogicThreadIndex() == thread_idx)
@@ -449,12 +450,18 @@ namespace PIP::server
 					}
 				}
 
-				// 2. (기존) 타이머 잡 처리 등...
+				// 2. 기존의 타이머 잡(공용) 처리
+				while (!worker._timer_queue.empty() && worker._timer_queue.top()._execute_time <= now)
+				{
+					TimerJob timer_job = worker._timer_queue.top();
+					worker._timer_queue.pop();
+					timer_job._task();
+				}
 			}
 			else
 			{
-				// 남은 시간 동안 살짝 쉬기 (CPU 과점 방지)
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				// 시간이 남으면 아주 잠깐 쉬어서 CPU 과점 방지
+				std::this_thread::yield(); // 혹은 sleep_for(0ms)
 			}
 		}
 	}

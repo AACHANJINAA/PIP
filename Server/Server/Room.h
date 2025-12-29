@@ -45,6 +45,10 @@ namespace PIP::server
 		// 공격 처리
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
+		// 플레이어 이동 처리 로직
+		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
+
+
 		// 게터
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
@@ -57,9 +61,8 @@ namespace PIP::server
 
 		void ProcessJobs();
 		void UpdatePhysics();
-		void UpdateAI();
+		void UpdateAI(float deltaTime);
 		void UpdateNPC(int npcId);
-
 
 	private:
 		int _room_id;
