@@ -35,11 +35,11 @@ namespace PIP::server
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
 			AddNPC(std::move(npc));
 
-			// 생성된 NPC의 AI를 1초 뒤에 처음으로 실행하도록 타이머에 등록
-			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
-			{
-				UpdateNPC(npcId);
-			});
+			//// 생성된 NPC의 AI를 1초 뒤에 처음으로 실행하도록 타이머에 등록
+			//Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
+			//{
+			//	UpdateNPC(npcId);
+			//});
 		}
 	}
 
@@ -90,15 +90,40 @@ namespace PIP::server
 
 	void Room::Update(float deltaTime)
 	{
-		ProcessJobs();
-		UpdatePhysics();
-		UpdateAI();
+		ProcessJobs();		// 1. 플레이어 이동 패킷 등 네트워크 명령을 먼저 다 처리
+		UpdatePhysics();	// 2. 바뀐 위치를 바탕으로 물리 충돌 해결
+		UpdateAI(deltaTime);// 3. NPC AI 업데이트
 	}
 
-	void Room::PushJob(std::function<void()> job) {}
-	void Room::ProcessJobs() {}
-	void Room::UpdatePhysics() {}
-	void Room::UpdateAI() {}
+	void Room::PushJob(std::function<void()> job)
+	{
+		_jobQueue.push(std::move(job));
+	}
+	void Room::ProcessJobs()
+	{
+		std::function<void()> job;
+		// 큐가 빌 때까지 모든 명령을 현재 프레임에서 소화
+		while (_jobQueue.try_pop(job))
+		{
+			if (job) job();
+		}
+	}
+	void Room::UpdatePhysics()
+	{
+		if (!_physicsSystem) return;
+
+		// 고정 스텝 60fps (16.6ms) 업데이트
+		_physicsSystem->Update(1.0f / 60.0f, 1, _tempAllocator, _jobSystem);
+	}
+	void Room::UpdateAI(float deltaTime)
+	{
+		// 기존에 타이머로 돌던 NPC 업데이트를 여기서 일괄 처리
+		for (auto& [id, npc] : _npcs)
+		{
+			npc->UpdateAI(deltaTime);
+			// 여기서 바뀐 NPC 위치를 동기화 패킷으로 생성할 수 있음
+		}
+	}
 
 	void Room::Broadcast(const char* data, size_t size, long long except_id)
 	{
@@ -235,6 +260,80 @@ namespace PIP::server
 
 			Broadcast(stream.constable_data(), stream.Size());
 		}
+	}
+
+	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet)
+	{
+		// 1. 유효성 검사
+		if (!session || session->_state != server::SESSION_STATE::ST_INGAME) return;
+
+		common::Vec3 targetPos = move_packet._position;
+		common::Quat targetRotation = move_packet._rotation;
+		common::packet::OBJECT_STATE targetState = move_packet._state;
+		common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
+
+		// 2. 맵 범위 체크
+		if (!MapDataManager::Instance()->IsInsideMap(targetPos.x, targetPos.z))
+		{
+			// 맵 밖으로 나가려는 시도 - 보정 패킷 전송
+			packet::SC_PACKET_MOVE correction_packet;
+			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			correction_packet._size = sizeof(correction_packet);
+			correction_packet._id = session->_id;
+			correction_packet._position = session->_player._position; // 이전 안전한 위치
+			correction_packet._rotation = session->_player._rotation;
+			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
+
+			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+			return;
+		}
+
+		// 3. 지형 높이(Y) 보정 (클라이언트와 동일하게)
+		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
+		targetPos.y = groundHeight;
+
+		// 4. 충돌 체크 (MapObject AABB)
+		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
+		{
+			// [충돌!] 이전 위치로 롤백 패킷 전송
+			packet::SC_PACKET_MOVE correction_packet;
+			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			correction_packet._size = sizeof(correction_packet);
+			correction_packet._id = session->_id;
+			correction_packet._position = session->_player._position; // 직전 위치
+			correction_packet._rotation = session->_player._rotation;
+			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
+
+			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
+		}
+		else
+		{
+			// [성공!] 서버 메모리 갱신 및 브로드캐스팅
+			session->_player._position = targetPos;
+			session->_player._rotation = targetRotation;
+			session->_player._state = targetState;
+
+			packet::SC_PACKET_MOVE sync_packet;
+			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
+			sync_packet._size = sizeof(sync_packet);
+			sync_packet._id = session->_id;
+			sync_packet._position = targetPos;
+			sync_packet._rotation = targetRotation;
+			sync_packet._state = targetState;
+
+			// 나를 제외한 방 안의 모든 유저에게 전송
+			Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
+		}
+
+		// 5. Jolt 물리 바디 동기화 (나중에 Jolt 바디 생성 후 활성화)
+		/*
+		if (!_physicsSystem) return;
+		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
+		if (!session->_player._physicsBodyID.IsInvalid()) {
+			bodyInterface.SetPosition(session->_player._physicsBodyID,
+				JPH::RVec3(targetPos.x, targetPos.y, targetPos.z), JPH::EActivation::Activate);
+		}
+		*/
 	}
 
 	void Room::CreatePhysicsTerrain()
