@@ -122,7 +122,14 @@ namespace PIP::server
 
 	void Room::UpdateAI(float deltaTime)
 	{
-		// 기존에 타이머로 돌던 NPC 업데이트를 여기서 일괄 처리
+		static float npcSyncTimer = 0;
+		npcSyncTimer += deltaTime;
+		bool shouldSendPacket = false;
+		if (npcSyncTimer >= 0.2f)
+		{
+			shouldSendPacket = true;
+			npcSyncTimer = 0.0f; // 타이머 초기화
+		}
 		for (auto& [id, npc] : _npcs)
 		{
 			common::Vec3 oldPos = npc->GetPosition();
@@ -144,8 +151,12 @@ namespace PIP::server
 			// [중요] 여기서 바뀐 위치를 체크하고 바로 Broadcast 하거나,
 			// 바뀐 리스트만 모았다가 한 번에 보낼 수 있습니다.
 			// 플레이어 시야 반경 안에 있는 npc만 보내도록, 맵 공간을 구획화하고 
-			SendNpcMovePacket(npc.get());
+			if (shouldSendPacket)
+			{
+				SendNpcMovePacket(npc.get());
+			}
 		}
+		
 	}
 	void Room::SendNpcMovePacket(NPC* npc)
 	{

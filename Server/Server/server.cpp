@@ -488,11 +488,11 @@ namespace PIP::server
 					timer_job._task();
 				}
 			}
-			else
-			{
-				// 시간이 남으면 아주 잠깐 쉬어서 CPU 과점 방지
-				std::this_thread::yield(); // 혹은 sleep_for(0ms)
-			}
+			//else
+			//{
+			//	// 시간이 남으면 아주 잠깐 쉬어서 CPU 과점 방지
+			//	std::this_thread::yield(); // 혹은 sleep_for(0ms)
+			//}
 		}
 	}
 	void Server::register_new_session(SOCKET client_socket)
