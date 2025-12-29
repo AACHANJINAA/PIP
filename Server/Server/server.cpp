@@ -366,31 +366,44 @@ namespace PIP::server
 			}
 
 			// 클라이언트 연결 종료 또는 에러 처리
-			if (FALSE == ret || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
+			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
 			{
 				std::shared_ptr<SESSION> session = GetSession(key);
 				if (session)
 				{
 					MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
 
-					auto task = [this, session_id = session->_id]() {
-						std::shared_ptr<SESSION> s = GetSession(session_id);
-						if (s && s->_state == SESSION_STATE::ST_INGAME && s->_room_id != -1)
+					// [핵심 변경] 방의 PushJob을 사용하여 로직 스레드 내에서 안전하게 처리
+					if (session->_room_id != -1)
+					{
+						Room* room = GetRoom(session->_room_id);
+						if (room)
 						{
-							Room* room = GetRoom(s->_room_id);
-							if (room)
-							{
-								// 방에서 플레이어 제거
-								room->LeavePlayer(s->_id);
-								MYLOG("[Logic_worker] Processed disconnect for session " << s->_id << " from room " << room->GetRoomId());
-							}
+							// 방의 큐에 퇴장 명령을 넣습니다.
+							room->PushJob([this, session_id = session->_id, room]() 
+								{
+									std::shared_ptr<SESSION> s = GetSession(session_id);
+									if (s) {
+										room->LeavePlayer(s->_id);
+										MYLOG("[RoomJob] Session " << session_id << " left room " << room->GetRoomId());
+									}
+									// 세션 삭제는 방에서 완전히 빠진 후에 수행
+									RemoveSession(session_id);
+								});
 						}
-						RemoveSession(session_id);
-					}; 
-					get_logic_queue(session->_logic_thread_idx)->push({std::move(task)});
+						else {
+							// 방이 없으면 즉시 삭제
+							RemoveSession(session->_id);
+						}
+					}
+					else
+					{
+						// 방에 입장 전이라면 즉시 세션 삭제
+						RemoveSession(session->_id);
+					}
 				}
-				if (eo->_io_op == IO_SEND)
-					delete eo;
+
+				if (eo->_io_op == IO_SEND) delete eo;
 				continue;
 			}
 
@@ -425,6 +438,8 @@ namespace PIP::server
 	}
 	void Server::Logic_worker(int thread_idx)
 	{
+		
+
 		auto& worker = _logic_workers[thread_idx];
 		auto lastTick = std::chrono::steady_clock::now();
 
@@ -433,6 +448,21 @@ namespace PIP::server
 
 		while (_is_running)
 		{
+			LogicJob logic_job;
+			while (worker.queue.try_pop(logic_job))
+			{
+				if (logic_job._task) logic_job._task();
+			}
+
+			// --- 2. 타이머 잡 처리 ---
+			while (!worker._timer_queue.empty() &&
+				worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
+			{
+				TimerJob timer_job = worker._timer_queue.top();
+				worker._timer_queue.pop();
+				if (timer_job._task) timer_job._task();
+			}
+
 			auto now = std::chrono::steady_clock::now();
 			auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - lastTick);
 

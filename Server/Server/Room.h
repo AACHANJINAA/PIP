@@ -47,6 +47,7 @@ namespace PIP::server
 
 		// 플레이어 이동 처리 로직
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
+		void Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 
 
 		// 게터
@@ -61,8 +62,10 @@ namespace PIP::server
 
 		void ProcessJobs();
 		void UpdatePhysics();
+		void SendNpcMovePacket(NPC* npc);
 		void UpdateAI(float deltaTime);
-		void UpdateNPC(int npcId);
+
+		//void UpdateNPC(int npcId);
 
 	private:
 		int _room_id;
