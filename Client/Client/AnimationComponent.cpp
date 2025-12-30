@@ -16,11 +16,15 @@ void AnimationComponent::late_update(float deltaTime)
 	auto renderComp = game_object()->get_component<RenderComponent>();
 	if (!renderComp) return;
 
-	auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
-	if (mesh && !_nowAnimationName.empty())
-	{
-		mesh->update_animation(_nowAnimationTime, _nowAnimationName);
-	}
+	//auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
+	//if (mesh && !_nowAnimationName.empty())
+	//{
+	//	mesh->update_animation(_nowAnimationTime, _nowAnimationName);
+	//}
+
+	auto mesh = _stateMeshMap.find(_currentState);
+	auto anim = _stateAnimMap.find(_currentState);
+	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second);
 }
 
 void AnimationComponent::set_state(common::packet::OBJECT_STATE state)
