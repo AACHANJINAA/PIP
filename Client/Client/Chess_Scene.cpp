@@ -21,7 +21,6 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	// =========================필요한 메시 로드==================================
 
     ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
-    ResourceManager::instance()->load_mesh("Resource/Character/Gramma_Walk/Gramma_Walk.gltf",true,"hi");
     ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf",true,"walk");
     ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",true,"idle");
 
@@ -41,7 +40,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	//SpawnBTS(device, commandList);
 
 	// DW설명 : 그래미 워크 생성 함수 호출
-	// SpawnGrammy_Walk(device, commandList);
+	SpawnGrammy_Walk(device, commandList);
 
     //Spawn_SK_MagicConstruct(device, commandList);
 
@@ -159,8 +158,8 @@ void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandLi
         renderer->set_mesh(hi_brute_Mesh);
 
         auto animaiton_component = hi_brute->add_component<AnimationComponent>();
-        animaiton_component->add_state_mapping(common::packet::OBJECT_STATE::WALK,"Gramma_walk_mesh", hi_brute_Mesh);
-
+        animaiton_component->add_state_mapping(common::packet::OBJECT_STATE::WALK,"walk", hi_brute_Mesh);
+		animaiton_component->set_state(common::packet::OBJECT_STATE::WALK);
 
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_Gramma_Walk";
