@@ -40,7 +40,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	//SpawnBTS(device, commandList);
 
 	// DW설명 : 그래미 워크 생성 함수 호출
-	SpawnGrammy_Walk(device, commandList);
+	//SpawnGrammy_Walk(device, commandList);
 
     //Spawn_SK_MagicConstruct(device, commandList);
 
@@ -207,8 +207,9 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         // 애니메이션 컴포넌트 추가
         auto animation_renderer = hi_brute->add_component<AnimationComponent>();
-        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
-
+        //animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
+        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
+        animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_SK_MagicConstruct";
 
@@ -223,7 +224,7 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
         hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
 
 
-        hi_brute->transform()->set_local_position(XMFLOAT3(0.0f + offsetX, 25.0f + offsetY, -130.0f + offsetZ));
+        hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 25.0f, -130.0f));
         ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
 }
