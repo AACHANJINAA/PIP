@@ -860,16 +860,12 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 			{
 				auto& v = primitive->_skinned_vertices[i];
 
-				// Position: Z 반전 (x, y, -z) -> 왼손 좌표계로 바꾸는 과정임
 				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
-
-				// Normal: Z 반전
 				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-
-				// Tangent: Z 반전
 				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w);
-
-				// UV
+				if (i < 10) {
+					CLOG("Vertex[" << i << "] Tangent.w = " << tangents[i].w);
+				}
 				v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
 
 				// Skinning Data (배열에 값 대입)
@@ -1288,6 +1284,12 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
 			primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
 			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+			/*if (i < tangents.size()) {
+				primitive->_vertices[i]._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, tangents[i].z, -tangents[i].w);
+			}
+			else {
+				primitive->_vertices[i]._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, -1.0f);
+			}*/
 		}
 
 		// 정점 확인 디버깅 
@@ -1315,6 +1317,10 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			}
 			else if (accessor["componentType"] == 5125) {
 				memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
+			}
+
+			for (size_t i = 0; i < primitive->_indexCount; i += 3) {
+				std::swap(primitive->_indices[i + 1], primitive->_indices[i + 2]);
 			}
 		}
 
