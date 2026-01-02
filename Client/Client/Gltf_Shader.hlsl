@@ -69,7 +69,6 @@ struct VS_INPUT
     float4 Tangent : TANGENT;
 };
 
-//-- 정점 셰이더와 픽셀 셰이더 간 데이터 전달 구조체 (이전과 동일) --//
 struct VS_OUTPUT
 {
     float4 Position : SV_POSITION;
@@ -80,8 +79,6 @@ struct VS_OUTPUT
     float3 Bitangent : BITANGENT0;
 };
 
-///-- 정점 셰이더 (로직은 이전과 동일) --///
-//-- 정점 셰이더 (수정된 버전) --//
 VS_OUTPUT VS_GLTF(VS_INPUT input)
 {
     VS_OUTPUT Out;
@@ -92,34 +89,33 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     
     Out.TexCoord = input.TexCoord0;
 
-    // 월드 공간 기준으로 Normal, Tangent, Bitangent를 계산하여 전달
-    float3x3 worldRotScale = (float3x3) g_matWorld;
+    float3x3 worldRot = (float3x3) g_matWorld;
     
-    // 각 축의 길이를 구해서 나눠주면 스케일이 제거된 순수 회전값이 됩니다.
-    float3 scale = float3(length(worldRotScale[0]), length(worldRotScale[1]), length(worldRotScale[2]));
-    
-    // 0으로 나누기 방지
-    if (any(scale <= 0.0001))
-        scale = float3(1, 1, 1);
+    // 각 축을 정규화해서 스케일을 제거 (Uniform Scale 가정)
+    worldRot[0] = normalize(worldRot[0]);
+    worldRot[1] = normalize(worldRot[1]);
+    worldRot[2] = normalize(worldRot[2]);
 
-    float3x3 worldRot = float3x3(
-        worldRotScale[0] / scale.x,
-        worldRotScale[1] / scale.y,
-        worldRotScale[2] / scale.z
-    );
-
-    Out.Normal = normalize(mul(worldRot, input.Normal));
-    Out.Tangent = normalize(mul(worldRot, input.Tangent.xyz));
-    
-    // Bitangent는 픽셀 셰이더나 여기서 다시 계산 (w 성분이 중요)
-    // Tangent.w를 곱해주는 것 잊지 마세요! (이미 C++에서 w를 반전시켰다면 여기선 그대로 씀)
-    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
+    // [중요] 벡터 * 행렬 (Vector * Matrix) 순서 유지!
+    Out.Normal = normalize(mul(input.Normal, worldRot));
+    Out.Tangent = normalize(mul(input.Tangent.xyz, worldRot));
+    float tangentW = input.Tangent.w;
+    // Bitangent 재계산 (Tangent.w 사용)
+    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal));
 
     return Out;
 }   
 
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 {
+    // 비추는 방향 밝은 초록이면 아래 위 방향
+    //float3 L = normalize(-gLights[0].m_vDirection); // Light.hlsl 94줄과 동일
+    //return float4(L * 0.5 + 0.5, 1.0f);
+    
+    // tangent 확인 -> bitangent도 똑같은 형식으로 확인 가능
+    //float3 T = normalize(In.Tangent);
+    //return float4(T * 0.5 + 0.5, 1.0f);
+    
     // 1. Albedo (BaseColor) 계산
     // 공식: FinalBaseColor = TextureSample * BaseColorFactor
     float4 diffuseSample = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
@@ -156,15 +152,20 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     // 3. Normal Map
     float3 N = normalize(In.Normal);
+    
     float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
 
     if (length(normalMapSample) > 0.1f)
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
+        N_map.y = -N_map.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
         float3 T = normalize(In.Tangent);
         float3 B = normalize(In.Bitangent);
         N = normalize(T * N_map.x + B * N_map.y + N * N_map.z);
     }
+
+    // tangent 확인용
+    //return float4(N * 0.5 + 0.5, 1.0f);
 
     
     // 4. Emissive (발광)
@@ -212,6 +213,7 @@ float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
     if (dot(normalMap, normalMap) > 0.01)
     {
         float3 N_tangent = normalMap * 2.0 - 1.0;
+        N_tangent.y = -N_tangent.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
         float3x3 TBN = float3x3(normalize(In.Tangent), normalize(In.Bitangent), normalize(In.Normal));
         N = normalize(mul(N_tangent, TBN));
     }

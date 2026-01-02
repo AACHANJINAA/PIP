@@ -69,7 +69,7 @@ VS_OUTPUT VS_GLTF_SKINNED(VS_SKINNED_INPUT input)
     Out.Tangent = normalize(mul((float3x3) g_matWorld, skinnedTangent));
     
     // Bitangent 계산 (Normal과 Tangent 외적)
-    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
+    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal) * input.Tangent.w);
 
     return Out;
 }
