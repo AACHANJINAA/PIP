@@ -284,6 +284,8 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 			XMStoreFloat3(&target_node._translation, final_value);
 		}
 		else if (channel._path == "rotation") {
+			// 정규화 수행
+			final_value = XMQuaternionNormalize(final_value);
 			XMStoreFloat4(&target_node._rotation, final_value);
 		}
 		else if (channel._path == "scale") {
@@ -310,7 +312,7 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 
 		// GPU 전송을 위해 Transpose (Row-Major)
 		XMStoreFloat4x4(&_final_bone_transforms[i], XMMatrixTranspose(final_matrix));
-		//XMStoreFloat4x4(&_final_bone_transforms[i], final_matrix);
+		// XMStoreFloat4x4(&_final_bone_transforms[i], final_matrix);
 	}
 
 	// 6. GPU 상수 버퍼 업로드
@@ -531,6 +533,9 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 		// 1. 파일에서 읽은 원본 행렬 (오른손 좌표계, Column-Major)
 		// 메모리 레이아웃 상 Translation이 끝에 있으므로, DXMath(Row-Major)로 읽으면 포맷은 맞음
 		DirectX::XMMATRIX gltf_matrix = DirectX::XMLoadFloat4x4(&inverse_bind_matrices[i]);
+
+		// 수정
+		//gltf_matrix = DirectX::XMMatrixTranspose(gltf_matrix);
 
 		// 2. [추가] 좌표계 변환 (Right-Handed -> Left-Handed)
 		// Z축을 반전시키는 스케일 행렬 생성
@@ -828,26 +833,70 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 		if (primitive_json["attributes"].contains("WEIGHTS_0"))
 		{
 			int acc_idx = primitive_json["attributes"]["WEIGHTS_0"];
-			int component_type = gltf_json["accessors"][acc_idx]["componentType"];
+			const json& accessor = gltf_json["accessors"][acc_idx];
+			int component_type = accessor["componentType"];
+
+			// [중요] normalized 속성 확인
+			bool is_normalized = accessor.value("normalized", false);
+
 			// WEIGHTS_0 읽기
 			// [개선] 만약 파일 데이터가 Unsigned Byte(5121)라면? 
-			if (component_type == 5121)
+			if (component_type == 5121) // Unsigned Byte
 			{
-				// 1. 기껏 만든 함수를 사용하되, 4바이트 크기인 XMBYTE4 타입으로 읽습니다!
 				std::vector<XMBYTE4> byte_weights = get_attribute_data<XMBYTE4>(gltf_json, binary_buffer, acc_idx);
-
-				// 2. 읽어온 데이터를 우리가 쓸 XMFLOAT4(실수) 형식으로 변환
 				weights_vec.resize(byte_weights.size());
+
 				for (size_t i = 0; i < byte_weights.size(); ++i) {
-					weights_vec[i] = XMFLOAT4(
-						byte_weights[i].x / 255.0f, // 정규화(0~1 사이로 변환)
-						byte_weights[i].y / 255.0f,
-						byte_weights[i].z / 255.0f,
-						byte_weights[i].w / 255.0f
-					);
+					if (is_normalized) {
+						// normalized=true: GPU가 자동으로 정규화하므로 그대로 사용
+						// 하지만 CPU에서 사용하려면 정규화 필요
+						weights_vec[i] = XMFLOAT4(
+							static_cast<uint8_t>(byte_weights[i].x) / 255.0f,
+							static_cast<uint8_t>(byte_weights[i].y) / 255.0f,
+							static_cast<uint8_t>(byte_weights[i].z) / 255.0f,
+							static_cast<uint8_t>(byte_weights[i].w) / 255.0f
+						);
+					}
+					else {
+						// normalized=false: 이미 0~1 범위 (실제로는 거의 없음)
+						weights_vec[i] = XMFLOAT4(
+							byte_weights[i].x,
+							byte_weights[i].y,
+							byte_weights[i].z,
+							byte_weights[i].w
+						);
+					}
 				}
 			}
-			else if (component_type == 5126)
+			else if (component_type == 5123) // Unsigned Short
+			{
+				const json& buffer_view = gltf_json["bufferViews"][accessor["bufferView"].get<int>()];
+				const char* buffer_start = binary_buffer.data() + buffer_view.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+				int count = accessor["count"];
+				int byte_stride = buffer_view.value("byteStride", 0);
+
+				weights_vec.resize(count);
+
+				for (int i = 0; i < count; ++i)
+				{
+					int step = (byte_stride > 0) ? byte_stride : (sizeof(uint16_t) * 4);
+					const uint16_t* ptr = reinterpret_cast<const uint16_t*>(buffer_start + i * step);
+
+					if (is_normalized) {
+						weights_vec[i] = XMFLOAT4(
+							ptr[0] / 65535.0f,
+							ptr[1] / 65535.0f,
+							ptr[2] / 65535.0f,
+							ptr[3] / 65535.0f
+						);
+					}
+					else {
+						// 이미 float 범위
+						weights_vec[i] = XMFLOAT4(ptr[0], ptr[1], ptr[2], ptr[3]);
+					}
+				}
+			}
+			else if (component_type == 5126) // Float
 			{
 				weights_vec = get_attribute_data<XMFLOAT4>(gltf_json, binary_buffer, primitive_json["attributes"]["WEIGHTS_0"]);
 			}
@@ -862,7 +911,13 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 
 				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
 				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w);
+				if (i < tangents.size()) {
+					v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w);
+				}
+				else {
+					// 기본값 (Tangent가 없으면 보통 (1, 0, 0, 1) 등으로 설정)
+					v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+				}
 				if (i < 10) {
 					CLOG("Vertex[" << i << "] Tangent.w = " << tangents[i].w);
 				}
@@ -929,7 +984,7 @@ void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::
 
 	// 1. 파일 로드
 	if (!load_gltf_file(file_path, gltf_json, binary_buffer)) {
-		CERROR("애니메이션 파일 로딩 실패");
+		CERROR("애니메이션 파일 로딩 실패: " + file_path);
 		return;
 	}
 
@@ -953,39 +1008,47 @@ void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::
 	int animation_index = 0;
 	for (const auto& anim_node : animations_node) {
 
-		std::string anim_name = gltf_json["animations"][animation_index]["name"].get<std::string>();
+		std::string anim_name = anim_node.value("name", "anim_" + std::to_string(animation_index));
 		if (want_name != "null_name")
 		{
 			anim_name = want_name;
 		}
 
 		AnimationClip clip;
-		clip._name = anim_node.value("name", "extra_anim");
+		clip._name = anim_name;
 		clip._duration = 0.0f;
 
-		// Samplers 데이터 미리 로드
+		// ---------------------------------------------------------
+		// (A) Samplers 데이터 미리 로드
+		// ---------------------------------------------------------
 		struct SamplerData {
 			std::vector<float> times;
 			std::vector<float> values;
 			AnimationInterpolation interpolation;
-			int component_count;
+			int component_count; // VEC3=3, VEC4=4
 		};
 		std::vector<SamplerData> samplers_temp;
 
 		for (const auto& sampler_json : anim_node["samplers"]) {
 			SamplerData sData;
+			// Input (Time)
 			sData.times = get_attribute_data<float>(gltf_json, binary_buffer, sampler_json["input"].get<int>());
 
-			if (!sData.times.empty() && sData.times.back() > clip._duration) {
-				clip._duration = sData.times.back();
+			// 애니메이션 길이 갱신
+			if (!sData.times.empty()) {
+				float max_t = sData.times.back();
+				if (max_t > clip._duration) clip._duration = max_t;
 			}
 
+			// Interpolation
 			sData.interpolation = string_to_interpolation(sampler_json.value("interpolation", "LINEAR"));
 
+			// Output (Values)
 			int output_idx = sampler_json["output"].get<int>();
 			const json& accessor = gltf_json["accessors"][output_idx];
 			std::string type = accessor["type"].get<std::string>();
 
+			// 타입에 따라 데이터 읽기
 			if (type == "VEC3") {
 				sData.component_count = 3;
 				std::vector<XMFLOAT3> vec3s = get_attribute_data<XMFLOAT3>(gltf_json, binary_buffer, output_idx);
@@ -998,58 +1061,118 @@ void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::
 				sData.values.resize(vec4s.size() * 4);
 				memcpy(sData.values.data(), vec4s.data(), vec4s.size() * sizeof(XMFLOAT4));
 			}
+			else if (type == "SCALAR") {
+				sData.component_count = 1;
+				sData.values = get_attribute_data<float>(gltf_json, binary_buffer, output_idx);
+			}
 			samplers_temp.push_back(sData);
 		}
 
-		// Channels 파싱 및 데이터 매핑
+		// ---------------------------------------------------------
+		// (B) Channels 파싱 및 데이터 매핑
+		// ---------------------------------------------------------
 		for (const auto& channel_node : anim_node["channels"]) {
 			int file_node_idx = channel_node["target"]["node"].get<int>();
 			std::string bone_name = temp_index_to_name[file_node_idx];
 
+			// [중요] 이름 불일치 보정 로직 (Stretching 해결의 핵심)
+			// 내 메쉬에 해당 이름이 없다면, 접두어 제거나 대체 이름 등을 시도합니다.
+			if (my_name_to_index.find(bone_name) == my_name_to_index.end())
+			{
+				// 1. "Armature" 같은 최상위 노드는 보통 무시
+				if (bone_name == "Armature") continue;
+
+				if (bone_name == "Root" || bone_name == "root") {
+					// 내 메쉬에 "root"가 있으면 그걸로 매칭
+					if (my_name_to_index.count("root")) 
+						bone_name = "root";
+					// 내 메쉬에 "Root"가 있으면 그걸로 매칭
+					else if (my_name_to_index.count("Root")) 
+						bone_name = "Root";
+					// 둘 다 없고 "Hips"나 "Pelvis"가 있다면 루트 대신 연결 (선택 사항)
+					// else if (my_name_to_index.count("Hips")) bone_name = "Hips";
+				}
+
+				// 2. 접두어 제거 시도 (예: "mixamorig:Hips" -> "Hips")
+				size_t colon_pos = bone_name.find(':');
+				if (colon_pos != std::string::npos) {
+					std::string suffix = bone_name.substr(colon_pos + 1);
+					if (my_name_to_index.count(suffix)) {
+						bone_name = suffix;
+					}
+				}
+				// 3. 언더바 접두어 제거 시도 (예: "MagicConstruct_Hips" -> "Hips")
+				else {
+					size_t underscore_pos = bone_name.find('_');
+					if (underscore_pos != std::string::npos) {
+						std::string suffix = bone_name.substr(underscore_pos + 1);
+						if (my_name_to_index.count(suffix)) {
+							bone_name = suffix;
+						}
+					}
+				}
+			}
+
+			// 매칭되는 뼈가 있을 때만 처리
 			if (my_name_to_index.count(bone_name)) {
 				AnimationChannel channel;
 				channel._node_index = my_name_to_index[bone_name];
 				channel._path = channel_node["target"]["path"].get<std::string>();
 
-				const SamplerData& sampler = samplers_temp[channel_node["sampler"].get<int>()];
+				int sampler_idx = channel_node["sampler"].get<int>();
+				const SamplerData& sampler = samplers_temp[sampler_idx];
 				channel._interpolation = sampler.interpolation;
 
 				size_t keyframe_count = sampler.times.size();
+
+				// CubicSpline은 키프레임당 3개의 데이터 세트(InTangent, Value, OutTangent)를 가짐
 				int values_per_key = (channel._interpolation == AnimationInterpolation::CubicSpline) ? 3 : 1;
-				int stride = sampler.component_count;
+				int component_cnt = sampler.component_count;
 
 				for (size_t k = 0; k < keyframe_count; ++k) {
 					Keyframe kf;
 					kf._time = sampler.times[k];
-					size_t base_idx = k * values_per_key * stride;
 
-					// 좌표계 변환 함수 (RH -> LH)
-					auto convert = [&](size_t offset) -> XMFLOAT4 {
-						float x = sampler.values[offset + 0];
-						float y = sampler.values[offset + 1];
-						float z = sampler.values[offset + 2];
-						float w = (stride > 3) ? sampler.values[offset + 3] : 0.0f;
+					// 데이터 읽기 시작 위치 (float 단위 인덱스)
+					size_t base_idx = k * values_per_key * component_cnt;
 
-						if (channel._path == "translation")
-							return XMFLOAT4(x, y, -z, 0.0f);
+					// [람다] 좌표계 변환을 포함하여 값 읽기 (RH -> LH)
+					auto read_converted = [&](size_t offset) -> XMFLOAT4 {
+						float x = (offset + 0 < sampler.values.size()) ? sampler.values[offset + 0] : 0.0f;
+						float y = (offset + 1 < sampler.values.size()) ? sampler.values[offset + 1] : 0.0f;
+						float z = (offset + 2 < sampler.values.size()) ? sampler.values[offset + 2] : 0.0f;
+						float w = (component_cnt > 3 && offset + 3 < sampler.values.size()) ? sampler.values[offset + 3] : 0.0f;
 
-						if (channel._path == "rotation")
-							return XMFLOAT4(-x, -y, z, w);
-
-						return XMFLOAT4(x, y, z, w); // scale 등
+						if (channel._path == "translation") {
+							return XMFLOAT4(x, y, -z, 0.0f); // Z 반전
+						}
+						else if (channel._path == "rotation") {
+							return XMFLOAT4(-x, -y, z, w); // 회전축 반전
+						}
+						else if (channel._path == "scale") {
+							return XMFLOAT4(x, y, z, 0.0f); // 변환 없음
+						}
+						return XMFLOAT4(x, y, z, w);
 						};
 
 					if (channel._interpolation == AnimationInterpolation::CubicSpline) {
-						kf._in_tangent = convert(base_idx + 0 * stride);
-						kf._value = convert(base_idx + 1 * stride);
-						kf._out_tangent = convert(base_idx + 2 * stride);
+						// 순서: In-Tangent -> Value -> Out-Tangent
+						kf._in_tangent = read_converted(base_idx + (0 * component_cnt));
+						kf._value = read_converted(base_idx + (1 * component_cnt));
+						kf._out_tangent = read_converted(base_idx + (2 * component_cnt));
 					}
 					else {
-						kf._value = convert(base_idx);
+						kf._value = read_converted(base_idx);
+						kf._in_tangent = XMFLOAT4(0, 0, 0, 0);
+						kf._out_tangent = XMFLOAT4(0, 0, 0, 0);
 					}
 					channel._keyframes.push_back(kf);
 				}
 				clip._channels.push_back(channel);
+			}
+			else {
+				// 디버깅: 매칭 실패한 뼈 이름 출력 (필요 시 주석 해제)
+				// CLOG("Warning: Bone mismatch in animation load: " << bone_name);
 			}
 		}
 		_animations.emplace(anim_name, clip);
