@@ -14,12 +14,8 @@ ComPtr<ID3D12RootSignature> DefaultRootSignatureGenerator::create(ID3D12Device* 
 	d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // [수정] 4개의 텍스처(t0, t1, t2, t3)를 포함하는 하나의 Descriptor Range를 정의합니다.
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
-    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 4; // 텍스처 4개를 사용합니다.
-    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0 레지스터에서 시작합니다.
-    d3dDescriptorRanges[0].RegisterSpace = 0;
-    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    CD3DX12_DESCRIPTOR_RANGE ranges[1];
+    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0부터 시작하는 4개의 SRV
 
     D3D12_ROOT_PARAMETER d3dRootParameters[5];
     // [수정] 0번 파라미터: 월드 행렬용 CBV
@@ -49,7 +45,7 @@ ComPtr<ID3D12RootSignature> DefaultRootSignatureGenerator::create(ID3D12Device* 
      // [수정] 파라미터 4: 텍스처를 위한 하나의 Descriptor Table
     d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
+    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &ranges[0];
     d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
@@ -95,15 +91,13 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
+	CD3DX12_DESCRIPTOR_RANGE ranges[4];
+
     for (int i = 0; i < 4; ++i)
     {
-        d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        d3dDescriptorRanges[i].NumDescriptors = 1; // 텍스처는 1개
-        d3dDescriptorRanges[i].BaseShaderRegister = i; // 셰이더의 t0 레지스터에 연결
-        d3dDescriptorRanges[i].RegisterSpace = 0;
-        d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+        ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
     }
+
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
 	D3D12_ROOT_PARAMETER d3dRootParameters[8]; // CBV 4개 + SRV 테이블 1개 = 5개
 
@@ -131,18 +125,12 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dRootParameters[3].Descriptor.RegisterSpace = 0;
     d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    //// [새로운 파라미터] 스키닝 상수 버퍼
-    //d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    //d3dRootParameters[4].Descriptor.ShaderRegister = 4; // b4: 스키닝 뼈 행렬
-    //d3dRootParameters[4].Descriptor.RegisterSpace = 0;
-    //d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 버텍스 셰이더에서만 필요
-
 	// 4번 텍스처 디스크립터 테이블
     for (int i = 0; i < 4; ++i)
     {
         d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
+        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &ranges[i];
         d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
     }
 
@@ -189,14 +177,10 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
+    CD3DX12_DESCRIPTOR_RANGE ranges[4];
     for (int i = 0; i < 4; ++i)
     {
-        d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        d3dDescriptorRanges[i].NumDescriptors = 1; // 텍스처는 1개
-        d3dDescriptorRanges[i].BaseShaderRegister = i; // 셰이더의 t0 레지스터에 연결
-        d3dDescriptorRanges[i].RegisterSpace = 0;
-        d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+        ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
     }
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
     D3D12_ROOT_PARAMETER d3dRootParameters[9]; // CBV 4개 + SRV 테이블 1개 = 5개
@@ -230,7 +214,7 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
     {
         d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
+        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &ranges[i];
         d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
     }
 
@@ -283,14 +267,10 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // 1. 텍스처(SRV)를 위한 디스크립터 범위 설정 (t0 ~ t3)
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[4];
+    CD3DX12_DESCRIPTOR_RANGE ranges[4];
     for (int i = 0; i < 4; ++i)
     {
-        d3dDescriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        d3dDescriptorRanges[i].NumDescriptors = 1;
-        d3dDescriptorRanges[i].BaseShaderRegister = i; // t0, t1, t2, t3
-        d3dDescriptorRanges[i].RegisterSpace = 0;
-        d3dDescriptorRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+        ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
     }
 
     // 2. 루트 파라미터 정의 (총 9개)
@@ -332,7 +312,7 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
         int rootParamIndex = 4 + i;
         d3dRootParameters[rootParamIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
         d3dRootParameters[rootParamIndex].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[rootParamIndex].DescriptorTable.pDescriptorRanges = &d3dDescriptorRanges[i];
+        d3dRootParameters[rootParamIndex].DescriptorTable.pDescriptorRanges = &ranges[i];
         d3dRootParameters[rootParamIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     }
 
@@ -391,12 +371,9 @@ ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* d
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
-    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 1; // 텍스처 1개
-    d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0 레지스터
-    d3dDescriptorRanges[0].RegisterSpace = 0;
-    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    CD3DX12_DESCRIPTOR_RANGE ranges[1];
+    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+
 
     D3D12_ROOT_PARAMETER d3dRootParameters[5];
 
@@ -427,7 +404,7 @@ ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* d
     // [4] t0: 텍스처 테이블 (Descriptor Table)
     d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
+    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &ranges[0];
     d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
@@ -489,13 +466,10 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // Descriptor Range for Textures (t0, t1, t2, t3, t4)
-    D3D12_DESCRIPTOR_RANGE d3dDescriptorRanges[1];
+    CD3DX12_DESCRIPTOR_RANGE ranges[1];
 
-    d3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    d3dDescriptorRanges[0].NumDescriptors = 5;
-	d3dDescriptorRanges[0].BaseShaderRegister = 0; // t0, t1, t2, t3, t4
-    d3dDescriptorRanges[0].RegisterSpace = 0;
-    d3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+
     // Root Parameters
     D3D12_ROOT_PARAMETER d3dRootParameters[5];
 
@@ -524,7 +498,7 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
 
     d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = d3dDescriptorRanges;
+    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &ranges[0];
     d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
