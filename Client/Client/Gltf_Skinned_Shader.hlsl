@@ -56,20 +56,14 @@ VS_OUTPUT VS_GLTF_SKINNED(VS_SKINNED_INPUT input)
     // 3. 텍스처 좌표 전달
     Out.TexCoord = input.TexCoord0;
 
-    // 4. Normal, Tangent 변환
-    // 법선 벡터도 뼈대의 회전에 따라 같이 회전해야 함
-    // (정확한 계산을 위해선 Inverse Transpose가 필요하지만, 균등 스케일 가정 시 3x3 사용)
-    float3x3 skinNormalTransform = (float3x3) skinTransform;
-    
-    float3 skinnedNormal = mul(input.Normal, skinNormalTransform);
-    float3 skinnedTangent = mul(input.Tangent.xyz, skinNormalTransform);
+    // 4. Normal, Tangent 변환 (수동 역전치 행렬 계산 버전)
+    matrix finalTransform = mul(skinTransform, g_matWorld);
+    matrix normalTransform = transpose(matrixInverse(finalTransform));
 
-    // 월드 회전 적용
-    Out.Normal = normalize(mul((float3x3) g_matWorld, skinnedNormal));
-    Out.Tangent = normalize(mul((float3x3) g_matWorld, skinnedTangent));
-    
-    // Bitangent 계산 (Normal과 Tangent 외적)
-    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal) * input.Tangent.w);
+    Out.Normal = normalize(mul(float4(input.Normal, 0.0f), normalTransform).xyz);
+    Out.Tangent = normalize(mul(float4(input.Tangent.xyz, 0.0f), normalTransform).xyz);
+
+    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
 
     return Out;
 }
