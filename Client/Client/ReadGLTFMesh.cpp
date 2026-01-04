@@ -910,14 +910,21 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				auto& v = primitive->_skinned_vertices[i];
 
 				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
-				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-				if (i < tangents.size()) {
-					v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w);
+				// Normal로부터 Tangent 자동 생성 (GLTF Tangent 무시)
+				XMVECTOR normal = XMLoadFloat3(&v._normal);
+				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+				// Normal이 Up과 거의 평행하면 다른 축 사용
+				if (abs(XMVectorGetY(normal)) > 0.99f) {
+					up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 				}
-				else {
-					// 기본값 (Tangent가 없으면 보통 (1, 0, 0, 1) 등으로 설정)
-					v._tangent = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-				}
+
+				// Tangent = normalize(cross(up, normal))
+				XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
+
+				XMFLOAT3 tangentF3;
+				XMStoreFloat3(&tangentF3, tangent);
+				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
 				if (i < 10) {
 					CLOG("Vertex[" << i << "] Tangent.w = " << tangents[i].w);
 				}

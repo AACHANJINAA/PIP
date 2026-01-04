@@ -56,14 +56,20 @@ VS_OUTPUT VS_GLTF_SKINNED(VS_SKINNED_INPUT input)
     // 3. 텍스처 좌표 전달
     Out.TexCoord = input.TexCoord0;
 
-    // 4. Normal, Tangent 변환 (수동 역전치 행렬 계산 버전)
+   // 4. Normal, Tangent 변환
     matrix finalTransform = mul(skinTransform, g_matWorld);
-    matrix normalTransform = transpose(matrixInverse(finalTransform));
 
-    Out.Normal = normalize(mul(float4(input.Normal, 0.0f), normalTransform).xyz);
-    Out.Tangent = normalize(mul(float4(input.Tangent.xyz, 0.0f), normalTransform).xyz);
+     // finalTransform에서 회전만 추출 (정규화)
+    float3x3 finalRot = (float3x3) finalTransform;
+    finalRot[0] = normalize(finalRot[0]);
+    finalRot[1] = normalize(finalRot[1]);
+    finalRot[2] = normalize(finalRot[2]);
 
-    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
+     // 정규화된 회전 행렬로 노멀 변환
+    Out.Normal = normalize(mul(input.Normal, finalRot));
+    Out.Tangent = normalize(mul(input.Tangent.xyz, finalRot));
+
+    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal) * input.Tangent.w);
 
     return Out;
 }

@@ -88,21 +88,20 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     Out.Position = mul(Out.Position, g_matProjection);
     
     Out.TexCoord = input.TexCoord0;
-
-    float3x3 worldRot = (float3x3) g_matWorld;
     
-    // 각 축을 정규화해서 스케일을 제거 (Uniform Scale 가정)
+    float3x3 worldRot = (float3x3) g_matWorld;
+
+     // 각 축을 정규화해서 스케일의 영향 제거 (Uniform Scale 가정)
     worldRot[0] = normalize(worldRot[0]);
     worldRot[1] = normalize(worldRot[1]);
     worldRot[2] = normalize(worldRot[2]);
 
-     // Normal 및 Tangent 변환 (수동 역전치 행렬 계산 버전)
-    matrix normalTransform = transpose(matrixInverse(g_matWorld));
-    Out.Normal = normalize(mul(float4(input.Normal, 0.0f), normalTransform).xyz);
-    Out.Tangent = normalize(mul(float4(input.Tangent.xyz, 0.0f), normalTransform).xyz);
+     // 정규화된 회전 행렬로 노멀 변환 (역행렬 계산 불필요!)
+    Out.Normal = normalize(mul(input.Normal, worldRot));
+    Out.Tangent = normalize(mul(input.Tangent.xyz, worldRot));
 
-	// Bitangent 계산
-    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
+     // Bitangent 계산
+    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal) * input.Tangent.w);
 
     return Out;
 }   
@@ -192,6 +191,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     {
         N = -N;
     }
+    
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
 
     float3 finalColor = litColor.rgb + finalEmissive;
@@ -201,6 +201,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     // Gamma Correction
     finalColor = pow(finalColor, 1.0f / 2.2f);
+
     return float4(finalColor, diffuseSample.a);
 }
 
