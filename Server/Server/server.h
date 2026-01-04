@@ -135,7 +135,6 @@ namespace PIP::server
 		void IO_worker();
 		void Logic_worker(int thread_idx);
 		void register_new_session(SOCKET client_socket);
-		DWORD_PTR GetPCoresMask();
 
 	private:
 		HANDLE						_iocp;
