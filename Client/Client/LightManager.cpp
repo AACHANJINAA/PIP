@@ -55,7 +55,7 @@ void LightManager::initialize(ID3D12Device* device)
     ThrowIfFailed(_lightsConstantBuffer->Map(0, &read_range, reinterpret_cast<void**>(&_pCbvDataBegin)));
 
 
-    set_global_ambient({ 0.35f, 0.35f, 0.35f, 1.0f });
+    set_global_ambient({ 0.5f, 0.5f, 0.5f, 1.0f });
 
     // 2. 주 방향 조명 (태양) 생성
     Light sun;
