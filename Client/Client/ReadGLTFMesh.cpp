@@ -971,6 +971,9 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				else if (accessor["componentType"] == 5125) { // unsigned int -> 너무 헷갈리는데 이거 나중에 enum으로 바꿔야 하나?
 					memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
 				}
+				for (size_t i = 0; i < primitive->_indexCount; i += 3) {
+					std::swap(primitive->_indices[i + 1], primitive->_indices[i + 2]);
+				}
 			}
 
 			BoundingOrientedBox::CreateFromPoints(primitive->_orientedBoundingBox, primitive->_skinned_vertices.size(), &primitive->_skinned_vertices[0]._position, sizeof(GltfSkinnedVertex));
@@ -1406,7 +1409,7 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			pos = XMVector3Transform(pos, world_mat);
 			XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
-			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
+			//primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
 			primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
 			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 			/*

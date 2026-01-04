@@ -69,7 +69,7 @@ VS_OUTPUT VS_GLTF_SKINNED(VS_SKINNED_INPUT input)
     Out.Normal = normalize(mul(input.Normal, finalRot));
     Out.Tangent = normalize(mul(input.Tangent.xyz, finalRot));
 
-    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal) * input.Tangent.w);
+    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
 
     return Out;
 }
