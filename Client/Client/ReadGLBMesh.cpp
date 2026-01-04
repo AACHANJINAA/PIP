@@ -262,12 +262,11 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
                         texture_upload_heap.Get(), 0, 0, 1, &texture_data);
 
                     // 텍스처 리소스의 상태를 셰이더에서 읽을 수 있도록 변경
-                    D3D12_RESOURCE_BARRIER barrier = {};
-                    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-                    barrier.Transition.pResource = gpu_primitive->_texture;
-                    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-                    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-                    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+                        gpu_primitive->_texture,
+                        D3D12_RESOURCE_STATE_COPY_DEST,
+						D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
                     command_list->ResourceBarrier(1, &barrier);
 
                     temp_upload_buffers.push_back(texture_upload_heap);
