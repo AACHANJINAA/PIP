@@ -337,15 +337,17 @@ void GameFramework::FrameAdvance()
 
 	HRESULT hResult = _commandAllocator->Reset();
 	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
-	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
-	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
-	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	d3dResourceBarrier.Transition.pResource = _renderTargetBuffers[_swapChainBufferIndex].Get();
-	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
+
+
+	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		_renderTargetBuffers[_swapChainBufferIndex].Get(),
+		D3D12_RESOURCE_STATE_PRESENT,
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+		D3D12_RESOURCE_BARRIER_FLAG_NONE);
+	
+
+	_commandList->ResourceBarrier(1, &barrier);
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =	_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	d3dRtvCPUDescriptorHandle.ptr += (_swapChainBufferIndex * _rtvDescriptorIncrementSize);
 	//float pfClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
@@ -376,10 +378,14 @@ void GameFramework::FrameAdvance()
 	{
 		m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 	}*/
-	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	_commandList->ResourceBarrier(1, &d3dResourceBarrier);
+
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		_renderTargetBuffers[_swapChainBufferIndex].Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_STATE_PRESENT,
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+		D3D12_RESOURCE_BARRIER_FLAG_NONE);
+	_commandList->ResourceBarrier(1, &barrier);
 
 	hResult = _commandList->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
