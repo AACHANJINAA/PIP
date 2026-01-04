@@ -33,13 +33,11 @@ namespace PIP::server
 			};
 			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
+			int startDelay = rand() % 200; // 0~199ms 랜덤 지연
+			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(startDelay), [this, npcId]() {
+					this->PushJob([this, npcId]() { this->UpdateSingleNPC(npcId); });
+				});
 			AddNPC(std::move(npc));
-
-			//// 생성된 NPC의 AI를 1초 뒤에 처음으로 실행하도록 타이머에 등록
-			//Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
-			//{
-			//	UpdateNPC(npcId);
-			//});
 		}
 	}
 
@@ -90,11 +88,22 @@ namespace PIP::server
 		// Broadcast(...);
 	}
 
-	void Room::Update(float deltaTime)
+
+	void Room::UpdatePhysics(float deltaTime)
 	{
-		ProcessJobs();		// 1. 플레이어 이동 패킷 등 네트워크 명령을 먼저 다 처리
-		UpdatePhysics();	// 2. 바뀐 위치를 바탕으로 물리 충돌 해결
-		UpdateAI(deltaTime);// 3. NPC AI 업데이트
+		if (!_physicsSystem)
+		{
+			return;
+		}
+		_physicsSystem->Update(deltaTime, 1, _tempAllocator, _jobSystem);
+	}
+	void Room::UpdateLogics(float deltaTime)
+	{
+		// 1. 잡 처리 (플레이어 이동 등) - 최대한 자주 처리
+		ProcessJobs();
+		//UpdatePhysics(deltaTime);
+
+		//UpdateAI(deltaTime);
 	}
 
 	void Room::PushJob(std::function<void()> job)
@@ -110,22 +119,67 @@ namespace PIP::server
 			if (job) job();
 		}
 	}
-	void Room::UpdatePhysics()
-	{
-		if (!_physicsSystem) return;
 
-		// 고정 스텝 60fps (16.6ms) 업데이트
-		_physicsSystem->Update(1.0f / 60.0f, 1, _tempAllocator, _jobSystem);
+	void Room::UpdateSingleNPC(int npcId)
+	{
+		NPC* npc = GetNPC(npcId);
+		if (not npc)
+		{
+			MYERROR("npc not found!!");
+			return;
+		}
+		// 랜덤이동
+		/*common::Vec3 oldPos = npc->GetPosition();
+		common::Vec3 newPos = oldPos;
+		newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
+		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
+
+		common::Vec3 oldPos = npc->GetPosition();
+		float deltaTime = 0.2f; // 200ms 마다 업데이트 되므로
+		npc->UpdateAI(0.2f);
+		common::Vec3 currPos = npc->GetPosition();
+
+		common::Vec3 velocity;
+		velocity.x = (currPos.x - oldPos.x) / deltaTime;
+		velocity.y = (currPos.y - oldPos.y) / deltaTime;
+		velocity.z = (currPos.z - oldPos.z) / deltaTime;
+		npc->SetVelocity(velocity);
+
+		common::Quat rotation = { 0,0,0,1 };
+		if (velocity.x != 0 || velocity.z != 0) {
+			// atan2 등을 이용해 Y축 회전각 계산 가능
+			float angle_rad = std::atan2(velocity.x, velocity.z); // Z축이 앞쪽인 경우
+			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
+			XMStoreFloat4(&rotation, q);
+
+		}
+		npc->SetRotation(rotation);
+
+		auto newPos = npc->GetPosition();
+		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
+		newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
+		npc->SetPosition(newPos);
+
+
+		SendNpcMovePacket(npc);
+
+
+		// 다음 업데이트 예약
+		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
+			{
+				this->PushJob([this, npcId]() {
+					this->UpdateSingleNPC(npcId);
+					});
+			});
 	}
 
-	
 
 	void Room::UpdateAI(float deltaTime)
 	{
 		static float npcSyncTimer = 0;
 		npcSyncTimer += deltaTime;
 		bool shouldSendPacket = false;
-		if (npcSyncTimer >= 0.2f)
+		if (npcSyncTimer >= 0.05f)
 		{
 			shouldSendPacket = true;
 			npcSyncTimer = 0.0f; // 타이머 초기화

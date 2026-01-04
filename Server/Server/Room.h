@@ -32,8 +32,9 @@ namespace PIP::server
 		// 메인 로직
 		// 게임 시작
 		void StartGame();
-		void Update(float deltaTime); //아직 사용 안함
-
+		void Update(float deltaTime);
+		void UpdatePhysics(float deltaTime);
+		void UpdateLogics(float deltaTime);
 
 
 
@@ -56,14 +57,17 @@ namespace PIP::server
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
 		RoomState GetRoomState() const { return _room_state; }
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
+
+
 	private:
 		void CreatePhysicsTerrain();
 		void PhysicsInitialize();
 
 		void ProcessJobs();
-		void UpdatePhysics();
-		void SendNpcMovePacket(NPC* npc);
+
+		void UpdateSingleNPC(int npcId);
 		void UpdateAI(float deltaTime);
+		void SendNpcMovePacket(NPC* npc);
 
 		//void UpdateNPC(int npcId);
 
