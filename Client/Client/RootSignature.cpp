@@ -13,43 +13,25 @@ ComPtr<ID3D12RootSignature> DefaultRootSignatureGenerator::create(ID3D12Device* 
 	::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
 	d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // [수정] 4개의 텍스처(t0, t1, t2, t3)를 포함하는 하나의 Descriptor Range를 정의합니다.
+    // 4개의 텍스처(t0, t1, t2, t3)를 포함하는 하나의 Descriptor Range를 정의합니다.
     CD3DX12_DESCRIPTOR_RANGE ranges[1];
     ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0부터 시작하는 4개의 SRV
 
-    D3D12_ROOT_PARAMETER d3dRootParameters[5];
-    // [수정] 0번 파라미터: 월드 행렬용 CBV
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
-    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    CD3DX12_ROOT_PARAMETER params[5];
 
-    // [수정] 1번 파라미터: 카메라용 CBV
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
-    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+    // 0번 파라미터: 월드 행렬용 CBV
+	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
+    // 1번 파라미터: 카메라용 CBV
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
     // 머터리얼 정보를 위한 상수 버퍼 뷰(CBV) 추가
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // 셰이더의 b2 레지스터
-    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
     // 조명 정보를 위한 상수 버퍼 뷰(CBV) 추가
-    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // 셰이더의 b3 레지스터
-    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
+     // 파라미터 4: 텍스처를 위한 하나의 Descriptor Table
+	params[4].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL); // t0~t3
 
-     // [수정] 파라미터 4: 텍스처를 위한 하나의 Descriptor Table
-    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &ranges[0];
-    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
-    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
 
     // 정적 샘플러 설정 (기존과 동일)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
@@ -99,43 +81,25 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     }
 
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
-	D3D12_ROOT_PARAMETER d3dRootParameters[8]; // CBV 4개 + SRV 테이블 1개 = 5개
+	CD3DX12_ROOT_PARAMETER params[8]; // CBV 4개 + SRV 테이블 1개 = 5개
 
     // 0번 월드 행렬용 CBV
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
-    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // 1번 카메라용 CBV
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
-    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
     // 2번 재질용 CBV
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: 재질
-    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
 	// 3번 조명용 CBV
-    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: 조명
-    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
 
 	// 4번 텍스처 디스크립터 테이블
     for (int i = 0; i < 4; ++i)
     {
-        d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &ranges[i];
-        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
+		params[4 + i].InitAsDescriptorTable(1, &ranges[i], D3D12_SHADER_VISIBILITY_PIXEL); // t0~t3
     }
 
-    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
-    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
 
     //// 3. 텍스처 샘플러 설정
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
@@ -183,49 +147,29 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
     }
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
-    D3D12_ROOT_PARAMETER d3dRootParameters[9]; // CBV 4개 + SRV 테이블 1개 = 5개
+    CD3DX12_ROOT_PARAMETER params[9]; // CBV 4개 + SRV 테이블 1개 = 5개
 
     // 0번 월드 행렬용 CBV
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[0].Descriptor.ShaderRegister = 0; // b0
-    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // 1번 카메라용 CBV
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[1].Descriptor.ShaderRegister = 1; // b1
-    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
     // 2번 재질용 CBV
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2; // b2: 재질
-    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
     // 3번 조명용 CBV
-    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3; // b3: 조명
-    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
 
     // 4번 텍스처 디스크립터 테이블
     for (int i = 0; i < 4; ++i)
     {
-        d3dRootParameters[4 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        d3dRootParameters[4 + i].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[4 + i].DescriptorTable.pDescriptorRanges = &ranges[i];
-        d3dRootParameters[4 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 셰이더에서만 필요
+        int param_index = 4 + i;
+        params[param_index].InitAsDescriptorTable(1, &ranges[i], D3D12_SHADER_VISIBILITY_PIXEL); // t0~t3
     }
 
     // 8번 체력용 CBV
-    d3dRootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[8].Descriptor.ShaderRegister = 8; // b4: 체력
-    d3dRootParameters[8].Descriptor.RegisterSpace = 1;
-    d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // 픽셀 쉐이더에서만 볼거임
+	params[8].InitAsConstantBufferView(8, 1, D3D12_SHADER_VISIBILITY_PIXEL); // b4: 체력
 
-    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
-    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
 
     //// 3. 텍스처 샘플러 설정
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
@@ -277,55 +221,28 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     // [0~3]: 공통 CBV
     // [4~7]: 공통 텍스처 테이블 (순서 유지!)
     // [8]  : [추가] 스키닝 뼈대 행렬 (맨 뒤로 이동)
-    D3D12_ROOT_PARAMETER d3dRootParameters[9];
+    CD3DX12_ROOT_PARAMETER params[9];
 
     // [0] b0: 월드 행렬
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[0].Descriptor.ShaderRegister = 0;
-    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // [1] b1: 카메라
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[1].Descriptor.ShaderRegister = 1;
-    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
     // [2] b2: 재질
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2;
-    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
     // [3] b3: 조명
-    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3;
-    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-    // -----------------------------------------------------------------------
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
     // [4~7] t0~t3: 텍스처 디스크립터 테이블 (GltfRootSignature와 위치 동일하게 유지)
-    // -----------------------------------------------------------------------
     for (int i = 0; i < 4; ++i)
     {
         // 파라미터 인덱스 4, 5, 6, 7
-        int rootParamIndex = 4 + i;
-        d3dRootParameters[rootParamIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        d3dRootParameters[rootParamIndex].DescriptorTable.NumDescriptorRanges = 1;
-        d3dRootParameters[rootParamIndex].DescriptorTable.pDescriptorRanges = &ranges[i];
-        d3dRootParameters[rootParamIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+        int param_index = 4 + i;
+		params[param_index].InitAsDescriptorTable(1, &ranges[i], D3D12_SHADER_VISIBILITY_PIXEL); // t0~t3
     }
-
-    // -----------------------------------------------------------------------
     // [8] b4: [추가] 스키닝 뼈대 행렬 (맨 뒤에 추가)
-    // -----------------------------------------------------------------------
-    d3dRootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[8].Descriptor.ShaderRegister = 4; // 레지스터는 여전히 b4
-    d3dRootParameters[8].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VS 전용
+	params[8].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX); // b4
 
-    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
-    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
 
     // 3. 정적 샘플러 설정 (기존과 동일)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
@@ -375,40 +292,21 @@ ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* d
     ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
 
 
-    D3D12_ROOT_PARAMETER d3dRootParameters[5];
+    CD3DX12_ROOT_PARAMETER params[5];
 
     // [0] b0: 월드 행렬 (CBV)
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[0].Descriptor.ShaderRegister = 0;
-    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // [1] b1: 카메라 (CBV)
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[1].Descriptor.ShaderRegister = 1;
-    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b
     // [2] b2: 재질 (CBV) - 스카이박스는 안 써도 칸은 비워둡니다 (호환성)
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2;
-    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
     // [3] b3: 조명 (CBV) - 마찬가지로 칸 유지
-    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3;
-    d3dRootParameters[3].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
     // [4] t0: 텍스처 테이블 (Descriptor Table)
-    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &ranges[0];
-    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	params[4].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL); // t0
 
-    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
-    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
 
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
 
@@ -471,38 +369,20 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
 
     // Root Parameters
-    D3D12_ROOT_PARAMETER d3dRootParameters[5];
-
+    CD3DX12_ROOT_PARAMETER params[5];
     // [0] b0: World Matrix (cbPerObject)
-    d3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[0].Descriptor.ShaderRegister = 0;
-    d3dRootParameters[0].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // [1] b1: Camera (cbPerFrame)
-    d3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[1].Descriptor.ShaderRegister = 1;
-    d3dRootParameters[1].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
     // [2] b2: Terrain Info (cbTerrain)
-    d3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dRootParameters[2].Descriptor.ShaderRegister = 2;
-    d3dRootParameters[2].Descriptor.RegisterSpace = 0;
-    d3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
+    // [3] b3: Light (cbPerLight)
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
+	// [4] t0~t4: Texture Descriptor Table
+    params[4].InitAsDescriptorTable(1, &ranges[0]);
 
-    d3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;                                                         
-    d3dRootParameters[3].Descriptor.ShaderRegister = 3;                                                                         
-    d3dRootParameters[3].Descriptor.RegisterSpace = 0;                                                                          
-    d3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-    d3dRootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    d3dRootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-    d3dRootParameters[4].DescriptorTable.pDescriptorRanges = &ranges[0];
-    d3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    d3dRootSignatureDesc.NumParameters = _countof(d3dRootParameters);
-    d3dRootSignatureDesc.pParameters = d3dRootParameters;
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
 
     // Static Sampler (s0)
     D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
