@@ -3,17 +3,25 @@
 #include "PhysicsManager.h"
 #include "server.h"
 
+
 using namespace PIP;
 int main()
 {
-    // PhysicsManager 초기화 (Jolt 콜백 등록 및 팩토리 생성)
 
-	//// ================= Jolt 테스트 코드 시작 =================
+
     // I/O 스레드는 2개, 로직 스레드는 나머지 CPU 코어 수만큼 할당합니다.
 	// (최소 1개의 로직 스레드는 보장)
-	int total_cores = static_cast<int>(std::thread::hardware_concurrency());
-	int logic_worker_thread_count = std::max(1, total_cores - 2);
+#include <timeapi.h>
+#pragma comment(lib, "winmm.lib")
+    timeBeginPeriod(1);
+
+	std::vector<int> p_cores = GetPerformanceCoreIndices();
+
+    int total_cores = p_cores.empty() ? static_cast<int>(std::thread::hardware_concurrency()) : static_cast<int>(p_cores.size());
 	int io_worker_thread_count = 2;
+	int logic_worker_thread_count = std::max(1, total_cores - io_worker_thread_count);
+
+    MYLOG("[System] Detected P-Cores (Logical): " << total_cores << ", Logic Threads: " << logic_worker_thread_count);
 
     PIP::PhysicsManager::Instance()->Initialize();
     // 서버 스탈트!

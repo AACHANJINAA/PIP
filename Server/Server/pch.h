@@ -28,6 +28,8 @@
 #include <sstream>
 #include <chrono>
 #include <queue>
+#include <algorithm>
+
 
 // DirectX 헤더
 #include <DirectXMath.h>
@@ -151,4 +153,143 @@ public:
 namespace PIP
 {
 	extern void print_error(const char* msg, int err_no);
+}
+
+
+
+// OS 별 헤더 포함
+#ifdef _WIN32
+	#include <windows.h>
+	#include <processthreadsapi.h>
+#else
+	#include <pthread.h>
+	#include <sched.h>
+	#include <unistd.h>
+	#include <fstream>
+	#include <string>
+	#include <filesystem>
+#endif
+
+// 로깅용
+inline void core_log(const std::string& msg) {
+	MYLOG("[System] " << msg << std::endl;)
+}
+
+// 고성능 코어의 인덱스(Logical Processor ID) 목록을 가져오는 함수
+inline std::vector<int> GetPerformanceCoreIndices() {
+    std::vector<int> p_cores;
+
+#ifdef _WIN32
+    // Windows 10/11 방식 (Intel Hybrid, AMD, ARM64 지원)
+    ULONG returnLength = 0;
+    GetSystemCpuSetInformation(nullptr, 0, &returnLength, GetConsoleWindow(), 0);
+
+    if (returnLength == 0) return {}; // 실패 시 빈 벡터 반환
+
+    std::vector<char> buffer(returnLength);
+    PSYSTEM_CPU_SET_INFORMATION cpuSets = reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data());
+
+    if (!GetSystemCpuSetInformation(cpuSets, returnLength, &returnLength, GetConsoleWindow(), 0)) {
+        return {};
+    }
+
+    // 1단계: 가장 높은 EfficiencyClass(성능 등급) 값을 찾음
+    int maxEfficiencyClass = -1;
+    int count = returnLength / sizeof(SYSTEM_CPU_SET_INFORMATION);
+
+    for (int i = 0; i < count; ++i) {
+        if (cpuSets[i].Type == CpuSetInformation) {
+            if ((int)cpuSets[i].CpuSet.EfficiencyClass > maxEfficiencyClass) {
+                maxEfficiencyClass = (int)cpuSets[i].CpuSet.EfficiencyClass;
+            }
+        }
+    }
+
+    // 2단계: 가장 높은 등급의 코어 ID만 수집 (이것들이 P코어/Big코어)
+    for (int i = 0; i < count; ++i) {
+        if (cpuSets[i].Type == CpuSetInformation) {
+            if (cpuSets[i].CpuSet.EfficiencyClass == maxEfficiencyClass) {
+                p_cores.push_back(cpuSets[i].CpuSet.Id);
+            }
+        }
+    }
+
+#else
+    // Linux / Android (ARM big.LITTLE, Intel Hybrid, AMD)
+    // /sys/devices/system/cpu/cpuN/cpu_capacity 값을 읽어서 판단
+    // capacity가 없으면 동종(Homogeneous) CPU로 간주
+
+    std::vector<std::pair<int, int>> core_capacities; // {core_id, capacity}
+    int max_capacity = -1;
+    int num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+
+    for (int i = 0; i < num_cpus; ++i) {
+        std::string path = "/sys/devices/system/cpu/cpu" + std::to_string(i) + "/cpu_capacity";
+        std::ifstream file(path);
+        int capacity = 0;
+
+        if (file.is_open()) {
+            file >> capacity;
+        }
+        else {
+            // capacity 파일이 없으면(구형 커널 등) 모든 코어를 동일하게 취급
+            capacity = 1024;
+        }
+
+        if (capacity > max_capacity) max_capacity = capacity;
+        core_capacities.push_back({ i, capacity });
+    }
+
+    // 가장 높은 capacity를 가진 코어만 추출
+    for (const auto& pair : core_capacities) {
+        // 약간의 오차 범위를 고려할 수도 있으나, 보통 정확히 일치함
+        if (pair.second >= max_capacity) {
+            p_cores.push_back(pair.first);
+        }
+    }
+#endif
+
+    return p_cores;
+}
+
+// 현재 스레드를 고성능 코어에만 할당하는 함수
+inline bool PinThreadToPerformanceCores() {
+    std::vector<int> p_cores = GetPerformanceCoreIndices();
+
+    if (p_cores.empty()) {
+        core_log("고성능 코어를 식별할 수 없습니다. 기본 스케줄러를 사용합니다.");
+        return false;
+    }
+
+    std::string core_list_str = "";
+    for (int id : p_cores) core_list_str += std::to_string(id) + " ";
+    core_log("식별된 고성능 코어 ID: " + core_list_str);
+
+#ifdef _WIN32
+    // Windows: Affinity Mask 설정
+    DWORD_PTR mask = 0;
+    for (int core_id : p_cores) {
+        // 64코어 이상인 경우 Processor Group 처리가 추가로 필요하지만,
+        // 일반적인 데스크탑/모바일 환경을 가정하여 단순 마스크 사용
+        if (core_id < 64) {
+            mask |= (static_cast<DWORD_PTR>(1) << core_id);
+        }
+    }
+
+    HANDLE hThread = GetCurrentThread();
+    DWORD_PTR result = SetThreadAffinityMask(hThread, mask);
+    return (result != 0);
+
+#else
+    // Linux: pthread_setaffinity_np 설정
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+
+    for (int core_id : p_cores) {
+        CPU_SET(core_id, &cpuset);
+    }
+
+    int rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    return (rc == 0);
+#endif
 }
