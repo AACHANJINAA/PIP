@@ -94,7 +94,7 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
     	// Directional Light
         if (gLights[i].m_nType == DIRECTIONAL_LIGHT)
         {
-            L = normalize(-gLights[i].m_vDirection);
+            L = normalize(gLights[i].m_vDirection);
             attenuation = 1.0;
         }
 
