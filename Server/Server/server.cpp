@@ -179,7 +179,7 @@ namespace PIP::server
 		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 		// P-Core만 사용하도록 프로세스 친화도 설정
-		SetProcessAffinityMask(GetCurrentProcess(), GetPCoresMask());
+		PinThreadToPerformanceCores();
 
 		_is_running = true;
 
@@ -201,7 +201,7 @@ namespace PIP::server
 		{
 			// 이미 있는 워커 객체의 thread 멤버에 새 스레드를 대입
 			_logic_workers[i].thread = std::thread([this, i]() {
-				SetThreadAffinityMask(GetCurrentThread(), GetPCoresMask());
+				PinThreadToPerformanceCores();
 				Logic_worker(i);
 				});
 		}
@@ -212,7 +212,7 @@ namespace PIP::server
 		{
 			_io_threads.emplace_back([this]() {
 				// P-Core만 사용하도록 CPU 친화도 설정
-				SetThreadAffinityMask(GetCurrentThread(), GetPCoresMask());
+				PinThreadToPerformanceCores();
 				IO_worker();
 				});
 		}
@@ -438,22 +438,23 @@ namespace PIP::server
 	}
 	void Server::Logic_worker(int thread_idx)
 	{
-		
-
 		auto& worker = _logic_workers[thread_idx];
 		auto lastTick = std::chrono::steady_clock::now();
 
-		// 60fps를 맞추기 위한 목표 간격 (약 16.6ms)
-		const auto frameDuration = std::chrono::microseconds(16666);
+		double accumulator = 0.0;
+		const double physicsStep = 1.0 / 60.0; // 16.66ms 고정
 
+		using namespace std::chrono;
 		while (_is_running)
 		{
+			auto t_start = steady_clock::now();
+			// 1. 공용 잡 큐 처리 (LOGIN, ENTER_ROOM 등) - 즉시 처리!
 			LogicJob logic_job;
 			while (worker.queue.try_pop(logic_job))
 			{
 				if (logic_job._task) logic_job._task();
 			}
-
+			auto t_job = steady_clock::now();
 			// --- 2. 타이머 잡 처리 ---
 			while (!worker._timer_queue.empty() &&
 				worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
@@ -463,36 +464,60 @@ namespace PIP::server
 				if (timer_job._task) timer_job._task();
 			}
 
+			// 2. 시간 계산
 			auto now = std::chrono::steady_clock::now();
-			auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - lastTick);
+			std::chrono::duration<double> elapsed = now - lastTick;
+			lastTick = now;
+			accumulator += elapsed.count();
 
-			if (elapsed >= frameDuration)
+			// 3. 물리 엔진 업데이트 (밀린 시간만큼 여러 번 돌려서라도 60fps 보장)
+			// 예: 렉 걸려서 33ms가 지났으면 루프가 2번 돌아서 물리를 따라잡음
+			auto t_phys_start = steady_clock::now();
+			int physStepCounter = 0;
+			while (accumulator >= physicsStep)
 			{
-				float deltaTime = elapsed.count() / 1000000.0f; // 초 단위 변환
-				lastTick = now;
-
-				// 1. 이 스레드가 담당하는 모든 방을 업데이트 (중앙 통제)
-				for (auto& room : _rooms)
-				{
-					if (room->GetLogicThreadIndex() == thread_idx)
-					{
-						room->Update(deltaTime);
+				for (auto& room : _rooms) {
+					if (room->GetLogicThreadIndex() == thread_idx) {
+						room->UpdatePhysics(static_cast<float>(physicsStep));
 					}
 				}
+				accumulator -= physicsStep;
+				physStepCounter++;
+			}
+			auto t_phys_end = steady_clock::now();
 
-				// 2. 기존의 타이머 잡(공용) 처리
-				while (!worker._timer_queue.empty() && worker._timer_queue.top()._execute_time <= now)
-				{
-					TimerJob timer_job = worker._timer_queue.top();
-					worker._timer_queue.pop();
-					timer_job._task();
+			// 4. 게임 로직 업데이트 (남은 시간만큼)
+			auto t_logic_start = steady_clock::now();
+			float dt = static_cast<float>(elapsed.count());
+			for (auto& room : _rooms) {
+				if (room->GetLogicThreadIndex() == thread_idx) {
+					room->UpdateLogics(dt);
 				}
 			}
-			//else
-			//{
-			//	// 시간이 남으면 아주 잠깐 쉬어서 CPU 과점 방지
-			//	std::this_thread::yield(); // 혹은 sleep_for(0ms)
-			//}
+			auto t_logic_end = steady_clock::now();
+
+			// --- [결과 분석] ---
+			/*double jobMs = duration<double, std::milli>(t_job - t_start).count();
+			double physMs = duration<double, std::milli>(t_phys_end - t_phys_start).count();
+			double logicMs = duration<double, std::milli>(t_logic_end - t_logic_start).count();
+			double totalMs = jobMs + physMs + logicMs;*/
+			/*if (totalMs > 16.0)
+			{
+				MYLOG("[LAG WARNING] Thread " << thread_idx << " Overload! Total: " << totalMs << "ms"
+					<< " (Job: " << jobMs << ", Phys: " << physMs << " [" << physStepCounter << "steps], Logic: " << logicMs
+					<< ")");
+			}*/
+			// 2. 남은 시간 계산 (16.6ms - 걸린 시간)
+
+			auto loopElapsed = steady_clock::now() - t_start;
+			auto frameDuration = milliseconds(16); // 약 60fps
+			auto sleepTime = frameDuration - loopElapsed;
+
+			if (sleepTime.count() > 0) {
+				// [핵심] 남은 시간만큼 진짜로 잠듭니다.
+				// timeBeginPeriod(1)을 했으므로 1ms 단위로 정확히 깹니다
+				std::this_thread::sleep_for(sleepTime);
+			}
 		}
 	}
 	void Server::register_new_session(SOCKET client_socket)
@@ -502,33 +527,16 @@ namespace PIP::server
 		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), _iocp, new_id, 0);
 		// TCP_NODELAY 설정 추가
-		int nodelay = 1;
-		if (SOCKET_ERROR == setsockopt(client_socket, IPPROTO_TCP, TCP_NODELAY,
-			(const char*)&nodelay, sizeof(nodelay)))
-		{
-			// 로그만 남기고 계속 진행
-			MYERROR("Failed to set TCP_NODELAY for session " << new_id);
-		}
+		//int nodelay = 1;
+		//if (SOCKET_ERROR == setsockopt(client_socket, IPPROTO_TCP, TCP_NODELAY,
+		//	(const char*)&nodelay, sizeof(nodelay)))
+		//{
+		//	// 로그만 남기고 계속 진행
+		//	MYERROR("Failed to set TCP_NODELAY for session " << new_id);
+		//}
 
 		AddSession(new_id, p);
 		p->do_recv();
 		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
-	}
-
-	DWORD_PTR Server::GetPCoresMask()
-	{
-		SYSTEM_INFO sysInfo;
-		GetSystemInfo(&sysInfo);
-
-		// Intel 12세대 이상: 보통 첫 8개 코어가 P-Core
-		// 시스템에 따라 조정 필요
-		DWORD_PTR pCoreMask = 0;
-		for (int i = 0; i < std::min(8, (int)sysInfo.dwNumberOfProcessors); ++i)
-		{
-			pCoreMask |= (1ULL << i);
-		}
-
-		MYLOG("P-Core mask set to: 0x" << std::hex << pCoreMask);
-		return pCoreMask;
 	}
 }

@@ -676,13 +676,13 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 		return false;
 	}
 	// TCP_NODELAY 설정 추가
-	int nodelay = 1;
-	if (SOCKET_ERROR == setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY,
-		(const char*)&nodelay, sizeof(nodelay)))
-	{
-		error_display("TCP_NODELAY", WSAGetLastError());
-		// 이건 치명적이지 않으므로 연결을 끊지는 않음
-	}
+	//int nodelay = 1;
+	//if (SOCKET_ERROR == setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY,
+	//	(const char*)&nodelay, sizeof(nodelay)))
+	//{
+	//	error_display("TCP_NODELAY", WSAGetLastError());
+	//	// 이건 치명적이지 않으므로 연결을 끊지는 않음
+	//}
 	return true;
 }
 void NetworkManager::disconnect()
