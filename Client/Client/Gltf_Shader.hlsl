@@ -158,10 +158,16 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     if (length(normalMapSample) > 0.1f)
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
-        N_map.y = -N_map.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
-        float3 T = normalize(In.Tangent);
-        float3 B = normalize(In.Bitangent);
-        N = normalize(T * N_map.x + B * N_map.y + N * N_map.z);
+        //N_map.y = -N_map.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
+        float3 T = normalize(In.Tangent - dot(In.Tangent, N) * N);
+        float3 B = cross(N, T);
+        if (dot(B, In.Bitangent) < 0.0f)
+        {
+            B = -B;
+        }
+        // 직교화된 T, B, N으로 TBN 행렬을 만들고 Normal을 변환합니다.
+        float3x3 TBN = float3x3(T, B, N);
+        N = normalize(mul(N_map, TBN));
     }
 
     // tangent 확인용
@@ -181,6 +187,12 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     // 5. 조명 계산 및 후처리
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
+    // [수정] 양면 재질일 경우, 뒷면의 Normal을 뒤집어줍니다.
+// 기하학적 Normal(In.Normal)을 기준으로 앞/뒷면을 판단합니다.
+    if (DoubleSided > 0 && dot(In.Normal, V) < 0.0)
+    {
+        N = -N;
+    }
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
 
     float3 finalColor = litColor.rgb + finalEmissive;
