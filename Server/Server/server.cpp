@@ -497,16 +497,16 @@ namespace PIP::server
 			auto t_logic_end = steady_clock::now();
 
 			// --- [결과 분석] ---
-			/*double jobMs = duration<double, std::milli>(t_job - t_start).count();
+			double jobMs = duration<double, std::milli>(t_job - t_start).count();
 			double physMs = duration<double, std::milli>(t_phys_end - t_phys_start).count();
 			double logicMs = duration<double, std::milli>(t_logic_end - t_logic_start).count();
-			double totalMs = jobMs + physMs + logicMs;*/
-			/*if (totalMs > 16.0)
+			double totalMs = jobMs + physMs + logicMs;
+			if (totalMs > 16.0)
 			{
 				MYLOG("[LAG WARNING] Thread " << thread_idx << " Overload! Total: " << totalMs << "ms"
 					<< " (Job: " << jobMs << ", Phys: " << physMs << " [" << physStepCounter << "steps], Logic: " << logicMs
 					<< ")");
-			}*/
+			}
 			// 2. 남은 시간 계산 (16.6ms - 걸린 시간)
 
 			auto loopElapsed = steady_clock::now() - t_start;

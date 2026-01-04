@@ -32,7 +32,6 @@ namespace PIP::server
 		// 메인 로직
 		// 게임 시작
 		void StartGame();
-		void Update(float deltaTime);
 		void UpdatePhysics(float deltaTime);
 		void UpdateLogics(float deltaTime);
 
@@ -66,7 +65,7 @@ namespace PIP::server
 		void ProcessJobs();
 
 		void UpdateSingleNPC(int npcId);
-		void UpdateAI(float deltaTime);
+		//void UpdateAI(float deltaTime);
 		void SendNpcMovePacket(NPC* npc);
 
 		//void UpdateNPC(int npcId);
@@ -76,6 +75,7 @@ namespace PIP::server
 		int _logic_thread_idx; // 이 방을 담당하는 로직 스레드의 인덱스
 		uint8_t _max_players;
 		RoomState _room_state;
+		float _npcSyncTimer = 0.0f;
 
 		// 이 방에 속한 플레이어들의 목록
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;

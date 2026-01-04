@@ -34,6 +34,7 @@ namespace PIP::server
 			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
 			int startDelay = rand() % 200; // 0~199ms 랜덤 지연
+			npc->SetLastUpdateTime(std::chrono::steady_clock::now());
 			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(startDelay), [this, npcId]() {
 					this->PushJob([this, npcId]() { this->UpdateSingleNPC(npcId); });
 				});
@@ -43,10 +44,20 @@ namespace PIP::server
 
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
-
+		bool wasEmpty = _players.empty(); // 입장 전 비어있었나?
 
 		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
+		if (wasEmpty) {
+			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
+			// 모든 NPC에게 최초의 타이머 시동을 걸어줌
+			for (auto& [id, npc] : _npcs) {
+				npc->SetLastUpdateTime(std::chrono::steady_clock::now());
+				this->PushJob([this, npcId = id]() {
+					this->UpdateSingleNPC(npcId);
+					});
+			}
+		}
 	}
 	void Room::LeavePlayer(long long player_id)
 	{
@@ -133,16 +144,22 @@ namespace PIP::server
 		common::Vec3 newPos = oldPos;
 		newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
 		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
+		auto now = std::chrono::steady_clock::now();
+		std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
+		float realDeltaTime = elapsed.count();
+
+		if (realDeltaTime > 0.5f) realDeltaTime = 0.2f;
+
+		npc->SetLastUpdateTime(now);
 
 		common::Vec3 oldPos = npc->GetPosition();
-		float deltaTime = 0.2f; // 200ms 마다 업데이트 되므로
-		npc->UpdateAI(0.2f);
+		npc->UpdateAI(realDeltaTime);
 		common::Vec3 currPos = npc->GetPosition();
 
 		common::Vec3 velocity;
-		velocity.x = (currPos.x - oldPos.x) / deltaTime;
-		velocity.y = (currPos.y - oldPos.y) / deltaTime;
-		velocity.z = (currPos.z - oldPos.z) / deltaTime;
+		velocity.x = (currPos.x - oldPos.x) / realDeltaTime;
+		velocity.y = (currPos.y - oldPos.y) / realDeltaTime;
+		velocity.z = (currPos.z - oldPos.z) / realDeltaTime;
 		npc->SetVelocity(velocity);
 
 		common::Quat rotation = { 0,0,0,1 };
@@ -163,7 +180,10 @@ namespace PIP::server
 
 		SendNpcMovePacket(npc);
 
-
+		if (_players.empty()) {
+			//MYLOG("Room " << _room_id << " is empty. NPC " << npcId << " goes to sleep.");
+			return; // 재예약을 안 함 -> 타이머 스레드에서 사라짐
+		}
 		// 다음 업데이트 예약
 		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
 			{
@@ -174,7 +194,7 @@ namespace PIP::server
 	}
 
 
-	void Room::UpdateAI(float deltaTime)
+	/*void Room::UpdateAI(float deltaTime)
 	{
 		static float npcSyncTimer = 0;
 		npcSyncTimer += deltaTime;
@@ -211,7 +231,7 @@ namespace PIP::server
 			}
 		}
 		
-	}
+	}*/
 	void Room::SendNpcMovePacket(NPC* npc)
 	{
 		if (!npc) return;

@@ -28,6 +28,8 @@ namespace PIP
 		int32_t GetHP()             const    { return _hp; }
         common::Vec3 GetVelocity()  const    { return _velocity; }
         common::Vec4 GetRotation()  const    { return _rotation; }
+        std::chrono::steady_clock::time_point GetLastUpdateTime() const { return _lastUpdateTime; }
+
         // Setters
         void SetPosition(common::Vec3 newPosition)      { _position = newPosition; }
         void SetState(NPCState newState)                { _state = newState; }
@@ -36,6 +38,7 @@ namespace PIP
 		void SetHP(int new_hp)                          { _hp = new_hp; }
 		void SetVelocity(const common::Vec3& v)         { _velocity = v; }
 		void SetRotation(const common::Quat& r)         { _rotation = r; }
+        void SetLastUpdateTime(std::chrono::steady_clock::time_point t) { _lastUpdateTime = t; }
 
     public:
         void UpdateAI(float deltaTime);
@@ -49,6 +52,7 @@ namespace PIP
         common::Vec3    _velocity;
         common::Quat    _rotation;
         NPCState        _state = NPCState::IDLE;
+        std::chrono::steady_clock::time_point _lastUpdateTime;
         lua_State* _L = nullptr;
         JPH::BodyID _physicsBodyID;
     };
