@@ -1,12 +1,6 @@
 ﻿#pragma once
 #include "ScriptComponent.h"
-struct InterpolatedNPCState {
-	common::Vec3 position{};
-	common::Vec3 velocity{};
-	common::Quat rotation{};
-	uint32_t	 timestamp{};
-	uint32_t	 client_receive_time{};
-};
+
 class NPCScript : public ScriptComponent {
 public:
 	using required_components = std::tuple<TransformComponent>;
@@ -17,21 +11,23 @@ public:
 
 	void set_id(int64_t npc_id) { _id = npc_id; }
 	void set_hp(int hp) { _hp = hp; }
-	void set_position(const f3& position);
+	void set_position(const XMFLOAT3& position);
 
 	int64_t id() const { return _id; }
 	int hp() const { return _hp; }
-	const f3& position() const;
+	const XMFLOAT3& position() const;
 
-	void on_server_update(const f3& pos, const f3& vel, const common::Quat& rot, uint32_t timestamp);
+	void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
+
 private:
-	int		_hp{};
-	int64_t _id{};
+	int		_hp = 0;
+	int64_t _id = 0;
 
-	InterpolatedNPCState _currentTargetState{};
-	InterpolatedNPCState _prevTargetState{};
-
-	float _interpolateTimer = 0.0f;
-	float _interpolateDuration = 0.2f;
-	bool  _hasReceivedFirstPacket = false;
+	// --- 동기화 변수 ---
+	XMFLOAT3 _serverPos = { 0, 0, 0 };      // 서버 기준 위치
+	XMFLOAT3 _serverVel = { 0, 0, 0 };      // 서버 기준 속도
+	XMFLOAT4 _serverRot = { 0, 0, 0, 1 };   // 서버 기준 회전
+	
+	float _accumulatedTime = 0.0f;          // 패킷 수신 후 경과 시간
+	bool _isFirstUpdate = true;             // 첫 패킷인지 여부
 };
