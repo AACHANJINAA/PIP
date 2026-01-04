@@ -164,16 +164,14 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     if (length(normalMapSample) > 0.1f)
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
-        N_map.y = -N_map.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
-        float3 T = normalize(In.Tangent - dot(In.Tangent, N) * N);
-        float3 B = cross(N, T);
-        if (dot(B, In.Bitangent) < 0.0f)
-        {
-            B = -B;
-        }
-        // 직교화된 T, B, N으로 TBN 행렬을 만들고 Normal을 변환합니다.
-        float3x3 TBN = float3x3(T, B, N);
-        N = normalize(mul(N_map, TBN));
+        N_map.y = -N_map.y; // OpenGL to DirectX
+
+        float3 T = normalize(In.Tangent);
+        float3 B = normalize(In.Bitangent);
+        float3 N_geom = normalize(In.Normal);
+
+    // T, B, N을 열로 배치하는 행렬 구성 (또는 선형 결합 방식)
+        N = normalize(N_map.x * T + N_map.y * B + N_map.z * N_geom);
     }
 
     // tangent 확인용
