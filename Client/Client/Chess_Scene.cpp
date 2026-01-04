@@ -42,7 +42,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	// DW설명 : 그래미 워크 생성 함수 호출
 	//SpawnGrammy_Walk(device, commandList);
 
-    Spawn_SK_MagicConstruct(device, commandList);
+    //Spawn_SK_MagicConstruct(device, commandList);
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
