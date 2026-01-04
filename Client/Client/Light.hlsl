@@ -131,7 +131,7 @@ matrix matrixInverse(matrix m)
               + m._13 * inv._31
               + m._14 * inv._41;
 
-    if (det == 0)
+    if (abs(det) < 0.0001)  // det == 0 대신 임계값 사용
         return (matrix) 0;
 
     det = 1.0f / det;
