@@ -99,9 +99,15 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     // [중요] 벡터 * 행렬 (Vector * Matrix) 순서 유지!
     Out.Normal = normalize(mul(input.Normal, worldRot));
     Out.Tangent = normalize(mul(input.Tangent.xyz, worldRot));
-    float tangentW = input.Tangent.w;
     // Bitangent 재계산 (Tangent.w 사용)
-    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal));
+    float3 bitangent = cross(Out.Normal, Out.Tangent);
+    bitangent *= input.Tangent.w;
+    if (determinant(worldRot) < 0.0f)
+    {
+        bitangent = -bitangent;
+    }
+
+    Out.Bitangent = normalize(bitangent);
 
     return Out;
 }   
@@ -158,7 +164,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     if (length(normalMapSample) > 0.1f)
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
-        //N_map.y = -N_map.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
+        N_map.y = -N_map.y; // 언리얼 Exporter의 OpenGL 변환 되돌리기
         float3 T = normalize(In.Tangent - dot(In.Tangent, N) * N);
         float3 B = cross(N, T);
         if (dot(B, In.Bitangent) < 0.0f)
@@ -202,7 +208,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     // Gamma Correction
     finalColor = pow(finalColor, 1.0f / 2.2f);
-    
     return float4(finalColor, diffuseSample.a);
 }
 

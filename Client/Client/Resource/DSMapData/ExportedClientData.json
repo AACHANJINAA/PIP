@@ -1,0 +1,1698 @@
+[
+	{
+		"Name": "BP_house_04_Optimized16_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -57.643437938644787,
+				"Y": 0.013338623046875,
+				"Z": 15.571041365018546
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.38871215400576575,
+				"Z": 0,
+				"W": 0.92135924661784219
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized16_Door2",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -64.590525439610005,
+				"Y": 0.013338620000000107,
+				"Z": 11.449394220499965
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99057079834118411,
+				"Z": 0,
+				"W": -0.1370018009871001
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized16_House_Merged",
+		"MeshFile": "Meshes/SM_House_Village_04_Merged.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Wood_Trim",
+			"MI_Styl_Wood_Planks",
+			"MI_Furniture_01",
+			"MI_Tool_01",
+			"MI_Picture",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"M_Wood_Floor_Inst",
+			"MI_Roof",
+			"MI_Glass"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -60.986841546917738,
+				"Y": 4.0600000000000005,
+				"Z": 7.1146016184277423
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96421457272513789,
+				"Z": 0,
+				"W": -0.26512309922841493
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized16_Stairs",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -67.810055589145435,
+				"Y": -0.013338620000000107,
+				"Z": 9.8262877433199645
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.86927300420644071,
+				"Z": 0,
+				"W": 0.49433232157922835
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized16_Stairs1",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -70.457943742895054,
+				"Y": 1.9906629779423954,
+				"Z": 8.0183363181305154
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96421457433814173,
+				"Z": 0,
+				"W": -0.26512309336215162
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized2_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -36.644643269272024,
+				"Y": 0.46646011352539063,
+				"Z": 16.228976186691167
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.43837286981745971,
+				"Z": 0,
+				"W": -0.89879320592002954
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized2_SM_MERGED_BP_house_Merge_2",
+		"MeshFile": "Meshes/SM_House_Village_Optimized.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Wood_Trim",
+			"MI_Tool_01",
+			"MI_Furniture_01",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wood_Planks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -32.5840264312762,
+				"Y": 1.7288946533203124,
+				"Z": 18.968955175674555
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.1993631199449174,
+				"Z": 0,
+				"W": -0.97992568412396897
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_01_Optimized14_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -18.431396959775061,
+				"Y": 0.17614501953125,
+				"Z": -1.7161653508821695
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.41294581651344098,
+				"Z": 0,
+				"W": -0.91075559434134012
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_01_Optimized14_SM_House_Village_01_Merged",
+		"MeshFile": "Meshes/SM_House_Village_01_Merged.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Wood_Trim",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Tool_01",
+			"MI_Log_props_01",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Glass",
+			"MI_Roof",
+			"MI_Styl_Wood_Planks",
+			"M_Wood_Floor_Inst"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -29.991239107636432,
+				"Y": 0.93000000000000005,
+				"Z": -4.0611723692027697
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.1631513769283939,
+				"Z": 0,
+				"W": -0.98660104814781591
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -11.176533116077245,
+				"Y": 0.013338623046875,
+				"Z": 42.736291106248757
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.36110615070363938,
+				"Z": 0,
+				"W": 0.93252471705794493
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Door2",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -18.356639476001973,
+				"Y": 0.013338620000000107,
+				"Z": 39.0354705769399
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99421085557148758,
+				"Z": 0,
+				"W": -0.10744661308673412
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_House_Merged",
+		"MeshFile": "Meshes/SM_House_Village_04_Merged.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Wood_Trim",
+			"MI_Styl_Wood_Planks",
+			"MI_Furniture_01",
+			"MI_Tool_01",
+			"MI_Picture",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"M_Wood_Floor_Inst",
+			"MI_Roof",
+			"MI_Glass"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -15.017369549810704,
+				"Y": 4.0600000000000005,
+				"Z": 34.493858433497401
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97168115310712433,
+				"Z": 0,
+				"W": -0.23629586686273057
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Stairs",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -21.667074781638515,
+				"Y": -0.013338620000000107,
+				"Z": 37.606881375235538
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.85416874233820206,
+				"Z": 0,
+				"W": 0.51999592268822115
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Stairs1",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -24.417884394499811,
+				"Y": 1.9906629779423954,
+				"Z": 35.959748562010688
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9716811545447438,
+				"Z": 0,
+				"W": -0.23629586095104077
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized14_door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0.84151699621689657,
+				"Y": 0.99189941406250004,
+				"Z": 2.7456736617294961
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.95151246694766134,
+				"Z": 0,
+				"W": -0.30761018390680039
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized14_SM_MERGED_BP_house_3",
+		"MeshFile": "Meshes/SM_House_Village_03_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Glass",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Picture",
+			"MI_Log_props_01",
+			"MI_Styl_Wood_Planks",
+			"MI_Roof",
+			"MI_Furniture_01",
+			"MI_Light_props",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Tool_01",
+			"M_Wood_Floor_Inst",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -5.1489057556153845,
+				"Y": 2.3650000000000002,
+				"Z": -2.3629051463362556
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.33519901673494823,
+				"Z": 0,
+				"W": -0.94214734472900985
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized14_Stairs",
+		"MeshFile": "Meshes/SM_ladder_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -0.19629853520433529,
+				"Y": 0.96499999999999997,
+				"Z": -6.0671839857775227
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.42917739882548839,
+				"Z": 0,
+				"W": -0.90322021696670829
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized16_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 98.585655568243382,
+				"Y": 1.0184954833984374,
+				"Z": 67.979062699406882
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.8900491392491432,
+				"Z": 0,
+				"W": -0.45586459581970112
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized16_SM_House_village_02_Merged",
+		"MeshFile": "Meshes/SM_House_village_02_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Log_props_01",
+			"MI_Picture",
+			"MI_Furniture_01",
+			"MI_Roof",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Tool_01",
+			"MI_Styl_Wood_Planks",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 85.451308006131654,
+				"Y": 5.0600000000000005,
+				"Z": 66.655800129058733
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.05023132317994336,
+				"Z": 0,
+				"W": -0.99873761027188335
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized13_door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 34.232962306216876,
+				"Y": 0.99189941406250004,
+				"Z": 91.325439291729495
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.95151246694766134,
+				"Z": 0,
+				"W": -0.30761018390680039
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized13_SM_MERGED_BP_house_3",
+		"MeshFile": "Meshes/SM_House_Village_03_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Glass",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Picture",
+			"MI_Log_props_01",
+			"MI_Styl_Wood_Planks",
+			"MI_Roof",
+			"MI_Furniture_01",
+			"MI_Light_props",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Tool_01",
+			"M_Wood_Floor_Inst",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 28.242539554384599,
+				"Y": 2.3650000000000002,
+				"Z": 86.216860483663751
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.33519901673494823,
+				"Z": 0,
+				"W": -0.94214734472900985
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized13_Stairs",
+		"MeshFile": "Meshes/SM_ladder_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 33.195146774795646,
+				"Y": 0.96499999999999997,
+				"Z": 82.512581644222479
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.42917739882548839,
+				"Z": 0,
+				"W": -0.90322021696670829
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized13_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 11.758271954126904,
+				"Y": 1.0184954833984374,
+				"Z": 44.756457572868648
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.07776586640837746,
+				"Z": 0,
+				"W": -0.99697164955767614
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized13_SM_House_village_02_Merged",
+		"MeshFile": "Meshes/SM_House_village_02_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Log_props_01",
+			"MI_Picture",
+			"MI_Furniture_01",
+			"MI_Roof",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Tool_01",
+			"MI_Styl_Wood_Planks",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 20.052593845614908,
+				"Y": 5.0600000000000005,
+				"Z": 55.026137902500011
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.90228697158086613,
+				"Z": 0,
+				"W": -0.43113596569461599
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized15_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -2.2960608779947371,
+				"Y": 0.013338623046875,
+				"Z": 78.411448709411772
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.47202642200745404,
+				"Z": 0,
+				"W": 0.88158440147659178
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized15_Door2",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -8.367992126111421,
+				"Y": 0.013338620000000107,
+				"Z": 73.084005528285431
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97371456629304065,
+				"Z": 0,
+				"W": -0.22777169136825423
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized15_House_Merged",
+		"MeshFile": "Meshes/SM_House_Village_04_Merged.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Wood_Trim",
+			"MI_Styl_Wood_Planks",
+			"MI_Furniture_01",
+			"MI_Tool_01",
+			"MI_Picture",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"M_Wood_Floor_Inst",
+			"MI_Roof",
+			"MI_Glass"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -4.0294772097444049,
+				"Y": 4.0600000000000005,
+				"Z": 69.4848038359805
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.93565488810369857,
+				"Z": 0,
+				"W": -0.35291632204767082
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized15_Stairs",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -11.234656389437369,
+				"Y": -0.013338620000000107,
+				"Z": 70.897207636069254
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.91115744073978922,
+				"Z": 0,
+				"W": 0.41205839171714204
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized15_Stairs1",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -13.505453712917888,
+				"Y": 1.9906629779423954,
+				"Z": 68.63369718849323
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9356548902508347,
+				"Z": 0,
+				"W": -0.35291631635516413
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized14_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 78.019598009202085,
+				"Y": 0.013338623046875,
+				"Z": 76.487062472947315
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.94074549884056069,
+				"Z": 0,
+				"W": -0.33911341231396985
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized14_Door2",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 85.365512222410743,
+				"Y": 0.013338620000000107,
+				"Z": 79.846756551604543
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.084075564223521138,
+				"Z": 0,
+				"W": -0.99645938176149274
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized14_House_Merged",
+		"MeshFile": "Meshes/SM_House_Village_04_Merged.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Wood_Trim",
+			"MI_Styl_Wood_Planks",
+			"MI_Furniture_01",
+			"MI_Tool_01",
+			"MI_Picture",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"M_Wood_Floor_Inst",
+			"MI_Roof",
+			"MI_Glass"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 82.243114642958403,
+				"Y": 4.0600000000000005,
+				"Z": 84.540113330846879
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.21341824080683303,
+				"Z": 0,
+				"W": -0.97696092782204791
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized14_Stairs",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 88.739358677841409,
+				"Y": -0.013338620000000107,
+				"Z": 81.118373284432906
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.53990621171385611,
+				"Z": 0,
+				"W": -0.8417251823206866
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_04_Optimized14_Stairs1",
+		"MeshFile": "Meshes/SM_ladder_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 91.564455175973862,
+				"Y": 1.9906629779423954,
+				"Z": 82.634562522902797
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.21341823486302117,
+				"Z": 0,
+				"W": -0.97696092912048038
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized5_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 52.016766470382095,
+				"Y": 0.46646011352539063,
+				"Z": 92.625108089852162
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98692275071757063,
+				"Z": 0,
+				"W": -0.16119393324832054
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized5_SM_MERGED_BP_house_Merge_2",
+		"MeshFile": "Meshes/SM_House_Village_Optimized.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Wood_Trim",
+			"MI_Tool_01",
+			"MI_Furniture_01",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wood_Planks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 53.248477894004431,
+				"Y": 1.7288946533203124,
+				"Z": 87.883907721379657
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.68485199491532367,
+				"Z": 0,
+				"W": -0.72868219757347008
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized17_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 90.84086745239172,
+				"Y": 1.0184954833984374,
+				"Z": 38.238627342713798
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.85317134421929586,
+				"Z": 0,
+				"W": 0.5216307673086773
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized17_SM_House_village_02_Merged",
+		"MeshFile": "Meshes/SM_House_village_02_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Log_props_01",
+			"MI_Picture",
+			"MI_Furniture_01",
+			"MI_Roof",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Tool_01",
+			"MI_Styl_Wood_Planks",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 98.006891371724123,
+				"Y": 5.0600000000000005,
+				"Z": 27.152139580577831
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.87832976754635383,
+				"Z": 0,
+				"W": -0.478055247269568
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized3_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -1.7405509539457991,
+				"Y": 0.46646011352539063,
+				"Z": 19.532657296221458
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.46962151654489442,
+				"Z": 0,
+				"W": -0.88286784469595059
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized3_SM_MERGED_BP_house_Merge_2",
+		"MeshFile": "Meshes/SM_House_Village_Optimized.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Wood_Trim",
+			"MI_Tool_01",
+			"MI_Furniture_01",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wood_Planks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -5.6022609690254805,
+				"Y": 1.7288946533203124,
+				"Z": 22.54650694816478
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.91003044760118168,
+				"Z": 0,
+				"W": -0.41454141462439276
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized14_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 92.511645942463119,
+				"Y": 1.0184954833984374,
+				"Z": 2.0451769127896791
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.91567283647350783,
+				"Z": 0,
+				"W": 0.40192444133762345
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized14_SM_House_village_02_Merged",
+		"MeshFile": "Meshes/SM_House_village_02_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Log_props_01",
+			"MI_Picture",
+			"MI_Furniture_01",
+			"MI_Roof",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Tool_01",
+			"MI_Styl_Wood_Planks",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 96.457315948786999,
+				"Y": 5.0600000000000005,
+				"Z": -10.552195746365513
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.8059114604842702,
+				"Z": 0,
+				"W": -0.59203607817438852
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized15_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 94.84262706512304,
+				"Y": 1.0184954833984374,
+				"Z": -31.667839290624737
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.52672495085175963,
+				"Z": 0,
+				"W": -0.8500357793353237
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_02_Optimized15_SM_House_village_02_Merged",
+		"MeshFile": "Meshes/SM_House_village_02_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Log_props_01",
+			"MI_Picture",
+			"MI_Furniture_01",
+			"MI_Roof",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Tool_01",
+			"MI_Styl_Wood_Planks",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 87.544483634295361,
+				"Y": 5.0600000000000005,
+				"Z": -20.66787510088751
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.47279268498448446,
+				"Z": 0,
+				"W": -0.88117369288078606
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized15_door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 99.145144983826214,
+				"Y": 0.99189941406250004,
+				"Z": -79.104458983386664
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.36561250319047428,
+				"Z": 0,
+				"W": -0.9307671553674397
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized15_SM_MERGED_BP_house_3",
+		"MeshFile": "Meshes/SM_House_Village_03_Merged.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Glass",
+			"MI_Stones",
+			"M_Styl_Wall_Brick",
+			"MI_Picture",
+			"MI_Log_props_01",
+			"MI_Styl_Wood_Planks",
+			"MI_Roof",
+			"MI_Furniture_01",
+			"MI_Light_props",
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Tool_01",
+			"M_Wood_Floor_Inst",
+			"MI_Styl_Wall_Brick"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 95.306866291344363,
+				"Y": 2.3650000000000002,
+				"Z": -72.230569337579993
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.51585781071596903,
+				"Z": 0,
+				"W": -0.85667421994789095
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_03_Optimized15_Stairs",
+		"MeshFile": "Meshes/SM_ladder_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Furniture_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 90.705473397524784,
+				"Y": 0.96499999999999997,
+				"Z": -76.363024229857317
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97052673836838732,
+				"Z": 0,
+				"W": -0.24099346487409135
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized4_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 66.722886546054241,
+				"Y": 0.46646011352539063,
+				"Z": -51.356444263778521
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.46962151654489442,
+				"Z": 0,
+				"W": -0.88286784469595059
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized4_SM_MERGED_BP_house_Merge_2",
+		"MeshFile": "Meshes/SM_House_Village_Optimized.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Wood_Trim",
+			"MI_Tool_01",
+			"MI_Furniture_01",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wood_Planks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 62.861176530974554,
+				"Y": 1.7288946533203124,
+				"Z": -48.342594611835203
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.91003044760118168,
+				"Z": 0,
+				"W": -0.41454141462439276
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized_Door1",
+		"MeshFile": "Meshes/SM_door_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 103.56947497700521,
+				"Y": 0.46646011352539063,
+				"Z": -92.826904357637929
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.57069157771095946,
+				"Z": 0,
+				"W": -0.82116449212674558
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_house_Optimized_SM_MERGED_BP_house_Merge_2",
+		"MeshFile": "Meshes/SM_House_Village_Optimized.gltf",
+		"Materials": [
+			"MI_Log_props_01",
+			"MI_Wood_Trim",
+			"MI_Tool_01",
+			"MI_Furniture_01",
+			"M_Wood_Floor_Inst",
+			"MI_Glass",
+			"MI_Styl_Wood_Planks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 99.108155669851257,
+				"Y": 1.7288946533203124,
+				"Z": -90.803856161301283
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.95265242815050799,
+				"Z": 0,
+				"W": -0.30406142658834806
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	}
+]
