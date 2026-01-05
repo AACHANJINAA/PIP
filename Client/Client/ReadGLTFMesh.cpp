@@ -1409,7 +1409,7 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			pos = XMVector3Transform(pos, world_mat);
 			XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
-			//primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
+			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
 			primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
 			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 			/*
