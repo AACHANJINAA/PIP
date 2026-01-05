@@ -315,3 +315,19 @@ Content/Developers/
  - 2026년 1월5일 13시 30분
  - 애니메이션, PBR
  - JOLT엔진 서버연동 (NPC 충돌검사)
+
+2026-01-05
+------------
+1.  종합설계기획심사
+ - 재미없다 <= 취향 차이
+ - Parser가 맞냐 <= 모두 Parser라고 부르고 있다.
+2. 진행상황 
+ - GIT HUB LFS 스캠에 속은 것을 깨달음 -> 다시 팜
+ - 애니메이션 (Idle, 이동  FSM을 통한 처리) , 동기화
+  * Mixamo와 Unreal호환
+ - Height Map Tiling
+3. ToDo
+- Shading 문제 해결 
+- 전투 구현 (공격 애니메이션, HP 감소, HP 표시 UI)
+4. 다음 미팅
+ - 1월 19일 월요일 1시 30분
