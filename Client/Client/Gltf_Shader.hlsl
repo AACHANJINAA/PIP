@@ -31,6 +31,7 @@ SamplerState g_samLinear : register(s0);
 cbuffer cbWorldMatrix : register(b0)
 {
     matrix g_matWorld;
+    matrix g_matWorldInverseTranspose;
 };
 
 // 카메라 정보
@@ -86,124 +87,88 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     Out.WorldPosition = mul(float4(input.Position, 1.0f), g_matWorld).xyz;
     Out.Position = mul(float4(Out.WorldPosition, 1.0f), g_matView);
     Out.Position = mul(Out.Position, g_matProjection);
-    
+
     Out.TexCoord = input.TexCoord0;
 
-    float3x3 worldRot = (float3x3) g_matWorld;
+    // 1. 올바른 역전치 행렬로 Normal과 Tangent를 변환
+    Out.Normal = normalize(mul(input.Normal, (float3x3) g_matWorldInverseTranspose));
+    Out.Tangent = normalize(mul(input.Tangent.xyz, (float3x3) g_matWorldInverseTranspose));
 
-         // 각 축 정규화
-    worldRot[0] = normalize(worldRot[0]);
-    worldRot[1] = normalize(worldRot[1]);
-    worldRot[2] = normalize(worldRot[2]);
+    // 2. Gram-Schmidt 직교화: Normal을 기준으로 Tangent를 직교하도록 보정
+    Out.Tangent = normalize(Out.Tangent - dot(Out.Tangent, Out.Normal) * Out.Normal);
 
-         // 노멀과 탄젠트 변환
-    Out.Normal = normalize(mul(input.Normal, worldRot));
-    Out.Tangent = normalize(mul(input.Tangent.xyz, worldRot));
-
-         // Bitangent 계산 (순서 수정!)
-    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
+    // 3. 직교가 보장된 벡터들로 Bitangent를 안전하게 계산
+    Out.Bitangent = cross(Out.Normal, Out.Tangent) * input.Tangent.w;
 
     return Out;
-}   
+}
 
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 {
-    // 비추는 방향 밝은 초록이면 아래 위 방향
-    //float3 L = normalize(-gLights[0].m_vDirection); // Light.hlsl 94줄과 동일
-    //return float4(L * 0.5 + 0.5, 1.0f);
-    
-    // tangent 확인 -> bitangent도 똑같은 형식으로 확인 가능
-    //float3 T = normalize(In.Tangent);
-    //return float4(T * 0.5 + 0.5, 1.0f);
-    
-    // 1. Albedo (BaseColor) 계산
-    // 공식: FinalBaseColor = TextureSample * BaseColorFactor
+    // 1. Albedo (BaseColor) 값 설정
     float4 diffuseSample = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
-    
     float3 albedo = diffuseSample.rgb;
-    
-    // 만약 텍스처가 로드되지 않아 검은색(0,0,0)이라면 흰색으로 보정 (Factor가 색을 결정하도록)
     if (length(albedo) < 0.01f)
     {
         albedo = float3(1.0, 1.0, 1.0);
     }
-    
-    // [핵심] C++에서 넘어온 BaseColorFactor 곱하기 (색상 틴트 적용)
     albedo *= BaseColorFactor.rgb;
 
-    
-    // 2. ORM (Occlusion, Roughness, Metallic) 계산
-    // 공식: Value = TextureSample * Factor
+    // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
     float3 ormSample = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-    
-    //[핵심] 기본값을 C++에서 넘어온 Factor로 설정! (쓰레기 값이 아니므로 믿고 씀)
-    float ao = 1.0f; // AO는 보통 별도 Factor가 없으므로 1.0 시작
-    float roughness = RoughnessFactor; // C++에서 설정한 거칠기 값
-    float metallic = MetallicFactor; // C++에서 설정한 금속성 값
+    float ao = 1.0f;
+    float roughness = RoughnessFactor;
+    float metallic = MetallicFactor;
 
-    // ORM 맵이 유효하다면(검은색이 아니라면), 텍스처 값을 Factor에 곱해줌 (PBR 표준)
-    // 예: 텍스처가 없으면 Factor(1.0) 그대로 사용, 텍스처가 있으면 Texture * Factor
     if (dot(ormSample, float3(1, 1, 1)) > 0.05f)
     {
         ao = ormSample.r;
-        roughness *= ormSample.g; // 텍스처(G) * 계수
-        metallic *= ormSample.b; // 텍스처(B) * 계수
+        roughness *= ormSample.g;
+        metallic *= ormSample.b;
     }
-    
-    // 3. Normal Map
-    float3 N = normalize(In.Normal);
-    
+
+    // 3. Normal Map 적용
+    float3 N = normalize(In.Normal); // 초기 Normal 값
+
     float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
 
-    if (length(normalMapSample) > 0.1f)
+    if (length(normalMapSample) > 0.1f) // 노멀 맵이 유효한 경우
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
-        N_map.y = -N_map.y; // OpenGL to DirectX
+        N_map.y = -N_map.y; // OpenGL -> DirectX Y축 반전
 
         float3 T = normalize(In.Tangent);
         float3 B = normalize(In.Bitangent);
-        float3 N_geom = normalize(In.Normal);
+        float3 N_geom = normalize(In.Normal); // 기하학적 노멀
 
-    // T, B, N을 열로 배치하는 행렬 구성 (또는 선형 결합 방식)
+        // TBN 행렬을 이용한 노멀 맵 적용
         N = normalize(N_map.x * T + N_map.y * B + N_map.z * N_geom);
     }
 
-    // tangent 확인용
-    //return float4(N * 0.5 + 0.5, 1.0f);
-
-    
-    // 4. Emissive (발광)
-    // 공식: FinalEmissive = TextureSample * EmissiveFactor
+    // 4. Emissive (방출광) 설정
     float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
-    
-    // 텍스처가 없으면 흰색(1,1,1)으로 가정, 있으면 텍스처 사용
     float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
-    
-    // [핵심] C++에서 넘어온 EmissiveFactor 곱하기
     float3 finalEmissive = emissiveColor * EmissiveFactor;
 
-    
-    // 5. 조명 계산 및 후처리
-    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
-    // [수정] 양면 재질일 경우, 뒷면의 Normal을 뒤집어줍니다.
-// 기하학적 Normal(In.Normal)을 기준으로 앞/뒷면을 판단합니다.
+    // 5. 최종 조명 계산 준비
+    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition); // 시야 벡터
+
+    // 양면 렌더링 시 노멀 뒤집기
     if (DoubleSided > 0 && dot(In.Normal, V) < 0.0)
     {
         N = -N;
     }
-    
+
+    // Light.hlsl의 Lighting 함수 호출
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
 
     float3 finalColor = litColor.rgb + finalEmissive;
 
-    // Tone Mapping (HDR -> LDR)
+    // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
-    
-    // Gamma Correction
     finalColor = pow(finalColor, 1.0f / 2.2f);
     return float4(finalColor, diffuseSample.a);
 }
-
 
 //////////////////////// HP 효과 픽셀 셰이더 추가 ////////////////////
 

@@ -166,15 +166,19 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 	}
 
 	// 1. 이 GameObject의 월드 행렬을 가져옵니다.
-	const XMFLOAT4X4& worldMatrix = game_object()->transform()->world_matrix();
+    const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
+    XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
 
-	// 2. [변경] 이 RenderComponent가 소유한 상수 버퍼의 내용을 월드 행렬로 업데이트합니다.
-	 XMStoreFloat4x4(&_mappedCbGameObjectInfo->_world, XMMatrixTranspose(XMLoadFloat4x4(&worldMatrix)));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo->_world, XMMatrixTranspose(worldMatrix));
 
-	// 3. [추가] 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 직접 바인딩합니다.
-	// (루트 시그니처 0번 슬롯은 월드 행렬용 CBV로 미리 약속되어 있습니다)
-	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
-    
+    // 역전치 행렬 계산 및 복사
+    XMMATRIX worldInverseTransposeMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo->_worldInverseTranspose, XMMatrixTranspose(worldInverseTransposeMatrix));
+
+
+    // 3. 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 바인딩합니다.
+    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
+
     _mesh->render(commandList);
 }
 

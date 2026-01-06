@@ -1407,15 +1407,9 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			pos = XMVector3Transform(pos, world_mat);
 			XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
-			XMVECTOR normal = (i < normals.size()) ? XMLoadFloat3(&normals[i]) : XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-			normal = XMVector3Normalize(XMVector3TransformNormal(normal, world_mat));
-			XMStoreFloat3(&primitive->_vertices[i]._normal, normal);
-
+			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
 			primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
-
-			XMVECTOR tangent = (i < tangents.size()) ? XMLoadFloat4(&tangents[i]) : XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
-			tangent = XMVector3Normalize(XMVector3TransformNormal(tangent, world_mat));
-			XMStoreFloat4(&primitive->_vertices[i]._tangent, tangent);
+			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 		}
 
 		if (primitive_json.contains("indices")) {
