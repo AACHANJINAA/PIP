@@ -83,21 +83,14 @@ struct VS_OUTPUT
 VS_OUTPUT VS_GLTF(VS_INPUT input)
 {
     VS_OUTPUT Out;
-
     Out.WorldPosition = mul(float4(input.Position, 1.0f), g_matWorld).xyz;
     Out.Position = mul(float4(Out.WorldPosition, 1.0f), g_matView);
     Out.Position = mul(Out.Position, g_matProjection);
-
     Out.TexCoord = input.TexCoord0;
 
-    // 1. 올바른 역전치 행렬로 Normal과 Tangent를 변환
     Out.Normal = normalize(mul(input.Normal, (float3x3) g_matWorldInverseTranspose));
     Out.Tangent = normalize(mul(input.Tangent.xyz, (float3x3) g_matWorldInverseTranspose));
-
-    // 2. Gram-Schmidt 직교화: Normal을 기준으로 Tangent를 직교하도록 보정
     Out.Tangent = normalize(Out.Tangent - dot(Out.Tangent, Out.Normal) * Out.Normal);
-
-    // 3. 직교가 보장된 벡터들로 Bitangent를 안전하게 계산
     Out.Bitangent = cross(Out.Normal, Out.Tangent) * input.Tangent.w;
 
     return Out;
@@ -135,7 +128,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     if (length(normalMapSample) > 0.1f) // 노멀 맵이 유효한 경우
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
-        N_map.y = -N_map.y; // OpenGL -> DirectX Y축 반전
 
         float3 T = normalize(In.Tangent);
         float3 B = normalize(In.Bitangent);
