@@ -19,6 +19,7 @@ struct Material
 struct CbGameObjectInfo
 {
 	XMFLOAT4X4 _world;
+    XMFLOAT4X4 _worldInverseTranspose;
 };
 
 class Material_Shader

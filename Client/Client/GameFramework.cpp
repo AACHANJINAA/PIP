@@ -205,6 +205,7 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 
 	d3dDescriptorHeapDesc.NumDescriptors = 1;
 	d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	d3dDescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	hResult = _device->CreateDescriptorHeap(&d3dDescriptorHeapDesc, IID_PPV_ARGS(&_dsvDescriptorHeap));
 	_ASSERTE(SUCCEEDED(hResult));
 
