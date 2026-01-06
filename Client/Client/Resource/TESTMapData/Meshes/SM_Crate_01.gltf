@@ -1,0 +1,152 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1008,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 600,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.5, -0.50000006, -0.50000006 ],
+			"max": [ 0.5, 0.50000006, 0.50000006 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 600,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 600,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 600,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 600,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Crate_01.bin",
+			"byteLength": 35616
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2016,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7200,
+			"byteOffset": 2016,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7200,
+			"byteOffset": 9216,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9600,
+			"byteOffset": 16416,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4800,
+			"byteOffset": 26016,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4800,
+			"byteOffset": 30816,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Prop_01_BaseColor.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Prop_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Crate_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Prop_01_BaseColor",
+			"sampler": 0,
+			"source": 0
+		}
+	]
+}

@@ -1,0 +1,147 @@
+[
+	{
+		"Name": "SM_Crate_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Crate_01.gltf",
+		"Materials": [
+			"MI_Prop_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": -0.34202014078474741,
+				"W": -0.9396926217107282
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Crate_2_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Crate_01.gltf",
+		"Materials": [
+			"MI_Prop_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 4,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0.50000000000000011,
+				"Y": -0.50000000000000011,
+				"Z": 0.50000000000000011,
+				"W": -0.50000000000000022
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Crate_3_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Crate_01.gltf",
+		"Materials": [
+			"MI_Prop_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -4,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": -0.50000000000000011,
+				"Y": -0.50000000000000011,
+				"Z": -0.50000000000000011,
+				"W": -0.50000000000000022
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Crate_4_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Crate_01.gltf",
+		"Materials": [
+			"MI_Prop_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 4
+			},
+			"Rotation":
+			{
+				"X": 6.1232339957367648e-17,
+				"Y": 0.99999999999999978,
+				"Z": -3.749399456654644e-33,
+				"W": -6.1232339957367648e-17
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Crate_5_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Crate_01.gltf",
+		"Materials": [
+			"MI_Prop_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": -4
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	}
+]
