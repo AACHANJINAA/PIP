@@ -88,20 +88,20 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     Out.Position = mul(Out.Position, g_matProjection);
     
     Out.TexCoord = input.TexCoord0;
-    
+
     float3x3 worldRot = (float3x3) g_matWorld;
 
-     // 각 축을 정규화해서 스케일의 영향 제거 (Uniform Scale 가정)
+         // 각 축 정규화
     worldRot[0] = normalize(worldRot[0]);
     worldRot[1] = normalize(worldRot[1]);
     worldRot[2] = normalize(worldRot[2]);
 
-     // 정규화된 회전 행렬로 노멀 변환 (역행렬 계산 불필요!)
+         // 노멀과 탄젠트 변환
     Out.Normal = normalize(mul(input.Normal, worldRot));
     Out.Tangent = normalize(mul(input.Tangent.xyz, worldRot));
 
-     // Bitangent 계산
-    Out.Bitangent = normalize(cross(Out.Tangent, Out.Normal) * input.Tangent.w);
+         // Bitangent 계산 (순서 수정!)
+    Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
 
     return Out;
 }   
@@ -201,7 +201,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     // Gamma Correction
     finalColor = pow(finalColor, 1.0f / 2.2f);
-
     return float4(finalColor, diffuseSample.a);
 }
 

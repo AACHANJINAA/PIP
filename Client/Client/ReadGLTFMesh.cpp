@@ -911,6 +911,7 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 
 				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
 				// Normal로부터 Tangent 자동 생성 (GLTF Tangent 무시)
+				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
 				XMVECTOR normal = XMLoadFloat3(&v._normal);
 				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -925,9 +926,6 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				XMFLOAT3 tangentF3;
 				XMStoreFloat3(&tangentF3, tangent);
 				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
-				if (i < 10) {
-					CLOG("Vertex[" << i << "] Tangent.w = " << tangents[i].w);
-				}
 				v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
 
 				// Skinning Data (배열에 값 대입)
@@ -1409,35 +1407,16 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			pos = XMVector3Transform(pos, world_mat);
 			XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
-			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
+			XMVECTOR normal = (i < normals.size()) ? XMLoadFloat3(&normals[i]) : XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+			normal = XMVector3Normalize(XMVector3TransformNormal(normal, world_mat));
+			XMStoreFloat3(&primitive->_vertices[i]._normal, normal);
+
 			primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
-			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-			/*
-			// [수정] 로컬 공간에서 Z축 반전을 먼저 적용한 뒤 월드 변환 -> 이걸로 하면 텍스쳐가 상당히 귀여워짐
-		    XMVECTOR localPos = XMLoadFloat3(&positions[i]);
-		    XMFLOAT3 flippedPos;
-		    XMStoreFloat3(&flippedPos, localPos);
-		    flippedPos.z = -flippedPos.z; // Z 반전
-		    
-		    XMVECTOR pos = XMLoadFloat3(&flippedPos);
-		    pos = XMVector3Transform(pos, world_mat);
-		    XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
-		    // 노말과 탄젠트도 Z 반전 필요
-		    primitive->_vertices[i]._normal = (i < normals.size()) ? XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z) : XMFLOAT3(0.0f, 1.0f, 0.0f);
-		    primitive->_vertices[i]._tangent = (i < tangents.size()) ? XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, tangents[i].w) : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-			}*/
+			XMVECTOR tangent = (i < tangents.size()) ? XMLoadFloat4(&tangents[i]) : XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+			tangent = XMVector3Normalize(XMVector3TransformNormal(tangent, world_mat));
+			XMStoreFloat4(&primitive->_vertices[i]._tangent, tangent);
 		}
-
-		// 정점 확인 디버깅 
-		//CLOG("--- Primitive Vertex Data Check ---");
-		//CLOG("Total Vertices Loaded: " << primitive->_vertexCount);
-		//// 불러온 정점 데이터의 첫 5개 위치 값을 출력
-		//for (size_t i = 0; i < min((size_t)5, (size_t)primitive->_vertexCount); ++i)
-		//{
-		//	const auto& v = primitive->_vertices[i];
-		//	CLOG("V[" << i << "] Position: (" << v._position.x << ", " << v._position.y << ", " << v._position.z << ")");
-		//}
 
 		if (primitive_json.contains("indices")) {
 			const json& accessor = gltfJson["accessors"][primitive_json["indices"].get<size_t>()];
