@@ -187,6 +187,10 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
+         // ===== 수정: 안전한 최소값 보장 =====
+    denom = max(denom, 0.0001);
+         // ===================================
+
     return nom / denom;
 }
 
@@ -197,6 +201,11 @@ float GeometrySchlickGGX(float NdotV, float roughness)
     float k = (r * r) / 8.0;
     float nom = NdotV;
     float denom = NdotV * (1.0 - k) + k;
+
+         // ===== 수정: 안전한 최소값 보장 =====
+    denom = max(denom, 0.0001);
+         // ===================================
+
     return nom / denom;
 }
 
@@ -254,7 +263,7 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
 
     	// Spot Light
         else if (gLights[i].m_nType == SPOT_LIGHT)
-            {
+        {
           
             L = normalize(gLights[i].m_vPosition - worldPos);
          
@@ -270,16 +279,27 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
         float3 radiance = gLights[i].m_cDiffuse.rgb * attenuation;
         
     	// Cook-Torrance BRDF
+        // roughness 클램핑 후
+        roughness = max(roughness, 0.08);
+
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
         float3 F = FresnelSchlick(saturate(dot(H, V)), F0);
         float3 kD = (1.0 - F) * (1.0 - metallic);
         float NdotL = saturate(dot(N, L));
-
+       
         float3 numerator = NDF * G * F;
         float denominator = 4.0 * saturate(dot(N, V)) * NdotL + 0.0001;
-    	float3 specular = numerator / denominator;
-       
+    	 // ===== 수정: clamp 추가 =====
+        denominator = max(denominator, 0.001);
+     // ===========================
+
+        float3 specular = numerator / denominator;
+
+     // ===== 추가: specular 값 제한 =====
+        specular = min(specular, 100.0); // 최대값 제한
+     // =================================
+
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
     

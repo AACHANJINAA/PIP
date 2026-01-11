@@ -173,7 +173,7 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
 
     // 역전치 행렬 계산 및 복사
     XMMATRIX worldInverseTransposeMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo->_worldInverseTranspose, XMMatrixTranspose(worldInverseTransposeMatrix));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo->_worldInverseTranspose, worldInverseTransposeMatrix);  // 이중 전치 제거!
 
 
     // 3. 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 바인딩합니다.
