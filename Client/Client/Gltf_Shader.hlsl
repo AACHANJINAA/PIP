@@ -120,33 +120,34 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
         metallic *= ormSample.b;
     }
 
-    // 3. Normal Map 적용
-    float3 N = normalize(In.Normal); // 초기 Normal 값
+    // 3. Normal Map 
+    float3 N = normalize(In.Normal);
 
     float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
 
-    if (length(normalMapSample) > 0.1f) // 노멀 맵이 유효한 경우
+    if (length(normalMapSample) > 0.1f)
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
 
         float3 T = normalize(In.Tangent);
         float3 B = normalize(In.Bitangent);
-        float3 N_geom = normalize(In.Normal); // 기하학적 노멀
+        float3 N_geom = normalize(In.Normal);
 
-        // TBN 행렬을 이용한 노멀 맵 적용
-        N = normalize(N_map.x * T + N_map.y * B + N_map.z * N_geom);
+    // TBN 행렬을 이용한 변환 - 수정된 부분
+        float3x3 TBN = float3x3(T, B, N_geom);
+        N = normalize(mul(N_map, TBN));
     }
 
-    // 4. Emissive (방출광) 설정
+// 4. Emissive
     float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
     float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
     float3 finalEmissive = emissiveColor * EmissiveFactor;
 
-    // 5. 최종 조명 계산 준비
-    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition); // 시야 벡터
+// 5. View vector
+    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-    // 양면 렌더링 시 노멀 뒤집기
-    if (DoubleSided > 0 && dot(In.Normal, V) < 0.0)
+// DoubleSided 처리 - 수정된 부분 (In.Normal → N)
+    if (DoubleSided > 0 && dot(N, V) < 0.0)
     {
         N = -N;
     }
