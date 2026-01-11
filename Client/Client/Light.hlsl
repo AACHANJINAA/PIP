@@ -173,7 +173,7 @@ cbuffer cbLights : register(b3)
     int gnLights;
 };
 
-const float PI = 3.14159265359;
+static const float PI = 3.14159265359;
 
 // D: Normal Distribution Function (GGX)
 float DistributionGGX(float3 N, float3 H, float roughness)
