@@ -119,9 +119,14 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
         roughness *= ormSample.g;
         metallic *= ormSample.b;
     }
+	else
+	{
+        metallic = 0.0f;
+    }
 
-    // 3. Normal Map 
+     // 3. Normal Map
     float3 N = normalize(In.Normal);
+    float3 N_geom = normalize(In.Normal); // 기하학적 Normal 저장
 
     float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
 
@@ -131,35 +136,35 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
         float3 T = normalize(In.Tangent);
         float3 B = normalize(In.Bitangent);
-        float3 N_geom = normalize(In.Normal);
 
-    // TBN 행렬을 이용한 변환 - 수정된 부분
+             // TBN 행렬을 이용한 변환
         float3x3 TBN = float3x3(T, B, N_geom);
         N = normalize(mul(N_map, TBN));
     }
 
-// 4. Emissive
+         // 4. Emissive
     float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
     float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
     float3 finalEmissive = emissiveColor * EmissiveFactor;
 
-// 5. View vector
+         // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-// DoubleSided 처리 - 수정된 부분 (In.Normal → N)
-    if (DoubleSided > 0 && dot(N, V) < 0.0)
+         // ===== 수정: DoubleSided 처리 - 기하학적 Normal 기준 =====
+    if (DoubleSided > 0 && dot(N_geom, V) < 0.0)
     {
         N = -N;
     }
-
-    // Light.hlsl의 Lighting 함수 호출
+     // ========================================================
+     // Light.hlsl의 Lighting 함수 호출
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
 
     float3 finalColor = litColor.rgb + finalEmissive;
 
-    // 톤 매핑 및 감마 보정
+         // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
+
     return float4(finalColor, diffuseSample.a);
 }
 
