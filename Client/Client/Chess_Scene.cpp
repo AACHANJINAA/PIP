@@ -22,8 +22,9 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
     ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf",true,"walk");
-    ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",true,"idle");
 
+    auto idle_brute_mesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",true,"idle");
+    dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf","attack");
 	// =========================================================================
 
 

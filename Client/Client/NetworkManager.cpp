@@ -301,6 +301,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 
 			animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 			animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
+			animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
 			
 			// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 			animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
