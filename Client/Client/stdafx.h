@@ -73,6 +73,8 @@ using Microsoft::WRL::ComPtr;
 #include <atomic>
 #include <mutex>
 #include <stack>
+#include <thread>
+#include <concurrent_queue.h>
 
 // Jolt Physics 헤더
 #include <Jolt/Jolt.h>
