@@ -33,11 +33,16 @@ public:
     std::shared_ptr<GameObject> find_object(const int& id);
     // TODO: 찾기 성능을 높이기 위해서 map이나 트리 구조를 사용해야함 -> 추후에 개선 필요
 
+    std::shared_ptr<GameObject> find_npc(int64_t id);
+
+	void register_npc(int64_t id, std::shared_ptr<GameObject> npc);
+	void unregister_npc(int64_t id);
 private:
     
     std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : 트리 구조로 바꿔야할 가능성 있음
     std::vector<std::shared_ptr<Object>>     _destructionQueue;
     std::queue<std::shared_ptr<GameObject>>  _newGameObjects;
+    std::unordered_map<int64_t, std::shared_ptr<GameObject>> _npcMap; // [추가] NPC 캐시
 };
 // =================================================================
  // [제거된 기능 목록]

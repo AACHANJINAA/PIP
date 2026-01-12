@@ -182,3 +182,19 @@ std::shared_ptr<GameObject> ObjectManager::find_object(const int& id)
             return object->unique_id() == id;
 	});
 }
+
+std::shared_ptr<GameObject> ObjectManager::find_npc(int64_t id)
+{
+    auto it = _npcMap.find(id);
+    if (it != _npcMap.end())
+        return it->second;
+    return nullptr;
+}
+void ObjectManager::register_npc(int64_t id, std::shared_ptr<GameObject> npc)
+{
+    _npcMap[id] = npc;
+}
+void ObjectManager::unregister_npc(int64_t id)
+{
+    _npcMap.erase(id);
+}

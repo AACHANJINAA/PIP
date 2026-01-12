@@ -78,8 +78,15 @@ namespace common::packet
         char* mutable_data() { return _buffer.data(); }
         size_t Size() const { return _buffer.size(); }
         size_t Pos() const { return _pos; }
+        void Clear()
+        {
+            _buffer.clear();
+            _pos = 0;
+        };
+
     private:
         std::vector<char> _buffer;
         size_t _pos;
     };
+
 }

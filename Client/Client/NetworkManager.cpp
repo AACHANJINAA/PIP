@@ -38,41 +38,50 @@ void error_display(const char* msg, int err_no)
 //}
 void NetworkManager::process_network_events()
 {
-	if (INVALID_SOCKET == _socket)
-	{
+	if (_socket == INVALID_SOCKET) return;
 
+	WSANETWORKEVENTS netEvents;
+
+	// 1. 이벤트 신호 확인 (즉시 리턴: 0ms 대기)
+	// 게임 루프를 방해하지 않기 위해 0으로 설정합니다.
+	DWORD ret = WSAWaitForMultipleEvents(1, &_netEvent, FALSE, 0, FALSE);
+
+	if (ret == WSA_WAIT_FAILED) {
 		return;
 	}
-	fd_set read_set, write_set;
-	FD_ZERO(&read_set);
-	FD_ZERO(&write_set);
 
-	FD_SET(_socket, &read_set);
-	if (!_sendBuffer.empty())
-	{
-		FD_SET(_socket, &write_set);
+	// 이벤트가 발생하지 않았으면(Timeout) 리턴
+	if (ret == WSA_WAIT_TIMEOUT) {
+		// [중요] 송신 버퍼에 남은 게 있으면 이벤트 없이도 보내야 함
+		if (!_sendBuffer.empty()) process_send();
+		return;
 	}
-	timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	int retval = select(0, &read_set, &write_set, NULL, &timeout);
-	if (SOCKET_ERROR == retval)
-	{
-		error_display("select fail", WSAGetLastError());
+
+	// 2. 발생한 이벤트 종류 알아내기 & 리셋
+	if (WSAEnumNetworkEvents(_socket, _netEvent, &netEvents) == SOCKET_ERROR) {
+		return;
+	}
+
+	// 3. 수신 처리 (FD_READ)
+	if (netEvents.lNetworkEvents & FD_READ) {
+		if (netEvents.iErrorCode[FD_READ_BIT] != 0) {
+			// 에러 발생
+		}
+		else {
+			recv_packet(); // 기존 recv 호출
+			process_recv(); // 패킷 파싱
+		}
+	}
+
+	// 4. 종료 처리 (FD_CLOSE)
+	if (netEvents.lNetworkEvents & FD_CLOSE) {
 		disconnect();
-		return;
 	}
 
-	if (FD_ISSET(_socket, &read_set))
-	{
-		recv_packet();
-	}
-	if (FD_ISSET(_socket, &write_set))
-	{
+	// 5. 송신 처리 (이벤트와 무관하게 큐가 차면 보냄)
+	if (!_sendBuffer.empty()) {
 		process_send();
 	}
-
-	process_recv();
 
 }
 void NetworkManager::send_packet(const char* data, size_t size)
@@ -531,6 +540,9 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		//CLOG("[SPAWN_NPC]");
 		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
 		auto NPC_logic = NPC->add_component<NPCScript>();
+
+		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
+
 		NPC_logic->set_id(npc_spawn_packet._npc_id);
 		NPC_logic->set_hp(npc_spawn_packet._hp);
 		NPC_logic->set_position(npc_spawn_packet._position);
@@ -576,7 +588,7 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 
 	// 받은 이름으로 게임 오브젝트를 찾아서 위치를 업데이트합니다.
 	// ObjectManager에 이름으로 오브젝트를 찾는 기능(find_object)이 있다고 가정합니다.
-	auto npc_object = ObjectManager::instance()->find_object(npc_name);
+	auto npc_object = ObjectManager::instance()->find_npc(move_packet._npc_id);
 	if (npc_object)
 	{
 		auto script = npc_object->get_component<NPCScript>();
@@ -597,6 +609,34 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 		CLOG("[S->C] Move NPC Error: Object not found with name: " << npc_name);
 	}
 }
+
+void NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& stream)
+{
+	// 1. 헤더 읽기
+	common::packet::SC_PACKET_NPC_MOVE_BATCH header;
+	stream >> header;
+
+	// 2. 개수만큼 반복하며 데이터 읽기
+	for (int i = 0; i < header._count; ++i)
+	{
+		common::packet::NPCMoveData data;
+		stream >> data;
+
+		auto npc_object = ObjectManager::instance()->find_npc(data._npc_id);
+		if (npc_object)
+		{
+			auto script = npc_object->get_component<NPCScript>();
+			if (script) {
+				// 아까 만든 on_server_update 호출 (타임스탬프 포함)
+				script->on_server_update(data._position, data._velocity, data._rotation, data._time_stamp);
+
+				// 상태(애니메이션) 업데이트가 필요하다면 추가
+				script->set_state(data._state);
+			}
+		}
+	}
+}
+
 bool NetworkManager::init_network()
 {
 	// 이동 응답 패킷 핸들러 등록
@@ -635,6 +675,9 @@ bool NetworkManager::init_network()
 	// NPC 이동 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE,
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC, this, std::placeholders::_1));
+	// NPC 이동 배치 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE_BATCH,
+		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH, this, std::placeholders::_1));
 
 
 	WSADATA wsaData;
@@ -658,32 +701,35 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 		return false;
 	}
 
+	_netEvent = WSACreateEvent();
+	if (WSA_INVALID_EVENT == _netEvent)
+	{
+		error_display("WSACreateEvent", WSAGetLastError());
+		return false;
+	}
+	if (WSAEventSelect(_socket, _netEvent, FD_READ | FD_CLOSE) == SOCKET_ERROR)
+	{
+		error_display("WSAEventSelect", WSAGetLastError());
+		return false;
+	}
+
+
 	SOCKADDR_IN addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	inet_pton(AF_INET, server_addr.data(), &addr.sin_addr);
 
-	if (SOCKET_ERROR == connect(_socket, (SOCKADDR*)(&addr), sizeof(addr)))
-	{
-		error_display("connect", WSAGetLastError());
-		disconnect();
-		return false;
+	if (connect(_socket, (SOCKADDR*)(&addr), sizeof(addr)) == SOCKET_ERROR) {
+		// connect 에러 처리 (WSAEWOULDBLOCK은 정상)
+		if (WSAGetLastError() != WSAEWOULDBLOCK) {
+			error_display("connect", WSAGetLastError());
+			disconnect();
+			return false;
+		}
 	}
-	u_long on = 1;
-	if (SOCKET_ERROR == ioctlsocket(_socket, FIONBIO, &on)) // 논블로킹 모드 설정
-	{
-		error_display("ioctlsocket", WSAGetLastError());
-		disconnect();
-		return false;
-	}
-	// TCP_NODELAY 설정 추가
-	//int nodelay = 1;
-	//if (SOCKET_ERROR == setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY,
-	//	(const char*)&nodelay, sizeof(nodelay)))
-	//{
-	//	error_display("TCP_NODELAY", WSAGetLastError());
-	//	// 이건 치명적이지 않으므로 연결을 끊지는 않음
-	//}
+	// TCP_NODELAY 설정 (주석 해제 권장)
+	int nodelay = 1;
+	setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&nodelay, sizeof(nodelay));
 	return true;
 }
 void NetworkManager::disconnect()
@@ -692,6 +738,13 @@ void NetworkManager::disconnect()
 	{
 		closesocket(_socket);
 		_socket = INVALID_SOCKET;
+
+		// [신규] 이벤트 닫기
+		if (_netEvent != WSA_INVALID_EVENT) {
+			WSACloseEvent(_netEvent);
+			_netEvent = WSA_INVALID_EVENT;
+		}
+
 		PostQuitMessage(0);
 	}
 }

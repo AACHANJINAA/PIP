@@ -18,6 +18,7 @@ public:
 	const XMFLOAT3& position() const;
 
 	void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
+	void set_state(const common::packet::OBJECT_STATE& object_state) { _state = object_state; }
 
 private:
 	int		_hp = 0;
@@ -30,4 +31,5 @@ private:
 	
 	float _accumulatedTime = 0.0f;          // 패킷 수신 후 경과 시간
 	bool _isFirstUpdate = true;             // 첫 패킷인지 여부
+	common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 };

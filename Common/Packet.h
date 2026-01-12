@@ -43,6 +43,7 @@ namespace common::packet
 		S2C_NPC_MOVE = 502,
 		S2C_NPC_DESPAWN = 503,
 		S2C_NPC_UPDATE_HP = 504,
+		S2C_NPC_MOVE_BATCH = 505,
 	};
 
 
@@ -198,6 +199,19 @@ namespace common::packet
 	};
 
 	// ------------------------------------------- NPC 관련 패킷 ------------------------------------------ //
+	struct NPCMoveData {
+		int64_t			_npc_id;
+		Vec3			_position;
+		Vec3			_velocity;
+		Quat			_rotation;
+		OBJECT_STATE	_state;
+		uint32_t		_time_stamp;
+	};
+
+	struct SC_PACKET_NPC_MOVE_BATCH : PacketHeader {
+		uint16_t _count; // 몬스터 수
+		// 뒤에 NPCMoveData 배열이 옴
+	};
 
 	struct SC_PACKET_NPC_SPAWN : PacketHeader
 	{

@@ -112,9 +112,14 @@ namespace PIP::server
 	{
 		// 1. 잡 처리 (플레이어 이동 등) - 최대한 자주 처리
 		ProcessJobs();
-		//UpdatePhysics(deltaTime);
+		// 2. 패킷 뭉쳐서 보내기 (타이머 체크)
+		_npcSyncTimer += deltaTime;
 
-		//UpdateAI(deltaTime);
+		if (_npcSyncTimer >= 0.05f) // 50ms마다 한 번씩 뭉쳐서 쏨 (20Hz)
+		{
+			BroadcastNpcBatch();
+			_npcSyncTimer = 0.0f;
+		}
 	}
 
 	void Room::PushJob(std::function<void()> job)
@@ -178,7 +183,7 @@ namespace PIP::server
 		npc->SetPosition(newPos);
 
 
-		SendNpcMovePacket(npc);
+		//SendNpcMovePacket(npc);
 
 		if (_players.empty()) {
 			//MYLOG("Room " << _room_id << " is empty. NPC " << npcId << " goes to sleep.");
@@ -260,6 +265,53 @@ namespace PIP::server
 		{
 			if (pair.first == except_id) continue;
 			pair.second->do_send(data, size);
+		}
+	}
+
+	void Room::BroadcastNpcBatch()
+	{
+		if (_npcs.empty()) return;
+
+		packet::PacketStream stream;
+		packet::SC_PACKET_NPC_MOVE_BATCH header;
+		header._type = packet::PacketType::S2C_NPC_MOVE_BATCH;
+		header._count = 0;
+		header._size = 0;
+
+		stream << header;
+
+		int count = 0;
+		for (auto& [id, npc] : _npcs)
+		{
+			packet::NPCMoveData data;
+			data._npc_id = npc->GetNpcId();
+			data._position = npc->GetPosition();
+			data._velocity = npc->GetVelocity();
+			data._rotation = npc->GetRotation();
+			data._state = common::packet::OBJECT_STATE::WALK; // 임시
+			data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+
+			stream << data;
+			
+			count++;
+			if (stream.Size() > 4000)
+			{
+				auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
+				h->_count = count;
+				h->_size = static_cast<uint16_t>(stream.Size());
+				Broadcast(stream.constable_data(), stream.Size());
+
+				stream.Clear();
+				stream << header;
+				count = 0;
+			}
+		}
+		// 3. 남은 데이터 전송
+		if (count > 0) {
+			auto* h = reinterpret_cast<common::packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
+			h->_count = count;
+			h->_size = static_cast<uint16_t>(stream.Size());
+			Broadcast(stream.constable_data(), stream.Size());
 		}
 	}
 
