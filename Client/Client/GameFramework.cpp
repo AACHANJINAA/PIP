@@ -272,7 +272,7 @@ void GameFramework::ReleaseObjects()
 
 void GameFramework::ProcessNetwork()
 {
-	NetworkManager::instance()->process_network_events();
+	NetworkManager::instance()->process_queued_packets();
 }
 
 void GameFramework::ProcessInput()
