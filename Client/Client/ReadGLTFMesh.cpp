@@ -22,7 +22,7 @@ ReadGLTFMesh::~ReadGLTFMesh()
 	_primitives.clear();
 }
 
-void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue)
 {
 	// 1. 각 프리미티브의 정점/인덱스 버퍼 생성 (기존 로직 유지)
 	for (const auto& primitive : _primitives)
@@ -146,6 +146,19 @@ void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCo
 
 		_indices.resize(first_primitive->_indexCount);
 		memcpy(_indices.data(), first_primitive->_indices.data(), sizeof(UINT) * first_primitive->_indexCount);
+	}
+
+	auto rm = ResourceManager::instance();
+	for (auto& prim : _primitives)
+	{
+		if (prim->_vertexUploadBuffer) {
+			rm->register_upload_buffer(prim->_vertexUploadBuffer, targetFenceValue);
+			prim->_vertexUploadBuffer.Reset();
+		}
+		if (prim->_indexUploadBuffer) {
+			rm->register_upload_buffer(prim->_indexUploadBuffer, targetFenceValue);
+			prim->_indexUploadBuffer.Reset();
+		}
 	}
 
 	// 업로드 완료 플래그 설정

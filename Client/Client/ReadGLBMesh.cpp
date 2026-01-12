@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "ReadGlbMesh.h"
 #include "DescriptorManager.h"
+#include "ResourceManager.h"
 
 // [변경] 생성자: 파일 파싱 및 CPU 데이터 저장만 담당
 ReadGlbMesh::ReadGlbMesh(const std::string& file_path)
@@ -154,7 +155,7 @@ ReadGlbMesh::ReadGlbMesh(const std::string& file_path)
 }
 
 // [추가] upload_to_gpu: GPU 리소스 생성 담당
-void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue)
 {
     // 이미 업로드되었다면 중복 실행을 방지합니다.
     if (_isUploaded) return;
@@ -288,6 +289,17 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
             }
         }
         _primitives.push_back(std::move(gpu_primitive));
+    }
+
+    // 2. [핵심] 명령 기록 직후, 리소스 매니저의 삭제 대기열에 등록!
+    auto rm = ResourceManager::instance();
+    if (_vertexUploadBuffer) {
+        rm->register_upload_buffer(_vertexUploadBuffer, targetFenceValue);
+        _vertexUploadBuffer.Reset(); // Mesh는 이제 소유권을 포기함 (큐가 관리)
+    }
+    if (_indexUploadBuffer) {
+        rm->register_upload_buffer(_indexUploadBuffer, targetFenceValue);
+        _indexUploadBuffer.Reset();
     }
 
     _isUploaded = true;

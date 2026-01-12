@@ -139,42 +139,76 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, b
         return nullptr;
     }
 
-    _meshes[file_path] = new_mesh;
-    _pending_meshes.push_back(new_mesh);
+    if (new_mesh) {
+        _meshes[file_path] = new_mesh;
+        _pending_meshes.push_back(new_mesh); // 큐에 등록만 함!
+    }
 
     return new_mesh;
 }
 
-void ResourceManager::upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+void ResourceManager::process_pending_uploads(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue)
 {
-    // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.
-    for (const auto& mesh : _pending_meshes)
+    if (_pending_meshes.empty()) return;
+
+    int uploadCount = 0;
+    while (!_pending_meshes.empty() && uploadCount < 2)
     {
-        if (!mesh->is_uploaded())
-        {
-            mesh->upload_to_gpu(device, command_list);
+        auto mesh = _pending_meshes.front();
+        _pending_meshes.pop_front();
+
+        if (mesh && !mesh->is_uploaded()) {
+            // [변경] targetFenceValue를 넘겨줌
+            mesh->upload_to_gpu(device, command_list, targetFenceValue);
+            uploadCount++;
         }
     }
-    // 업로드가 끝났으므로 대기 목록을 비웁니다.
-    _pending_meshes.clear();
 }
 
-void ResourceManager::release_upload_buffers()
+void ResourceManager::register_manual_mesh(const std::string& name, std::shared_ptr<Mesh> mesh)
 {
-    for (const auto& val : _meshes | std::views::values)
-    {
-        if (val) val->release_upload_buffers();
-    }
+    if (mesh == nullptr || _meshes.contains(name)) return;
 
-    // [추가] 텍스처 업로드 버퍼 해제
-    for (auto& pair : _textures)
+    _meshes[name] = mesh;
+    _pending_meshes.push_back(mesh); // 대기열에 추가하여 다음 프레임에 업로드 유도
+}
+
+//void ResourceManager::upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+//{
+//    // 대기 목록에 있는 모든 메시에 대해 upload_to_gpu를 호출합니다.
+//    for (const auto& mesh : _pending_meshes)
+//    {
+//        if (!mesh->is_uploaded())
+//        {
+//            mesh->upload_to_gpu(device, command_list, TODO);
+//        }
+//    }
+//    // 업로드가 끝났으므로 대기 목록을 비웁니다.
+//    _pending_meshes.clear();
+//}
+
+void ResourceManager::release_upload_buffers(UINT64 completedFenceValue)
+{
+    // 큐의 앞부분부터 검사 (오래된 것부터)
+    while (!_pendingDeleteBuffers.empty())
     {
-        if (pair.second.upload_heap)
-            {
-                pair.second.upload_heap.Reset();
-            }
+        if (_pendingDeleteBuffers.front().targetFenceValue <= completedFenceValue) {
+            // GPU 작업 완료됨 -> 큐에서 빼면 ComPtr 소멸자가 호출되며 리소스 해제
+            _pendingDeleteBuffers.pop_front();
+        }
+        else {
+            // 아직 사용 중인 버퍼를 만나면 중단 (뒤에 있는 것들도 당연히 사용 중임)
+            break;
+        }
     }
 }
+void ResourceManager::register_upload_buffer(ComPtr<ID3D12Resource> buffer, UINT64 targetFenceValue)
+{
+    if (buffer) {
+        _pendingDeleteBuffers.push_back({ buffer, targetFenceValue });
+    }
+}
+
 
 void ResourceManager::unload_unused_meshes()
 {

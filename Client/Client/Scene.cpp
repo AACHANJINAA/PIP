@@ -81,6 +81,8 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         //          모든 생성은 하나도 통일하는 것이 좋을 것 같다.
         //          저번에 지형만 렌더링이 검정색으로 나온 경우가 있는 그것도 이 구조 때문이다.
 
+        // KJ: 어리둥절
+
         std::string material_name = "npc_material"; // player는 고정된 재질
         ResourceManager::instance()->create_material(material_name);
         ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
@@ -118,6 +120,4 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
 
         
     }
-    // 리소스 업로드 (메쉬 로드 시점에 텍스처 업로드도 포함된다고 가정)
-    ResourceManager::instance()->upload_pending_meshes(device, commandList);
 }

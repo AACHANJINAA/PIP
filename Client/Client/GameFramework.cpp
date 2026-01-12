@@ -68,7 +68,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
     WaitForGpuComplete();
 
     // GPU에 데이터 전송이 끝났으므로, 임시 업로드 버퍼들을 해제합니다.
-    ResourceManager::instance()->release_upload_buffers();
+    ResourceManager::instance()->release_upload_buffers(UINT_MAX);
 
 	return(true);
 }
@@ -181,6 +181,10 @@ void GameFramework::CreateCommandQueueAndList()
 	_ASSERTE(SUCCEEDED(hResult));
 
 	hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_commandAllocator));
+	_ASSERTE(SUCCEEDED(hResult));
+
+	// [추가] 리소스 업로드 전용 할당기 생성
+	hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_uploadAllocator));
 	_ASSERTE(SUCCEEDED(hResult));
 
 	hResult = _device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, _commandAllocator.Get(), NULL, IID_PPV_ARGS(&_commandList));
@@ -312,93 +316,98 @@ void GameFramework::MoveToNextFrame()
 
 void GameFramework::FrameAdvance()
 {
-	// 렌더링 중복 방지
-	if (_isRendering)
-	{
-		CERROR("Skipping frame - already rendering!");
-		return;
-	}
+	if (_isRendering) return;
 	_isRendering = true;
 
-	// [핵심] 실제 렌더링이나 업데이트 시작 전에 씬 전환을 먼저 처리합니다. 한프레임 지연
-	SceneManager::instance()->process_scene_change_if_requested(_device.Get(),
-		_commandAllocator.Get(), _commandList.Get());
+	// 1. 씬 전환 처리 (필요시)
+	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), _commandAllocator.Get(),
+		_commandList.Get());
 
-	// 1. 타이머 틱 및 기본 처리
+	// 2. 타이머 & 로직 & 물리 업데이트
 	_gameTimer.Tick(0.0f);
 	float deltaTime = _gameTimer.GetTimeElapsed();
-	ProcessNetwork();
-	ProcessInput();
-	
-	// 2. 게임 로직 업데이트 (Update, LateUpdate)
-	update_game_logic(deltaTime);
 
-	// 3. 물리 업데이트 (FixedUpdate)
+	ProcessNetwork(); // (스레드 분리했다면 큐 비우기)
+	ProcessInput();
+	update_game_logic(deltaTime);
 	update_physics(deltaTime);
 
-	HRESULT hResult = _commandAllocator->Reset();
-	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
+	// ---------------------------------------------------------
+	// 3. [비동기 리소스 업로드] (대기 없음!)
+	// ---------------------------------------------------------
+	// 업로드 전용 할당기 사용 -> 렌더링 할당기와 충돌 안 함
+	UINT64 nextFenceValue = _fenceValues[_swapChainBufferIndex] + 1;
 
+	// 업로드 처리시 이 값을 알려줌
+	_uploadAllocator->Reset();
+	_commandList->Reset(_uploadAllocator.Get(), nullptr);
 
+	// 큐에 쌓인 메쉬 중 일부만(Time Slicing) 업로드 명령 기록
+	ResourceManager::instance()->process_pending_uploads(_device.Get(), _commandList.Get(), nextFenceValue);
+
+	_commandList->Close();
+	ID3D12CommandList* ppUploadLists[] = { _commandList.Get() };
+	_commandQueue->ExecuteCommandLists(1, ppUploadLists);
+
+	// [중요] 여기서 WaitForGpuComplete() 절대 호출 금지!
+	// GPU가 알아서 업로드하고 나서 렌더링함 (같은 큐라서 순서 보장됨)
+
+	// ---------------------------------------------------------
+	// 4. [렌더링]
+	// ---------------------------------------------------------
+	// 렌더링 전용 할당기 사용
+	_commandAllocator->Reset();
+	_commandList->Reset(_commandAllocator.Get(), nullptr);
+
+	// (리소스 배리어 설정: Present -> RenderTarget)
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		_renderTargetBuffers[_swapChainBufferIndex].Get(),
-		D3D12_RESOURCE_STATE_PRESENT,
-		D3D12_RESOURCE_STATE_RENDER_TARGET,
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-		D3D12_RESOURCE_BARRIER_FLAG_NONE);
-	
-
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	_commandList->ResourceBarrier(1, &barrier);
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =	_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	d3dRtvCPUDescriptorHandle.ptr += (_swapChainBufferIndex * _rtvDescriptorIncrementSize);
-	//float pfClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
-	
-	// 내가 한 색상
-	float pfClearColor[4] = { 0.894f, 0.651f, 0.475f, 1.0f };
-	_commandList->ClearRenderTargetView(d3dRtvCPUDescriptorHandle,	pfClearColor/*Colors::Azure*/, 0, NULL);
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle =	_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle,	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-		1.0f, 0, 0, NULL); _commandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
+	// 뷰포트, RTV/DSV 설정 및 클리어
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	rtvHandle.ptr += (_swapChainBufferIndex * _rtvDescriptorIncrementSize);
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = _dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
+	float clearColor[4] = { 0.894f, 0.651f, 0.475f, 1.0f };
+	_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,
+		nullptr);
+	_commandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
 
-	// [수정] 렌더러 호출 시 더 이상 카메라를 넘기지 않습니다.
+	// 실제 그리기 (업로드 안 된 메쉬는 Mesh::render 내부에서 skip됨)
 	Renderer::instance()->render(_commandList.Get());
-	
 
-	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.
 #ifdef _WITH_PLAYER_TOP
-
-	//렌더 타겟은 그대로 두고 깊이 버퍼를 1.0으로 지우고 플레이어를 렌더링하면 플레이어는 무조건 그려질 것이다.
-	_commandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, 
-	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
-
+	_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,
+		nullptr);
 #endif
-	//3인칭 카메라일 때 플레이어를 렌더링한다.
-	/*if (m_pPlayer) 
-	{
-		m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
-	}*/
 
+	// (리소스 배리어 복구: RenderTarget -> Present)
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		_renderTargetBuffers[_swapChainBufferIndex].Get(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET,
-		D3D12_RESOURCE_STATE_PRESENT,
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-		D3D12_RESOURCE_BARRIER_FLAG_NONE);
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	_commandList->ResourceBarrier(1, &barrier);
 
-	hResult = _commandList->Close();
-	ID3D12CommandList* ppd3dCommandLists[] = { _commandList.Get() };
-	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
-	
-	_swapChain->Present(1, 0);
-	WaitForGpuComplete();
+	_commandList->Close();
+	ID3D12CommandList* ppRenderLists[] = { _commandList.Get() };
+	_commandQueue->ExecuteCommandLists(1, ppRenderLists);
 
-	ResourceManager::instance()->release_upload_buffers();
+	// ---------------------------------------------------------
+	// 5. [프레임 종료]
+	// ---------------------------------------------------------
+	_swapChain->Present(1, 0); // VSync 끄기 (0)
 
+	// [중요] 임시 업로드 버퍼 해제
+	// (스마트 포인터라 큐에서 빠지면 알아서 해제되지만, 명시적 호출도 가능)
+
+	// 다음 프레임 준비 (여기서만 펜스 대기)
 	MoveToNextFrame();
-	// 5. 파괴 예정 객체 정리
+
+
+	ResourceManager::instance()->release_upload_buffers(_fence->GetCompletedValue());
+	// 후처리
 	ObjectManager::instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 7, 42);
 	::SetWindowText(_hWnd, _frameRate);

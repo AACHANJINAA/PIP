@@ -42,6 +42,5 @@ SkyboxMesh::SkyboxMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandL
     _indices = indices;
 	// 프리미티브 토폴로지를 삼각형 리스트로 설정합니다.
     _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	// GPU에 데이터를 업로드합니다.
-	Mesh::upload_to_gpu(device, commandList);
+	
 }
