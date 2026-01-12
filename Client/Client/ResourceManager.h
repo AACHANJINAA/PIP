@@ -2,7 +2,7 @@
 #include "Shader.h"
 
 class Mesh;
-
+constexpr int MAX_UPLOADS_PER_FRAME = 2;  // 프레임당 최대 업로드 수
 class ResourceManager : public Singleton<ResourceManager>
 {
 	friend class Singleton<ResourceManager>; // 싱글톤 접근 허용
@@ -18,18 +18,24 @@ public:
     // 파일 경로를 기반으로 메시를 로드하거나, 이미 로드되었다면 캐시된 메시를 반환합니다.
     std::shared_ptr<Mesh> load_mesh(const std::string& file_path, bool _isAnimated = false, std::string animation_name = "null_name");
 
+	// [신규] 메인 루프에서 호출하여 대기 중인 메쉬 업로드
+    void process_pending_uploads(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue);
+    // [신규] 파일이 아닌 코드로 생성한 메쉬를 대기열에 등록
+    void register_manual_mesh(const std::string& name, std::shared_ptr<Mesh> mesh);
 
     // SkyBox Load 함수 추가 및 SRV 핸들러 추가
-  // 인자에 device 추가!
+	// 인자에 device 추가!
     void load_skybox(const std::string& file_path);
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
     D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
 
-    // [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
-    void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+    //// [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
+    //void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
-	// [추가] 업로드에 사용된 임시 버퍼들을 해제하는 함수
-    void release_upload_buffers();
+    // [변경] Fence 값을 인자로 받아서 완료된 것만 지움
+    void release_upload_buffers(UINT64 completedFenceValue);
+    // [신규] 업로드 버퍼를 삭제 대기열에 등록 (업로드 직후 호출)
+    void register_upload_buffer(ComPtr<ID3D12Resource> buffer, UINT64 targetFenceValue);
 
 	// [추가] 사용되지 않는 메시들을 메모리에서 해제하는 함수
     void unload_unused_meshes();
@@ -123,7 +129,13 @@ private:
     std::string _skybox_texture_path;
 
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
-    std::vector<std::shared_ptr<Mesh>> _pending_meshes;
+	std::deque<std::shared_ptr<Mesh>> _pending_meshes;
+
+    struct PendingDeleteBuffer {
+        ComPtr<ID3D12Resource> buffer; // ComPtr로 생명주기 연장
+        UINT64 targetFenceValue;       // 이 펜스 값에 도달하면 안전함
+    };
+	std::deque<PendingDeleteBuffer> _pendingDeleteBuffers; // 삭제 대기열
 
     TextureInfo _default_white_texture;
 

@@ -341,7 +341,6 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			auto renderer = playerObject->add_component<RenderComponent>();
 
 			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true, "walk");
-			ResourceManager::instance()->upload_pending_meshes(GameFramework::instance()->device().Get(), GameFramework::instance()->command_list().Get());
 			renderer->set_mesh(playerMesh);
 
 			auto idleMesh = 

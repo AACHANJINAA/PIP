@@ -76,7 +76,6 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void Chess_Scene::release_upload_buffers()
 {
-    ResourceManager::instance()->release_upload_buffers();
 }
 
 void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -108,7 +107,6 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 
         hi_brute->transform()->set_local_position(XMFLOAT3(0.0f, 25.0f, -130.0f));
-        ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
     
 	for (int i = 0; i < 5; ++i)
@@ -139,7 +137,6 @@ void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 
         hi_brute->transform()->set_local_position(XMFLOAT3((-100.f + i * 50.f), 50.0f, -80.0f));
-        ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
 }
 
@@ -177,7 +174,6 @@ void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandLi
 
 
         hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 25.0f, -130.0f));
-        ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
 }
 
@@ -226,6 +222,5 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
 
         hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 25.0f, -130.0f));
-        ResourceManager::instance()->upload_pending_meshes(device, commandList);
     }
 }

@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include <algorithm>
 
+#include "ResourceManager.h"
 
 
 // --- Mesh Base Class ---
@@ -32,7 +33,7 @@ Mesh::~Mesh()
 	}
 }
 
-void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue)
 {
 	// 이미 업로드되었다면 중복 실행 방지
 	/*if (_isUploaded || _verticesDataBuffer.empty() ) return;
@@ -69,15 +70,22 @@ void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandLis
 	/*_isUploaded = true;*/
 }
 
-void Mesh::	upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+void Mesh::	upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue)
 {
-	//if (_isUploaded || _vertexDataBuffer.empty()) return;
-	//if (0 == _vertexStride)
-	//{
-	//	CERROR("stride 설정 안됨")
-	//}
-	upload_to_gpu_internal(device, commandList);
-	// 이거 중요!
+	// 1. 기존 내부 로직(버퍼 생성 및 복사 명령 기록) 실행
+	upload_to_gpu_internal(device, commandList, targetFenceValue);
+
+	// 2. [핵심] 명령 기록 직후, 리소스 매니저의 삭제 대기열에 등록!
+	auto rm = ResourceManager::instance();
+	if (_vertexUploadBuffer) {
+		rm->register_upload_buffer(_vertexUploadBuffer, targetFenceValue);
+		_vertexUploadBuffer.Reset(); // Mesh는 이제 소유권을 포기함 (큐가 관리)
+	}
+	if (_indexUploadBuffer) {
+		rm->register_upload_buffer(_indexUploadBuffer, targetFenceValue);
+		_indexUploadBuffer.Reset();
+	}
+
 	_isUploaded = true;
 }
 

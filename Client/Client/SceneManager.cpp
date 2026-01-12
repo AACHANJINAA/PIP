@@ -68,7 +68,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 
     auto it = _scene_creators.find(scene_to_load);
     if (it == _scene_creators.end()) {
-        CERROR("scene load failed�: " << scene_to_load);
+        CERROR("scene load failed: " << scene_to_load);
         return;
     }
     _currentScene = it->second(); 
@@ -82,16 +82,14 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     command_list->Reset(command_allocator, nullptr);
 
     _currentScene->build_objects(device, command_list);
-    ResourceManager::instance()->upload_pending_meshes(device, command_list);
+    ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX);
 
     command_list->Close();
     ID3D12CommandList* ppd3dCommandLists[] = { command_list };
     game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
     game_framework->WaitForGpuComplete();
 
-    // TODO: .
-    //ResourceManager::Instance()->release_upload_buffers();
-    //ResourceManager::Instance()->unload_unused_meshes();
+    ResourceManager::instance()->release_upload_buffers(UINT64_MAX); // TODO: 오류 날수 도 있음
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +119,8 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     _skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
     _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
+
+    ResourceManager::instance()->register_manual_mesh("SkyBox", skyboxmesh);
 }
 
 void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
@@ -144,7 +144,7 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
     );
 
     // 3. GPU
-    terrain->upload_to_gpu(device, cmdList);
+    ResourceManager::instance()->register_manual_mesh("Terrain", terrain);
 
     // 4. GameObject
     _terrainObject = ObjectManager::instance()->create_game_object("terrain");
