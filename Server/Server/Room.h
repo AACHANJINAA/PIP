@@ -40,6 +40,7 @@ namespace PIP::server
 		void PushJob(std::function<void()> job);
 		// 방에 있는 모든 플레이어에게 패킷을 전송 (브로드캐스팅)
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
+		void BroadcastNpcBatch();
 		// 정보 전송
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
 		// 공격 처리

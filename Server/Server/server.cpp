@@ -97,6 +97,11 @@ namespace PIP::server
 
 	void SESSION::do_send(const char* data, size_t size)
 	{
+		// [안전장치] 버퍼 오버플로우 방지
+		if (size > EXP_OVER::BUFFER_SIZE) {
+			MYERROR("Packet size (" << size << ") exceeds buffer size (" << EXP_OVER::BUFFER_SIZE << ")");
+			return; // 보내지 않고 리턴 (크래시 방지)
+		}
 		EXP_OVER* o = new EXP_OVER(IO_SEND);
 		memcpy(o->_buffer.data(), data, size);
 		o->_wsabuf[0].len = static_cast<ULONG>(size);

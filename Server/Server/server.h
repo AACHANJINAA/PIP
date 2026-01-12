@@ -18,6 +18,8 @@ namespace PIP::server
 	class EXP_OVER
 	{
 	public:
+		static constexpr size_t BUFFER_SIZE = 4096;
+
 		EXP_OVER(IO_OP io_op) : _io_op(io_op), _accept_socket(-1)
 		{
 			ZeroMemory(&_over, sizeof(_over));
@@ -29,7 +31,7 @@ namespace PIP::server
 		WSAOVERLAPPED			_over;
 		IO_OP					_io_op;
 		SOCKET					_accept_socket;
-		std::array<UCHAR,1024>	_buffer;
+		std::array<UCHAR, BUFFER_SIZE>	_buffer;
 		std::array<WSABUF, 1>	_wsabuf;
 	};
 
