@@ -127,6 +127,13 @@ void MainPlayerScript::update(float deltaTime)
 
     	current_transform->set_local_position(new_pos);
     }
+    else if(InputManager::instance()->IsKeyPress(VK_SPACE))
+    {
+        if (animation_comp)
+        {
+            anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
+        }
+    }
     else
     {
         if (animation_comp)
