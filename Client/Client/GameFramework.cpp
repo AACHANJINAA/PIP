@@ -47,8 +47,9 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	CreateSwapChain(); 
 	CreateDepthStencilView();
 
-	HRESULT hResult = _commandAllocator->Reset();
-	hResult = _commandList->Reset(_commandAllocator.Get(), NULL);
+	HRESULT hResult;
+	hResult = _commandAllocators[0]->Reset();
+	hResult = _commandList->Reset(_commandAllocators[0].Get(), NULL);
 
 	InputManager::instance()->initialize(hMainWnd);
 	DescriptorManager::instance()->initialize(_device.Get());
@@ -173,21 +174,26 @@ void GameFramework::CreateDirect3DDevice() {
 
 void GameFramework::CreateCommandQueueAndList()
 {
+	HRESULT hResult;
+	// 큐 생성 (기존 유지)
 	D3D12_COMMAND_QUEUE_DESC d3dCommandQueueDesc;
 	::ZeroMemory(&d3dCommandQueueDesc, sizeof(D3D12_COMMAND_QUEUE_DESC));
 	d3dCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	d3dCommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	HRESULT hResult = _device->CreateCommandQueue(&d3dCommandQueueDesc, IID_PPV_ARGS(&_commandQueue));
+	hResult = _device->CreateCommandQueue(&d3dCommandQueueDesc, IID_PPV_ARGS(&_commandQueue));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_commandAllocator));
-	_ASSERTE(SUCCEEDED(hResult));
+	// [수정] 할당기 배열 생성
+	for (int i = 0; i < SWAP_CHAIN_BUFFERS; i++)
+	{
+		hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_commandAllocators[i]));
+		_ASSERTE(SUCCEEDED(hResult));
+		hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_uploadAllocators[i]));
+		_ASSERTE(SUCCEEDED(hResult));
+	}
 
-	// [추가] 리소스 업로드 전용 할당기 생성
-	hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_uploadAllocator));
-	_ASSERTE(SUCCEEDED(hResult));
-
-	hResult = _device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, _commandAllocator.Get(), NULL, IID_PPV_ARGS(&_commandList));
+	hResult = _device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, _commandAllocators[0].Get(), nullptr,
+		IID_PPV_ARGS(&_commandList));
 	_ASSERTE(SUCCEEDED(hResult));
 
 	hResult = _commandList->Close();
@@ -319,8 +325,12 @@ void GameFramework::FrameAdvance()
 	if (_isRendering) return;
 	_isRendering = true;
 
+	// [수정] 현재 프레임 인덱스에 맞는 할당기 선택
+	auto& currentRenderAllocator = _commandAllocators[_swapChainBufferIndex];
+	auto& currentUploadAllocator = _uploadAllocators[_swapChainBufferIndex];
+
 	// 1. 씬 전환 처리 (필요시)
-	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), _commandAllocator.Get(),
+	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), currentRenderAllocator.Get(),
 		_commandList.Get());
 
 	// 2. 타이머 & 로직 & 물리 업데이트
@@ -339,8 +349,8 @@ void GameFramework::FrameAdvance()
 	UINT64 nextFenceValue = _fenceValues[_swapChainBufferIndex] + 1;
 
 	// 업로드 처리시 이 값을 알려줌
-	_uploadAllocator->Reset();
-	_commandList->Reset(_uploadAllocator.Get(), nullptr);
+	currentUploadAllocator->Reset();
+	_commandList->Reset(currentUploadAllocator.Get(), nullptr);
 
 	// 큐에 쌓인 메쉬 중 일부만(Time Slicing) 업로드 명령 기록
 	ResourceManager::instance()->process_pending_uploads(_device.Get(), _commandList.Get(), nextFenceValue);
@@ -356,8 +366,8 @@ void GameFramework::FrameAdvance()
 	// 4. [렌더링]
 	// ---------------------------------------------------------
 	// 렌더링 전용 할당기 사용
-	_commandAllocator->Reset();
-	_commandList->Reset(_commandAllocator.Get(), nullptr);
+	currentRenderAllocator->Reset();
+	_commandList->Reset(currentRenderAllocator.Get(), nullptr);
 
 	// (리소스 배리어 설정: Present -> RenderTarget)
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(

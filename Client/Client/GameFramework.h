@@ -37,11 +37,11 @@ private:
 	UINT _dsvDescriptorIncrementSize;
 
 	ComPtr<ID3D12CommandQueue> _commandQueue;
-	ComPtr<ID3D12CommandAllocator> _commandAllocator;
+	std::array<ComPtr<ID3D12CommandAllocator>, SWAP_CHAIN_BUFFERS> _commandAllocators;
 	ComPtr<ID3D12GraphicsCommandList> _commandList;
 	// [추가] 리소스 업로드 전용 할당기
 	// (만약 더블 버퍼링 중이라면 배열로 선언: _uploadAllocators[SWAP_CHAIN_BUFFERS])
-	ComPtr<ID3D12CommandAllocator> _uploadAllocator;
+	std::array<ComPtr<ID3D12CommandAllocator>, SWAP_CHAIN_BUFFERS> _uploadAllocators;
 
 
 	ComPtr<ID3D12PipelineState> _pipelineState; // 기존 PSO
@@ -101,7 +101,9 @@ public:
 
 	ComPtr<ID3D12GraphicsCommandList>& command_list() { return _commandList; }
 	ComPtr<ID3D12Device>& device() { return _device; }
-	ComPtr<ID3D12CommandAllocator>& command_allocator() { return _commandAllocator; }
+	ComPtr<ID3D12CommandAllocator>& command_allocator() {
+		return _commandAllocators[_swapChainBufferIndex];
+	}
 	ComPtr<ID3D12CommandQueue>& command_queue() { return _commandQueue; }
 	HWND hWnd() const { return _hWnd; }
 public:

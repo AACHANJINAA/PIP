@@ -89,7 +89,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
     game_framework->WaitForGpuComplete();
 
-    ResourceManager::instance()->release_upload_buffers(UINT64_MAX); // TODO: 오류 날수 도 있음
+    //ResourceManager::instance()->release_upload_buffers(UINT64_MAX); // TODO: 오류 날수 도 있음
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
