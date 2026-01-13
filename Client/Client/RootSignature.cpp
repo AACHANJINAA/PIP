@@ -313,9 +313,9 @@ ComPtr<ID3D12RootSignature> SkyBoxRootSignatureGenerator::create(ID3D12Device* d
     d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 
     // [주소 모드] 스카이박스는 끝부분 선(Seam) 방지를 위해 CLAMP가 안전함
-    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 
     d3dStaticSamplerDesc.MipLODBias = 0;
     d3dStaticSamplerDesc.MaxAnisotropy = 1; // LINEAR 쓸 땐 1, ANISOTROPIC 쓸 땐 16
