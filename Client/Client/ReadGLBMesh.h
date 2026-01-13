@@ -49,7 +49,7 @@ public:
     // Mesh 베이스 클래스로부터 상속받은 가상 함수들을 오버라이드합니다.
 
     // CPU 데이터를 기반으로 실제 GPU 리소스를 생성합니다.
-    virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
+    virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue) override;
     // 각 프리미티브에 대한 드로우 콜(Draw Call)을 제출하여 메시를 렌더링합니다.
     virtual void render(ID3D12GraphicsCommandList* command_list) override;
 	std::tuple<std::vector<unsigned char>, UINT, UINT> load_image_from_glb(const json& j,

@@ -137,7 +137,7 @@ public:
 	ReadGLTFMesh(const std::string& filePath, bool is_animated = false, std::string animation_name = "null_name");
 	~ReadGLTFMesh() override;
 
-	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
+	void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue) override;
 
 	//virtual void render(ID3D12GraphicsCommandList* commandList) override;
 	void render(ID3D12GraphicsCommandList* commandList) override;
