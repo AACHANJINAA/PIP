@@ -177,76 +177,15 @@ cbuffer cbHp : register(b8, space1)
 
 float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
 {
-    // 1. Albedo (BaseColor) - PS_GLTF와 동일한 로직
-    float4 diffuseSample = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
-    float3 albedo = diffuseSample.rgb;
-    if (length(albedo) < 0.01f)
-    {
-        albedo = float3(1.0, 1.0, 1.0);
-    }
-    albedo *= BaseColorFactor.rgb;
-
-	// 2. ORM (Occlusion, Roughness, Metallic) - PS_GLTF와 동일한 로직
-    float3 ormSample = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-    float ao = 1.0f;
-    float roughness = RoughnessFactor;
-    float metallic = MetallicFactor;
-
-    if (dot(ormSample, float3(1, 1, 1)) > 0.05f)
-    {
-        ao = ormSample.r;
-        roughness *= ormSample.g;
-        metallic *= ormSample.b;
-    }
-
-	// 3. Normal Map - PS_GLTF와 동일한 안정적인 로직
-    float3 N = normalize(In.Normal);
-    float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
-
-    if (length(normalMapSample) > 0.1f)
-    {
-        float3 N_map = normalMapSample * 2.0 - 1.0;
-        N_map.y = -N_map.y;
-
-    // Gram-Schmidt 직교화
-        float3 T = normalize(In.Tangent - dot(In.Tangent, N) * N);
-        float3 B = cross(N, T);
-        if (dot(B, In.Bitangent) < 0.0f)
-        {
-            B = -B;
-        }
-
-        float3x3 TBN = float3x3(T, B, N);
-        N = normalize(mul(N_map, TBN));
-    }
-
-	// 4. Emissive (자체 발광) - PS_GLTF와 동일한 로직
-    float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
-    float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
-    float3 finalEmissive = emissiveColor * EmissiveFactor;
-
-	// 5. 최종 라이팅 계산 - PS_GLTF와 동일한 로직
-    float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
-
-    if (DoubleSided > 0 && dot(In.Normal, V) < 0.0)
-    {
-        N = -N;
-    }
-
-    float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
-    float3 color = litColor.rgb + finalEmissive;
-
-	// 톤 매핑 및 감마 보정
-    color = color / (color + 1.0f);
-    color = pow(color, 1.0f / 2.2f);
-
-	// --- [고유 기능] HP 감소 효과 ---
+    float4 color = PS_GLTF(In);
+ 
+    // --- [고유 기능] HP 감소 효과 ---
     float hp_r = (100 - g_nHp) / 100.0f;
     if (color.r < hp_r)
     {
         color.r = hp_r;
     }
-	// ---------------------------------
+    // ---------------------------------
 
-    return float4(color, diffuseSample.a);
+    return float4(color);
 }
