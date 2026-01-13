@@ -136,7 +136,7 @@ public:
 	// [추가] CPU 메모리에 로드된 데이터를 기반으로 실제 GPU 버퍼를 생성하는 함수입니다.
 	// Renderer가 렌더링 직전에 호출해줍니다.
 	
-	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue);
 
 	virtual void release_upload_buffers();
 	
@@ -149,7 +149,7 @@ public:
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
 protected:
 	static BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max);
-	virtual void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	virtual void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue);
 
 	// [추가] 템플릿 함수로 다양한 정점 타입을 지원합니다.
 	template<typename VertexType>

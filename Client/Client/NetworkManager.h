@@ -5,8 +5,32 @@ class NetworkManager : public Singleton<NetworkManager>
 {
     friend class Singleton<NetworkManager>; // 싱글톤 접근 허용
     using PacketHandler = std::function<void(common::packet::PacketStream& stream)>;
+public:
+    bool init_network();
+	void cleanup_network();
+    bool connect_to_server(std::string_view server_addr, const int& port);
+	void disconnect();
+    void process_queued_packets();
+
+    void send_packet(const char* data, size_t size);
+
+public:
+    // 클라이언트 -> 서버 패킷 전송 함수
+    void SendLoginPacket(const std::string& name);
+    void SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state);
+    void SendAttackPacket(); // 공격 패킷 전송 함수 추가
+    void SendRoomListPacket();
+    void SendEnterRoomPacket(int room_id_to_enter);
 
 private:
+    void network_worker();
+
+    void process_recv();
+    void process_send();
+    void recv_packet();
+
+	void process_network_events(); // 네트워크 이벤트 처리 함수
+
     void RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler);
 
     // 개별 패킷 처리 함수들 (private)
@@ -24,29 +48,6 @@ private:
 
     //TODO: void Handle_S2C_ERROR(common::packet::PacketStream& stream); // 에러 패킷 처리 함수
 
-    void process_recv();
-	void process_send();
-public:
-    
-	void process_network_events(); // 네트워크 이벤트 처리 함수
-
-    bool init_network();
-	void cleanup_network();
-
-    bool connect_to_server(std::string_view server_addr, const int& port);
-	void disconnect();
-    // 데이터 수신 및 처리
-    void recv_packet();
-    void send_packet(const char* data, size_t size);
-
-
-    // 클라이언트 -> 서버 패킷 전송 함수
-    void SendLoginPacket(const std::string& name);
-    void SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state);
-    void SendAttackPacket(); // 공격 패킷 전송 함수 추가
-    void SendRoomListPacket();
-    void SendEnterRoomPacket(int room_id_to_enter);
-
 private:
 	WSAEVENT    _netEvent = WSA_INVALID_EVENT; // 네트워크 이벤트
     SOCKET _socket{ INVALID_SOCKET }; // 클라이언트 소켓
@@ -56,4 +57,9 @@ private:
     std::string _name;
     // 패킷 핸들러 함수 포인터 타입 정의
     std::unordered_map<common::packet::PacketType, PacketHandler> _handlers;
+
+	std::thread _networkThread;
+    std::atomic<bool> _isRunning{ false };
+	concurrency::concurrent_queue<std::vector<char>> _packetQueue; // 수신된 패킷을 저장하는 큐
+    concurrency::concurrent_queue<std::vector<char>> _sendQueue;
 };
