@@ -60,6 +60,7 @@ private:
 
 	float _physicsTimeAccumulator = 0.0f; // 물리 업데이트 시간 누적 변수
 
+	UINT64 _currentFenceValue = 0; // 펜스 값을 전체적으로 관리할 카운터 변수
 
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
