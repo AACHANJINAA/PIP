@@ -340,13 +340,13 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			// RenderComponent
 			auto renderer = playerObject->add_component<RenderComponent>();
 
-			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Btrue_Walk/Btrue_Walk.gltf", true, "walk");
+			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
 			renderer->set_mesh(playerMesh);
 
 			auto idleMesh = 
 				ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,"idle");
 			auto walkMesh = 
-				ResourceManager::instance()->load_mesh("Resource/Character/Btrue_Walk/Btrue_Walk.gltf", true,"walk");
+				ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true,"walk");
 
 			animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 			animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
