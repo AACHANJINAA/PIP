@@ -152,7 +152,7 @@ void ResourceManager::process_pending_uploads(ID3D12Device* device, ID3D12Graphi
     if (_pending_meshes.empty()) return;
 
     int uploadCount = 0;
-    while (!_pending_meshes.empty() && uploadCount < 2)
+    while (!_pending_meshes.empty() && uploadCount < MAX_UPLOADS_PER_FRAME)
     {
         auto mesh = _pending_meshes.front();
         _pending_meshes.pop_front();

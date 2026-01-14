@@ -308,14 +308,20 @@ void GameFramework::WaitForGpuComplete()
 
 void GameFramework::MoveToNextFrame()
 {
+	const UINT64 fenceValueToSignal = _currentFenceValue + 1;
+	_currentFenceValue++;
+
+	HRESULT hResult = _commandQueue->Signal(_fence.Get(), fenceValueToSignal);
+
+	_fenceValues[_swapChainBufferIndex] = fenceValueToSignal;
+
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
-	UINT64 nFenceValue = _fenceValues[_swapChainBufferIndex];
-	HRESULT hResult = _commandQueue->Signal(_fence.Get(), nFenceValue);
+	const UINT64 fenceValueToWaitFor = _fenceValues[_swapChainBufferIndex];
 
-	if (_fence->GetCompletedValue() < nFenceValue)
+	if (_fence->GetCompletedValue() < fenceValueToWaitFor)
 	{
-		hResult = _fence->SetEventOnCompletion(nFenceValue, _fenceEvent);
+		hResult = _fence->SetEventOnCompletion(fenceValueToWaitFor, _fenceEvent);
 		::WaitForSingleObject(_fenceEvent, INFINITE);
 	}
 }
@@ -346,7 +352,7 @@ void GameFramework::FrameAdvance()
 	// 3. [비동기 리소스 업로드] (대기 없음!)
 	// ---------------------------------------------------------
 	// 업로드 전용 할당기 사용 -> 렌더링 할당기와 충돌 안 함
-	UINT64 nextFenceValue = _fenceValues[_swapChainBufferIndex] + 1;
+	UINT64 nextFenceValue = _currentFenceValue + 1;
 
 	// 업로드 처리시 이 값을 알려줌
 	currentUploadAllocator->Reset();
