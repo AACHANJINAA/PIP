@@ -46,11 +46,8 @@ void OtherPlayerScript::awake()
     auto render_comp = game_object()->add_component<RenderComponent>().get();
 	auto animation_comp = game_object()->add_component<AnimationComponent>().get();
 
-    auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",
-        true,
-        "idle");
-    auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Bture_Walk/Bture_Walk.gltf", true,
-        "walk");
+    auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
+    auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
 
     render_comp->set_mesh(idleMesh);
 
