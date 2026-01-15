@@ -15,7 +15,7 @@ private:
 
 public:
     void initialize(ID3D12Device* device);
-    void render(ID3D12GraphicsCommandList* commandList);
+    void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
 
     ID3D12RootSignature* get_root_signature(const std::string& name) const;
     ID3D12PipelineState* get_pso(const std::string& name) const;
@@ -32,7 +32,7 @@ private:
     void create_pipeline_state_objects(ID3D12Device* device);
 
     void build_render_list(CameraComponent* camera);
-    void draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera);
+    void draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
 
     // [변경] 개별 ComPtr 대신, 이름으로 루트 시그니처를 관리하는 map을 사용합니다.
     std::unordered_map<std::string, ComPtr<ID3D12RootSignature>> _rootSignatures;

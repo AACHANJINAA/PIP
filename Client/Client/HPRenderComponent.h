@@ -13,7 +13,7 @@ public:
     HPRenderComponent();
     virtual ~HPRenderComponent();
 
-    virtual void render(ID3D12GraphicsCommandList* commandList) override;
+    virtual void render(ID3D12GraphicsCommandList* commandList, UINT frameIndex) override;
 
 protected:
     ComPtr<ID3D12Resource> _cbGameHpInfo;

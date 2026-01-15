@@ -69,7 +69,7 @@ HPRenderComponent::~HPRenderComponent()
 {
 }
 
-void HPRenderComponent::render(ID3D12GraphicsCommandList* commandList)
+void HPRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frameIndex)
 {
     if (!_mesh)
     {
@@ -90,5 +90,5 @@ void HPRenderComponent::render(ID3D12GraphicsCommandList* commandList)
     commandList->SetGraphicsRootConstantBufferView(8, _cbGameHpInfo->GetGPUVirtualAddress());
 
     // 월드 행렬 업데이트를 위해 필요함
-    RenderComponent::render(commandList);
+    RenderComponent::render(commandList, frameIndex);
 }

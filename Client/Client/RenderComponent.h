@@ -47,7 +47,7 @@ public:
     virtual ~RenderComponent();
 
     // render 함수는 이제 Renderer에 의해 호출됩니다.
-    virtual void render(ID3D12GraphicsCommandList* commandList);
+    virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
     // --- Getters & Setters ---
     virtual void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
 
@@ -71,9 +71,9 @@ protected:
     //std::shared_ptr<GltfMaterial> _material;                // 셰이더 또는 머티리얼
     //std::vector<std::shared_ptr<GltfMaterial>> _materials;  // 서브 리소스를 이용한 다중 텍스쳐링을 위한 변수
     std::string _psoName = "default";
-    // [추가] 이 RenderComponent만의 고유한 상수 버퍼 관련 멤버들
-    ComPtr<ID3D12Resource> _cbGameObjectInfo;
-    CbGameObjectInfo* _mappedCbGameObjectInfo = nullptr;
+    // 프레임 개수만큼 늘리기
+    std::array<ComPtr<ID3D12Resource>, 2> _cbGameObjectInfo;
+    std::array<CbGameObjectInfo*, 2> _mappedCbGameObjectInfo;
 
     bool _frustumCullingEnabled = true;
 };
