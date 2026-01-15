@@ -104,7 +104,7 @@ void Renderer::create_pipeline_state_objects(ID3D12Device* device)
     }
 }
 
-void Renderer::render(ID3D12GraphicsCommandList* commandList)
+void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
     // [추가] 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋합니다.
     _current_dynamic_descriptor_index = 0;
@@ -120,7 +120,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-    draw_render_list(commandList, camera);
+    draw_render_list(commandList, camera,  frame_index);
 }
 
 void Renderer::build_render_list(CameraComponent* camera)
@@ -171,7 +171,7 @@ void Renderer::build_render_list(CameraComponent* camera)
         << invalidBoundingBoxCount << " invalid BB");*/
 }
 
-void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera)
+void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index)
 {
     // 렌더링에 실제 사용될 '동적 힙'을 커맨드 리스트에 설정합니다
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
@@ -216,7 +216,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
         if (camera)
         {
-            camera->update_shader_variables(commandList);
+            camera->update_shader_variables(commandList, frame_index);
             camera->set_viewports_and_scissor_rects(commandList);
         }
 
@@ -247,7 +247,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             // 셰이더에게 객체별 리소스 바인딩을 맡김
             shader_prototype->update_per_object(commandList, this, gameObject.get());
 
-            renderComp->render(commandList);
+            renderComp->render(commandList, frame_index);
         }
     }
     //KJ 설명: OnPrepareRender 함수는 더 이상 필요 없으며, 그 역할은 Renderer가 더 효율적인 방식으로 수행하게 됩니다.

@@ -73,34 +73,40 @@ RenderComponent::RenderComponent()
     resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-    // 4. 위에서 정의한 속성들을 사용하여 실제 상수 버퍼 리소스를 생성합니다.
-    HRESULT hr = device->CreateCommittedResource(
-        &heap_props,                    // 힙 속성
-        D3D12_HEAP_FLAG_NONE,
-        &resource_desc,                 // 리소스 속성
-        D3D12_RESOURCE_STATE_GENERIC_READ, // 업로드 힙의 초기 상태는 GENERIC_READ 입니다.
-        nullptr,                        // 최적화된 초기화 값 없음
-        IID_PPV_ARGS(&_cbGameObjectInfo)); // 생성된 리소스는 _cbGameObjectInfo 멤버에 저장됩니다.
-
-    if (FAILED(hr))
+    for (int i = 0; i < _cbGameObjectInfo.size(); ++i)
     {
-        CERROR("RenderComponent: 상수 버퍼 생성에 실패했습니다.");
-        return;
-    }
+        // 4. 위에서 정의한 속성들을 사용하여 실제 상수 버퍼 리소스를 생성합니다.
+        HRESULT hr = device->CreateCommittedResource(
+            &heap_props,                    // 힙 속성
+            D3D12_HEAP_FLAG_NONE,
+            &resource_desc,                 // 리소스 속성
+            D3D12_RESOURCE_STATE_GENERIC_READ, // 업로드 힙의 초기 상태는 GENERIC_READ 입니다.
+            nullptr,                        // 최적화된 초기화 값 없음
+            IID_PPV_ARGS(&_cbGameObjectInfo[i])); // 생성된 리소스는 _cbGameObjectInfo 멤버에 저장됩니다.
 
-    // 5. 생성된 리소스의 가상 주소를 CPU가 쓰기 가능하도록 영구적으로 맵핑(mapping)합니다.
-    //    _mappedCbGameObjectInfo 포인터를 통해 CPU에서 이 버퍼에 데이터를 쓸 수 있게 됩니다.
-    //    (업로드 힙에 생성한 리소스는 Unmap을 호출할 필요가 없습니다.)
-    _cbGameObjectInfo->Map(0, nullptr, reinterpret_cast<void**>(&_mappedCbGameObjectInfo));
+        if (FAILED(hr))
+        {
+            CERROR("RenderComponent: 상수 버퍼 생성에 실패했습니다.");
+            return;
+        }
+
+        // 5. 생성된 리소스의 가상 주소를 CPU가 쓰기 가능하도록 영구적으로 맵핑(mapping)합니다.
+        //    _mappedCbGameObjectInfo 포인터를 통해 CPU에서 이 버퍼에 데이터를 쓸 수 있게 됩니다.
+        //    (업로드 힙에 생성한 리소스는 Unmap을 호출할 필요가 없습니다.)
+        _cbGameObjectInfo[i]->Map(0, nullptr, reinterpret_cast<void**>(&_mappedCbGameObjectInfo[i]));
+    }
 }
 
 RenderComponent::~RenderComponent()
 {
-	if (_cbGameObjectInfo)
+	for (int i = 0; i < _cbGameObjectInfo.size(); ++i)
 	{
-		_cbGameObjectInfo->Unmap(0, nullptr);
-		_mappedCbGameObjectInfo = nullptr;
-		_cbGameObjectInfo.Reset();
+		if (_cbGameObjectInfo[i])
+		{
+			_cbGameObjectInfo[i]->Unmap(0, nullptr);
+			_mappedCbGameObjectInfo[i] = nullptr;
+			_cbGameObjectInfo[i].Reset();
+		}
 	}
 }
 
@@ -157,7 +163,7 @@ const std::string& RenderComponent::pso_name() const
     return _psoName;
 }
 
-void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
+void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
     if (!_mesh)
 	{
@@ -169,15 +175,12 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList)
     const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
     XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
 
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo->_world, XMMatrixTranspose(worldMatrix));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
 
-    // 역전치 행렬 계산 및 복사
     XMMATRIX worldInverseTransposeMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo->_worldInverseTranspose, worldInverseTransposeMatrix);  // 이중 전치 제거!
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverseTransposeMatrix);
 
-
-    // 3. 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 바인딩합니다.
-    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo->GetGPUVirtualAddress());
+    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
 
     _mesh->render(commandList);
 }

@@ -21,7 +21,7 @@ public:
 
     // 역할 이전 (from CCamera::UpdateShaderVariables):
     // 셰이더에 뷰/프로젝션 행렬 업데이트
-    void update_shader_variables(ID3D12GraphicsCommandList* commandList);
+    void update_shader_variables(ID3D12GraphicsCommandList* commandList, UINT frame_index);
 
     // 역할 이전 (from CCamera::SetViewportsAndScissorRects):
     // 뷰포트 및 시저렉트 설정
@@ -65,8 +65,8 @@ private:
 
     // 역할 이전 (from CCamera):
     // 상수 버퍼 리소스 및 매핑된 포인터
-    ComPtr<ID3D12Resource> _cbCamera;
-    CB_CAMERA_INFO* _mappedCbCamera = nullptr;
+    std::array<ComPtr<ID3D12Resource>, 2> _cbCamera;
+    std::array<CB_CAMERA_INFO*, 2> _mappedCbCamera;
 
     ComPtr<ID3D12Resource> _cbSkybox;
 	XMFLOAT4X4* _mappedCbSkybox = nullptr;

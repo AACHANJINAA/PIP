@@ -393,7 +393,7 @@ void GameFramework::FrameAdvance()
 	_commandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
 
 	// 실제 그리기 (업로드 안 된 메쉬는 Mesh::render 내부에서 skip됨)
-	Renderer::instance()->render(_commandList.Get());
+	Renderer::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
 #ifdef _WITH_PLAYER_TOP
 	_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,

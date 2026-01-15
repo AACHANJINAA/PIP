@@ -32,22 +32,25 @@ CameraComponent::CameraComponent() :
 		CERROR("CameraComponent: Device is null.");
 		return;
 	}
-
-	_cbCamera = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_CAMERA_INFO),
+	for (UINT i = 0; i < _cbCamera.size(); ++i)
+	{	
+		_cbCamera[i] = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_CAMERA_INFO),
 		D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 
-	_cbSkybox = ::CreateBufferResource(device, nullptr, nullptr, sizeof(XMFLOAT4X4),
-		D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+		if (!_cbCamera[i])
+		{
+			CERROR("CameraComponent: Failed to create constant buffer.");
+			return;
+		}
+		D3D12_RANGE read_range_cb{ 0, 0 };
 
-	if (!_cbCamera)
-	{
-		CERROR("CameraComponent: Failed to create constant buffer.");
-		return;
+		_cbCamera[i]->Map(0, &read_range_cb, reinterpret_cast<void**>(&_mappedCbCamera[i]));
 	}
 
-	D3D12_RANGE readRange{ 0, 0 };
-	_cbCamera->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbCamera));
-	_cbSkybox->Map(0, &readRange, reinterpret_cast<void**>(&_mappedCbSkybox));
+	_cbSkybox = ::CreateBufferResource(device, nullptr, nullptr, sizeof(XMFLOAT4X4), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+	D3D12_RANGE read_range_sb{ 0, 0 };
+	_cbSkybox->Map(0, &read_range_sb, reinterpret_cast<void**>(&_mappedCbSkybox));
 
 	set_lens(_fov, _aspect, _near, _far);
 	// --- initialize() 로직 끝 ---
@@ -60,13 +63,13 @@ CameraComponent::~CameraComponent()
 	}
 
 	// --- release() 로직 시작 ---
-	if (_cbCamera)
+	for (UINT i = 0; i < _cbCamera.size(); ++i)
 	{
-		_cbCamera->Unmap(0, nullptr);
-		// _cbCamera는 ComPtr이므로, 소멸자가 호출될 때 자동으로 Reset()되어 리소스가 해제됩니다.
-		// 따라서 명시적으로 _cbCamera.Reset()을 호출할 필요는 없습니다.
+		if (_cbCamera[i])
+		{
+			_cbCamera[i]->Unmap(0, nullptr);
+		}
 	}
-
 	if (_cbSkybox)
 	{
 		_cbSkybox->Unmap(0, nullptr);
@@ -76,39 +79,23 @@ CameraComponent::~CameraComponent()
 	// --- release() 로직 끝 ---
 }
 
-void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* commandList)
+void CameraComponent::update_shader_variables(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-	if (!_mappedCbCamera) return;
+	if (!_mappedCbCamera[frame_index]) return;
 
 	// 뷰와 프로젝션 행렬을 셰이더가 사용할 수 있도록 Transpose하여 상수 버퍼에 복사합니다.
-	XMStoreFloat4x4(&_mappedCbCamera->_view, XMMatrixTranspose(XMLoadFloat4x4(&_viewMatrix)));
-	XMStoreFloat4x4(&_mappedCbCamera->_projection,
+	XMStoreFloat4x4(&_mappedCbCamera[frame_index]->_view, XMMatrixTranspose(XMLoadFloat4x4(&_viewMatrix)));
+	XMStoreFloat4x4(&_mappedCbCamera[frame_index]->_projection,
 	XMMatrixTranspose(XMLoadFloat4x4(&_projectionMatrix)));
 
 	// 카메라의 월드 위치를 상수 버퍼에 복사합니다.
 	if (game_object() && game_object()->transform())
 	{
 		XMFLOAT3 pos = game_object()->transform()->position();
-		_mappedCbCamera->_position = XMFLOAT4(pos.x, pos.y, pos.z, 1.0f);
+		_mappedCbCamera[frame_index]->_position = XMFLOAT4(pos.x, pos.y, pos.z, 1.0f);
 	}
 
-	auto print_matrix = [](const char* name, const XMFLOAT4X4& matrix) {
-		CLOG("--- " << name << " ---");
-		CLOG(matrix.m[0][0] << ", " << matrix.m[0][1] << ", " << matrix.m[0][2] << ", " << matrix.m[0][3]);
-		CLOG(matrix.m[1][0] << ", " << matrix.m[1][1] << ", " << matrix.m[1][2] << ", " << matrix.m[1][3]);
-		CLOG(matrix.m[2][0] << ", " << matrix.m[2][1] << ", " << matrix.m[2][2] << ", " << matrix.m[2][3]);
-		CLOG(matrix.m[3][0] << ", " << matrix.m[3][1] << ", " << matrix.m[3][2] << ", " << matrix.m[3][3]);
-		CLOG("--------------------");
-	};
-	
-	// 매 프레임 행렬 값을 출력합니다.
-	//static int frame_count = 0;
-	//if (frame_count < 10) { // 처음 10프레임만 출력
-	//   print_matrix("View Matrix", _viewMatrix);
-	//   print_matrix("Projection Matrix", _projectionMatrix);
-	//   frame_count++;
-	//}    // 루트 시그니처의 1번 파라미터(b1)에 카메라 상수 버퍼를 바인딩합니다.
-	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera->GetGPUVirtualAddress();
+	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = _cbCamera[frame_index]	->GetGPUVirtualAddress();
 	commandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress);
 }
 void CameraComponent::set_viewports_and_scissor_rects(ID3D12GraphicsCommandList* commandList)
