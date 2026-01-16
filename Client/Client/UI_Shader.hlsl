@@ -16,6 +16,8 @@ cbuffer cbUIElement : register(b1)
     float4 g_Color; // UI 색상 (tint)
     float2 g_UVOffset; // 텍스처 UV 오프셋
     float2 g_UVScale; // 텍스처 UV 스케일
+    int g_UseTexture; // 텍스처 사용 여부 (1: 사용, 0: 단색)
+    float g_Padding2; // 패딩
 };
 
      // 텍스처 및 샘플러
@@ -58,6 +60,15 @@ PS_INPUT VS_UI(VS_INPUT input)
      // 픽셀 셰이더
 float4 PS_UI(PS_INPUT input) : SV_TARGET
 {
-         // 일단 텍스처 없이 단색으로 테스트
-    return g_Color;
+    if (g_UseTexture > 0)
+    {
+             // 텍스처 사용
+        float4 texColor = g_Texture.Sample(g_Sampler, input.texcoord);
+        return texColor * g_Color;
+    }
+    else
+    {
+             // 단색
+        return g_Color;
+    }
 }

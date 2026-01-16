@@ -145,8 +145,16 @@ void UIRenderComponent::initialize_quad_mesh()
 void UIRenderComponent::set_texture(const std::string& texture_path)
 {
     _texture_info = ResourceManager::instance()->load_texture(texture_path);
-}
 
+    if (!_texture_info)
+    {
+        CERROR("Failed to load UI texture: " << texture_path);
+    }
+    else
+    {
+        CLOG("UI texture loaded successfully: " << texture_path);
+    }
+}
 void UIRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
     if (!_mesh || !_mapped_ui_element) return;
@@ -157,12 +165,14 @@ void UIRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT fram
     _mapped_ui_element->color = _color;
     _mapped_ui_element->uv_offset = _uv_offset;
     _mapped_ui_element->uv_scale = _uv_scale;
+    _mapped_ui_element->use_texture = (_texture_info != nullptr) ? 1 : 0;  // ← 추가
+    _mapped_ui_element->padding = 0.0f;  // ← 추가
 
     // 상수 버퍼 바인딩
     commandList->SetGraphicsRootConstantBufferView(0, _cb_screen_info->GetGPUVirtualAddress());
     commandList->SetGraphicsRootConstantBufferView(1, _cb_ui_element->GetGPUVirtualAddress());
 
-    // 텍스처 바인딩
+    // 텍스처 바인딩 (있을 때만)
     if (_texture_info)
     {
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles = { _texture_info->cpu_handle };

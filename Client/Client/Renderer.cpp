@@ -155,16 +155,19 @@ void Renderer::build_render_list(CameraComponent* camera)
                 {
                     invalidBoundingBoxCount++;
 
-                    // UI는 bounding box가 없어도 렌더링해야 함
+                    // UI는 bounding box가 없어도 렌더링
                     if (renderComp->pso_name() == "ui")
                     {
                         CLOG("UI has invalid BB, but adding to render list anyway");
                         _renderMap[renderComp->pso_name()].push_back(gameObject);
                         visibleObjects++;
-                        continue;  // UI는 frustum culling 건너뛰기
+                        continue;
                     }
 
-                    CERROR("Invalid bounding box for: " << gameObject->name());
+                    // ========== 여기 수정! ==========
+                    // CERROR 대신 CLOG로 변경 (프로그램 멈추지 않음)
+                    CLOG("Warning: Invalid bounding box for: " << gameObject->name() << " - skipping");
+                    // ================================
                     continue;
                 }
 

@@ -42,8 +42,9 @@ struct CbUIElement
     XMFLOAT4 color;             // 색상 tint
     XMFLOAT2 uv_offset;         // UV 오프셋
     XMFLOAT2 uv_scale;          // UV 스케일
+    int use_texture;            // 텍스처 사용 여부 (1: 사용, 0: 단색)
+    float padding;              // 패딩
 };
-
 // 화면 정보 상수 버퍼 구조체
 struct CbScreenInfo
 {
@@ -60,12 +61,13 @@ public:
 
     // UI는 frustum culling 불필요
     virtual bool is_visible(const BoundingFrustum& frustum) const override { return true; }
-	// UI는 월드 경계 상자가 없음
+
+    // UI는 유효하지 않은 bounding box 반환
     virtual BoundingOrientedBox get_world_bounding_box() const override
     {
         BoundingOrientedBox box;
         box.Center = XMFLOAT3(0, 0, 0);
-        box.Extents = XMFLOAT3(0, 0, 0);  // 크기 0 (invalid)
+        box.Extents = XMFLOAT3(0, 0, 0);
         box.Orientation = XMFLOAT4(0, 0, 0, 1);
         return box;
     }
