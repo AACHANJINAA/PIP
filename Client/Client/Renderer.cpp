@@ -228,6 +228,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
 
+        if (psoName != "ui" && camera)  // UI는 카메라 설정 안 함!
+        {
+            camera->update_shader_variables(commandList, frame_index);
+            camera->set_viewports_and_scissor_rects(commandList);
+        }
+
         if (camera)
         {
             camera->update_shader_variables(commandList, frame_index);

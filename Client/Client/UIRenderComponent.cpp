@@ -12,13 +12,9 @@ bool UIRenderComponent::_screen_info_initialized = false;
 
 UIRenderComponent::UIRenderComponent()
 {
-    CLOG("========== UIRenderComponent Constructor Called ==========");
-
     set_name("UIRenderComponent");
     set_pso_name("ui");
     set_frustum_culling_enabled(false);  // UI´Â frustum culling ²û
-
-    CLOG("PSO Name set to: " << pso_name());
 
     initialize_constant_buffers();
     initialize_quad_mesh();
@@ -27,9 +23,6 @@ UIRenderComponent::UIRenderComponent()
     {
         initialize_screen_info();
     }
-
-    CLOG("UIRenderComponent initialized successfully");
-    CLOG("===========================================================");
 }
 
 UIRenderComponent::~UIRenderComponent()
