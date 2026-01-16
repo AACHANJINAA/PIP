@@ -56,6 +56,16 @@ public:
 
     void set_current_command_list(ID3D12GraphicsCommandList* command_list){ _command_list = command_list; }
 
+    // 텍스처의 GPU 리소스와 관련 정보를 저장하는 내부 구조체
+    struct TextureInfo
+    {
+        std::string name;
+        ComPtr<ID3D12Resource> resource = nullptr;
+        ComPtr<ID3D12Resource> upload_heap = nullptr;
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle{};
+        D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
+    };
+
 private:
     // GlTF PBR 재질 속성을 셰이더로 전달하기 위한 상수 버퍼 구조체
     // 이 구조체는 HLSL의 cbMaterial과 1:1로 매칭됩니다.
@@ -74,16 +84,6 @@ private:
         int HasNormalTexture;
         int HasEmissiveTexture;
         XMFLOAT2 Padding; // 16바이트 정렬을 위한 패딩
-    };
-
-    // 텍스처의 GPU 리소스와 관련 정보를 저장하는 내부 구조체
-    struct TextureInfo
-    {
-         std::string name;
-         ComPtr<ID3D12Resource> resource = nullptr;
-         ComPtr<ID3D12Resource> upload_heap = nullptr;
-         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle{};
-         D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
     };
     
     // --- glTF PBR 표준에 맞춘 MaterialInfo 구조체 ---

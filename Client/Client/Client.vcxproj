@@ -157,6 +157,8 @@
     <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="UIRenderComponent.h" />
+    <ClInclude Include="UIShader.h" />
     <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
@@ -223,6 +225,8 @@
     <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TimerManager.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
+    <ClCompile Include="UIRenderComponent.cpp" />
+    <ClCompile Include="UIShader.cpp" />
     <ClCompile Include="WICTextureLoader12.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -275,6 +279,9 @@
     <FxCompile Include="Terrain_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="UI_Shader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -410,3 +410,69 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
 
     return pd3dGraphicsRootSignature;
 }
+
+
+const std::string& UIRootSignatureGenerator::name() const
+{
+    static const std::string terrainName = "ui";
+    return terrainName;
+}
+
+ComPtr<ID3D12RootSignature> UIRootSignatureGenerator::create(ID3D12Device* device)
+{
+    // 루트 파라미터 정의
+    CD3DX12_ROOT_PARAMETER1 slot_root_parameter[3];
+
+    // 0: 화면 정보 상수 버퍼 (b0)
+    slot_root_parameter[0].InitAsConstantBufferView(0);
+
+    // 1: UI 요소 정보 상수 버퍼 (b1)
+    slot_root_parameter[1].InitAsConstantBufferView(1);
+
+    // 2: 텍스처 (t0)
+    CD3DX12_DESCRIPTOR_RANGE1 texture_range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+    slot_root_parameter[2].InitAsDescriptorTable(1, &texture_range);
+
+    // 샘플러 설정
+    CD3DX12_STATIC_SAMPLER_DESC sampler(
+        0,                                // register(s0)
+        D3D12_FILTER_MIN_MAG_MIP_LINEAR,  // 필터
+        D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // U 주소 모드
+        D3D12_TEXTURE_ADDRESS_MODE_WRAP   // V 주소 모드
+    );
+
+    // 루트 시그니처 생성
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC root_signature_desc;
+    root_signature_desc.Init_1_1(
+        3,                      // 파라미터 개수
+        slot_root_parameter,    // 파라미터 배열
+        1,                      // 샘플러 개수
+        &sampler,               // 샘플러 배열
+        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+    );
+
+    ComPtr<ID3DBlob> signature_blob;
+    ComPtr<ID3DBlob> error_blob;
+    D3DX12SerializeVersionedRootSignature(
+        &root_signature_desc,
+        D3D_ROOT_SIGNATURE_VERSION_1_1,
+        &signature_blob,
+        &error_blob
+    );
+
+    if (error_blob)
+    {
+        CERROR("UI Root Signature Serialization Error: "
+            << (char*)error_blob->GetBufferPointer());
+    }
+
+    ComPtr<ID3D12RootSignature> root_signature;
+    device->CreateRootSignature(
+        0,
+        signature_blob->GetBufferPointer(),
+        signature_blob->GetBufferSize(),
+        IID_PPV_ARGS(&root_signature)
+    );
+
+    return root_signature;
+}
