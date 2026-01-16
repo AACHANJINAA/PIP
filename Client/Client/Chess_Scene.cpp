@@ -14,6 +14,7 @@
 #include "ReadGLTFMesh.h"
 
 #include "TerrainLoader.h"
+#include "UIRenderComponent.h"
 
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -44,6 +45,20 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	//SpawnGrammy_Walk(device, commandList);
 
     Spawn_SK_MagicConstruct(device, commandList);
+
+    CLOG("========== Creating Test UI ==========");
+
+    auto ui_object = ObjectManager::instance()->create_game_object("TestUI");
+    auto ui_component = ui_object->add_component<UIRenderComponent>();
+
+    // 화면 왼쪽 상단에 빨간색 사각형 UI 생성
+    ui_component->set_screen_position(100.0f, 100.0f);
+    ui_component->set_size(300.0f, 50.0f);
+    ui_component->set_color(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)); // 빨간색
+
+    CLOG("UI Component created: " << ui_component->name());
+    CLOG("UI PSO Name: " << ui_component->pso_name());
+    CLOG("========================================");
 
 	// DW설명 : 플레이어 오브젝트 생성
     {

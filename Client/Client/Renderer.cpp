@@ -12,6 +12,7 @@
 #include "SkyboxShader.h"
 #include "GltfSkinnedShader.h"
 #include "TerrainShader.h"
+#include "UIShader.h" 
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -37,6 +38,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<SkyBoxRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<TerrainRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<UIRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -68,6 +70,8 @@ void Renderer::initialize(ID3D12Device* device)
 	auto terrain_shader = std::make_shared<TerrainShader>();
 	_shaderPrototypes[terrain_shader->pso_name()] = terrain_shader;
 
+    auto ui_shader = std::make_shared<UIShader>();
+    _shaderPrototypes[ui_shader->pso_name()] = ui_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -132,6 +136,7 @@ void Renderer::build_render_list(CameraComponent* camera)
     int totalObjects = 0;
     int visibleObjects = 0;
     int invalidBoundingBoxCount = 0;
+    int uiObjects = 0; 
 
     for (const auto& gameObject : allGameObjects)
     {
@@ -142,7 +147,6 @@ void Renderer::build_render_list(CameraComponent* camera)
         if (renderComp && renderComp->is_enabled())
         {
             totalObjects++;
-
             try
             {
                 BoundingOrientedBox obb = renderComp->get_world_bounding_box();
@@ -150,6 +154,16 @@ void Renderer::build_render_list(CameraComponent* camera)
                 if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
                 {
                     invalidBoundingBoxCount++;
+
+                    // UI는 bounding box가 없어도 렌더링해야 함
+                    if (renderComp->pso_name() == "ui")
+                    {
+                        CLOG("UI has invalid BB, but adding to render list anyway");
+                        _renderMap[renderComp->pso_name()].push_back(gameObject);
+                        visibleObjects++;
+                        continue;  // UI는 frustum culling 건너뛰기
+                    }
+
                     CERROR("Invalid bounding box for: " << gameObject->name());
                     continue;
                 }
