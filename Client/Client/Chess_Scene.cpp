@@ -46,19 +46,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     Spawn_SK_MagicConstruct(device, commandList);
 
-    CLOG("========== Creating Test UI ==========");
+	Spawn_UI(device, commandList);
 
-    auto ui_object = ObjectManager::instance()->create_game_object("TestUI");
-    auto ui_component = ui_object->add_component<UIRenderComponent>();
-
-    // 화면 왼쪽 상단에 빨간색 사각형 UI 생성
-    ui_component->set_screen_position(100.0f, 100.0f);
-    ui_component->set_size(300.0f, 50.0f);
-    ui_component->set_color(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)); // 빨간색
-
-    CLOG("UI Component created: " << ui_component->name());
-    CLOG("UI PSO Name: " << ui_component->pso_name());
-    CLOG("========================================");
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
@@ -238,4 +227,25 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 25.0f, -130.0f));
     }
+}
+
+void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) 
+{
+    // 1. HP Frame (뒤에 렌더링될 프레임)
+    auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
+    auto hp_frame = hp_frame_obj->add_component<UIRenderComponent>();
+
+    hp_frame->set_screen_position(30.0f, 30.0f);      // 화면 왼쪽 상단
+    hp_frame->set_size(410.0f, 30.0f);                 // Bar보다 좀 더 큼
+    hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
+    hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+
+    // 2. HP Bar (앞에 렌더링될 바)
+    auto hp_bar_obj = ObjectManager::instance()->create_game_object("HP_Bar");
+    auto hp_bar = hp_bar_obj->add_component<UIRenderComponent>();
+
+    hp_bar->set_screen_position(30.0f, 30.0f);        // Frame보다 안쪽
+    hp_bar->set_size(500.0f, 30.0f);                   // Frame보다 작게
+    hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+    hp_bar->set_texture("Resource/UI/HP_Bar.dds");
 }

@@ -23,7 +23,7 @@ public:
 
     void Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
-
+    void Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
 private:
 };
