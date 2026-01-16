@@ -58,6 +58,6 @@ PS_INPUT VS_UI(VS_INPUT input)
      // 픽셀 셰이더
 float4 PS_UI(PS_INPUT input) : SV_TARGET
 {
-    float4 texColor = g_Texture.Sample(g_Sampler, input.texcoord);
-    return texColor * g_Color;
+         // 일단 텍스처 없이 단색으로 테스트
+    return g_Color;
 }
