@@ -123,6 +123,9 @@
     <ClInclude Include="MainPlayerScript.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="MonsterHPComponent.h" />
+    <ClInclude Include="MonsterHPUIRenderComponent.h" />
+    <ClInclude Include="MonsterHPUIShader.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="FreeCamera.h" />
     <ClInclude Include="GameFramework.h" />
@@ -189,6 +192,9 @@
     <ClCompile Include="MainPlayerScript.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="MonsterHPComponent.cpp" />
+    <ClCompile Include="MonsterHPUIRenderComponent.cpp" />
+    <ClCompile Include="MonsterHPUIShader.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="FreeCamera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
@@ -272,6 +278,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <None Include="Monster_HP_Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="Skybox_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

@@ -328,7 +328,7 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
    
     auto transition = CD3DX12_RESOURCE_BARRIER::Transition(
         new_texture_info.resource.Get(),
-        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
     _command_list->ResourceBarrier(1, &transition);
     
     // 7. 셰이더 리소스 뷰(SRV)를 생성합니다.

@@ -15,6 +15,7 @@
 
 #include "TerrainLoader.h"
 #include "UIRenderComponent.h"
+#include "MonsterHPUIRenderComponent.h"
 
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -48,6 +49,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 	Spawn_UI(device, commandList);
 
+	// Spawn_Monster_HP_UI(device, commandList);
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
@@ -229,7 +231,7 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
     }
 }
 
-void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) 
+void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     // 1. HP Frame (뒤에 렌더링될 프레임)
     auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
@@ -248,4 +250,12 @@ void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     hp_bar->set_size(500.0f, 30.0f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
+}
+
+void Chess_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+	auto monster_hp_frame_obj = ObjectManager::instance()->create_game_object("Monster_HP_Frame");
+	auto monster_hp_ui_renderer = monster_hp_frame_obj->add_component<MonsterHPUIRenderComponent>();
+	monster_hp_ui_renderer->set_hp_back_texture("Resource/UI/HP_Bar_Frame.dds");
+	monster_hp_ui_renderer->set_hp_bar_texture("Resource/UI/HP_Bar.dds");
 }

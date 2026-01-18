@@ -25,5 +25,7 @@ public:
 
     void Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
+    void Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
 private:
 };

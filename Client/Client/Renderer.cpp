@@ -12,7 +12,8 @@
 #include "SkyboxShader.h"
 #include "GltfSkinnedShader.h"
 #include "TerrainShader.h"
-#include "UIShader.h" 
+#include "UIShader.h"
+#include "MonsterHPUIShader.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -39,6 +40,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<TerrainRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<UIRootSignatureGenerator>());
+	_rootSignatureGenerators.push_back(std::make_unique<MonsterHPUIRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -72,6 +74,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto ui_shader = std::make_shared<UIShader>();
     _shaderPrototypes[ui_shader->pso_name()] = ui_shader;
+
+	auto monster_hp_ui_shader = std::make_shared<MonsterHPUIShader>();
+	_shaderPrototypes[monster_hp_ui_shader->pso_name()] = monster_hp_ui_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -156,7 +161,7 @@ void Renderer::build_render_list(CameraComponent* camera)
                     invalidBoundingBoxCount++;
 
                     // UI는 bounding box가 없어도 렌더링
-                    if (renderComp->pso_name() == "ui")
+                    if (renderComp->pso_name() == "ui" || renderComp->pso_name() == "Monster_HP_UI")
                     {
                         CLOG("UI has invalid BB, but adding to render list anyway");
                         _renderMap[renderComp->pso_name()].push_back(gameObject);

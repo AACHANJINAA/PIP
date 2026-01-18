@@ -299,11 +299,20 @@
     <ClInclude Include="BehaviorTree.h">
       <Filter>0. Engine\7. Helper</Filter>
     </ClInclude>
-    <ClInclude Include="MainPlayerHPComponent.h">
+    <ClInclude Include="UIRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="UIShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterHPComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClInclude>
-    <ClInclude Include="HPUIShader.h">
+    <ClInclude Include="MonsterHPUIShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterHPUIRenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -484,11 +493,20 @@
     <ClCompile Include="BehaviorTree.cpp">
       <Filter>0. Engine\7. Helper</Filter>
     </ClCompile>
-    <ClCompile Include="MainPlayerHPComponent.cpp">
+    <ClCompile Include="UIRenderComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UIShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterHPComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClCompile>
-    <ClCompile Include="HPUIShader.cpp">
+    <ClCompile Include="MonsterHPUIShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterHPUIRenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -523,6 +541,9 @@
     <None Include="Gltf_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
+    <None Include="Monster_HP_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Skybox_Shader.hlsl">
@@ -537,7 +558,7 @@
     <FxCompile Include="Light.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="HPBarUI_Shader.hlsl">
+    <FxCompile Include="UI_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>
