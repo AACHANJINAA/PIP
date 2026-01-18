@@ -488,15 +488,15 @@ ComPtr<ID3D12RootSignature> MonsterHPUIRootSignatureGenerator::create(ID3D12Devi
     // 루트 파라미터 정의
     CD3DX12_ROOT_PARAMETER1 slot_root_parameter[4];
 
-    // [0] b1: 카메라 정보 (대원님 요청사항: 반드시 b1)
-    slot_root_parameter[0].InitAsConstantBufferView(1);
+    // [0] b2: HP 바 크기 정보 (g_Size)
+    slot_root_parameter[0].InitAsConstantBufferView(2);
 
-    // [1] b2: HP 바 크기 정보 (g_Size)
-    slot_root_parameter[1].InitAsConstantBufferView(2);
+    // [1] b1: 카메라 정보 (대원님 요청사항: 반드시 b1)
+    slot_root_parameter[1].InitAsConstantBufferView(1);
 
     // [수정] 2개의 테이블로 분리 (각각 t0, t1)
-    CD3DX12_DESCRIPTOR_RANGE1 range0(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0
-    CD3DX12_DESCRIPTOR_RANGE1 range1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); // t1
+    static CD3DX12_DESCRIPTOR_RANGE1 range0(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0
+    static CD3DX12_DESCRIPTOR_RANGE1 range1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); // t1
 
     slot_root_parameter[2].InitAsDescriptorTable(1, &range0); // 슬롯 2 -> t0
     slot_root_parameter[3].InitAsDescriptorTable(1, &range1); // 슬롯 3 -> t1

@@ -130,7 +130,7 @@ void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, 
             // 상수 버퍼 업데이트
             HPBarVertex v;
             // 몬스터 머리 위로 띄우기 위해 Y축에 오프셋(예: 2.0f) 추가
-            DirectX::XMFLOAT3 pos = hpComponent.get()->get_world_position();
+            DirectX::XMFLOAT3 pos = hpComponent.get()->game_object().get()->transform().get()->get_world_position();
             v.pos = { pos.x, pos.y + 5.0f, pos.z };
             v.hpRatio = hpComponent.get()->get_hp_ratio();
             vtxBuffer.push_back(v);
@@ -142,9 +142,11 @@ void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, 
     // 그릴 게 없으면 리턴
     if (vtxBuffer.empty()) return;
 
+    ::memcpy(_vbMappedData, vtxBuffer.data(), sizeof(HPBarVertex) * activeCount);
+
     // 4. 루트 시그니처 매개변수 바인딩
     // [슬롯 1] HP바 공통 상수 정보 (b2)
-    commandList->SetGraphicsRootConstantBufferView(1, _cbResource->GetGPUVirtualAddress());
+    commandList->SetGraphicsRootConstantBufferView(0, _cbResource->GetGPUVirtualAddress());
 
     // [슬롯 2] 텍스처 디스크립터 테이블 (t0: 알맹이, t1: 테두리) 바인딩
     // 텍스처를 들고 있는 ResourceManager나 별도의 핸들 관리자를 통해 바인딩하세요.

@@ -48,26 +48,36 @@ void GS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> outputStream)
     float4 clipPos = mul(float4(input[0].PosW, 1.0f), VP);
     float w = g_Size.x * clipPos.w;
     float h = g_Size.y * clipPos.w;
-
     // 배경 프레임 그리기
     v.TexIndex = 1; // 프레임은 1번
     float4 frameOffsets[4] =
     {
-        float4(-w, h, 0.001f * clipPos.w, 0), float4(w, h, 0.001f * clipPos.w, 0),
-        float4(-w, -h, 0.001f * clipPos.w, 0), float4(w, -h, 0.001f * clipPos.w, 0)
+        float4(-w, h, 0.001f * clipPos.w, 0), 
+        float4(w, h, 0.001f * clipPos.w, 0),
+        float4(-w, -h, 0.001f * clipPos.w, 0), 
+        float4(w, -h, 0.001f * clipPos.w, 0)
     };
+    
+    float2 uvOffsets[4] =
+    {
+        float2(0.0f, 0.0f), // 0: 좌상
+        float2(1.0f, 0.0f), // 1: 우상
+        float2(0.0f, 1.0f), // 2: 좌하
+        float2(1.0f, 1.0f) // 3: 우하
+    };
+    
     [unroll]
     for (int i = 0; i < 4; i++)
     {
         v.PosH = clipPos + frameOffsets[i];
-        v.UV = float2(i % 2, i / 2);
+        v.UV = uvOffsets[i]; // [수정] 계산 대신 배열 값 사용 (오차 0%)
         outputStream.Append(v);
     }
     outputStream.RestartStrip();
 
     // 체력 바 알맹이 그리기
     v.TexIndex = 0; // 체력 바는 0번
-    float innerW = w * 0.94f;
+    float innerW = w * 0.88f;
     float innerH = h * 0.60f;
     const float barUV_StartX = 25.0f / 512.0f;
     const float barUV_EndX = 393.0f / 512.0f;
@@ -80,19 +90,19 @@ void GS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> outputStream)
     float zDepth = 0.0f;
 
     // 왼쪽 위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래
-    v.PosH = clipPos + float4(-innerW, innerH, zDepth, 0);
+    v.PosH = clipPos + float4(-innerW, innerH, zDepth, 0.0f);
     v.UV = float2(barUV_StartX, barUV_StartY);
     outputStream.Append(v);
     
-    v.PosH = clipPos + float4(rightOffset, innerH, zDepth, 0);
+    v.PosH = clipPos + float4(rightOffset, innerH, zDepth, 0.0f);
     v.UV = float2(currentBarUV_EndX, barUV_StartY);
     outputStream.Append(v);
     
-    v.PosH = clipPos + float4(-innerW, -innerH, zDepth, 0);
+    v.PosH = clipPos + float4(-innerW, -innerH, zDepth, 0.0f);
     v.UV = float2(barUV_StartX, barUV_EndY);
     outputStream.Append(v);
     
-    v.PosH = clipPos + float4(rightOffset, -innerH, zDepth, 0);
+    v.PosH = clipPos + float4(rightOffset, -innerH, zDepth, 0.0f);
     v.UV = float2(currentBarUV_EndX, barUV_EndY);
     outputStream.Append(v);
 

@@ -16,6 +16,7 @@ class MonsterHPUIShader : public Shader
 	virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
 	virtual D3D12_SHADER_BYTECODE create_geometry_shader(ComPtr<ID3DBlob>& shader_blob);
 	virtual D3D12_BLEND_DESC create_blend_state() override;
+	virtual D3D12_RASTERIZER_DESC create_rasterizer_state() override;
 	virtual D3D12_DEPTH_STENCIL_DESC create_depth_stencil_state() override;
 };
 

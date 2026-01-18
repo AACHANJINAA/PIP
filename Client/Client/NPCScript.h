@@ -10,7 +10,8 @@ public:
 	void late_update(float deltaTime) override;
 
 	void set_id(int64_t npc_id) { _id = npc_id; }
-	void set_hp(int hp) { _hp = hp; }
+	void set_hp(int hp);
+	int  get_hp() { return _hp; }
 	void set_position(const XMFLOAT3& position);
 
 	int64_t id() const { return _id; }

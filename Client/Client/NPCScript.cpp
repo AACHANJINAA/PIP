@@ -2,6 +2,7 @@
 #include "NPCScript.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
+#include "MonsterHPComponent.h"
 
 void NPCScript::set_position(const XMFLOAT3& position)
 {
@@ -43,6 +44,15 @@ void NPCScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const
 			transform()->set_local_rotation(TransformComponent::apply_offset_rotation(rot, -90.f, 0, 0));
 		}
 		_isFirstUpdate = false;
+	}
+}
+
+void NPCScript::set_hp(int hp)
+{
+	_hp = hp;
+	auto hp_component = game_object()->get_component<MonsterHPComponent>();
+	if (hp_component) {
+		hp_component.get()->set_current_hp(hp);
 	}
 }
 

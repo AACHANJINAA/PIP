@@ -201,6 +201,12 @@ XMFLOAT3 TransformComponent::get_world_scale()
     return XMFLOAT3();
 }
 
+XMFLOAT3 TransformComponent::get_world_position()
+{
+    const XMFLOAT4X4& worldMat = world_matrix(); // 1. 여기서 최신 월드 행렬을 계산해서 가져옴
+    return XMFLOAT3(worldMat._41, worldMat._42, worldMat._43); // 2. 행렬에서 '위치' 값만 쏙 빼옴
+}
+
 void TransformComponent::rotate(float pitch, float yaw, float roll)
 {
     XMVECTOR delta_rotation_quat = XMQuaternionRotationRollPitchYaw(
