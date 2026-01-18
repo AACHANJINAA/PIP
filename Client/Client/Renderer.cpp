@@ -154,20 +154,20 @@ void Renderer::build_render_list(CameraComponent* camera)
             totalObjects++;
             try
             {
+                // UI는 bounding box가 없어도 렌더링
+                if (renderComp->pso_name() == "ui" || renderComp->pso_name() == "Monster_HP_UI")
+                {
+                    CLOG("UI has invalid BB, but adding to render list anyway");
+                    _renderMap[renderComp->pso_name()].push_back(gameObject);
+                    visibleObjects++;
+                    continue;
+                }
+
                 BoundingOrientedBox obb = renderComp->get_world_bounding_box();
 
                 if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
                 {
                     invalidBoundingBoxCount++;
-
-                    // UI는 bounding box가 없어도 렌더링
-                    if (renderComp->pso_name() == "ui" || renderComp->pso_name() == "Monster_HP_UI")
-                    {
-                        CLOG("UI has invalid BB, but adding to render list anyway");
-                        _renderMap[renderComp->pso_name()].push_back(gameObject);
-                        visibleObjects++;
-                        continue;
-                    }
 
                     // ========== 여기 수정! ==========
                     // CERROR 대신 CLOG로 변경 (프로그램 멈추지 않음)
@@ -236,11 +236,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
 
-        if (psoName != "ui" && camera)  // UI는 카메라 설정 안 함!
-        {
-            camera->update_shader_variables(commandList, frame_index);
-            camera->set_viewports_and_scissor_rects(commandList);
-        }
+        // DW수정 : 카메라 중복 설정 제거
+        //if (psoName != "ui" && camera)  // UI는 카메라 설정 안 함!
+        //{
+        //    camera->update_shader_variables(commandList, frame_index);
+        //    camera->set_viewports_and_scissor_rects(commandList);
+        //}
 
         if (camera)
         {

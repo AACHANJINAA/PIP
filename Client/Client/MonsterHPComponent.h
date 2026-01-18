@@ -31,18 +31,16 @@ public:
 		_hpRatio = static_cast<float>(_currentHP) / static_cast<float>(_maxHP);
 	}
 	int get_current_hp() const { return _currentHP; }
-
-	XMFLOAT3 get_world_position();
 private:
 
 	int _maxHP{ 100 };
 	int _currentHP{ 100 };
 	bool _isDead{ false };
 	
-	bool _isHpChanged{ true }; // false로 초기화인 상태여야 함 true면 수정할것
+	bool _isHpChanged{ false }; // false로 초기화인 상태여야 함 true면 수정할것
 	float _chageHpTimer{ 3.0f }; // HP 변화 후 잠시 대기 타이머
 	float _nowHpTimer{ 0.0f }; // 현재 타이머
 
-	float _hpRatio{ 1.0f }; // 0.0 ~ 1.0 현재 HP 비율
+	float _hpRatio{ 0.5f }; // 0.0 ~ 1.0 현재 HP 비율
 };
 
