@@ -14,7 +14,7 @@ public:
 	virtual ~Shader() = default;
 
 	// 이 템플릿 메서드는 파생 클래스가 정의한 정보를 바탕으로 PSO를 생성하는 전체 과정을 담당합니다.
-	ComPtr<ID3D12PipelineState> create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature);
+	virtual ComPtr<ID3D12PipelineState> create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature);
 
 	// --- 파생 클래스가 반드시 구현해야 할 정보 ---
 

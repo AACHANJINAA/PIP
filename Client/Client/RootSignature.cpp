@@ -476,3 +476,75 @@ ComPtr<ID3D12RootSignature> UIRootSignatureGenerator::create(ID3D12Device* devic
 
     return root_signature;
 }
+
+const std::string& MonsterHPUIRootSignatureGenerator::name() const
+{
+    static const std::string monster_HP_UI_name = "Monster_HP_UI";
+    return monster_HP_UI_name;
+}
+
+ComPtr<ID3D12RootSignature> MonsterHPUIRootSignatureGenerator::create(ID3D12Device* device)
+{
+    // 루트 파라미터 정의
+    CD3DX12_ROOT_PARAMETER1 slot_root_parameter[4];
+
+    // [0] b1: 카메라 정보 (대원님 요청사항: 반드시 b1)
+    slot_root_parameter[0].InitAsConstantBufferView(1);
+
+    // [1] b2: HP 바 크기 정보 (g_Size)
+    slot_root_parameter[1].InitAsConstantBufferView(2);
+
+    // [수정] 2개의 테이블로 분리 (각각 t0, t1)
+    CD3DX12_DESCRIPTOR_RANGE1 range0(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0
+    CD3DX12_DESCRIPTOR_RANGE1 range1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); // t1
+
+    slot_root_parameter[2].InitAsDescriptorTable(1, &range0); // 슬롯 2 -> t0
+    slot_root_parameter[3].InitAsDescriptorTable(1, &range1); // 슬롯 3 -> t1
+
+    // 3. 정적 샘플러 설정 (s0)
+    CD3DX12_STATIC_SAMPLER_DESC linear_sampler(
+        0,                                // register(s0)
+        D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+        D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+        D3D12_TEXTURE_ADDRESS_MODE_CLAMP
+    );
+
+    // 4. 루트 시그니처 설명자 초기화
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC root_signature_desc;
+    root_signature_desc.Init_1_1(
+        _countof(slot_root_parameter),
+        slot_root_parameter,
+        1,
+        &linear_sampler,
+        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+    );
+
+    // 5. 직렬화 및 생성
+    ComPtr<ID3DBlob> signature_blob;
+    ComPtr<ID3DBlob> error_blob;
+    HRESULT hr = D3DX12SerializeVersionedRootSignature(
+        &root_signature_desc,
+        D3D_ROOT_SIGNATURE_VERSION_1_1,
+        &signature_blob,
+        &error_blob
+    );
+
+    if (FAILED(hr))
+    {
+        if (error_blob)
+        {
+            CERROR("Monster HP UI Root Signature Error: " << (char*)error_blob->GetBufferPointer());
+        }
+        return nullptr;
+    }
+
+    ComPtr<ID3D12RootSignature> root_signature;
+    device->CreateRootSignature(
+        0,
+        signature_blob->GetBufferPointer(),
+        signature_blob->GetBufferSize(),
+        IID_PPV_ARGS(&root_signature)
+    );
+
+    return root_signature;
+}

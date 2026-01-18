@@ -9,8 +9,9 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 
-#include "HPRenderComponent.h"
+//#include "HPRenderComponent.h"
 #include "AnimationComponent.h"
+#include "MonsterHPComponent.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -580,6 +581,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		//CLOG("[SPAWN_NPC]");
 		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
 		auto NPC_logic = NPC->add_component<NPCScript>();
+		auto NPC_HP = NPC->add_component<MonsterHPComponent>();
 
 		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
 
