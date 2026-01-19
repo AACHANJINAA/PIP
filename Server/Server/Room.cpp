@@ -25,19 +25,46 @@ namespace PIP::server
 	{
 		PhysicsInitialize();
 
-		for (int i = 0; i < 100; ++i)
+		// [DEBUG] NPC 개수 1마리로 축소
+		for (int i = 0; i < 1; ++i)
 		{
 			int npcId = _next_npc_id++;
 			common::Vec3 randomPos = {
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
 			};
+			
+			// 지형 높이 보정 + 5.0f (안전하게 공중 스폰)
 			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
+			randomPos.y += 5.0f;
+
+			MYLOG("Creating NPC " << npcId << " at " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
+
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
+
+			// [추가] 물리 컴포넌트에 Jolt Body 생성 명령
+			auto physics = npc->GetComponent<PhysicsComponent>();
+			if (physics)
+			{
+				// NPC 모양 설정 (반경 0.5, 높이 1.0의 캡슐)
+				JPH::Ref<JPH::Shape> npcShape = new JPH::CapsuleShape(1.0f, 0.5f);
+
+				// Dynamic: 힘과 충돌의 영향을 받는 동적 물체로 생성
+				physics->CreateBody(_physicsSystem, npcShape, JPH::EMotionType::Dynamic, Layers::MOVING);
+				
+				if(!physics->GetBodyID().IsInvalid()) {
+					MYLOG("NPC " << npcId << " Body Created Successfully!");
+				} else {
+					MYERROR("NPC " << npcId << " Body Creation FAILED!");
+				}
+			}
+
 			int startDelay = rand() % 200; // 0~199ms 랜덤 지연
 			npc->SetLastUpdateTime(std::chrono::steady_clock::now());
 			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(startDelay), [this, npcId]() {
 					this->PushJob([this, npcId]() { this->UpdateSingleNPC(npcId); });
 				});
+			MYLOG("NPC Spawned at: " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
+			MYLOG("NPC Transform Pos: " << npc->GetPosition().x << ", " << npc->GetPosition().y << ", " << npc->GetPosition().z );
 			AddNPC(std::move(npc));
 		}
 	}
@@ -112,6 +139,11 @@ namespace PIP::server
 	{
 		// 1. 잡 처리 (플레이어 이동 등) - 최대한 자주 처리
 		ProcessJobs();
+		for (auto& [id, npc] : _npcs)
+		{
+			npc->PhysicsUpdate(deltaTime);
+		}
+
 		// 2. 패킷 뭉쳐서 보내기 (타이머 체크)
 		_npcSyncTimer += deltaTime;
 
@@ -144,11 +176,7 @@ namespace PIP::server
 			MYERROR("npc not found!!");
 			return;
 		}
-		// 랜덤이동
-		/*common::Vec3 oldPos = npc->GetPosition();
-		common::Vec3 newPos = oldPos;
-		newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
-		newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
+		
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
 		float realDeltaTime = elapsed.count();
@@ -158,13 +186,16 @@ namespace PIP::server
 		npc->SetLastUpdateTime(now);
 
 		common::Vec3 oldPos = npc->GetPosition();
-		npc->UpdateAI(realDeltaTime);
-		common::Vec3 currPos = npc->GetPosition();
+		npc->Update(realDeltaTime); // AI가 내부적으로 목표를 정함
+		common::Vec3 targetPos = npc->GetPosition(); // AI가 옮겨놓은 위치를 '목표점'으로 인식
 
+		// [변경] 목표 지점으로 가기 위한 속도 계산
 		common::Vec3 velocity;
-		velocity.x = (currPos.x - oldPos.x) / realDeltaTime;
-		velocity.y = (currPos.y - oldPos.y) / realDeltaTime;
-		velocity.z = (currPos.z - oldPos.z) / realDeltaTime;
+		velocity.x = (targetPos.x - oldPos.x) / realDeltaTime;
+		velocity.y = npc->GetVelocity().y;
+		velocity.z = (targetPos.z - oldPos.z) / realDeltaTime;
+
+		// 물리 바디에 속도 부여 (이제 물리 엔진이 자연스럽게 이동시킴)
 		npc->SetVelocity(velocity);
 
 		common::Quat rotation = { 0,0,0,1 };
@@ -177,10 +208,11 @@ namespace PIP::server
 		}
 		npc->SetRotation(rotation);
 
-		auto newPos = npc->GetPosition();
-		// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
-		newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
-		npc->SetPosition(newPos);
+		// [삭제] 4. 강제 위치 보정 및 세팅 (이제 Jolt가 처리함)
+		//auto newPos = npc->GetPosition();
+		//// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
+		//newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
+		//npc->SetPosition(newPos);
 
 
 		//SendNpcMovePacket(npc);
@@ -584,7 +616,7 @@ namespace PIP::server
 		float dx = (info.max_x - info.min_x) / (info.width - 1);
 		float dz = (info.max_z - info.min_z) / (info.height - 1);
 		settings.mScale = JPH::Vec3(dx, 1.0f, dz);
-		settings.mSampleCount = info.width; // 정사각형 가정
+		settings.mSampleCount = static_cast<JPH::uint32>(info.width); // 정사각형 가정
 
 		// 데이터 복사 및 변환 (float -> Jolt 포맷)
 		settings.mHeightSamples.resize(heightMap.size());

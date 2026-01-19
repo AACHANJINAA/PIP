@@ -3,7 +3,8 @@
 
 #include "MapDataManager.h"
 #include "NPC.h"
-
+#include "TransformComponent.h"
+#include "GameObject.h"
 namespace PIP
 {
 	
@@ -17,25 +18,28 @@ namespace PIP
 		lua_register(L, "Log", Lua_Log);
 	}
 
-	NPC* LuaManager::GetOwnerNPC(lua_State* L)
+	GameObject* LuaManager::GetOwner(lua_State* L)
 	{
-        lua_getglobal(L, "__npc_ptr"); // NPC 객체 포인터 가져오기
+        lua_getglobal(L, "__gameObject"); // AIComponent에서 등록한 이름
         if (!lua_islightuserdata(L, -1))
         {
             lua_pop(L, 1);
             return nullptr;
         }
-        NPC* npc = static_cast<NPC*>(lua_touserdata(L, -1));
+        GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, -1));
         lua_pop(L, 1);
-        return npc;
+        return obj;
 	}
 
 	int LuaManager::Lua_GetPosition(lua_State* L)
     {
-        NPC* npc = GetOwnerNPC(L);
-        if (!npc) return 0;
+        GameObject* obj = GetOwner(L);
+        if (!obj) return 0;
 
-        common::Vec3 pos = npc->GetPosition();
+        auto transform = obj->GetComponent<TransformComponent>();
+        if (!transform) return 0;
+
+        common::Vec3 pos = transform->GetPosition();
         lua_pushnumber(L, pos.x);
         lua_pushnumber(L, pos.y);
         lua_pushnumber(L, pos.z);
@@ -44,14 +48,19 @@ namespace PIP
 
     int LuaManager::Lua_SetPosition(lua_State* L)
     {
-        NPC* npc = GetOwnerNPC(L);
-        if (!npc) return 0;
+        GameObject* obj = GetOwner(L);
+        if (!obj) return 0;
 
         float x = static_cast<float>(lua_tonumber(L, 1));
         float y = static_cast<float>(lua_tonumber(L, 2));
         float z = static_cast<float>(lua_tonumber(L, 3));
 
-        npc->SetPosition({ x, y, z });
+		auto transform = obj->GetComponent<TransformComponent>();
+        if (!transform)
+        {
+            return 0;
+        }
+		transform->SetPosition(common::Vec3{ x, y, z });
         return 0;
     }
 

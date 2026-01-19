@@ -29,7 +29,15 @@
 #include <chrono>
 #include <queue>
 #include <algorithm>
+#include <variant>
+#include <typeindex>
 
+//LUA 헤더
+extern "C" {
+#include "lua-5.4.2_Win64_dll17_lib/include/lua.h"
+#include "lua-5.4.2_Win64_dll17_lib/include/lualib.h"
+#include "lua-5.4.2_Win64_dll17_lib/include/lauxlib.h"
+}
 
 // DirectX 헤더
 #include <DirectXMath.h>
@@ -65,6 +73,10 @@ using namespace DirectX;
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
+#include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 // Jolt 관련 편의를 위한 using
 using namespace JPH::literals; // 1.0_r 같은 리터럴 사용 시
