@@ -10,8 +10,11 @@ public:
 	void cleanup_network();
     bool connect_to_server(std::string_view server_addr, const int& port);
 	void disconnect();
+
+    // 메인 게임 루프에서 호출하여 큐에 쌓인 패킷 처리
     void process_queued_packets();
 
+	// 서버로 패킷 전송 함수 즉시 전송(Blocking)
     void send_packet(const char* data, size_t size);
 
 public:
@@ -23,13 +26,10 @@ public:
     void SendEnterRoomPacket(int room_id_to_enter);
 
 private:
-    void network_worker();
+	void network_worker(); // 네트워크 스레드 함수
 
-    void process_recv();
-    void process_send();
+    // 수신 및 패킹 함수
     void recv_packet();
-
-	void process_network_events(); // 네트워크 이벤트 처리 함수
 
     void RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler);
 
@@ -49,10 +49,9 @@ private:
     //TODO: void Handle_S2C_ERROR(common::packet::PacketStream& stream); // 에러 패킷 처리 함수
 
 private:
-	WSAEVENT    _netEvent = WSA_INVALID_EVENT; // 네트워크 이벤트
     SOCKET _socket{ INVALID_SOCKET }; // 클라이언트 소켓
     std::vector<char> _recvBuffer; // 수신 버퍼
-    std::vector<char> _sendBuffer; // 송신 버퍼
+
     long long _my_session_id = -1; // 자신의 세션 ID (로그인 후 서버로부터 받음) [TODO: 임시로 여기에 저장하긴 했음]
     std::string _name;
     // 패킷 핸들러 함수 포인터 타입 정의
@@ -60,6 +59,7 @@ private:
 
 	std::thread _networkThread;
     std::atomic<bool> _isRunning{ false };
+
+    // 완성된 패킷만 담는 큐 (네트워크 스레드 -> 메인 스레드)
 	concurrency::concurrent_queue<std::vector<char>> _packetQueue; // 수신된 패킷을 저장하는 큐
-    concurrency::concurrent_queue<std::vector<char>> _sendQueue;
 };
