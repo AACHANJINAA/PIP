@@ -162,6 +162,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AIComponent.cpp" />
+    <ClCompile Include="BehaviorTree.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="LuaManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapDataManager.cpp" />
@@ -174,10 +178,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="TransformComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\json.hpp" />
@@ -186,10 +192,16 @@
     <ClInclude Include="..\..\Common\stb_image.h" />
     <ClInclude Include="..\..\Common\TerrainData.h" />
     <ClInclude Include="..\..\Common\Vector3.h" />
+    <ClInclude Include="AIComponent.h" />
+    <ClInclude Include="BehaviorTree.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="JoltHelper.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
     <ClInclude Include="MapDataManager.h" />
     <ClInclude Include="NPC.h" />
+    <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PacketHandlers.h" />
@@ -197,6 +209,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />
+    <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Monster.lua" />
