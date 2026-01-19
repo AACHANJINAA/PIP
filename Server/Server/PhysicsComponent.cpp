@@ -15,10 +15,12 @@ namespace PIP
 	}
 
 	void PhysicsComponent::CreateBody(JPH::PhysicsSystem* physicsSystem, const JPH::Shape* shape,
-	                                  JPH::EMotionType motionType, JPH::ObjectLayer layer)
+	                                  JPH::EMotionType motionType, JPH::ObjectLayer layer, JPH::Vec3 positionOffset)
 	{
 		_physicsSystem = physicsSystem;
 		if (!_physicsSystem || !shape) return;
+
+		_positionOffset = positionOffset;
 
 		JPH::RVec3 startPos(0, 0, 0);
 		JPH::Quat startRot = JPH::Quat::sIdentity();
@@ -30,8 +32,15 @@ namespace PIP
 			startRot = Utils::ToJolt(transform->GetRotation());
 		}
 
+		startPos += _positionOffset;
+
 		JPH::BodyCreationSettings settings(shape, startPos, startRot, motionType, layer);
-		settings.mAllowedDOFs = JPH::EAllowedDOFs::All;
+		settings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX |
+								JPH::EAllowedDOFs::TranslationY |
+								JPH::EAllowedDOFs::TranslationZ |
+								JPH::EAllowedDOFs::RotationY;
+
+		settings.mFriction = 0.5f;
 
 		if (motionType == JPH::EMotionType::Dynamic)
 		{
@@ -60,7 +69,7 @@ namespace PIP
 		auto transform = GetComponent<TransformComponent>();
 		if (transform)
 		{
-			transform->SetPosition(joltPos);
+			transform->SetPosition(joltPos - _positionOffset);
 			transform->SetRotation(joltRot);
 		}
 	}

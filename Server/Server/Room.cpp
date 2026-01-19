@@ -26,7 +26,7 @@ namespace PIP::server
 		PhysicsInitialize();
 
 		// [DEBUG] NPC 개수 1마리로 축소
-		for (int i = 0; i < 1; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			int npcId = _next_npc_id++;
 			common::Vec3 randomPos = {
@@ -37,7 +37,7 @@ namespace PIP::server
 			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
 			randomPos.y += 5.0f;
 
-			MYLOG("Creating NPC " << npcId << " at " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
+			//MYLOG("Creating NPC " << npcId << " at " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
 
 			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
 
@@ -46,13 +46,16 @@ namespace PIP::server
 			if (physics)
 			{
 				// NPC 모양 설정 (반경 0.5, 높이 1.0의 캡슐)
-				JPH::Ref<JPH::Shape> npcShape = new JPH::CapsuleShape(1.0f, 0.5f);
+				JPH::Ref<JPH::Shape> baseShape = new JPH::CapsuleShape(1.0f, 0.5f);
+
+				JPH::Vec3 offset(0, 1.5f, 0);
+				//JPH::Ref<JPH::Shape> npcShape = new JPH::RotatedTranslatedShape(offset, JPH::Quat::sIdentity(), baseShape);
 
 				// Dynamic: 힘과 충돌의 영향을 받는 동적 물체로 생성
-				physics->CreateBody(_physicsSystem, npcShape, JPH::EMotionType::Dynamic, Layers::MOVING);
+				physics->CreateBody(_physicsSystem, baseShape, JPH::EMotionType::Dynamic, Layers::MOVING, offset);
 				
 				if(!physics->GetBodyID().IsInvalid()) {
-					MYLOG("NPC " << npcId << " Body Created Successfully!");
+					//MYLOG("NPC " << npcId << " Body Created Successfully!");
 				} else {
 					MYERROR("NPC " << npcId << " Body Creation FAILED!");
 				}
@@ -63,8 +66,8 @@ namespace PIP::server
 			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(startDelay), [this, npcId]() {
 					this->PushJob([this, npcId]() { this->UpdateSingleNPC(npcId); });
 				});
-			MYLOG("NPC Spawned at: " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
-			MYLOG("NPC Transform Pos: " << npc->GetPosition().x << ", " << npc->GetPosition().y << ", " << npc->GetPosition().z );
+			//MYLOG("NPC Spawned at: " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
+			//MYLOG("NPC Transform Pos: " << npc->GetPosition().x << ", " << npc->GetPosition().y << ", " << npc->GetPosition().z );
 			AddNPC(std::move(npc));
 		}
 	}
