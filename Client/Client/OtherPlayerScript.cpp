@@ -53,6 +53,7 @@ void OtherPlayerScript::awake()
 
     animation_comp->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
     animation_comp->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
+    animation_comp->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh); // [추가] 공격 애니메이션 매핑 안되어 있어서 오류난거였음
     // 재질 및 쉐이더 설정
 
     animation_comp->set_state(common::packet::OBJECT_STATE::WALK);
