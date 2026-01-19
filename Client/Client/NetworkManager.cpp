@@ -24,95 +24,21 @@ void error_display(const char* msg, int err_no)
 	MessageBox(GameFramework::instance()->hWnd(), lpMsgBuf, (LPCWSTR)msg, MB_OK);
 	LocalFree(lpMsgBuf);
 }
-//void NetworkManager::Initialize(SOCKET client_socket)
-//{
-//	_socket = client_socket;
-//
-//	// 패킷 핸들러 등록
-//	RegisterHandler(common::packet::PacketType::S2C_P_MOVE, std::bind(&NetworkManager::HANDLE_S2C_MOVE, this, std::placeholders::_1));
-//	RegisterHandler(common::packet::PacketType::S2C_P_LEAVE, std::bind(&NetworkManager::HANDLE_S2C_LEAVE, this, std::placeholders::_1));
-//	RegisterHandler(common::packet::PacketType::S2C_P_ATTACK, std::bind(&NetworkManager::HANDLE_S2C_ATTACK, this, std::placeholders::_1));
-//	RegisterHandler(common::packet::PacketType::S2C_P_ROOM_LIST_ACK, std::bind(&NetworkManager::HANDLE_S2C_ROOM_LIST_ACK, this, std::placeholders::_1));
-//	RegisterHandler(common::packet::PacketType::S2C_P_ENTER_ROOM_ACK, std::bind(&NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK, this, std::placeholders::_1));
-//	RegisterHandler(common::packet::PacketType::S2C_P_SPAWN_PLAYER, std::bind(&NetworkManager::HANDLE_S2C_SPAWN_PLAYER, this, std::placeholders::_1));
-//	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK, std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
-//}
-void NetworkManager::process_network_events()
-{
-	if (_socket == INVALID_SOCKET) return;
 
-	WSANETWORKEVENTS netEvents;
-
-	// 1. 이벤트 신호 확인 (즉시 리턴: 0ms 대기)
-	// 게임 루프를 방해하지 않기 위해 0으로 설정합니다.
-	DWORD ret = WSAWaitForMultipleEvents(1, &_netEvent, FALSE, 0, FALSE);
-
-	if (ret == WSA_WAIT_FAILED) {
-		return;
-	}
-
-	// 이벤트가 발생하지 않았으면(Timeout) 리턴
-	if (ret == WSA_WAIT_TIMEOUT) {
-		// [중요] 송신 버퍼에 남은 게 있으면 이벤트 없이도 보내야 함
-		if (!_sendBuffer.empty()) process_send();
-		return;
-	}
-
-	// 2. 발생한 이벤트 종류 알아내기 & 리셋
-	if (WSAEnumNetworkEvents(_socket, _netEvent, &netEvents) == SOCKET_ERROR) {
-		return;
-	}
-
-	// 3. 수신 처리 (FD_READ)
-	if (netEvents.lNetworkEvents & FD_READ) {
-		if (netEvents.iErrorCode[FD_READ_BIT] != 0) {
-			// 에러 발생
-		}
-		else {
-			recv_packet(); // 기존 recv 호출
-			process_recv(); // 패킷 파싱
-		}
-	}
-
-	// 4. 종료 처리 (FD_CLOSE)
-	if (netEvents.lNetworkEvents & FD_CLOSE) {
-		disconnect();
-	}
-
-	// 5. 송신 처리 (이벤트와 무관하게 큐가 차면 보냄)
-	if (!_sendBuffer.empty()) {
-		process_send();
-	}
-
-}
 void NetworkManager::send_packet(const char* data, size_t size)
 {
-	// 데이터를 복사해서 큐에 밀어넣기만 함 (매우 빠름)
-	std::vector<char> packet(data, data + size);
-	_sendQueue.push(std::move(packet));
-
-	// 네트워크 스레드 깨우기
-	WSASetEvent(_netEvent);
-}
-void NetworkManager::process_send()
-{
-	std::vector<char> packet;
-
-	// 큐에 쌓인 모든 패킷을 꺼내서 전송
-	while (_sendQueue.try_pop(packet))
+	// Blocking 소켓이므로 루프를 돌며 모두 전송될 때까지 대기
+	size_t total_sent = 0;
+	while (total_sent < size)
 	{
-		// [최적화 팁] 실제로는 여기서 작은 패킷들을 4KB 버퍼에 뭉쳐서(Nagling처럼)
-		// 한 번에 send 하는 것이 시스템 콜을 줄여서 더 좋습니다.
-		// 하지만 지금은 단순하게 하나씩 보냅니다.
-
-		int sent = send(_socket, packet.data(), static_cast<int>(packet.size()), 0);
+		int sent = send(_socket, data + total_sent, static_cast<int>(size - total_sent), 0);
 
 		if (sent == SOCKET_ERROR) {
-			int err = WSAGetLastError();
-			if (err != WSAEWOULDBLOCK) {
-				CERROR("심각한 버그")
-			}
+			error_display("send", WSAGetLastError());
+			_isRunning = false; // 치명적 오류 시 루프 종료
+			return;
 		}
+		total_sent += sent;
 	}
 }
 
@@ -134,87 +60,72 @@ void NetworkManager::process_queued_packets()
 
 void NetworkManager::network_worker()
 {
+	//CLOG("Network Worker Thread Started");
+
 	while (_isRunning)
 	{
+		// 안전 장치: 소켓이 유효하지 않으면 즉시 종료                        
 		if (_socket == INVALID_SOCKET) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			continue;
-		}
-
-		// 10ms 동안 대기 (이벤트 발생 시 즉시 깨어남)
-		DWORD ret = WSAWaitForMultipleEvents(1, &_netEvent, FALSE, 10, FALSE);
-
-		if (ret == WSA_WAIT_TIMEOUT) {
-			if (!_sendBuffer.empty()) process_send();
-			continue;
-		}
-
-		// 타임아웃이거나 이벤트가 발생했으면 일단 송신 시도 (큐 확인)
-		if (!_sendQueue.empty()) {
-			process_send();
-		}
-
-		if (ret == WSA_WAIT_TIMEOUT) continue;
-
-		WSANETWORKEVENTS netEvents;
-		WSAEnumNetworkEvents(_socket, _netEvent, &netEvents);
-
-		if (netEvents.lNetworkEvents & FD_READ) {
-			recv_packet();
-		}
-
-		// FD_WRITE는 '보낼 수 있는 상태'가 되었을 때 뜹니다.
-		if (netEvents.lNetworkEvents & FD_WRITE) {
-			process_send();
-		}
-
-		if (netEvents.lNetworkEvents & FD_CLOSE) {
+			CERROR("Network worker: Socket is invalid. Terminating thread.");
 			_isRunning = false;
+			break;
 		}
+
+		// Blocking RECV 호출
+		recv_packet();
 	}
+
+	//CLOG("Network Worker Thread Ended");
 }
 
 
 void NetworkManager::recv_packet()
 {
 	char buf[4096];
+	// 여기서 데이터가 올 때까지 스레드가 대기합니다 (Blocking)
 	int len = recv(_socket, buf, sizeof(buf), 0);
+
+	if (len == SOCKET_ERROR) {
+		int err = WSAGetLastError();
+		if (err != WSAEWOULDBLOCK) {
+			// 실제 에러 or 연결 끊김
+			error_display("recv", err);
+			_isRunning = false;
+		}
+		return;
+	}
+
+	if (len == 0) {
+		// 정상적인 연결 종료 (Graceful Close)
+		_isRunning = false;
+		CLOG("Server closed the connection.");
+		return;
+	}
+
+	// 데이터 수신 성공
 	if (len > 0) {
 		_recvBuffer.insert(_recvBuffer.end(), buf, buf + len);
 
-		// [중요] 완성된 패킷 단위로 잘라서 큐에 push (Framing)
-		while (_recvBuffer.size() >= sizeof(common::packet::PacketHeader)) {
+		// 패킷 조립 (Framing)
+		while (true)
+		{
+			if (_recvBuffer.size() < sizeof(common::packet::PacketHeader))
+				break; // 헤더조차 다 못 받음
+
 			auto* header = reinterpret_cast<common::packet::PacketHeader*>(_recvBuffer.data());
-			if (_recvBuffer.size() < header->_size) break;
 
+			if (_recvBuffer.size() < header->_size)
+				break; // 패킷 바디가 다 안 옴
+
+			// 완성된 패킷 하나 추출
 			std::vector<char> singlePacket(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
-			_packetQueue.push(std::move(singlePacket)); // 큐로 배달
 
+			// 메인 스레드가 처리하도록 큐에 전달
+			_packetQueue.push(std::move(singlePacket));
+
+			// 버퍼에서 제거
 			_recvBuffer.erase(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
 		}
-	}
-}
-void NetworkManager::process_recv()
-{
-	while (true)
-	{
-		if (_recvBuffer.size() < sizeof(common::packet::PacketHeader))
-			return;
-		common::packet::PacketHeader* header = reinterpret_cast<common::packet::PacketHeader*>(_recvBuffer.data());
-
-		if (_recvBuffer.size() < header->_size)
-			return;
-
-		// [수정] PacketStream으로 감싸서 핸들러에 전달
-		common::packet::PacketStream stream(_recvBuffer.data(), header->_size);
-
-		auto it = _handlers.find(header->_type);
-		if (it != _handlers.end())
-		{
-			it->second(stream); // stream을 그대로 전달
-		}
-
-		_recvBuffer.erase(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
 	}
 }
 
@@ -717,7 +628,7 @@ bool NetworkManager::init_network()
 	// NPC 이동 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE,
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC, this, std::placeholders::_1));
-	// NPC 이동 배치 패킷 핸들러 등록
+	// NPC 이동 Batch 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE_BATCH,
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH, this, std::placeholders::_1));
 
@@ -733,8 +644,22 @@ bool NetworkManager::init_network()
 void NetworkManager::cleanup_network()
 {
 	_isRunning = false;
-	if (_netEvent != WSA_INVALID_EVENT) WSASetEvent(_netEvent); // 스레드 깨우기
-	if (_networkThread.joinable()) _networkThread.join(); // 종료 대기
+
+	// 1. 소켓 연결 종료 (블락킹 된 recv를 깨움)
+	if (_socket != INVALID_SOCKET) {
+		// SD_BOTH: 송신 및 수신을 모두 중단.
+		// 이렇게 하면 대기 중인 recv가 0이나 SOCKET_ERROR를 반환하며 즉시 리턴됩니다.
+		shutdown(_socket, SD_BOTH);
+		closesocket(_socket);
+		_socket = INVALID_SOCKET;
+	}
+
+	// 2. 네트워크 스레드 종료 대기
+	if (_networkThread.joinable()) {
+		_networkThread.join();
+	}
+
+	// 3. Winsock 정리
 	WSACleanup();
 }
 bool NetworkManager::connect_to_server(std::string_view server_addr, const int& port)
@@ -745,19 +670,6 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 		error_display("socket", WSAGetLastError());
 		return false;
 	}
-
-	_netEvent = WSACreateEvent();
-	if (WSA_INVALID_EVENT == _netEvent)
-	{
-		error_display("WSACreateEvent", WSAGetLastError());
-		return false;
-	}
-	if (WSAEventSelect(_socket, _netEvent, FD_READ | FD_CLOSE | FD_WRITE) == SOCKET_ERROR)
-	{
-		error_display("WSAEventSelect", WSAGetLastError());
-		return false;
-	}
-
 
 	SOCKADDR_IN addr;
 	addr.sin_family = AF_INET;
@@ -772,7 +684,7 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 			return false;
 		}
 	}
-	// TCP_NODELAY 설정 (주석 해제 권장)
+	// 네이글 끄는 코드
 	int nodelay = 1;
 	setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&nodelay, sizeof(nodelay));
 
@@ -782,17 +694,14 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 }
 void NetworkManager::disconnect()
 {
+	_isRunning = false;
+
 	if (_socket != INVALID_SOCKET)
 	{
+		shutdown(_socket, SD_BOTH); // 송수신 중단
 		closesocket(_socket);
 		_socket = INVALID_SOCKET;
-
-		// [신규] 이벤트 닫기
-		if (_netEvent != WSA_INVALID_EVENT) {
-			WSACloseEvent(_netEvent);
-			_netEvent = WSA_INVALID_EVENT;
-		}
-
-		PostQuitMessage(0);
 	}
+
+	// 필요하다면 PostQuitMessage(0);
 }
