@@ -157,7 +157,7 @@ void Renderer::build_render_list(CameraComponent* camera)
                 // UI는 bounding box가 없어도 렌더링
                 if (renderComp->pso_name() == "ui" || renderComp->pso_name() == "Monster_HP_UI")
                 {
-                    CLOG("UI has invalid BB, but adding to render list anyway");
+                    //CLOG("UI has invalid BB, but adding to render list anyway");
                     _renderMap[renderComp->pso_name()].push_back(gameObject);
                     visibleObjects++;
                     continue;

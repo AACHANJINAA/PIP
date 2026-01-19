@@ -24,6 +24,14 @@ void AnimationComponent::late_update(float deltaTime)
 
 	auto mesh = _stateMeshMap.find(_currentState);
 	auto anim = _stateAnimMap.find(_currentState);
+
+	// [추가된 부분] 맵에 상태가 등록되어 있지 않으면 에러 로그를 띄우고 리턴합니다.
+	if (mesh == _stateMeshMap.end() || anim == _stateAnimMap.end())
+	{
+		// _currentState를 int로 변환하여 어떤 상태가 누락되었는지 확인
+		CERROR("Animation state not found: " << static_cast<int>(_currentState));
+		return;
+	}
 	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second);
 }
 
