@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 namespace JPH { class TempAllocator; }
 namespace PIP::GAME
 {
@@ -11,10 +11,11 @@ namespace PIP::GAME
 
         virtual void Initialize() {}
         virtual void Update(float deltaTime) {}
-        //[±âÁ¸] ´Ü¼ø ¹°¸® ¾÷µ¥ÀÌÆ® (Transform µ¿±âÈ­ µî)
-        virtual void PhysicsUpdate(float deltaTime) {}
+        
+        // [ì¶”ê°€] í• ë‹¹ì ë²„ì „ ì—…ë°ì´íŠ¸ (AI ë“±)
+        virtual void Update(float deltaTime, JPH::TempAllocator* allocator) {}
 
-        //[½Å±Ô] ÇÒ´çÀÚ°¡ ÇÊ¿äÇÑ ¹°¸® ¾÷µ¥ÀÌÆ®(Ä³¸¯ÅÍ ½Ã¹Ä·¹ÀÌ¼Ç µî)
+        virtual void PhysicsUpdate(float deltaTime) {}
         virtual void PhysicsUpdate(float deltaTime, JPH::TempAllocator* tempAllocator) {}
 
 		GameObject* GetOwner() const { return _owner; }
@@ -26,5 +27,3 @@ namespace PIP::GAME
         GameObject* _owner;
 	};
 }
-
-

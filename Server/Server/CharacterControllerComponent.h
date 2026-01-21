@@ -28,7 +28,7 @@ namespace PIP::GAME
 
 		bool IsGrounded() const;
 	private:
-		float _halfHeight;
+		float _halfHeight {};
 
 		JPH::PhysicsSystem* _physicsSystem = nullptr;
 		JPH::Ref<JPH::CharacterVirtual> _character;

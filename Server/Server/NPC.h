@@ -21,6 +21,8 @@ namespace PIP::GAME
 		NPC(int npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp);
 		~NPC() override;
 
+		void SetupBT();
+
 		// Getters
 		int GetNpcId()              const    { return GetId(); }
 		int GetNpcType()            const    { return _npc_type; }

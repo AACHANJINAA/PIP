@@ -25,7 +25,7 @@ namespace PIP::SERVER
 	{
 		PhysicsInitialize();
 
-		// [DEBUG] NPC 개수 1마리로 축소
+		// [DEBUG] NPC 개수 100마리
 		for (int i = 0; i < 100; ++i)
 		{
 			int npcId = _next_npc_id++;
@@ -37,49 +37,44 @@ namespace PIP::SERVER
 			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
 			randomPos.y += 5.0f;
 
-			//MYLOG("Creating NPC " << npcId << " at " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
-
 			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, randomPos, 100);
 
-			// [추가] 물리 컴포넌트에 Jolt Body 생성 명령
+			// 캐릭터 컨트롤러 초기화
 			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
 			if (controller)
 			{
-				// 캐릭터 컨트롤러 초기화 (키 1.8m, 반지름 0.5m)
 				controller->Initialize(_physicsSystem, 1.8f, 0.5f);
 			}
 
-			int startDelay = rand() % 200; // 0~199ms 랜덤 지연
-			npc->SetLastUpdateTime(std::chrono::steady_clock::now());
-			Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(startDelay), [this, npcId]() {
-					this->PushJob([this, npcId]() { this->UpdateSingleNPC(npcId); });
-				});
-			//MYLOG("NPC Spawned at: " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
-			//MYLOG("NPC Transform Pos: " << npc->GetPosition().x << ", " << npc->GetPosition().y << ", " << npc->GetPosition().z );
+			// [핵심 수정] 초기 업데이트 시간을 랜덤하게 분산 (Staggering)
+			// 0.0 ~ 0.2초 사이의 랜덤한 시간만큼 '과거'로 설정하여, 
+			// UpdateLogics 루프에서 각자 다른 타이밍에 0.2초 경과 조건을 만족하게 함.
+			float randomOffset = (rand() % 200) / 1000.0f; 
+			auto scatteredTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
+			npc->SetLastUpdateTime(scatteredTime);
+			
 			AddNPC(std::move(npc));
 		}
 	}
 
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
-		bool wasEmpty = _players.empty(); // 입장 전 비어있었나?
+		bool wasEmpty = _players.empty(); 
 
 		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
 		if (wasEmpty) {
 			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
-			// 모든 NPC에게 최초의 타이머 시동을 걸어줌
 			for (auto& [id, npc] : _npcs) {
-				npc->SetLastUpdateTime(std::chrono::steady_clock::now());
-				this->PushJob([this, npcId = id]() {
-					this->UpdateSingleNPC(npcId);
-					});
+				// 플레이어가 들어와서 깨울 때도 랜덤하게 흩뿌려줌
+				float randomOffset = (rand() % 200) / 1000.0f; 
+				auto scatteredTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
+				npc->SetLastUpdateTime(scatteredTime);
 			}
 		}
 	}
 	void Room::LeavePlayer(long long player_id)
 	{
-		// 다른 클라이언트에게 퇴장 사실을 알림
 		packet::SC_PACKET_LEAVE leave_packet;
 		leave_packet._type = packet::PacketType::S2C_P_LEAVE;
 		leave_packet._size = sizeof(leave_packet);
@@ -107,51 +102,60 @@ namespace PIP::SERVER
 	{
 		_room_state = RoomState::PLAYING;
 		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
-
-		// TODO: 게임 시작 패킷을 방에 있는 모든 플레이어에게 전송
-		// 예: packet::SC_PACKET_GAME_START packet;
-		// packet._type = ...
-		// packet._size = ...
-		// packet.who_is_white_player_id = ...
-		// packet.who_is_black_player_id = ...
-		// Broadcast(...);
 	}
 
 
 	void Room::UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
-		// [최적화] 플레이어가 없거나 물리 시스템이 없으면 연산 건너뜀 (CPU 절약)
-		if (!_physicsSystem || _players.empty())
-		{
-			return;
-		}
-		// 전달받은 allocator 사용
+		if (!_physicsSystem || _players.empty()) return;
+		
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 
-		// 2. NPC 캐릭터 시뮬레이션 (GameObject 레벨에서 전파)
 		for (auto& [id, npc] : _npcs)
 		{
-			// GameObject 내부에서 모든 컴포넌트의 PhysicsUpdate(dt, alloc)를 호출함
 			npc->PhysicsUpdate(deltaTime, tempAllocator);
 		}
 	}
-	void Room::UpdateLogics(float deltaTime)
+
+	void Room::UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
-		// 1. 잡 처리 (플레이어 이동 등) - 최대한 자주 처리
 		ProcessJobs();
-		for (auto& [id, npc] : _npcs)
-		{
-			npc->PhysicsUpdate(deltaTime);
-		}
+		
+		if (_players.empty()) return;
 
-		// 2. 패킷 뭉쳐서 보내기 (타이머 체크)
 		_npcSyncTimer += deltaTime;
-
-		if (_npcSyncTimer >= 0.05f) // 50ms마다 한 번씩 뭉쳐서 쏨 (20Hz)
+		bool shouldSync = false;
+		if (_npcSyncTimer >= 0.05f) 
 		{
-			BroadcastNpcBatch();
+			shouldSync = true;
 			_npcSyncTimer = 0.0f;
 		}
+
+		auto now = std::chrono::steady_clock::now();
+		const float HEARTBEAT_INTERVAL = 0.2f;
+
+		for (auto& [id, npc] : _npcs)
+		{
+			// 1. 하트비트 체크 (랜덤 분산된 LastUpdateTime 덕분에 부하가 분산됨)
+			std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
+			if (elapsed.count() >= HEARTBEAT_INTERVAL)
+			{
+				npc->Update(elapsed.count(), tempAllocator);
+				npc->SetLastUpdateTime(now);
+			}
+
+			// 3. 회전 처리
+			common::Vec3 vel = npc->GetVelocity();
+			if (vel.x * vel.x + vel.z * vel.z > 0.001f) {
+				float angle = std::atan2(vel.x, vel.z);
+				DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
+				common::Vec4 rot;
+				XMStoreFloat4((XMFLOAT4*)&rot, q);
+				npc->SetRotation(rot);
+			}
+		}
+
+		if (shouldSync) BroadcastNpcBatch();
 	}
 
 	void Room::PushJob(std::function<void()> job)
@@ -161,105 +165,12 @@ namespace PIP::SERVER
 	void Room::ProcessJobs()
 	{
 		std::function<void()> job;
-		// 큐가 빌 때까지 모든 명령을 현재 프레임에서 소화
 		while (_jobQueue.try_pop(job))
 		{
 			if (job) job();
 		}
 	}
 
-	void Room::UpdateSingleNPC(int npcId)
-	{
-		GAME::NPC* npc = GetNPC(npcId);
-		if (not npc) return;
-
-		auto now = std::chrono::steady_clock::now();
-		std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
-		float realDeltaTime = elapsed.count();
-		if (realDeltaTime > 0.5f) realDeltaTime = 0.2f;
-
-		npc->SetLastUpdateTime(now);
-
-		// 1. 현재 물리 위치 저장
-		common::Vec3 physicsPos = npc->GetPosition();
-
-		// 2. AI 업데이트 (Lua가 SetPosition 호출)
-		npc->Update(realDeltaTime);
-
-		// 3. Lua가 원했던 목표 위치
-		common::Vec3 desiredPos = npc->GetPosition();
-
-		// 4. [핵심] 위치를 물리 위치로 되돌림 (순간이동 방지)
-		npc->SetPosition(physicsPos);
-
-		// 5. 차이를 속도로 변환하여 물리 엔진에 전달
-		common::Vec3 velocity;
-		velocity.x = (desiredPos.x - physicsPos.x) / realDeltaTime;
-		velocity.y = npc->GetVelocity().y; // Y축(중력) 유지
-		velocity.z = (desiredPos.z - physicsPos.z) / realDeltaTime;
-
-		npc->SetVelocity(velocity);
-
-		// 회전 처리
-		common::Quat rotation = { 0,0,0,1 };
-		if (velocity.x != 0 || velocity.z != 0) {
-			float angle_rad = std::atan2(velocity.x, velocity.z);
-			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
-			XMStoreFloat4(&rotation, q);
-		}
-		npc->SetRotation(rotation);
-
-		if (_players.empty()) {
-			return;
-		}
-
-		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
-			{
-				this->PushJob([this, npcId]() {
-					this->UpdateSingleNPC(npcId);
-					});
-			});
-	}
-
-
-	/*void Room::UpdateAI(float deltaTime)
-	{
-		static float npcSyncTimer = 0;
-		npcSyncTimer += deltaTime;
-		bool shouldSendPacket = false;
-		if (npcSyncTimer >= 0.05f)
-		{
-			shouldSendPacket = true;
-			npcSyncTimer = 0.0f; // 타이머 초기화
-		}
-		for (auto& [id, npc] : _npcs)
-		{
-			common::Vec3 oldPos = npc->GetPosition();
-			npc->UpdateAI(deltaTime);
-			common::Vec3 currPos = npc->GetPosition();
-
-			// 속도 계산
-			common::Vec3 velocity = {
-				(currPos.x - oldPos.x) / deltaTime,
-				(currPos.y - oldPos.y) / deltaTime,
-				(currPos.z - oldPos.z) / deltaTime
-			};
-			npc->SetVelocity(velocity);
-
-			// 지형 보정 (기존 로직 유지)
-			common::Vec3 newPos = MapDataManager::Instance()->AdjustPositionToGround(npc->GetPosition());
-			npc->SetPosition(newPos);
-
-			// [중요] 여기서 바뀐 위치를 체크하고 바로 Broadcast 하거나,
-			// 바뀐 리스트만 모았다가 한 번에 보낼 수 있습니다.
-			// 플레이어 시야 반경 안에 있는 npc만 보내도록, 맵 공간을 구획화하고 
-			if (shouldSendPacket)
-			{
-				SendNpcMovePacket(npc.get());
-			}
-		}
-		
-	}*/
 	void Room::SendNpcMovePacket(GAME::NPC* npc)
 	{
 		if (!npc) return;
@@ -270,7 +181,7 @@ namespace PIP::SERVER
 		move_packet_data._position = npc->GetPosition();
 		move_packet_data._velocity = npc->GetVelocity();
 		move_packet_data._rotation = npc->GetRotation();
-		move_packet_data._state = common::packet::OBJECT_STATE::WALK; // 일단 임시
+		move_packet_data._state = common::packet::OBJECT_STATE::WALK; 
 		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 		packet::PacketStream finalStream;
@@ -311,13 +222,13 @@ namespace PIP::SERVER
 			data._position = npc->GetPosition();
 			data._velocity = npc->GetVelocity();
 			data._rotation = npc->GetRotation();
-			data._state = common::packet::OBJECT_STATE::WALK; // 임시
+			data._state = common::packet::OBJECT_STATE::WALK;
 			data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 			stream << data;
 			
 			count++;
-			if (stream.Size() > 4000)
+			if (stream.Size() > 3800)
 			{
 				auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
 				h->_count = count;
@@ -329,7 +240,6 @@ namespace PIP::SERVER
 				count = 0;
 			}
 		}
-		// 3. 남은 데이터 전송
 		if (count > 0) {
 			auto* h = reinterpret_cast<common::packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
 			h->_count = count;
@@ -338,9 +248,8 @@ namespace PIP::SERVER
 		}
 	}
 
-	void Room::SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player)
-	{
-		// 1. 방에 이미 있던 다른 플레이어들의 정보를 새 플레이어에게 전송
+	// ... (나머지 동일) ...
+	void Room::SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player) {
 		for (auto& pair : _players)
 		{
 			if (pair.first == new_player->_id) continue;
@@ -350,7 +259,6 @@ namespace PIP::SERVER
 			new_player->do_send(spawn_packet.constable_data(), spawn_packet.Size());
 		}
 
-		// 2. 방에 있는 모든 NPC들의 정보를 새 플레이어에게 전송
 		for (auto& val : _npcs | std::views::values)
 		{
 			GAME::NPC* npc = val.get();
@@ -358,37 +266,31 @@ namespace PIP::SERVER
 
 			packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
 			spawn_packet_data._type = common::packet::PacketType::S2C_NPC_SPAWN;
-			spawn_packet_data._size = 0; // 임시 크기, 나중에 덮어씀
+			spawn_packet_data._size = 0;
 			spawn_packet_data._hp = npc->GetHP();
 			spawn_packet_data._npc_id = npc->GetNpcId();
 			spawn_packet_data._npc_type = npc->GetNpcType();
 			spawn_packet_data._position = npc->GetPosition();
 
 			packet::PacketStream finalStream;
-			finalStream << spawn_packet_data; // 1. 구조체를 스트림에 쓴다
-			finalStream << npc_name;          // 2. 이름(가변 데이터)을 스트림에 쓴다
+			finalStream << spawn_packet_data;
+			finalStream << npc_name;
 
-			// 3. 최종 크기를 계산하여 패킷 헤더에 덮어쓴다
 			auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
 			final_header->_size = static_cast<uint16_t>(finalStream.Size());
 
 			new_player->do_send(finalStream.constable_data(), finalStream.Size());
 		}
 	}
-
-	void Room::HandleAttack(std::shared_ptr<SESSION> attacker)
-	{
+	void Room::HandleAttack(std::shared_ptr<SESSION> attacker) {
 		if (attacker == nullptr) return;
 
-		// 이부분이 공격타입에 따라서 공격범위 같은게 바뀌는 곳일 것 같음
 		BoundingSphere attackerSphere{ attacker->_player._position, 5.0f };
 		const int32_t damage = attacker->_player._damage;
-
 
 		std::vector<packet::NPCHitInfo> npc_hits;
 		std::vector<packet::PlayerHitInfo> player_hits;
 
-		// NPC 공격 판정
 		for (auto& [npc_id, npc] : _npcs)
 		{
 			BoundingSphere npcSphere{ npc->GetPosition(), 2.0f };
@@ -398,14 +300,10 @@ namespace PIP::SERVER
 				if (new_hp < 0) new_hp = 0;
 				npc->SetHP(new_hp);
 
-				MYLOG("[ROOM ATTACK] " << attacker->_id << " attacks NPC " << npc_id
-						<< "new_hp: " << new_hp);
-
 				npc_hits.emplace_back(npc_id, damage, new_hp);
 			}
 		}
 
-		// 다른 플레이어 공격 판정
 		for (auto const& [player_id, player_session] : _players)
 		{
 			if (player_session && player_id != attacker->_id)
@@ -417,13 +315,11 @@ namespace PIP::SERVER
 					if (new_hp < 0) new_hp = 0;
 					player_session->_player._hp = new_hp;
 
-					MYLOG("[ROOM ATTACK] Player:" << attacker->_id << " attacks Player:" << player_id << "'s HP: " << new_hp);
 					player_hits.emplace_back(player_id, damage, new_hp);
 				}
 			}
 		}
 
-		// NPC 공격 결과 브로드캐스팅
 		if (!npc_hits.empty())
 		{
 			packet::PacketStream stream;
@@ -444,7 +340,6 @@ namespace PIP::SERVER
 			Broadcast(stream.constable_data(), stream.Size());
 		}
 
-		// 플레이어 공격 결과 브로드캐스팅
 		if (!player_hits.empty())
 		{
 			packet::PacketStream stream;
@@ -465,10 +360,7 @@ namespace PIP::SERVER
 			Broadcast(stream.constable_data(), stream.Size());
 		}
 	}
-
-	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet)
-	{
-		// 1. 유효성 검사
+	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet) {
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 
 		common::Vec3 targetPos = move_packet._position;
@@ -476,15 +368,13 @@ namespace PIP::SERVER
 		common::packet::OBJECT_STATE targetState = move_packet._state;
 		common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
 
-		// 2. 맵 범위 체크
 		if (!MapDataManager::Instance()->IsInsideMap(targetPos.x, targetPos.z))
 		{
-			// 맵 밖으로 나가려는 시도 - 보정 패킷 전송
 			packet::SC_PACKET_MOVE correction_packet;
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->_player._position; // 이전 안전한 위치
+			correction_packet._position = session->_player._position;
 			correction_packet._rotation = session->_player._rotation;
 			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
 
@@ -492,19 +382,16 @@ namespace PIP::SERVER
 			return;
 		}
 
-		// 3. 지형 높이(Y) 보정 (클라이언트와 동일하게)
 		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
 		targetPos.y = groundHeight;
 
-		// 4. 충돌 체크 (MapObject AABB)
 		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
 		{
-			// [충돌!] 이전 위치로 롤백 패킷 전송
 			packet::SC_PACKET_MOVE correction_packet;
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->_player._position; // 직전 위치
+			correction_packet._position = session->_player._position; 
 			correction_packet._rotation = session->_player._rotation;
 			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
 
@@ -512,7 +399,6 @@ namespace PIP::SERVER
 		}
 		else
 		{
-			// [성공!] 서버 메모리 갱신 및 브로드캐스팅
 			session->_player._position = targetPos;
 			session->_player._rotation = targetRotation;
 			session->_player._state = targetState;
@@ -525,24 +411,10 @@ namespace PIP::SERVER
 			sync_packet._rotation = targetRotation;
 			sync_packet._state = targetState;
 
-			// 나를 제외한 방 안의 모든 유저에게 전송
 			Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
 		}
-
-		// 5. Jolt 물리 바디 동기화 (나중에 Jolt 바디 생성 후 활성화)
-		/*
-		if (!_physicsSystem) return;
-		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
-		if (!session->_player._physicsBodyID.IsInvalid()) {
-			bodyInterface.SetPosition(session->_player._physicsBodyID,
-				JPH::RVec3(targetPos.x, targetPos.y, targetPos.z), JPH::EActivation::Activate);
-		}
-		*/
 	}
-
-	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session,
-		const common::packet::CS_PACKET_ENTER_ROOM& enter_packet)
-	{
+	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
 
 		if (session->_room_id != -1)
 		{
@@ -591,25 +463,19 @@ namespace PIP::SERVER
 
 		EnterPlayer(session);
 	}
-
-	void Room::CreatePhysicsTerrain()
-	{
-		// MapDataManager에서 로드된 지형 정보 가져오기
+	void Room::CreatePhysicsTerrain() {
 		const auto& terrainData = MapDataManager::Instance()->GetTerrainData();
 		const auto& info = terrainData.GetInfo();
 		const auto& heightMap = terrainData.GetHeightData();
 
-		// Jolt HeightFieldShape 생성
 		JPH::HeightFieldShapeSettings settings;
 		settings.mOffset = JPH::Vec3(info.min_x, 0.0f, info.min_z);
 
-		// 간격 계산 (Scale)
 		float dx = (info.max_x - info.min_x) / (info.width - 1);
 		float dz = (info.max_z - info.min_z) / (info.height - 1);
 		settings.mScale = JPH::Vec3(dx, 1.0f, dz);
-		settings.mSampleCount = static_cast<JPH::uint32>(info.width); // 정사각형 가정
+		settings.mSampleCount = static_cast<JPH::uint32>(info.width);
 
-		// 데이터 복사 및 변환 (float -> Jolt 포맷)
 		settings.mHeightSamples.resize(heightMap.size());
 		for (size_t i = 0; i < heightMap.size(); ++i) {
 			settings.mHeightSamples[i] = heightMap[i];
@@ -618,7 +484,6 @@ namespace PIP::SERVER
 		auto result = settings.Create();
 		if (result.HasError()) return;
 
-		// Body 생성 (Static: 움직이지 않음)
 		JPH::BodyCreationSettings bodySettings(result.Get(), JPH::RVec3(0, 0, 0), JPH::Quat::sIdentity(),
 			JPH::EMotionType::Static, Layers::NON_MOVING);
 
@@ -628,14 +493,12 @@ namespace PIP::SERVER
 		_terrainBodyID = terrainBody->GetID();
 		bodyInterface.AddBody(_terrainBodyID, JPH::EActivation::DontActivate);
 
-		// 지형 생성 확인을 위한 간단한 레이캐스트 테스트
 		JPH::RRayCast ray;
-		ray.mOrigin = JPH::Vec3(0, 100, 0); // 맵 중앙 하늘 위
-		ray.mDirection = JPH::Vec3(0, -200, 0); // 바닥 방향으로 쏘기
+		ray.mOrigin = JPH::Vec3(0, 100, 0); 
+		ray.mDirection = JPH::Vec3(0, -200, 0); 
 
 		JPH::RayCastResult ray_result;
 		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
-			// 성공! 무언가에 부딪혔음.
 			float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
 			MYLOG("Physics Terrain Test Success! Height at (0,0): " << hitY);
 		}
@@ -643,17 +506,9 @@ namespace PIP::SERVER
 			MYERROR("Physics Terrain NOT FOUND! Ray missed.");
 		}
 	}
-
-	void Room::PhysicsInitialize()
-	{
-		// 1. 물리 시스템 필수 객체 생성
-		// TempAllocator: 물리 연산 중 임시 메모리 할당 (10MB 정도)
-		//_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
-
-		// JobSystem: 아까 논의한 대로 '단일 스레드' 모드 사용
+	void Room::PhysicsInitialize() {
 		_jobSystem = new JPH::JobSystemSingleThreaded(JPH::cMaxPhysicsJobs);
 
-		// 2. PhysicsSystem 생성 및 초기화
 		_physicsSystem = new JPH::PhysicsSystem();
 
 		const JPH::uint cMaxBodies = 1024;
@@ -664,80 +519,8 @@ namespace PIP::SERVER
 		_physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
 			_bpLayerInterface, _objVsBpLayerFilter, _objLayerPairFilter);
 
-		// 3. 중력 설정 (Y축 아래 방향)
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
-		// 4. 지형 생성 호출 (예시)
 		CreatePhysicsTerrain();
 	}
-
-	//void Room::UpdateNPC(int npcId)
-	//{
-	//	NPC* npc = GetNPC(npcId);
-	//	if (not npc)
-	//	{
-	//		MYERROR("npc not found!!");
-	//		return;
-	//	}
-	//	// 랜덤이동
-	//	/*common::Vec3 oldPos = npc->GetPosition();
-	//	common::Vec3 newPos = oldPos;
-	//	newPos.x += static_cast<float>(_npcURD(_gen)) * 10.0f;
-	//	newPos.z += static_cast<float>(_npcURD(_gen)) * 10.0f;*/
-	//
-	//	common::Vec3 oldPos = npc->GetPosition();
-	//	float deltaTime = 0.2f; // 200ms 마다 업데이트 되므로
-	//	npc->UpdateAI(0.2f);
-	//	common::Vec3 currPos = npc->GetPosition();
-
-	//	common::Vec3 velocity;
-	//	velocity.x = (currPos.x - oldPos.x) / deltaTime;
-	//	velocity.y = (currPos.y - oldPos.y) / deltaTime;
-	//	velocity.z = (currPos.z - oldPos.z) / deltaTime;
-	//	npc->SetVelocity(velocity);
-
-	//	common::Quat rotation = { 0,0,0,1 };
-	//	if (velocity.x != 0 || velocity.z != 0) {
-	//		// atan2 등을 이용해 Y축 회전각 계산 가능
-	//		float angle_rad = std::atan2(velocity.x, velocity.z); // Z축이 앞쪽인 경우
-	//		DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
-	//		XMStoreFloat4(&rotation, q);
-
-	//	}
-	//	npc->SetRotation(rotation);
-
-	//	auto newPos = npc->GetPosition();
-	//	// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
-	//	newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
-	//	npc->SetPosition(newPos);
-
-	//	const std::string& npc_name = npc->GetName();
-
-	//	packet::SC_PACKET_NPC_MOVE move_packet_data;
-	//	move_packet_data._type = common::packet::PacketType::S2C_NPC_MOVE;
-	//	move_packet_data._size = 0; // 임시
-	//	move_packet_data._npc_id = npcId;
-	//	move_packet_data._position = newPos;
-	//	move_packet_data._velocity = npc->GetVelocity();
-	//	move_packet_data._rotation = npc->GetRotation();
-	//	move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
-
-	//	packet::PacketStream finalStream;
-	//	finalStream << move_packet_data;
-	//	finalStream << npc_name;
-
-	//	// 최종 크기를 계산하여 패킷 헤더에 덮어쓰기 <중요>
-	//	auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
-	//	final_header->_size = static_cast<uint16_t>(finalStream.Size());
-
-	//	Broadcast(finalStream.constable_data(), finalStream.Size());
-
-
-	//	//// 다음 업데이트 예약
-	//	//Server::Instance()->AddTimerJob(_logic_thread_idx,std::chrono::milliseconds(200),[this, npcId]()
-	//	//{
-	//	//	this->UpdateNPC(npcId);
-	//	//});
-	//}
 }
-

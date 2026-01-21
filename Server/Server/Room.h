@@ -21,43 +21,34 @@ namespace PIP::SERVER
 		Room(int room_id, int logic_thread_idx);
 		void Initialize();
 
-		// 플레이어 추가/제거
 		void EnterPlayer(std::shared_ptr<SESSION> new_player);
 		void LeavePlayer(long long player_id);
 
-		// NPC
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int npc_id);
 
-		// 메인 로직
-		// 게임 시작
 		void StartGame();
-		void UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator);
-		void UpdateLogics(float deltaTime);
-
-
+		
+        // 물리 업데이트 (할당자 필수)
+		void UpdatePhysics(float deltaTime, JPH::TempAllocator* allocator);
+        
+        // 로직 업데이트 (할당자 선택적 허용 - AI 때문)
+		void UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator = nullptr);
 
 		void PushJob(std::function<void()> job);
-		// 방에 있는 모든 플레이어에게 패킷을 전송 (브로드캐스팅)
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
 		void BroadcastNpcBatch();
-		// 정보 전송
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
-		// 공격 처리
 		void HandleAttack(std::shared_ptr<SESSION> attacker);
 
-		// 플레이어 이동 처리 로직
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 
-
-		// 게터
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
 		RoomState GetRoomState() const { return _room_state; }
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
-
 
 	private:
 		void CreatePhysicsTerrain();
@@ -65,37 +56,30 @@ namespace PIP::SERVER
 
 		void ProcessJobs();
 
-		void UpdateSingleNPC(int npcId);
-		//void UpdateAI(float deltaTime);
+        // [삭제] UpdateSingleNPC는 더 이상 사용하지 않음
+		// void UpdateSingleNPC(int npcId);
+        
 		void SendNpcMovePacket(GAME::NPC* npc);
-
-		//void UpdateNPC(int npcId);
 
 	private:
 		int _room_id;
-		int _logic_thread_idx; // 이 방을 담당하는 로직 스레드의 인덱스
+		int _logic_thread_idx;
 		uint8_t _max_players;
 		RoomState _room_state;
 		float _npcSyncTimer = 0.0f;
 
-		// 이 방에 속한 플레이어들의 목록
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
 		std::unordered_map<int, std::unique_ptr<GAME::NPC>> _npcs;
-		int _next_npc_id = 20000; // NPC ID는 플레이어 ID와 겹치지 않도록 높은 수에서 시작
+		int _next_npc_id = 20000;
 
-		// --- Jolt 물리 객체 ---
 		JPH::PhysicsSystem*					_physicsSystem = nullptr;
-		//JPH::TempAllocator*					_tempAllocator = nullptr;
 		JPH::JobSystem*						_jobSystem = nullptr;
 
-		// 인터페이스 구현체 (JoltSetup.h에 정의한 것들)
 		BPLayerInterfaceImpl				_bpLayerInterface;
 		ObjectVsBroadPhaseLayerFilterImpl	_objVsBpLayerFilter;
 		ObjectLayerPairFilterImpl			_objLayerPairFilter;
 
-		// 지형 Body ID 저장 (나중에 삭제 등을 위해)
 		JPH::BodyID _terrainBodyID;
-
 	};
 }

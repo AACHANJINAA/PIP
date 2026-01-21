@@ -8,6 +8,7 @@
 
 namespace PIP::SERVER
 {
+	// ... (기존 SESSION 및 Server 초기화 코드 동일) ...
 	using packet::PacketType;
 	std::string PacketTypeToString(PacketType type)
 	{
@@ -129,7 +130,7 @@ namespace PIP::SERVER
 			}
 			if (_recv_buffer.size() - processed_bytes < header->_size) break;
 
-			auto task = 
+			auto task =
 				[session = shared_from_this(),
 				stream = packet::PacketStream(_recv_buffer.data() + processed_bytes, header->_size)]
 			() mutable
@@ -223,7 +224,6 @@ namespace PIP::SERVER
 		}
 		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
 		
-
 
 		// 리슨 소켓 설정 및 Accept 준비
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -446,12 +446,10 @@ namespace PIP::SERVER
 		auto& worker = _logic_workers[thread_idx];
 		auto lastTick = std::chrono::steady_clock::now();
 
+		JPH::TempAllocatorImpl tempAllocator(20 * 1024 * 1024);
+
 		double accumulator = 0.0;
 		const double physicsStep = 1.0 / 60.0; // 16.66ms 고정
-
-		// [추가] 스레드 로컬 할당자 생성 (20MB 정도면 충분)
-		// 이 스레드가 담당하는 모든 방이 이 할당자를 돌려씀 (동기화 불필요)
-		JPH::TempAllocatorImpl tempAllocator(20 * 1024 * 1024);
 
 		using namespace std::chrono;
 		while (_is_running)
@@ -480,7 +478,6 @@ namespace PIP::SERVER
 			accumulator += elapsed.count();
 
 			// 3. 물리 엔진 업데이트 (밀린 시간만큼 여러 번 돌려서라도 60fps 보장)
-			// 예: 렉 걸려서 33ms가 지났으면 루프가 2번 돌아서 물리를 따라잡음
 			auto t_phys_start = steady_clock::now();
 			int physStepCounter = 0;
 			while (accumulator >= physicsStep)
@@ -500,31 +497,17 @@ namespace PIP::SERVER
 			float dt = static_cast<float>(elapsed.count());
 			for (auto& room : _rooms) {
 				if (room->GetLogicThreadIndex() == thread_idx) {
-					room->UpdateLogics(dt);
+					// [변경] 할당자 전달
+					room->UpdateLogics(dt, &tempAllocator);
 				}
 			}
 			auto t_logic_end = steady_clock::now();
-
-			// --- [결과 분석] ---
-			/*double jobMs = duration<double, std::milli>(t_job - t_start).count();
-			double physMs = duration<double, std::milli>(t_phys_end - t_phys_start).count();
-			double logicMs = duration<double, std::milli>(t_logic_end - t_logic_start).count();
-			double totalMs = jobMs + physMs + logicMs;
-			if (totalMs > 16.0)
-			{
-				MYLOG("[LAG WARNING] Thread " << thread_idx << " Overload! Total: " << totalMs << "ms"
-					<< " (Job: " << jobMs << ", Phys: " << physMs << " [" << physStepCounter << "steps], Logic: " << logicMs
-					<< ")");
-			}*/
-			// 2. 남은 시간 계산 (16.6ms - 걸린 시간)
 
 			auto loopElapsed = steady_clock::now() - t_start;
 			auto frameDuration = milliseconds(16); // 약 60fps
 			auto sleepTime = frameDuration - loopElapsed;
 
 			if (sleepTime.count() > 0) {
-				// [핵심] 남은 시간만큼 진짜로 잠듭니다.
-				// timeBeginPeriod(1)을 했으므로 1ms 단위로 정확히 깹니다
 				std::this_thread::sleep_for(sleepTime);
 			}
 		}
@@ -535,15 +518,7 @@ namespace PIP::SERVER
 		long long new_id = _new_id++;
 		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
 		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), _iocp, new_id, 0);
-		// TCP_NODELAY 설정 추가
-		//int nodelay = 1;
-		//if (SOCKET_ERROR == setsockopt(client_socket, IPPROTO_TCP, TCP_NODELAY,
-		//	(const char*)&nodelay, sizeof(nodelay)))
-		//{
-		//	// 로그만 남기고 계속 진행
-		//	MYERROR("Failed to set TCP_NODELAY for session " << new_id);
-		//}
-
+		
 		AddSession(new_id, p);
 		p->do_recv();
 		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
