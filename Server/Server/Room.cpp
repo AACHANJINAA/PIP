@@ -8,7 +8,7 @@
 #include "Jolt/Physics/Collision/RayCast.h"
 #include <random>
 
-namespace PIP::server
+namespace PIP::SERVER
 {
 	constexpr int MAX_ROOM_PLAYERS = 4; // 최대 플레이어 수
 
@@ -39,10 +39,10 @@ namespace PIP::server
 
 			//MYLOG("Creating NPC " << npcId << " at " << randomPos.x << ", " << randomPos.y << ", " << randomPos.z);
 
-			auto npc = std::make_unique<NPC>(npcId, 1, _room_id, randomPos, 100);
+			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, randomPos, 100);
 
 			// [추가] 물리 컴포넌트에 Jolt Body 생성 명령
-			auto physics = npc->GetComponent<PhysicsComponent>();
+			auto physics = npc->GetComponent<GAME::PhysicsComponent>();
 			if (physics)
 			{
 				// NPC 모양 설정 (반경 0.5, 높이 1.0의 캡슐)
@@ -100,12 +100,12 @@ namespace PIP::server
 		_players.erase(player_id);
 	}
 
-	void Room::AddNPC(std::unique_ptr<NPC> npc)
+	void Room::AddNPC(std::unique_ptr<GAME::NPC> npc)
 	{
 		_npcs.emplace(npc->GetNpcId(), std::move(npc));
 	}
 
-	NPC* Room::GetNPC(int npc_id)
+	GAME::NPC* Room::GetNPC(int npc_id)
 	{
 		auto it = _npcs.find(npc_id);
 		if (it == _npcs.end())
@@ -175,7 +175,7 @@ namespace PIP::server
 
 	void Room::UpdateSingleNPC(int npcId)
 	{
-		NPC* npc = GetNPC(npcId);
+		GAME::NPC* npc = GetNPC(npcId);
 		if (not npc)
 		{
 			MYERROR("npc not found!!");
@@ -274,7 +274,7 @@ namespace PIP::server
 		}
 		
 	}*/
-	void Room::SendNpcMovePacket(NPC* npc)
+	void Room::SendNpcMovePacket(GAME::NPC* npc)
 	{
 		if (!npc) return;
 
@@ -367,7 +367,7 @@ namespace PIP::server
 		// 2. 방에 있는 모든 NPC들의 정보를 새 플레이어에게 전송
 		for (auto& val : _npcs | std::views::values)
 		{
-			NPC* npc = val.get();
+			GAME::NPC* npc = val.get();
 			const std::string& npc_name = npc->GetName();
 
 			packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
@@ -483,7 +483,7 @@ namespace PIP::server
 	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet)
 	{
 		// 1. 유효성 검사
-		if (!session || session->_state != server::SESSION_STATE::ST_INGAME) return;
+		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 
 		common::Vec3 targetPos = move_packet._position;
 		common::Quat targetRotation = move_packet._rotation;
@@ -560,7 +560,7 @@ namespace PIP::server
 
 		if (session->_room_id != -1)
 		{
-			server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
+			SERVER::Room* old_room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 			if (old_room)
 			{
 				packet::SC_PACKET_LEAVE leave_packet;
@@ -574,7 +574,7 @@ namespace PIP::server
 		}
 
 		session->_room_id = enter_packet._room_id;
-		session->_state = server::SESSION_STATE::ST_INGAME;
+		session->_state = SERVER::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = GetLogicThreadIndex();
 		common::Vec3 spawnPos{ 0, 10, 10 };
 		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);

@@ -2,7 +2,7 @@
 #include "PhysicsComponent.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
-namespace PIP
+namespace PIP::GAME
 {
 	PhysicsComponent::~PhysicsComponent()
 	{

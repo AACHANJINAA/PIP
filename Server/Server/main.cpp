@@ -25,13 +25,13 @@ int main()
 
     PIP::PhysicsManager::Instance()->Initialize();
     // 서버 스탈트!
-    server::Server::Instance()->Start(io_worker_thread_count, logic_worker_thread_count);
+    SERVER::Server::Instance()->Start(io_worker_thread_count, logic_worker_thread_count);
 
     // 서버가 종료될 때까지 대기 (콘솔에서 Enter 키를 누르면 종료)
 	MYLOG("Press Enter to stop the server..." << std::endl);
     std::cin.get();
 
-    server::Server::Instance()->Stop();
+    SERVER::Server::Instance()->Stop();
     WSACleanup();
     
     return 0;

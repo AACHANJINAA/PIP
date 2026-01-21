@@ -2,7 +2,7 @@
 #include "Component.h"
 #include "JoltHelper.h"
 
-namespace PIP
+namespace PIP::GAME
 {
     class TransformComponent : public Component
     {

@@ -3,7 +3,7 @@
 #include "PhysicsComponent.h"
 #include "TransformComponent.h"
 
-namespace PIP
+namespace PIP::GAME
 {
 	// NPC의 상태를 나타내는 열거형
 	enum class NPCState : uint8_t

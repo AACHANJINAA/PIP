@@ -2,7 +2,7 @@
 #include "Room.h"
 #include "Player.h"
 
-namespace PIP::server
+namespace PIP::SERVER
 {
 	class Server;
 

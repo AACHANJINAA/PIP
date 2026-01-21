@@ -13,11 +13,11 @@ namespace PIP::packet
 		RegisterHandler(PacketType::C2S_P_CHAT_IN_ROOM, Handle_C2S_CHAT_IN_ROOM);
 	}
 
-	void PacketManager::Dispatch(const std::shared_ptr<PIP::server::SESSION>& session, PIP::packet::PacketStream& stream)
+	void PacketManager::Dispatch(const std::shared_ptr<PIP::SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
     {
         packet::PacketHeader header = stream.PeekHeader();
 
-		server::SESSION_STATE sessionState = session->_state;
+		SERVER::SESSION_STATE sessionState = session->_state;
        // MYLOG("[DISPATCHER] Dispatching packet type " << static_cast<int>(header._type) << " for Session ID : " 
        //     << session->_id << " in state " << static_cast<int>(sessionState));
 
@@ -26,7 +26,7 @@ namespace PIP::packet
         // 세션 상태에 따라 처리 가능한 패킷인지 검증합니다.
         switch (sessionState)
         {
-        case server::SESSION_STATE::ST_LOBBY:
+        case SERVER::SESSION_STATE::ST_LOBBY:
                 if (header._type == packet::PacketType::C2S_P_ROOM_LIST 
                     || header._type == packet::PacketType::C2S_P_ENTER_ROOM
                     || header._type == packet::PacketType::C2S_P_LOGIN)
@@ -35,7 +35,7 @@ namespace PIP::packet
                 }
                 break;
 
-            case server::SESSION_STATE::ST_INGAME:
+            case SERVER::SESSION_STATE::ST_INGAME:
                 // 인게임에서 처리 가능한 모든 패킷 종류를 여기에 명시합니다.
                 switch (header._type)
                 {

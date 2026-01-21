@@ -4,7 +4,7 @@
 
 namespace PIP::packet
 {
-	using PacketHandler = std::function<void(std::shared_ptr<PIP::server::SESSION>, PIP::packet::PacketStream&)>;
+	using PacketHandler = std::function<void(std::shared_ptr<PIP::SERVER::SESSION>, PIP::packet::PacketStream&)>;
 
 	class PacketManager : public Singleton<PacketManager>
 	{
@@ -19,7 +19,7 @@ namespace PIP::packet
 			_handlers[packetId] = std::move(handler);
 		}
 
-		void Dispatch(const std::shared_ptr<PIP::server::SESSION>& session, PIP::packet::PacketStream& stream);
+		void Dispatch(const std::shared_ptr<PIP::SERVER::SESSION>& session, PIP::packet::PacketStream& stream);
 		
 	};
 }

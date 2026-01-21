@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "Component.h"
 
-namespace PIP
+namespace PIP::GAME
 {
     class GameObject
     {

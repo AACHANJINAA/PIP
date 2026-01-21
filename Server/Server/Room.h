@@ -3,7 +3,7 @@
 #include "Server.h"
 #include "NPC.h"
 
-namespace PIP::server
+namespace PIP::SERVER
 {
 
 	enum class RoomState : uint8_t
@@ -26,8 +26,8 @@ namespace PIP::server
 		void LeavePlayer(long long player_id);
 
 		// NPC
-		void AddNPC(std::unique_ptr<NPC> npc);
-		NPC* GetNPC(int npc_id);
+		void AddNPC(std::unique_ptr<GAME::NPC> npc);
+		GAME::NPC* GetNPC(int npc_id);
 
 		// 메인 로직
 		// 게임 시작
@@ -67,7 +67,7 @@ namespace PIP::server
 
 		void UpdateSingleNPC(int npcId);
 		//void UpdateAI(float deltaTime);
-		void SendNpcMovePacket(NPC* npc);
+		void SendNpcMovePacket(GAME::NPC* npc);
 
 		//void UpdateNPC(int npcId);
 
@@ -81,7 +81,7 @@ namespace PIP::server
 		// 이 방에 속한 플레이어들의 목록
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
-		std::unordered_map<int, std::unique_ptr<NPC>> _npcs;
+		std::unordered_map<int, std::unique_ptr<GAME::NPC>> _npcs;
 		int _next_npc_id = 20000; // NPC ID는 플레이어 ID와 겹치지 않도록 높은 수에서 시작
 
 		// --- Jolt 물리 객체 ---
