@@ -1,10 +1,12 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "LuaManager.h"
 
 #include "MapDataManager.h"
 #include "NPC.h"
 #include "TransformComponent.h"
 #include "GameObject.h"
+#include "CharacterControllerComponent.h"
+
 namespace PIP
 {
 	
@@ -14,13 +16,14 @@ namespace PIP
 
 		lua_register(L, "GetPosition", Lua_GetPosition);
 		lua_register(L, "SetPosition", Lua_SetPosition);
+		lua_register(L, "SetVelocity", Lua_SetVelocity);
 		lua_register(L, "GetMapBounds", Lua_GetMapBounds);
 		lua_register(L, "Log", Lua_Log);
 	}
 
 	GAME::GameObject* LuaManager::GetOwner(lua_State* L)
 	{
-        lua_getglobal(L, "__gameObject"); // AIComponent에서 등록한 이름
+        lua_getglobal(L, "__gameObject"); 
         if (!lua_islightuserdata(L, -1))
         {
             lua_pop(L, 1);
@@ -64,9 +67,39 @@ namespace PIP
         return 0;
     }
 
+    int LuaManager::Lua_SetVelocity(lua_State* L)
+    {
+        GAME::GameObject* obj = GetOwner(L);
+        if (!obj) return 0;
+
+        float x = static_cast<float>(lua_tonumber(L, 1));
+        float y = static_cast<float>(lua_tonumber(L, 2));
+        float z = static_cast<float>(lua_tonumber(L, 3));
+
+        // [수정] 컴포넌트 직접 조회 방식으로 변경하여 안정성 확보
+        auto controller = obj->GetComponent<GAME::CharacterControllerComponent>();
+        if (controller)
+        {
+            controller->SetVelocity({ x, y, z });
+        }
+        else
+        {
+            // 혹시 모르니 NPC 캐스팅도 남겨두거나 에러 로그 출력
+             if (auto npc = dynamic_cast<GAME::NPC*>(obj))
+             {
+                 npc->SetVelocity({ x, y, z });
+             }
+             else
+             {
+                 // MYERROR("Lua SetVelocity Failed: Component Not Found");
+             }
+        }
+
+        return 0;
+    }
+
     int LuaManager::Lua_GetMapBounds(lua_State* L)
     {
-        // MapDataManager에서 지형 정보 가져오기
         const auto& info = MapDataManager::Instance()->GetTerrainData().GetInfo();
 
         lua_pushnumber(L, info.min_x);

@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 #include "LuaManager.h"
 #include "MapDataManager.h"
@@ -42,23 +42,11 @@ namespace PIP::SERVER
 			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, randomPos, 100);
 
 			// [추가] 물리 컴포넌트에 Jolt Body 생성 명령
-			auto physics = npc->GetComponent<GAME::PhysicsComponent>();
-			if (physics)
+			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
+			if (controller)
 			{
-				// NPC 모양 설정 (반경 0.5, 높이 1.0의 캡슐)
-				JPH::Ref<JPH::Shape> baseShape = new JPH::CapsuleShape(1.0f, 0.5f);
-
-				JPH::Vec3 offset(0, 1.5f, 0);
-				//JPH::Ref<JPH::Shape> npcShape = new JPH::RotatedTranslatedShape(offset, JPH::Quat::sIdentity(), baseShape);
-
-				// Dynamic: 힘과 충돌의 영향을 받는 동적 물체로 생성
-				physics->CreateBody(_physicsSystem, baseShape, JPH::EMotionType::Dynamic, Layers::NPC, offset);
-				
-				if(!physics->GetBodyID().IsInvalid()) {
-					//MYLOG("NPC " << npcId << " Body Created Successfully!");
-				} else {
-					MYERROR("NPC " << npcId << " Body Creation FAILED!");
-				}
+				// 캐릭터 컨트롤러 초기화 (키 1.8m, 반지름 0.5m)
+				controller->Initialize(_physicsSystem, 1.8f, 0.5f);
 			}
 
 			int startDelay = rand() % 200; // 0~199ms 랜덤 지연
@@ -139,6 +127,13 @@ namespace PIP::SERVER
 		}
 		// 전달받은 allocator 사용
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
+
+		// 2. NPC 캐릭터 시뮬레이션 (GameObject 레벨에서 전파)
+		for (auto& [id, npc] : _npcs)
+		{
+			// GameObject 내부에서 모든 컴포넌트의 PhysicsUpdate(dt, alloc)를 호출함
+			npc->PhysicsUpdate(deltaTime, tempAllocator);
+		}
 	}
 	void Room::UpdateLogics(float deltaTime)
 	{
@@ -176,57 +171,48 @@ namespace PIP::SERVER
 	void Room::UpdateSingleNPC(int npcId)
 	{
 		GAME::NPC* npc = GetNPC(npcId);
-		if (not npc)
-		{
-			MYERROR("npc not found!!");
-			return;
-		}
-		
+		if (not npc) return;
+
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
 		float realDeltaTime = elapsed.count();
-
 		if (realDeltaTime > 0.5f) realDeltaTime = 0.2f;
 
 		npc->SetLastUpdateTime(now);
 
-		common::Vec3 oldPos = npc->GetPosition();
-		npc->Update(realDeltaTime); // AI가 내부적으로 목표를 정함
-		common::Vec3 targetPos = npc->GetPosition(); // AI가 옮겨놓은 위치를 '목표점'으로 인식
+		// 1. 현재 물리 위치 저장
+		common::Vec3 physicsPos = npc->GetPosition();
 
-		// [변경] 목표 지점으로 가기 위한 속도 계산
+		// 2. AI 업데이트 (Lua가 SetPosition 호출)
+		npc->Update(realDeltaTime);
+
+		// 3. Lua가 원했던 목표 위치
+		common::Vec3 desiredPos = npc->GetPosition();
+
+		// 4. [핵심] 위치를 물리 위치로 되돌림 (순간이동 방지)
+		npc->SetPosition(physicsPos);
+
+		// 5. 차이를 속도로 변환하여 물리 엔진에 전달
 		common::Vec3 velocity;
-		velocity.x = (targetPos.x - oldPos.x) / realDeltaTime;
-		velocity.y = npc->GetVelocity().y;
-		velocity.z = (targetPos.z - oldPos.z) / realDeltaTime;
+		velocity.x = (desiredPos.x - physicsPos.x) / realDeltaTime;
+		velocity.y = npc->GetVelocity().y; // Y축(중력) 유지
+		velocity.z = (desiredPos.z - physicsPos.z) / realDeltaTime;
 
-		// 물리 바디에 속도 부여 (이제 물리 엔진이 자연스럽게 이동시킴)
 		npc->SetVelocity(velocity);
 
+		// 회전 처리
 		common::Quat rotation = { 0,0,0,1 };
 		if (velocity.x != 0 || velocity.z != 0) {
-			// atan2 등을 이용해 Y축 회전각 계산 가능
-			float angle_rad = std::atan2(velocity.x, velocity.z); // Z축이 앞쪽인 경우
+			float angle_rad = std::atan2(velocity.x, velocity.z);
 			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, angle_rad, 0.0f);
 			XMStoreFloat4(&rotation, q);
-
 		}
 		npc->SetRotation(rotation);
 
-		// [삭제] 4. 강제 위치 보정 및 세팅 (이제 Jolt가 처리함)
-		//auto newPos = npc->GetPosition();
-		//// TODO: 맵 경계나 벽 충돌 체크 로직 추가 필요
-		//newPos = MapDataManager::Instance()->AdjustPositionToGround(newPos);
-		//npc->SetPosition(newPos);
-
-
-		//SendNpcMovePacket(npc);
-
 		if (_players.empty()) {
-			//MYLOG("Room " << _room_id << " is empty. NPC " << npcId << " goes to sleep.");
-			return; // 재예약을 안 함 -> 타이머 스레드에서 사라짐
+			return;
 		}
-		// 다음 업데이트 예약
+
 		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(200), [this, npcId]()
 			{
 				this->PushJob([this, npcId]() {

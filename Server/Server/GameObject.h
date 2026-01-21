@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include "Component.h"
 
+namespace JPH { class TempAllocator; }
+
 namespace PIP::GAME
 {
     class GameObject
@@ -15,6 +17,8 @@ namespace PIP::GAME
 
         void Update(float deltaTime);
         void PhysicsUpdate(float deltaTime);
+        // [추가] 할당자 받는 버전
+        void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator);
 
         template <typename T, typename... Args>
         T* AddComponent(Args&&... args);

@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="AIComponent.cpp" />
     <ClCompile Include="BehaviorTree.cpp" />
+    <ClCompile Include="CharacterControllerComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="LuaManager.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="..\..\Common\Vector3.h" />
     <ClInclude Include="AIComponent.h" />
     <ClInclude Include="BehaviorTree.h" />
+    <ClInclude Include="CharacterControllerComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="JoltHelper.h" />
