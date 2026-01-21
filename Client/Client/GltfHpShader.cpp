@@ -39,7 +39,7 @@ D3D12_SHADER_BYTECODE GltfHpShader::create_vertex_shader(ComPtr<ID3DBlob>& shade
 
 D3D12_SHADER_BYTECODE GltfHpShader::create_pixel_shader(ComPtr<ID3DBlob>& shader_blob)
 {
-    return compile_shader_from_file(L"Gltf_Shader.hlsl", "PS_HP_GLTF", "ps_5_1", shader_blob);
+    return compile_shader_from_file(L"Gltf_Shader.hlsl", "PS_GLTF", "ps_5_1", shader_blob);
 }
 
 std::string GltfHpShader::required_root_signature() const
