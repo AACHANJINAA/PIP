@@ -83,7 +83,7 @@ namespace PIP::GAME
                 lastPos = _blackboard->get<common::Vec3>("last_pos");
             }
 
-            float movedDist = std::sqrt(std::pow(current.x - lastPos.x, 2) + std::pow(current.z - lastPos.z, 2));
+            float movedDist = static_cast<float>(std::sqrt(std::pow(current.x - lastPos.x, 2) + std::pow(current.z - lastPos.z, 2)));
 
             // 예상 이동 거리의 20%도 못 갔으면 끼인 것으로 간주
             if (movedDist < (_speed * dt * 0.2f)) {

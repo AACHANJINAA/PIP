@@ -1,15 +1,22 @@
 ﻿#pragma once
-#include "BehaviorTree.h"
 #include "Component.h"
+#include "BehaviorTree.h"
+
+extern "C" {
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+}
 
 namespace PIP::GAME
 {
 	enum class AIMode
 	{
-		Lua = 0,
-		BT = 1,
-		None = 2,
+		None,
+		Lua,
+		BT
 	};
+
 	class AIComponent : public Component
 	{
 	public:
@@ -17,26 +24,23 @@ namespace PIP::GAME
 		~AIComponent() override;
 
 		void Initialize() override;
-		void Update(float deltaTime) override;
+		
+        // 기존
+        void Update(float deltaTime) override {}
 
-		// Lua 모드 설정 및 스크립트 로드
+        // [추가] 할당자 버전
+		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
+
 		void SetLuaScript(const std::string& path);
-
-		// BT 모드 설정 및 루트 노드 설정
 		void SetBehaviorTree(std::shared_ptr<BTNode> root);
 
-		// AI 데이터 공유를 위한 블랙보드 접근
-		Blackboard& GetBlackboard() { return _blackboard; }
-		const Blackboard& GetBlackboard() const { return _blackboard; }
+        Blackboard* GetBlackboard() { return &_blackboard; }
 
 	private:
 		AIMode _mode = AIMode::None;
-
-		// --- Lua 관련 ---
 		lua_State* _L = nullptr;
-
-		// --- Behavior Tree 관련 ---
-		std::shared_ptr<BTNode> _btRoot = nullptr;
-		Blackboard _blackboard;
+		
+		std::shared_ptr<BTNode> _btRoot;
+        Blackboard _blackboard;
 	};
 }

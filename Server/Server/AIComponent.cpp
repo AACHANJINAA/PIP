@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "AIComponent.h"
 #include "GameObject.h"
 #include "LuaManager.h"
@@ -16,11 +16,10 @@ namespace PIP::GAME
 
 	void AIComponent::Initialize()
 	{
-		// 블랙보드에 자기 자신(GameObject)을 등록해두면 BT 노드들이 접근하기 쉽습니다.
 		_blackboard.set("owner", GetOwner());
 	}
 
-	void AIComponent::Update(float deltaTime)
+	void AIComponent::Update(float deltaTime, JPH::TempAllocator* allocator)
 	{
 		if (_mode == AIMode::None) return;
 
@@ -48,8 +47,7 @@ namespace PIP::GAME
 		{
 			if (_btRoot)
 			{
-				// BT 실행 (Tick)
-				_btRoot->tick(deltaTime);
+				_btRoot->tick(deltaTime, allocator);
 			}
 		}
 	}
@@ -63,8 +61,6 @@ namespace PIP::GAME
 		{
 			LuaManager::Instance()->RegisterFunctions(_L);
 
-			// 중요: Lua에서 GameObject에 접근할 수 있도록 포인터 등록
-			// LuaManager의 GetOwner 함수도 이에 맞춰 수정이 필요합니다.
 			lua_pushlightuserdata(_L, GetOwner());
 			lua_setglobal(_L, "__gameObject");
 

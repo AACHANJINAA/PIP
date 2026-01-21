@@ -16,8 +16,10 @@ namespace PIP::GAME
         virtual ~GameObject() = default;
 
         void Update(float deltaTime);
+        // [추가]
+        void Update(float deltaTime, JPH::TempAllocator* allocator);
+
         void PhysicsUpdate(float deltaTime);
-        // [추가] 할당자 받는 버전
         void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator);
 
         template <typename T, typename... Args>
@@ -38,7 +40,6 @@ namespace PIP::GAME
         std::unordered_map<std::type_index, Component*> _componentCache;
     };
 
-    // Component::GetComponent 인라인 구현
     template <typename T>
     inline T* Component::GetComponent()
     {
