@@ -32,7 +32,7 @@ namespace PIP::server
 		// 메인 로직
 		// 게임 시작
 		void StartGame();
-		void UpdatePhysics(float deltaTime);
+		void UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator);
 		void UpdateLogics(float deltaTime);
 
 
@@ -86,7 +86,7 @@ namespace PIP::server
 
 		// --- Jolt 물리 객체 ---
 		JPH::PhysicsSystem*					_physicsSystem = nullptr;
-		JPH::TempAllocator*					_tempAllocator = nullptr;
+		//JPH::TempAllocator*					_tempAllocator = nullptr;
 		JPH::JobSystem*						_jobSystem = nullptr;
 
 		// 인터페이스 구현체 (JoltSetup.h에 정의한 것들)

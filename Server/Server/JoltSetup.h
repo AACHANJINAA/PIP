@@ -8,6 +8,7 @@ namespace PIP
         // ObjectLayer = uint16
         static constexpr JPH::ObjectLayer NON_MOVING = 0; // 지형, 건물
         static constexpr JPH::ObjectLayer MOVING = 1; // 플레이어, 몬스터
+		static constexpr JPH::ObjectLayer NPC = 2; // 충돌은 안하지만 닿으면 이벤트 발생
 
         //TODO: 나중에 추가할 가능성이 있는 레이어들
         //static constexpr ObjectLayer TRIGGER = 2; // 닿으면 이벤트만 발생, 몸이 통과됨)
@@ -15,7 +16,7 @@ namespace PIP
         //static constexpr ObjectLayer MONSTER = 4;
 
 		// ObjectLayer 개수
-        static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+        static constexpr JPH::ObjectLayer NUM_LAYERS = 3;
     }
 
     // BroadPhase 레이어 정의 (성능 최적화용)
@@ -41,6 +42,7 @@ namespace PIP
 			// ObjectLayer와 BroadPhaseLayer 매핑 설정
             _objectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
             _objectToBroadPhase[Layers::MOVING]     = BroadPhaseLayers::MOVING;
+			_objectToBroadPhase[Layers::NPC]        = BroadPhaseLayers::MOVING;
         }
 
         virtual JPH::uint GetNumBroadPhaseLayers() const override
@@ -89,6 +91,8 @@ namespace PIP
             case Layers::MOVING:
 				// 2. MOVING 물체는 모든 레이어와 충돌
                 return true;
+			case Layers::NPC:
+                return true;
             default:
                 return false;
             }
@@ -110,6 +114,9 @@ namespace PIP
                 return inObject2 == Layers::MOVING;
             case Layers::MOVING:
                 return true;
+            case Layers::NPC:
+                // [핵심] NPC는 NPC끼리 충돌하지 않음 (inObject2가 NPC면 false)
+                return inObject2 == Layers::NON_MOVING || inObject2 == Layers::MOVING;
             default:
                 return false;
             }

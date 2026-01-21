@@ -52,7 +52,7 @@ namespace PIP::server
 				//JPH::Ref<JPH::Shape> npcShape = new JPH::RotatedTranslatedShape(offset, JPH::Quat::sIdentity(), baseShape);
 
 				// Dynamic: 힘과 충돌의 영향을 받는 동적 물체로 생성
-				physics->CreateBody(_physicsSystem, baseShape, JPH::EMotionType::Dynamic, Layers::MOVING, offset);
+				physics->CreateBody(_physicsSystem, baseShape, JPH::EMotionType::Dynamic, Layers::NPC, offset);
 				
 				if(!physics->GetBodyID().IsInvalid()) {
 					//MYLOG("NPC " << npcId << " Body Created Successfully!");
@@ -130,13 +130,15 @@ namespace PIP::server
 	}
 
 
-	void Room::UpdatePhysics(float deltaTime)
+	void Room::UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
-		if (!_physicsSystem)
+		// [최적화] 플레이어가 없거나 물리 시스템이 없으면 연산 건너뜀 (CPU 절약)
+		if (!_physicsSystem || _players.empty())
 		{
 			return;
 		}
-		_physicsSystem->Update(deltaTime, 1, _tempAllocator, _jobSystem);
+		// 전달받은 allocator 사용
+		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 	}
 	void Room::UpdateLogics(float deltaTime)
 	{
@@ -660,7 +662,7 @@ namespace PIP::server
 	{
 		// 1. 물리 시스템 필수 객체 생성
 		// TempAllocator: 물리 연산 중 임시 메모리 할당 (10MB 정도)
-		_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
+		//_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
 
 		// JobSystem: 아까 논의한 대로 '단일 스레드' 모드 사용
 		_jobSystem = new JPH::JobSystemSingleThreaded(JPH::cMaxPhysicsJobs);

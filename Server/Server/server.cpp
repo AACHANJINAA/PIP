@@ -193,7 +193,7 @@ namespace PIP::server
 		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		_logic_workers.resize(logic_thread_count);
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			int logic_idx = i % logic_thread_count;
 			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
@@ -449,6 +449,10 @@ namespace PIP::server
 		double accumulator = 0.0;
 		const double physicsStep = 1.0 / 60.0; // 16.66ms 고정
 
+		// [추가] 스레드 로컬 할당자 생성 (20MB 정도면 충분)
+		// 이 스레드가 담당하는 모든 방이 이 할당자를 돌려씀 (동기화 불필요)
+		JPH::TempAllocatorImpl tempAllocator(20 * 1024 * 1024);
+
 		using namespace std::chrono;
 		while (_is_running)
 		{
@@ -483,7 +487,7 @@ namespace PIP::server
 			{
 				for (auto& room : _rooms) {
 					if (room->GetLogicThreadIndex() == thread_idx) {
-						room->UpdatePhysics(static_cast<float>(physicsStep));
+						room->UpdatePhysics(static_cast<float>(physicsStep), &tempAllocator);
 					}
 				}
 				accumulator -= physicsStep;
