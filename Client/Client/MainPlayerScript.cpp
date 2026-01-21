@@ -6,13 +6,15 @@
 #include "ObjectManager.h"
 #include "RenderComponent.h"
 #include "Renderer.h"
-#include "Renderer.h"
+
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "TerrainLoader.h"
 #include "TransformComponent.h"
 #include "TimerManager.h"
 #include "AnimationComponent.h"
+
+#include "LightManager.h"
 
 
 void MainPlayerScript::update(float deltaTime)
@@ -78,6 +80,23 @@ void MainPlayerScript::update(float deltaTime)
         if(_speed > 5.f)
         {
             _speed -= 1.f;
+        }
+    }
+
+    Light* sunLight = LightManager::instance()->get_light(0);
+
+    if (sunLight && sunLight->m_nType == 3) // 0번 조명이 방향성 조명인지 확인
+    {
+        // 'J' 키를 누르면 조명 각도를 Y축 기준으로 회전
+        if (InputManager::instance()->IsKeyPress('J'))
+        {
+            sunLight->m_vDirection = XMFLOAT3(-0.8f, -0.4f, -0.2f);
+        }
+        // 'K' 키를 누르면 조명 각도를 특정 방향으로 즉시 변경
+        if (InputManager::instance()->IsKeyPress('K'))
+        {
+            // (0.8f, -0.4f, 0.2f}는 동쪽 높은 곳에서 서쪽 낮은 곳을 비추는 형태입니다.
+            sunLight->m_vDirection = XMFLOAT3(0.8f, -0.4f, 0.2f);
         }
     }
 
