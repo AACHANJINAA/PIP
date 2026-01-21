@@ -2,7 +2,7 @@
 #include "BehaviorTree.h"
 #include "Component.h"
 
-namespace PIP
+namespace PIP::GAME
 {
 	enum class AIMode
 	{

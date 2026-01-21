@@ -3,7 +3,7 @@
 #include "GameObject.h"
 #include "LuaManager.h"
 
-namespace PIP
+namespace PIP::GAME
 {
 	AIComponent::~AIComponent()
 	{

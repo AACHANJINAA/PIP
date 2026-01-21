@@ -3,7 +3,7 @@
 #include "JoltHelper.h"
 
 
-namespace PIP
+namespace PIP::GAME
 {
 	class PhysicsComponent : public Component
 	{

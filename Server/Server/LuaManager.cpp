@@ -18,7 +18,7 @@ namespace PIP
 		lua_register(L, "Log", Lua_Log);
 	}
 
-	GameObject* LuaManager::GetOwner(lua_State* L)
+	GAME::GameObject* LuaManager::GetOwner(lua_State* L)
 	{
         lua_getglobal(L, "__gameObject"); // AIComponent에서 등록한 이름
         if (!lua_islightuserdata(L, -1))
@@ -26,17 +26,17 @@ namespace PIP
             lua_pop(L, 1);
             return nullptr;
         }
-        GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, -1));
+        GAME::GameObject* obj = static_cast<GAME::GameObject*>(lua_touserdata(L, -1));
         lua_pop(L, 1);
         return obj;
 	}
 
 	int LuaManager::Lua_GetPosition(lua_State* L)
     {
-        GameObject* obj = GetOwner(L);
+        GAME::GameObject* obj = GetOwner(L);
         if (!obj) return 0;
 
-        auto transform = obj->GetComponent<TransformComponent>();
+        auto transform = obj->GetComponent<GAME::TransformComponent>();
         if (!transform) return 0;
 
         common::Vec3 pos = transform->GetPosition();
@@ -48,14 +48,14 @@ namespace PIP
 
     int LuaManager::Lua_SetPosition(lua_State* L)
     {
-        GameObject* obj = GetOwner(L);
+	    GAME::GameObject* obj = GetOwner(L);
         if (!obj) return 0;
 
         float x = static_cast<float>(lua_tonumber(L, 1));
         float y = static_cast<float>(lua_tonumber(L, 2));
         float z = static_cast<float>(lua_tonumber(L, 3));
 
-		auto transform = obj->GetComponent<TransformComponent>();
+		auto transform = obj->GetComponent<GAME::TransformComponent>();
         if (!transform)
         {
             return 0;

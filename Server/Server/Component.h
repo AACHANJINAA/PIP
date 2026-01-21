@@ -1,5 +1,5 @@
 #pragma once
-namespace PIP
+namespace PIP::GAME
 {
 	class GameObject;
 	class Component

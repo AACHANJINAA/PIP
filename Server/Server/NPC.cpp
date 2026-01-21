@@ -4,7 +4,7 @@
 #include "PhysicsComponent.h"
 
 
-namespace PIP
+namespace PIP::GAME
 {
     NPC::NPC(int npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp)
         : GameObject(npc_id),

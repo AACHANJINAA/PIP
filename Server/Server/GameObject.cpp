@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameObject.h"
-namespace PIP
+namespace PIP::GAME
 {
 	void GameObject::Update(float deltaTime)
 	{

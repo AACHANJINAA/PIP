@@ -12,7 +12,7 @@ namespace PIP::packet
 {
 	
 	// 중복 코드를 줄이기 위한 Helper 함수
-	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<PIP::server::SESSION> session)
+	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<PIP::SERVER::SESSION> session)
 	{
 		// [수정] SC_PACKET_SPAWN_PLAYER 구조체 변수를 선언하고 멤버를 채웁니다.
 		packet::SC_PACKET_SPAWN_PLAYER spawn_packet_data;
@@ -41,7 +41,7 @@ namespace PIP::packet
 	}
 
 
-	void Handle_C2S_LOGIN(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_LOGIN(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_LOGIN login_packet;
 		std::string player_name;
@@ -73,10 +73,10 @@ namespace PIP::packet
 		MYLOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
 	}
 
-	void Handle_C2S_MOVE(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_MOVE(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 
-		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
+		if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
 
 		// 1. 데이터만 먼저 복사 (네트워크 스레드에서 수행)
 		packet::CS_PACKET_MOVE move_packet;
@@ -90,7 +90,7 @@ namespace PIP::packet
 			return;;
 		}
 
-		auto room = server::Server::Instance()->GetRoom(session->_room_id);
+		auto room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 		if (room)
 		{
 			// 2. 실제 좌표 수정 및 Jolt 물리 검증 로직을 '방의 잡 큐'로 던짐
@@ -253,7 +253,7 @@ namespace PIP::packet
 
 	}
 
-	void Handle_C2S_ATTACK(std::shared_ptr<PIP::server::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_ATTACK(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_ATTACK attack_packet;
 		try
@@ -269,12 +269,12 @@ namespace PIP::packet
 
 		// 1. 세션과 방의 유효성 검사
 		
-		server::Room* room = server::Server::Instance()->GetRoom(session->_room_id);
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 		if (!room)
 		{
 			room->PushJob([&]()
 				{
-					if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1)
+					if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1)
 						return;
 					// 2. 실제 공격 처리는 Room 객체에 위임
 					room->HandleAttack(session);
@@ -282,14 +282,14 @@ namespace PIP::packet
 		}
 	}
 
-	void Handle_C2S_ENTER_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
+	void Handle_C2S_ENTER_ROOM(std::shared_ptr<SERVER::SESSION> session, packet::PacketStream& stream)
 	{
 
 		packet::CS_PACKET_ENTER_ROOM enter_packet;
 		stream >> enter_packet; // 여기서 가고 싶은 room_id를 읽음
 
 		// [중요] session->_room_id가 아니라, 패킷에 담긴 ID로 방을 직접 찾습니다!
-		server::Room* target_room = server::Server::Instance()->GetRoom(enter_packet._room_id);
+		SERVER::Room* target_room = SERVER::Server::Instance()->GetRoom(enter_packet._room_id);
 
 		if (target_room == nullptr) {
 			MYERROR("Target room " << enter_packet._room_id << " not found!");
@@ -321,7 +321,7 @@ namespace PIP::packet
 				}
 				if (session->_room_id != -1)
 				{
-					server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
+					SERVER::Room* old_room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 					if (old_room)
 					{
 						packet::SC_PACKET_LEAVE leave_packet;
@@ -337,7 +337,7 @@ namespace PIP::packet
 
 				// 2. 세션에 방 번호 부여
 				session->_room_id = enter_packet._room_id;
-				session->_state = server::SESSION_STATE::ST_INGAME;
+				session->_state = SERVER::SESSION_STATE::ST_INGAME;
 				session->_logic_thread_idx = target_room->GetLogicThreadIndex();
 				common::Vec3 spawnPos{ 10, 10, 10 };
 				session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
@@ -424,7 +424,7 @@ namespace PIP::packet
 		//room->EnterPlayer(session);
 	}
 
-	void Handle_C2S_ROOM_LIST(std::shared_ptr<server::SESSION> session, PacketStream& stream)
+	void Handle_C2S_ROOM_LIST(std::shared_ptr<SERVER::SESSION> session, PacketStream& stream)
 	{
 		packet::CS_PACKET_ROOM_LIST recv_packet;
 		try
@@ -440,7 +440,7 @@ namespace PIP::packet
 		std::vector<RoomInfo> room_infos;
 		for (int i = 0; i < 100; ++i)
 		{
-			server::Room* room = server::Server::Instance()->GetRoom(i);
+			SERVER::Room* room = SERVER::Server::Instance()->GetRoom(i);
 			if (room)
 			{
 				RoomInfo info;
@@ -463,7 +463,7 @@ namespace PIP::packet
 		MYLOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);
 	}
 
-	void Handle_C2S_CHAT_IN_ROOM(std::shared_ptr<server::SESSION> session, packet::PacketStream& stream)
+	void Handle_C2S_CHAT_IN_ROOM(std::shared_ptr<SERVER::SESSION> session, packet::PacketStream& stream)
 	{
 		// 1. 채팅 메시지 읽기
 		// PacketStream의 >> 연산자는 먼저 길이를 읽고, 그 길이만큼 문자열을 읽어옵니다.
@@ -488,14 +488,14 @@ namespace PIP::packet
 		}
 
 		// 2. 세션이 방에 있는지 확인
-		if (session->_state != server::SESSION_STATE::ST_INGAME || session->_room_id == -1)
+		if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1)
 		{
 			MYLOG("[CHAT] Session " << session->_id << " sent chat message from outside a room.");
 			return;
 		}
 
 		// 3. 방 객체 가져오기
-		server::Room* room = server::Server::Instance()->GetRoom(session->_room_id);
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 		if (room == nullptr) return;
 
 		// 4. 방에 있는 모든 사람에게 채팅 메시지 브로드캐스팅

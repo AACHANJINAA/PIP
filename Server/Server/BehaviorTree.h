@@ -1,10 +1,10 @@
 ﻿#pragma once
-namespace PIP
+namespace PIP::GAME
 {
 	class GameObject;
 }
 
-namespace PIP
+namespace PIP::GAME
 {
     // --- 1. Blackboard (데이터 공유) ---
     class Blackboard {

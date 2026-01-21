@@ -6,7 +6,7 @@
 #include "MapDataManager.h"
 #include "PacketManager.h"
 
-namespace PIP::server
+namespace PIP::SERVER
 {
 	using packet::PacketType;
 	std::string PacketTypeToString(PacketType type)
