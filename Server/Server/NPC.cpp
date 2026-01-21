@@ -21,7 +21,7 @@ namespace PIP::GAME
 
         // 3. PhysicsComponent 추가
         // (실제 Jolt 바디 생성인 CreateBody는 Room에서 물리 시스템을 인자로 주어 호출해야 합니다)
-        AddComponent<PhysicsComponent>();
+        AddComponent<CharacterControllerComponent>();
 
         // 4. AIComponent 추가 및 기존 Lua 스크립트 설정
         auto ai = AddComponent<AIComponent>();
