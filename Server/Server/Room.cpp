@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Room.h"
 #include "LuaManager.h"
 #include "MapDataManager.h"
@@ -10,7 +10,7 @@
 
 namespace PIP::SERVER
 {
-	constexpr int MAX_ROOM_PLAYERS = 4; // 최대 플레이어 수
+	constexpr int MAX_ROOM_PLAYERS = 4;
 
 	std::random_device Room::_rd {};
 	std::mt19937 Room::_gen{ _rd() };
@@ -25,7 +25,8 @@ namespace PIP::SERVER
 	{
 		PhysicsInitialize();
 
-		// [DEBUG] NPC 개수 100마리
+		_gridMap.Initialize(-1000, 1000, -1000, 1000, 50);
+
 		for (int i = 0; i < 100; ++i)
 		{
 			int npcId = _next_npc_id++;
@@ -33,22 +34,17 @@ namespace PIP::SERVER
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
 			};
 			
-			// 지형 높이 보정 + 5.0f (안전하게 공중 스폰)
 			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
 			randomPos.y += 5.0f;
 
 			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, randomPos, 100);
 
-			// 캐릭터 컨트롤러 초기화
 			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
 			if (controller)
 			{
 				controller->Initialize(_physicsSystem, 1.8f, 0.5f);
 			}
 
-			// [핵심 수정] 초기 업데이트 시간을 랜덤하게 분산 (Staggering)
-			// 0.0 ~ 0.2초 사이의 랜덤한 시간만큼 '과거'로 설정하여, 
-			// UpdateLogics 루프에서 각자 다른 타이밍에 0.2초 경과 조건을 만족하게 함.
 			float randomOffset = (rand() % 200) / 1000.0f; 
 			auto scatteredTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
 			npc->SetLastUpdateTime(scatteredTime);
@@ -60,13 +56,14 @@ namespace PIP::SERVER
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
 		bool wasEmpty = _players.empty(); 
-
+		if (new_player->_player) {
+			_gridMap.Add(new_player->_player.get());
+		}
 		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
 		if (wasEmpty) {
 			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
 			for (auto& [id, npc] : _npcs) {
-				// 플레이어가 들어와서 깨울 때도 랜덤하게 흩뿌려줌
 				float randomOffset = (rand() % 200) / 1000.0f; 
 				auto scatteredTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
 				npc->SetLastUpdateTime(scatteredTime);
@@ -85,6 +82,7 @@ namespace PIP::SERVER
 
 	void Room::AddNPC(std::unique_ptr<GAME::NPC> npc)
 	{
+		_gridMap.Add(npc.get());
 		_npcs.emplace(npc->GetNpcId(), std::move(npc));
 	}
 
@@ -136,15 +134,16 @@ namespace PIP::SERVER
 
 		for (auto& [id, npc] : _npcs)
 		{
-			// 1. 하트비트 체크 (랜덤 분산된 LastUpdateTime 덕분에 부하가 분산됨)
 			std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
 			if (elapsed.count() >= HEARTBEAT_INTERVAL)
 			{
+				auto old_pos = npc->GetPosition();
 				npc->Update(elapsed.count(), tempAllocator);
 				npc->SetLastUpdateTime(now);
+				auto new_pos = npc->GetPosition();
+				_gridMap.UpdatePosition(npc.get(), old_pos, new_pos);
 			}
 
-			// 3. 회전 처리
 			common::Vec3 vel = npc->GetVelocity();
 			if (vel.x * vel.x + vel.z * vel.z > 0.001f) {
 				float angle = std::atan2(vel.x, vel.z);
@@ -204,18 +203,28 @@ namespace PIP::SERVER
 
 	void Room::BroadcastNpcBatch()
 	{
-		if (_npcs.empty()) return;
+		if (_npcs.empty() || _players.empty()) return;
 
+		// 1. 이번 프레임에 움직인 NPC들만 미리 추려냄
+		std::vector<GAME::NPC*> dirtyNPCs;
+		for (auto& [id, npc] : _npcs)
+		{
+			if (npc->IsDirty()) {
+				dirtyNPCs.push_back(npc.get());
+			}
+		}
+
+		if (dirtyNPCs.empty()) return;
+
+		// 2. 전체 브로드캐스트 패킷 생성 (AOI 일시 비활성화)
 		packet::PacketStream stream;
 		packet::SC_PACKET_NPC_MOVE_BATCH header;
 		header._type = packet::PacketType::S2C_NPC_MOVE_BATCH;
 		header._count = 0;
-		header._size = 0;
-
 		stream << header;
 
 		int count = 0;
-		for (auto& [id, npc] : _npcs)
+		for (auto* npc : dirtyNPCs)
 		{
 			packet::NPCMoveData data;
 			data._npc_id = npc->GetNpcId();
@@ -226,13 +235,15 @@ namespace PIP::SERVER
 			data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 			stream << data;
-			
 			count++;
+
 			if (stream.Size() > 3800)
 			{
 				auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
 				h->_count = count;
 				h->_size = static_cast<uint16_t>(stream.Size());
+				
+				// 방 안의 모든 플레이어에게 전송
 				Broadcast(stream.constable_data(), stream.Size());
 
 				stream.Clear();
@@ -240,15 +251,23 @@ namespace PIP::SERVER
 				count = 0;
 			}
 		}
-		if (count > 0) {
-			auto* h = reinterpret_cast<common::packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
+
+		// 남은 데이터 전송
+		if (count > 0)
+		{
+			auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
 			h->_count = count;
 			h->_size = static_cast<uint16_t>(stream.Size());
 			Broadcast(stream.constable_data(), stream.Size());
 		}
+
+		// 3. 상태 초기화
+		for (auto* npc : dirtyNPCs)
+		{
+			npc->SyncSentData();
+		}
 	}
 
-	// ... (나머지 동일) ...
 	void Room::SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player) {
 		for (auto& pair : _players)
 		{
@@ -285,8 +304,8 @@ namespace PIP::SERVER
 	void Room::HandleAttack(std::shared_ptr<SESSION> attacker) {
 		if (attacker == nullptr) return;
 
-		BoundingSphere attackerSphere{ attacker->_player._position, 5.0f };
-		const int32_t damage = attacker->_player._damage;
+		BoundingSphere attackerSphere{ attacker->_player->GetPosition(), 5.0f };
+		const int32_t damage = attacker->_player->_damage;
 
 		std::vector<packet::NPCHitInfo> npc_hits;
 		std::vector<packet::PlayerHitInfo> player_hits;
@@ -308,12 +327,12 @@ namespace PIP::SERVER
 		{
 			if (player_session && player_id != attacker->_id)
 			{
-				BoundingSphere targetSphere{ player_session->_player._position, 2.0f };
+				BoundingSphere targetSphere{ player_session->_player->GetPosition(), 2.0f };
 				if (attackerSphere.Intersects(targetSphere))
 				{
-					int32_t new_hp = player_session->_player._hp - damage;
+					int32_t new_hp = player_session->_player->_hp - damage;
 					if (new_hp < 0) new_hp = 0;
-					player_session->_player._hp = new_hp;
+					player_session->_player->_hp = new_hp;
 
 					player_hits.emplace_back(player_id, damage, new_hp);
 				}
@@ -374,8 +393,8 @@ namespace PIP::SERVER
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->_player._position;
-			correction_packet._rotation = session->_player._rotation;
+			correction_packet._position = session->_player->GetPosition();
+			correction_packet._rotation = session->_player->GetRotation();
 			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
@@ -391,17 +410,19 @@ namespace PIP::SERVER
 			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 			correction_packet._size = sizeof(correction_packet);
 			correction_packet._id = session->_id;
-			correction_packet._position = session->_player._position; 
-			correction_packet._rotation = session->_player._rotation;
+			correction_packet._position = session->_player->GetPosition(); 
+			correction_packet._rotation = session->_player->GetRotation();
 			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
 
 			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 		}
 		else
 		{
-			session->_player._position = targetPos;
-			session->_player._rotation = targetRotation;
-			session->_player._state = targetState;
+			common::Vec3 oldPos = session->_player->GetPosition();
+
+			session->_player->SetPosition(targetPos);
+			session->_player->SetRotation(targetRotation);
+			session->_player->_state = targetState;
 
 			packet::SC_PACKET_MOVE sync_packet;
 			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
@@ -411,6 +432,8 @@ namespace PIP::SERVER
 			sync_packet._rotation = targetRotation;
 			sync_packet._state = targetState;
 
+			_gridMap.UpdatePosition(session->_player.get(), oldPos, targetPos);
+			
 			Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
 		}
 	}
@@ -435,10 +458,10 @@ namespace PIP::SERVER
 		session->_state = SERVER::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = GetLogicThreadIndex();
 		common::Vec3 spawnPos{ 0, 10, 10 };
-		session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
-		session->_player._level = 1;
-		session->_player._hp = 100;
-		session->_player._exp = 0;
+		session->_player->SetPosition(MapDataManager::Instance()->AdjustPositionToGround(spawnPos));
+		session->_player->_level = 1;
+		session->_player->_hp = 100;
+		session->_player->_exp = 0;
 
 
 		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 0, -150)");
