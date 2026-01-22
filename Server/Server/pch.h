@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <variant>
 #include <typeindex>
+#include <unordered_set>
 
 //LUA 헤더
 extern "C" {

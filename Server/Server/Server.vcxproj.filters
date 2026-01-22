@@ -54,6 +54,15 @@
     <Filter Include="소스 파일\Manager\PhysicsManager">
       <UniqueIdentifier>{06024f05-3f6f-49c1-b06c-0095a95aa96f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\GridMap">
+      <UniqueIdentifier>{0881f11b-5a65-4180-b36b-626c837c0c9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Game\BehaviorTree">
+      <UniqueIdentifier>{268c42dd-2d2e-4c90-92c9-0106a4eabbc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Game\BT_Nodes">
+      <UniqueIdentifier>{9099eaaf-bcde-4ac3-b551-b29a281945cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -105,7 +114,16 @@
       <Filter>소스 파일\Manager\PhysicsManager</Filter>
     </ClCompile>
     <ClCompile Include="BehaviorTree.cpp">
-      <Filter>소스 파일\Utils</Filter>
+      <Filter>소스 파일\Game\BehaviorTree</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterControllerComponent.cpp">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="BT_Nodes.cpp">
+      <Filter>소스 파일\Game\BT_Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="GridMap.cpp">
+      <Filter>소스 파일\Game\GridMap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -179,7 +197,16 @@
       <Filter>소스 파일\Manager\PhysicsManager</Filter>
     </ClInclude>
     <ClInclude Include="BehaviorTree.h">
-      <Filter>소스 파일\Utils</Filter>
+      <Filter>소스 파일\Game\BehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterControllerComponent.h">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_Nodes.h">
+      <Filter>소스 파일\Game\BT_Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="GridMap.h">
+      <Filter>소스 파일\Game\GridMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

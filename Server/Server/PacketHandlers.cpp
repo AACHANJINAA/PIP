@@ -20,18 +20,18 @@ namespace PIP::packet
 		spawn_packet_data._size = 0; // 임시 크기 (나중에 다시 계산)
 
 		spawn_packet_data._id = session->_id;
-		spawn_packet_data._position = session->_player._position;
-		spawn_packet_data._rotation = session->_player._rotation;
-		spawn_packet_data._hp = session->_player._hp;
-		spawn_packet_data._level = session->_player._level;
-		spawn_packet_data._exp = session->_player._exp;
-		spawn_packet_data._state = session->_player._state;
+		spawn_packet_data._position = session->_player->GetPosition();
+		spawn_packet_data._rotation = session->_player->GetRotation();
+		spawn_packet_data._hp = session->_player->_hp;
+		spawn_packet_data._level = session->_player->_level;
+		spawn_packet_data._exp = session->_player->_exp;
+		spawn_packet_data._state = session->_player->_state;
 
 		packet::PacketStream finalStream;
 		// [수정] 구조체 자체를 스트림에 씁니다.
 		finalStream << spawn_packet_data;
 		// [추가] 이름(가변 길이)을 스트림에 씁니다.
-		finalStream << session->_player._name;
+		finalStream << session->_player->_name;
 
 		// [수정] 최종 크기를 계산하여 패킷 헤더에 덮어씁니다.
 		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
@@ -57,9 +57,9 @@ namespace PIP::packet
 			return;
 		}
 		// 2. 세션 객체에 이름을 저장합니다.
-		session->_player._name = player_name;
+		session->_player->_name = player_name;
 		
-		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player._name << "'.");
+		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player->_name << "'.");
 
 		// 아바타 정보 전송 로직 제거
 
@@ -122,7 +122,7 @@ namespace PIP::packet
 		//common::Vec3 targetPos = move_packet._position;
 		//common::Vec4 targetRotation = move_packet._rotation;
 		//common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
-		//session->_player._state = move_packet._state;
+		//session->_player->_state = move_packet._state;
 
 		//// 1. 맵 범위 체크 (heightmap 범위 밖으로 나가지 못하게)
 		//float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
@@ -142,10 +142,10 @@ namespace PIP::packet
 		//	correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
 		//	correction_packet._size = sizeof(correction_packet);
 		//	correction_packet._id = session->_id;
-		//	correction_packet._position = session->_player._position; // 서버가 알고 있는 마지막 유효 위치
+		//	correction_packet._position = session->_player->_position; // 서버가 알고 있는 마지막 유효 위치
 		//	correction_packet._rotation = targetRotation;
-		//	correction_packet._state = session->_player._state;
-		//	session->_player._rotation = targetRotation; // 회전은 일단 갱신
+		//	correction_packet._state = session->_player->_state;
+		//	session->_player->_rotation = targetRotation; // 회전은 일단 갱신
 
 		//	room->Broadcast(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 		//	return;
@@ -158,7 +158,7 @@ namespace PIP::packet
 		//if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
 		//{
 		//	// 충돌 발생! 안전한 위치 찾기
-		//	common::Vec3 safe_pos = session->_player._position;
+		//	common::Vec3 safe_pos = session->_player->_position;
 
 		//	// 3-1. 이전 위치가 안전한지 체크
 		//	if (!MapDataManager::Instance()->CheckForCollision(safe_pos, player_extents))
@@ -224,11 +224,11 @@ namespace PIP::packet
 		//	correction_packet._id = session->_id;
 		//	correction_packet._position = safe_pos;
 		//	correction_packet._rotation = targetRotation;
-		//	correction_packet._state = session->_player._state;
+		//	correction_packet._state = session->_player->_state;
 
 		//	// 서버의 플레이어 위치도 안전한 위치로 갱신
-		//	session->_player._position = safe_pos;
-		//	session->_player._rotation = targetRotation;
+		//	session->_player->_position = safe_pos;
+		//	session->_player->_rotation = targetRotation;
 
 		//	room->Broadcast(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
 
@@ -236,8 +236,8 @@ namespace PIP::packet
 		//else
 		//{
 		//	// 4. 유효한 이동: 서버에 위치를 갱신하고 브로드캐스팅
-		//	session->_player._position = targetPos;
-		//	session->_player._rotation = targetRotation;
+		//	session->_player->_position = targetPos;
+		//	session->_player->_rotation = targetRotation;
 
 		//	packet::SC_PACKET_MOVE sync_packet;
 		//	sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
@@ -245,7 +245,7 @@ namespace PIP::packet
 		//	sync_packet._id = session->_id;
 		//	sync_packet._position = targetPos;
 		//	sync_packet._rotation = targetRotation;
-		//	sync_packet._state = session->_player._state;
+		//	sync_packet._state = session->_player->_state;
 
 		//	room->Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), sync_packet._id);
 		//}
@@ -340,10 +340,10 @@ namespace PIP::packet
 				session->_state = SERVER::SESSION_STATE::ST_INGAME;
 				session->_logic_thread_idx = target_room->GetLogicThreadIndex();
 				common::Vec3 spawnPos{ 10, 10, 10 };
-				session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
-				session->_player._level = 1;
-				session->_player._hp = 100;
-				session->_player._exp = 0;
+				session->_player->SetPosition(MapDataManager::Instance()->AdjustPositionToGround(spawnPos));
+				session->_player->_level = 1;
+				session->_player->_hp = 100;
+				session->_player->_exp = 0;
 				// 3. 방의 플레이어 목록에 추가
 				target_room->EnterPlayer(session);
 
@@ -395,10 +395,11 @@ namespace PIP::packet
 		//session->_state = server::SESSION_STATE::ST_INGAME;
 		//session->_logic_thread_idx = room->GetLogicThreadIndex();
 		//common::Vec3 spawnPos{ 0, 10, 10 };
-		//session->_player._position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
-		//session->_player._level = 1;
-		//session->_player._hp = 100;
-		//session->_player._exp = 0;
+		//
+		// _position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
+		//session->_player->_level = 1;
+		//session->_player->_hp = 100;
+		//session->_player->_exp = 0;
 
 
 		//MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 0, -150)");

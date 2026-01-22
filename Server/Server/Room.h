@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "GridMap.h"
 #include "JoltSetup.h"
 #include "Server.h"
 #include "NPC.h"
@@ -62,11 +63,13 @@ namespace PIP::SERVER
 		void SendNpcMovePacket(GAME::NPC* npc);
 
 	private:
-		int _room_id;
-		int _logic_thread_idx;
-		uint8_t _max_players;
-		RoomState _room_state;
-		float _npcSyncTimer = 0.0f;
+		int								_room_id;
+		int								_logic_thread_idx;
+		uint8_t							_max_players;
+		RoomState						_room_state;
+		float							_npcSyncTimer = 0.0f;
+
+		GAME::GridMap 					_gridMap;
 
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
 		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;

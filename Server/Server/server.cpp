@@ -66,11 +66,11 @@ namespace PIP::SERVER
 		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }
 	{
 		_state = SESSION_STATE::ST_LOBBY;
-		_player = Player(session_id);
+		_player = std::make_shared<GAME::Player>(session_id);
 	}
 	SESSION::~SESSION()
 	{
-		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player._name);
+		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player->_name);
 		// TODO: Logic_Worker 에서 세션 종료 패킷을 보내는 로직 추가 필요
 		closesocket(_c_socket);
 	}

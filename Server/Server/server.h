@@ -59,7 +59,7 @@ namespace PIP::SERVER
 		std::vector<char>					_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
 
 		std::atomic<SESSION_STATE>			_state;
-		Player								_player;
+		std::shared_ptr<GAME::Player>		_player;
 	public:
 		SESSION();
 		SESSION(long long session_id, SOCKET s, int logic_index);
