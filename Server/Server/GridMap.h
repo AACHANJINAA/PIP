@@ -18,7 +18,7 @@ namespace PIP::GAME
 
 		// 객체가 이동했을 때 셀 갱신
 		// return: 셀이 변경되었으면 true (AOI 패킷 전송 트리거용)
-		bool UpdatePosition(GameObject* obj, common::Vec3 oldPos, common::Vec3 newPos);
+		bool UpdatePosition(GameObject* obj, common::Vec3 newPos);
 
 		// 주변 객체 찾기 (플레이어 시야 처리용)
 		// typeFilter: 특정 타입(NPC, Player 등)만 골라낼 때 사용 (0이면 전체)
@@ -36,5 +36,8 @@ namespace PIP::GAME
 
 		// 각 셀마다 객체 포인터들을 저장
 		std::vector<std::unordered_set<GameObject*>> _cells;
+
+		// [추가] 객체가 현재 어느 셀 인덱스에 있는지 추적하는 맵
+		std::unordered_map<GameObject*, int> _objectCellIndex;
 	};
 }

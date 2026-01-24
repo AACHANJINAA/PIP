@@ -487,6 +487,18 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	std::string npc_name;
 	stream >> npc_name;
 
+	// [수정] 이미 존재하는지 확인 (AOI 재진입 대응)
+	auto existingNPC = ObjectManager::instance()->find_npc(npc_spawn_packet._npc_id);
+	if (existingNPC)
+	{
+		// 존재하면 위치만 강제 동기화
+		auto script = existingNPC->get_component<NPCScript>();
+		if (script) {
+			script->initialize_from_server(npc_spawn_packet._position);
+		}
+		return;
+	}
+
 	if (npc_spawn_packet._npc_type == 1)
 	{
 		//CLOG("[SPAWN_NPC]");
@@ -590,6 +602,21 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& str
 	}
 }
 
+void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_NPC_DESPAWN packet;
+	stream >> packet;
+
+	// NPC 찾아서 삭제
+	auto npc = ObjectManager::instance()->find_npc(packet._npc_id);
+	if (npc)
+	{
+		ObjectManager::instance()->unregister_npc(packet._npc_id);
+		npc->destroy();
+		// CLOG("[S->C] NPC Despawned (AOI): " << packet._npc_id);
+	}
+}
+
 bool NetworkManager::init_network()
 {
 	// 이동 응답 패킷 핸들러 등록
@@ -631,6 +658,9 @@ bool NetworkManager::init_network()
 	// NPC 이동 Batch 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE_BATCH,
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_NPC_DESPAWN, 
+		std::bind(&NetworkManager::HANDLE_S2C_DESPAWN_NPC, this, std::placeholders::_1));
 
 
 	WSADATA wsaData;

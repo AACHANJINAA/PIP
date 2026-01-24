@@ -13,17 +13,18 @@ public:
 	void set_hp(int hp);
 	int  get_hp() { return _hp; }
 	void set_position(const XMFLOAT3& position);
+	void set_state(const common::packet::OBJECT_STATE& object_state) { _state = object_state; }
 
 	int64_t id() const { return _id; }
 	int hp() const { return _hp; }
 	const XMFLOAT3& position() const;
 
 	void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
-	void set_state(const common::packet::OBJECT_STATE& object_state) { _state = object_state; }
-
+	void initialize_from_server(const XMFLOAT3& pos);
 private:
-	int		_hp = 0;
-	int64_t _id = 0;
+	int		_hp = 100;
+	int64_t _id = -1;
+	common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 
 	// --- 동기화 변수 ---
 	XMFLOAT3 _serverPos = { 0, 0, 0 };      // 서버 기준 위치
@@ -32,5 +33,4 @@ private:
 	
 	float _accumulatedTime = 0.0f;          // 패킷 수신 후 경과 시간
 	bool _isFirstUpdate = true;             // 첫 패킷인지 여부
-	common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 };

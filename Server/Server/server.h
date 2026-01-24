@@ -60,6 +60,8 @@ namespace PIP::SERVER
 
 		std::atomic<SESSION_STATE>			_state;
 		std::shared_ptr<GAME::Player>		_player;
+
+		std::unordered_set<int>				_viewedNpcs;
 	public:
 		SESSION();
 		SESSION(long long session_id, SOCKET s, int logic_index);

@@ -11,7 +11,7 @@ namespace PIP::GAME
         _minZ = minZ; _maxZ = maxZ;
         _cellSize = cellSize;
 
-        if (_cellSize <= 0) _cellSize = 50; // 안전장치
+        if (_cellSize <= 0) _cellSize = 50;
 
         float width = maxX - minX;
         float height = maxZ - minZ;
@@ -21,8 +21,9 @@ namespace PIP::GAME
 
         _cells.clear();
         _cells.resize(_cols * _rows);
+        _objectCellIndex.clear(); // 맵 초기화
 
-        MYLOG("[GridMap] Initialized: " << _cols << "x" << _rows << " cells (Size: " << _cellSize << ")");
+        MYLOG("[GridMap] Initialized: " << _cols << "x" << _rows << " cells");
     }
 
     int GridMap::GetIndex(common::Vec3 pos) const
@@ -56,23 +57,43 @@ namespace PIP::GAME
     void GridMap::Remove(GameObject* obj)
     {
         if (!obj) return;
+
+        // 이미 있으면 무시하거나 업데이트
+        if (_objectCellIndex.contains(obj)) {
+            Remove(obj);
+        }
+
         auto tc = obj->GetComponent<TransformComponent>();
         if (!tc) return;
 
         int idx = GetIndex(tc->GetPosition());
-        _cells[idx].erase(obj);
+        _cells[idx].insert(obj);
+        _objectCellIndex[obj] = idx; // 기록
     }
 
-    bool GridMap::UpdatePosition(GameObject* obj, common::Vec3 oldPos, common::Vec3 newPos)
+    bool GridMap::UpdatePosition(GameObject* obj, common::Vec3 newPos)
     {
-        int oldIdx = GetIndex(oldPos);
+        if (!obj) return false;
+
         int newIdx = GetIndex(newPos);
 
-        if (oldIdx == newIdx) return false; // 같은 셀 내에서의 이동
+        // 현재 어느 셀에 있는지 조회
+        int oldIdx = -1;
+        auto it = _objectCellIndex.find(obj);
+        if (it != _objectCellIndex.end()) {
+            oldIdx = it->second;
+        }
 
-        _cells[oldIdx].erase(obj);
+        // 셀이 안 바뀌었으면 패스
+        if (oldIdx == newIdx) return false;
+
+        // 바뀌었으면 이동 (Remove -> Add 최적화)
+        if (oldIdx != -1) _cells[oldIdx].erase(obj);
+
         _cells[newIdx].insert(obj);
-        return true; // 셀 변경됨 (AOI 갱신 필요)
+        _objectCellIndex[obj] = newIdx; // 갱신
+
+        return true; // AOI 갱신 필요함 알림
     }
 
     void GridMap::GetNearbyObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter) const

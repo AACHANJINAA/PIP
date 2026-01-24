@@ -25,7 +25,7 @@ namespace PIP::SERVER
 	{
 		PhysicsInitialize();
 
-		_gridMap.Initialize(-1000, 1000, -1000, 1000, 50);
+		_gridMap.Initialize(-1000, 1000, -1000, 1000, 100);
 
 		for (int i = 0; i < 100; ++i)
 		{
@@ -121,13 +121,54 @@ namespace PIP::SERVER
 		
 		if (_players.empty()) return;
 
+		// --- 1. AOI 시야 갱신 (Enter/Leave) ---
+		for (auto& [pid, session] : _players)
+		{
+			if (!session || !session->_player) continue;
+
+			// 내 주변 객체들 찾기 (GridMap)
+			std::vector<GAME::GameObject*> nearbyObjects;
+			_gridMap.GetNearbyObjects(session->_player->GetPosition(), nearbyObjects);
+
+			std::unordered_set<int> currentNearbyIds;
+
+			// 1-1. 시야에 들어온 NPC 처리 (Enter)
+			for (auto* obj : nearbyObjects)
+			{
+				if (auto npc = dynamic_cast<GAME::NPC*>(obj))
+				{
+					int npcId = npc->GetNpcId();
+					currentNearbyIds.insert(npcId);
+
+					// 새로 발견된 NPC라면?
+					if (!session->_viewedNpcs.contains(npcId))
+					{
+						session->_viewedNpcs.insert(npcId);
+						SendNpcSpawnToPlayer(session, npc);
+					}
+				}
+			}
+
+			// 1-2. 시야에서 사라진 NPC 처리 (Leave)
+			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); )
+			{
+				if (!currentNearbyIds.contains(*it))
+				{
+					// 더 이상 주변에 없으므로 삭제 패킷 전송
+					SendNpcLeaveToPlayer(session, *it);
+					it = session->_viewedNpcs.erase(it);
+				}
+				else
+				{
+					++it;
+				}
+			}
+		}
+
+		// --- 2. NPC AI 및 물리 업데이트 ---
 		_npcSyncTimer += deltaTime;
 		bool shouldSync = false;
-		if (_npcSyncTimer >= 0.05f) 
-		{
-			shouldSync = true;
-			_npcSyncTimer = 0.0f;
-		}
+		if (_npcSyncTimer >= 0.05f) { shouldSync = true; _npcSyncTimer = 0.0f; }
 
 		auto now = std::chrono::steady_clock::now();
 		const float HEARTBEAT_INTERVAL = 0.2f;
@@ -137,13 +178,13 @@ namespace PIP::SERVER
 			std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
 			if (elapsed.count() >= HEARTBEAT_INTERVAL)
 			{
-				auto old_pos = npc->GetPosition();
 				npc->Update(elapsed.count(), tempAllocator);
 				npc->SetLastUpdateTime(now);
 				auto new_pos = npc->GetPosition();
-				_gridMap.UpdatePosition(npc.get(), old_pos, new_pos);
+				
 			}
-
+			_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
+			// 회전 처리
 			common::Vec3 vel = npc->GetVelocity();
 			if (vel.x * vel.x + vel.z * vel.z > 0.001f) {
 				float angle = std::atan2(vel.x, vel.z);
@@ -205,103 +246,106 @@ namespace PIP::SERVER
 	{
 		if (_npcs.empty() || _players.empty()) return;
 
-		// 1. 이번 프레임에 움직인 NPC들만 미리 추려냄
+		// 1. 움직인 NPC 수집
 		std::vector<GAME::NPC*> dirtyNPCs;
-		for (auto& [id, npc] : _npcs)
-		{
-			if (npc->IsDirty()) {
-				dirtyNPCs.push_back(npc.get());
-			}
+		for (auto& [id, npc] : _npcs) {
+			if (npc->IsDirty()) dirtyNPCs.push_back(npc.get());
 		}
-
 		if (dirtyNPCs.empty()) return;
 
-		// 2. 전체 브로드캐스트 패킷 생성 (AOI 일시 비활성화)
-		packet::PacketStream stream;
-		packet::SC_PACKET_NPC_MOVE_BATCH header;
-		header._type = packet::PacketType::S2C_NPC_MOVE_BATCH;
-		header._count = 0;
-		stream << header;
-
-		int count = 0;
-		for (auto* npc : dirtyNPCs)
+		// 2. 플레이어별 전송
+		for (auto& [pid, session] : _players)
 		{
-			packet::NPCMoveData data;
-			data._npc_id = npc->GetNpcId();
-			data._position = npc->GetPosition();
-			data._velocity = npc->GetVelocity();
-			data._rotation = npc->GetRotation();
-			data._state = common::packet::OBJECT_STATE::WALK;
-			data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+			if (!session || !session->_player) continue;
 
-			stream << data;
-			count++;
+			packet::PacketStream stream;
+			packet::SC_PACKET_NPC_MOVE_BATCH header;
+			header._type = packet::PacketType::S2C_NPC_MOVE_BATCH;
+			header._count = 0;
+			stream << header;
 
-			if (stream.Size() > 3800)
+			int count = 0;
+			for (auto* npc : dirtyNPCs)
 			{
+				// [핵심] 시야 리스트(View List)에 있는 놈만 보낸다!
+				if (!session->_viewedNpcs.contains(npc->GetNpcId()))
+					continue;
+
+				packet::NPCMoveData data;
+				data._npc_id = npc->GetNpcId();
+				data._position = npc->GetPosition();
+				data._velocity = npc->GetVelocity();
+				data._rotation = npc->GetRotation();
+				data._state = common::packet::OBJECT_STATE::WALK;
+				data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+
+				stream << data;
+				count++;
+
+				if (stream.Size() > 3800) {
+					auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
+					h->_count = count;
+					h->_size = (uint16_t)stream.Size();
+					session->do_send(stream.constable_data(), stream.Size());
+					stream.Clear();
+					stream << header;
+					count = 0;
+				}
+			}
+
+			if (count > 0) {
 				auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
 				h->_count = count;
-				h->_size = static_cast<uint16_t>(stream.Size());
-				
-				// 방 안의 모든 플레이어에게 전송
-				Broadcast(stream.constable_data(), stream.Size());
-
-				stream.Clear();
-				stream << header;
-				count = 0;
+				h->_size = (uint16_t)stream.Size();
+				session->do_send(stream.constable_data(), stream.Size());
 			}
 		}
 
-		// 남은 데이터 전송
-		if (count > 0)
-		{
-			auto* h = reinterpret_cast<packet::SC_PACKET_NPC_MOVE_BATCH*>(stream.mutable_data());
-			h->_count = count;
-			h->_size = static_cast<uint16_t>(stream.Size());
-			Broadcast(stream.constable_data(), stream.Size());
-		}
-
-		// 3. 상태 초기화
-		for (auto* npc : dirtyNPCs)
-		{
-			npc->SyncSentData();
-		}
+		// 3. 클린업
+		for (auto* npc : dirtyNPCs) npc->SyncSentData();
 	}
 
 	void Room::SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player) {
+		// 다른 플레이어 정보만 보냄
 		for (auto& pair : _players)
 		{
 			if (pair.first == new_player->_id) continue;
-
-			auto& other_player_session = pair.second;
-			packet::PacketStream spawn_packet = packet::MakeSpawnPlayerPacket(other_player_session);
+			auto& other_session = pair.second;
+			packet::PacketStream spawn_packet = packet::MakeSpawnPlayerPacket(other_session);
 			new_player->do_send(spawn_packet.constable_data(), spawn_packet.Size());
 		}
 
-		for (auto& val : _npcs | std::views::values)
-		{
-			GAME::NPC* npc = val.get();
-			const std::string& npc_name = npc->GetName();
-
-			packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
-			spawn_packet_data._type = common::packet::PacketType::S2C_NPC_SPAWN;
-			spawn_packet_data._size = 0;
-			spawn_packet_data._hp = npc->GetHP();
-			spawn_packet_data._npc_id = npc->GetNpcId();
-			spawn_packet_data._npc_type = npc->GetNpcType();
-			spawn_packet_data._position = npc->GetPosition();
-
-			packet::PacketStream finalStream;
-			finalStream << spawn_packet_data;
-			finalStream << npc_name;
-
-			auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
-			final_header->_size = static_cast<uint16_t>(finalStream.Size());
-
-			new_player->do_send(finalStream.constable_data(), finalStream.Size());
-		}
 	}
-	void Room::HandleAttack(std::shared_ptr<SESSION> attacker) {
+
+	void Room::SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc)
+	{
+		packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
+		spawn_packet_data._type = common::packet::PacketType::S2C_NPC_SPAWN;
+		spawn_packet_data._size = 0;
+		spawn_packet_data._hp = npc->GetHP();
+		spawn_packet_data._npc_id = npc->GetNpcId();
+		spawn_packet_data._npc_type = npc->GetNpcType();
+		spawn_packet_data._position = npc->GetPosition();
+		const std::string& npc_name = npc->GetName();
+
+		packet::PacketStream finalStream;
+		finalStream << spawn_packet_data;
+		finalStream << npc_name;
+		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
+		final_header->_size = static_cast<uint16_t>(finalStream.Size());
+
+		session->do_send(finalStream.constable_data(), finalStream.Size());
+	}
+	void Room::SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int npcId)
+	{
+		packet::SC_PACKET_NPC_DESPAWN despawn_packet;
+		despawn_packet._type = common::packet::PacketType::S2C_NPC_DESPAWN;
+		despawn_packet._size = sizeof(despawn_packet);
+		despawn_packet._npc_id = npcId;
+		session->do_send(reinterpret_cast<const char*>(&despawn_packet), sizeof(despawn_packet));
+	}
+
+	void Room::HandleAttack(const std::shared_ptr<SESSION>& attacker) {
 		if (attacker == nullptr) return;
 
 		BoundingSphere attackerSphere{ attacker->_player->GetPosition(), 5.0f };
@@ -432,7 +476,7 @@ namespace PIP::SERVER
 			sync_packet._rotation = targetRotation;
 			sync_packet._state = targetState;
 
-			_gridMap.UpdatePosition(session->_player.get(), oldPos, targetPos);
+			_gridMap.UpdatePosition(session->_player.get(), targetPos);
 			
 			Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
 		}
