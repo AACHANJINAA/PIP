@@ -37,11 +37,14 @@ namespace PIP::SERVER
 		void UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator = nullptr);
 
 		void PushJob(std::function<void()> job);
+
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
 		void BroadcastNpcBatch();
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
-		void HandleAttack(std::shared_ptr<SESSION> attacker);
+		void SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc);
+		void SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int npcId);
 
+		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 

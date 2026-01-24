@@ -47,6 +47,20 @@ void NPCScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const
 	}
 }
 
+void NPCScript::initialize_from_server(const XMFLOAT3& pos)
+{
+	_serverPos = pos;
+	_serverVel = { 0, 0, 0 };
+	_serverRot = { 0, 0, 0, 1 };
+	_accumulatedTime = 0.0f;
+
+	if (transform()) {
+		transform()->set_local_position(pos);
+	}
+
+	_isFirstUpdate = false; // 이제 업데이트 가능 상태로 전환
+}
+
 void NPCScript::set_hp(int hp)
 {
 	_hp = hp;
@@ -62,11 +76,16 @@ void NPCScript::update(float deltaTime)
 
 	_accumulatedTime += deltaTime;
 
+	// [최적화] 패킷이 0.5초 이상 안 오면 예측 이동(Dead Reckoning) 중지 (가출 방지)
+	XMVECTOR vServerVel = XMLoadFloat3(&_serverVel);
+	if (_accumulatedTime > 0.3f) {
+		vServerVel = XMVectorZero();
+	}
+
 	// ---------------------------------------------------------
 	// 1. 추측 항법 (Dead Reckoning)
 	// ---------------------------------------------------------
 	XMVECTOR vServerPos = XMLoadFloat3(&_serverPos);
-	XMVECTOR vServerVel = XMLoadFloat3(&_serverVel);
 	XMVECTOR vPredictedPos = vServerPos + (vServerVel * _accumulatedTime);
 
 	// ---------------------------------------------------------
