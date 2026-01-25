@@ -37,7 +37,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 500.0f, 10.0f)); // 20m 높이
     cameraObject->transform()->set_local_rotation(90.0f, 0.0f, 0.0f); // 약간 아래 보기
 
-    load_scene_from_file("Resource/DSMapData/ExportedClientData.json", device, commandList);
+    load_scene_from_file("Resource/MD/ExportedClientData.json", device, commandList);
 
 	// DW설명 : 브루트 소년단 생성 함수 호출
 	//SpawnBTS(device, commandList);
