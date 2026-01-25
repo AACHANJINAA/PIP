@@ -139,7 +139,7 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 
     // 2. ResourceManager
     terrain->load_textures_to_resource_manager(
-        "Resource\\HeightMap\\HeightMap_Material.gltf",
+        "Resource\\HeightMap\\aerial_rocks_04_4k.gltf",
 		"Resource\\HeightMap\\Detail_Texture3.dds"
     );
 
