@@ -140,7 +140,7 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
     // 2. ResourceManager
     terrain->load_textures_to_resource_manager(
         "Resource\\HeightMap\\rocky_terrain\\rocky_terrain_02_4k.gltf",
-		"Resource\\HeightMap\\aerial_rocks.dds"
+		"Resource\\HeightMap\\aerial_rocks\\textures\\aerial_rocks_04_diff_4k.dds"
     );
 
     // 3. GPU
