@@ -49,7 +49,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 	Spawn_UI(device, commandList);
 
-	Spawn_Monster_HP_UI(device, commandList);
+	//Spawn_Monster_HP_UI(device, commandList);
 
 	// DW설명 : 플레이어 오브젝트 생성
     {
