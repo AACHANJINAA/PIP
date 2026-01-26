@@ -28,8 +28,8 @@ namespace PIP::SERVER
 			return "S2C_P_MOVE";
 		case PacketType::C2S_P_MOVE:
 			return "C2S_P_MOVE";
-		case PacketType::C2S_P_ATTACK:
-			return "C2S_P_ATTACK";
+		case PacketType::C2S_P_ACTION:
+			return "C2S_P_ACTION";
 		/*case PacketType::S2C_P_ATTACK:
 			return "S2C_P_ATTACK";*/
 		case PacketType::S2C_P_PLAYER_ATTACK:

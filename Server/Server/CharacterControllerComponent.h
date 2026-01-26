@@ -26,6 +26,8 @@ namespace PIP::GAME
 		void SetPosition(const common::Vec3& position);
 		common::Vec3 GetPosition() const;
 
+		void AddImpulse(const common::Vec3& impulse);
+
 		bool IsGrounded() const;
 	private:
 		float _halfHeight {};

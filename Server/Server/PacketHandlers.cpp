@@ -516,4 +516,25 @@ namespace PIP::packet
 		room->Broadcast(broadcast_stream.constable_data(), broadcast_stream.Size());
 		MYLOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);
 	}
+
+	void Handle_C2S_ACTION(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
+	{
+		packet::CS_PACKET_ACTION action_packet;
+		try {
+			stream >> action_packet;
+		}
+		catch (const std::runtime_error& e) {
+			MYERROR("[Action] Failed to read action packet: " << e.what());
+			return;
+		}
+
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+		if (room) {
+			room->PushJob([session, action_packet, room]() {
+				if (session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
+				// Room 클래스에 새로 만들 함수 호출
+				room->HandleAction(session, action_packet);
+			});
+		}
+	}
 }

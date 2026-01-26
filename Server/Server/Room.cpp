@@ -279,6 +279,29 @@ namespace PIP::SERVER
 		}
 	}
 
+	void Room::BroadcastToNPCViewers(int npc_id, const char* data, size_t size)
+	{
+		for (auto& [pid, session] : _players)
+		{
+			if (!session) continue;
+
+			// 이 세션(유저)이 해당 NPC를 보고 있는가?
+			if (session->_viewedNpcs.contains(npc_id))
+			{
+				session->do_send(data, size);
+			}
+		}
+	}
+
+	void Room::BroadcastToPlayerViewers(long long player_id, const char* data, size_t size)
+	{
+		// 플레이어 AOI는 아직 gridMap 기반으로 완벽하지 않을 수 있으나,
+		// 기본적으로 '같은 방' 혹은 '근처' 개념을 사용해야 함.
+		// 여기서는 간단하게 방 전체 전송 (추후 GridMap 기반으로 고도화 가능)
+		// 혹은 GridMap을 통해 주변 플레이어를 찾아서 전송
+		Broadcast(data, size);
+	}
+
 	void Room::BroadcastNpcBatch()
 	{
 		if (_npcs.empty() || _players.empty()) return;
@@ -567,6 +590,82 @@ namespace PIP::SERVER
 
 		EnterPlayer(session);
 	}
+
+	void Room::HandleAction(const std::shared_ptr<PIP::SERVER::SESSION>& actor,
+	                        const common::packet::CS_PACKET_ACTION& action_packet)
+	{
+		if (!actor || !actor->_player) return;
+
+		// TODO: [Action] 공격 모션 알림 (공격자 중심 AOI)
+		// SC_PACKET_ACTION_NOTIFY(actor_id, action_type, direction) 패킷을 정의하고 
+		// 공격자(actor_id)를 시야에 둔 유저들에게 전송하여 애니메이션을 동기화해야 함.
+
+		if (action_packet._action_type == packet::ActionType::NORMAL_ATTACK)
+		{
+			common::Vec3 attackerPos = actor->_player->GetPosition();
+
+			// 공격 범위 설정 (예: 반경 3m)
+			// action._position을 공격 중심점(타격점)으로 사용
+			BoundingSphere attackSphere{ action_packet._position, 3.0f };
+
+			std::vector<packet::NPCHitInfo> npc_hits;
+
+			// NPC 피격 체크
+			for (auto& [npc_id, npc] : _npcs)
+			{
+				BoundingSphere npcSphere{ npc->GetPosition(), 1.0f };
+
+				if (attackSphere.Intersects(npcSphere))
+				{
+					// [데미지 계산]
+					int32_t damage = actor->_player->_damage;
+					int32_t new_hp = npc->GetHP() - damage;
+					if (new_hp < 0) new_hp = 0;
+					npc->SetHP(new_hp);
+
+					// [물리 넉백]
+					// 공격자 -> NPC 방향으로 밀어냄
+					common::Vec3 npc_pos_vec3 = npc->GetPosition();
+					XMVECTOR npc_pos = XMLoadFloat3(&npc_pos_vec3);
+					XMVECTOR attacker_pos = XMLoadFloat3(&attackerPos);
+					common::Vec3 knockbackDir;
+					XMStoreFloat3(&knockbackDir, npc_pos - attacker_pos);
+					knockbackDir.y = 0.0f; // 위/아래로 뜨는 것 방지 (필요 시 제거)
+					knockbackDir = common::Normalize(knockbackDir);
+
+					float knockbackForce = 15.0f; // 넉백 파워
+					auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
+					if (controller) {
+						common::Vec3 impluse;
+						XMStoreFloat3(&impluse, XMLoadFloat3(&knockbackDir) * knockbackForce);
+						controller->AddImpulse(impluse);
+					}
+
+					npc_hits.emplace_back(npc_id, damage, new_hp);
+				}
+			}
+
+			// 2. [Result] 피격 결과 전송 (AOI 적용)
+			// 각 피격된 NPC 별로 패킷을 따로 만들어서, 그 NPC를 보고 있는 유저들에게만 쏨
+			for (const auto& hit : npc_hits)
+			{
+				packet::PacketStream stream;
+				packet::SC_PACKET_NPC_ATTACK hit_packet;
+				hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
+				hit_packet._attacker_id = actor->_id;
+				hit_packet._hit_count = 1; // 단일 타겟 모드로 보냄 (AOI 최적화 위해)
+
+				stream << hit_packet;
+				stream << hit; // hit info 1개
+
+				auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+				h->_size = static_cast<uint16_t>(stream.Size());
+
+				BroadcastToNPCViewers(hit._target_id, stream.constable_data(), stream.Size());
+			}
+		}
+	}
+
 	void Room::CreatePhysicsTerrain() {
 		const auto& terrainData = MapDataManager::Instance()->GetTerrainData();
 		const auto& info = terrainData.GetInfo();

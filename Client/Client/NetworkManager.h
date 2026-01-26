@@ -22,6 +22,7 @@ public:
     void SendLoginPacket(const std::string& name);
     void SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state);
     void SendAttackPacket(); // 공격 패킷 전송 함수 추가
+    void SendActionPacket(common::packet::ActionType type, int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
 

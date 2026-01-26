@@ -18,27 +18,35 @@ namespace common::packet
 	enum class PacketType : uint16_t {
 		error = 0,
 
+		//------------------------------------------ 로그인 관련 패킷 ------------------------------------------ //
 		C2S_P_LOGIN = 11,
 		S2C_P_LOGIN_ACK = 14,
 		S2C_P_LEAVE = 12,
 		S2C_P_SPAWN_PLAYER = 13,
 
+		//------------------------------------------ 이동 관련 패킷 ------------------------------------------ //
 		S2C_P_MOVE = 91,
 		C2S_P_MOVE = 92,
 
-		C2S_P_ATTACK = 101,
+		//------------------------------------------ Action 관련 패킷 ------------------------------------------ //
+		//C2S_P_ATTACK = 101, // 범용 행동 패킷으로 대체되어 사용되지 않음
+		C2S_P_ACTION = 105, // [신규] 범용 행동 패킷
+
 		// S2C_P_ATTACK = 102, // 다중 공격을 위해 아래 패킷들로 대체되어 사용되지 않음
 		S2C_P_PLAYER_ATTACK = 103, // 플레이어 다중 피격 정보
 		S2C_P_NPC_ATTACK = 104,    // NPC 다중 피격 정보
 
+		//------------------------------------------ 방 관련 패킷 ------------------------------------------ //
 		C2S_P_ENTER_ROOM = 201,
 		S2C_P_ENTER_ROOM_ACK = 202,
 		C2S_P_ROOM_LIST = 203,
 		S2C_P_ROOM_LIST_ACK = 204,
 
+		//------------------------------------------ 채팅 관련 패킷 ------------------------------------------ //
 		C2S_P_CHAT_IN_ROOM = 301, // 클라 -> 서버: 방 내부 채팅 메시지
 		S2C_P_CHAT_IN_ROOM = 302, // 서버 -> 클라: 방 내부 채팅 메시지 전달
 
+		//------------------------------------------ NPC 관련 패킷 ------------------------------------------ //
 		S2C_NPC_SPAWN = 501,
 		S2C_NPC_MOVE = 502,
 		S2C_NPC_DESPAWN = 503,
@@ -46,8 +54,6 @@ namespace common::packet
 		S2C_NPC_MOVE_BATCH = 505,
 	};
 
-
-	constexpr char MAX_ID_LENGTH = 20;
 
 	enum class MOVE_TYPE : uint16_t
 	{
@@ -58,9 +64,6 @@ namespace common::packet
 		MOVE_LEFT = 4,
 	};
 
-	constexpr unsigned short MAP_HEIGHT = 8;
-	constexpr unsigned short MAP_WIDTH = 8;
-
 	enum class AttackDirection : uint8_t
 	{
 		UP,
@@ -69,7 +72,15 @@ namespace common::packet
 		RIGHT
 	};
 
-	
+	// [신규] 행동 종류 열거형
+	enum class ActionType : uint8_t
+	{
+		NONE = 0,
+		NORMAL_ATTACK = 1, // 일반 공격
+		SKILL = 2,         // 스킬 사용
+		INTERACT = 3       // 상호작용 (예: 아이템 줍기)
+	};
+
 #pragma pack (push, 1)
 
 	struct PacketHeader
@@ -108,6 +119,15 @@ namespace common::packet
 		Vec3 _position;
 		common::Quat _rotation;
 		OBJECT_STATE _state;
+	};
+	// [신규] 클라 -> 서버: 범용 행동 패킷
+	struct CS_PACKET_ACTION : PacketHeader
+	{
+		ActionType   _action_type;   // 1: 평타, 2: 스킬...
+		int32_t      _action_id;     // 스킬 인덱스 or 아이템 ID
+		int64_t      _target_id;     // 타겟팅 스킬일 경우 대상 ID (없으면 -1)
+		common::Quat _direction;     // 바라보는 방향
+		Vec3         _position;      // 시전 위치 (클라이언트 기준 발사 위치)
 	};
 
 	//struct CS_PACKET_MOVE : PacketHeader
