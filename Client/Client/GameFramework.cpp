@@ -297,12 +297,24 @@ void GameFramework::ProcessInput()
 
 void GameFramework::WaitForGpuComplete()
 {
-	UINT64 nFenceValue = ++_fenceValues[_swapChainBufferIndex];
-	HRESULT hResult = _commandQueue->Signal(_fence.Get(), nFenceValue);
-	if (_fence->GetCompletedValue() < nFenceValue)
+	// 기존 방식이 전역 펜스 값을 사용하지 않아 전역 펜스값을 사용하도록 수정
+	_currentFenceValue++;
+	UINT64 fenceToWaitFor = _currentFenceValue;
+
+	// 명령 큐에 시그널을 보내기
+	HRESULT hResult = _commandQueue->Signal(_fence.Get(), fenceToWaitFor);
+
+	// 해당 펜스 값에 도달할 때까지 CPU를 대기
+	if (_fence->GetCompletedValue() < fenceToWaitFor)
 	{
-		hResult = _fence->SetEventOnCompletion(nFenceValue, _fenceEvent);
+		hResult = _fence->SetEventOnCompletion(fenceToWaitFor, _fenceEvent);
 		::WaitForSingleObject(_fenceEvent, INFINITE);
+	}
+
+	// 각 버퍼의 마지막 펜스 값도 최신화
+	for (int i = 0; i < SWAP_CHAIN_BUFFERS; ++i)
+	{
+		_fenceValues[i] = fenceToWaitFor;
 	}
 }
 
@@ -318,6 +330,9 @@ void GameFramework::MoveToNextFrame()
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
 	const UINT64 fenceValueToWaitFor = _fenceValues[_swapChainBufferIndex];
+
+	// DW주석 : 이거 풀면 gpu를 기다리는 방식이지만 깜빡이는 현상은 해결할 수 있음
+	// WaitForGpuComplete();
 
 	if (_fence->GetCompletedValue() < fenceValueToWaitFor)
 	{
