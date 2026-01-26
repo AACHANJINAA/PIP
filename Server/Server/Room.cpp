@@ -77,7 +77,44 @@ namespace PIP::SERVER
 		leave_packet._size = sizeof(leave_packet);
 		leave_packet._id = player_id;
 		this->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof(leave_packet), player_id);
-		_players.erase(player_id);
+		
+
+		auto it = _players.find(player_id);
+		if (it != _players.end()) {
+			auto session = it->second;
+			if (session) {
+				if (session->_player) _gridMap.Remove(session->_player.get());
+				session->_viewedNpcs.clear(); // [추가] 다음 방 입장을 위해 시야 목록 초기화
+			}
+			_players.erase(it);
+		}
+	}
+
+	void Room::RemoveNPC(int npcId)
+	{
+		auto it = _npcs.find(npcId);
+		if (it == _npcs.end()) return;
+
+		// 1. 그리드 맵에서 제거 (가장 중요: 다른 유저의 시야 검색 시 유령 포인터 방지)
+		_gridMap.Remove(it->second.get());
+
+		// 2. 이 NPC를 보고 있던 모든 플레이어의 시야 목록에서 제거 및 패킷 전송
+		for (auto& [pid, session] : _players)
+		{
+			if (!session) continue;
+
+			// viewedNpcs에서 ID를 지우는 데 성공했다면 (즉, 보고 있었다면)
+			if (session->_viewedNpcs.erase(npcId))
+			{
+				// 클라이언트에게 삭제(Despawn) 패킷 전송
+				SendNpcLeaveToPlayer(session, npcId);
+			}
+		}
+
+		// 3. 실제 NPC 객체 삭제 및 맵에서 제거
+		_npcs.erase(it);
+
+		MYLOG("[Room] NPC " << npcId << " has been removed and cleaned up.");
 	}
 
 	void Room::AddNPC(std::unique_ptr<GAME::NPC> npc)

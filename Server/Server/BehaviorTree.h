@@ -15,18 +15,21 @@ namespace PIP::GAME
 
         template <typename T>
         T get(const std::string& key) const {
-            if (auto it = _data.find(key); it != _data.end()) {
-                try {
-                    return std::any_cast<T>(it->second);
-                }
-                catch (...)
-                {
-	                return T{};
-                }
+            auto it = _data.find(key);
+            if (it != _data.end()) {
+                // [수정] 포인터 기반 캐스팅 (예외 발생 안 함)
+                const T* ptr = std::any_cast<T>(&it->second);
+                if (ptr) return *ptr;
+
+                // 타입 불일치 시 로그 남기기 (개발 중에만)
+                MYERROR("Bad any_cast for key: " << key << std::endl);
             }
-            return T{};
+            return T{}; // 기본값 반환
         }
-        bool has(const std::string& key) const { return _data.contains(key); }
+        bool has(const std::string& key) const {
+            auto it = _data.find(key);
+            return it != _data.end() && it->second.has_value();
+        }
 
     private:
         std::unordered_map<std::string, std::any> _data;

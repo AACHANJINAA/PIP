@@ -58,17 +58,20 @@ namespace PIP::GAME
     {
         if (!obj) return;
 
-        // 이미 있으면 무시하거나 업데이트
-        if (_objectCellIndex.contains(obj)) {
-            Remove(obj);
+        // [수정] 재귀 호출 삭제하고 바로 처리
+        auto it = _objectCellIndex.find(obj);
+        if (it != _objectCellIndex.end())
+        {
+            int idx = it->second;
+
+            // 셀 범위 체크
+            if (idx >= 0 && idx < _cells.size()) {
+                _cells[idx].erase(obj); // 실제 GridCell에서 제거
+            }
+
+            // 인덱스 맵에서 제거
+            _objectCellIndex.erase(it);
         }
-
-        auto tc = obj->GetComponent<TransformComponent>();
-        if (!tc) return;
-
-        int idx = GetIndex(tc->GetPosition());
-        _cells[idx].insert(obj);
-        _objectCellIndex[obj] = idx; // 기록
     }
 
     bool GridMap::UpdatePosition(GameObject* obj, common::Vec3 newPos)

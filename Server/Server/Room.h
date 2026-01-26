@@ -25,6 +25,8 @@ namespace PIP::SERVER
 		void EnterPlayer(std::shared_ptr<SESSION> new_player);
 		void LeavePlayer(long long player_id);
 
+		// [추가] ID를 이용한 안전한 NPC 삭제 (그리드 및 시야 정리 포함)
+		void RemoveNPC(int npcId);
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int npc_id);
 
