@@ -7,7 +7,7 @@ namespace PIP::packet
 		// Packet.h에 정의된 이름으로 수정
 		RegisterHandler(PacketType::C2S_P_LOGIN, Handle_C2S_LOGIN);
 		RegisterHandler(PacketType::C2S_P_MOVE, Handle_C2S_MOVE);
-		RegisterHandler(PacketType::C2S_P_ATTACK, Handle_C2S_ATTACK);
+		RegisterHandler(PacketType::C2S_P_ACTION, Handle_C2S_ACTION); // [수정] 공격핸들러 -> 액션핸들러
 		RegisterHandler(PacketType::C2S_P_ENTER_ROOM, Handle_C2S_ENTER_ROOM);
 		RegisterHandler(PacketType::C2S_P_ROOM_LIST, Handle_C2S_ROOM_LIST);
 		RegisterHandler(PacketType::C2S_P_CHAT_IN_ROOM, Handle_C2S_CHAT_IN_ROOM);
@@ -40,7 +40,8 @@ namespace PIP::packet
                 switch (header._type)
                 {
                     case packet::PacketType::C2S_P_MOVE:
-                    case packet::PacketType::C2S_P_ATTACK:
+                    case packet::PacketType::C2S_P_ACTION:
+					case packet::PacketType::C2S_P_LOGIN:
                     case packet::PacketType::C2S_P_CHAT_IN_ROOM:
                     case packet::PacketType::C2S_P_ENTER_ROOM: // 인게임 중 다른 방으로 이동
                     case packet::PacketType::C2S_P_ROOM_LIST:  // 인게임 중 방 목록 요청

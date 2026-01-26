@@ -131,6 +131,15 @@ namespace PIP::GAME
 		return _character ? Utils::FromJolt(_character->GetPosition()) : common::Vec3{ 0,0,0 };
 	}
 
+	void CharacterControllerComponent::AddImpulse(const common::Vec3& impulse)
+	{
+		if (_character)
+		{
+			JPH::Vec3 currentVel = _character->GetLinearVelocity();
+			_character->SetLinearVelocity(currentVel + Utils::ToJolt(impulse));
+		}
+	}
+
 	bool CharacterControllerComponent::IsGrounded() const
 	{
 		return _character ? _character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround : false;

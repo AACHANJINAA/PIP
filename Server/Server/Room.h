@@ -41,6 +41,12 @@ namespace PIP::SERVER
 		void PushJob(std::function<void()> job);
 
 		void Broadcast(const char* data, size_t size, long long except_id = -1);
+
+		// 특정 NPC를 보고 있는 플레이어들에게 데이터 전송
+		void BroadcastToNPCViewers(int npc_id, const char* data, size_t size);
+		// 특정 플레이어를 보고 있는 플레이어들에게 데이터 전송
+		void BroadcastToPlayerViewers(long long player_id, const char* data, size_t size);
+
 		void BroadcastNpcBatch();
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
 		void SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc);
@@ -49,6 +55,7 @@ namespace PIP::SERVER
 		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
+		void HandleAction(const std::shared_ptr<PIP::SERVER::SESSION>& actor, const common::packet::CS_PACKET_ACTION& action_packet);
 
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }

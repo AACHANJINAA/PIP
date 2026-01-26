@@ -164,8 +164,23 @@ void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation
 void NetworkManager::SendAttackPacket()
 {
 	common::packet::CS_PACKET_ATTACK packet;
-	packet._type = common::packet::PacketType::C2S_P_ATTACK;
+	//packet._type = common::packet::PacketType::C2S_P_ATTACK;
 	packet._size = sizeof(packet);
+
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+void NetworkManager::SendActionPacket(common::packet::ActionType type, int32_t actionID, int64_t targetID,
+	common::Vec3 pos, common::Quat dir)
+{
+	common::packet::CS_PACKET_ACTION packet;
+	packet._type = common::packet::PacketType::C2S_P_ACTION;
+	packet._size = sizeof(packet);
+	packet._action_type = type;
+	packet._action_id = actionID;
+	packet._target_id = targetID;
+	packet._position = pos;
+	packet._direction = dir;
 
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }

@@ -66,9 +66,16 @@ void MainPlayerScript::update(float deltaTime)
         move_direction = Vector3::Add(move_direction ,common::Vec3Down);
         is_moving = true;
 	}
-	if (InputManager::instance()->IsKeyDown(VK_SPACE))
+	if (InputManager::instance()->IsKeyPress(VK_SPACE))
 	{
-        NetworkManager::instance()->SendAttackPacket();
+        // [수정] 범용 액션 패킷으로 변경
+        NetworkManager::instance()->SendActionPacket(
+            common::packet::ActionType::NORMAL_ATTACK, // 일반 공격
+            0,                                         // action_id (평타는 0)
+            -1,                                        // target_id (논타겟)
+            current_transform->local_position(),       // 공격 발생 위치
+            current_transform->local_rotation()        // 공격 방향
+        );
 	}
 
     if (InputManager::instance()->IsKeyDown('P'))
