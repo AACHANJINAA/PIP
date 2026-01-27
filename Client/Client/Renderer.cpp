@@ -115,8 +115,8 @@ void Renderer::create_pipeline_state_objects(ID3D12Device* device)
 
 void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-    // [추가] 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋합니다.
-    _current_dynamic_descriptor_index = 0;
+    // 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋
+    _current_dynamic_descriptor_index = frame_index * _max_descriptors_per_frame;
     CameraComponent* camera = CameraComponent::get_main();
     if (!camera)
     {
@@ -325,11 +325,18 @@ void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT 
     
     UINT num_descriptors = static_cast<UINT>(cpu_handles.size());
     
-    // [수정] 힙이 가득 찼는지 확인하는 로직으로 변경
-    if (_current_dynamic_descriptor_index + num_descriptors > _dynamic_descriptor_heap_capacity)
+    // [수정] 현재 프레임의 할당량이 꽉 찼는지 확인
+     // 현재 인덱스 + 필요 개수 > (현재 프레임 + 1) * 구획 크기
+     // frame_index를 여기서 알기 어려우므로, 간단히 _current_dynamic_descriptor_index가 범위를 넘는지 확인해도 됩니다.
+
+     // 현재 인덱스가 힙 전체 용량을 넘거나, 다음 프레임 구획을 침범하려 하면 에러
+     // (간단한 버전: 전체 용량만 체크해도 되지만, 엄격하게 하려면 아래처럼)
+    UINT current_frame_start = (_current_dynamic_descriptor_index / _max_descriptors_per_frame) * _max_descriptors_per_frame;
+    UINT limit = current_frame_start + _max_descriptors_per_frame;
+
+    if (_current_dynamic_descriptor_index + num_descriptors > limit)
     {
-     // 이 에러가 발생하면 create_dynamic_descriptor_heap의 capacity를 늘려야 합니다.
-        CERROR("Dynamic descriptor heap is full! Increase capacity.");
+        CERROR("Dynamic descriptor heap segment for this frame is full! Increase capacity.");
         return;
     }
     
@@ -357,7 +364,17 @@ void Renderer::create_dynamic_descriptor_heap(UINT capacity)
     heap_desc.NumDescriptors = capacity;
     heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&_dynamic_descriptor_heap));
+	heap_desc.NodeMask = 0; // 명시적으로 설정
+
+    HRESULT hr = _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&_dynamic_descriptor_heap));
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create dynamic descriptor heap!");
+        return;
+    }
     _dynamic_descriptor_heap_capacity = capacity;
+
+    _max_descriptors_per_frame = capacity / SWAP_CHAIN_BUFFERS;
+
     _current_dynamic_descriptor_index = 0;
 }

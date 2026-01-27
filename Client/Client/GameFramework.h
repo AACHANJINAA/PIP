@@ -1,7 +1,7 @@
 #pragma once
 #include "TimerManager.h"
 #include "Scene.h"
-static constexpr UINT SWAP_CHAIN_BUFFERS = 2;
+// static constexpr UINT SWAP_CHAIN_BUFFERS = 2;
 
 class GameFramework : public Singleton<GameFramework>
 {
