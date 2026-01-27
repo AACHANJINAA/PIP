@@ -351,8 +351,7 @@ void GameFramework::FrameAdvance()
 	auto& currentUploadAllocator = _uploadAllocators[_swapChainBufferIndex];
 
 	// 1. 씬 전환 처리 (필요시)
-	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), currentRenderAllocator.Get(),
-		_commandList.Get());
+	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), currentRenderAllocator.Get(), _commandList.Get());
 
 	// 2. 타이머 & 로직 & 물리 업데이트
 	_gameTimer.Tick(0.0f);
@@ -389,6 +388,8 @@ void GameFramework::FrameAdvance()
 	// 렌더링 전용 할당기 사용
 	currentRenderAllocator->Reset();
 	_commandList->Reset(currentRenderAllocator.Get(), nullptr);
+
+	ResourceManager::instance()->set_current_command_list(_commandList.Get());
 
 	// (리소스 배리어 설정: Present -> RenderTarget)
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(

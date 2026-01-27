@@ -99,6 +99,10 @@ using Microsoft::WRL::ComPtr;
 #define EPSILON					1.0e-6f
 
 
+// 스왑체인 개수
+constexpr UINT SWAP_CHAIN_BUFFERS = 2;
+
+
 // 이것은 오브젝트 매니저를 위한 변수입니다.
 #define ALLARRAYSIZE				5
 

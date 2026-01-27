@@ -56,4 +56,8 @@ private:
     UINT _dynamic_descriptor_heap_capacity = 0;
     UINT _current_dynamic_descriptor_index = 0;
     UINT _descriptor_size = 0;
+
+    // 프레임당 할당 가능한 최대 디스크립터 수 
+    // DW설명 : 스왑체인 버퍼 수에 맞춰서 우리가 할당한 디스크립터 힙의 개수를 나누어야 함
+    UINT _max_descriptors_per_frame = 0;
 };
