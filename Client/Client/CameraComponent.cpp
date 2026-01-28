@@ -47,7 +47,7 @@ CameraComponent::CameraComponent() :
 		_cbCamera[i]->Map(0, &read_range_cb, reinterpret_cast<void**>(&_mappedCbCamera[i]));
 	}
 
-	_cbSkybox = ::CreateBufferResource(device, nullptr, nullptr, sizeof(XMFLOAT4X4), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+	_cbSkybox = ::CreateBufferResource(device, nullptr, nullptr, sizeof(CB_SKYBOX_INFO), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 
 	D3D12_RANGE read_range_sb{ 0, 0 };
 	_cbSkybox->Map(0, &read_range_sb, reinterpret_cast<void**>(&_mappedCbSkybox));
@@ -128,11 +128,15 @@ void CameraComponent::recalculate_view_matrix()
 
 	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookToLH(pos, look, up));
 	// 스카이박스용 뷰 행렬 (이동 성분 제거) 계산 및 상수 버퍼에 복사
+
 	if (_mappedCbSkybox)
 	{
 		XMMATRIX view_no_translate = XMLoadFloat4x4(&_viewMatrix);
 		view_no_translate.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f); // Translation 부분을 0으로 설정
-		XMStoreFloat4x4(_mappedCbSkybox, XMMatrixTranspose(view_no_translate)); // HLSL을 위해 Transpose
+	    XMStoreFloat4x4(&_mappedCbSkybox->_viewNoTranslate, XMMatrixTranspose(view_no_translate));
+
+		XMMATRIX proj = XMLoadFloat4x4(&_projectionMatrix);
+		XMStoreFloat4x4(&_mappedCbSkybox->_projection, XMMatrixTranspose(proj));
 	}
 
 	// [추가] 뷰 행렬이 변경되었으므로 프러스텀도 업데이트합니다.

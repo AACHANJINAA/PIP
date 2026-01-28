@@ -7,6 +7,7 @@ cbuffer cbPerFrame : register(b1)
 cbuffer cbskybox : register(b2)
 {
     float4x4 ViewNoTranslate;
+    float4x4 SkyboxProjection;
 }
 
 TextureCube SkyboxTexture : register(t0);
@@ -27,9 +28,10 @@ VS_Output VS_Main(VS_Input input)
 {
 	VS_Output output;
 
-    float4 viewPosition = mul(ViewNoTranslate, float4(input.VS_Input_PositionL, 1.0f));
+     // Çà·Ä °ö¼À ¼ø¼­ ¼öÁ¤ (DirectX row-major)
+    float4 viewPosition = mul(float4(input.VS_Input_PositionL, 1.0f), ViewNoTranslate);
 		
-    output.Position = mul(Projection, viewPosition);
+    output.Position = mul(viewPosition, SkyboxProjection);
 
     output.Position.z = output.Position.w;
 
@@ -40,11 +42,10 @@ VS_Output VS_Main(VS_Input input)
 
 float4 PS_Main(VS_Output input) : SV_TARGET
 {
-    //float3 texDir = normalize(input.VS_output_PositionL);
-    //float4 skycolor = SkyboxTexture.Sample(SkyboxSampler, texDir);
-    //return skycolor;
+    float3 texDir = normalize(input.VS_output_PositionL);
+    float4 skycolor = SkyboxTexture.Sample(SkyboxSampler, texDir);
+    return skycolor;
    
-    float3 texdir = normalize(input.VS_output_PositionL);
-    return float4(texdir * 0.5f + 0.5f, 1.0f);
-   
+    //float3 texdir = normalize(input.VS_output_PositionL);
+    //return float4(texdir * 0.5f + 0.5f, 1.0f);
 }
