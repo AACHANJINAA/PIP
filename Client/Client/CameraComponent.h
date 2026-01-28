@@ -68,8 +68,14 @@ private:
     std::array<ComPtr<ID3D12Resource>, 2> _cbCamera;
     std::array<CB_CAMERA_INFO*, 2> _mappedCbCamera;
 
+    struct CB_SKYBOX_INFO
+    {
+        XMFLOAT4X4 _viewNoTranslate;
+        XMFLOAT4X4 _projection;
+    };
+
     ComPtr<ID3D12Resource> _cbSkybox;
-	XMFLOAT4X4* _mappedCbSkybox = nullptr;
+    CB_SKYBOX_INFO* _mappedCbSkybox = nullptr;
    
 public:
     // --- Main Camera ---

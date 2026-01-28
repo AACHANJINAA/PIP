@@ -103,7 +103,7 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
         return;
     }
 
-    ResourceManager::instance()->load_skybox("Resource\\SkyBox\\Night.dds");
+    ResourceManager::instance()->load_skybox("Resource\\SkyBox\\skybox_texture.dds");
 
     _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
     _skyboxObject->set_persistent(true);
