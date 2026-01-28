@@ -72,5 +72,7 @@ public:
     // 단, 내부 구현은 새로운 아키텍처에 맞게 변경되어야 합니다. (Chess_Scene에서 재정의)
     virtual void load_scene_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
+	virtual void render_post_process(ID3D12GraphicsCommandList* commandList, UINT frame_index) {}
+
 protected:
 };
