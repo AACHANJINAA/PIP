@@ -1,11 +1,20 @@
 #pragma once
-#include "RenderComponent.h"
+#include "Behaviour.h"
+#include "Mesh.h"
 
-class SkyboxRenderComponent : public RenderComponent
+class SkyboxRenderComponent : public Behaviour
 {
 public:
-	SkyboxRenderComponent() = default;
-	virtual ~SkyboxRenderComponent() = default;
+    SkyboxRenderComponent();
+    virtual ~SkyboxRenderComponent() = default;
 
-	virtual void pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer) override;
+    void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
+    void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
+    void set_pso_name(const std::string& name) { _psoName = name; }
+    std::shared_ptr<Mesh> mesh() const { return _mesh; }
+    const std::string& pso_name() const { return _psoName; }
+
+private:
+    std::shared_ptr<Mesh> _mesh;
+    std::string _psoName = "skybox";
 };

@@ -21,6 +21,7 @@
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "RenderComponent.h"
+#include "SkyboxRenderComponent.h"
 
 #include "TerrainLoader.h"
 
@@ -146,6 +147,10 @@ void Renderer::build_render_list(CameraComponent* camera)
     for (const auto& gameObject : allGameObjects)
     {
         if (!gameObject || gameObject->is_destroyed()) continue;
+
+        // 스카이박스는 Scene에서 렌더링하므로 제외
+        auto skyboxComp = gameObject->get_component<SkyboxRenderComponent>();
+        if (skyboxComp) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
 
