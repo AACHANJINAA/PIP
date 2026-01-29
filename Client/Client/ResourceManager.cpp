@@ -638,6 +638,89 @@ D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
     return {};
 }
 
+void ResourceManager::load_ibl_maps()
+{
+    CLOG("Loading IBL maps...");
+
+    // 1. Irradiance Map (Diffuse IBL용 큐브맵)
+    _ibl_irradiance_path = "Resource\\SkyBox\\IBL_diffuse.dds";
+    auto irradiance_result = load_cubemap_from_dds(_ibl_irradiance_path);
+    if (irradiance_result) {
+        CLOG("IBL Irradiance Map loaded: " << _ibl_irradiance_path);
+    }
+    else {
+        CERROR("Failed to load IBL Irradiance Map: " << _ibl_irradiance_path);
+    }
+
+    // 2. Prefiltered Environment Map (Specular IBL용 큐브맵)
+    _ibl_prefiltered_path = "Resource\\SkyBox\\IBL_specular.dds";
+    auto prefiltered_result = load_cubemap_from_dds(_ibl_prefiltered_path);
+    if (prefiltered_result) {
+        CLOG("IBL Prefiltered Map loaded: " << _ibl_prefiltered_path);
+    }
+    else {
+        CERROR("Failed to load IBL Prefiltered Map: " << _ibl_prefiltered_path);
+    }
+
+    // 3. BRDF LUT (2D 텍스처)
+    _ibl_brdf_lut_path = "Resource\\SkyBox\\IBL_BRDF_LUT.dds";
+    auto brdf_result = load_texture(_ibl_brdf_lut_path);
+    if (brdf_result) {
+        CLOG("IBL BRDF LUT loaded: " << _ibl_brdf_lut_path);
+    }
+    else {
+        CERROR("Failed to load IBL BRDF LUT: " << _ibl_brdf_lut_path);
+    }
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_irradiance_srv()
+{
+    if (_ibl_irradiance_path.empty()) {
+        CERROR("IBL Irradiance texture has not been loaded yet.");
+        return {};
+    }
+
+    auto it = _textures.find(_ibl_irradiance_path);
+    if (it != _textures.end()) {
+        return it->second.gpu_handle;
+    }
+
+    CERROR("IBL Irradiance texture not found in texture map: " << _ibl_irradiance_path);
+    return {};
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_prefiltered_srv()
+{
+    if (_ibl_prefiltered_path.empty()) {
+        CERROR("IBL Prefiltered texture has not been loaded yet.");
+        return {};
+    }
+
+    auto it = _textures.find(_ibl_prefiltered_path);
+    if (it != _textures.end()) {
+        return it->second.gpu_handle;
+    }
+
+    CERROR("IBL Prefiltered texture not found in texture map: " << _ibl_prefiltered_path);
+    return {};
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_brdf_lut_srv()
+{
+    if (_ibl_brdf_lut_path.empty()) {
+        CERROR("IBL BRDF LUT texture has not been loaded yet.");
+        return {};
+    }
+
+    auto it = _textures.find(_ibl_brdf_lut_path);
+    if (it != _textures.end()) {
+        return it->second.gpu_handle;
+    }
+
+    CERROR("IBL BRDF LUT texture not found in texture map: " << _ibl_brdf_lut_path);
+    return {};
+}
+
 ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::string& file_path)
 {
     // 1. 캐시 확인

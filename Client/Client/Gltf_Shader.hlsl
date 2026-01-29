@@ -61,6 +61,7 @@ static MATERIAL gMaterial =
 };
 
  #include "Light.hlsl"
+ #include "IBL.hlsl"
 
 struct VS_INPUT
 {
@@ -155,13 +156,16 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     {
         N = -N;
     }
-     // ========================================================
-     // Light.hlsl의 Lighting 함수 호출
+    // 1. 직접광 계산 (Light.hlsl의 Lighting 함수)
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao);
 
-    float3 finalColor = litColor.rgb + finalEmissive;
+   // 2. 환경광 계산 (IBL.hlsl의 CalculateIBL 함수)
+    float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
 
-         // 톤 매핑 및 감마 보정
+    // 3. 직접광 + 환경광 + 자체발광
+    float3 finalColor = litColor.rgb + iblColor + finalEmissive;
+
+    // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
 
