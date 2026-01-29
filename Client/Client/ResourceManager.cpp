@@ -249,7 +249,7 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
 	// 1. 항상 원본 파일 경로를 키로 사용하여 캐시를 확인
     auto it = _textures.find(file_path);
     if (it != _textures.end()) {
-        CLOG("Texture cache hit for: " << file_path);
+       // CLOG("Texture cache hit for: " << file_path);
         return &it->second;
     }
 
