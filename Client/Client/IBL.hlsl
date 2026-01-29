@@ -21,7 +21,7 @@ Texture2D g_BrdfLut : register(t10);
     // 주의: SamplerState g_samLinear는 Gltf_Shader.hlsl에서 선언됨
     // IBL.hlsl은 Gltf_Shader.hlsl에 include되므로 자동으로 사용 가능
 
-    // ============================================================
+  // ============================================================
     // Diffuse IBL 계산
     // ============================================================
 float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
@@ -29,13 +29,18 @@ float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
         // 1. F0 계산 (표면 반사율)
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
 
-        // 2. kD 계산 (Diffuse 비율)
+        // 2. kD 계산 (Diffuse 강도)
     float3 kD = (1.0 - F0) * (1.0 - metallic);
 
         // 3. Irradiance Map 샘플링
     float3 irradiance = g_IrradianceMap.Sample(g_samLinear, N).rgb;
 
-        // 4. Lambertian Diffuse BRDF 적용
+        // HDR 텍스처 스케일링 (값이 너무 큰 경우)
+    irradiance *= 0.001; // ← 이 줄 추가!
+     // 최소 환경광 추가 (완전히 검은색 방지)
+    float3 minAmbient = float3(0.02, 0.02, 0.02); // ← 이 값 조절 (0.01~0.05)
+    irradiance = max(irradiance, minAmbient);
+        // 4. Lambertian Diffuse BRDF 계산
     return kD * albedo * irradiance;
 }
 
@@ -57,6 +62,9 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
         // 4. Prefiltered Map 샘플링
     float3 prefilteredColor = g_PrefilteredMap.SampleLevel(g_samLinear, R, lod).rgb;
 
+        // HDR 텍스처 스케일링 (값이 너무 큰 경우)
+    prefilteredColor *= 0.1; // ← 이 줄 추가!
+
         // 5. BRDF LUT 샘플링
     float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
 
@@ -67,9 +75,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
     return prefilteredColor * (F0 * brdf.x + brdf.y);
 }
 
-    // ============================================================
     // IBL 통합 함수
-    // ============================================================
 float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao)
 {
         // 1. Diffuse IBL 계산
@@ -79,7 +85,6 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
         // 3. Diffuse + Specular 합산 후 AO 적용
-    return (diffuse + specular) * ao;
+    return (diffuse + specular) * ao; // ← iblStrength 제거!
 }
-
 #endif // _IBL_HLSL_
