@@ -8,8 +8,6 @@ cbuffer cbCameraInfo : register(b1)
     float4 gvCameraPosition; // Camera Position
 };
 
-#include "Light.hlsl"
-
 cbuffer cbPerObject : register(b0)
 {
     float4x4 World;
@@ -66,6 +64,10 @@ PS_Input VS_Main(VS_Input input)
     return output;
 }
 
+#include "Light.hlsl"
+#define g_samLinear terrainSampler 
+#include "IBL.hlsl"
+
 float4 PS_Main(PS_Input input) : SV_TARGET
 {
     float3 P = input.PositionW;
@@ -99,10 +101,13 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float3x3 TBN = float3x3(normalize(input.TangentW), normalize(input.BitangentW), N);
     N = normalize(mul(N_tangent, TBN));
 
-    // Call the PBR Lighting function
+     // Call the PBR Lighting function
     float4 litColor = Lighting(P, N, V, albedo, metallic, roughness, ao);
-    
-    float3 finalColor = litColor.rgb + emissive; // Add emissive after lighting
+
+        // IBL 추가 ← 추가
+    float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
+
+    float3 finalColor = litColor.rgb + iblColor + emissive; // ← iblColor 추가
      
 	// Tone Mapping (HDR -> LDR)
     finalColor.rgb = finalColor.rgb / (finalColor.rgb + 1.0f);
