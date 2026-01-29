@@ -605,27 +605,18 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
      // GLTF 셰이더는 IBL 텍스처가 필요함
     if (mat_info.shader_name == "gltf" || mat_info.shader_name == "skinned" || mat_info.shader_name == "gltf_hp")
     {
-        CLOG("bind_material: shader_name = " << mat_info.shader_name); // ← 추가
-
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_irradiance_handle = get_cpu_handle(_ibl_irradiance_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_prefiltered_handle = get_cpu_handle(_ibl_prefiltered_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_brdf_lut_handle = get_cpu_handle(_ibl_brdf_lut_path);
 
-        CLOG("IBL Handles: irr=" << ibl_irradiance_handle.ptr << " pref=" << ibl_prefiltered_handle.ptr << "brdf = " << ibl_brdf_lut_handle.ptr); // ← 추가
-
             if (ibl_irradiance_handle.ptr != 0 && ibl_prefiltered_handle.ptr != 0 && ibl_brdf_lut_handle.ptr != 0)
             {
-                CLOG("Binding IBL textures to slot 8"); // ← 추가
                 std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> ibl_handles;
                 ibl_handles.push_back(ibl_irradiance_handle);  // t8
                 ibl_handles.push_back(ibl_prefiltered_handle); // t9
                 ibl_handles.push_back(ibl_brdf_lut_handle);    // t10
 
                 renderer->bind_texture_table(command_list, 8, ibl_handles); // params[8~10]
-            }
-            else
-            {
-                CERROR("IBL handles are 0! Not binding."); // ← 추가
             }
     }
 }
