@@ -597,5 +597,8 @@
     <FxCompile Include="Light.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="IBL.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
