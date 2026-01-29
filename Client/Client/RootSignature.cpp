@@ -398,13 +398,14 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // Descriptor Range for Textures (t0, t1, t2, t3, t4)
-    CD3DX12_DESCRIPTOR_RANGE ranges[1];
+    // Descriptor Range for Textures
+    CD3DX12_DESCRIPTOR_RANGE ranges[2]; // ← 1에서 2로 변경
 
-    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+    ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t4
+    ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t8~t10(IBL)← 추가
 
     // Root Parameters
-    CD3DX12_ROOT_PARAMETER params[5];
+    CD3DX12_ROOT_PARAMETER params[6];
     // [0] b0: World Matrix (cbPerObject)
     params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // [1] b1: Camera (cbPerFrame)
@@ -415,6 +416,8 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
 	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
 	// [4] t0~t4: Texture Descriptor Table
     params[4].InitAsDescriptorTable(1, &ranges[0]);
+    // [5] t8~t10: IBL Texture Descriptor Table ← 추가
+    params[5].InitAsDescriptorTable(1, &ranges[1]);
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
