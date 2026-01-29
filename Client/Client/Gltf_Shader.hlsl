@@ -168,6 +168,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
+    
 
     return float4(finalColor, diffuseSample.a);
 }
