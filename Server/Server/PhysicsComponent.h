@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Component.h"
-#include "JoltHelper.h"
+#include "../../Common/JoltHelper.h"
 
 
 namespace PIP::GAME

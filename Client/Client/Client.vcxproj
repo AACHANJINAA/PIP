@@ -91,6 +91,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\JoltHelper.h" />
     <ClInclude Include="..\..\Common\json.hpp" />
     <ClInclude Include="..\..\Common\Packet.h" />
     <ClInclude Include="..\..\Common\PacketStream.h" />
@@ -98,7 +99,7 @@
     <ClInclude Include="..\..\Common\Vector3.h" />
     <ClInclude Include="AnimationComponent.h" />
     <ClInclude Include="BehaviorTree.h" />
-    <ClInclude Include="Behaviour.h" />
+    <ClInclude Include="Behavior.h" />
     <ClInclude Include="BoardCubeScript.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColiderComponent.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="GltfHpShader.h" />
     <ClInclude Include="HPRenderComponent.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LayerManager.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="main.h" />
@@ -135,6 +137,8 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OtherPlayerScript.h" />
+    <ClInclude Include="PhysicsColliderComponent.h" />
+    <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerShader.h" />
     <ClInclude Include="ReadFBXMesh.h" />
     <ClInclude Include="ReadGLBMesh.h" />
@@ -162,12 +166,13 @@
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="UIRenderComponent.h" />
     <ClInclude Include="UIShader.h" />
+    <ClInclude Include="WeaponScript.h" />
     <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationComponent.cpp" />
     <ClCompile Include="BehaviorTree.cpp" />
-    <ClCompile Include="Behaviour.cpp" />
+    <ClCompile Include="Behavior.cpp" />
     <ClCompile Include="BoardCubeScript.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
@@ -204,6 +209,8 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="OtherPlayerScript.cpp" />
+    <ClCompile Include="PhysicsColliderComponent.cpp" />
+    <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerShader.cpp" />
     <ClCompile Include="ReadFBXMesh.cpp" />
     <ClCompile Include="ReadGLBMesh.cpp" />
@@ -233,6 +240,7 @@
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="UIRenderComponent.cpp" />
     <ClCompile Include="UIShader.cpp" />
+    <ClCompile Include="WeaponScript.cpp" />
     <ClCompile Include="WICTextureLoader12.cpp" />
   </ItemGroup>
   <ItemGroup>

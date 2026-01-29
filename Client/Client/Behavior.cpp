@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "Behaviour.h"
+#include "Behavior.h"
 
-Behaviour::Behaviour() : Component(), _isEnabled{ true }
+Behavior::Behavior() : Component(), _isEnabled{ true }
 {
 }
 
 
-void Behaviour::set_enabled(bool isEnabled)
+void Behavior::set_enabled(bool isEnabled)
 {
 	if (_isEnabled != isEnabled)
 	{

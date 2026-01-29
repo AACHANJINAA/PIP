@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-#include "Behaviour.h"
+#include "Behavior.h"
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "Mesh.h"
@@ -40,7 +40,7 @@ private:
 	std::shared_ptr<Shader> _shader;
 };
 
-class RenderComponent : public Behaviour
+class RenderComponent : public Behavior
 {
 public:
     RenderComponent();

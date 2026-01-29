@@ -1,7 +1,6 @@
 #pragma once
-#include "pch.h"
 #include <Jolt/Jolt.h>
-#include "../../Common/Vector3.h" // 경로에 맞게 수정
+#include "Vector3.h"
 
 namespace PIP::Utils
 {
@@ -15,6 +14,7 @@ namespace PIP::Utils
     {
         return {q.x, q.y, q.z, q.w};
     }
+
 
     // Jolt -> Common
     inline common::Vec3 FromJolt(const JPH::Vec3& v)

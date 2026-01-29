@@ -11,6 +11,7 @@
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "LightManager.h"
+#include "PhysicsManager.h"
 
 
 GameFramework::GameFramework()
@@ -52,6 +53,12 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	hResult = _commandList->Reset(_commandAllocators[0].Get(), NULL);
 
 	InputManager::instance()->initialize(hMainWnd);
+	if (!PhysicsManager::instance()->initialize()) {
+		CLOG("[ERROR] PhysicsManager Init Failed!" << std::endl);
+	}
+	else {
+		CLOG("[SUCCESS] PhysicsManager Initialized." << std::endl);
+	}
 	DescriptorManager::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
@@ -65,11 +72,11 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	ID3D12CommandList * ppd3dCommandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	
-    // GPU가 모든 초기화 작업을 마칠 때까지 기다립니다.
-    WaitForGpuComplete();
+	// GPU가 모든 초기화 작업을 마칠 때까지 기다립니다.
+	WaitForGpuComplete();
 
-    // GPU에 데이터 전송이 끝났으므로, 임시 업로드 버퍼들을 해제합니다.
-    ResourceManager::instance()->release_upload_buffers(UINT_MAX);
+	// GPU에 데이터 전송이 끝났으므로, 임시 업로드 버퍼들을 해제합니다.
+	ResourceManager::instance()->release_upload_buffers(UINT_MAX);
 
 	return(true);
 }
@@ -524,6 +531,8 @@ void GameFramework::update_physics(float elapsedTime)
 	while (_physicsTimeAccumulator >= fixedTimeStep)
 	{
 		const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
+
+		// 1. Transform -> Physics Body 동기화
 		for (const auto& gameObject : allGameObjects)
 		{
 			if (gameObject && !gameObject->is_destroyed())
@@ -531,6 +540,10 @@ void GameFramework::update_physics(float elapsedTime)
 				gameObject->fixed_update(fixedTimeStep);
 			}
 		}
+
+		// 2. Physics Simulation & Event Dispatch (여기에 추가!)
+		PhysicsManager::instance()->update(fixedTimeStep);
+
 		_physicsTimeAccumulator -= fixedTimeStep;
 	}
 }

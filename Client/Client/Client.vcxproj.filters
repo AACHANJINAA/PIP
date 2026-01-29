@@ -69,9 +69,6 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\0. Object">
       <UniqueIdentifier>{28044087-c5ad-4f75-83ea-b2ca74906fd8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="0. Engine\1. GameObject &amp; Components\1. Behaviour">
-      <UniqueIdentifier>{d6bc12f8-cab7-47f6-9d9a-4b774be9fda4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components\2. GameObject">
       <UniqueIdentifier>{7d8d333e-662c-4518-867a-4deacc3add82}</UniqueIdentifier>
     </Filter>
@@ -95,6 +92,21 @@
     </Filter>
     <Filter Include="0. Engine\7. Helper">
       <UniqueIdentifier>{02f48ba8-132b-47c4-a5a2-509cef65adb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4. External\1. Common">
+      <UniqueIdentifier>{3573e0e9-2bde-4bf6-9244-f570f9c2330c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\8. Physics">
+      <UniqueIdentifier>{e39ff450-05e5-487f-a8ed-3e37c66c2103}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents">
+      <UniqueIdentifier>{6c7e92e4-0913-4b63-82f8-3d52ae80445e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\1. Behavior">
+      <UniqueIdentifier>{d6bc12f8-cab7-47f6-9d9a-4b774be9fda4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent">
+      <UniqueIdentifier>{a047e690-9a26-4f15-b367-d054a338b960}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -176,8 +188,8 @@
     <ClInclude Include="Object.h">
       <Filter>0. Engine\1. GameObject &amp; Components\0. Object</Filter>
     </ClInclude>
-    <ClInclude Include="Behaviour.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\1. Behaviour</Filter>
+    <ClInclude Include="Behavior.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\1. Behavior</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
@@ -186,15 +198,6 @@
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClInclude>
     <ClInclude Include="TransformComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ScriptComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ColiderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClInclude>
     <ClInclude Include="LayerManager.h">
@@ -230,15 +233,6 @@
     <ClInclude Include="DescriptorManager.h">
       <Filter>0. Engine\4. Resource</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\Packet.h">
-      <Filter>4. External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\PacketStream.h">
-      <Filter>4. External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\Vector3.h">
-      <Filter>4. External</Filter>
-    </ClInclude>
     <ClInclude Include="NPCScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
@@ -271,12 +265,6 @@
     </ClInclude>
     <ClInclude Include="TerrainShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\TerrainData.h">
-      <Filter>4. External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\json.hpp">
-      <Filter>4. External</Filter>
     </ClInclude>
     <ClInclude Include="MainPlayerAnimationScript.h">
       <Filter>1. Game\2. Scripts</Filter>
@@ -313,6 +301,45 @@
     </ClInclude>
     <ClInclude Include="UIShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\JoltHelper.h">
+      <Filter>4. External\1. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\json.hpp">
+      <Filter>4. External\1. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\Packet.h">
+      <Filter>4. External\1. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\PacketStream.h">
+      <Filter>4. External\1. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TerrainData.h">
+      <Filter>4. External\1. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\Vector3.h">
+      <Filter>4. External\1. Common</Filter>
+    </ClInclude>
+    <ClInclude Include="JoltSetup.h">
+      <Filter>0. Engine\8. Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsManager.h">
+      <Filter>0. Engine\8. Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ColiderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsColliderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponScript.h">
+      <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -385,8 +412,8 @@
     <ClCompile Include="Object.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\0. Object</Filter>
     </ClCompile>
-    <ClCompile Include="Behaviour.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components\1. Behaviour</Filter>
+    <ClCompile Include="Behavior.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\1. Behavior</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\2. GameObject</Filter>
@@ -395,15 +422,6 @@
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClCompile>
     <ClCompile Include="TransformComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
-    </ClCompile>
-    <ClCompile Include="ScriptComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
-    </ClCompile>
-    <ClCompile Include="ColiderComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClCompile>
     <ClCompile Include="LayerManager.cpp">
@@ -507,6 +525,24 @@
     </ClCompile>
     <ClCompile Include="UIShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsManager.cpp">
+      <Filter>0. Engine\8. Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ColiderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsColliderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponScript.cpp">
+      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
