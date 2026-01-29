@@ -105,6 +105,8 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     ResourceManager::instance()->load_skybox("Resource\\SkyBox\\skybox_texture.dds");
 
+    ResourceManager::instance()->load_ibl_maps();
+
     _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
     _skyboxObject->set_persistent(true);
 

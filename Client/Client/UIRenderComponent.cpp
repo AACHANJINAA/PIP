@@ -150,10 +150,6 @@ void UIRenderComponent::set_texture(const std::string& texture_path)
     {
         CERROR("Failed to load UI texture: " << texture_path);
     }
-    else
-    {
-        CLOG("UI texture loaded successfully: " << texture_path);
-    }
 }
 void UIRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {

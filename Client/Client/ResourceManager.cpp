@@ -249,7 +249,7 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
 	// 1. 항상 원본 파일 경로를 키로 사용하여 캐시를 확인
     auto it = _textures.find(file_path);
     if (it != _textures.end()) {
-        CLOG("Texture cache hit for: " << file_path);
+       // CLOG("Texture cache hit for: " << file_path);
         return &it->second;
     }
 
@@ -600,6 +600,25 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     
     // 이 벡터를 루트 파라미터 4번에 테이블로 바인딩합니다.
     renderer->bind_texture_table(command_list, 4, texture_handles);
+
+    // GLTF 셰이더는 IBL 텍스처가 필요함
+     // GLTF 셰이더는 IBL 텍스처가 필요함
+    if (mat_info.shader_name == "gltf" || mat_info.shader_name == "skinned" || mat_info.shader_name == "gltf_hp")
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE ibl_irradiance_handle = get_cpu_handle(_ibl_irradiance_path);
+        D3D12_CPU_DESCRIPTOR_HANDLE ibl_prefiltered_handle = get_cpu_handle(_ibl_prefiltered_path);
+        D3D12_CPU_DESCRIPTOR_HANDLE ibl_brdf_lut_handle = get_cpu_handle(_ibl_brdf_lut_path);
+
+            if (ibl_irradiance_handle.ptr != 0 && ibl_prefiltered_handle.ptr != 0 && ibl_brdf_lut_handle.ptr != 0)
+            {
+                std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> ibl_handles;
+                ibl_handles.push_back(ibl_irradiance_handle);  // t8
+                ibl_handles.push_back(ibl_prefiltered_handle); // t9
+                ibl_handles.push_back(ibl_brdf_lut_handle);    // t10
+
+                renderer->bind_texture_table(command_list, 8, ibl_handles); // params[8~10]
+            }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -635,6 +654,113 @@ D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
     if (_skybox_texture_path.empty()) return {};
     auto it = _textures.find(_skybox_texture_path);
     if (it != _textures.end()) return it->second.cpu_handle;
+    return {};
+}
+
+void ResourceManager::load_ibl_maps()
+{
+    CLOG("Loading IBL maps...");
+
+    // 1. Irradiance Map (Diffuse IBL용 큐브맵)
+    _ibl_irradiance_path = "Resource\\SkyBox\\IBL_diffuse.dds";
+    auto irradiance_result = load_cubemap_from_dds(_ibl_irradiance_path);
+    if (irradiance_result) {
+        CLOG("IBL Irradiance Map loaded: " << _ibl_irradiance_path);
+    }
+    else {
+        CERROR("Failed to load IBL Irradiance Map: " << _ibl_irradiance_path);
+    }
+
+    // 2. Prefiltered Environment Map (Specular IBL용 큐브맵)
+    _ibl_prefiltered_path = "Resource\\SkyBox\\IBL_specular.dds";
+    auto prefiltered_result = load_cubemap_from_dds(_ibl_prefiltered_path);
+    if (prefiltered_result) {
+        CLOG("IBL Prefiltered Map loaded: " << _ibl_prefiltered_path);
+    }
+    else {
+        CERROR("Failed to load IBL Prefiltered Map: " << _ibl_prefiltered_path);
+    }
+
+    // 3. BRDF LUT (2D 텍스처)
+    _ibl_brdf_lut_path = "Resource\\SkyBox\\IBL_BRDF_LUT.dds";
+    auto brdf_result = load_texture(_ibl_brdf_lut_path);
+    if (brdf_result) {
+        CLOG("IBL BRDF LUT loaded: " << _ibl_brdf_lut_path);
+    }
+    else {
+        CERROR("Failed to load IBL BRDF LUT: " << _ibl_brdf_lut_path);
+    }
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_irradiance_srv()
+{
+    // ========== 방법 1: _ibl_irradiance_path로 찾기 ==========
+    if (!_ibl_irradiance_path.empty()) {
+        auto it = _textures.find(_ibl_irradiance_path);
+        if (it != _textures.end()) {
+            return it->second.gpu_handle;
+        }
+    }
+
+    // ========== 방법 2: 직접 경로로 찾기 (fallback) ==========
+    auto it2 = _textures.find("Resource\\SkyBox\\IBL_diffuse.dds");
+    if (it2 != _textures.end()) {
+        CLOG("Found via direct path!");
+        return it2->second.gpu_handle;
+    }
+
+    // ========== 방법 3: 맵 전체 검색 ==========
+    for (const auto& [path, tex] : _textures) {
+        if (path.find("IBL_diffuse") != std::string::npos) {
+            CLOG("Found via search: " << path);
+            return tex.gpu_handle;
+        }
+    }
+
+    CERROR("IBL Irradiance not found anywhere!");
+    CLOG("_ibl_irradiance_path = '" << _ibl_irradiance_path << "'");
+    return {};
+}
+
+//동일하게** get_ibl_prefiltered_srv()** 와** get_ibl_brdf_lut_srv()** 도 수정 :
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_prefiltered_srv()
+{
+    if (!_ibl_prefiltered_path.empty()) {
+        auto it = _textures.find(_ibl_prefiltered_path);
+        if (it != _textures.end()) return it->second.gpu_handle;
+    }
+
+    auto it2 = _textures.find("Resource\\SkyBox\\IBL_specular.dds");
+    if (it2 != _textures.end()) return it2->second.gpu_handle;
+
+    for (const auto& [path, tex] : _textures) {
+        if (path.find("IBL_specular") != std::string::npos) {
+            return tex.gpu_handle;
+        }
+    }
+
+    CERROR("IBL Prefiltered not found!");
+    return {};
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_brdf_lut_srv()
+{
+    if (!_ibl_brdf_lut_path.empty()) {
+        auto it = _textures.find(_ibl_brdf_lut_path);
+        if (it != _textures.end()) return it->second.gpu_handle;
+    }
+
+    auto it2 = _textures.find("Resource\\SkyBox\\IBL_BRDF_LUT.dds");
+    if (it2 != _textures.end()) return it2->second.gpu_handle;
+
+    for (const auto& [path, tex] : _textures) {
+        if (path.find("IBL_BRDF_LUT") != std::string::npos) {
+            return tex.gpu_handle;
+        }
+    }
+
+    CERROR("IBL BRDF LUT not found!");
     return {};
 }
 
