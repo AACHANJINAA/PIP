@@ -97,6 +97,17 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     return Out;
 }
 
+//float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
+//{
+//     float3 N = normalize(In.Normal);
+//        float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
+//        float3 R = reflect(-V, N);
+
+//        // TEST 1: Irradiance Map 직접 샘플링
+//        float3 testIrr = g_IrradianceMap.Sample(g_samLinear, N).rgb;
+//        return float4(testIrr * 10.0, 1.0); // 10배 밝게
+//}
+
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 {
     // 1. Albedo (BaseColor) 값 설정
@@ -113,6 +124,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float ao = 1.0f;
     float roughness = RoughnessFactor;
     float metallic = MetallicFactor;
+  
 
     if (dot(ormSample, float3(1, 1, 1)) > 0.05f)
     {
@@ -169,7 +181,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
     
-
     return float4(finalColor, diffuseSample.a);
 }
 
