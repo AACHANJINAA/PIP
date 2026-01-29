@@ -48,9 +48,6 @@
     <Filter Include="소스 파일\Game\Components">
       <UniqueIdentifier>{f55f1d8d-8df6-4c39-8e0d-bc93022b040c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Utils">
-      <UniqueIdentifier>{d60e64d6-2aa7-47f6-9232-0e4dfa01ae08}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Manager\PhysicsManager">
       <UniqueIdentifier>{06024f05-3f6f-49c1-b06c-0095a95aa96f}</UniqueIdentifier>
     </Filter>
@@ -190,9 +187,6 @@
     <ClInclude Include="AIComponent.h">
       <Filter>소스 파일\Game\Components</Filter>
     </ClInclude>
-    <ClInclude Include="JoltHelper.h">
-      <Filter>소스 파일\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="PhysicsManager.h">
       <Filter>소스 파일\Manager\PhysicsManager</Filter>
     </ClInclude>
@@ -207,6 +201,9 @@
     </ClInclude>
     <ClInclude Include="GridMap.h">
       <Filter>소스 파일\Game\GridMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\JoltHelper.h">
+      <Filter>소스 파일\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,8 @@
 #include "AnimationComponent.h"
 
 #include "LightManager.h"
+#include "PhysicsColliderComponent.h"
+#include "WeaponScript.h"
 
 
 void MainPlayerScript::update(float deltaTime)
@@ -106,7 +108,19 @@ void MainPlayerScript::update(float deltaTime)
             sunLight->m_vDirection = XMFLOAT3(0.8f, -0.4f, 0.2f);
         }
     }
-
+    if (InputManager::instance()->IsKeyPress(VK_SPACE))
+    {
+        // 스페이스 누르면 내 주변 3m 다 때림
+        if (_attackRangeObject) {
+            _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(true);
+        }
+    }
+    else
+    {
+        if (_attackRangeObject) {
+            _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(false);
+        }
+    }
 	
     auto anim_comp = game_object()->get_component<AnimationComponent>();
     if (is_moving) {
@@ -155,8 +169,9 @@ void MainPlayerScript::update(float deltaTime)
     }
     else if(InputManager::instance()->IsKeyPress(VK_SPACE))
     {
-        if (animation_comp)
-        {
+        
+        // 애니메이션 패킷 전송 등...
+        if (anim_comp) {
             anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
         }
     }
@@ -192,6 +207,21 @@ void MainPlayerScript::awake()
         // 카메라가 없으면 기본 회전 (필요에 따라 조정)                        
         transform()->set_local_rotation(0.0f, 0.0f, 0.0f);
     }
+
+
+    // [테스트] 플레이어 중심 공격 범위 (Attack Range) 생성
+    _attackRangeObject = ObjectManager::instance()->create_game_object("AttackRange");
+    _attackRangeObject->transform()->set_parent(game_object()->transform());
+    _attackRangeObject->transform()->set_local_position({ 0, 0, 0 });
+
+    auto col = _attackRangeObject->add_component<PhysicsColliderComponent>();
+    // 반지름 3.0m짜리 거대한 구 (센서)
+    col->initialize(PhysicsColliderComponent::ShapeType::Sphere, { 3.0f, 0, 0 }, { 0,0,0 }, { 0,0,0 }, true);
+
+    // 로그 찍는 스크립트 붙이기
+    _attackRangeObject->add_component<WeaponScript>();
+
+    col->set_active(false); // 평소엔 끔
 
 	/*_renderComponent = game_object()->add_component<RenderComponent>().get();
     auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");

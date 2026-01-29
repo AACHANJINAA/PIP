@@ -1,9 +1,9 @@
 #pragma once
 #include "stdafx.h"
-#include "Behaviour.h"
+#include "Behavior.h"
 
 
-class MonsterHPComponent : public Behaviour
+class MonsterHPComponent : public Behavior
 {
 public:
 	MonsterHPComponent();

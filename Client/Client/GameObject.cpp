@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "GameObject.h"
-#include "Behaviour.h"
+#include "Behavior.h"
 #include "LayerManager.h"
+#include "ScriptComponent.h"
 #include "TransformComponent.h"
 
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
@@ -14,12 +15,12 @@ void GameObject::init()
 	_transform = add_component<TransformComponent>();
 }
 
-void GameObject::awake()
+void GameObject::awake() const
 {
 	for (const auto& component : _components)
 	{
 		// 컴포넌트가 Behaviour를 상속받았는지 확인
-		if (auto behaviour = std::dynamic_pointer_cast<Behaviour>(component))
+		if (auto behaviour = std::dynamic_pointer_cast<Behavior>(component))
 		{
 			if (behaviour->is_enabled())
 			{
@@ -29,11 +30,11 @@ void GameObject::awake()
 	}
 }
 
-void GameObject::start()
+void GameObject::start() const
 {
 	for (const auto& component : _components)
 	{
-		if (auto behaviour = std::dynamic_pointer_cast<Behaviour>(component))
+		if (auto behaviour = std::dynamic_pointer_cast<Behavior>(component))
 		{
 			if (behaviour->is_enabled())
 			{
@@ -42,7 +43,7 @@ void GameObject::start()
 		}
 	}
 }
-void GameObject::update(float delta_time)
+void GameObject::update(float delta_time) const
 {
 	// [제거] TransformComponent는 더 이상 GameFramework의 업데이트 루프에 의존하지 않습니다.
 	 // if (_transform) {
@@ -52,24 +53,24 @@ void GameObject::update(float delta_time)
 	 // 자신의 모든 Behaviour 컴포넌트의 update를 호출합니다.
 	for (const auto& component : _components)
 	{
-		if (auto behaviour = std::dynamic_pointer_cast<Behaviour>(component))
+		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
 		{
-			if (behaviour->is_enabled())
+			if (behavior->is_enabled())
 			{
-				behaviour->update(delta_time);
+				behavior->update(delta_time);
 			}
 		}
 	}
 }
-void GameObject::fixed_update(float fixed_delta_time)
+void GameObject::fixed_update(float fixed_delta_time) const
 {
 	for (const auto& component : _components)
 	{
-		if (auto behaviour = std::dynamic_pointer_cast<Behaviour>(component))
+		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
 		{
-			if (behaviour->is_enabled())
+			if (behavior->is_enabled())
 			{
-				behaviour->fixed_update(fixed_delta_time);
+				behavior->fixed_update(fixed_delta_time);
 			}
 		}
 	}
@@ -79,11 +80,11 @@ void GameObject::late_update(float delta_time)
 {
 	for (const auto& component : _components)
 	{
-		if (auto behaviour = std::dynamic_pointer_cast<Behaviour>(component))
+		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
 		{
-			if (behaviour->is_enabled())
+			if (behavior->is_enabled())
 			{
-				behaviour->late_update(delta_time);
+				behavior->late_update(delta_time);
 			}
 		}
 	}
@@ -92,6 +93,42 @@ void GameObject::late_update(float delta_time)
 void GameObject::destroy()
 {
 	Object::destroy(shared_from_this());
+}
+
+void GameObject::on_collision_enter(const std::shared_ptr<GameObject>& other)
+{
+	// 이 객체에 붙은 모든 스크립트의 콜백을 호출
+	for (const auto& component : _components)
+	{
+		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
+		{
+			script->on_collision_enter(other);
+		}
+	}
+}
+void GameObject::on_collision_stay(const std::shared_ptr<GameObject>& other)
+{
+	// 이 객체에 붙은 모든 스크립트의 콜백을 호출
+	for (const auto& component : _components)
+	{
+		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
+		{
+			script->on_collision_stay(other);
+		}
+	}
+	
+}
+void GameObject::on_collision_exit(const std::shared_ptr<GameObject>& other)
+{
+	// 이 객체에 붙은 모든 스크립트의 콜백을 호출
+	for (const auto& component : _components)
+	{
+		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
+		{
+			script->on_collision_exit(other);
+		}
+	}
+	
 }
 
 void GameObject::set_layer(const std::string& name)

@@ -189,6 +189,7 @@
     <ClCompile Include="TransformComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\JoltHelper.h" />
     <ClInclude Include="..\..\Common\json.hpp" />
     <ClInclude Include="..\..\Common\Packet.h" />
     <ClInclude Include="..\..\Common\PacketStream.h" />
@@ -202,7 +203,6 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GridMap.h" />
-    <ClInclude Include="JoltHelper.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
     <ClInclude Include="MapDataManager.h" />

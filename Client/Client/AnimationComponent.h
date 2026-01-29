@@ -1,9 +1,9 @@
 #pragma once
 #include "stdafx.h"
-#include "Behaviour.h"
+#include "Behavior.h"
 
 class Mesh;
-class AnimationComponent : public Behaviour
+class AnimationComponent : public Behavior
 {
 public:
 	AnimationComponent();

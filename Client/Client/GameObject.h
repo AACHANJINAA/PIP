@@ -2,113 +2,118 @@
 #include "Object.h"
 
 class Component;
-class Behaviour;
+class Behavior;
 class TransformComponent; // TransformComponent에 대한 전방 선언 추가
 class GameObject : public Object, public std::enable_shared_from_this<GameObject>
 {
 public:
-    GameObject(const std::string& name = "GameObject");
-    virtual ~GameObject() = default;
+	GameObject(const std::string& name = "GameObject");
+	virtual ~GameObject() = default;
 
-    void init();
+	void init();
 
-    void awake();
-    void start();
-    void update(float deltaTime);
-    void fixed_update(float deltaTime);
-    void late_update(float deltaTime);
-    void destroy();
-    // [변경] 레이어 타입을 uint32_t로 변경
-    uint32_t layer_mask() const { return _layerMask; }
+	void awake() const;
+	void start() const;
+	void update(float deltaTime) const;
+	void fixed_update(float deltaTime) const;
+	void late_update(float deltaTime);
+	void destroy();
 
-    // [변경] 이름으로 레이어를 설정하는 함수
-    void set_layer(const std::string& name);
+	void on_collision_enter(const std::shared_ptr<GameObject>& other);
+	void on_collision_stay(const std::shared_ptr<GameObject>& other);
+	void on_collision_exit(const std::shared_ptr<GameObject>& other);
 
-    // [추가] 특정 레이어에 속하는지 확인하는 함수
-    bool is_in_layer(const std::string& name) const;
-    // --- 편의 Getter ---
+	// [변경] 레이어 타입을 uint32_t로 변경
+	uint32_t layer_mask() const { return _layerMask; }
+
+	// [변경] 이름으로 레이어를 설정하는 함수
+	void set_layer(const std::string& name);
+
+	// [추가] 특정 레이어에 속하는지 확인하는 함수
+	bool is_in_layer(const std::string& name) const;
+	// --- 편의 Getter ---
 	// [변경] 반환 타입을 shared_ptr로 변경
-    std::shared_ptr<TransformComponent> transform() const { return _transform; }
+	std::shared_ptr<TransformComponent> transform() const { return _transform; }
 
-    // --- Component Management ---
+	// --- Component Management ---
 
-    template<typename T, typename... Args>
-    std::shared_ptr<T> add_component(Args&&... args)
-    {
-        // 이미 해당 타입의 컴포넌트가 있으면 추가하지 않고 기존 것을 반환
-        auto existing = get_component<T>();
-        if (existing)
-            return existing;
+	template<typename T, typename... Args>
+	std::shared_ptr<T> add_component(Args&&... args)
+	{
+		// 이미 해당 타입의 컴포넌트가 있으면 추가하지 않고 기존 것을 반환
+		auto existing = get_component<T>();
+		if (existing)
+			return existing;
 
-        // 먼저, 이 컴포넌트가 요구하는 다른 컴포넌트들을 재귀적으로 추가합니다.
-        add_required_components(static_cast<typename T::required_components*>(nullptr));
+		// 먼저, 이 컴포넌트가 요구하는 다른 컴포넌트들을 재귀적으로 추가합니다.
+		add_required_components(static_cast<typename T::required_components*>(nullptr));
 
-        // 그 다음, 원래 요청된 컴포넌트를 추가하고 반환합니다.
-        auto new_component = std::make_shared<T>(std::forward<Args>(args)...);
-        new_component->set_game_object(shared_from_this());
-        _components.push_back(new_component);
-        return new_component;
-    }
+		// 그 다음, 원래 요청된 컴포넌트를 추가하고 반환합니다.
+		auto new_component = std::make_shared<T>(std::forward<Args>(args)...);
+		new_component->set_game_object(shared_from_this());
+		_components.push_back(new_component);
+		return new_component;
+	}
 
-    template<typename T>
-    std::shared_ptr<T> get_component()
-    {
-        for (const auto& component : _components)
-        {
-            if (auto castedComponent = std::dynamic_pointer_cast<T>(component))
-            {
-                return castedComponent;
-            }
-        }
-        return nullptr;
-    }
+	template<typename T>
+	std::shared_ptr<T> get_component()
+	{
+		for (const auto& component : _components)
+		{
+			if (auto castedComponent = std::dynamic_pointer_cast<T>(component))
+			{
+				return castedComponent;
+			}
+		}
+		return nullptr;
+	}
 
-    void remove_component(std::shared_ptr<Component> component);
+	void remove_component(std::shared_ptr<Component> component);
 
 private:
-    // 의존성을 재귀적으로 추가하기 위한 템플릿 도우미 함수
-    template <typename... T>
-    void add_required_components(std::tuple<T...>*)
-    {
-        // 튜플의 0번째 인덱스부터 의존성 추가를 시작합니다.
-        add_required_component_at<0, T...>();
-    }
+	// 의존성을 재귀적으로 추가하기 위한 템플릿 도우미 함수
+	template <typename... T>
+	void add_required_components(std::tuple<T...>*)
+	{
+		// 튜플의 0번째 인덱스부터 의존성 추가를 시작합니다.
+		add_required_component_at<0, T...>();
+	}
 
-    // 2. 재귀적으로 호출되며 실제 작업을 수행하는 함수
-    template <size_t I, typename... T>
-    // 템플릿 인자 I가 튜플의 크기보다 작을 때만 이 함수가 선택되도록 합니다. (SFINAE)
-    typename std::enable_if<(I < sizeof...(T))>::type add_required_component_at()
-    {
-        // 현재 인덱스(I)에 해당하는 컴포넌트의 타입을 가져옵니다.
-        using ComponentType = typename std::tuple_element<I, std::tuple<T...>>::type;
+	// 2. 재귀적으로 호출되며 실제 작업을 수행하는 함수
+	template <size_t I, typename... T>
+	// 템플릿 인자 I가 튜플의 크기보다 작을 때만 이 함수가 선택되도록 합니다. (SFINAE)
+	typename std::enable_if<(I < sizeof...(T))>::type add_required_component_at()
+	{
+		// 현재 인덱스(I)에 해당하는 컴포넌트의 타입을 가져옵니다.
+		using ComponentType = typename std::tuple_element<I, std::tuple<T...>>::type;
 
-        // 해당 타입의 컴포넌트가 이 게임오브젝트에 아직 없으면, 추가합니다.
-        if (!get_component<ComponentType>())
-        {
-            add_component<ComponentType>();
-        }
+		// 해당 타입의 컴포넌트가 이 게임오브젝트에 아직 없으면, 추가합니다.
+		if (!get_component<ComponentType>())
+		{
+			add_component<ComponentType>();
+		}
 
-        // 다음 인덱스(I + 1)의 컴포넌트를 처리하기 위해 재귀 호출합니다.
-        add_required_component_at<I + 1, T...>();
-    }
+		// 다음 인덱스(I + 1)의 컴포넌트를 처리하기 위해 재귀 호출합니다.
+		add_required_component_at<I + 1, T...>();
+	}
 
-    // 3. 재귀 호출을 종료하는 함수
-    template <size_t I, typename... T>
-    // 템플릿 인자 I가 튜플의 크기와 같아지면 이 함수가 선택되어 재귀가 멈춥니다.
-    typename std::enable_if<(I == sizeof...(T))>::type add_required_component_at()
-    {
-        // 모든 의존성을 확인했으므로 아무것도 하지 않고 재귀를 종료합니다.
-    }
+	// 3. 재귀 호출을 종료하는 함수
+	template <size_t I, typename... T>
+	// 템플릿 인자 I가 튜플의 크기와 같아지면 이 함수가 선택되어 재귀가 멈춥니다.
+	typename std::enable_if<(I == sizeof...(T))>::type add_required_component_at()
+	{
+		// 모든 의존성을 확인했으므로 아무것도 하지 않고 재귀를 종료합니다.
+	}
 
-    // 4. 의존성이 아예 없는 경우를 위한 함수
-    void add_required_components(std::tuple<>*)
-    {
-        // 할 일 없음
-    }
+	// 4. 의존성이 아예 없는 경우를 위한 함수
+	void add_required_components(std::tuple<>*)
+	{
+		// 할 일 없음
+	}
 private:
-    std::vector<std::shared_ptr<Component>> _components;
-    std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
-    uint32_t                                _layerMask = 0;
+	std::vector<std::shared_ptr<Component>> _components;
+	std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
+	uint32_t                                _layerMask = 0;
 };
 //public:
 //	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?

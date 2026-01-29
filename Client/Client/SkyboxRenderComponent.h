@@ -1,8 +1,8 @@
 #pragma once
-#include "Behaviour.h"
+#include "Behavior.h"
 #include "Mesh.h"
 
-class SkyboxRenderComponent : public Behaviour
+class SkyboxRenderComponent : public Behavior
 {
 public:
     SkyboxRenderComponent();

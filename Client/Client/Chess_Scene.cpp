@@ -19,6 +19,7 @@
 
 #include "SkyboxRenderComponent.h"
 #include "CameraComponent.h"
+#include "PhysicsColliderComponent.h"
 #include "Renderer.h"
 #include "SceneManager.h"
 
@@ -83,6 +84,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
         //playerObject->transform()->set_local_position(XMFLOAT3(0.0f, 70.0f, -150.0f));
         //ResourceManager::Instance()->upload_pending_meshes(device, commandList);
     }
+
+    SpawnDummyNPC(device, commandList);
 }
 
 void Chess_Scene::release_upload_buffers()
@@ -136,6 +139,35 @@ void Chess_Scene::render_post_process(ID3D12GraphicsCommandList* commandList, UI
 
     // 메시 렌더링
     skyboxComp->render(commandList, frame_index);
+}
+
+void Chess_Scene::SpawnDummyNPC(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    
+
+    auto npc = ObjectManager::instance()->create_game_object("DummyNPC");
+    npc->transform()->set_local_position({ 5.0f, 0.0f, 5.0f });
+
+    // 1. 렌더 컴포넌트 추가
+    auto render_comp = npc->add_component<RenderComponent>();
+
+    // 2. 메쉬 로드 (플레이어와 동일한 메쉬 사용)
+    auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+    render_comp->set_mesh(npc_mesh);
+
+    // 3. 재질(Material) 및 PSO 설정
+    // 기존에 "gltf" PSO가 설정되어 있어야 합니다.
+    render_comp->set_pso_name("gltf");
+
+    // 4. 크기 및 회전 조정 (너무 작거나 누워있을 수 있으므로)
+    npc->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f }); // 플레이어와 비슷한 크기
+    npc->transform()->set_local_rotation(-90.0f, 0.0f, 0.0f);    // GLTF 특성상 -90도 회전이 필요할 수 있음
+
+    // 5. 물리 컴포넌트 추가 (캡슐)
+    auto collider = npc->add_component<PhysicsColliderComponent>();
+    // 반지름 0.5, 높이 1.0 (플레이어 크기에 맞춰 조정)
+    collider->initialize(PhysicsColliderComponent::ShapeType::Capsule, { 0.5f, 1.0f, 0.0f }, { 0.f, 1.0f, 0.f },
+        { 0,0,0 }, false);
 }
 
 void Chess_Scene::SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

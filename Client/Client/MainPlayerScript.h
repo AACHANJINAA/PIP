@@ -41,6 +41,7 @@ private:
     int64_t _playerId;
 	RenderComponent* _renderComponent{ nullptr };
 	GameObject* _camera{ nullptr };
+    std::shared_ptr<GameObject> _attackRangeObject;
 
     // ¼Óµµ
     float _speed{5.f};
