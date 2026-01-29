@@ -29,6 +29,12 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
     D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
 
+    // IBL Maps Load 함수 및 SRV 핸들러
+    void load_ibl_maps();
+    D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_irradiance_srv();
+    D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_prefiltered_srv();
+    D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_brdf_lut_srv();
+
     //// [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
     //void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
@@ -127,6 +133,11 @@ private:
 
     // skybox 파일 경로
     std::string _skybox_texture_path;
+
+	// ibl 맵 파일 경로
+    std::string _ibl_irradiance_path;
+    std::string _ibl_prefiltered_path;
+    std::string _ibl_brdf_lut_path;
 
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
 	std::deque<std::shared_ptr<Mesh>> _pending_meshes;

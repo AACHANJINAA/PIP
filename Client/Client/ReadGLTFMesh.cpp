@@ -348,7 +348,7 @@ void ReadGLTFMesh::render_skinned(ID3D12GraphicsCommandList* commandList)
 	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
 	if (_bone_palette_buffer)
 	{
-		commandList->SetGraphicsRootConstantBufferView(8, _bone_palette_buffer->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(11, _bone_palette_buffer->GetGPUVirtualAddress());
 	}
 }
 
