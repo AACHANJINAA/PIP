@@ -27,22 +27,23 @@ D3D12_SHADER_BYTECODE SkyboxShader::create_pixel_shader(ComPtr<ID3DBlob>& shader
 	return compile_shader_from_file(L"Skybox_Shader.hlsl", "PS_Main", "ps_5_1", shader_blob);
 }
 
-D3D12_RASTERIZER_DESC SkyboxShader::create_rasterizer_state()
-{
-	D3D12_RASTERIZER_DESC rasterizer_desc = Shader::create_rasterizer_state();
-	// 스카이박스는 None으로 설정
-	rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE;
-	return rasterizer_desc;
-}
 
 D3D12_DEPTH_STENCIL_DESC SkyboxShader::create_depth_stencil_state()
 {
 	D3D12_DEPTH_STENCIL_DESC depth_stencil_desc = Shader::create_depth_stencil_state();
-	
+
 	// 스카이박스는 깊이 테스트는 하되, 쓰기는 하지 않음
 	depth_stencil_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	// 이미 그려진 픽셀과 깊이가 같거나 더 가까울 때만 그림
 	depth_stencil_desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	return depth_stencil_desc;
+}
+
+D3D12_RASTERIZER_DESC SkyboxShader::create_rasterizer_state()
+{
+	D3D12_RASTERIZER_DESC rasterizer_desc = Shader::create_rasterizer_state();
+	// 스카이박스는 None으로 설정
+	rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE;
+	return rasterizer_desc;
 }
