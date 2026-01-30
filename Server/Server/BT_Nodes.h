@@ -4,6 +4,7 @@
 #include "CharacterControllerComponent.h"
 #include "TransformComponent.h"
 #include "MapDataManager.h"
+#include "NPC.h"
 
 
 namespace PIP::GAME
@@ -54,6 +55,7 @@ namespace PIP::GAME
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override {
             GameObject* owner = _blackboard->get<GameObject*>("owner");
             if (!owner) return NodeStatus::FAILURE;
+            auto npc = dynamic_cast<NPC*>(owner);
 
             auto cc = owner->GetComponent<CharacterControllerComponent>();
             auto tc = owner->GetComponent<TransformComponent>();
@@ -68,9 +70,13 @@ namespace PIP::GAME
             float distSq = dx * dx + dz * dz;
 
             // 1. 도착 체크
-            if (distSq < 1.0f) {
+            if (distSq < 0.15f) {
                 cc->SetVelocity({ 0,0,0 });
                 _blackboard->set("target_pos", std::any()); // 목표 삭제 (비우기)
+
+                // [추가] 도착했으니 IDLE
+                if (npc) npc->SetState(common::packet::OBJECT_STATE::IDLE);
+
                 return NodeStatus::SUCCESS;
             }
 
@@ -100,6 +106,8 @@ namespace PIP::GAME
             // 2초 이상 끼임 -> 실패 반환 -> 상위 Selector가 새 타겟 찾음
             if (stuckTimer > 2.0f) {
                 _blackboard->set("target_pos", std::any()); // 목표 삭제
+                // [추가] 멈췄으니 IDLE
+                if (npc) npc->SetState(common::packet::OBJECT_STATE::IDLE);
                 return NodeStatus::FAILURE;
             }
 
@@ -111,6 +119,9 @@ namespace PIP::GAME
             vel.z = (dz / dist) * _speed;
 
             cc->SetVelocity(vel);
+
+            // [추가] 이동 중이니 WALK
+            if (npc) npc->SetState(common::packet::OBJECT_STATE::WALK);
 
             // 4. 회전 (바라보기)
             if (dist > 0.1f) {

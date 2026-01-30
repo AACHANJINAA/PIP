@@ -22,12 +22,13 @@ namespace PIP::GAME
 		~NPC() override;
 
 		void SetupBT();
+		
 
 		// Getters
 		int GetNpcId()              const { return GetId(); }
 		int GetNpcType()            const { return _npc_type; }
 
-		NPCState GetState()         const { return _state; }
+		common::packet::OBJECT_STATE GetState() const { return _state; }
 		int GetRoomId()             const { return _room_id; }
 		int32_t GetHP()             const { return _hp; }
 		std::chrono::steady_clock::time_point GetLastUpdateTime() const { return _lastUpdateTime; }
@@ -47,7 +48,6 @@ namespace PIP::GAME
 			auto tc = const_cast<NPC*>(this)->GetComponent<TransformComponent>();
 			return tc ? tc->GetRotation() : common::Vec4{ 0,0,0,1 };
 		}
-
 		JPH::BodyID GetBodyID() const
 		{
 			auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>();
@@ -55,7 +55,7 @@ namespace PIP::GAME
 		}
 
 		// Setters
-		void SetState(NPCState newState) { _state = newState; }
+		void SetState(common::packet::OBJECT_STATE new_state) { _state = new_state; }
 		void SetRoom(int room_id) { _room_id = room_id; }
 		void SetHP(int new_hp) { _hp = new_hp; }
 		void SetLastUpdateTime(std::chrono::steady_clock::time_point t) { _lastUpdateTime = t; }
@@ -124,7 +124,7 @@ namespace PIP::GAME
 		int32_t         _npc_type;
 		int32_t         _room_id;
 		int32_t         _hp;
-		NPCState        _state = NPCState::IDLE;
+		common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 		common::Vec3	_lastSentPos = {0,0,0};
 		common::Vec4	_lastSentRot = {0,0,0,1};
 		std::chrono::steady_clock::time_point _lastUpdateTime;

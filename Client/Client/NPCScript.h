@@ -13,7 +13,7 @@ public:
 	void set_hp(int hp);
 	int  get_hp() { return _hp; }
 	void set_position(const XMFLOAT3& position);
-	void set_state(const common::packet::OBJECT_STATE& object_state) { _state = object_state; }
+	void set_state(const common::packet::OBJECT_STATE& object_state);
 
 	int64_t id() const { return _id; }
 	int hp() const { return _hp; }

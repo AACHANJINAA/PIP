@@ -520,6 +520,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
 		auto NPC_logic = NPC->add_component<NPCScript>();
 		auto NPC_HP = NPC->add_component<MonsterHPComponent>();
+		auto animation_component = NPC->add_component<AnimationComponent>();
+		auto render_comp = NPC->add_component<RenderComponent>();
 
 		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
 
@@ -529,18 +531,25 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		NPC->set_layer("Enemy");
 
 
-		auto npc_mesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+		auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf",
+			true, "walk");
 
-		auto render_comp = NPC->add_component<RenderComponent>();
-		render_comp->set_mesh(npc_mesh);
+		auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",
+			true, "idle");
+
+		
+		render_comp->set_mesh(idleMesh);
+
+		animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
+		animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
 
 		// ResourceManager을 통해 재질 생성 및 쉐이더 할당
-		std::string material_name = "npc_material"; // player는 고정된 재질
+		std::string material_name = "npc_material";
 		ResourceManager::instance()->create_material(material_name);
-		ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+		ResourceManager::instance()->set_shader_for_material(material_name, "skinned"); // [중요] skinned 쉐이더 사용
 
 		// gltf
-		render_comp->set_pso_name("gltf");
+		render_comp->set_pso_name("skinned");
 
 		/*CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
 			<< " Name: " << npc_name
@@ -575,6 +584,9 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 		if (script)
 		{
 			script->on_server_update(move_packet._position, move_packet._velocity, move_packet._rotation, move_packet._time_stamp);
+
+			// [추가] 상태 업데이트! (걷기/멈춤 반영)
+			script->set_state(move_packet._state);
 		}
 		else
 		{
