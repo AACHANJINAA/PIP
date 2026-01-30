@@ -258,7 +258,7 @@ namespace PIP::SERVER
 		move_packet_data._position = npc->GetPosition();
 		move_packet_data._velocity = npc->GetVelocity();
 		move_packet_data._rotation = npc->GetRotation();
-		move_packet_data._state = common::packet::OBJECT_STATE::WALK; 
+		move_packet_data._state = npc->GetState();
 		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 		packet::PacketStream finalStream;
@@ -336,7 +336,7 @@ namespace PIP::SERVER
 				data._position = npc->GetPosition();
 				data._velocity = npc->GetVelocity();
 				data._rotation = npc->GetRotation();
-				data._state = common::packet::OBJECT_STATE::WALK;
+				data._state = npc->GetState();
 				data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 				stream << data;
@@ -386,6 +386,7 @@ namespace PIP::SERVER
 		spawn_packet_data._npc_id = npc->GetNpcId();
 		spawn_packet_data._npc_type = npc->GetNpcType();
 		spawn_packet_data._position = npc->GetPosition();
+		spawn_packet_data._state = npc->GetState();
 		const std::string& npc_name = npc->GetName();
 
 		packet::PacketStream finalStream;

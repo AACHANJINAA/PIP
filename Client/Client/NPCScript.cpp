@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 #include "NPCScript.h"
+
+#include "AnimationComponent.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "MonsterHPComponent.h"
@@ -11,6 +13,16 @@ void NPCScript::set_position(const XMFLOAT3& position)
 	}
 }
 
+void NPCScript::set_state(const common::packet::OBJECT_STATE& object_state)
+{
+	_state = object_state;
+	// 애니메이션 컴포넌트에게 상태 변경 알림
+	auto animation_component = game_object()->get_component<AnimationComponent>();
+	if (animation_component) {
+		animation_component->set_state(object_state);
+	}
+}
+
 const XMFLOAT3& NPCScript::position() const
 {
 	static XMFLOAT3 dummy = { 0, 0, 0 };
@@ -19,9 +31,6 @@ const XMFLOAT3& NPCScript::position() const
 
 void NPCScript::awake()
 {
-	// 모델 기본 설정
-	transform()->set_local_rotation(-90.f, 0.f, 0.f);
-	transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
 
 	_serverPos = transform()->local_position();
 	_serverRot = transform()->local_rotation();
@@ -40,8 +49,7 @@ void NPCScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const
 	if (_isFirstUpdate) {
 		if (transform()) {
 			transform()->set_local_position(pos);
-			// 서버 회전에 -90도 오프셋 적용
-			transform()->set_local_rotation(TransformComponent::apply_offset_rotation(rot, -90.f, 0, 0));
+			transform()->set_local_rotation(rot);
 		}
 		_isFirstUpdate = false;
 	}
@@ -109,15 +117,7 @@ void NPCScript::update(float deltaTime)
 	// ---------------------------------------------------------
 	// 3. 회전 보간 (Slerp)
 	// ---------------------------------------------------------
-	XMVECTOR qCurrentRot = XMLoadFloat4(&transform()->local_rotation());
-	// 서버 회전에 모델 오프셋(-90도) 적용한 것을 목표로 설정
-	auto offset_rotation = TransformComponent::apply_offset_rotation(_serverRot, -90.f, 0, 0);
-	XMVECTOR qTargetRot = XMLoadFloat4(&offset_rotation);
-
-	XMVECTOR qNextRot = XMQuaternionSlerp(qCurrentRot, qTargetRot, deltaTime * 8.0f);
-	XMFLOAT4 nextRot;
-	XMStoreFloat4(&nextRot, qNextRot);
-	transform()->set_local_rotation(nextRot);
+	transform()->set_local_rotation(_serverRot);
 }
 
 void NPCScript::late_update(float deltaTime)
