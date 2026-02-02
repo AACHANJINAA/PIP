@@ -23,6 +23,7 @@
 #include "RenderComponent.h"
 #include "SkyboxRenderComponent.h"
 
+
 #include "TerrainLoader.h"
 
 void Renderer::initialize(ID3D12Device* device)
