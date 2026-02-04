@@ -63,7 +63,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
     float3 prefilteredColor = g_PrefilteredMap.SampleLevel(g_samLinear, R, lod).rgb;
 
         // HDR 텍스처 스케일링 (값이 너무 큰 경우)
-    prefilteredColor *= 0.1; // ← 이 줄 추가!
+    prefilteredColor *= 0.001; // ← 이 줄 추가!
 
         // 5. BRDF LUT 샘플링
     float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
