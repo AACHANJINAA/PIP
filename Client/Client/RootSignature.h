@@ -69,3 +69,12 @@ public:
 
     ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
 };
+
+class DebugRootSignatureGenerator : public IRootSignatureGenerator {
+public:
+    virtual const std::string& name() const override {
+        static const std::string name = "debug";
+        return name;
+    }
+    virtual ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
+};

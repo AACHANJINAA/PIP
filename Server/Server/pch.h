@@ -89,6 +89,7 @@ inline std::mutex g_log_mutex;
 // 디버그 빌드에서만 로그가 동작하도록 설정
 #ifdef _DEBUG
 #define ENABLE_DEBUG_LOG // 주석 처리로 껏다켯다하면서 사용할것
+#define _DEBUG_PHYSICS_VISUALIZATION
 #endif
 
 #ifdef _DEBUG

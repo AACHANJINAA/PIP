@@ -11,6 +11,7 @@
 
 //#include "HPRenderComponent.h"
 #include "AnimationComponent.h"
+#include "DebugDrawManager.h"
 #include "MonsterHPComponent.h"
 
 void error_display(const char* msg, int err_no)
@@ -109,21 +110,20 @@ void NetworkManager::recv_packet()
 		// 패킷 조립 (Framing)
 		while (true)
 		{
-			if (_recvBuffer.size() < sizeof(common::packet::PacketHeader))
-				break; // 헤더조차 다 못 받음
-
+			if (_recvBuffer.size() < sizeof(common::packet::PacketHeader)) break;
 			auto* header = reinterpret_cast<common::packet::PacketHeader*>(_recvBuffer.data());
 
-			if (_recvBuffer.size() < header->_size)
-				break; // 패킷 바디가 다 안 옴
+			// [수정] 헤더 사이즈가 비정상적(0이거나 너무 작음)이면 스트림이 깨진 것임
+			if (header->_size < sizeof(common::packet::PacketHeader)) {
+				CLOG("Critical: Invalid Packet Size " << header->_size);
+				_recvBuffer.clear(); // 스트림 초기화
+				break;
+			}
 
-			// 완성된 패킷 하나 추출
+			if (_recvBuffer.size() < header->_size) break;
+
 			std::vector<char> singlePacket(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
-
-			// 메인 스레드가 처리하도록 큐에 전달
 			_packetQueue.push(std::move(singlePacket));
-
-			// 버퍼에서 제거
 			_recvBuffer.erase(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
 		}
 	}
@@ -644,6 +644,19 @@ void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream
 	}
 }
 
+void NetworkManager::HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_DEBUG_DRAW packet;
+	stream >> packet;
+
+	//// [로그 추가]
+	//CLOG("[DEBUG_DRAW] Received Packet: Type=" << (int)packet._shape_type
+	//	<< " Pos=" << packet._position.x << "," << packet._position.y
+	//	<< " Duration=" << packet._duration);
+
+	DebugDrawManager::instance()->AddDebugRequest(packet);
+}
+
 bool NetworkManager::init_network()
 {
 	// 이동 응답 패킷 핸들러 등록
@@ -688,6 +701,9 @@ bool NetworkManager::init_network()
 
 	RegisterHandler(common::packet::PacketType::S2C_NPC_DESPAWN, 
 		std::bind(&NetworkManager::HANDLE_S2C_DESPAWN_NPC, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_DRAW,
+		std::bind(&NetworkManager::HANDLE_S2C_DEBUG_DRAW, this, std::placeholders::_1));
 
 
 	WSADATA wsaData;

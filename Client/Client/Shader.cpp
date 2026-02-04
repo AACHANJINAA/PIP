@@ -20,7 +20,7 @@ ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootS
 
 	// [수정] 파생 클래스가 토폴로지를 지정할 수 있도록 가상 함수로 분리하는 것이 좋습니다.
 	// virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive_topology_type() const { return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; }
-	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	pso_desc.PrimitiveTopologyType = this->primitive_topology_type();
 
 	pso_desc.NumRenderTargets = 1;
 	pso_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
