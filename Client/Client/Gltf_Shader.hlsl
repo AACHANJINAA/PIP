@@ -121,11 +121,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
         roughness *= ormSample.g;
         metallic *= ormSample.b;
     }
-	else
-	{
-        metallic = 0.0f;
-    }
-
+    
      // 3. Normal Map
     float3 N = normalize(In.Normal);
     float3 N_geom = normalize(In.Normal); // 기하학적 Normal 저장
