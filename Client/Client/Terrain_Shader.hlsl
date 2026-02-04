@@ -22,12 +22,13 @@ SamplerState terrainSampler : register(s0);
 
 cbuffer cbTerrainInfo : register(b2)
 {
-    float4 g_bounds;
-    float2 g_size;
-    float g_height_scale;
-    float g_min_height;
-    float2 g_tiling;
-    float2 g_detail_tiling;
+    float4 Bounds;
+    float2 Size;
+    float HeightScale;
+    float MinHeight;
+    float2 Tiling;
+    float2 DetailTiling; 
+    float2 Padding; // 16바이트 정렬
 };
 
 struct VS_Input
@@ -74,11 +75,11 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float3 N = normalize(input.NormalW);
     float3 V = normalize(gvCameraPosition.xyz - P); // View direction
 
-    float2 baseUV = input.UV * g_tiling;
+    float2 baseUV = input.UV * Tiling;
     float3 albedo = albedoTexture.Sample(terrainSampler, input.UV).rgb;
     
     // 디테일 텍스처 샘플링 (별도의 타일링 값 사용)
-    float2 detailUV = input.UV * g_detail_tiling;
+    float2 detailUV = input.UV * DetailTiling;
     float3 detailColor = detailTexture.Sample(terrainSampler, detailUV).rgb;
 
     // Multiply Blending: 기본 색상과 디테일 색상을 곱하여 혼합
@@ -100,9 +101,11 @@ float4 PS_Main(PS_Input input) : SV_TARGET
 	// Construct TBN matrix
     float3x3 TBN = float3x3(normalize(input.TangentW), normalize(input.BitangentW), N);
     N = normalize(mul(N_tangent, TBN));
-
+    
+    float specular = 0.5f;
+    
      // Call the PBR Lighting function
-    float4 litColor = Lighting(P, N, V, albedo, metallic, roughness, ao);
+    float4 litColor = Lighting(P, N, V, albedo, metallic, roughness, ao, specular);
 
         // IBL 추가 ← 추가
     float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
