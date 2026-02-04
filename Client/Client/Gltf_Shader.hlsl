@@ -172,6 +172,15 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     return float4(finalColor, diffuseSample.a);
 }
 
+// 디버그용 노말 출력
+//float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
+//{
+//    float3 N = normalize(In.Normal);
+//    return float4(N * 0.5 + 0.5, 1.0);
+//    float normalLen = length(In.Normal);
+//    return float4(normalLen.xxx, 1.0);
+//}
+
 //////////////////////// HP 효과 픽셀 셰이더 추가 ////////////////////
 
 cbuffer cbHp : register(b8, space1)
