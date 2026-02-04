@@ -1,4 +1,9 @@
 ﻿#pragma once
+#if defined(_DEBUG)
+#define _DEBUG_PHYSICS_VISUALIZATION
+#endif
+
+
 //#define _WITH_SWAPCHAIN_FULLSCREEN_STATE
 // assmip
 #include <assimp/Importer.hpp>      // Assimp 로더

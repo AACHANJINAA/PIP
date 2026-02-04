@@ -2,6 +2,7 @@
 #include "GameFramework.h"
 
 #include "Chess_Scene.h"
+#include "DebugDrawManager.h"
 #include "Renderer.h"
 
 #include "DescriptorManager.h"
@@ -64,6 +65,9 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	Renderer::instance()->initialize(_device.Get());
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 	LightManager::instance()->initialize(_device.Get());
+#ifdef _DEBUG_PHYSICS_VISUALIZATION
+	DebugDrawManager::instance()->Initialize(_device.Get());
+#endif
 
 	BuildObjects();
 	//렌더링할 게임 객체를 생성한다.
@@ -521,6 +525,10 @@ void GameFramework::update_game_logic(float deltaTime)
 	{
 		main_cam->recalculate_view_matrix();
 	}
+
+#ifdef _DEBUG_PHYSICS_VISUALIZATION
+	DebugDrawManager::instance()->Update(deltaTime);
+#endif
 }
 
 void GameFramework::update_physics(float elapsedTime)

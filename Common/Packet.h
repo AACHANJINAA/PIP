@@ -52,6 +52,9 @@ namespace common::packet
 		S2C_NPC_DESPAWN = 503,
 		S2C_NPC_UPDATE_HP = 504,
 		S2C_NPC_MOVE_BATCH = 505,
+
+		//------------------------------------------- 디버깅용 패킷 --------------------------------------- //
+		S2C_P_DEBUG_DRAW = 601,
 	};
 
 
@@ -79,6 +82,12 @@ namespace common::packet
 		NORMAL_ATTACK = 1, // 일반 공격
 		SKILL = 2,         // 스킬 사용
 		INTERACT = 3       // 상호작용 (예: 아이템 줍기)
+	};
+
+	enum class DebugShapeType : uint8_t {
+		SPHERE = 0,
+		BOX = 1,
+		CAPSULE = 2
 	};
 
 #pragma pack (push, 1)
@@ -281,6 +290,14 @@ namespace common::packet
 	{
 		long long _sender_id;
 		uint16_t _message_length;
+	};
+	// ------------------------------------------- 디버깅용 패킷 ------------------------------------------ //
+	struct SC_PACKET_DEBUG_DRAW : PacketHeader {
+		DebugShapeType _shape_type;
+		Vec3           _position;
+		Quat           _rotation;
+		Vec3           _extents;  // Sphere: x=반경 / Box: x,y,z=반폭 / Capsule: x=반경, y=절반높이
+		float          _duration; // 지속 시간 (초)
 	};
 #pragma pack (pop)
 }

@@ -108,6 +108,9 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent">
       <UniqueIdentifier>{a047e690-9a26-4f15-b367-d054a338b960}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\3. Renderer\7. DebugRender">
+      <UniqueIdentifier>{e9db94f8-77e8-44a6-b58e-d3a185dd7f09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -341,6 +344,9 @@
     <ClInclude Include="WeaponScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
+    <ClInclude Include="DebugDrawManager.h">
+      <Filter>0. Engine\3. Renderer\7. DebugRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -543,6 +549,9 @@
     </ClCompile>
     <ClCompile Include="WeaponScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDrawManager.cpp">
+      <Filter>0. Engine\3. Renderer\7. DebugRender</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -47,6 +47,7 @@ private:
 	void HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream);
 	void HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& stream);
     void HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream);
+    void HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream);
 
     //TODO: void Handle_S2C_ERROR(common::packet::PacketStream& stream); // 에러 패킷 처리 함수
 

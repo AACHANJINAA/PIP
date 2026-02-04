@@ -8,7 +8,8 @@ public:
     DebugShader() = default;
     virtual ~DebugShader() = default;
 
-    virtual const std::string& pso_name() const override;
+    const std::string& pso_name() const override;
+	std::string required_root_signature() const override { return "debug"; }
 
 protected:
     virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override;

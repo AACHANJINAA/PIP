@@ -566,3 +566,20 @@ ComPtr<ID3D12RootSignature> MonsterHPUIRootSignatureGenerator::create(ID3D12Devi
 
     return root_signature;
 }
+
+ComPtr<ID3D12RootSignature> DebugRootSignatureGenerator::create(ID3D12Device* device) {
+    CD3DX12_ROOT_PARAMETER params[2];
+    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0 (World)
+    params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1 (Camera)
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error);
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
+}

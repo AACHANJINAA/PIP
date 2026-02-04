@@ -105,6 +105,7 @@
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
+    <ClInclude Include="DebugDrawManager.h" />
     <ClInclude Include="DebugShader.h" />
     <ClInclude Include="DefaultObjectShader.h" />
     <ClInclude Include="DescriptorManager.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
+    <ClCompile Include="DebugDrawManager.cpp" />
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />

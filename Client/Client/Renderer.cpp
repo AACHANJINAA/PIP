@@ -20,6 +20,7 @@
 
 #include "Camera.h"
 #include "CameraComponent.h"
+#include "DebugDrawManager.h"
 #include "RenderComponent.h"
 #include "SkyboxRenderComponent.h"
 
@@ -35,6 +36,7 @@ void Renderer::initialize(ID3D12Device* device)
     create_dynamic_descriptor_heap(100000);
 
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
+    _rootSignatureGenerators.push_back(std::make_unique<DebugRootSignatureGenerator>()); // 추가
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
@@ -132,6 +134,11 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
     draw_render_list(commandList, camera,  frame_index);
+
+#ifdef _DEBUG_PHYSICS_VISUALIZATION
+    // [수정] viewProj가 아니라 frame_index를 넘겨야 합니다!
+    DebugDrawManager::instance()->Render(commandList, frame_index);
+#endif
 }
 
 void Renderer::build_render_list(CameraComponent* camera)
