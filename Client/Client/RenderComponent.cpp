@@ -165,23 +165,23 @@ const std::string& RenderComponent::pso_name() const
 
 void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-    if (!_mesh)
-	{
-		CERROR("메쉬가 렌더 컴포넌트에 없음");
-		return;
-	}
-
-	// 1. 이 GameObject의 월드 행렬을 가져옵니다.
     const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
     XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
 
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
+    // World Matrix (Transpose해서 저장)
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world,
+        XMMatrixTranspose(worldMatrix));
 
-    XMMATRIX worldInverseTransposeMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverseTransposeMatrix);
+    // WorldInverseTranspose (일관성 있게 Transpose 한번 더)
+    XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
+    XMMATRIX worldInverseTranspose = XMMatrixTranspose(worldInverse);
 
-    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
+    // Transpose를 한번 더 해서 저장 (HLSL에서 column-major 사용하므로)
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose,
+        XMMatrixTranspose(worldInverseTranspose));
 
+    commandList->SetGraphicsRootConstantBufferView(0,
+        _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
     _mesh->render(commandList);
 }
 
