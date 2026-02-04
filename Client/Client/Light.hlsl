@@ -1,3 +1,5 @@
+// 언리얼 스타일 PBR 조명 계산
+
 #define MAX_LIGHTS            16
 #define MAX_MATERIALS        512
 
@@ -8,146 +10,6 @@
 #define _WITH_LOCAL_VIEWER_HIGHLIGHTING
 #define _WITH_THETA_PHI_CONES
 //#define _WITH_REFLECT
-
-// 4x4 행렬의 역행렬을 계산하는 헬퍼 함수
-matrix matrixInverse(matrix m)
-{
-    float4x4 inv;
-
-    inv._11 = m._22 * m._33 * m._44
-            - m._22 * m._34 * m._43
-            - m._32 * m._23 * m._44
-            + m._32 * m._24 * m._43
-            + m._42 * m._23 * m._34
-            - m._42 * m._24 * m._33;
-
-    inv._21 = -m._21 * m._33 * m._44
-            + m._21 * m._34 * m._43
-            + m._31 * m._23 * m._44
-            - m._31 * m._24 * m._43
-            - m._41 * m._23 * m._34
-            + m._41 * m._24 * m._33;
-
-    inv._31 = m._21 * m._32 * m._44
-            - m._21 * m._34 * m._42
-            - m._31 * m._22 * m._44
-            + m._31 * m._24 * m._42
-            + m._41 * m._22 * m._34
-            - m._41 * m._24 * m._32;
-
-    inv._41 = -m._21 * m._32 * m._43
-            + m._21 * m._33 * m._42
-            + m._31 * m._22 * m._43
-            - m._31 * m._23 * m._42
-            - m._41 * m._22 * m._33
-            + m._41 * m._23 * m._32;
-
-    inv._12 = -m._12 * m._33 * m._44
-            + m._12 * m._34 * m._43
-            + m._32 * m._13 * m._44
-            - m._32 * m._14 * m._43
-            - m._42 * m._13 * m._34
-            + m._42 * m._14 * m._33;
-
-    inv._22 = m._11 * m._33 * m._44
-            - m._11 * m._34 * m._43
-            - m._31 * m._13 * m._44
-            + m._31 * m._14 * m._43
-            + m._41 * m._13 * m._34
-            - m._41 * m._14 * m._33;
-
-    inv._32 = -m._11 * m._32 * m._44
-            + m._11 * m._34 * m._42
-            + m._31 * m._12 * m._44
-            - m._31 * m._14 * m._42
-            - m._41 * m._12 * m._34
-            + m._41 * m._14 * m._32;
-
-    inv._42 = m._11 * m._32 * m._43
-            - m._11 * m._33 * m._42
-            - m._31 * m._12 * m._43
-            + m._31 * m._13 * m._42
-            + m._41 * m._12 * m._33
-            - m._41 * m._13 * m._32;
-
-    inv._13 = m._12 * m._23 * m._44
-            - m._12 * m._24 * m._43
-            - m._22 * m._13 * m._44
-            + m._22 * m._14 * m._43
-            + m._42 * m._13 * m._24
-            - m._42 * m._14 * m._23;
-
-    inv._23 = -m._11 * m._23 * m._44
-            + m._11 * m._24 * m._43
-            + m._21 * m._13 * m._44
-            - m._21 * m._14 * m._43
-            - m._41 * m._13 * m._24
-            + m._41 * m._14 * m._23;
-
-    inv._33 = m._11 * m._22 * m._44
-            - m._11 * m._24 * m._42
-            - m._21 * m._12 * m._44
-            + m._21 * m._14 * m._42
-            + m._41 * m._12 * m._24
-            - m._41 * m._14 * m._22;
-
-    inv._43 = -m._11 * m._22 * m._43
-            + m._11 * m._23 * m._42
-            + m._21 * m._12 * m._43
-            - m._21 * m._13 * m._42
-            - m._41 * m._12 * m._23
-            + m._41 * m._13 * m._22;
-
-    inv._14 = -m._12 * m._23 * m._34
-            + m._12 * m._24 * m._33
-            + m._22 * m._13 * m._34
-            - m._22 * m._14 * m._33
-            - m._32 * m._13 * m._24
-            + m._32 * m._14 * m._23;
-
-    inv._24 = m._11 * m._23 * m._34
-            - m._11 * m._24 * m._33
-            - m._21 * m._13 * m._34
-            + m._21 * m._14 * m._33
-            + m._31 * m._13 * m._24
-            - m._31 * m._14 * m._23;
-
-    inv._34 = -m._11 * m._22 * m._34
-            + m._11 * m._24 * m._32
-            + m._21 * m._12 * m._34
-            - m._21 * m._14 * m._32
-            - m._31 * m._12 * m._24
-            + m._31 * m._14 * m._22;
-
-    inv._44 = m._11 * m._22 * m._33
-            - m._11 * m._23 * m._32
-            - m._21 * m._12 * m._33
-            + m._21 * m._13 * m._32
-            + m._31 * m._12 * m._23
-            - m._31 * m._13 * m._22;
-
-    float det = m._11 * inv._11
-              + m._12 * inv._21
-              + m._13 * inv._31
-              + m._14 * inv._41;
-
-    if (abs(det) < 0.0001)  // det == 0 대신 임계값 사용
-        return (matrix) 0;
-
-    det = 1.0f / det;
-
-    float4x4 result;
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            result[i][j] = inv[i][j] * det;
-        }
-    }
-
-    return result;
-}
-
 
 struct LIGHT
 {
@@ -175,135 +37,142 @@ cbuffer cbLights : register(b3)
 
 static const float PI = 3.14159265359;
 
-// D: Normal Distribution Function (GGX)
-float DistributionGGX(float3 N, float3 H, float roughness)
+ // Pow5 헬퍼 (Fresnel에서 사용)
+float Pow5(float x)
 {
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = saturate(dot(N, H));
-    float NdotH2 = NdotH * NdotH;
+    float x2 = x * x;
+    return x2 * x2 * x;
+}
 
-    float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
+// F0 계산
 
-         // ===== 수정: 안전한 최소값 보장 =====
+// 유전체(비금속)의 Specular 값을 F0로 변환
+// Specular 기본값 0.5 = F0 0.04 (4% 반사)
+float DielectricSpecularToF0(float Specular)
+{
+    return 0.08 * Specular;
+}
+
+ // 최종 F0 계산 (Metallic에 따라 lerp)
+float3 ComputeF0(float Specular, float3 BaseColor, float Metallic)
+{
+    return lerp(DielectricSpecularToF0(Specular).xxx, BaseColor, Metallic.xxx);
+}
+
+// D: Normal Distribution Function (언리얼 최적화 버전)
+float D_GGX(float a2, float NoH)
+{
+    float d = (NoH * a2 - NoH) * NoH + 1;
+    float denom = PI * d * d;
+    
     denom = max(denom, 0.0001);
-         // ===================================
 
-    return nom / denom;
+    return a2 / denom;
 }
 
-// G: Geometry Function (Smith's method with Schlick-GGX)
-float GeometrySchlickGGX(float NdotV, float roughness)
+ // Vis: Visibility Function (Geometry + 1/(4*NdotV*NdotL) 통합)
+float Vis_SmithJointApprox(float a2, float NoV, float NoL)
 {
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
-    float nom = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+    float a = sqrt(a2);
+    float Vis_SmithV = NoL * (NoV * (1 - a) + a);
+    float Vis_SmithL = NoV * (NoL * (1 - a) + a);
 
-	// ===== 수정: 안전한 최소값 보장 =====
+    float denom = Vis_SmithV + Vis_SmithL;
+    
     denom = max(denom, 0.0001);
-         // ===================================
 
-    return nom / denom;
+    return 0.5 / denom;
 }
 
-float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+// F: Fresnel (언리얼 SpecularColor 방식)
+float3 F_Schlick(float3 SpecularColor, float VoH)
 {
-    float NdotV = saturate(dot(N, V));
-    float NdotL = saturate(dot(N, L));
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-    return ggx1 * ggx2;
+    float Fc = Pow5(1 - VoH); // 1 sub, 3 mul
+
+       // 2% 이하는 물리적으로 불가능하므로 섀도우로 간주
+    return saturate(50.0 * SpecularColor.g) * Fc + (1 - Fc) * SpecularColor;
 }
 
-// F: Fresnel Equation (Schlick's approximation)
-float3 FresnelSchlick(float cosTheta, float3 F0)
+// 직접광 계산
+float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao, float specular)
 {
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
+       // SpecularColor 계산
+    float3 SpecularColor = ComputeF0(specular, albedo, metallic);
 
-float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao)
-{
-    float3 F0 = lerp(0.04, albedo, metallic);
-   
     float3 Lo = float3(0.0, 0.0, 0.0);
 
-    [unroll(MAX_LIGHTS)]
+       [unroll(MAX_LIGHTS)]
     for (int i = 0; i < gnLights; i++)
     {
-        
         if (!gLights[i].m_bEnable)
             continue;
-        
+
         float3 L;
         float attenuation = 1.0;
-        	
-    	// Directional Light
+
+           // Light 타입별 처리 (기존과 동일)
         if (gLights[i].m_nType == DIRECTIONAL_LIGHT)
         {
             L = normalize(-gLights[i].m_vDirection);
             attenuation = 1.0;
         }
-
-        // Point Light
         else if (gLights[i].m_nType == POINT_LIGHT)
-            {
+        {
             L = normalize(gLights[i].m_vPosition - worldPos);
-            
             float distance = length(gLights[i].m_vPosition - worldPos);
-           
-            if (distance > gLights[i].m_fRange)
-               continue;
-           
-            attenuation = 1.0 / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
-            
-        }
 
-    	// Spot Light
+            if (distance > gLights[i].m_fRange)
+                continue;
+
+            attenuation = 1.0 / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
+        }
         else if (gLights[i].m_nType == SPOT_LIGHT)
         {
-          
             L = normalize(gLights[i].m_vPosition - worldPos);
-         
             float distance = length(gLights[i].m_vPosition - worldPos);
+
             if (distance > gLights[i].m_fRange)
-            	continue;
+                continue;
+
             float fAlpha = max(dot(-L, gLights[i].m_vDirection), 0.0f);
-            float fSpotFactor = pow(max(((fAlpha - gLights[i].m_fPhi) / (gLights[i].m_fTheta - gLights[i].m_fPhi)), 0.0f), gLights[i].m_fFalloff);
+            float fSpotFactor = pow(max(((fAlpha - gLights[i].m_fPhi) / (gLights[i].m_fTheta -gLights[i].m_fPhi)), 0.0f), gLights[i].m_fFalloff);
             attenuation = fSpotFactor / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
         }
 
+           // 벡터 및 Dot products 계산
         float3 H = normalize(V + L);
         float3 radiance = gLights[i].m_cDiffuse.rgb * attenuation;
-        
-    	// Cook-Torrance BRDF
-        // roughness 클램핑 후
+
+        float NoL = saturate(dot(N, L));
+        float NoV = saturate(dot(N, V));
+        float NoH = saturate(dot(N, H));
+        float VoH = saturate(dot(V, H));
+
+           // Roughness 클램핑
         roughness = max(roughness, 0.08);
+        float a = roughness * roughness;
+        float a2 = a * a;
 
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        float3 F = FresnelSchlick(saturate(dot(H, V)), F0);
+           // ===== 언리얼 BRDF (안전장치 포함) =====
+        float D = D_GGX(a2, NoH);
+        float Vis = Vis_SmithJointApprox(a2, NoV, NoL);
+        float3 F = F_Schlick(SpecularColor, VoH);
+
+           // Diffuse
         float3 kD = (1.0 - F) * (1.0 - metallic);
-        float NdotL = saturate(dot(N, L));
-       
-        float3 numerator = NDF * G * F;
-        float denominator = 4.0 * saturate(dot(N, V)) * NdotL + 0.0001;
-    	 // ===== 수정: clamp 추가 =====
-        denominator = max(denominator, 0.001);
-     // ===========================
+        float3 diffuse = kD * albedo / PI;
 
-        float3 specular = numerator / denominator;
+           // Specular
+        float3 spec = D * Vis * F;
 
-     // ===== 추가: specular 값 제한 =====
-        specular = min(specular, 100.0); // 최대값 제한
-     // =================================
+           // 안전장치: 최종 결과값 제한
+        spec = min(spec, 100.0);
 
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+           // 최종 누적
+        Lo += (diffuse + spec) * radiance * NoL;
     }
-    
-	// Global Ambient
+
+       // Global Ambient
     float3 ambient = gcGlobalAmbientLight.rgb * albedo * ao;
     float3 color = ambient + Lo;
 
