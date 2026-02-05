@@ -72,8 +72,8 @@ protected:
     //std::vector<std::shared_ptr<GltfMaterial>> _materials;  // 서브 리소스를 이용한 다중 텍스쳐링을 위한 변수
     std::string _psoName = "default";
     // 프레임 개수만큼 늘리기
-    std::array<ComPtr<ID3D12Resource>, 2> _cbGameObjectInfo;
-    std::array<CbGameObjectInfo*, 2> _mappedCbGameObjectInfo;
+    std::array<ComPtr<ID3D12Resource>, SWAP_CHAIN_BUFFERS> _cbGameObjectInfo;
+    std::array<CbGameObjectInfo*, SWAP_CHAIN_BUFFERS> _mappedCbGameObjectInfo;
 
     bool _frustumCullingEnabled = true;
 };

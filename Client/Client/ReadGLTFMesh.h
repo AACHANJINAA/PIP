@@ -143,10 +143,14 @@ public:
 	void render(ID3D12GraphicsCommandList* commandList) override;
 	void release_upload_buffers() override;
 
-
+	
 	// DW설명 : 애니메이션 관련 함수들
+	void set_bone_palette_buffer_from_animation_component(ComPtr<ID3D12Resource> bone_palette_buffer) { _bone_palette_buffer_from_animation_component = bone_palette_buffer; }
+
+	void update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer);
 	void update_animation(float& delta_time, std::string animation_name);
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
+	size_t get_joint_count() const { return _joints.size(); }
 
 	// 애니메이션만 있는 glTF 파일 로더 추가
 	void load_animation_only(const std::string& file_path, const std::string& want_name = "null_name");
@@ -223,6 +227,8 @@ private: // DW설명 : 애니메이션 관련 멤버 변수들
 	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼
 	ComPtr<ID3D12Resource> _bone_palette_buffer;
 
+	// 애니메이션 컴포넌트로부터 받는 뼈대 행렬 버퍼
+	ComPtr<ID3D12Resource> _bone_palette_buffer_from_animation_component = nullptr;
 
 private: // 애니메이션을 위해 필요한 멤버들
 	

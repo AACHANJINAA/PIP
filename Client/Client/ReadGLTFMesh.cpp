@@ -88,51 +88,31 @@ void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCo
 	//    이 버퍼는 매 프레임 CPU에서 갱신되므로 D3D12_HEAP_TYPE_UPLOAD로 생성합니다.
 	if (!_joints.empty() && !_bone_palette_buffer)
 	{
-		// 뼈대 개수 * 행렬 크기(64 byte)
 		UINT element_size = sizeof(DirectX::XMFLOAT4X4);
 		UINT buffer_size = (UINT)(_joints.size() * element_size);
-
-		// 256바이트 정렬 (CBV 요구사항)
 		buffer_size = (buffer_size + 255) & ~255;
 
-		D3D12_HEAP_PROPERTIES heap_prop = {};
-		heap_prop.Type = D3D12_HEAP_TYPE_UPLOAD;
-		heap_prop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		heap_prop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-		heap_prop.CreationNodeMask = 1;
-		heap_prop.VisibleNodeMask = 1;
-
-		D3D12_RESOURCE_DESC res_desc = {};
-		res_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		res_desc.Alignment = 0;
-		res_desc.Width = buffer_size;
-		res_desc.Height = 1;
-		res_desc.DepthOrArraySize = 1;
-		res_desc.MipLevels = 1;
-		res_desc.Format = DXGI_FORMAT_UNKNOWN;
-		res_desc.SampleDesc.Count = 1;
-		res_desc.SampleDesc.Quality = 0;
-		res_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		res_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-		// 버퍼 리소스 생성
-		HRESULT hr = device->CreateCommittedResource(
-			&heap_prop,
-			D3D12_HEAP_FLAG_NONE,
-			&res_desc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&_bone_palette_buffer)
-		);
-
-		if (FAILED(hr))
+		if (!_joints.empty() && !_bone_palette_buffer)
 		{
-			// 에러 처리 (로그 출력 등)
-			// CERROR("Failed to create bone palette buffer.");
-		}
-		else
-		{
-			// 디버깅용 이름 설정
+			// [수정] 임시 객체의 주소를 바로 딸 수 없으므로, 변수로 먼저 만듭니다.
+			CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+			CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+
+			HRESULT hr = device->CreateCommittedResource(
+				&heapProps,         // 이제 변수의 주소를 넘기므로 안전합니다.
+				D3D12_HEAP_FLAG_NONE,
+				&bufferDesc,        // 변수의 주소
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&_bone_palette_buffer)
+			);
+
+			if (FAILED(hr))
+			{
+				// 에러 처리
+				return;
+			}
+
 			_bone_palette_buffer->SetName(L"BonePaletteBuffer");
 		}
 	}
@@ -204,6 +184,141 @@ void ReadGLTFMesh::release_upload_buffers()
 	{
 		if (primitive->_vertexUploadBuffer) primitive->_vertexUploadBuffer.Reset();
 		if (primitive->_indexUploadBuffer) primitive->_indexUploadBuffer.Reset();
+	}
+}
+
+void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer)
+{
+	// 유효하지 않은 클립 인덱스 체크
+	if (!_animations.contains(animation_name))
+	{
+		return;
+	}
+
+	const AnimationClip& clip = _animations.find(animation_name)->second;
+
+	// 1. 시간 갱신 (Looping 처리)
+	//_current_animation_time += delta_time;
+	if (clip._duration > 0.0f) {
+		delta_time = fmod(delta_time, clip._duration);
+	}
+
+	// 2. 채널별 키프레임 보간 수행
+	for (const auto& channel : clip._channels)
+	{
+		if (channel._keyframes.empty()) continue;
+
+		NodeInfo& target_node = _nodes[channel._node_index];
+
+		// 현재 시간에 맞는 키프레임 인덱스 찾기
+		size_t prev_idx = 0;
+		size_t next_idx = 0;
+
+		if (channel._keyframes.size() == 1) {
+			prev_idx = next_idx = 0;
+		}
+		else {
+			for (size_t i = 0; i < channel._keyframes.size() - 1; ++i) {
+				if (delta_time >= channel._keyframes[i]._time &&
+					delta_time < channel._keyframes[i + 1]._time) {
+					prev_idx = i;
+					next_idx = i + 1;
+					break;
+				}
+			}
+			if (delta_time >= channel._keyframes.back()._time) {
+				prev_idx = next_idx = channel._keyframes.size() - 1;
+			}
+		}
+
+		const Keyframe& prev_key = channel._keyframes[prev_idx];
+		const Keyframe& next_key = channel._keyframes[next_idx];
+
+		float duration = next_key._time - prev_key._time;
+		float t = (duration > 0.0f) ? (delta_time - prev_key._time) / duration : 0.0f;
+
+		XMVECTOR final_value;
+
+		// 보간 방식에 따른 계산
+		if (channel._interpolation == AnimationInterpolation::Step)
+		{
+			final_value = XMLoadFloat4(&prev_key._value);
+		}
+		else if (channel._interpolation == AnimationInterpolation::CubicSpline)
+		{
+			float t2 = t * t;
+			float t3 = t2 * t;
+
+			XMVECTOR p0 = XMLoadFloat4(&prev_key._value);
+			XMVECTOR p1 = XMLoadFloat4(&next_key._value);
+			XMVECTOR m0 = XMLoadFloat4(&prev_key._out_tangent) * duration;
+			XMVECTOR m1 = XMLoadFloat4(&next_key._in_tangent) * duration;
+
+			final_value = (2 * t3 - 3 * t2 + 1) * p0 +
+				(t3 - 2 * t2 + t) * m0 +
+				(-2 * t3 + 3 * t2) * p1 +
+				(t3 - t2) * m1;
+		}
+		else // Linear
+		{
+			XMVECTOR v0 = XMLoadFloat4(&prev_key._value);
+			XMVECTOR v1 = XMLoadFloat4(&next_key._value);
+
+			if (channel._path == "rotation") {
+				final_value = XMQuaternionSlerp(v0, v1, t);
+			}
+			else {
+				final_value = XMVectorLerp(v0, v1, t);
+			}
+		}
+
+		// 3. 노드 상태 업데이트
+		if (channel._path == "translation") {
+			XMStoreFloat3(&target_node._translation, final_value);
+		}
+		else if (channel._path == "rotation") {
+			// 정규화 수행
+			final_value = XMQuaternionNormalize(final_value);
+			XMStoreFloat4(&target_node._rotation, final_value);
+		}
+		else if (channel._path == "scale") {
+			XMStoreFloat3(&target_node._scale, final_value);
+		}
+	}
+
+	// 4. 노드 계층 구조 전체 갱신 (Local -> Global)
+	for (size_t i = 0; i < _nodes.size(); ++i) {
+		if (_nodes[i]._parent_index == -1) {
+			update_node_hierarchy((int)i, XMMatrixIdentity());
+		}
+	}
+
+	// 5. 스키닝 행렬(Matrix Palette) 계산
+	for (size_t i = 0; i < _joints.size(); ++i)
+	{
+		int node_idx = _joints[i];
+		XMMATRIX global_transform = XMLoadFloat4x4(&_nodes[node_idx]._global_transform);
+		XMMATRIX inverse_bind_matrix = XMLoadFloat4x4(&_skeleton[i]._inverse_bind_matrix);
+
+		// Final = InverseBindMatrix * GlobalTransform
+		XMMATRIX final_matrix = inverse_bind_matrix * global_transform;
+
+		// GPU 전송을 위해 Transpose (Row-Major)
+		XMStoreFloat4x4(&_final_bone_transforms[i], XMMatrixTranspose(final_matrix));
+		// XMStoreFloat4x4(&_final_bone_transforms[i], final_matrix);
+	}
+
+	// 6. GPU 상수 버퍼 업로드
+	if (bone_palette_buffer)
+	{
+		void* mapped_data = nullptr;
+		D3D12_RANGE read_range = { 0, 0 };
+
+		if (SUCCEEDED(bone_palette_buffer->Map(0, &read_range, &mapped_data)))
+		{
+			memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
+			bone_palette_buffer->Unmap(0, nullptr);
+		}
 	}
 }
 
@@ -346,7 +461,13 @@ void ReadGLTFMesh::render_skinned(ID3D12GraphicsCommandList* commandList)
 {
 	// 뼈대 행렬 팔레드 GPU 상수 버퍼에 바인딩
 	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
-	if (_bone_palette_buffer)
+
+	// 만약 AnimationComponent에서 제공한 버퍼가 있으면 그것을 사용
+	if(_bone_palette_buffer_from_animation_component)
+	{
+		commandList->SetGraphicsRootConstantBufferView(9, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
+	}
+	else if (_bone_palette_buffer)
 	{
 		commandList->SetGraphicsRootConstantBufferView(9, _bone_palette_buffer->GetGPUVirtualAddress());
 	}
