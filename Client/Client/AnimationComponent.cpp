@@ -2,7 +2,7 @@
 #include "AnimationComponent.h"
 #include "ReadGLTFMesh.h"
 #include "GameObject.h"
-#include "RenderComponent.h"
+#include "GameFramework.h"
 
 AnimationComponent::AnimationComponent()
 {
@@ -32,7 +32,14 @@ void AnimationComponent::late_update(float deltaTime)
 		CERROR("Animation state not found: " << static_cast<int>(_currentState));
 		return;
 	}
-	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second);
+	if(_bone_palette_buffer)
+	{
+		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer);
+	}
+	else
+	{
+		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second);
+	}
 }
 
 void AnimationComponent::set_state(common::packet::OBJECT_STATE state)
@@ -78,34 +85,55 @@ void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
 		renderer->set_mesh(want_mesh);
 	}
 	_nowAnimationTime = 0.f;
+
+	// DW설명 : 여기서 애니메이션을 메쉬의 뼈의 개수에 맞게 초기화 해줌
+
+	create_bone_palette_buffer(want_mesh);
 }
 
-/*void AnimationComponent::set_animation(std::string name)
+void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>& want_mesh)
 {
-	_nowAnimationName = name;
-}
+	GameFramework::instance()->WaitForGpuComplete();
 
-void AnimationComponent::set_animation_time(float time)
-{
-	_nowAnimationTime = time;
-}
-
-void AnimationComponent::set_mesh(const std::shared_ptr<Mesh>& want_mesh)
-{
-	_nowAnimationMash = want_mesh;
-	auto renderer = game_object().get()->get_component<RenderComponent>();
-	renderer->set_mesh(want_mesh);
-}
-
-
-void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
-{
-	if (_nowAnimationMash.get() == want_mesh.get())
+	if (_bone_palette_buffer)
 	{
+		_bone_palette_buffer.Reset();
+	}
+	
+	
+	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(want_mesh);
+	if (gltf_mesh == nullptr)
+	{
+		// 뼈가 없는 일반 메쉬이거나 캐스팅 실패 -> 버퍼 만들 필요 없음
 		return;
 	}
-	_nowAnimationMash = want_mesh;
-	auto renderer = game_object().get()->get_component<RenderComponent>();
-	renderer->set_mesh(want_mesh);
-	_nowAnimationTime = 0.f;
-}*/
+
+	size_t joint_size = gltf_mesh->get_joint_count();
+	UINT element_size = sizeof(DirectX::XMFLOAT4X4);
+	UINT buffer_size = (UINT)(joint_size * element_size);
+	buffer_size = (buffer_size + 255) & ~255;
+
+	if (joint_size && !_bone_palette_buffer)
+	{
+		// 임시 객체의 주소를 바로 딸 수 없으므로, 변수로 먼저 만들어두기
+		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+
+		HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
+			&heapProps,         // 이제 변수의 주소를 넘기므로 안전
+			D3D12_HEAP_FLAG_NONE,
+			&bufferDesc,        // 변수의 주소
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&_bone_palette_buffer) // 이거 comptr에 &연산자 오버로딩이 되어있어 동작함
+		);
+
+		if (FAILED(hr))
+		{
+			// 에러 처리
+			return;
+		}
+
+		_bone_palette_buffer->SetName(L"BonePaletteBuffer");
+	}
+}

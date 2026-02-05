@@ -19,6 +19,8 @@ public:
 	void late_update(float deltaTime);
 	void destroy();
 
+	void prepare_render() const;
+
 	void on_collision_enter(const std::shared_ptr<GameObject>& other);
 	void on_collision_stay(const std::shared_ptr<GameObject>& other);
 	void on_collision_exit(const std::shared_ptr<GameObject>& other);

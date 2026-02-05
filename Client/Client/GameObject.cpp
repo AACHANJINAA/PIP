@@ -4,6 +4,8 @@
 #include "LayerManager.h"
 #include "ScriptComponent.h"
 #include "TransformComponent.h"
+#include "AnimationComponent.h"
+#include "ReadGLTFMesh.h"
 
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
 {
@@ -93,6 +95,35 @@ void GameObject::late_update(float delta_time)
 void GameObject::destroy()
 {
 	Object::destroy(shared_from_this());
+}
+
+void GameObject::prepare_render() const
+{
+	// 만약 애니메이션 컴포넌트가 있다면, 본 팔레트 버퍼를 갱신
+	for (const auto& animation : _components)
+	{
+		// 애니메이션 컴포넌트 가져오기
+		if (auto animation_component = std::dynamic_pointer_cast<AnimationComponent>(animation))
+		{
+			std::shared_ptr<Mesh> now_mesh = nullptr;
+
+			// 렌더러로부터 메쉬 가져오기
+			for (const auto& component : _components)
+			{
+				if (auto render_component = std::dynamic_pointer_cast<RenderComponent>(component))
+				{
+					now_mesh = render_component->mesh();
+				}
+			}
+
+			// 본 팔레트 버퍼 설정
+			auto bone_palette_buffer = animation_component->get_bone_palette_buffer();
+			if(bone_palette_buffer)
+			{
+				std::dynamic_pointer_cast<ReadGLTFMesh>(now_mesh)->set_bone_palette_buffer_from_animation_component(bone_palette_buffer.Get());
+			}
+		}
+	}
 }
 
 void GameObject::on_collision_enter(const std::shared_ptr<GameObject>& other)
