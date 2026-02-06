@@ -2,8 +2,12 @@
 #include "Component.h"
 #include "JoltSetup.h"
 #include <Jolt/Physics/Character/CharacterVirtual.h>
+
+#include "Vector3.h"
+
 namespace PIP::GAME
 {
+	constexpr float ImpactFriction = 35.0f; // 넉백 감쇄 속도
 	class CharacterControllerComponent : public Component{
 	public:
 		CharacterControllerComponent(GameObject* owner) : Component(owner) {}
@@ -29,8 +33,32 @@ namespace PIP::GAME
 		void AddImpulse(const common::Vec3& impulse);
 
 		bool IsGrounded() const;
+
+		// [추가] Jolt의 Shape 정보를 가져오는 함수
+		const JPH::Shape* GetShape() const {
+			if (_character) return _character->GetShape();
+			return nullptr;
+		}
+
+		// [추가] CharacterVirtual 객체 자체를 가져오는 함수 (AOI 업데이트 제어용)
+		JPH::CharacterVirtual* GetCharacter() { return _character.GetPtr(); }
+
+		// AI가 결정한 이동 속도 (매 프레임 덮어씌워짐)
+		void SetAIMovement(const common::Vec3& vel) { _aiVelocity = vel; }
+
+		// 외부에서 가해진 힘 (넉백 등, 서서히 감쇄됨)
+		void AddImpact(const common::Vec3& force)
+		{
+			using namespace common::VectorHelper;
+			_impactVelocity += force;
+		}
+
 	private:
 		float _halfHeight {};
+
+		common::Vec3 _aiVelocity = { 0,0,0 };
+		common::Vec3 _impactVelocity = { 0,0,0 };
+		
 
 		JPH::PhysicsSystem* _physicsSystem = nullptr;
 		JPH::Ref<JPH::CharacterVirtual> _character;

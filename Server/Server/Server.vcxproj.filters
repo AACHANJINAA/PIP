@@ -60,6 +60,9 @@
     <Filter Include="소스 파일\Game\BT_Nodes">
       <UniqueIdentifier>{9099eaaf-bcde-4ac3-b551-b29a281945cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\Actor">
+      <UniqueIdentifier>{b7a3052d-f926-4c77-a8f7-4673c892535b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -121,6 +124,12 @@
     </ClCompile>
     <ClCompile Include="GridMap.cpp">
       <Filter>소스 파일\Game\GridMap</Filter>
+    </ClCompile>
+    <ClCompile Include="HitboxComponent.cpp">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor.cpp">
+      <Filter>소스 파일\Game\Actor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +213,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Common\JoltHelper.h">
       <Filter>소스 파일\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HitboxComponent.h">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>소스 파일\Game\Actor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

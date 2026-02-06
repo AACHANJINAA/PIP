@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AIComponent.cpp" />
     <ClCompile Include="BehaviorTree.cpp" />
     <ClCompile Include="BT_Nodes.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GridMap.cpp" />
+    <ClCompile Include="HitboxComponent.cpp" />
     <ClCompile Include="LuaManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapDataManager.cpp" />
@@ -196,6 +198,7 @@
     <ClInclude Include="..\..\Common\stb_image.h" />
     <ClInclude Include="..\..\Common\TerrainData.h" />
     <ClInclude Include="..\..\Common\Vector3.h" />
+    <ClInclude Include="Actor.h" />
     <ClInclude Include="AIComponent.h" />
     <ClInclude Include="BehaviorTree.h" />
     <ClInclude Include="BT_Nodes.h" />
@@ -203,6 +206,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GridMap.h" />
+    <ClInclude Include="HitboxComponent.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
     <ClInclude Include="MapDataManager.h" />

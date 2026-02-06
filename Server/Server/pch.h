@@ -79,12 +79,24 @@ using namespace DirectX;
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h> // AllHitCollisionCollector 정의
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/ShapeCast.h>
 
 // Jolt 관련 편의를 위한 using
 using namespace JPH::literals; // 1.0_r 같은 리터럴 사용 시
 
 // 1. 로그용 전역 뮤텍스는 그대로 사용합니다.
 inline std::mutex g_log_mutex;
+
+namespace common {
+    struct ObjectSnapshot {
+        uint32_t     _timestamp;
+        common::Vec3 _position;
+        common::Quat _rotation;
+    };
+}
+
 
 // 디버그 빌드에서만 로그가 동작하도록 설정
 #ifdef _DEBUG

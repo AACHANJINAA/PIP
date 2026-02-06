@@ -342,6 +342,7 @@ void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT 
 
     if (_current_dynamic_descriptor_index + num_descriptors > limit)
     {
+		//TODO: pkj주석 npc 1000명이상일때 동적 디스크립터 힙이 여기서 터짐 -> 해결방법 고민해보기
         CERROR("Dynamic descriptor heap segment for this frame is full! Increase capacity.");
         return;
     }

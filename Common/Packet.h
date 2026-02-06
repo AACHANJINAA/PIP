@@ -137,6 +137,7 @@ namespace common::packet
 		int64_t      _target_id;     // 타겟팅 스킬일 경우 대상 ID (없으면 -1)
 		common::Quat _direction;     // 바라보는 방향
 		Vec3         _position;      // 시전 위치 (클라이언트 기준 발사 위치)
+		uint32_t     _client_time_stamp; // 클라이언트 타임스탬프 (밀리초)
 	};
 
 	//struct CS_PACKET_MOVE : PacketHeader

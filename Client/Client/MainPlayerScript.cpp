@@ -128,7 +128,7 @@ void MainPlayerScript::update(float deltaTime)
 		{
             anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
 		}
-        move_direction = common::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
+        move_direction = common::VectorHelper::Normalize(move_direction); // 대각선 이동 시 속도가 빨라지지 않도록 정규화
         // _speed = 5.0f; // 이동 속도 (임의의 값, 필요시 조정)
         auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, _speed * deltaTime));
 

@@ -139,17 +139,84 @@ namespace PIP::SERVER
 		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
 	}
 
+	bool Room::IsPlayerNearby(const common::Vec3& get_position, float size)
+	{
+		bool isAnyPlayerNear = false;
+		for (auto& [pid, player] : _players) {
+			float distSq = common::VectorHelper::DistanceSq(get_position, player->_player->GetPosition());
+			if (distSq < size * size) { // 50m 이내에 플레이어가 한명이라도 있으면
+				isAnyPlayerNear = true;
+				break;
+			}
+		}
+		return isAnyPlayerNear;
+	}
+
 
 	void Room::UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
 		if (!_physicsSystem || _players.empty()) return;
-		
-		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 
-		for (auto& [id, npc] : _npcs)
-		{
-			npc->PhysicsUpdate(deltaTime, tempAllocator);
+		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+
+		// --- 1. 시야 내에 있는(활성화된) NPC들 찾기 ---
+		std::unordered_set<GAME::NPC*> activeNpcs;
+		for (auto& [pid, session] : _players) {
+			if (!session || !session->_player) continue;
+
+			std::vector<GAME::GameObject*> nearby;
+			// 그리드 맵에서 내 주변(3x3)에 있는 모든 객체를 가져옴
+			_gridMap.GetNearbyObjects(session->_player->GetPosition(), nearby);
+
+			for (auto* obj : nearby) {
+				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+					activeNpcs.insert(npc); // 중복 방지를 위해 set에 저장
+				}
+			}
 		}
+
+		for (auto& [id, npc] : _npcs) {
+			// [수정] 그리드 맵 시야 안에 있는 NPC만 물리 시뮬레이션(Kinematic)을 돌림
+			if (activeNpcs.contains(npc.get())) {
+				if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
+					// [최적화] 플레이어 근처일 때만 CharacterVirtual::Update 수행
+					npc->PhysicsUpdate(deltaTime, tempAllocator);
+					
+				}
+				else if (auto pc = npc->GetComponent<GAME::PhysicsComponent>()) {
+					// 일반 리지드 바디일 경우 Jolt 엔진 수준에서 활성화/비활성화
+					auto& bi = _physicsSystem->GetBodyInterface();
+					bi.ActivateBody(pc->GetBodyID());
+				}
+			}else
+			{
+				if (auto pc = npc->GetComponent<GAME::PhysicsComponent>()) {
+					// 일반 리지드 바디일 경우 Jolt 엔진 수준에서 활성화/비활성화
+					auto& bi = _physicsSystem->GetBodyInterface();
+					bi.DeactivateBody(pc->GetBodyID());
+				}
+			}
+
+			// 기록은 리와인드를 위해 무조건 수행
+			npc->RecordSnapshot(currentTick);
+		}
+
+		// --- 2. 플레이어 업데이트 루프 (플레이어도 리와인드가 필요하므로 기록) ---
+		for (auto& [pid, session] : _players) {
+			if (session && session->_player) {
+
+				// 플레이어는 항상 시뮬레이션 (혹은 클라 동기화 데이터 적용)
+				session->_player->PhysicsUpdate(deltaTime, tempAllocator);
+
+				// 플레이어 상태도 기록 (PVP 판정용)
+				session->_player->RecordSnapshot(currentTick);
+			}
+		}
+
+		// --- 3. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
+		// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
+		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
+		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 	}
 
 	void Room::UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator)
@@ -489,107 +556,106 @@ namespace PIP::SERVER
 	{
 		if (!actor || !actor->_player) return;
 
-		// [서버 물리 데이터 정의] - 실제 판정 로직과 이 수치를 일치시켜야 합니다.
-		common::packet::DebugShapeType actualShape;
-		common::Vec3 actualExtents;
-
-		// 공격 종류별로 실제 Jolt에서 사용할 충돌체 수치 세팅
-		if (action_packet._action_type == packet::ActionType::NORMAL_ATTACK) {
-			actualShape = packet::DebugShapeType::SPHERE;
-			actualExtents = { 3.0f, 0.0f, 0.0f }; // 실제 반경 2.5m
-		}
-		else {
-			actualShape = packet::DebugShapeType::BOX;
-			actualExtents = { 0.5f, 0.5f, 2.0f }; // 실제 가로1, 세로1, 깊이4 박스
-		}
+		std::vector<packet::NPCHitInfo> npc_hits;
+		std::vector<packet::PlayerHitInfo> player_hits;
 
 		// TODO: [Action] 공격 모션 알림 (공격자 중심 AOI)
 		// SC_PACKET_ACTION_NOTIFY(actor_id, action_type, direction) 패킷을 정의하고 
 		// 공격자(actor_id)를 시야에 둔 유저들에게 전송하여 애니메이션을 동기화해야 함.
 
-		if (action_packet._action_type == packet::ActionType::NORMAL_ATTACK)
+		switch (action_packet._action_type)
 		{
-			common::Vec3 attackerPos = actor->_player->GetPosition();
-
-			// 공격 범위 설정 (예: 반경 3m)
-			// action._position을 공격 중심점(타격점)으로 사용
-			BoundingSphere attackSphere{ action_packet._position, 3.0f };
-
-			std::vector<packet::NPCHitInfo> npc_hits;
-
-			// NPC 피격 체크
-			for (auto& [npc_id, npc] : _npcs)
+		case packet::ActionType::NORMAL_ATTACK:
 			{
-				BoundingSphere npcSphere{ npc->GetPosition(), 1.0f };
+				//TODO: [공격 정의] 나중에 무기/스킬 테이블에서 가져오는 구조로 확장 가능
+				JPH::Ref<JPH::Shape> attackShape = new JPH::SphereShape(3.0f);// 3m 반경 공격
+				JPH::RMat44 attackTransform = JPH::RMat44::sRotationTranslation(
+					Utils::ToJolt(action_packet._direction), Utils::ToJolt(action_packet._position));
 
-				if (attackSphere.Intersects(npcSphere))
-				{
-					// [데미지 계산]
-					int32_t damage = actor->_player->_damage;
-					int32_t new_hp = npc->GetHP() - damage;
-					if (new_hp < 0) new_hp = 0;
-					npc->SetHP(new_hp);
+				// TODO: [GridMap 최적화] 공격 지점 주변 5m 이내 대상들만 1차 선별
+				std::vector<GAME::GameObject*> nearbyObjects;
+				_gridMap.GetNearbyObjects(action_packet._position, nearbyObjects);
 
-					// [물리 넉백]
-					// 공격자 -> NPC 방향으로 밀어냄
-					common::Vec3 npc_pos_vec3 = npc->GetPosition();
-					XMVECTOR npc_pos = XMLoadFloat3(&npc_pos_vec3);
-					XMVECTOR attacker_pos = XMLoadFloat3(&attackerPos);
-					common::Vec3 knockbackDir;
-					XMStoreFloat3(&knockbackDir, npc_pos - attacker_pos);
-					knockbackDir.y = 0.0f; // 위/아래로 뜨는 것 방지 (필요 시 제거)
-					knockbackDir = common::Normalize(knockbackDir);
 
-					float knockbackForce = 15.0f; // 넉백 파워
-					auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
-					if (controller) {
-						common::Vec3 impluse;
-						XMStoreFloat3(&impluse, XMLoadFloat3(&knockbackDir) * knockbackForce);
-						controller->AddImpulse(impluse);
+				for (auto* obj : nearbyObjects) {
+					// 자기 자신은 제외
+					if (obj->GetId() == actor->_id) continue;
+
+					// [수정] Actor 인터페이스로 통합 판정 (NPC/Player 공통)
+					if (auto targetActor = dynamic_cast<GAME::Actor*>(obj)) {
+						if (targetActor->ValidateHit(_physicsSystem, attackShape.GetPtr(), attackTransform,
+							action_packet._client_time_stamp,
+							actor->_player->GetPosition(), actor->_player->_damage))
+						{
+							// NPC 피격 기록
+							if (auto npc = dynamic_cast<GAME::NPC*>(targetActor))
+								npc_hits.emplace_back(npc->GetNpcId(), actor->_player->_damage, npc->GetHP());
+							// Player 피격 기록
+							else if (auto player = dynamic_cast<GAME::Player*>(targetActor))
+								player_hits.emplace_back(player->GetId(), actor->_player->_damage, player->_hp);
+						}
 					}
-
-					npc_hits.emplace_back(npc_id, damage, new_hp);
+					// (확장) Player vs Player 판정도 동일한 로직으로 여기에 추가 가능
 				}
-			}
 
-			// 2. [Result] 피격 결과 전송 (AOI 적용)
-			// 각 피격된 NPC 별로 패킷을 따로 만들어서, 그 NPC를 보고 있는 유저들에게만 쏨
-			for (const auto& hit : npc_hits)
-			{
-				packet::PacketStream stream;
-				packet::SC_PACKET_NPC_ATTACK hit_packet;
-				hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
-				hit_packet._attacker_id = actor->_id;
-				hit_packet._hit_count = 1; // 단일 타겟 모드로 보냄 (AOI 최적화 위해)
+#ifdef _DEBUG_PHYSICS_VISUALIZATION
+				// --- 4. [디버그] 서버 판정 가시화 패킷 ---
+				packet::SC_PACKET_DEBUG_DRAW debug;
+				debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
+				debug._size = sizeof(debug);
+				debug._position = action_packet._position;
+				debug._rotation = action_packet._direction;
+				debug._duration = 0.5f;
+				// 공격 타입에 맞춘 디버그 도형 설정 (여기서는 구체)
+				debug._shape_type = packet::DebugShapeType::SPHERE;
+				debug._extents = { 3.0f, 0, 0 };
 
-				stream << hit_packet;
-				stream << hit; // hit info 1개
-
-				auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
-				h->_size = static_cast<uint16_t>(stream.Size());
-
-				BroadcastToNPCViewers(hit._target_id, stream.constable_data(), stream.Size());
-			}
-		}
-#ifdef _DEBUG_PHYSICS_VISUALIZATION // 매크로 이름 통일 확인!
-		packet::SC_PACKET_DEBUG_DRAW debug;
-		debug._size = sizeof(debug);
-		debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
-		debug._position = action_packet._position;
-		debug._rotation = action_packet._direction;
-		debug._duration = 0.5f;
-
-		// 만약 현재 공격에 할당된 Jolt Shape가 있다면 그 정보를 가져옵니다.
-		// 예시: 찌르기 공격용 Jolt BoxShape 설정이 {0.5, 0.5, 3.0} 이라면:
-		if (action_packet._action_type == packet::ActionType::NORMAL_ATTACK) {
-			debug._shape_type = packet::DebugShapeType::SPHERE;
-			debug._extents = { 3.0f, 0.0f, 0.0f }; // 실제 서버 물리 엔진 파라미터와 100% 일치시킴
-		}
-		/*MYLOG("[DEBUG_DRAW] Sending Packet: Type=" << (int)debug._shape_type
-			<< " Pos=" << debug._position.x << "," << debug._position.y << "," << debug._position.z
-			<< " Size=" << debug._size);*/
-		Broadcast(reinterpret_cast<const char*>(&debug), sizeof(debug));
+				Broadcast(reinterpret_cast<const char*>(&debug), sizeof(debug));
 #endif
+			}
+			break;
+		case packet::ActionType::SKILL:
+			// 스킬 ID(action_packet._action_id)에 따른 다양한 박스/캡슐 판정 로직 추가 지점
+			break;
+		case packet::ActionType::INTERACT:
+			// 상호작용 로직 (아이템 줍기 등)
+			break;
+		case packet::ActionType::NONE:
+			MYERROR("에러!!");
+			return;
+			break;
+		default:
+			MYERROR("Unknown action type received: " << static_cast<int>(action_packet._action_type));
+			return;
+			break;
+		}
+
+		// --- 3. [AOI 브로드캐스트] 피격 결과 전송 ---
+		// 모든 유저에게 쏘는 것이 아니라, "맞은 놈을 보고 있는 유저"에게만 전송합니다.
+
+		// NPC 피격 알림
+		for (const auto& hit : npc_hits) {
+			packet::PacketStream stream;
+			packet::SC_PACKET_NPC_ATTACK hit_packet;
+			hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
+			hit_packet._attacker_id = actor->_id;
+			hit_packet._hit_count = 1; // 단일 전송 모드
+
+			stream << hit_packet;
+			stream << hit;
+
+			auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h->_size = static_cast<uint16_t>(stream.Size());
+
+			// [핵심] 이 NPC를 시야에 둔 플레이어들에게만 브로드캐스트
+			BroadcastToNPCViewers(hit._target_id, stream.constable_data(), stream.Size());
+		}
+
+
+		// TODO: (필요 시) 플레이어 피격 알림도 동일하게 BroadcastToPlayerViewers 호출...
+
+		
+
 	}
 	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet) {
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
