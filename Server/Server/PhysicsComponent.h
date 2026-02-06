@@ -27,6 +27,7 @@ namespace PIP::GAME
 		common::Vec3 GetVelocity() const;
 
 		JPH::BodyID GetBodyID() const { return _bodyID; }
+		JPH::Shape::ShapeToIDMap::value_type::first_type GetShape();
 
 	private:
 		JPH::PhysicsSystem* _physicsSystem = nullptr;

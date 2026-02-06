@@ -1,4 +1,5 @@
 #pragma once
+#include "Actor.h"
 #include "GameObject.h"
 #include "PhysicsComponent.h"
 #include "CharacterControllerComponent.h"
@@ -15,7 +16,7 @@ namespace PIP::GAME
 		DEAD
 	};
 
-	class NPC : public GameObject
+	class NPC : public Actor
 	{
 	public:
 		NPC(int npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp);
@@ -48,10 +49,23 @@ namespace PIP::GAME
 			auto tc = const_cast<NPC*>(this)->GetComponent<TransformComponent>();
 			return tc ? tc->GetRotation() : common::Vec4{ 0,0,0,1 };
 		}
-		JPH::BodyID GetBodyID() const
-		{
-			auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>();
-			return pc ? pc->GetBodyID() : JPH::BodyID();
+		// [수정] 컴포넌트 종류에 상관없이 실제 사용하는 Jolt Shape 반환
+		const JPH::Shape* GetPhysicsShape() const {
+			// 1. 일반 리지드 바디 확인
+			if (auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>())
+				return pc->GetShape(); // PhysicsComponent에 GetShape()가 있다고 가정
+
+			// 2. 버추얼 캐릭터 확인
+			if (auto cc = const_cast<NPC*>(this)->GetComponent<CharacterControllerComponent>())
+				return cc->GetShape();
+
+			return nullptr;
+		}
+		// [수정] 리지드 바디 ID 반환 (리지드 바디 기반일 때만 유효)
+		JPH::BodyID GetBodyID() const {
+			if (auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>())
+				return pc->GetBodyID();
+			return JPH::BodyID(); // Invalid ID 반환
 		}
 
 		// Setters
@@ -119,8 +133,17 @@ namespace PIP::GAME
 			_lastSentRot = GetRotation();
 			_lastSentTime = std::chrono::steady_clock::now(); // 시간 갱신
 		}
-		
+		// [모듈화] 공격 검증 및 피격 처리 통합 함수
+		bool ValidateHit(JPH::PhysicsSystem* physics, 
+						const JPH::Shape* attackShape,
+						const JPH::RMat44& attackTransform,
+						uint32_t timestamp, 
+						const common::Vec3& attackerPos, 
+						int32_t damage) override;
+		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
+
 	private:
+		float			_hitCooldown = 0.0f;
 		int32_t         _npc_type;
 		int32_t         _room_id;
 		int32_t         _hp;

@@ -18,15 +18,51 @@ namespace common
 	constexpr Vec3 Vec3Forward = { 0.0f, 0.0f, 1.0f };
 	constexpr Vec3 Vec3Backward = { 0.0f, 0.0f, -1.0f };
 
-
-	inline float Length(const Vec3& v)
+	namespace VectorHelper
 	{
-		return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+		inline float Length(const Vec3& v)
+		{
+			return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+		}
+		inline Vec3 Normalize(const Vec3& v)
+		{
+			float len = Length(v);
+			if (len <= FLT_EPSILON) return Vec3Zero;
+			return { v.x / len, v.y / len, v.z / len };
+		}
+		inline float Distance(const Vec3& v1, const Vec3& v2)
+		{
+			XMVECTOR vec = { v2.x - v1.x, v2.y - v1.y, v2.z - v1.z };
+			XMVECTOR result = DirectX::XMVector3Length(vec);
+			float dist;
+			XMStoreFloat(&dist, result);
+			return dist;
+		}
+		inline float DistanceSq(const Vec3& v1, const Vec3& v2)
+		{
+			XMVECTOR vec = { v2.x - v1.x, v2.y - v1.y, v2.z - v1.z };
+			XMVECTOR result = DirectX::XMVector3LengthSq(vec);
+			float distSq;
+			XMStoreFloat(&distSq, result);
+			return distSq;
+		}
+		inline Vec3 operator+(const Vec3& a, const Vec3& b)
+		{
+			return { a.x + b.x, a.y + b.y, a.z + b.z };
+		}
+		inline Vec3 operator+=(Vec3& a, const Vec3& b)
+		{
+			a.x += b.x; a.y += b.y; a.z += b.z;
+			return a;
+		}
+		inline Vec3 operator*(const Vec3& v, float scalar)
+		{
+			return { v.x * scalar, v.y * scalar, v.z * scalar };
+		}
+		inline Vec3 operator-(const Vec3& a, const Vec3& b)
+		{
+			return { a.x - b.x, a.y - b.y, a.z - b.z };
+		}
 	}
-	inline Vec3 Normalize(const Vec3& v)
-	{
-		float len = Length(v);
-		if (len <= FLT_EPSILON) return Vec3Zero;
-		return { v.x / len, v.y / len, v.z / len };
-	}
+	
 }

@@ -94,4 +94,11 @@ namespace PIP::GAME
 
 		return { v.GetX(), v.GetY(), v.GetZ() };
 	}
+
+	JPH::Shape::ShapeToIDMap::value_type::first_type PhysicsComponent::GetShape()
+	{
+		if (!_physicsSystem || _bodyID.IsInvalid()) return nullptr;
+		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
+		return bodyInterface.GetShape(_bodyID);
+	}
 }

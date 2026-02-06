@@ -1,11 +1,12 @@
 #pragma once
+#include "Actor.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "CharacterControllerComponent.h"
 
 namespace PIP::GAME
 {
-	class Player : public GameObject
+	class Player : public Actor
 	{
 	public:
 		Player(long long owner_id);
@@ -45,9 +46,9 @@ namespace PIP::GAME
 			return tc ? tc->GetRotation() : common::Quat{ 0,0,0,1 };
 		}
 
+		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
+			uint32_t timestamp, const common::Vec3& attackerPos, int32_t damage) override;
 
-
-	public:
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		std::string					_name;

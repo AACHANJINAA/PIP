@@ -31,7 +31,8 @@ namespace PIP::SERVER
 		GAME::NPC* GetNPC(int npc_id);
 
 		void StartGame();
-		
+
+		bool IsPlayerNearby(const common::Vec3& get_position, float size);
         // 물리 업데이트 (할당자 필수)
 		void UpdatePhysics(float deltaTime, JPH::TempAllocator* allocator);
         
@@ -96,5 +97,7 @@ namespace PIP::SERVER
 		ObjectLayerPairFilterImpl			_objLayerPairFilter;
 
 		JPH::BodyID _terrainBodyID;
+
+		const size_t MAX_HISTORY_SIZE = 30; // 30프레임(약 1초) 기록
 	};
 }

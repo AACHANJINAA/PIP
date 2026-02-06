@@ -2,7 +2,7 @@
 #include "CharacterControllerComponent.h"
 
 #include <algorithm>
-
+#include "GameObject.h"
 #include "TransformComponent.h"
 
 namespace PIP::GAME
@@ -51,64 +51,56 @@ namespace PIP::GAME
 		_character->SetListener(&_contactListener);
 	}
 
-	void CharacterControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)
-	{
-		if (!_character || !_physicsSystem) return;
+	void CharacterControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) {
+		if (!_character) return;
 
-		// 1. 중력 적용
-		JPH::Vec3 velocity = _character->GetLinearVelocity();
-		JPH::Vec3 gravity = _physicsSystem->GetGravity();
-		// [추가] 바닥 상태 체크 및 중력 처리
-		if (_character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround)
-		{
-			// 땅에 있을 때는 Y 속도를 0으로 (또는 아주 작은 값으로 유지해 바닥 밀착)
-			// 만약 점프 중이 아니라면:
-			if (velocity.GetY() < 0.0f) {
-				velocity.SetY(std::max(velocity.GetY(), -1.0f)); // 약간만 눌러줌
-			}
+		using namespace common::VectorHelper;
+		// 1. 외부 임팩트(넉백) 감쇄 처리
+		float speed = Length(_impactVelocity);
+		if (speed > 0.1f) {
+			_impactVelocity =  Normalize(_impactVelocity) * std::max(0.0f, speed - ImpactFriction * deltaTime);
 		}
-		else
-		{
-			// 공중에 있을 때만 중력 누적
-			velocity += gravity * deltaTime;
+		else {
+			_impactVelocity = common::Vec3Zero;
 		}
-		_character->SetLinearVelocity(velocity);
 
-		// 2. 필터 설정
-		JPH::DefaultBroadPhaseLayerFilter broadPhaseFilter(
-			_physicsSystem->GetObjectVsBroadPhaseLayerFilter(), Layers::NPC);
-		JPH::DefaultObjectLayerFilter objectFilter(
-			_physicsSystem->GetObjectLayerPairFilter(), Layers::NPC);
+		// 2. 최종 수평 속도 합성 (AI + 넉백)
+		common::Vec3 horizontalVel = _aiVelocity + _impactVelocity;
+		JPH::Vec3 finalJoltVel = Utils::ToJolt(horizontalVel);
 
-		JPH::BodyFilter bodyFilter;
-		JPH::ShapeFilter shapeFilter;
-
-		// 3. 업데이트
-		_character->Update(deltaTime, gravity, broadPhaseFilter, objectFilter, bodyFilter, shapeFilter, *allocator);
-
-
-		// 4. Transform 동기화 (허리 -> 발바닥 변환)
-		auto transform = GetComponent<TransformComponent>();
-		if (transform)
-		{
-			JPH::RVec3 centerPos = _character->GetPosition();
-
-			centerPos.SetY(centerPos.GetY() - _halfHeight); // [핵심] 다시 발바닥으로 내림
-
-			transform->SetPosition(Utils::FromJolt(centerPos));
+		// 3. 수직 속도(중력) 처리 - [핵심] 기존 Y 속도를 가져와서 중력 누적
+		float currentYVel = _character->GetLinearVelocity().GetY();
+		if (_character->GetGroundState() != JPH::CharacterVirtual::EGroundState::OnGround) {
+			// 공중에 있다면 중력 가속도 적용
+			currentYVel += _physicsSystem->GetGravity().GetY() * deltaTime;
 		}
+		else {
+			// 땅에 있다면 아주 살짝만 아래로 눌러줌
+			currentYVel = -1.0f;
+		}
+		finalJoltVel.SetY(currentYVel);
+
+		_character->SetLinearVelocity(finalJoltVel);
+
+		// 3. Jolt CharacterVirtual 업데이트 (시뮬레이션이 아닌 '충돌 해결'만 수행)
+		_character->Update(deltaTime, _physicsSystem->GetGravity(),
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+			_physicsSystem->GetDefaultLayerFilter(Layers::NPC), 
+			{}, {}, *allocator);
+
+		// 4. GameObject의 Transform과 동기화
+		JPH::RVec3 centerPos = _character->GetPosition();
+		// [중요] Jolt 중심 좌표를 다시 발바닥 좌표로 변환하여 Transform에 저장
+		common::Vec3 footPos = Utils::FromJolt(centerPos);
+		footPos.y -= _halfHeight; // 반 높이만큼 내려줘야 발바닥 기준이 됩니다.
+
+		auto tc = GetOwner()->GetComponent<TransformComponent>();
+		if (tc) tc->SetPosition(footPos);
 	}
 
 	void CharacterControllerComponent::SetVelocity(const common::Vec3& velocity)
 	{
-		if (_character)
-		{
-			JPH::Vec3 currentVel = _character->GetLinearVelocity();
-			JPH::Vec3 inputVel = Utils::ToJolt(velocity);
-			// X, Z축 이동만 덮어쓰고 Y축(중력)은 유지하여 자연스러운 낙하 구현
-			inputVel.SetY(currentVel.GetY());
-			_character->SetLinearVelocity(inputVel);
-		}
+		_aiVelocity = velocity;
 	}
 	common::Vec3 CharacterControllerComponent::GetVelocity() const
 	{
