@@ -592,6 +592,9 @@
     <None Include="UI_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
+    <None Include="IBL.hlsl">
+      <Filter>2. Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Skybox_Shader.hlsl">
@@ -604,9 +607,6 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Light.hlsl">
-      <Filter>2. Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="IBL.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

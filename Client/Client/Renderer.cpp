@@ -282,6 +282,8 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             // 셰이더에게 객체별 리소스 바인딩을 맡김
             shader_prototype->update_per_object(commandList, this, gameObject.get());
 
+            gameObject->prepare_render();
+
             renderComp->render(commandList, frame_index);
         }
     }

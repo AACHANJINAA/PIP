@@ -22,6 +22,7 @@ public:
 
 	void set_current_hp(int current_hp) 
 	{ 
+		if (current_hp == _currentHP) return;
 		_currentHP = std::clamp(current_hp, 0, _maxHP);
 		_isHpChanged = true;
 		if (_currentHP <= 0)
@@ -34,13 +35,13 @@ public:
 private:
 
 	int _maxHP{ 100 };
-	int _currentHP{ 100 };
+	int _currentHP{ 00 };
 	bool _isDead{ false };
 	
 	bool _isHpChanged{ false }; // false로 초기화인 상태여야 함 true면 수정할것
 	float _chageHpTimer{ 3.0f }; // HP 변화 후 잠시 대기 타이머
 	float _nowHpTimer{ 0.0f }; // 현재 타이머
 
-	float _hpRatio{ 0.5f }; // 0.0 ~ 1.0 현재 HP 비율
+	float _hpRatio{ 1.f }; // 0.0 ~ 1.0 현재 HP 비율
 };
 
