@@ -112,7 +112,7 @@ namespace PIP::GAME
                 cc->AddImpact(knockbackDir * 15.0f);
             }
 
-            MYLOG("[HIT] " << GetName() << " part: " << hitPart << " HP: " << GetHP());
+            //MYLOG("[HIT] " << GetName() << " part: " << hitPart << " HP: " << GetHP());
             _hitCooldown = 0.2f;
             return true;
         }
