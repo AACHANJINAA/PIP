@@ -32,6 +32,19 @@ void AnimationComponent::late_update(float deltaTime)
 		CERROR("Animation state not found: " << static_cast<int>(_currentState));
 		return;
 	}
+
+	std::shared_ptr<Mesh> targetMesh = mesh->second;
+
+	// 사용하려는 메쉬(targetMesh)가 현재 버퍼의 주인(_bufferedMesh)과 다른가?
+	// 다르다면 버퍼 크기가 맞지 않을 수 있으므로 버퍼를 재생성해야 함!
+	if (targetMesh != _bufferedMesh)
+	{
+		change_mesh(targetMesh);
+	}
+
+	auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(targetMesh);
+	if (!glTF_mesh) return;
+
 	if(_bone_palette_buffer)
 	{
 		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer);
@@ -89,6 +102,9 @@ void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
 	// DW설명 : 여기서 애니메이션을 메쉬의 뼈의 개수에 맞게 초기화 해줌
 
 	create_bone_palette_buffer(want_mesh);
+
+	// 현재 버퍼가 이 메쉬용임을 기록
+	_bufferedMesh = want_mesh;
 }
 
 void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>& want_mesh)

@@ -39,6 +39,9 @@ private:
 	// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문
 	ComPtr<ID3D12Resource> _bone_palette_buffer;
 
+	// 현재 버퍼가 어떤 메쉬를 기준으로 생성된 뼈 팔레트 행렬 상수 버퍼인지 확인용
+	std::shared_ptr<Mesh> _bufferedMesh = nullptr;
+
 	float _nowAnimationTime{ 0.f };
 	std::string _nowAnimationName{};
 	//std::shared_ptr<Mesh> _nowAnimationMash{}; //KJ가 DW -> Mesh 아님? ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
