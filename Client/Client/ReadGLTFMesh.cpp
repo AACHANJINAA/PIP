@@ -287,6 +287,8 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 	}
 
 	// 4. 노드 계층 구조 전체 갱신 (Local -> Global)
+	// DW설명 : 여기서 Global은 월드 좌표계가 아닌 부모 노드 기준 모델의 변환을 담은 좌표계를 뜻한다.
+	// 즉 이걸로 올바른 좌표를 구하고 싶다면 월드 행렬을 곱해주어야 함
 	for (size_t i = 0; i < _nodes.size(); ++i) {
 		if (_nodes[i]._parent_index == -1) {
 			update_node_hierarchy((int)i, XMMatrixIdentity());
@@ -1315,6 +1317,34 @@ void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::
 		_animations.emplace(anim_name, clip);
 		++animation_index;
 	}
+}
+
+int ReadGLTFMesh::get_bone_index_by_name(const std::string& name) const
+{
+	for (size_t i = 0; i < _skeleton.size(); ++i)
+	{
+		if (_skeleton[i]._name == name)
+		{
+			return _skeleton[i]._node_index; // 노드 인덱스 반환
+		}
+	}
+	return -1; // 못 찾음
+}
+
+XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(const std::string& bone_name) const
+{
+	int node_index = get_bone_index_by_name(bone_name);
+
+	if (node_index != -1)
+	{
+		// 해당 뼈(노드)의 현재 모델 좌표계의 변환 행렬 반환
+		return _nodes[node_index]._global_transform;
+	}
+
+	// 못 찾으면 단위 행렬 반환
+	DirectX::XMFLOAT4X4 identity;
+	DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
+	return identity;
 }
 
 AnimationInterpolation ReadGLTFMesh::string_to_interpolation(const std::string& str)

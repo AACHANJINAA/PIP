@@ -37,8 +37,10 @@ public:
 	// [변경] 반환 타입을 shared_ptr로 변경
 	std::shared_ptr<TransformComponent> transform() const { return _transform; }
 
-	// --- Component Management ---
+	// DW설명 : glTF 관련 컴포넌트 팩 추가 함수
+	void add_glTF_conponent_pack();
 
+	// --- Component Management ---
 	template<typename T, typename... Args>
 	std::shared_ptr<T> add_component(Args&&... args)
 	{
