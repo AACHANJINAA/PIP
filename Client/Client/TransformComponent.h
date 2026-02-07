@@ -24,6 +24,8 @@ public:
     XMFLOAT3 forward();
 
     // --- Setters ---
+	void set_world_matrix(const XMFLOAT4X4& matrix);
+
     void set_local_position(const XMFLOAT3& position);
     void set_local_rotation(const XMFLOAT4& rotation);
     void set_local_rotation(float pitch, float yaw, float roll);

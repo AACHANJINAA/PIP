@@ -99,6 +99,28 @@ XMFLOAT3 TransformComponent::forward()
 
 // --- Setter 함수들 ---
 
+void TransformComponent::set_world_matrix(const XMFLOAT4X4& matrix)
+{
+    XMMATRIX worldMat = XMLoadFloat4x4(&matrix);
+    // 월드 행렬에서 위치, 회전, 스케일 분해
+    XMVECTOR scaleVec, rotationQuat, translationVec;
+    XMMatrixDecompose(&scaleVec, &rotationQuat, &translationVec, worldMat);
+    // 로컬 공간으로 변환
+    if (auto parent_ptr = _parent.lock())
+    {
+        XMMATRIX parentWorldMat = XMLoadFloat4x4(&parent_ptr->world_matrix());
+        XMMATRIX parentWorldMatInv = XMMatrixInverse(nullptr, parentWorldMat);
+        XMMATRIX localMat = worldMat * parentWorldMatInv;
+        // 다시 분해
+        XMMatrixDecompose(&scaleVec, &rotationQuat, &translationVec, localMat);
+    }
+    // 값 저장
+    XMStoreFloat3(&_localPosition, translationVec);
+    XMStoreFloat4(&_localRotation, rotationQuat);
+    XMStoreFloat3(&_localScale, scaleVec);
+	set_hierarchy_dirty(); // 자신과 자식들에게 변경 전파
+}
+
 void TransformComponent::set_local_position(const XMFLOAT3& position)
 {
     _localPosition = position;
