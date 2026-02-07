@@ -5,6 +5,7 @@
 #include "ScriptComponent.h"
 #include "TransformComponent.h"
 #include "AnimationComponent.h"
+#include "SocketComponenet.h"
 #include "ReadGLTFMesh.h"
 
 GameObject::GameObject(const std::string& name) : Object(name), _transform{ nullptr }
@@ -171,6 +172,14 @@ bool GameObject::is_in_layer(const std::string& name) const
 {
 	uint32_t layerValue = LayerManager::instance()->get_layer_value(name);
 	return (_layerMask & layerValue) != 0;
+}
+
+void GameObject::add_glTF_conponent_pack()
+{
+	// 애니메이션, 소켓 컴포넌트 추가
+	// 여기에 있는 add 순서는 꼭 지켜져야 함 -> 그래서 이렇게 pack 함수로 묶어둠
+	add_component<AnimationComponent>();
+	add_component<SocketComponenet>();
 }
 
 void GameObject::remove_component(std::shared_ptr<Component> component)
