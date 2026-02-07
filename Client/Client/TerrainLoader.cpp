@@ -43,10 +43,10 @@ namespace
 			 return DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
 		 }
 
-		 int x_plus_1 = min(x + 1, width - 1);
-		 int x_minus_1 = max(x - 1, 0);
-		 int z_plus_1 = min(z + 1, length - 1);
-		 int z_minus_1 = max(z - 1, 0);
+		 int x_plus_1 = std::min(x + 1, width - 1);
+		 int x_minus_1 = std::max(x - 1, 0);
+		 int z_plus_1 = std::min(z + 1, length - 1);
+		 int z_minus_1 = std::max(z - 1, 0);
 
 		 float height_y1 = terrainData.GetHeightAt(info.min_x + x * (info.max_x - info.min_x) / (width - 1), info.min_z + z_minus_1 * (info.max_z - info.min_z) / (length - 1));
 		 float height_y2 = terrainData.GetHeightAt(info.min_x + x * (info.max_x - info.min_x) / (width - 1), info.min_z + z_plus_1 * (info.max_z - info.min_z) / (length - 1));

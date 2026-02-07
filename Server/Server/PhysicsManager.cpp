@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "PhysicsManager.h"
 
-
+#ifdef _DEBUG
 static void TraceImpl(const char* inFMT, ...)
 {
 	va_list list;
@@ -17,6 +17,7 @@ static bool AssertFailedImpl(const char* inExpression, const char* inMessage, co
 	MYERROR("Jolt Assert Failed: Expression: {}, Message: {}, File: {}, Line: {}", inExpression, inMessage, inFile, inLine);
 	return true; // true면 브레이크포인트
 }
+#endif
 
 namespace PIP
 {
@@ -30,8 +31,10 @@ namespace PIP
 		JPH::RegisterDefaultAllocator(); // 메모리 할당자 등록
 										 // * 기본: RegisterDefaultAllocator() -> 그냥 malloc/new 씀. (편함)
 										 // *심화: 게임 전용 메모리 풀(Memory Pool)이나 스택 할당기를 연결해서 성능을 극도로 쥐어짤 수 있음.
+#ifdef _DEBUG
 		JPH::Trace = TraceImpl; // 로그 출력 콜백 등록 Jolt가 "이거 이상해"라고 말하면 MYLOG로 찍어줌.
 		JPH::AssertFailed = AssertFailedImpl; // ASSERT 실패 콜백 등록 Jolt가 치명적인 오류를 발견하면 MYERROR로 찍고 브레이크포인트를 걸어줌.
+#endif
 
 		// 팩토리 및 타입 등록 (가장 중요)
 		JPH::Factory::sInstance = new JPH::Factory(); // 물리 객체 설계도 공장 생성

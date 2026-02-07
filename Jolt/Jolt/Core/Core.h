@@ -117,7 +117,20 @@
 #endif
 
 // Detect CPU architecture
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM) || defined(_M_ARM64EC)
+	// ARM CPU architecture
+	#define JPH_CPU_ARM
+	#if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+		#define JPH_CPU_ARCH_BITS 64
+		#define JPH_USE_NEON
+		#define JPH_VECTOR_ALIGNMENT 16
+		#define JPH_DVECTOR_ALIGNMENT 32
+	#else
+		#define JPH_CPU_ARCH_BITS 32
+		#define JPH_VECTOR_ALIGNMENT 8 // 32-bit ARM does not support aligning on the stack on 16 byte boundaries
+		#define JPH_DVECTOR_ALIGNMENT 8
+	#endif
+#elif defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 	// X86 CPU architecture
 	#define JPH_CPU_X86
 	#if defined(__x86_64__) || defined(_M_X64)
@@ -166,19 +179,6 @@
 		#else
 			#error Undefined compiler
 		#endif
-	#endif
-#elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
-	// ARM CPU architecture
-	#define JPH_CPU_ARM
-	#if defined(__aarch64__) || defined(_M_ARM64)
-		#define JPH_CPU_ARCH_BITS 64
-		#define JPH_USE_NEON
-		#define JPH_VECTOR_ALIGNMENT 16
-		#define JPH_DVECTOR_ALIGNMENT 32
-	#else
-		#define JPH_CPU_ARCH_BITS 32
-		#define JPH_VECTOR_ALIGNMENT 8 // 32-bit ARM does not support aligning on the stack on 16 byte boundaries
-		#define JPH_DVECTOR_ALIGNMENT 8
 	#endif
 #elif defined(__riscv)
 	// RISC-V CPU architecture
@@ -648,5 +648,15 @@ static_assert(sizeof(uint64) == 8, "Invalid size of uint64");
 #else
 	#define JPH_TSAN_NO_SANITIZE
 #endif
+
+// DirectX 12 is only supported on Windows
+#if defined(JPH_USE_DX12) && !defined(JPH_PLATFORM_WINDOWS)
+	#undef JPH_USE_DX12
+#endif // JPH_PLATFORM_WINDOWS
+
+// Metal is only supported on Apple platforms
+#if defined(JPH_USE_METAL) && !defined(JPH_PLATFORM_MACOS) && !defined(JPH_PLATFORM_IOS)
+	#undef JPH_USE_METAL
+#endif // !JPH_PLATFORM_MACOS && !JPH_PLATFORM_IOS
 
 JPH_NAMESPACE_END

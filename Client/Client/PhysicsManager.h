@@ -3,6 +3,20 @@
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 
+#ifdef _DEBUG
+static void TraceImpl(const char* inFMT, ...) {
+	va_list list; va_start(list, inFMT);
+	char buffer[1024]; vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
+	OutputDebugStringA(buffer); // 클라이언트는 출력창에 로그
+}
+static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, JPH::uint inLine)
+{
+	// Assert 발생 시 중단점
+	__debugbreak();
+	return true;
+}
+#endif
 class GameObject;
 
 struct CollisionEvent {

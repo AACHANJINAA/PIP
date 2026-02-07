@@ -7,6 +7,12 @@
 
 bool PhysicsManager::initialize()
 {
+
+    // 이 줄들을 추가하세요
+#ifdef _DEBUG
+    JPH::Trace = TraceImpl;
+    JPH::AssertFailed = AssertFailedImpl;
+#endif
     // Jolt 초기화
     JPH::RegisterDefaultAllocator();
     JPH::Factory::sInstance = new JPH::Factory();
