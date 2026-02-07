@@ -2,7 +2,29 @@
 #if defined(_DEBUG)
 #define _DEBUG_PHYSICS_VISUALIZATION
 #endif
+#define NOMINMAX
 
+// C++ 표준 라이브러리 헤더
+#include <iostream>
+#include <vector>
+#include <array>
+#include <map>
+#include <typeindex>
+#include <list>
+#include <fstream>
+#include <sstream>
+#include <numeric>
+#include <random>
+#include <queue>
+#include <unordered_map>
+#include <functional>
+#include <concepts>
+#include <string>
+#include <atomic>
+#include <mutex>
+#include <stack>
+#include <thread>
+#include <concurrent_queue.h>
 
 //#define _WITH_SWAPCHAIN_FULLSCREEN_STATE
 // assmip
@@ -17,7 +39,7 @@
 #pragma comment(lib, "ws2_32.lib")
 #include <wincodec.h>
 #pragma comment(lib, "windowscodecs.lib")
-#define NOMINMAX
+
 
 #include <tchar.h>
 
@@ -59,27 +81,7 @@ using Microsoft::WRL::ComPtr;
 
 
 // 
-// C++ 표준 라이브러리 헤더
-#include <iostream>
-#include <vector>
-#include <array>
-#include <map>
-#include <typeindex>
-#include <list>
-#include <fstream>
-#include <sstream>
-#include <numeric>
-#include <random>
-#include <queue>
-#include <unordered_map>
-#include <functional>
-#include <concepts>
-#include <string>
-#include <atomic>
-#include <mutex>
-#include <stack>
-#include <thread>
-#include <concurrent_queue.h>
+
 
 // Jolt Physics 헤더
 #include <Jolt/Jolt.h>
