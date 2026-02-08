@@ -33,7 +33,7 @@ void Renderer::initialize(ID3D12Device* device)
     
     _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); 
 
-    create_dynamic_descriptor_heap(100000);
+    create_dynamic_descriptor_heap(1000000);
 
     // [추가] 사용할 루트 시그니처 생성기들을 등록합니다.
     _rootSignatureGenerators.push_back(std::make_unique<DebugRootSignatureGenerator>()); // 추가
