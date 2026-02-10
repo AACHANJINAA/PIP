@@ -24,16 +24,22 @@ public:
     void register_manual_mesh(const std::string& name, std::shared_ptr<Mesh> mesh);
 
     // SkyBox Load 함수 추가 및 SRV 핸들러 추가
-	// 인자에 device 추가!
+
+    ID3D12DescriptorHeap* get_static_srv_heap() const { return _static_srv_heap.Get(); }
+	
     void load_skybox(const std::string& file_path);
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv();
     D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
+    D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv_gpu() const;
 
     // IBL Maps Load 함수 및 SRV 핸들러
     void load_ibl_maps();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_irradiance_srv();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_prefiltered_srv();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_brdf_lut_srv();
+    D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_diffuse_gpu() const { return _ibl_diffuse_gpu_handle; }
+    D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_specular_gpu() const { return _ibl_specular_gpu_handle; }
+    D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_brdf_lut_gpu() const { return _ibl_brdf_gpu_handle; }
 
     //// [추가] 대기중인 모든 메시를 GPU에 업로드하는 함수
     //void upload_pending_meshes(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
@@ -131,13 +137,32 @@ private:
     std::unordered_map<std::string, MaterialInfo> _materials;    // Key: 재질 이름
 	std::vector<TextureInfo*> _pending_textures; // 아직 GPU에 업로드되지 않은 텍스처 목록
 
+
+    // Skybox/IBL 전용 SHADER_VISIBLE 힙
+    ComPtr<ID3D12DescriptorHeap> _static_srv_heap;
+    UINT _static_heap_descriptor_size = 0;
+
     // skybox 파일 경로
     std::string _skybox_texture_path;
 
-	// ibl 맵 파일 경로
+    // ibl 맵 파일 경로
     std::string _ibl_irradiance_path;
     std::string _ibl_prefiltered_path;
     std::string _ibl_brdf_lut_path;
+
+	// skybox SRV 핸들러
+    D3D12_CPU_DESCRIPTOR_HANDLE _skybox_cpu_handle = {};
+    D3D12_GPU_DESCRIPTOR_HANDLE _skybox_gpu_handle = {};
+
+    D3D12_CPU_DESCRIPTOR_HANDLE _ibl_diffuse_cpu_handle = {};
+    D3D12_GPU_DESCRIPTOR_HANDLE _ibl_diffuse_gpu_handle = {};
+
+    D3D12_CPU_DESCRIPTOR_HANDLE _ibl_specular_cpu_handle = {};
+    D3D12_GPU_DESCRIPTOR_HANDLE _ibl_specular_gpu_handle = {};
+
+    D3D12_CPU_DESCRIPTOR_HANDLE _ibl_brdf_cpu_handle = {};
+    D3D12_GPU_DESCRIPTOR_HANDLE _ibl_brdf_gpu_handle = {};
+
 
     // [추가] 로드되었지만 아직 GPU에 업로드되지 않은 메시들의 목록
 	std::deque<std::shared_ptr<Mesh>> _pending_meshes;
