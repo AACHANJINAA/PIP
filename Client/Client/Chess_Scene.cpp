@@ -92,55 +92,6 @@ void Chess_Scene::release_upload_buffers()
 {
 }
 
-void Chess_Scene::render_post_process(ID3D12GraphicsCommandList* commandList, UINT frame_index)
-{
-    // SceneManager에서 스카이박스 오브젝트 가져오기
-    auto skyboxObject = SceneManager::instance()->get_skybox_object();
-    if (!skyboxObject) return;
-
-    auto skyboxComp = skyboxObject->get_component<SkyboxRenderComponent>();
-    if (!skyboxComp || !skyboxComp->is_enabled()) return;
-
-    auto mesh = skyboxComp->mesh();
-    if (!mesh) return;
-
-    // PSO 및 루트 시그니처 설정
-    Renderer* renderer = Renderer::instance();
-    ID3D12PipelineState* pso = renderer->get_pso("skybox");
-    ID3D12RootSignature* rootSig = renderer->get_root_signature("skybox");
-
-    if (!pso || !rootSig) return;
-
-    commandList->SetPipelineState(pso);
-    commandList->SetGraphicsRootSignature(rootSig);
-
-    // 카메라 설정
-    CameraComponent* camera = CameraComponent::get_main();
-    if (camera)
-    {
-        camera->update_shader_variables(commandList, frame_index);
-        camera->set_viewports_and_scissor_rects(commandList);
-
-        // 스카이박스 상수 버퍼 (루트 파라미터 2)
-        if (camera->get_cb_skybox())
-        {
-            D3D12_GPU_VIRTUAL_ADDRESS cbAddress = camera->get_cb_skybox()->GetGPUVirtualAddress();
-            commandList->SetGraphicsRootConstantBufferView(2, cbAddress);
-        }
-    }
-
-    // 큐브맵 텍스처 (루트 파라미터 4)
-    D3D12_CPU_DESCRIPTOR_HANDLE srv_cpu_handle = ResourceManager::instance()->get_skybox_srv_cpu();
-    if (srv_cpu_handle.ptr != 0)
-    {
-        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles = { srv_cpu_handle };
-        renderer->bind_texture_table(commandList, 4, handles);
-    }
-
-    // 메시 렌더링
-    skyboxComp->render(commandList, frame_index);
-}
-
 void Chess_Scene::SpawnDummyNPC(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     

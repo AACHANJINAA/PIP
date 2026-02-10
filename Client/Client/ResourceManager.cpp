@@ -83,6 +83,22 @@ void ResourceManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList
     _device = device;
     _command_list = command_list;
 
+    // Skybox/IBL 전용 SHADER_VISIBLE 힙 생성 (4개: skybox + 3 IBL)
+    D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
+    heap_desc.NumDescriptors = 4;  // Skybox + IBL 3개
+    heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    heap_desc.NodeMask = 0;
+
+    HRESULT hr = _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&_static_srv_heap));
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create static SRV heap!");
+        return;
+    }
+
+    _static_heap_descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
     create_default_textures(device, command_list);
 }
 
@@ -628,7 +644,20 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
 void ResourceManager::load_skybox(const std::string& file_path)
 {
     _skybox_texture_path = file_path;
-    load_cubemap_from_dds(file_path);
+    auto* skybox_info = load_cubemap_from_dds(file_path);
+
+    _skybox_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
+    _skybox_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Format = skybox_info->resource->GetDesc().Format;
+    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+    srv_desc.TextureCube.MipLevels = skybox_info->resource->GetDesc().MipLevels;
+    srv_desc.TextureCube.MostDetailedMip = 0;
+    srv_desc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+    _device->CreateShaderResourceView(skybox_info->resource.Get(), &srv_desc, _skybox_cpu_handle);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv()
@@ -649,46 +678,76 @@ D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv()
     return {}; // 유효하지 않은 핸들 반환
 }
 
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_gpu() const
+{
+    return _skybox_gpu_handle; 
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
 {
-    if (_skybox_texture_path.empty()) return {};
-    auto it = _textures.find(_skybox_texture_path);
-    if (it != _textures.end()) return it->second.cpu_handle;
-    return {};
+    return _skybox_cpu_handle;
 }
 
 void ResourceManager::load_ibl_maps()
 {
-    CLOG("Loading IBL maps...");
-
-    // 1. Irradiance Map (Diffuse IBL용 큐브맵)
+    // 1. Irradiance Map (인덱스 1)
     _ibl_irradiance_path = "Resource\\SkyBox\\IBL_diffuse.dds";
-    auto irradiance_result = load_cubemap_from_dds(_ibl_irradiance_path);
-    if (irradiance_result) {
-        CLOG("IBL Irradiance Map loaded: " << _ibl_irradiance_path);
-    }
-    else {
-        CERROR("Failed to load IBL Irradiance Map: " << _ibl_irradiance_path);
+    auto irradiance_info = load_cubemap_from_dds(_ibl_irradiance_path);
+    if (irradiance_info)
+    {
+        _ibl_diffuse_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
+        _ibl_diffuse_cpu_handle.ptr += _static_heap_descriptor_size * 1;  // 인덱스 1
+        _ibl_diffuse_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
+        _ibl_diffuse_gpu_handle.ptr += _static_heap_descriptor_size * 1;
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Format = irradiance_info->resource->GetDesc().Format;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        srv_desc.TextureCube.MipLevels = irradiance_info->resource->GetDesc().MipLevels;
+        srv_desc.TextureCube.MostDetailedMip = 0;
+        srv_desc.TextureCube.ResourceMinLODClamp = 0.0f;
+        _device->CreateShaderResourceView(irradiance_info->resource.Get(), &srv_desc, _ibl_diffuse_cpu_handle);
     }
 
-    // 2. Prefiltered Environment Map (Specular IBL용 큐브맵)
+    // 2. Prefiltered Environment Map (인덱스 2)
     _ibl_prefiltered_path = "Resource\\SkyBox\\IBL_specular.dds";
-    auto prefiltered_result = load_cubemap_from_dds(_ibl_prefiltered_path);
-    if (prefiltered_result) {
-        CLOG("IBL Prefiltered Map loaded: " << _ibl_prefiltered_path);
-    }
-    else {
-        CERROR("Failed to load IBL Prefiltered Map: " << _ibl_prefiltered_path);
+    auto prefiltered_info = load_cubemap_from_dds(_ibl_prefiltered_path);
+    if (prefiltered_info)
+    {
+        _ibl_specular_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
+        _ibl_specular_cpu_handle.ptr += _static_heap_descriptor_size * 2;  // 인덱스 2
+        _ibl_specular_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
+        _ibl_specular_gpu_handle.ptr += _static_heap_descriptor_size * 2;
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Format = prefiltered_info->resource->GetDesc().Format;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        srv_desc.TextureCube.MipLevels = prefiltered_info->resource->GetDesc().MipLevels;
+        srv_desc.TextureCube.MostDetailedMip = 0;
+        srv_desc.TextureCube.ResourceMinLODClamp = 0.0f;
+        _device->CreateShaderResourceView(prefiltered_info->resource.Get(), &srv_desc, _ibl_specular_cpu_handle);
     }
 
-    // 3. BRDF LUT (2D 텍스처)
+    // 3. BRDF LUT (인덱스 3, 2D 텍스처)
     _ibl_brdf_lut_path = "Resource\\SkyBox\\IBL_BRDF_LUT.dds";
-    auto brdf_result = load_texture(_ibl_brdf_lut_path);
-    if (brdf_result) {
-        CLOG("IBL BRDF LUT loaded: " << _ibl_brdf_lut_path);
-    }
-    else {
-        CERROR("Failed to load IBL BRDF LUT: " << _ibl_brdf_lut_path);
+    auto brdf_info = load_texture(_ibl_brdf_lut_path);
+    if (brdf_info)
+    {
+        _ibl_brdf_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
+        _ibl_brdf_cpu_handle.ptr += _static_heap_descriptor_size * 3;  // 인덱스 3
+        _ibl_brdf_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
+        _ibl_brdf_gpu_handle.ptr += _static_heap_descriptor_size * 3;
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Format = brdf_info->resource->GetDesc().Format;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv_desc.Texture2D.MipLevels = brdf_info->resource->GetDesc().MipLevels;
+        srv_desc.Texture2D.MostDetailedMip = 0;
+        srv_desc.Texture2D.ResourceMinLODClamp = 0.0f;
+        _device->CreateShaderResourceView(brdf_info->resource.Get(), &srv_desc, _ibl_brdf_cpu_handle);
     }
 }
 

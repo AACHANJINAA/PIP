@@ -26,6 +26,7 @@
 
 
 #include "TerrainLoader.h"
+#include "ResourceManager.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -147,57 +148,33 @@ void Renderer::build_render_list(CameraComponent* camera)
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
     const BoundingFrustum& frustum = camera->frustum();
 
-    int totalObjects = 0;
-    int visibleObjects = 0;
-    int invalidBoundingBoxCount = 0;
-    int uiObjects = 0; 
-
     for (const auto& gameObject : allGameObjects)
     {
         if (!gameObject || gameObject->is_destroyed()) continue;
-
-        // 스카이박스는 Scene에서 렌더링하므로 제외
-        auto skyboxComp = gameObject->get_component<SkyboxRenderComponent>();
-        if (skyboxComp) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
 
         if (renderComp && renderComp->is_enabled())
         {
-            totalObjects++;
-            try
+            // UI와 Skybox는 bounding box 체크 없이 렌더링
+            if (renderComp->pso_name() == "ui" ||
+                renderComp->pso_name() == "Monster_HP_UI" ||
+                renderComp->pso_name() == "skybox")
             {
-                // UI는 bounding box가 없어도 렌더링
-                if (renderComp->pso_name() == "ui" || renderComp->pso_name() == "Monster_HP_UI")
-                {
-                    //CLOG("UI has invalid BB, but adding to render list anyway");
-                    _renderMap[renderComp->pso_name()].push_back(gameObject);
-                    visibleObjects++;
-                    continue;
-                }
-
-                BoundingOrientedBox obb = renderComp->get_world_bounding_box();
-
-                if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
-                {
-                    invalidBoundingBoxCount++;
-
-                    // ========== 여기 수정! ==========
-                    // CERROR 대신 CLOG로 변경 (프로그램 멈추지 않음)
-                    CLOG("Warning: Invalid bounding box for: " << gameObject->name() << " - skipping");
-                    // ================================
-                    continue;
-                }
-
-                if (renderComp->is_visible(frustum))
-                {
-                    visibleObjects++;
-                    _renderMap[renderComp->pso_name()].push_back(gameObject);
-                }
+                _renderMap[renderComp->pso_name()].push_back(gameObject);
+                continue;
             }
-            catch (...)
+
+            // 일반 객체는 frustum culling
+            BoundingOrientedBox obb = renderComp->get_world_bounding_box();
+            if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
             {
-                CERROR("Exception during frustum culling for: " << gameObject->name());
+                continue;
+            }
+
+            if (renderComp->is_visible(frustum))
+            {
+                _renderMap[renderComp->pso_name()].push_back(gameObject);
             }
         }
     }
@@ -208,44 +185,38 @@ void Renderer::build_render_list(CameraComponent* camera)
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index)
 {
-    // 렌더링에 실제 사용될 '동적 힙'을 커맨드 리스트에 설정합니다
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
-
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-    // ---------------------------------------------------------
-    for (auto const& [psoName, gameObjects] : _renderMap)
+    // 렌더링 순서 명시: 일반 객체 → Skybox → UI
+    std::vector<std::string> render_order = {
+        "terrain",      // 지형
+        "gltf",         // 일반 메시
+        "skinned",      // 애니메이션 메시
+        "skybox",       // Skybox
+        "ui",           // UI
+        "Monster_HP_UI" // 몬스터 HP UI
+    };
+
+    for (const auto& psoName : render_order)
     {
-        if (gameObjects.empty()) continue;
+        auto it = _renderMap.find(psoName);
+        if (it == _renderMap.end() || it->second.empty()) continue;
 
-        // 1. psoName으로 PSO를 가져옵니다.
+        const auto& gameObjects = it->second;
+
+        // PSO와 루트 시그니처 설정
         ID3D12PipelineState* pso = get_pso(psoName);
-        if (!pso) {
-            CERROR("PSO not found for: " << psoName);
-            continue;
-        }
-        //CLOG("PSO found for: " << psoName);
+        if (!pso) continue;
 
-        // 2. psoName으로 이 PSO를 만든 셰이더 프로토타입을 찾습니다.
         auto proto_it = _shaderPrototypes.find(psoName);
-        if (proto_it == _shaderPrototypes.end()) 
-        {
-			CLOG("[Renderer] Shader prototype not found for PSO name: " << psoName);
-            continue;
-        }
+        if (proto_it == _shaderPrototypes.end()) continue;
+
         const auto& shader_prototype = proto_it->second;
-
-        // 3. 찾은 셰이더에게 필요한 루트 시그니처의 '이름'을 물어봅니다.
         const std::string& root_sig_name = shader_prototype->required_root_signature();
-
-        // 4. 그 이름으로 실제 루트 시그니처 '객체'를 가져옵니다.
         ID3D12RootSignature* root_signature = get_root_signature(root_sig_name);
-        if (!root_signature) {
-            CERROR("Root signature not found for: " << root_sig_name);
-            continue;
-        }
+        if (!root_signature) continue;
 
-        // 5. 가져온 PSO와 루트 시그니처를 설정합니다. (이제 if문이 완전히 사라졌습니다!)
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
 
@@ -255,39 +226,57 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             camera->set_viewports_and_scissor_rects(commandList);
         }
 
-        // 6. 이 PSO 그룹에 속한 모든 오브젝트를 그립니다.
+        // Skybox 전용 처리
+        if (psoName == "skybox")
+        {
+            auto static_heap = ResourceManager::instance()->get_static_srv_heap();
+            if (static_heap)
+            {
+                ID3D12DescriptorHeap* heaps[] = { static_heap };
+                commandList->SetDescriptorHeaps(1, heaps);
+            }
+
+            // Skybox 상수 버퍼
+            if (camera && camera->get_cb_skybox())
+            {
+                D3D12_GPU_VIRTUAL_ADDRESS cbAddress =
+                    camera->get_cb_skybox()->GetGPUVirtualAddress();
+                commandList->SetGraphicsRootConstantBufferView(2, cbAddress);
+            }
+
+            // Skybox 텍스처 (고정 힙의 GPU 핸들 직접 사용)
+            D3D12_GPU_DESCRIPTOR_HANDLE srv_gpu_handle = ResourceManager::instance()->get_skybox_srv_gpu();
+            if (srv_gpu_handle.ptr != 0)
+            {
+                commandList->SetGraphicsRootDescriptorTable(4, srv_gpu_handle);
+            }
+
+            // Skybox 렌더링
+            for (const auto& gameObject : gameObjects)
+            {
+                auto renderComp = gameObject->get_component<RenderComponent>();
+                if (renderComp)
+                {
+                    renderComp->render(commandList, frame_index);
+                }
+            }
+            continue; // 다음 PSO로
+        }
+
+        // 일반 객체 렌더링
         for (const auto& gameObject : gameObjects)
         {
             auto renderComp = gameObject->get_component<RenderComponent>();
-            if (!renderComp) {
-                CERROR("No RenderComponent for object: " << gameObject->name());
-                continue;
-            }
+            if (!renderComp) continue;
 
             auto mesh = renderComp->mesh();
-            if (!mesh) {
-                CERROR("No mesh for object: " << gameObject->name());
-                continue;
-            }
+            if (!mesh) continue;
 
-            // --- [추가] GPU 업로드 확인 및 실행 ---
-            /*if (!mesh->is_uploaded())
-            {
-                // TODO: 현재는 Renderer에서 메쉬의 gpu업로드를 플래그로 한번씩 처리하고 있음(레거시코드처럼 한번에 만들고 업로드 한게 아님)
-				// TODO: 추후 ResourceManager에서 메쉬를 관리하게 될 때, ResourceManager에서 한번에 업로드하는 방식으로 변경할 예정
-                mesh->upload_to_gpu(_device, commandList);
-            }*/
-            // ------------------------------------
-            
-            // 셰이더에게 객체별 리소스 바인딩을 맡김
             shader_prototype->update_per_object(commandList, this, gameObject.get());
-
             gameObject->prepare_render();
-
             renderComp->render(commandList, frame_index);
         }
     }
-    //KJ 설명: OnPrepareRender 함수는 더 이상 필요 없으며, 그 역할은 Renderer가 더 효율적인 방식으로 수행하게 됩니다.
 }
 
 ID3D12RootSignature* Renderer::get_root_signature(const std::string& name) const

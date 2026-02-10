@@ -422,7 +422,7 @@ void GameFramework::FrameAdvance()
 	// 실제 그리기 (업로드 안 된 메쉬는 Mesh::render 내부에서 skip됨)
 	Renderer::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
-	// 씬의 후처리 렌더링 (스카이박스 등)
+	// 씬의 후처리 렌더링
 	Scene* currentScene = SceneManager::instance()->current_scene();
 	if (currentScene)
 	{

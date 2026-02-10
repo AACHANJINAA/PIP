@@ -16,9 +16,6 @@ public:
     virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
     virtual void release_upload_buffers() override;
 
-    // 스카이박스 렌더링
-	virtual void render_post_process(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
-
 private:
     void SpawnDummyNPC(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
