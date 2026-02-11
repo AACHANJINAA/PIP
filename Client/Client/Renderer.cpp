@@ -225,6 +225,10 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             camera->update_shader_variables(commandList, frame_index);
             camera->set_viewports_and_scissor_rects(commandList);
         }
+        if (psoName != "skybox")
+        {
+            commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+        }
 
         // Skybox 전용 처리
         if (psoName == "skybox")
