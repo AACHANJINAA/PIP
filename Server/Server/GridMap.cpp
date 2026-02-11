@@ -52,6 +52,9 @@ namespace PIP::GAME
 
         int idx = GetIndex(tc->GetPosition());
         _cells[idx].insert(obj);
+
+        // [수정] 이 객체가 어떤 셀에 들어갔는지 기록해야 나중에 Remove에서 찾을 수 있습니다.
+        _objectCellIndex[obj] = idx;
     }
 
     void GridMap::Remove(GameObject* obj)
