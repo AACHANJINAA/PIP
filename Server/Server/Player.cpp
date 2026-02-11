@@ -4,11 +4,12 @@
 #include <algorithm>
 
 #include "HitboxComponent.h"
+#include "MapDataManager.h"
 
 
 namespace PIP::GAME
 {
-	Player::Player(long long owner_id) 
+	Player::Player(int64_t owner_id)
 		:
 		_name {"DefaultName" },
 		_hp { 100 },
@@ -16,7 +17,7 @@ namespace PIP::GAME
 		_level { 0 },
 		_exp { 0 },
 		_damage{ 10 },
-		Actor(static_cast<int>(owner_id)),
+		Actor(owner_id),
 		_owner_id{ owner_id }
 	{
 		SetFaction(Faction::FACTION_PLAYER);
@@ -51,18 +52,28 @@ namespace PIP::GAME
 		}
 		if (hc && hc->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart))
 		{
-			MYLOG("[HitTest] HIT SUCCESS! Part: " << hitPart << " HP: " << _hp << " -> " << (_hp - damage));
 			// 3. 실제 데미지 적용
+			short old_hp = _hp;
 			_hp -= static_cast<short>(damage);
 			_hp = std::max<short>(_hp, 0);
+			MYLOG("[HitTest] HIT SUCCESS! Part: " << hitPart << " HP: " << old_hp << " -> " << _hp);
 
-			// 4. 넉백 효과 (공격자 방향 기준)
-			if (auto cc = GetComponent<CharacterControllerComponent>()) {
-				using namespace common::VectorHelper;
-				common::Vec3 knockbackDir = common::Normalize(GetPosition() - dynamic_cast<Actor*>(attacker)->GetPosition());
-				cc->AddImpact(knockbackDir * 10.0f); // 플레이어는 NPC보다 약간 적은 넉백
-			}
+			// 2. [핵심] 즉시 위치 이동 (넉백 좌표 계산)
+			common::Vec3 currentPos = GetPosition();
+			common::Vec3 attackerPos = dynamic_cast<Actor*>(attacker)->GetPosition();
 
+			// 공격자 반대 방향으로 2.5m 이동
+			common::Vec3 dir = common::Normalize(currentPos - attackerPos);
+			dir.y = 0; // 수평 이동만
+			common::Vec3 knockbackPos = currentPos + (dir * 2.5f);
+
+			// 지형 높이 보정 (밀려난 곳이 절벽 밖이거나 땅 속일 수 있음)
+			knockbackPos = MapDataManager::Instance()->AdjustPositionToGround(knockbackPos);
+
+			// 서버상 위치 즉시 업데이트
+			SetPosition(knockbackPos);
+
+			MYLOG("[HitTest] HIT SUCCESS! New Pos: " << knockbackPos.x << ", " << knockbackPos.z);
 			return true;
 		}
 		return false;

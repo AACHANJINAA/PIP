@@ -10,7 +10,7 @@
 
 namespace PIP::GAME
 {
-	NPC::NPC(int npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp)
+	NPC::NPC(int64_t npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp)
 		: Actor(npc_id),
 		_npc_type{ npc_type },
 		_room_id{ room_id },
@@ -70,6 +70,7 @@ namespace PIP::GAME
 		bb->set("owner", static_cast<GameObject*>(this));
 		bb->set("stuck_timer", 0.0f);
 		bb->set("last_pos", GetPosition());
+		bb->set("room_id", _room_id);
 
 		// 1. 공격 종류별 설정 (Shape, Offset, Damage, Cooldown)
 		// 일반 공격: 앞 2m 반경의 구체 형태
@@ -83,7 +84,7 @@ namespace PIP::GAME
 		NPCAttackConfig heavyAtk;
 		heavyAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.0f)); // 가로 3m, 세로 2m, 깊이 4m
 		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
-		heavyAtk.damage = 30;
+		heavyAtk.damage = 20;
 		heavyAtk.cooldown = 4.0f;
 
 		BTBuilder builder;
@@ -154,7 +155,7 @@ namespace PIP::GAME
 			// [반격 로직] 공격자를 타겟으로 설정
 			auto ai = GetComponent<AIComponent>();
 			if (ai) {
-				ai->GetBlackboard()->set("target_enemy", attacker);
+				ai->GetBlackboard()->set("target_enemy", attacker->GetId());
 				MYLOG("[HIT] " << GetName() << " part: " << hitPart << " set: target_enemy");
 			}
 

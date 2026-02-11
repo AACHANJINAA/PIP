@@ -291,138 +291,47 @@ namespace PIP::packet
 		// [중요] session->_room_id가 아니라, 패킷에 담긴 ID로 방을 직접 찾습니다!
 		SERVER::Room* target_room = SERVER::Server::Instance()->GetRoom(enter_packet._room_id);
 
-		if (target_room == nullptr) {
-			MYERROR("Target room " << enter_packet._room_id << " not found!");
+		if (!target_room) {
+			MYERROR("Target room " << enter_packet._room_id << " not found or Full");
 			return;
 		}
+		if (target_room->IsFull())
+		{
+			SC_PACKET_ENTER_ROOM_ACK ack_packet;
+			ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
+			ack_packet._size = sizeof(ack_packet);
+			ack_packet._room_id = enter_packet._room_id;
+			ack_packet._success = false; // 입장 실패
+			session->do_send(reinterpret_cast<const char*>(&ack_packet), sizeof(ack_packet));
+			MYLOG("Room " << enter_packet._room_id << " is full. Session " << session->_id << " cannot enter.");
+			return; // [추가] 실패했으므로 여기서 함수를 끝내야 합니다!
+		}
 
-		// 이제 방을 찾았으니, 그 방의 큐에 입장을 부탁합니다.
-		target_room->PushJob([session, enter_packet, target_room]() 
+		if (session->_room_id != -1) // [CASE 1] 이미 방에 있는 경우: 퇴장 후 입장
+		{
+			SERVER::Room* old_room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+			if (old_room)
 			{
-				// --- 여기부터는 '로직 스레드'에서 실행되는 안전한 구역입니다 ---
-
-				// 1. 방이 꽉 찼는지 등 체크
-				if (target_room->IsFull()) 
-				{
-					MYLOG("[EnterRoom] Session " << session->_id << " failed to enter Room " <<
-					enter_packet._room_id << ". Reason: Invalid, Full");
-
-					// 실패 ACK 전송
-					SC_PACKET_ENTER_ROOM_ACK ack_packet;
-					ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
-					ack_packet._size = sizeof(ack_packet);
-					ack_packet._room_id = enter_packet._room_id;
-					ack_packet._success = false;
-
-					PacketStream ack_stream;
-					ack_stream << ack_packet;
-					session->do_send(ack_stream.constable_data(), ack_stream.Size());
-					return;
-				}
-				if (session->_room_id != -1)
-				{
-					SERVER::Room* old_room = SERVER::Server::Instance()->GetRoom(session->_room_id);
-					if (old_room)
+				old_room->PushJob([old_room, target_room, session, enter_packet]()
 					{
-						packet::SC_PACKET_LEAVE leave_packet;
-						leave_packet._type = PacketType::S2C_P_LEAVE;
-						leave_packet._size = sizeof(leave_packet);
-						leave_packet._id = session->_id;
-						old_room->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof
-						(leave_packet), session->_id);
-
+						// 1. 이전 방 스레드에서 안전하게 퇴장 처리
 						old_room->LeavePlayer(session->_id);
-					}
-				}
 
-				// 2. 세션에 방 번호 부여
-				session->_room_id = enter_packet._room_id;
-				session->_state = SERVER::SESSION_STATE::ST_INGAME;
-				session->_logic_thread_idx = target_room->GetLogicThreadIndex();
-				common::Vec3 spawnPos{ 10, 10, 10 };
-				session->_player->SetPosition(MapDataManager::Instance()->AdjustPositionToGround(spawnPos));
-				session->_player->_level = 1;
-				session->_player->_hp = 100;
-				session->_player->_exp = 0;
-				// 3. 방의 플레이어 목록에 추가
-				target_room->EnterPlayer(session);
+						// 2. 퇴장 완료 후, 대상 방 스레드에 입장 요청
+						target_room->PushJob([target_room, session, enter_packet]()
+							{
+								target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
+							});
+					});
+				return; // Job 체인으로 넘겼으므로 종료
+			}
+		}
 
-				// 4. 스폰 패킷 전송 (기존 로직)
-				target_room->SendRoomInfoToNewPlayer(session);
-				packet::PacketStream self_spawn = MakeSpawnPlayerPacket(session);
-				session->do_send(self_spawn.constable_data(), self_spawn.Size());
-				target_room->Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
-
-				MYLOG("Session " << session->_id << " successfully entered Room " << session->_room_id);
+		// [CASE 2] 첫 입장이거나 이전 방이 없는 경우: 즉시 입장 요청
+		target_room->PushJob([target_room, session, enter_packet]()
+			{
+				target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
 			});
-
-		//// --- 1. 방 입장 유효성 검사 ---
-		//if (room == nullptr || room->IsFull())
-		//{
-		//	MYLOG("[EnterRoom] Session " << session->_id << " failed to enter Room " <<
-		//		enter_packet._room_id << ". Reason: Invalid, Full");
-
-		//	// 실패 ACK 전송
-		//	SC_PACKET_ENTER_ROOM_ACK ack_packet;
-		//	ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
-		//	ack_packet._size = sizeof(ack_packet);
-		//	ack_packet._room_id = enter_packet._room_id;
-		//	ack_packet._success = false;
-
-		//	PacketStream ack_stream;
-		//	ack_stream << ack_packet;
-		//	session->do_send(ack_stream.constable_data(), ack_stream.Size());
-		//	return;
-		//}
-
-		//if (session->_room_id != -1)
-		//{
-		//	server::Room* old_room = server::Server::Instance()->GetRoom(session->_room_id);
-		//	if (old_room)
-		//	{
-		//		packet::SC_PACKET_LEAVE leave_packet;
-		//		leave_packet._type = PacketType::S2C_P_LEAVE;
-		//		leave_packet._size = sizeof(leave_packet);
-		//		leave_packet._id = session->_id;
-		//		old_room->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof
-		//		(leave_packet), session->_id);
-
-		//		old_room->LeavePlayer(session->_id);
-		//	}
-		//}
-
-		//session->_room_id = enter_packet._room_id;
-		//session->_state = server::SESSION_STATE::ST_INGAME;
-		//session->_logic_thread_idx = room->GetLogicThreadIndex();
-		//common::Vec3 spawnPos{ 0, 10, 10 };
-		//
-		// _position = MapDataManager::Instance()->AdjustPositionToGround(spawnPos);
-		//session->_player->_level = 1;
-		//session->_player->_hp = 100;
-		//session->_player->_exp = 0;
-
-
-		//MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 0, -150)");
-
-		//SC_PACKET_ENTER_ROOM_ACK ack_packet;
-		//ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
-		//ack_packet._size = sizeof(ack_packet);
-		//ack_packet._room_id = enter_packet._room_id;
-		//ack_packet._success = true;
-		//PacketStream ack_stream;
-		//ack_stream << ack_packet;
-		//session->do_send(ack_stream.constable_data(), ack_stream.Size());
-		//MYLOG("[EnterRoom] Sent ENTER_ROOM_ACK(success) to session " << session->_id);
-
-		//room->SendRoomInfoToNewPlayer(session);
-
-		//packet::PacketStream self_spawn_stream = MakeSpawnPlayerPacket(session);
-		//session->do_send(self_spawn_stream.mutable_data(), self_spawn_stream.Size());
-
-		//room->Broadcast(self_spawn_stream.constable_data(), self_spawn_stream.Size(), session->_id);
-		//MYLOG("[EnterRoom] Broadcasted SPAWN_PLAYER of new session " << session->_id << " to other players in room " << room->GetRoomId());
-
-		//room->EnterPlayer(session);
 	}
 
 	void Handle_C2S_ROOM_LIST(std::shared_ptr<SERVER::SESSION> session, PacketStream& stream)
