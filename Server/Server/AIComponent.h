@@ -34,13 +34,16 @@ namespace PIP::GAME
 		void SetLuaScript(const std::string& path);
 		void SetBehaviorTree(std::shared_ptr<BTNode> root);
 
-        Blackboard* GetBlackboard() { return &_blackboard; }
+		std::shared_ptr<Blackboard> GetBlackboard() {
+			if (!_blackboard) _blackboard = std::make_shared<Blackboard>();
+			return _blackboard;
+		}
 
 	private:
 		AIMode _mode = AIMode::None;
 		lua_State* _L = nullptr;
 		
 		std::shared_ptr<BTNode> _btRoot;
-        Blackboard _blackboard;
+		std::shared_ptr<Blackboard> _blackboard; // 멤버 변수를 shared_ptr로 변경
 	};
 }

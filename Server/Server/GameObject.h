@@ -35,11 +35,12 @@ namespace PIP::GAME
 
         // [공통 인터페이스] 특정 공격에 맞았는지 검증하고 처리
         virtual bool ValidateHit(JPH::PhysicsSystem* physics,
-            const JPH::Shape* attackShape,
-            const JPH::RMat44& attackTransform,
-            uint32_t timestamp, // 리와인드용
-            const common::Vec3& attackerPos,
-            int32_t damage) = 0; // NPC, Player가 각각 구현
+                                 const JPH::Shape* attackShape,
+                                 const JPH::RMat44& attackTransform,
+                                 uint32_t timestamp,
+                                 // 리와인드용
+                                 GameObject* attacker,
+                                 int32_t damage) = 0; // NPC, Player가 각각 구현
 
     private:
         int _id;

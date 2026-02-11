@@ -54,9 +54,9 @@ namespace PIP::GAME
 
 		using namespace common::VectorHelper;
 		// 1. 외부 임팩트(넉백) 감쇄 처리
-		float speed = Length(_impactVelocity);
+		float speed = common::Length(_impactVelocity);
 		if (speed > 0.1f) {
-			_impactVelocity =  Normalize(_impactVelocity) * std::max(0.0f, speed - ImpactFriction * deltaTime);
+			_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, speed - ImpactFriction * deltaTime);
 		}
 		else {
 			_impactVelocity = common::Vec3Zero;

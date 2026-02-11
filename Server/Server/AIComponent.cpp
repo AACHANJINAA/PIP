@@ -16,7 +16,8 @@ namespace PIP::GAME
 
 	void AIComponent::Initialize()
 	{
-		_blackboard.set("owner", GetOwner());
+		auto bb = GetBlackboard();
+		bb->set("owner", GetOwner());
 	}
 
 	void AIComponent::Update(float deltaTime, JPH::TempAllocator* allocator)

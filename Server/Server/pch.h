@@ -92,6 +92,8 @@ using namespace JPH::literals; // 1.0_r 같은 리터럴 사용 시
 // 1. 로그용 전역 뮤텍스는 그대로 사용합니다.
 inline std::mutex g_log_mutex;
 
+using namespace common::VectorHelper; // XMFLOAT3 연산자 오버로드 사용 위해
+
 namespace common {
     struct ObjectSnapshot {
         uint32_t     _timestamp;

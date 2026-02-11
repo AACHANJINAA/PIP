@@ -31,7 +31,6 @@ const XMFLOAT3& NPCScript::position() const
 
 void NPCScript::awake()
 {
-
 	_serverPos = transform()->local_position();
 	_serverRot = transform()->local_rotation();
 	_serverVel = { 0, 0, 0 };
@@ -42,14 +41,21 @@ void NPCScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const
 {
 	_serverPos = pos;
 	_serverVel = vel;
-	_serverRot = rot;
 	_accumulatedTime = 0.0f; // 패킷 수신 후 시간 리셋
+
+	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
+	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&rot);
+	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
+	XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
+
+	// 보정된 회전값을 _serverRot에 저장
+	XMStoreFloat4(&_serverRot, qFinal);
 
 	// 첫 패킷 수신 시 즉시 동기화
 	if (_isFirstUpdate) {
 		if (transform()) {
 			transform()->set_local_position(pos);
-			transform()->set_local_rotation(rot);
+			transform()->set_local_rotation(_serverRot);
 		}
 		_isFirstUpdate = false;
 	}
@@ -61,6 +67,14 @@ void NPCScript::initialize_from_server(const XMFLOAT3& pos)
 	_serverVel = { 0, 0, 0 };
 	_serverRot = { 0, 0, 0, 1 };
 	_accumulatedTime = 0.0f;
+
+	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
+	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_serverRot);
+	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
+	XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
+
+	// 보정된 회전값을 _serverRot에 저장
+	XMStoreFloat4(&_serverRot, qFinal);
 
 	if (transform()) {
 		transform()->set_local_position(pos);
@@ -117,6 +131,15 @@ void NPCScript::update(float deltaTime)
 	// ---------------------------------------------------------
 	// 3. 회전 보간 (Slerp)
 	// ---------------------------------------------------------
+
+	//// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
+	//XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_serverRot);
+	//XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
+	//XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
+
+	//// 보정된 회전값을 _serverRot에 저장
+	//XMStoreFloat4(&_serverRot, qFinal);
+
 	transform()->set_local_rotation(_serverRot);
 }
 

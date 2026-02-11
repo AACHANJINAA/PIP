@@ -212,6 +212,7 @@ namespace common::packet
 		int64_t _target_id;
 		int32_t _damage;
 		int32_t _target_current_hp;
+		Vec3	_target_position;
 	};
 
 	// 플레이어 다중 공격 결과를 담는 새로운 패킷 구조체

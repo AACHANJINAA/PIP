@@ -47,7 +47,7 @@ namespace PIP::GAME
 		}
 
 		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
-			uint32_t timestamp, const common::Vec3& attackerPos, int32_t damage) override;
+		                 uint32_t timestamp, GameObject* attacker, int32_t damage) override;
 
 		//common::Vec3				_position;
 		//common::Quat				_rotation;

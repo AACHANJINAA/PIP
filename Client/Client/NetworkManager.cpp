@@ -398,7 +398,8 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 {
 	common::packet::SC_PACKET_PLAYER_ATTACK attack_header;
 	stream >> attack_header;
-
+	CLOG("[S->C] Received PLAYER_ATTACK. Attacker: " << attack_header._attacker_id << " HitCount: " <<
+		(int)attack_header._hit_count);
 	for (uint8_t i = 0; i < attack_header._hit_count; ++i)
 	{
 		common::packet::PlayerHitInfo hit_info;
@@ -414,7 +415,9 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 				if (player_logic && hit_info._target_id == player_logic->id())
 				{
 					player_logic->set_hp(hit_info._target_current_hp);
-					CLOG("나의 플레이어가 맞고 체력이 바뀌었다. SC_PACKET_PLAYER_ATTACK 패킷 처리");
+					CLOG("[Hit] My Player HP: " << player_logic->hp() << " -> " << hit_info._target_current_hp);
+					// [추가 필요] 서버가 보낸 좌표로 플레이어 위치 강제 동기화 (넉백 반영)
+					player->transform()->set_local_position(hit_info._target_position);
 					continue; // 다음 피격 정보로
 				}
 			}
@@ -540,7 +543,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 		animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 		animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-
+		// [추가] 플레이어와 동일한 공격 애니메이션 등록
+		animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
 		// ResourceManager을 통해 재질 생성 및 쉐이더 할당
 		std::string material_name = "npc_material";
 		ResourceManager::instance()->create_material(material_name);
