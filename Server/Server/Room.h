@@ -29,6 +29,8 @@ namespace PIP::SERVER
 		void RemoveNPC(int npcId);
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int npc_id);
+		// NPC의 공격 및 행동 판정
+		void ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config);
 
 		void StartGame();
 
@@ -97,7 +99,5 @@ namespace PIP::SERVER
 		ObjectLayerPairFilterImpl			_objLayerPairFilter;
 
 		JPH::BodyID _terrainBodyID;
-
-		const size_t MAX_HISTORY_SIZE = 30; // 30프레임(약 1초) 기록
 	};
 }

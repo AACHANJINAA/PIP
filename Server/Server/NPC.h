@@ -7,6 +7,15 @@
 
 namespace PIP::GAME
 {
+	struct NPCAttackConfig {
+		JPH::Ref<JPH::Shape> shape;    // 공격 판정 모양 (Sphere, Box, Capsule 등)
+		common::Vec3 posOffset;        // NPC 중심으로부터의 오프셋
+		float damage;                  // 공격력
+		float cooldown;                // 재사용 대기시간
+		std::string animationKey;      // (선택) 클라이언트에 보낼 애니메이션 이름/번호
+		// 추가 가능: 상태 이상, 넉백 수치 등
+	};
+
 	// NPC의 상태를 나타내는 열거형
 	enum class NPCState : uint8_t
 	{
@@ -134,12 +143,12 @@ namespace PIP::GAME
 			_lastSentTime = std::chrono::steady_clock::now(); // 시간 갱신
 		}
 		// [모듈화] 공격 검증 및 피격 처리 통합 함수
-		bool ValidateHit(JPH::PhysicsSystem* physics, 
-						const JPH::Shape* attackShape,
-						const JPH::RMat44& attackTransform,
-						uint32_t timestamp, 
-						const common::Vec3& attackerPos, 
-						int32_t damage) override;
+		bool ValidateHit(JPH::PhysicsSystem* physics,
+		                 const JPH::Shape* attackShape,
+		                 const JPH::RMat44& attackTransform,
+		                 uint32_t timestamp,
+		                 GameObject* attacker,
+		                 int32_t damage) override;
 		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 
 	private:

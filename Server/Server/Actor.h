@@ -4,9 +4,16 @@
 
 namespace PIP::GAME
 {
+    enum class Faction : uint32_t {
+        FACTION_PLAYER = 0,
+        FACTION_MONSTER = 1,
+        FACTION_NEUTRAL = 2,
+    	FACTION_UNKNOWN = 9999,
+        // 추가 파벌 정의 가능
+	};
     class Actor : public GameObject {
     public:
-        Actor(int id) : GameObject(id) {}
+        Actor(int id) : GameObject(id), _factionId(Faction::FACTION_UNKNOWN) {}
         virtual ~Actor() override = default;
 
         // --- 공통 데이터 접근 ---
@@ -36,14 +43,10 @@ namespace PIP::GAME
             return (it == _history.end()) ? _history.back() : *it;
         }
 
-        // --- 공통 피격 인터페이스 ---
-        virtual bool ValidateHit(JPH::PhysicsSystem* physics,
-            const JPH::Shape* attackShape,
-            const JPH::RMat44& attackTransform,
-            uint32_t timestamp,
-            const common::Vec3& attackerPos,
-            int32_t damage) = 0;
+        void SetFaction(Faction factionId) { _factionId = factionId; }
+        Faction GetFaction() const { return _factionId; }
     protected:
         std::deque<common::ObjectSnapshot> _history;
+        Faction _factionId;
     };
 }

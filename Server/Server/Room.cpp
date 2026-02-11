@@ -133,6 +133,136 @@ namespace PIP::SERVER
 		return it->second.get();
 	}
 
+	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config)
+	{
+		if (!attacker) return;
+
+		// 1. 공격 위치 계산 (공격자의 방향/회전 고려)
+		common::Quat rot = attacker->GetRotation();
+		XMVECTOR rotVec = XMLoadFloat4((XMFLOAT4*)&rot);
+		XMVECTOR offsetVec = XMLoadFloat3((XMFLOAT3*)&config.posOffset);
+
+		// 오프셋을 캐릭터가 바라보는 방향으로 회전시킴
+		XMVECTOR rotatedOffset = XMVector3Rotate(offsetVec, rotVec);
+		common::Vec3 finalPos = attacker->GetPosition();
+		XMStoreFloat3((XMFLOAT3*)&finalPos, XMLoadFloat3((XMFLOAT3*)&finalPos) + rotatedOffset);
+
+		// Jolt 트랜스폼 생성
+		JPH::RMat44 attackTransform = JPH::RMat44::sRotationTranslation(
+			Utils::ToJolt(rot), Utils::ToJolt(finalPos));
+
+		// 2. GridMap을 통해 범위 내 잠재적 타겟 선별
+		std::vector<GAME::GameObject*> nearby;
+		_gridMap.GetNearbyObjects(finalPos, nearby);
+
+		uint32_t now = static_cast<uint32_t>(GetTickCount64());
+
+		// 피격된 대상들을 모으기 위한 리스트
+		std::vector<packet::PlayerHitInfo> player_hits;
+		std::vector<packet::NPCHitInfo> npc_hits;
+
+		for (auto* obj : nearby) {
+			if (obj->GetId() == attacker->GetId()) continue; // 자가 공격 방지
+
+			if (auto target = dynamic_cast<GAME::Actor*>(obj)) {
+				// [추가] 같은 진영끼리는 공격 스킵 (팀킬 방지) 
+				if (attacker->GetFaction() == target->GetFaction()) continue;
+
+				// 3. 타겟의 ValidateHit 호출 (공격자 포인터 전달)
+				if (target->ValidateHit(_physicsSystem, config.shape, attackTransform, now, attacker, (int32_t)config.damage))
+				{
+					// [추가] 타겟 타입에 따라 피격 정보 기록
+					if (auto p = dynamic_cast<GAME::Player*>(target)) {
+						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->_hp, p->GetPosition());
+					}
+					else if (auto n = dynamic_cast<GAME::NPC*>(target)) {
+						npc_hits.emplace_back(n->GetNpcId(), (int32_t)config.damage, n->GetHP());
+					}
+				}
+			}
+		}
+
+		// 3. [패킷 전송] 플레이어가 맞았음을 알림
+		if (!player_hits.empty()) {
+			packet::PacketStream stream;
+			packet::SC_PACKET_PLAYER_ATTACK header;
+			header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
+			header._attacker_id = attacker->GetId();
+			header._hit_count = (uint8_t)player_hits.size();
+			stream << header;
+			for (auto& h : player_hits) stream << h;
+
+			auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h_ptr->_size = (uint16_t)stream.Size();
+			Broadcast(stream.constable_data(), stream.Size());
+		}
+
+		// 4. [패킷 전송] NPC가 맞았음을 알림 (NPC끼리 맞았을 때)
+		if (!npc_hits.empty()) {
+			packet::PacketStream stream;
+			packet::SC_PACKET_NPC_ATTACK header;
+			header._type = packet::PacketType::S2C_P_NPC_ATTACK;
+			header._attacker_id = attacker->GetId();
+			header._hit_count = (uint8_t)npc_hits.size();
+			stream << header;
+			for (auto& h : npc_hits) stream << h;
+
+			auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h_ptr->_size = (uint16_t)stream.Size();
+			Broadcast(stream.constable_data(), stream.Size());
+		}
+
+
+	// 4. (디버깅) 서버 판정 범위를 시각화 패킷으로 전송
+#ifdef _DEBUG
+	// --- [디버그] 서버의 공격 판정 영역을 클라이언트에 가시화 ---
+		packet::SC_PACKET_DEBUG_DRAW debug;
+		debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
+		debug._size = sizeof(debug);
+		debug._position = finalPos; // 계산된 공격 중심 월드 좌표
+		debug._rotation = rot;      // 공격자의 월드 회전값
+		debug._duration = 0.5f;     // 0.5초 동안만 표시
+
+		// Jolt Shape의 실제 타입을 확인하여 디버그 데이터 추출
+		const JPH::Shape* shape = config.shape.GetPtr();
+		switch (shape->GetSubType())
+		{
+		case JPH::EShapeSubType::Sphere:
+		{
+			auto sphere = static_cast<const JPH::SphereShape*>(shape);
+			debug._shape_type = packet::DebugShapeType::SPHERE;
+			// x에 반지름 저장
+			debug._extents = { sphere->GetRadius(), 0, 0 };
+		}
+		break;
+		case JPH::EShapeSubType::Box:
+		{
+			auto box = static_cast<const JPH::BoxShape*>(shape);
+			JPH::Vec3 halfExtents = box->GetHalfExtent();
+			debug._shape_type = packet::DebugShapeType::BOX;
+			// x, y, z에 반폭값 저장
+			debug._extents = { halfExtents.GetX(), halfExtents.GetY(), halfExtents.GetZ() };
+		}
+		break;
+		case JPH::EShapeSubType::Capsule:
+		{
+			auto capsule = static_cast<const JPH::CapsuleShape*>(shape);
+			debug._shape_type = packet::DebugShapeType::CAPSULE;
+			// x에 반지름, y에 실린더 절반 높이 저장
+			debug._extents = { capsule->GetRadius(), capsule->GetHalfHeightOfCylinder(), 0 };
+		}
+		break;
+		default:
+			// 지원하지 않는 도형은 로그만 남기고 전송 안 함
+			// MYLOG("DebugDraw: Unsupported shape type.");
+			return;
+		}
+
+		// 방 안의 모든 플레이어에게 전송 (서버 판정이 맞는지 개발 중에 확인용)
+		Broadcast(reinterpret_cast<const char*>(&debug), sizeof(debug));
+#endif
+	}
+
 	void Room::StartGame()
 	{
 		_room_state = RoomState::PLAYING;
@@ -143,7 +273,7 @@ namespace PIP::SERVER
 	{
 		bool isAnyPlayerNear = false;
 		for (auto& [pid, player] : _players) {
-			float distSq = common::VectorHelper::DistanceSq(get_position, player->_player->GetPosition());
+			float distSq = common::DistanceSq(get_position, player->_player->GetPosition());
 			if (distSq < size * size) { // 50m 이내에 플레이어가 한명이라도 있으면
 				isAnyPlayerNear = true;
 				break;
@@ -584,8 +714,8 @@ namespace PIP::SERVER
 					// [수정] Actor 인터페이스로 통합 판정 (NPC/Player 공통)
 					if (auto targetActor = dynamic_cast<GAME::Actor*>(obj)) {
 						if (targetActor->ValidateHit(_physicsSystem, attackShape.GetPtr(), attackTransform,
-							action_packet._client_time_stamp,
-							actor->_player->GetPosition(), actor->_player->_damage))
+						                             action_packet._client_time_stamp,
+						                             actor->_player.get(), actor->_player->_damage))
 						{
 							// NPC 피격 기록
 							if (auto npc = dynamic_cast<GAME::NPC*>(targetActor))
