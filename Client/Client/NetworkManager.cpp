@@ -414,10 +414,10 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 				auto player_logic = player->get_component<MainPlayerScript>();
 				if (player_logic && hit_info._target_id == player_logic->id())
 				{
-					player_logic->set_hp(hit_info._target_current_hp);
 					CLOG("[Hit] My Player HP: " << player_logic->hp() << " -> " << hit_info._target_current_hp);
-					// [추가 필요] 서버가 보낸 좌표로 플레이어 위치 강제 동기화 (넉백 반영)
+					player_logic->set_hp(hit_info._target_current_hp);
 					player->transform()->set_local_position(hit_info._target_position);
+
 					continue; // 다음 피격 정보로
 				}
 			}
