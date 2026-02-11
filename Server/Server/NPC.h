@@ -43,21 +43,7 @@ namespace PIP::GAME
 		int32_t GetHP()             const { return _hp; }
 		std::chrono::steady_clock::time_point GetLastUpdateTime() const { return _lastUpdateTime; }
 
-		common::Vec3 GetPosition()  const
-		{
-			auto tc = const_cast<NPC*>(this)->GetComponent<TransformComponent>();
-			return tc ? tc->GetPosition() : common::Vec3{ 0,0,0 };
-		}
-		common::Vec3 GetVelocity()  const
-		{
-			auto cc = const_cast<NPC*>(this)->GetComponent<CharacterControllerComponent>();
-			return cc ? cc->GetVelocity() : common::Vec3{ 0,0,0 };
-		}
-		common::Vec4 GetRotation()  const
-		{
-			auto tc = const_cast<NPC*>(this)->GetComponent<TransformComponent>();
-			return tc ? tc->GetRotation() : common::Vec4{ 0,0,0,1 };
-		}
+		
 		// [수정] 컴포넌트 종류에 상관없이 실제 사용하는 Jolt Shape 반환
 		const JPH::Shape* GetPhysicsShape() const {
 			// 1. 일반 리지드 바디 확인

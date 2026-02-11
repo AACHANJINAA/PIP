@@ -417,6 +417,7 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 					CLOG("[Hit] My Player HP: " << player_logic->hp() << " -> " << hit_info._target_current_hp);
 					player_logic->set_hp(hit_info._target_current_hp);
 					player_logic->set_position(hit_info._target_position);
+					player_logic->apply_knockback(hit_info._knockback_vector);
 
 					continue; // 다음 피격 정보로
 				}

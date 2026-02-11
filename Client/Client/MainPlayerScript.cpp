@@ -17,49 +17,49 @@
 #include "LightManager.h"
 #include "PhysicsColliderComponent.h"
 #include "WeaponScript.h"
+#include "MonsterHPComponent.h"
 
+void MainPlayerScript::set_hp(int hp)
+{
+	_hp = hp;
+	auto hp_ui = game_object()->get_component<MonsterHPComponent>();
+	if (hp_ui) {
+		hp_ui->set_current_hp(hp);
+	}
+}
 
 void MainPlayerScript::update(float deltaTime)
 {
-    // --- ÀÌµ¿ ÀÔ·Â Ã³¸® ¹× ·ÎÄÃ À§Ä¡ ¾÷µ¥ÀÌÆ® ---
     auto current_transform = this->transform();
     if (!current_transform) return;
 
 	auto animation_comp = game_object()->get_component<AnimationComponent>();
 
-    // ¸ğµ¨ÀÇ -90µµ XÃà È¸ÀüÀ» °í·ÁÇÑ ½ÇÁ¦ forward º¤ÅÍ °è»ê
-    XMFLOAT3 modelForward = Vector3::ScalarProduct(current_transform->forward(), 1.f, false);    // ½ÇÁ¦ ¾Õ ¹æÇâ
-    XMFLOAT3 modelRight = current_transform->right();   // ½ÇÁ¦ ¿À¸¥ÂÊ ¹æÇâ
     common::Vec3 move_direction{};
     bool is_moving = false;
 
     XMFLOAT3 camForward = _camera->transform()->forward();
     XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
-    XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV)); // Ä«¸Ş¶ó ±âÁØ ¿À¸¥ÂÊ
+    XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));
 
     if (InputManager::instance()->IsKeyPress('W')) {
-        // ÇÃ·¹ÀÌ¾îÀÇ ¾ÕÂÊ ¹æÇâÀ¸·Î ÀÌµ¿
         move_direction = Vector3::Add(move_direction, camFwdV);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('A')) {
-        // ÇÃ·¹ÀÌ¾îÀÇ ¿ŞÂÊ ¹æÇâÀ¸·Î ÀÌµ¿
         XMFLOAT3 playerLeft = Vector3::ScalarProduct(camRightV, -1.0f, false);
         move_direction = Vector3::Add(move_direction, playerLeft);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('S')) {
-        // ÇÃ·¹ÀÌ¾îÀÇ µÚÂÊ ¹æÇâÀ¸·Î ÀÌµ¿
         XMFLOAT3 modelBackward = Vector3::ScalarProduct(camFwdV, -1.0f, false);
         move_direction = Vector3::Add(move_direction, modelBackward);
         is_moving = true;
     }
     if (InputManager::instance()->IsKeyPress('D')) {
-        // ÇÃ·¹ÀÌ¾îÀÇ ¿À¸¥ÂÊ ¹æÇâÀ¸·Î ÀÌµ¿
         move_direction = Vector3::Add(move_direction, camRightV);
         is_moving = true;
     }
-    // ³ªÁß¿¡ Á¡ÇÁ·Î º¯°æ
     if (InputManager::instance()->IsKeyPress('Q')) {
         move_direction = Vector3::Add(move_direction ,common::Vec3Up);
         is_moving = true;
@@ -68,126 +68,77 @@ void MainPlayerScript::update(float deltaTime)
         move_direction = Vector3::Add(move_direction ,common::Vec3Down);
         is_moving = true;
 	}
+
 	if (InputManager::instance()->IsKeyPress(VK_SPACE))
 	{
-        // [¼öÁ¤] ¹ü¿ë ¾×¼Ç ÆĞÅ¶À¸·Î º¯°æ
         NetworkManager::instance()->SendActionPacket(
-            common::packet::ActionType::NORMAL_ATTACK, // ÀÏ¹İ °ø°İ
-            0,                                         // action_id (ÆòÅ¸´Â 0)
-            -1,                                        // target_id (³íÅ¸°Ù)
-            current_transform->local_position(),       // °ø°İ ¹ß»ı À§Ä¡
-            current_transform->local_rotation()        // °ø°İ ¹æÇâ
+            common::packet::ActionType::NORMAL_ATTACK,
+            0, -1,
+            current_transform->local_position(),
+            current_transform->local_rotation()
         );
 	}
 
-    if (InputManager::instance()->IsKeyDown('P'))
-    {
-        _speed += 1.f;
-    }
+    if (InputManager::instance()->IsKeyDown('P')) _speed += 1.f;
+    if (InputManager::instance()->IsKeyDown('M')) if(_speed > 5.f) _speed -= 1.f;
 
-    if (InputManager::instance()->IsKeyDown('M')) {
-        if(_speed > 5.f)
-        {
-            _speed -= 1.f;
-        }
-    }
-
-    Light* sunLight = LightManager::instance()->get_light(0);
-
-    if (sunLight && sunLight->m_nType == 3) // 0¹ø Á¶¸íÀÌ ¹æÇâ¼º Á¶¸íÀÎÁö È®ÀÎ
-    {
-        // 'J' Å°¸¦ ´©¸£¸é Á¶¸í °¢µµ¸¦ YÃà ±âÁØÀ¸·Î È¸Àü
-        if (InputManager::instance()->IsKeyPress('J'))
-        {
-            sunLight->m_vDirection = XMFLOAT3(-0.8f, -0.4f, -0.2f);
-        }
-        // 'K' Å°¸¦ ´©¸£¸é Á¶¸í °¢µµ¸¦ Æ¯Á¤ ¹æÇâÀ¸·Î Áï½Ã º¯°æ
-        if (InputManager::instance()->IsKeyPress('K'))
-        {
-            // (0.8f, -0.4f, 0.2f}´Â µ¿ÂÊ ³ôÀº °÷¿¡¼­ ¼­ÂÊ ³·Àº °÷À» ºñÃß´Â ÇüÅÂÀÔ´Ï´Ù.
-            sunLight->m_vDirection = XMFLOAT3(0.8f, -0.4f, 0.2f);
-        }
-    }
-    if (InputManager::instance()->IsKeyPress(VK_SPACE))
-    {
-        // ½ºÆäÀÌ½º ´©¸£¸é ³» ÁÖº¯ 3m ´Ù ¶§¸²
-        if (_attackRangeObject) {
-            _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(true);
-        }
-    }
-    else
-    {
-        if (_attackRangeObject) {
-            _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(false);
-        }
+    if (InputManager::instance()->IsKeyPress(VK_SPACE)) {
+        if (_attackRangeObject) _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(true);
+    } else {
+        if (_attackRangeObject) _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(false);
     }
 	
-    auto anim_comp = game_object()->get_component<AnimationComponent>();
-    if (is_moving) {
-		if (anim_comp)
-		{
-            anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
-		}
-        move_direction = common::Normalize(move_direction); // ´ë°¢¼± ÀÌµ¿ ½Ã ¼Óµµ°¡ »¡¶óÁöÁö ¾Êµµ·Ï Á¤±ÔÈ­
-        // _speed = 5.0f; // ÀÌµ¿ ¼Óµµ (ÀÓÀÇÀÇ °ª, ÇÊ¿ä½Ã Á¶Á¤)
-        auto new_pos = Vector3::Add(current_transform->local_position() ,Vector3::ScalarProduct(move_direction, _speed * deltaTime));
+    // ---------------------------------------------------------
+    // [ë„‰ë°± ë¬¼ë¦¬ ì—°ì‚°] ì„œë²„ì™€ ë™ì¼í•œ ê³µì‹ (Friction 35.0f)
+    // ---------------------------------------------------------
+    float impactSpeed = common::Length(_impactVelocity);
+    if (impactSpeed > 0.1f) {
+        _impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - 35.0f * deltaTime);
+    } else {
+        _impactVelocity = {0,0,0};
+    }
 
-        // [Ãß°¡µÊ] 2. ÁöÇü ³ôÀÌ(Y) º¸Á¤ ·ÎÁ÷
-		// Å¬¶óÀÌ¾ğÆ®¿¡¼­ ÁöÇü ³ôÀÌ °è»ê ·ÎÁ÷À» ¼­¹ö¿Í µ¿ÀÏÇÏ°Ô Àû¿ëÇÏ¿© ¿¹Ãø Á¤È®µµ¸¦ ³ôÀÓ.
+    auto anim_comp = game_object()->get_component<AnimationComponent>();
+    common::Vec3 currentPos = current_transform->local_position();
+    common::Vec3 new_pos = currentPos;
+
+    if (is_moving) {
+		if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
+        move_direction = common::Normalize(move_direction);
+        new_pos = Vector3::Add(currentPos, Vector3::ScalarProduct(move_direction, _speed * deltaTime));
+
 		if (const auto scene_manager = SceneManager::instance()) {
 			if (const auto terrain_obj = scene_manager->get_terrain_object()) {
-				if (auto render_comp = terrain_obj->get_component<RenderComponent>()) {
-                    auto mesh = render_comp->mesh();
-                    // Mesh°¡ TerrainLoaderÀÎÁö È®ÀÎ ÈÄ Ä³½ºÆÃ (¾ÈÀüÇÏ°Ô dynamic_pointer_cast »ç¿ë)
-
-					if (auto terrain_loader = std::dynamic_pointer_cast<TerrainLoader>(mesh)) {
-                        // ÇØ´ç X, Z À§Ä¡ÀÇ Á¤È®ÇÑ ÁöÇü ³ôÀÌ¸¦ °¡Á®¿È
-                        float terrain_height = terrain_loader->get_height_at(new_pos.x, new_pos.z);
-
-                        // CLOG("Pre-Height Y: " << new_pos.y << " | Terrain Y: " << terrain_height);
-                        
-						// ÁöÇü ¾Æ·¡·Î¸¸ ¸ø°¡°Ô, À§·Î´Â ÀÚÀ¯·Ó°Ô
-                        new_pos.y = terrain_height;
+				if (auto rc = terrain_obj->get_component<RenderComponent>()) {
+					if (auto terrain_loader = std::dynamic_pointer_cast<TerrainLoader>(rc->mesh())) {
+                        new_pos.y = terrain_loader->get_height_at(new_pos.x, new_pos.z);
                     }
                 }
             }
         }
 
         if (_camera && _camera->transform()) {
-            XMFLOAT3 camForward = _camera->transform()->forward();
-
-            float yawRadians = atan2f(camForward.x, camForward.z);
-
-            float yawDegrees = XMConvertToDegrees(yawRadians);
-            yawDegrees -= 180.f;
-            // ¸ğµ¨ÀÇ ±âº» -90µµ XÃà È¸Àü À¯ÁöÇÏ°í, yaw¸¸ Ä«¸Ş¶ó ¹æÇâÀ¸·Î ¼³Á¤
-			// DW¼öÁ¤ : ±âÁ¸ ÄÚµå´Â XÃà È¸ÀüÀ» 0À¸·Î ¼³Á¤ÇßÀ¸³ª, ¸ğµ¨ÀÇ ±âº» È¸ÀüÀ» À¯ÁöÇÏµµ·Ï ¼öÁ¤ ¾Ö´Ï¸ŞÀÌ¼Ç Àû¿ëµÇ¸é -90 ¾ÈÇØµµ ¹®Á¦ ¾øÀ½
+            XMFLOAT3 camF = _camera->transform()->forward();
+            float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z)) - 180.f;
             current_transform->set_local_rotation(0.0f, yawDegrees, 0.0f);
         }
-
-    	current_transform->set_local_position(new_pos);
-    }
-    else if(InputManager::instance()->IsKeyPress(VK_SPACE))
-    {
-        
-        // ¾Ö´Ï¸ŞÀÌ¼Ç ÆĞÅ¶ Àü¼Û µî...
-        if (anim_comp) {
-            anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
-        }
-    }
-    else
-    {
-        if (animation_comp)
-        {
-            anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
-        }
+    } else if(InputManager::instance()->IsKeyPress(VK_SPACE)) {
+        if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
+    } else {
+        if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
     }
 
-    // --- 50ms ¸¶´Ù À§Ä¡ Á¤º¸ Àü¼Û ---
+    // ë„‰ë°± ì´ë™ëŸ‰ í•©ì‚°
+    new_pos.x += _impactVelocity.x * deltaTime;
+    new_pos.z += _impactVelocity.z * deltaTime;
+
+    current_transform->set_local_position(new_pos);
+
+    // --- 20ms ì£¼ê¸° ìœ„ì¹˜ ì „ì†¡ ---
     _sendTimer += deltaTime;
     if (_sendTimer >= SENDINTERVAL) {
         _sendTimer = 0.f;
-        common::packet::OBJECT_STATE current_state = animation_comp ? animation_comp->get_state() : common::packet::OBJECT_STATE::IDLE;
+        common::packet::OBJECT_STATE current_state = anim_comp ? anim_comp->get_state() : common::packet::OBJECT_STATE::IDLE;
         NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation(), current_state);
     }
 }
@@ -195,80 +146,22 @@ void MainPlayerScript::update(float deltaTime)
 void MainPlayerScript::awake()
 {
     _camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
-
     if (_camera) {
-        XMFLOAT3 camForward = _camera->transform()->forward();
-        float yawRadians = atan2f(camForward.x, camForward.z);
-        float yawDegrees = XMConvertToDegrees(yawRadians);
-        yawDegrees -= 180.f; // ¸ğµ¨ÀÌ µÚ¸¦ º¸°í ÀÖ´Ù¸é 180µµ È¸Àü ÇÊ¿ä        
+        XMFLOAT3 camF = _camera->transform()->forward();
+        float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z)) - 180.f;
         transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
     }
-    else {
-        // Ä«¸Ş¶ó°¡ ¾øÀ¸¸é ±âº» È¸Àü (ÇÊ¿ä¿¡ µû¶ó Á¶Á¤)                        
-        transform()->set_local_rotation(0.0f, 0.0f, 0.0f);
-    }
 
-
-    // [Å×½ºÆ®] ÇÃ·¹ÀÌ¾î Áß½É °ø°İ ¹üÀ§ (Attack Range) »ı¼º
     _attackRangeObject = ObjectManager::instance()->create_game_object("AttackRange");
     _attackRangeObject->transform()->set_parent(game_object()->transform());
     _attackRangeObject->transform()->set_local_position({ 0, 0, 0 });
-
     auto col = _attackRangeObject->add_component<PhysicsColliderComponent>();
-    // ¹İÁö¸§ 3.0mÂ¥¸® °Å´ëÇÑ ±¸ (¼¾¼­)
     col->initialize(PhysicsColliderComponent::ShapeType::Sphere, { 3.0f, 0, 0 }, { 0,0,0 }, { 0,0,0 }, true);
-
-    // ·Î±× Âï´Â ½ºÅ©¸³Æ® ºÙÀÌ±â
     _attackRangeObject->add_component<WeaponScript>();
-
-    col->set_active(false); // Æò¼Ò¿£ ²û
-
-	/*_renderComponent = game_object()->add_component<RenderComponent>().get();
-    auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
-
-    // ÀçÁú ¹× ½¦ÀÌ´õ ¼³Á¤
-    _renderComponent->set_mesh(playerMesh);
-
-	// ResourceManagerÀ» ÅëÇØ ÀçÁú »ı¼º ¹× ¼ÎÀÌ´õ ÇÒ´ç
-    std::string material_name = "player_material";
-	ResourceManager::instance()->create_material(material_name);
-	ResourceManager::instance()->set_shader_for_material(material_name, "gltf_hp");
-
-    // gltf
-    _renderComponent->set_pso_name("gltf");
-
-    // À§Ä¡, È¸Àü Á¤º¸
-    transform()->set_local_rotation(-90.f, 0.f, 0.f);
-    transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });*/
+    col->set_active(false);
 }
 
 void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)
 {
-    common::Vec3 direction{};
-    switch (cmd)
-    {
-    case common::packet::MOVE_TYPE::MOVE_UP:
-        direction = common::Vec3Forward;
-        break;
-    case common::packet::MOVE_TYPE::MOVE_DOWN:
-        direction = common::Vec3Backward;
-        break;
-    case common::packet::MOVE_TYPE::MOVE_RIGHT:
-        direction = common::Vec3Right;
-        break;
-    case common::packet::MOVE_TYPE::MOVE_LEFT:
-        direction = common::Vec3Left;
-        break;
-    default:
-        return; // Á¤ÀÇµÇÁö ¾ÊÀº Å¸ÀÔÀÌ¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½
-    }
-
-    this->game_object()->get_component<TransformComponent>()->set_local_position(
-        {
-            this->position().x + direction.x * TimerManager::instance()->GetTimeElapsed(),
-            this->position().y + direction.y * TimerManager::instance()->GetTimeElapsed(),
-            this->position().z + direction.z * TimerManager::instance()->GetTimeElapsed()
-        }
-	);
-	// ¼­¹ö·Î ÀÌµ¿ ¸í·É Àü¼ÛÀº Á¤ÇØÁø Å¸ÀÓ¿¡ Àü¼ÛµÇµµ·Ï ÇÔ
+    // ... ê¸°ì¡´ ë ˆê±°ì‹œ í•¨ìˆ˜ ìœ ì§€ ...
 }

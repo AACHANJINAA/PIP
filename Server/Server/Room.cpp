@@ -179,7 +179,13 @@ namespace PIP::SERVER
 				{
 					// [추가] 타겟 타입에 따라 피격 정보 기록
 					if (auto p = dynamic_cast<GAME::Player*>(target)) {
-						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->_hp, p->GetPosition());
+						common::Vec3 currentPos = p->GetPosition();
+						common::Vec3 attackerPos = attacker->GetPosition();
+						common::Vec3 knockDir = common::Normalize(currentPos - attackerPos);
+						knockDir.y = 0;
+						common::Vec3 knockForce = knockDir * 20.0f; // 넉백 세기 설정
+
+						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->_hp, p->GetPosition(), knockForce);
 					}
 					else if (auto n = dynamic_cast<GAME::NPC*>(target)) {
 						npc_hits.emplace_back(n->GetNpcId(), (int32_t)config.damage, n->GetHP());
@@ -293,6 +299,20 @@ namespace PIP::SERVER
 	{
 		if (!_physicsSystem || _players.empty()) return;
 
+		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
+		static float debugTimer = 0.0f; // static으로 선언하여 값 유지
+		debugTimer += deltaTime;
+		if (debugTimer >= 1.0f) {
+			debugTimer = 0.0f;
+			for (auto& [pid, session] : _players) {
+				if (session && session->_player) {
+					common::Vec3 pos = session->_player->GetPosition();
+					MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " <<
+						pos.z);
+				}
+			}
+		}
+
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
 
 		// --- 1. 시야 내에 있는(활성화된) NPC들 찾기 ---
@@ -337,16 +357,66 @@ namespace PIP::SERVER
 			npc->RecordSnapshot(currentTick);
 		}
 
-		// --- 2. 플레이어 업데이트 루프 (플레이어도 리와인드가 필요하므로 기록) ---
+		// --- 2. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
 		for (auto& [pid, session] : _players) {
-			if (session && session->_player) {
+			if (!session || !session->_player) continue;
 
-				// 플레이어는 항상 시뮬레이션 (혹은 클라 동기화 데이터 적용)
-				session->_player->PhysicsUpdate(deltaTime, tempAllocator);
+			auto player = session->_player;
+			auto cc = player->GetComponent<GAME::CharacterControllerComponent>();
+			if (!cc) continue;
 
-				// 플레이어 상태도 기록 (PVP 판정용)
-				session->_player->RecordSnapshot(currentTick);
+			// [핵심] 물리 엔진 업데이트 (조작 의도 + 넉백 + 중력)
+			player->PhysicsUpdate(deltaTime, tempAllocator);
+
+			common::Vec3 serverPos = player->GetPosition();
+			common::Vec3 clientTargetPos = player->GetLastClientTargetPos();
+			common::Vec3 lastSentPos = player->GetLastSentPos();
+
+			// --- 패킷 전송 조건 체크 (최적화) ---
+			// 1. 넉백 중인가? (Impact 속도가 남아있음)
+			bool isKnockback = common::Length(cc->GetImpactVelocity()) > 0.1f;
+
+			// 2. 서버-클라이언트 오차가 0.5m 이상이면 (벽에 막힘 등 Desync 발생)
+			float desyncDistSq = common::DistanceSq(serverPos, clientTargetPos);
+
+			if (isKnockback || desyncDistSq > (0.5f * 0.5f))
+			{
+				packet::SC_PACKET_MOVE sync_packet;
+				sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
+				sync_packet._size = sizeof(sync_packet);
+				sync_packet._id = session->_id;
+				sync_packet._position = serverPos;
+				sync_packet._rotation = player->GetRotation();
+				sync_packet._state = player->_state;
+
+				
+				// 본인 포함 브로드캐스트 (강제 위치 견인)
+				Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet));
+
+				// 전송 기록 갱신
+				player->SetLastSentPos(serverPos);
+				player->SetLastClientTargetPos(serverPos); // 의도 동기화
 			}
+			else if (common::DistanceSq(serverPos, lastSentPos) > (0.05f * 0.05f))
+			{
+				// 3. 오차는 적지만 이동량이 유의미할 때 (5cm 이상)
+				// -> 타인에게만 전송 (대역폭 절약)
+
+				packet::SC_PACKET_MOVE sync_packet;
+				sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
+				sync_packet._size = sizeof(sync_packet);
+				sync_packet._id = session->_id;
+				sync_packet._position = serverPos;
+				sync_packet._rotation = player->GetRotation();
+				sync_packet._state = player->_state;
+
+				Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
+				player->SetLastSentPos(serverPos);
+			}
+
+			// 히스토리 기록 (리와인드용)
+			player->RecordSnapshot(currentTick);
+			
 		}
 
 		// --- 3. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
@@ -360,7 +430,15 @@ namespace PIP::SERVER
 		ProcessJobs();
 		
 		if (_players.empty()) return;
-
+		// --- [추가] 2. 플레이어 로직 업데이트 ---
+		for (auto& [pid, session] : _players)
+		{
+			if (session && session->_player)
+			{
+				// 여기서 Player::Update(deltaTime, allocator)가 호출됩니다.
+				session->_player->Update(deltaTime, tempAllocator);
+			}
+		}
 		// --- 1. AOI 시야 갱신 (Enter/Leave) ---
 		for (auto& [pid, session] : _players)
 		{
@@ -716,9 +794,9 @@ namespace PIP::SERVER
 				for (auto* obj : nearbyObjects) {
 					// 자기 자신은 제외
 					if (obj->GetId() == actor->_id) continue;
-
 					// [수정] Actor 인터페이스로 통합 판정 (NPC/Player 공통)
 					if (auto targetActor = dynamic_cast<GAME::Actor*>(obj)) {
+						if (actor->_player->GetFaction() == targetActor->GetFaction()) continue;
 						if (targetActor->ValidateHit(_physicsSystem, attackShape.GetPtr(), attackTransform,
 						                             action_packet._client_time_stamp,
 						                             actor->_player.get(), actor->_player->_damage))
@@ -788,67 +866,65 @@ namespace PIP::SERVER
 		}
 
 
-		// TODO: (필요 시) 플레이어 피격 알림도 동일하게 BroadcastToPlayerViewers 호출...
+		// 2. 하단에 플레이어 피격 알림 브로드캐스트 추가
+		if (!player_hits.empty()) {
+			packet::PacketStream stream;
+			packet::SC_PACKET_PLAYER_ATTACK header;
+			header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
+			header._attacker_id = actor->_id;
+			header._hit_count = (uint8_t)player_hits.size();
+			stream << header;
+			for (auto& h : player_hits) stream << h;
+
+			auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h_ptr->_size = (uint16_t)stream.Size();
+			Broadcast(stream.constable_data(), stream.Size());
+		}
 
 		
 
 	}
 	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet) {
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
+		auto player = session->_player;
+		auto cc = player->GetComponent<GAME::CharacterControllerComponent>();
+		if (cc) {
+			// [추가] 넉백 힘이 작용 중일 때는 클라이언트의 조작 속도를 0으로 만듦
+			// 이렇게 해야 물리 엔진이 밀어내는 힘이 온전히 작용함
+			if (common::Length(cc->GetImpactVelocity()) > 2.0f) {
+				cc->SetVelocity({ 0, 0, 0 });
+			}
+			else {
+				// [중요] player->GetPosition()은 이제 '물리 좌표'를 반환함
+				common::Vec3 currentPhysicsPos = player->GetPosition();
+				common::Vec3 targetPos = move_packet._position;
+				// [누락되었던 핵심 코드] 클라이언트가 최종적으로 도달하고자 하는 목표 위치 기록
+				player->SetLastClientTargetPos(move_packet._position);
+				// 1. 클라이언트가 가려는 방향 계산
+				common::Vec3 currentPos = session->_player->GetPosition();
 
-		common::Vec3 targetPos = move_packet._position;
-		common::Quat targetRotation = move_packet._rotation;
-		common::packet::OBJECT_STATE targetState = move_packet._state;
-		common::Vec3 player_extents = { 0.5f, 0.9f, 0.5f };
+				common::Vec3 moveDir = targetPos - currentPos;
+				moveDir.y = 0; // 수평 이동만 고려
+				float dist = common::Length(moveDir);
 
-		if (!MapDataManager::Instance()->IsInsideMap(targetPos.x, targetPos.z))
-		{
-			packet::SC_PACKET_MOVE correction_packet;
-			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
-			correction_packet._size = sizeof(correction_packet);
-			correction_packet._id = session->_id;
-			correction_packet._position = session->_player->GetPosition();
-			correction_packet._rotation = session->_player->GetRotation();
-			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
-
-			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
-			return;
-		}
-
-		float groundHeight = MapDataManager::Instance()->GetGroundHeight(targetPos.x, targetPos.z);
-		targetPos.y = groundHeight;
-
-		if (MapDataManager::Instance()->CheckForCollision(targetPos, player_extents))
-		{
-			packet::SC_PACKET_MOVE correction_packet;
-			correction_packet._type = common::packet::PacketType::S2C_P_MOVE;
-			correction_packet._size = sizeof(correction_packet);
-			correction_packet._id = session->_id;
-			correction_packet._position = session->_player->GetPosition(); 
-			correction_packet._rotation = session->_player->GetRotation();
-			correction_packet._state = common::packet::OBJECT_STATE::IDLE;
-
-			session->do_send(reinterpret_cast<char*>(&correction_packet), sizeof(correction_packet));
-		}
-		else
-		{
-			common::Vec3 oldPos = session->_player->GetPosition();
-
-			session->_player->SetPosition(targetPos);
-			session->_player->SetRotation(targetRotation);
-			session->_player->_state = targetState;
-
-			packet::SC_PACKET_MOVE sync_packet;
-			sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
-			sync_packet._size = sizeof(sync_packet);
-			sync_packet._id = session->_id;
-			sync_packet._position = targetPos;
-			sync_packet._rotation = targetRotation;
-			sync_packet._state = targetState;
-
-			_gridMap.UpdatePosition(session->_player.get(), targetPos);
-			
-			Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
+				// 1. [안전장치] 거리가 5m 이상이면 속도 대신 즉시 텔레포트
+				if (dist > 5.0f) {
+					player->SetPosition(targetPos);
+					cc->SetVelocity({ 0, 0, 0 });
+				}
+				// 2. 속도 제한 (최대 시속 72km 수준으로 제한)
+				else if (dist > 0.01f) {
+					common::Vec3 vel = common::Normalize(moveDir) * (dist / 0.02f);
+					float maxSpeed = 20.0f;
+					if (common::Length(vel) > maxSpeed) vel = common::Normalize(vel) * maxSpeed;
+					cc->SetVelocity(vel);
+				}
+				else {
+					cc->SetVelocity({ 0, 0, 0 });
+				}
+			}
+			session->_player->SetRotation(move_packet._rotation);
+			session->_player->_state = move_packet._state;
 		}
 	}
 	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {

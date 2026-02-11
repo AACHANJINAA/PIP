@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "CharacterControllerComponent.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
 
@@ -20,8 +21,20 @@ namespace PIP::GAME
 
         // [중요] 컴포넌트를 통해 위치와 회전을 가져오는 헬퍼 함수
         virtual common::Vec3 GetPosition() const {
+            // [중요] 캐릭터 컨트롤러가 있다면 Jolt 바디의 좌표가 '진실'임
+            if (auto cc = const_cast<Actor*>(this)->GetComponent<CharacterControllerComponent>()) {
+                return cc->GetPosition(); // 발바닥 보정값이 들어간 cc의 GetPosition 호출
+            }
+            // 물리 객체가 없는 일반 오브젝트만 트랜스폼 참조
             auto tc = const_cast<Actor*>(this)->GetComponent<TransformComponent>();
             return tc ? tc->GetPosition() : common::Vec3{ 0,0,0 };
+        }
+
+        virtual common::Vec3 GetVelocity() const {
+            if (auto cc = const_cast<Actor*>(this)->GetComponent<CharacterControllerComponent>()) {
+                return cc->GetVelocity();
+            }
+            return { 0,0,0 };
         }
 
         virtual common::Quat GetRotation() const {

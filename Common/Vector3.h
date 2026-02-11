@@ -8,7 +8,7 @@ namespace common
 {
     using Vec3 = DirectX::XMFLOAT3;
 	using Vec4 = DirectX::XMFLOAT4;
-	using Quat = DirectX::XMFLOAT4; // Quaternionµµ XMFLOAT4·Î Ç¥Çö
+	using Quat = DirectX::XMFLOAT4; // Quaternionï¿½ï¿½ XMFLOAT4ï¿½ï¿½ Ç¥ï¿½ï¿½
 	constexpr Vec3 Vec3One = { 1.0f, 1.0f, 1.0f };
 	constexpr Vec3 Vec3Zero = { 0.0f, 0.0f, 0.0f };
 	constexpr Vec3 Vec3Up = { 0.0f, 1.0f, 0.0f };
@@ -24,8 +24,9 @@ namespace common
 	}
 	inline Vec3 Normalize(const Vec3& v)
 	{
-		float len = Length(v);
-		if (len <= FLT_EPSILON) return Vec3Zero;
+		float lenSq = v.x * v.x + v.y * v.y + v.z * v.z;
+		if (lenSq < 1e-6f || std::isinf(lenSq) || std::isnan(lenSq)) return Vec3Zero;
+		float len = sqrtf(lenSq);
 		return { v.x / len, v.y / len, v.z / len };
 	}
 	inline float Distance(const Vec3& v1, const Vec3& v2)
