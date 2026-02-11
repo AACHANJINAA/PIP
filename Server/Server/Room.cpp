@@ -29,7 +29,7 @@ namespace PIP::SERVER
 
 		for (int i = 0; i < 100; ++i)
 		{
-			int npcId = _next_npc_id++;
+			int64_t npcId = _next_npc_id++;
 			common::Vec3 randomPos = {
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
 			};
@@ -58,6 +58,12 @@ namespace PIP::SERVER
 		bool wasEmpty = _players.empty(); 
 		if (new_player->_player) {
 			_gridMap.Add(new_player->_player.get());
+		}
+		if (new_player->_player) {
+			if (auto cc = new_player->_player->GetComponent<GAME::CharacterControllerComponent>()) {
+				// NPC와 동일하게 1.8m 높이, 0.5m 반지름으로 초기화
+				cc->Initialize(_physicsSystem, 1.8f, 0.5f);
+			}
 		}
 		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
@@ -90,7 +96,7 @@ namespace PIP::SERVER
 		}
 	}
 
-	void Room::RemoveNPC(int npcId)
+	void Room::RemoveNPC(int64_t npcId)
 	{
 		auto it = _npcs.find(npcId);
 		if (it == _npcs.end()) return;
@@ -123,7 +129,7 @@ namespace PIP::SERVER
 		_npcs.emplace(npc->GetNpcId(), std::move(npc));
 	}
 
-	GAME::NPC* Room::GetNPC(int npc_id)
+	GAME::NPC* Room::GetNPC(int64_t npc_id)
 	{
 		auto it = _npcs.find(npc_id);
 		if (it == _npcs.end())
@@ -847,54 +853,64 @@ namespace PIP::SERVER
 	}
 	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
 
-		if (session->_room_id != -1)
-		{
-			SERVER::Room* old_room = SERVER::Server::Instance()->GetRoom(session->_room_id);
-			if (old_room)
-			{
-				packet::SC_PACKET_LEAVE leave_packet;
-				leave_packet._type = packet::PacketType::S2C_P_LEAVE;
-				leave_packet._size = sizeof(leave_packet);
-				leave_packet._id = session->_id;
-				old_room->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof(leave_packet), session->_id);
-
-				old_room->LeavePlayer(session->_id);
-			}
-		}
-
-		session->_room_id = enter_packet._room_id;
+		// --- [Step 1] 세션 데이터 갱신 ---
+		session->_room_id = _room_id; // 현재 방 ID (this->_room_id)
 		session->_state = SERVER::SESSION_STATE::ST_INGAME;
-		session->_logic_thread_idx = GetLogicThreadIndex();
-		common::Vec3 spawnPos{ 0, 10, 10 };
+		session->_logic_thread_idx = _logic_thread_idx;
+
+		common::Vec3 spawnPos{ 10, 10, 10 };
 		session->_player->SetPosition(MapDataManager::Instance()->AdjustPositionToGround(spawnPos));
-		session->_player->_level = 1;
 		session->_player->_hp = 100;
-		session->_player->_exp = 0;
 
+		// --- [Step 2] 패킷 전송 (여기서 다 보냅니다) ---
 
-		MYLOG("[EnterRoom] Session " << session->_id << " updated. New Room: " << session->_room_id << ", Pos: (0, 0, -150)");
-
+		// 1. 입장 성공 ACK 전송
 		packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = packet::PacketType::S2C_P_ENTER_ROOM_ACK;
 		ack_packet._size = sizeof(ack_packet);
-		ack_packet._room_id = enter_packet._room_id;
+		ack_packet._room_id = _room_id;
 		ack_packet._success = true;
-		packet::PacketStream ack_stream;
-		ack_stream << ack_packet;
-		session->do_send(ack_stream.constable_data(), ack_stream.Size());
-		MYLOG("[EnterRoom] Sent ENTER_ROOM_ACK(success) to session " << session->_id);
+		session->do_send(reinterpret_cast<char*>(&ack_packet), sizeof(ack_packet));
 
+		// 2. 다른 플레이어들의 정보를 나에게 전송
 		SendRoomInfoToNewPlayer(session);
 
-		packet::PacketStream self_spawn_stream = packet::MakeSpawnPlayerPacket(session);
-		session->do_send(self_spawn_stream.mutable_data(), self_spawn_stream.Size());
+		// 3. 나의 스폰 패킷 생성 및 전송
+		packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
+		session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
 
-		Broadcast(self_spawn_stream.constable_data(), self_spawn_stream.Size(), session->_id);
-		MYLOG("[EnterRoom] Broadcasted SPAWN_PLAYER of new session " << session->_id << " to other players in room " << GetRoomId());
+		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
+		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
+		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
 
+		// --- [Step 3] 최종 입장 완료 (리스트 및 그리드맵 추가) ---
 		EnterPlayer(session);
+
+		MYLOG("[Room] Session " << session->_id << " successfully entered Room " << _room_id);
 	}
 
+
+	GAME::Player* Room::GetPlayer(int64_t player_id)
+	{
+		if (_players.contains(player_id))
+		{
+			return _players[player_id]->_player.get();
+		}
+		return nullptr;
+	}
+
+	GAME::Actor* Room::GetActor(int64_t actor_id)
+	{
+		if (auto npc = GetNPC(actor_id))
+		{
+			return npc;
+		}
+		if (auto player = GetPlayer(actor_id))
+		{
+			return player;
+		}
+		return nullptr;
+	}
 
 	void Room::CreatePhysicsTerrain() {
 		const auto& terrainData = MapDataManager::Instance()->GetTerrainData();

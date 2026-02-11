@@ -99,13 +99,32 @@ namespace PIP::GAME
     }
 
 	bool Condition_HasEnemy::check() {
-        return _blackboard->has("target_enemy");
+        // 1. 키가 있는지 먼저 확인 (필수!)
+        if (!_blackboard->has("target_enemy")) return false;
+
+        auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+        if (!room) return false;
+
+        int64_t enemy_id = _blackboard->get<int64_t>("target_enemy");
+        return room->GetActor(enemy_id) != nullptr;
+
     }
 
 	bool Condition_IsEnemyInRange::check() {
-        GameObject* enemy = _blackboard->get<GameObject*>("target_enemy");
+        auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+        if (!room)
+        {
+            return false;
+        }
+        int64_t enemy_id = _blackboard->get<int64_t>("target_enemy");
         GameObject* owner = _blackboard->get<GameObject*>("owner");
-        if (!enemy || !owner) return false;
+		GameObject* enemy = room->GetActor(enemy_id);
+        if (!owner) return false;
+        if (!enemy)
+        {
+            _blackboard->set("target_enemy", -1);
+            return false;
+        }
 
         auto npc = dynamic_cast<NPC*>(owner);
         float distSq = common::DistanceSq(npc->GetPosition(), dynamic_cast<Actor*>(enemy)->GetPosition());
@@ -113,8 +132,14 @@ namespace PIP::GAME
     }
 
 	NodeStatus Action_ChaseEnemy::tick(float dt, JPH::TempAllocator* allocator) {
+        auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+        if (!room)
+        {
+            return NodeStatus::FAILURE;
+        }
         GameObject* owner = _blackboard->get<GameObject*>("owner");
-        GameObject* enemy = _blackboard->get<GameObject*>("target_enemy");
+        int64_t enemy_id = _blackboard->get<int64_t>("target_enemy");
+        Actor* enemy = room->GetActor(enemy_id);
         if (!owner || !enemy) return NodeStatus::FAILURE;
 
         auto npc = dynamic_cast<NPC*>(owner);
@@ -189,6 +214,11 @@ namespace PIP::GAME
     }
 
 	NodeStatus Action_AttackEnemy::tick(float dt, JPH::TempAllocator* allocator) {
+        auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+        if (!room)
+        {
+            return NodeStatus::FAILURE;
+        }
         // 1. 쿨타임 체크
         if (_timer > 0) _timer -= dt;
         if (_attackDurationTimer > 0) _attackDurationTimer -= dt;
@@ -206,9 +236,10 @@ namespace PIP::GAME
             _attackDurationTimer -= dt;
             return NodeStatus::RUNNING; // 아직 공격 중이므로 이동 노드로 못 넘어가게 함
         }
-
+        
         GameObject* owner = _blackboard->get<GameObject*>("owner");
-        GameObject* target = _blackboard->get<GameObject*>("target_enemy");
+        int64_t target_id = _blackboard->get<int64_t>("target_enemy");
+		Actor* target = room->GetActor(target_id);
         if (!owner || !target) return NodeStatus::FAILURE;
 
         auto npc = dynamic_cast<NPC*>(owner);
@@ -237,12 +268,16 @@ namespace PIP::GAME
         }
 
         // 4. 실제 공격 판정 요청 (Room Job)
-        SERVER::Room* room = SERVER::Server::Instance()->GetRoom(npc->GetRoomId());
         if (room) {
-            // config 데이터를 캡처하여 안전하게 전달
-            room->PushJob([room, npc, config = _config]() {
-                room->ExecuteActorAction(npc, config);
-                });
+            
+            int64_t npcId = npc->GetId(); // ID 미리 따놓기
+            room->PushJob([room, npcId, config = _config]() {
+                // 실행 시점에 안전하게 다시 찾음
+                auto* attacker = room->GetActor(npcId);
+                if (attacker) {
+                    room->ExecuteActorAction(attacker, config);// config 데이터를 캡처하여 안전하게 전달
+                }
+            });
         }
 
         // 5. 상태 설정 (애니메이션 재생용)

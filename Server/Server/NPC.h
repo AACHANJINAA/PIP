@@ -28,14 +28,14 @@ namespace PIP::GAME
 	class NPC : public Actor
 	{
 	public:
-		NPC(int npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp);
+		NPC(int64_t npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp);
 		~NPC() override;
 
 		void SetupBT();
 		
 
 		// Getters
-		int GetNpcId()              const { return GetId(); }
+		int64_t GetNpcId()          const { return GetId(); }
 		int GetNpcType()            const { return _npc_type; }
 
 		common::packet::OBJECT_STATE GetState() const { return _state; }

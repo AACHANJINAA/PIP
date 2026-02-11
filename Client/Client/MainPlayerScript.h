@@ -1,6 +1,7 @@
 #pragma once
 #include "ScriptComponent.h"
 
+constexpr float SENDINTERVAL{ 0.02f };
 class RenderComponent;
 class MainPlayerScript : public ScriptComponent
 {
@@ -19,8 +20,8 @@ public:
     // (예시: HP, ID, 이름 등 플레이어의 상태를 관리하는 변수와 함수들이 여기에 위치할 수 있습니다.)
 	void set_hp(int hp) { _hp = hp; }
 	int hp() const { return _hp; }
-    void set_position(const f3& pos)
-	{
+    void set_position(const f3& pos) const
+    {
 		auto transform = this->transform();
         if (transform)
         {
@@ -48,7 +49,7 @@ private:
 
     // 20ms 마다 서버에 위치 정보를 전송하기 위한 타이머
     float _sendTimer{ 0.f };
-    const float _sendInterval{ 0.02f };
+    
 };
 
 

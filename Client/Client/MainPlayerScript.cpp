@@ -185,7 +185,7 @@ void MainPlayerScript::update(float deltaTime)
 
     // --- 50ms 마다 위치 정보 전송 ---
     _sendTimer += deltaTime;
-    if (_sendTimer >= _sendInterval) {
+    if (_sendTimer >= SENDINTERVAL) {
         _sendTimer = 0.f;
         common::packet::OBJECT_STATE current_state = animation_comp ? animation_comp->get_state() : common::packet::OBJECT_STATE::IDLE;
         NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation(), current_state);

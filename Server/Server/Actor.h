@@ -13,7 +13,7 @@ namespace PIP::GAME
 	};
     class Actor : public GameObject {
     public:
-        Actor(int id) : GameObject(id), _factionId(Faction::FACTION_UNKNOWN) {}
+        Actor(int64_t id) : GameObject(id), _factionId(Faction::FACTION_UNKNOWN) {}
         virtual ~Actor() override = default;
 
         // --- 공통 데이터 접근 ---
