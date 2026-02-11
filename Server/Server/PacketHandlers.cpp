@@ -270,9 +270,9 @@ namespace PIP::packet
 		// 1. 세션과 방의 유효성 검사
 		
 		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
-		if (!room)
+		if (room)
 		{
-			room->PushJob([&]()
+			room->PushJob([room, session]()
 				{
 					if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1)
 						return;
