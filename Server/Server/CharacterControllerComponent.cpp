@@ -54,16 +54,24 @@ namespace PIP::GAME
 
 		using namespace common::VectorHelper;
 		// 1. 외부 임팩트(넉백) 감쇄 처리
-		float speed = common::Length(_impactVelocity);
-		if (speed > 0.1f) {
-			_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, speed - ImpactFriction * deltaTime);
+		float impactSpeed = common::Length(_impactVelocity);
+		if (impactSpeed > 50.0f) _impactVelocity = common::Normalize(_impactVelocity) * 50.0f; // 최대 넉백 속도 제한
+
+		if (impactSpeed > 0.1f) {
+			_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction * deltaTime);
 		}
 		else {
 			_impactVelocity = common::Vec3Zero;
 		}
 
 		// 2. 최종 수평 속도 합성 (AI + 넉백)
-		common::Vec3 horizontalVel = _aiVelocity + _impactVelocity;
+		common::Vec3 horizontalVel;
+		if (common::Length(_impactVelocity) > 10.0f) { // 강하게 맞았을 때
+			horizontalVel = _impactVelocity; // 유저 조작 무시 (스턴 느낌)
+		}
+		else {
+			horizontalVel = _aiVelocity + _impactVelocity; // 평상시 합성
+		}
 		JPH::Vec3 finalJoltVel = Utils::ToJolt(horizontalVel);
 
 		// 3. 수직 속도(중력) 처리 - [핵심] 기존 Y 속도를 가져와서 중력 누적
@@ -74,7 +82,7 @@ namespace PIP::GAME
 		}
 		else {
 			// 땅에 있다면 아주 살짝만 아래로 눌러줌
-			currentYVel = -1.0f;
+			currentYVel = -0.5f;
 		}
 		finalJoltVel.SetY(currentYVel);
 
@@ -82,16 +90,22 @@ namespace PIP::GAME
 
 		// 3. Jolt CharacterVirtual 업데이트 (시뮬레이션이 아닌 '충돌 해결'만 수행)
 		_character->Update(deltaTime, _physicsSystem->GetGravity(),
-			_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
-			_physicsSystem->GetDefaultLayerFilter(Layers::NPC), 
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(_physicsLayer),
+			_physicsSystem->GetDefaultLayerFilter(_physicsLayer),
 			{}, {}, *allocator);
 
-		// 4. GameObject의 Transform과 동기화
-		JPH::RVec3 centerPos = _character->GetPosition();
-		// [중요] Jolt 중심 좌표를 다시 발바닥 좌표로 변환하여 Transform에 저장
-		common::Vec3 footPos = Utils::FromJolt(centerPos);
-		footPos.y -= _halfHeight; // 반 높이만큼 내려줘야 발바닥 기준이 됩니다.
+		// 4. [핵심] NaN 체크 및 강제 복구
+		JPH::RVec3 newJoltPos = _character->GetPosition();
+		if (std::isnan(newJoltPos.GetX()) || std::isinf(newJoltPos.GetX())) {
+			MYERROR("Physics Explosion Detected! Resetting to safe position.");
+			_character->SetPosition(JPH::RVec3(0, 50, 0)); // 안전한 위치로 강제 견인
+			_impactVelocity = { 0,0,0 };
+			_aiVelocity = { 0,0,0 };
+			return;
+		}
 
+		// 5. GameObject의 Transform과 동기화
+		common::Vec3 footPos = this->GetPosition(); // 보정된 발바닥 좌표
 		auto tc = GetOwner()->GetComponent<TransformComponent>();
 		if (tc) tc->SetPosition(footPos);
 	}
@@ -118,7 +132,11 @@ namespace PIP::GAME
 	}
 	common::Vec3 CharacterControllerComponent::GetPosition() const
 	{
-		return _character ? Utils::FromJolt(_character->GetPosition()) : common::Vec3{ 0,0,0 };
+		if (!_character) return common::Vec3Zero;
+		JPH::RVec3 centerPos = _character->GetPosition();
+		common::Vec3 footPos = Utils::FromJolt(centerPos);
+		footPos.y -= _halfHeight; // 중심에서 발바닥으로
+		return footPos;
 	}
 
 	void CharacterControllerComponent::AddImpulse(const common::Vec3& impulse)
@@ -133,5 +151,10 @@ namespace PIP::GAME
 	bool CharacterControllerComponent::IsGrounded() const
 	{
 		return _character ? _character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround : false;
+	}
+
+	const JPH::Shape* CharacterControllerComponent::GetShape() const {
+		if (_character) return _character->GetShape();
+		return nullptr;
 	}
 }

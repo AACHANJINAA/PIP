@@ -59,10 +59,11 @@
 #include <dxgidebug.h>
 
 #include "d3dx12.h"
+#include "Vector3.h"
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;
-
+using namespace common::VectorHelper;
 using Microsoft::WRL::ComPtr;
 
 #pragma comment(lib,"d3dcompiler.lib")

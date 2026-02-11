@@ -24,7 +24,7 @@ namespace PIP::GAME
 		// 1. Transform 추가
 		AddComponent<GAME::TransformComponent>();
 		// 2. 물리 컨트롤러 추가 (플레이어도 이제 물리 적용!)
-		AddComponent<GAME::CharacterControllerComponent>();
+		AddComponent<GAME::CharacterControllerComponent>(Layers::MOVING);
 
 		// [추가] 히트박스 설정 (NPC와 동일한 크기의 캡슐)
 		auto hitbox = AddComponent<HitboxComponent>();
@@ -40,6 +40,8 @@ namespace PIP::GAME
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
 	                         const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
 	{
+		if (_hitCooldown > 0.0f) return false; // 쿨다운 중이면 무시
+
 		// 1. 과거 시점 위치 복구
 		auto snapshot = GetSnapshotAt(timestamp);
 
@@ -58,24 +60,24 @@ namespace PIP::GAME
 			_hp = std::max<short>(_hp, 0);
 			MYLOG("[HitTest] HIT SUCCESS! Part: " << hitPart << " HP: " << old_hp << " -> " << _hp);
 
-			// 2. [핵심] 즉시 위치 이동 (넉백 좌표 계산)
-			common::Vec3 currentPos = GetPosition();
-			common::Vec3 attackerPos = dynamic_cast<Actor*>(attacker)->GetPosition();
+			if (auto cc = GetComponent<CharacterControllerComponent>()) {
+				common::Vec3 currentPos = GetPosition();
+				common::Vec3 attackerPos = dynamic_cast<Actor*>(attacker)->GetPosition();
+				common::Vec3 dir = common::Normalize(currentPos - attackerPos);
+				dir.y = 0;
 
-			// 공격자 반대 방향으로 2.5m 이동
-			common::Vec3 dir = common::Normalize(currentPos - attackerPos);
-			dir.y = 0; // 수평 이동만
-			common::Vec3 knockbackPos = currentPos + (dir * 2.5f);
-
-			// 지형 높이 보정 (밀려난 곳이 절벽 밖이거나 땅 속일 수 있음)
-			knockbackPos = MapDataManager::Instance()->AdjustPositionToGround(knockbackPos);
-
-			// 서버상 위치 즉시 업데이트
-			SetPosition(knockbackPos);
-
-			MYLOG("[HitTest] HIT SUCCESS! New Pos: " << knockbackPos.x << ", " << knockbackPos.z);
+				// [수정] AddImpulse 대신 AddImpact 호출 (20.0f 정도로 강하게)
+				cc->AddImpact(dir * 20.0f);
+			}
+			_hitCooldown = 0.3f; // 피격 쿨다운 설정
 			return true;
 		}
 		return false;
+	}
+
+	void Player::Update(float deltaTime, JPH::TempAllocator* allocator)
+	{
+		if (_hitCooldown > 0.0f) _hitCooldown -= deltaTime;
+		Actor::Update(deltaTime, allocator);
 	}
 }

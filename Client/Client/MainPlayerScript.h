@@ -11,16 +11,12 @@ public:
     MainPlayerScript() = default;
     virtual ~MainPlayerScript() = default;
 
-    // --- »ý¸íÁÖ±â ÇÔ¼ö ¿À¹ö¶óÀÌµå ---
-    // ¸Å ÇÁ·¹ÀÓ ÀÔ·ÂÀ» È®ÀÎÇÏ±â À§ÇØ update ÇÔ¼ö¸¦ ÀçÁ¤ÀÇÇÕ´Ï´Ù.
     virtual void update(float deltaTime) override;
     void awake() override;
 
-    // --- °íÀ¯ ±â´É ---
-    // (¿¹½Ã: HP, ID, ÀÌ¸§ µî ÇÃ·¹ÀÌ¾îÀÇ »óÅÂ¸¦ °ü¸®ÇÏ´Â º¯¼ö¿Í ÇÔ¼öµéÀÌ ¿©±â¿¡ À§Ä¡ÇÒ ¼ö ÀÖ½À´Ï´Ù.)
-	void set_hp(int hp) { _hp = hp; }
+	void set_hp(int hp);
 	int hp() const { return _hp; }
-    void set_position(const f3& pos) const
+    void set_position(const f3& pos)
     {
 		auto transform = this->transform();
         if (transform)
@@ -33,54 +29,20 @@ public:
     void set_id(int64_t id) { _playerId = id; }
 	int64_t id() const { return _playerId; }
 
+	void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }
+
 private:
-    // ±âÁ¸ MainPlayerÀÇ private ÇÔ¼ö¿´´ø move_pos¸¦ °¡Á®¿É´Ï´Ù.
     void move_pos(common::packet::MOVE_TYPE cmd);
 
-    // (¿¹½Ã: ÇÃ·¹ÀÌ¾îÀÇ »óÅÂ º¯¼öµé)
     int _hp;
     int64_t _playerId;
 	RenderComponent* _renderComponent{ nullptr };
 	GameObject* _camera{ nullptr };
     std::shared_ptr<GameObject> _attackRangeObject;
 
-    // ¼Óµµ
+    // [ì¶”ê°€] ë„‰ë°± ë¬¼ë¦¬ ì œì–´ ë³€ìˆ˜
+    common::Vec3 _impactVelocity = { 0,0,0 };
+
     float _speed{5.f};
-
-    // 20ms ¸¶´Ù ¼­¹ö¿¡ À§Ä¡ Á¤º¸¸¦ Àü¼ÛÇÏ±â À§ÇÑ Å¸ÀÌ¸Ó
     float _sendTimer{ 0.f };
-    
 };
-
-
-//class MainPlayer : public GameObject, public HPObject
-//{
-//public:
-//	MainPlayer(int x = 0, int y = 0, int z = 0);
-//	~MainPlayer();
-//
-//public:
-//	// GameObjectÀ»(¸¦) ÅëÇØ »ó¼ÓµÊ
-//	void animate(float elapsed_time, Camera* camera, ID3D12GraphicsCommandList* command_list) override;
-//	void collision(float elapsed_time) override;
-//	void process_input(float elapsed_time) override;
-//
-//public:
-//	void SetDistance(float MoveDistance) { _MoveDistance = MoveDistance; }
-//	void SetID(int64_t id) { _id = id; }
-//	int64_t GetID() const { return _id; }
-//	void SetName(const std::string& name) { _name = name; }
-//	std::string GetName() const { return _name; }
-//	
-//private:
-//	void Move_Pos(common::packet::MOVE_TYPE Cmd);
-//
-//private:
-//	int64_t		_id = -1;
-//	std::string _name;
-//
-//	float _MoveDistance{2}; // ¿òÁ÷ÀÏ °Å¸®
-//
-//	std::shared_ptr<TransformComponent> MainPlayer_Trasnform = get_component<TransformComponent>();
-//};
-

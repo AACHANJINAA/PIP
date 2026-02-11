@@ -146,6 +146,12 @@ namespace PIP::GAME
         auto targetActor = dynamic_cast<Actor*>(enemy);
         if (!npc || !targetActor) return NodeStatus::FAILURE;
 
+        // GetActor(ID)를 통해 현재 방에 실재하는지 검증
+        if (!room || room->GetActor(enemy->GetId()) == nullptr) {
+            _blackboard->set("target_enemy", std::any()); // 존재하지 않으므로 타겟 지움
+            return NodeStatus::FAILURE;
+        }
+
         auto cc = owner->GetComponent<CharacterControllerComponent>();
         auto tc = owner->GetComponent<TransformComponent>();
         if (!cc || !tc) return NodeStatus::FAILURE;
