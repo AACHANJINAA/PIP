@@ -13,6 +13,7 @@
 #include "SceneManager.h"
 #include "LightManager.h"
 #include "PhysicsManager.h"
+#include "ReplicationSystem.h"
 
 
 GameFramework::GameFramework()
@@ -60,6 +61,8 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	else {
 		CLOG("[SUCCESS] PhysicsManager Initialized." << std::endl);
 	}
+	// [추가] 리플리케이션 시스템 초기화
+	_replicationSystem = std::make_unique<ReplicationSystem>();
 	DescriptorManager::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
@@ -369,6 +372,12 @@ void GameFramework::FrameAdvance()
 	float deltaTime = _gameTimer.GetTimeElapsed();
 
 	ProcessNetwork(); // (스레드 분리했다면 큐 비우기)
+
+	// 2. 리플리케이션 시스템 업데이트 (ReplicationSystem)
+	// 채워진 스냅샷 데이터를 각 오브젝트(INetSync)에 일괄 적용합니다.
+	if (_replicationSystem) {
+		_replicationSystem->update(deltaTime);
+	}
 	ProcessInput();
 	update_game_logic(deltaTime);
 	update_physics(deltaTime);

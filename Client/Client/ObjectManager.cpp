@@ -5,6 +5,8 @@
 #include "TransformComponent.h"
 #include <algorithm>
 
+#include "Behavior.h"
+
 std::shared_ptr<GameObject> ObjectManager::create_game_object(const std::string& name)
 {
     // 1. make_shared로 객체를 생성합니다. 이제 생성자는 안전합니다.
@@ -55,6 +57,21 @@ void ObjectManager::process_destructions()
 void ObjectManager::remove_game_object_from_list(std::shared_ptr<GameObject> gameObject)
 {
     if (!gameObject) return;
+
+
+    // ---------------------------------------------------------
+    // 1. [추가] 모든 컴포넌트의 on_destroy() 호출
+    // ---------------------------------------------------------
+    // GameObject 클래스 내부에 정의된 _components 리스트를 순회합니다.
+    // (GameObject.h에 getter가 있다고 가정하거나, 친구 클래스라면 직접 접근)
+    for (const auto& component : gameObject->components())
+    {
+        if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
+        {
+            // 비활성화 상태여도 파괴 시점의 정리는 필요하므로 무조건 호출합니다.
+            behavior->on_destroy();
+        }
+    }
 
     // --- [변경] 부모로부터 연결 끊기 로직 ---
     if (auto transform = gameObject->transform())

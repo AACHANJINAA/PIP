@@ -1,11 +1,13 @@
 ﻿#pragma once
+#include "INetSync.h"
 #include "ScriptComponent.h"
 
-class NPCScript : public ScriptComponent {
+class NPCScript : public ScriptComponent, public INetSync {
 public:
 	using required_components = std::tuple<TransformComponent>;
 
 	void awake() override;
+	void on_destroy() override;
 	void update(float deltaTime) override;
 	void late_update(float deltaTime) override;
 
@@ -21,6 +23,10 @@ public:
 
 	void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
 	void initialize_from_server(const XMFLOAT3& pos);
+
+	// --- INetSync 인터페이스 구현 ---
+	void on_receive_snapshot(const NetSnapshot& snapshot) override;
+	void apply_snapshot() override;
 private:
 	int		_hp = 100;
 	int64_t _id = -1;
@@ -33,4 +39,7 @@ private:
 	
 	float _accumulatedTime = 0.0f;          // 패킷 수신 후 경과 시간
 	bool _isFirstUpdate = true;             // 첫 패킷인지 여부
+
+	NetSnapshot _pendingSnapshot;
+	bool _isNewDataArrived = false;
 };

@@ -46,7 +46,7 @@ namespace PIP::SERVER
 			}
 
 			float randomOffset = (rand() % 200) / 1000.0f; 
-			auto scatteredTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
+			auto scatteredTime = std::chrono::steady_clock::now(); //- std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
 			npc->SetLastUpdateTime(scatteredTime);
 			
 			AddNPC(std::move(npc));
@@ -71,7 +71,7 @@ namespace PIP::SERVER
 			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
 			for (auto& [id, npc] : _npcs) {
 				float randomOffset = (rand() % 200) / 1000.0f; 
-				auto scatteredTime = std::chrono::steady_clock::now() - std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
+				auto scatteredTime = std::chrono::steady_clock::now(); //- std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
 				npc->SetLastUpdateTime(scatteredTime);
 			}
 		}

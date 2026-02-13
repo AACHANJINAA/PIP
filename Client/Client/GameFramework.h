@@ -2,7 +2,7 @@
 #include "TimerManager.h"
 #include "Scene.h"
 // static constexpr UINT SWAP_CHAIN_BUFFERS = 2;
-
+class ReplicationSystem;
 class GameFramework : public Singleton<GameFramework>
 {
 	friend Singleton<GameFramework>; // 싱글톤 접근 허용
@@ -62,6 +62,10 @@ private:
 
 	UINT64 _currentFenceValue = 0; // 펜스 값을 전체적으로 관리할 카운터 변수
 
+	// [추가] 리플리케이션 시스템 소유 (unique_ptr로 생명주기 관리)
+	std::unique_ptr<ReplicationSystem> _replicationSystem;
+
+
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
 
@@ -107,6 +111,9 @@ public:
 	}
 	ComPtr<ID3D12CommandQueue>& command_queue() { return _commandQueue; }
 	HWND hWnd() const { return _hWnd; }
+
+	// [추가] 리플리케이션 시스템 접근자
+	ReplicationSystem* get_replication_system() const { return _replicationSystem.get(); }
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 
