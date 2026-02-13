@@ -111,6 +111,9 @@
     <Filter Include="0. Engine\3. Renderer\7. DebugRender">
       <UniqueIdentifier>{e9db94f8-77e8-44a6-b58e-d3a185dd7f09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\0. Core\1. System">
+      <UniqueIdentifier>{e12dcf6a-9479-4505-938a-b39416d9cb2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -350,6 +353,12 @@
     <ClInclude Include="SocketComponenet.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
     </ClInclude>
+    <ClInclude Include="ReplicationSystem.h">
+      <Filter>0. Engine\0. Core\1. System</Filter>
+    </ClInclude>
+    <ClInclude Include="INetSync.h">
+      <Filter>0. Engine\0. Core\1. System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -558,6 +567,12 @@
     </ClCompile>
     <ClCompile Include="SocketComponenet.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicationSystem.cpp">
+      <Filter>0. Engine\0. Core\1. System</Filter>
+    </ClCompile>
+    <ClCompile Include="INetSync.cpp">
+      <Filter>0. Engine\0. Core\1. System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

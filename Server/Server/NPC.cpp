@@ -127,8 +127,56 @@ namespace PIP::GAME
 		ai->SetBehaviorTree(root);
 	}
 
+	bool NPC::IsDirty() const
+	{
+		// 1. 상태(애니메이션) 변화 체크 (최우선)
+		// IDLE <-> WALK 등 상태가 바뀌면 즉시 패킷을 보내야 합니다.
+		if (_state != _lastSentState)
+		{
+			return true;
+		}
+
+		// 2. 위치 변화 체크
+		common::Vec3 currentPos = GetPosition();
+		float distSq = (currentPos.x - _lastSentPos.x) * (currentPos.x - _lastSentPos.x) +
+			(currentPos.y - _lastSentPos.y) * (currentPos.y - _lastSentPos.y) +
+			(currentPos.z - _lastSentPos.z) * (currentPos.z - _lastSentPos.z);
+
+		// 상태에 따른 임계값(Threshold) 차등 적용
+		// 움직이는 중일 때는 5cm, 가만히 있을 때는 10cm 이상 변해야Dirty로 간주
+		float thresholdSq = (_state == common::packet::OBJECT_STATE::IDLE) ? 0.01f : 0.0025f;
+
+		if (distSq > thresholdSq)
+		{
+			return true;
+		}
+
+		// 3. 회전 변화 체크
+		common::Vec4 currentRot = GetRotation();
+		// 쿼터니언 차이 계산 (단순 거리 비교보다 안정적이지만, 여기선 가벼운 연산을 위해 거리로 유지)
+		float rotDiff = (currentRot.x - _lastSentRot.x) * (currentRot.x - _lastSentRot.x) +
+			(currentRot.y - _lastSentRot.y) * (currentRot.y - _lastSentRot.y) +
+			(currentRot.z - _lastSentRot.z) * (currentRot.z - _lastSentRot.z) +
+			(currentRot.w - _lastSentRot.w) * (currentRot.w - _lastSentRot.w);
+
+		// 회전은 약 5~10도 이상 변했을 때만 전송 (너무 민감하면 지터링 발생)
+		if (rotDiff > 0.05f)
+		{
+			return true;
+		}
+
+		// 4. 하트비트 (Heartbeat)
+		// 아무 변화가 없더라도 1초에 한 번은 위치를 강제 동기화하여 누적 오차 방지
+		auto now = std::chrono::steady_clock::now();
+		if (std::chrono::duration<float>(now - _lastSentTime).count() > 1.0f) {
+			return true;
+		}
+
+		return false;
+	}
+
 	bool NPC::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
-						  const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
+	                      const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
 	{
 		if (_hitCooldown > 0) return false;
 		// 1. 부모(Actor)의 히스토리에서 과거 데이터 가져오기

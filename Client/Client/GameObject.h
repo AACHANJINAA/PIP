@@ -73,7 +73,7 @@ public:
 	}
 
 	void remove_component(std::shared_ptr<Component> component);
-
+	const std::vector<std::shared_ptr<Component>>& components() const { return _components; }
 private:
 	// 의존성을 재귀적으로 추가하기 위한 템플릿 도우미 함수
 	template <typename... T>

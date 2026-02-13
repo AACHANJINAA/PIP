@@ -8,6 +8,7 @@
 #include "OtherPlayerScript.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "ReplicationSystem.h"
 
 //#include "HPRenderComponent.h"
 #include "AnimationComponent.h"
@@ -45,17 +46,32 @@ void NetworkManager::send_packet(const char* data, size_t size)
 
 void NetworkManager::process_queued_packets()
 {
+	// 메인 스레드에서 패킷 큐를 비우는 전체 시간 측정
+	auto start = std::chrono::high_resolution_clock::now();
+	// 타입별 누적 시간을 저장할 맵
+	static std::unordered_map<uint16_t, long long> typeAccumTime;
+	typeAccumTime.clear();
+
 	// 이 함수는 '메인 스레드'의 게임 루프에서 호출됩니다.
 	std::vector<char> packetData;
 	while (_packetQueue.try_pop(packetData))
 	{
 		common::packet::PacketStream stream(packetData.data(), packetData.size());
 		auto* header = reinterpret_cast<common::packet::PacketHeader*>(packetData.data());
+		auto pStart = std::chrono::high_resolution_clock::now();
 
 		auto it = _handlers.find(header->_type);
 		if (it != _handlers.end()) {
 			it->second(stream); // 실제 게임 로직(MainPlayer 이동 등) 실행
 		}
+		auto pEnd = std::chrono::high_resolution_clock::now();
+		typeAccumTime[(uint16_t)header->_type] += std::chrono::duration_cast<std::chrono::microseconds>(pEnd - pStart).count();
+	}
+
+	// 여기서 어떤 타입이 가장 오래 걸렸는지 로그 출력
+	for (auto& pair : typeAccumTime) {
+		if (pair.second > 500) // 0.5ms 이상 먹은 놈만 출력
+			CLOG("Packet Type " << pair.first << " took " << pair.second << "us");
 	}
 }
 
@@ -607,28 +623,38 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 
 void NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& stream)
 {
+	// 대량의 NPC 이동 정보를 처리하는 시간 측정
+	auto start = std::chrono::high_resolution_clock::now();
+
 	// 1. 헤더 읽기
 	common::packet::SC_PACKET_NPC_MOVE_BATCH header;
 	stream >> header;
 
+	auto rs = GameFramework::instance()->get_replication_system();
+	if (!rs) return;
+
 	// 2. 개수만큼 반복하며 데이터 읽기
-	for (int i = 0; i < header._count; ++i)
-	{
+	for (uint16_t i = 0; i < header._count; ++i) {
 		common::packet::NPCMoveData data;
 		stream >> data;
 
-		auto npc_object = ObjectManager::instance()->find_npc(data._npc_id);
-		if (npc_object)
-		{
-			auto script = npc_object->get_component<NPCScript>();
-			if (script) {
-				// 아까 만든 on_server_update 호출 (타임스탬프 포함)
-				script->on_server_update(data._position, data._velocity, data._rotation, data._time_stamp);
+		NetSnapshot snapshot;
+		snapshot.pos = data._position;
+		snapshot.vel = data._velocity;
+		snapshot.rot = data._rotation;
+		snapshot.state = data._state;
+		snapshot.timestamp = data._time_stamp;
 
-				// 상태(애니메이션) 업데이트가 필요하다면 추가
-				script->set_state(data._state);
-			}
-		}
+		// 시스템에 전달 (매우 가벼운 직렬 처리)
+		rs->on_packet_arrival(data._npc_id, snapshot);
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+	// 배치가 0.5ms(500us) 이상 소요된 경우 로그 출력
+	if (duration > 500) {
+		CLOG("[Profiling] NPC_MOVE_BATCH: " << duration << "us, Count: " << (int)header._count);
 	}
 }
 
