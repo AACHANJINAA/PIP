@@ -44,6 +44,15 @@ public:
 	template<typename T, typename... Args>
 	std::shared_ptr<T> add_component(Args&&... args)
 	{
+		// [추가] 순회 중 컴포넌트 추가 시도 시 에러 발생
+		if (_isIterating) {
+			std::string typeName = typeid(T).name();
+			std::string msg = "CRITICAL: Adding [" + typeName + "] during Awake/Update/FixedUpdate is NOT allowed.\n"
+								+ "Please add it to the 'required_components' tuple of your script.";
+			OutputDebugStringA(msg.c_str());
+			assert(false && "Iterator Invalidation Risk: Use required_components tuple instead.");
+		}
+
 		// 이미 해당 타입의 컴포넌트가 있으면 추가하지 않고 기존 것을 반환
 		auto existing = get_component<T>();
 		if (existing)
@@ -118,6 +127,8 @@ private:
 	std::vector<std::shared_ptr<Component>> _components;
 	std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
 	uint32_t                                _layerMask = 0;
+
+	mutable bool _isIterating = false; // [추가] 순회 중 상태를 나타내는 플래그
 };
 //public:
 //	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?

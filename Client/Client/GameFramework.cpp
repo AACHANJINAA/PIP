@@ -543,7 +543,7 @@ void GameFramework::update_game_logic(float deltaTime)
 void GameFramework::update_physics(float elapsedTime)
 {
 	_physicsTimeAccumulator += elapsedTime;
-	const float fixedTimeStep = 1.0f / 60.0f;
+	const float fixedTimeStep = 0.02f;
 
 	while (_physicsTimeAccumulator >= fixedTimeStep)
 	{

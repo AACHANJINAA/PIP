@@ -128,6 +128,7 @@ namespace common::packet
 		Vec3 _position;
 		common::Quat _rotation;
 		OBJECT_STATE _state;
+		uint32_t _client_tick; // [추가] 클라이언트의 타임스탬프
 	};
 	// [신규] 클라 -> 서버: 범용 행동 패킷
 	struct CS_PACKET_ACTION : PacketHeader

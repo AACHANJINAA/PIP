@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "TerrainLoader.h"
+
+#include "PhysicsManager.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
 
@@ -28,6 +30,8 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 	int grid_width = static_cast<int>(info.width) - 1;
 	int grid_height = static_cast<int>(info.height) - 1;
 	create_flat_grid(grid_width, grid_height);
+
+	PhysicsManager::instance()->create_physics_terrain(_terrainData);
 }
 
 namespace

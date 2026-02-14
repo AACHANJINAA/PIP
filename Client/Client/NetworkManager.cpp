@@ -163,7 +163,7 @@ void NetworkManager::SendLoginPacket(const std::string& name)
 	send_packet(stream.mutable_data(), stream.Size());
 }
 
-void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state)
+void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state, uint32_t current_tick)
 {
 	// 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
 	common::packet::CS_PACKET_MOVE packet;
@@ -172,6 +172,7 @@ void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation
 	packet._position = position;
 	packet._rotation = rotation;
 	packet._state = state;
+	packet._client_tick = current_tick;
 	// 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
 	// 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
@@ -276,42 +277,42 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			player_logic->set_position(spawn_data._position);
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
 			
-			// Animationcomponent
-			auto animation_component = playerObject->add_component<AnimationComponent>();
-			
-			
-			// RenderComponent
-			auto renderer = playerObject->add_component<RenderComponent>();
+			//// Animationcomponent
+			//auto animation_component = playerObject->add_component<AnimationComponent>();
+			//
+			//
+			//// RenderComponent
+			//auto renderer = playerObject->add_component<RenderComponent>();
 
-			auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
-			renderer->set_mesh(playerMesh);
+			//auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
+			//renderer->set_mesh(playerMesh);
 
-			auto idleMesh = 
-				ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,"idle");
-			auto walkMesh = 
-				ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true,"walk");
+			//auto idleMesh = 
+			//	ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,"idle");
+			//auto walkMesh = 
+			//	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true,"walk");
 
-			animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
-			animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-			animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
-			
-			// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
-			animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
-			animation_component->set_state(common::packet::OBJECT_STATE::IDLE); // IDLE로 설정하면 로직이 돕니다.
+			//animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
+			//animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
+			//animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
+			//
+			//// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
+			//animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
+			//animation_component->set_state(common::packet::OBJECT_STATE::IDLE); // IDLE로 설정하면 로직이 돕니다.
 
-			// ResourceManager을 통해 재질 생성 및 쉐이더 할당
-			std::string material_name = "player_material"; // player는 고정된 재질
-			ResourceManager::instance()->create_material(material_name);
-			ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
+			//// ResourceManager을 통해 재질 생성 및 쉐이더 할당
+			//std::string material_name = "player_material"; // player는 고정된 재질
+			//ResourceManager::instance()->create_material(material_name);
+			//ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
 
-			// gltf
-			renderer->set_pso_name("skinned");
+			//// gltf
+			//renderer->set_pso_name("skinned");
 
-			// 위치, 회전 정보
-			//playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
-			//playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
-			//playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
-			playerObject->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
+			//// 위치, 회전 정보
+			////playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
+			////playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
+			////playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
+			//playerObject->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
 		}
 		
 
@@ -352,29 +353,23 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	// SC_PACKET_MOVE는 헤더 외에 여러 멤버를 가집니다.
 	common::packet::SC_PACKET_MOVE move_packet;
 	stream >> move_packet; // 구조체 전체를 읽습니다.
-	auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-	auto player_Transform = player->get_component<TransformComponent>();
-	if (player && move_packet._id == _my_session_id && player_Transform) // 읽어온 id 사용
+	if (move_packet._id == _my_session_id) // 읽어온 id 사용
 	{
-		common::Vec3 currentPos = player_Transform->local_position();
-		common::Vec3 serverPos = move_packet._position;
-
-		// 현재 위치와 서버가 보낸 위치 사이의 거리(제곱) 계산
-		float distSq = pow(currentPos.x - serverPos.x, 2) +
-			pow(currentPos.y - serverPos.y, 2) +
-			pow(currentPos.z - serverPos.z, 2);
-
-		// [핵심] 오차가 허용 범위(예: 2.0f)보다 클 때만 위치를 강제 보정합니다.
-		// 네트워크 지연으로 인한 미세한 차이는 무시하여 부드러운 움직임을 유지합니다.
-		// 만약 벽을 뚫거나 심각한 위치 불일치가 발생하면(거리가 멀면) 그때 강제로 텔레포트 시킵니다.
-		const float TOLERANCE_SQ = 2.0f * 2.0f; // 2.0 단위 거리 (필요에 따라 조절)
-
-		if (distSq > TOLERANCE_SQ)
-		{
-			player_Transform->set_local_position(serverPos);
-			// 디버깅용 로그: 큰 오차가 발생했을 때만 출력
-			CLOG("Server Correction Applied! Distance: " << sqrt(distSq));
+		auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+		if (player) {
+			auto script = player->get_component<MainPlayerScript>();
+			auto cc = player->get_component<PhysicsCharacterControllerComponent>();
+			if (script && cc) {
+				// 물리 위치 기준으로 오차 계산
+				float distSq = common::DistanceSq(cc->get_position(), move_packet._position);
+				if (distSq > 0.5f * 0.5f) { // 0.5m 이상 차이 시 싱크
+					CLOG("Server Correction Applied. Dist: " << sqrt(distSq));
+					script->sync_with_server(move_packet._position, move_packet._rotation);
+				}
+			}
 		}
+		CLOG("[S->C] Syncing MY player position. Server Pos=" << move_packet._position.x << "," << move_packet._position.y
+			<< " My Pos=" << (player ? player->transform()->local_position().x : 0) << "," << (player ? player->transform()->local_position().y : 0));
 	}
 	else
 	{

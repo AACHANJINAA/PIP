@@ -1,17 +1,19 @@
 #pragma once
 #include "ScriptComponent.h"
-
+#include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
+#include "PhysicsCharacterControllerComponent.h"    // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
+#include "AnimationComponent.h"                     // [추가]
 constexpr float SENDINTERVAL{ 0.02f };
-class RenderComponent;
 class MainPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent>;
+	using required_components = std::tuple<RenderComponent, PhysicsCharacterControllerComponent, AnimationComponent>;
 
     MainPlayerScript() = default;
     virtual ~MainPlayerScript() = default;
 
-    virtual void update(float deltaTime) override;
+    void update(float deltaTime) override;
+    void fixed_update(float deltaTime) override;
     void awake() override;
 
 	void set_hp(int hp);
@@ -30,7 +32,7 @@ public:
 	int64_t id() const { return _playerId; }
 
 	void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }
-
+    void sync_with_server(const common::Vec3& pos, const common::Quat& rot);
 private:
     void move_pos(common::packet::MOVE_TYPE cmd);
 
@@ -42,6 +44,7 @@ private:
 
     // [추가] 넉백 물리 제어 변수
     common::Vec3 _impactVelocity = { 0,0,0 };
+    common::Vec3 _visualOffset = { 0, 0, 0 }; // 보정 오차 저장 변수
 
     float _speed{5.f};
     float _sendTimer{ 0.f };

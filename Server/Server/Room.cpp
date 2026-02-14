@@ -888,44 +888,58 @@ namespace PIP::SERVER
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 		auto player = session->_player;
 		auto cc = player->GetComponent<GAME::CharacterControllerComponent>();
-		if (cc) {
-			// [추가] 넉백 힘이 작용 중일 때는 클라이언트의 조작 속도를 0으로 만듦
-			// 이렇게 해야 물리 엔진이 밀어내는 힘이 온전히 작용함
-			if (common::Length(cc->GetImpactVelocity()) > 2.0f) {
+		// [1] 넉백 힘이 강력하게 작용 중인지 체크 (임계값 2.0f 이상)
+		bool isHeavyKnockback = common::Length(cc->GetImpactVelocity()) > 2.0f;
+		if (isHeavyKnockback) {
+			// [넉백 중 로직]
+			// 클라이언트 조작 속도를 0으로 만들어 물리적 밀려남만 허용함
+			cc->SetVelocity({ 0, 0, 0 });
+
+			// 이때는 클라이언트의 위치를 억지로 승인하기보다, 서버 물리 엔진이 미는 대로 둡니다.
+			// 클라이언트는 서버에서 오는 보정 패킷을 비주얼 오프셋으로 부드럽게 받아냅니다.
+			player->SetLastClientTargetPos(move_packet._position);
+		}
+		else
+		{
+			auto snapshot = player->GetSnapshotAt(move_packet._client_tick);
+			// 2. 과거 위치와 클라이언트가 보낸 위치 사이의 거리 계산
+			float moveDist = common::Distance(snapshot._position, move_packet._position);
+
+			// 3. [승인 로직] 초당 5m 속도 플레이어가 0.2초(RTT) 지연 시 약 1m 오차는 정상 범위
+			// 해킹이 아니라고 판단되면 클라이언트의 예측 위치를 서버 물리 바디에 즉시 수용
+			constexpr float MAX_RECONCILE_DIST = 5.0f;
+			if (moveDist < MAX_RECONCILE_DIST) {
+				// [A] 이동 승인: 서버 물리 바디를 클라이언트 위치로 즉시 옮겨 동기화함
+				player->SetPosition(move_packet._position);
+				player->SetLastClientTargetPos(move_packet._position);
+
+				// 순간 이동했으므로 속도는 0으로 초기화 (관성 꼬임 방지)
 				cc->SetVelocity({ 0, 0, 0 });
 			}
-			else {
-				// [중요] player->GetPosition()은 이제 '물리 좌표'를 반환함
-				common::Vec3 currentPhysicsPos = player->GetPosition();
-				common::Vec3 targetPos = move_packet._position;
-				// [누락되었던 핵심 코드] 클라이언트가 최종적으로 도달하고자 하는 목표 위치 기록
-				player->SetLastClientTargetPos(move_packet._position);
-				// 1. 클라이언트가 가려는 방향 계산
-				common::Vec3 currentPos = session->_player->GetPosition();
+			else 
+			{
+				// [거절] 너무 멀면(렉/핵) 기존 추적 로직 작동 -> 보정 패킷 발송됨
+				common::Vec3 currentPos = player->GetPosition();
+				common::Vec3 moveDir = move_packet._position - currentPos;
+				moveDir.y = 0;
 
-				common::Vec3 moveDir = targetPos - currentPos;
-				moveDir.y = 0; // 수평 이동만 고려
 				float dist = common::Length(moveDir);
 
-				// 1. [안전장치] 거리가 5m 이상이면 속도 대신 즉시 텔레포트
+				// 텔레포트(5m) 혹은 속도 이동
 				if (dist > 5.0f) {
-					player->SetPosition(targetPos);
-					cc->SetVelocity({ 0, 0, 0 });
+					player->SetPosition(move_packet._position);
 				}
-				// 2. 속도 제한 (최대 시속 72km 수준으로 제한)
 				else if (dist > 0.01f) {
+					// 속도 제한을 50.0f로 넉넉하게 주어 억울한 보정 방지
 					common::Vec3 vel = common::Normalize(moveDir) * (dist / 0.02f);
-					float maxSpeed = 20.0f;
-					if (common::Length(vel) > maxSpeed) vel = common::Normalize(vel) * maxSpeed;
+					if (common::Length(vel) > 50.0f) vel = common::Normalize(vel) * 50.0f;
 					cc->SetVelocity(vel);
 				}
-				else {
-					cc->SetVelocity({ 0, 0, 0 });
-				}
+				player->SetLastClientTargetPos(move_packet._position);
 			}
-			session->_player->SetRotation(move_packet._rotation);
-			session->_player->_state = move_packet._state;
 		}
+		session->_player->SetRotation(move_packet._rotation);
+		session->_player->_state = move_packet._state;
 	}
 	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
 

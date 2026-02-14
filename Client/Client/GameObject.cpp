@@ -20,6 +20,7 @@ void GameObject::init()
 
 void GameObject::awake() const
 {
+	_isIterating = true; // 플래그 On
 	for (const auto& component : _components)
 	{
 		// 컴포넌트가 Behaviour를 상속받았는지 확인
@@ -31,6 +32,7 @@ void GameObject::awake() const
 			}
 		}
 	}
+	_isIterating = false; // 플래그 Off
 }
 
 void GameObject::start() const
@@ -46,24 +48,21 @@ void GameObject::start() const
 		}
 	}
 }
-void GameObject::update(float delta_time) const
+void GameObject::update(float deltaTime) const
 {
-	// [제거] TransformComponent는 더 이상 GameFramework의 업데이트 루프에 의존하지 않습니다.
-	 // if (_transform) {
-	 //     _transform->update();
-	 // }
-
-	 // 자신의 모든 Behaviour 컴포넌트의 update를 호출합니다.
+	_isIterating = true;
+	// 자신의 모든 Behaviour 컴포넌트의 update를 호출합니다.
 	for (const auto& component : _components)
 	{
 		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
 		{
 			if (behavior->is_enabled())
 			{
-				behavior->update(delta_time);
+				behavior->update(deltaTime);
 			}
 		}
 	}
+	_isIterating = false;
 }
 void GameObject::fixed_update(float fixed_delta_time) const
 {

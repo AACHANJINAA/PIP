@@ -6,6 +6,7 @@ class Behavior : public Component
 {
 public:
 	Behavior();
+	Behavior(const std::string& name) : Component(name), _isEnabled{ true } {}
 	virtual ~Behavior() = default;
 
 	// --- Getter/Setter (코드 컨벤션 적용) ---
