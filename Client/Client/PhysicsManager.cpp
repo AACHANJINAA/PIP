@@ -2,6 +2,8 @@
 #include "PhysicsManager.h"
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h> // 추가
 #include "PhysicsColliderComponent.h"
 #include "GameObject.h"
 
@@ -27,6 +29,9 @@ bool PhysicsManager::initialize()
         _bpLayerInterface, _objVsBpLayerFilter, _objLayerPairFilter);
 
     _physicsSystem->SetContactListener(&_contactListener);
+
+    // 클라이언트 중력 설정 (서버와 동일하게)
+    _physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
     return true;
 }
@@ -62,6 +67,35 @@ void PhysicsManager::cleanup()
     delete _jobSystem;      _jobSystem = nullptr;
     delete _tempAllocator;  _tempAllocator = nullptr;
     delete JPH::Factory::sInstance; JPH::Factory::sInstance = nullptr;
+}
+
+void PhysicsManager::create_physics_terrain(const common::TerrainData& terrainData)
+{
+    const auto& info = terrainData.GetInfo();
+    const auto& heightMap = terrainData.GetHeightData();
+
+    JPH::HeightFieldShapeSettings settings;
+    settings.mOffset = JPH::Vec3(info.min_x, 0.0f, info.min_z);
+
+    float dx = (info.max_x - info.min_x) / (info.width - 1);
+    float dz = (info.max_z - info.min_z) / (info.height - 1);
+    settings.mScale = JPH::Vec3(dx, 1.0f, dz);
+    settings.mSampleCount = static_cast<JPH::uint32>(info.width);
+
+    settings.mHeightSamples.resize(heightMap.size());
+    for (size_t i = 0; i < heightMap.size(); ++i) {
+        settings.mHeightSamples[i] = heightMap[i];
+    }
+
+    auto result = settings.Create();
+    if (result.HasError()) return;
+
+    // Layers::NON_MOVING은 서버와 동일한 레이어 설정이어야 함
+    JPH::BodyCreationSettings bodySettings(result.Get(), JPH::RVec3(0, 0, 0), JPH::Quat::sIdentity(),
+        JPH::EMotionType::Static, PIP::Layers::NON_MOVING);
+
+    JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
+    _terrainBodyID = bodyInterface.CreateAndAddBody(bodySettings, JPH::EActivation::DontActivate);
 }
 
 // -----------------------------------------------------------------------------

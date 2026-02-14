@@ -5,6 +5,7 @@ class Component : public Object
 {
 public:
     Component();
+	Component(const std::string& name) : Object(name), _gameObject{} {}
     virtual ~Component() = default;
 
     // 모든 컴포-넌트는 이 타입을 가집니다. 기본적으로는 의존성이 없음을 의미합니다.

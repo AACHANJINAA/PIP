@@ -4,7 +4,7 @@
 #include "GameObject.h"
 #include "GameFramework.h"
 
-AnimationComponent::AnimationComponent()
+AnimationComponent::AnimationComponent() : Behavior("AnimationComponent")
 {
 }
 

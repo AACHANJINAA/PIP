@@ -81,14 +81,8 @@
     <Filter Include="0. Engine\3. Renderer\4. TextureLoader">
       <UniqueIdentifier>{43c5fdd3-2872-4f44-945b-40cbed081f81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="0. Engine\3. Renderer\5. TerrainLoader">
-      <UniqueIdentifier>{c4eda412-bb59-4f0e-8ffc-708146f7997e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents">
       <UniqueIdentifier>{c9682bcf-f8f2-4f9a-b3a6-a290036050ac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="0. Engine\3. Renderer\6. Lighting">
-      <UniqueIdentifier>{1be2618d-2734-443a-b0bd-f6a639571e7d}</UniqueIdentifier>
     </Filter>
     <Filter Include="0. Engine\7. Helper">
       <UniqueIdentifier>{02f48ba8-132b-47c4-a5a2-509cef65adb6}</UniqueIdentifier>
@@ -108,11 +102,17 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent">
       <UniqueIdentifier>{a047e690-9a26-4f15-b367-d054a338b960}</UniqueIdentifier>
     </Filter>
-    <Filter Include="0. Engine\3. Renderer\7. DebugRender">
-      <UniqueIdentifier>{e9db94f8-77e8-44a6-b58e-d3a185dd7f09}</UniqueIdentifier>
-    </Filter>
     <Filter Include="0. Engine\0. Core\1. System">
       <UniqueIdentifier>{e12dcf6a-9479-4505-938a-b39416d9cb2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\6. DebugRender">
+      <UniqueIdentifier>{e9db94f8-77e8-44a6-b58e-d3a185dd7f09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\3. Renderer\5. Lighting">
+      <UniqueIdentifier>{1be2618d-2734-443a-b0bd-f6a639571e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\4. Terrain">
+      <UniqueIdentifier>{c4eda412-bb59-4f0e-8ffc-708146f7997e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -282,10 +282,10 @@
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
     <ClInclude Include="LightManager.h">
-      <Filter>0. Engine\3. Renderer\6. Lighting</Filter>
+      <Filter>0. Engine\3. Renderer\5. Lighting</Filter>
     </ClInclude>
     <ClInclude Include="TerrainLoader.h">
-      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components\4. Terrain</Filter>
     </ClInclude>
     <ClInclude Include="AnimationComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
@@ -348,7 +348,7 @@
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
     <ClInclude Include="DebugDrawManager.h">
-      <Filter>0. Engine\3. Renderer\7. DebugRender</Filter>
+      <Filter>0. Engine\3. Renderer\6. DebugRender</Filter>
     </ClInclude>
     <ClInclude Include="SocketComponenet.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
@@ -358,6 +358,9 @@
     </ClInclude>
     <ClInclude Include="INetSync.h">
       <Filter>0. Engine\0. Core\1. System</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsCharacterControllerComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -518,10 +521,10 @@
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClCompile>
     <ClCompile Include="LightManager.cpp">
-      <Filter>0. Engine\3. Renderer\6. Lighting</Filter>
+      <Filter>0. Engine\3. Renderer\5. Lighting</Filter>
     </ClCompile>
     <ClCompile Include="TerrainLoader.cpp">
-      <Filter>0. Engine\3. Renderer\5. TerrainLoader</Filter>
+      <Filter>0. Engine\1. GameObject &amp; Components\4. Terrain</Filter>
     </ClCompile>
     <ClCompile Include="AnimationComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
@@ -563,7 +566,7 @@
       <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="DebugDrawManager.cpp">
-      <Filter>0. Engine\3. Renderer\7. DebugRender</Filter>
+      <Filter>0. Engine\3. Renderer\6. DebugRender</Filter>
     </ClCompile>
     <ClCompile Include="SocketComponenet.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components</Filter>
@@ -573,6 +576,9 @@
     </ClCompile>
     <ClCompile Include="INetSync.cpp">
       <Filter>0. Engine\0. Core\1. System</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsCharacterControllerComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

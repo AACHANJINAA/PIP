@@ -2,7 +2,7 @@
 #include "JoltSetup.h"
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
-
+#include "../../Common/TerrainData.h" // TerrainData 참조 추가
 #ifdef _DEBUG
 static void TraceImpl(const char* inFMT, ...) {
 	va_list list; va_start(list, inFMT);
@@ -51,8 +51,11 @@ public:
 	void update(float deltaTime);
 	void cleanup();
 
-	JPH::PhysicsSystem* get_physics_system() { return _physicsSystem; }
-	JPH::BodyInterface& get_body_interface() { return _physicsSystem->GetBodyInterface(); }
+	// [추가] 물리 지형 생성 함수
+	void create_physics_terrain(const common::TerrainData& terrainData);
+	JPH::TempAllocator* get_temp_allocator() const { return _tempAllocator; }
+	JPH::PhysicsSystem* get_physics_system() const { return _physicsSystem; }
+	JPH::BodyInterface& get_body_interface() const { return _physicsSystem->GetBodyInterface(); }
 private:
 	JPH::PhysicsSystem* _physicsSystem = nullptr;
 	JPH::TempAllocator* _tempAllocator = nullptr;
@@ -65,4 +68,6 @@ private:
 	MyContactListener                       _contactListener;
 
 	Concurrency::concurrent_queue<CollisionEvent> _collisionQueue;
+
+	JPH::BodyID _terrainBodyID; // [추가] 지형 바디 ID 저장
 };

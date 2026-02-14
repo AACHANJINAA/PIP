@@ -63,12 +63,18 @@ namespace PIP
     public:
         virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
         {
+            
+        	// 플레이어(MOVING)와 지형(NON_MOVING) 충돌 허용
+            if (inObject1 == Layers::MOVING && inObject2 == Layers::NON_MOVING) return true;
+            if (inObject2 == Layers::MOVING && inObject1 == Layers::NON_MOVING) return true;
+
+            // NPC(SENSOR)와 플레이어(MOVING) 간의 충돌(센서) 허용
             // [최적화] 클라이언트 물리 엔진은 오직 '무기(SENSOR)'와 '대상(MOVING)' 사이의 충돌만 체크합니다.
             // 캐릭터끼리 부딪히거나, 캐릭터가 벽에 막히는 등의 물리 시뮬레이션은 서버가 수행하므로 여기서는 모두 무시합니다.
-        	if (inObject1 == Layers::SENSOR && inObject2 == Layers::MOVING) return true;
+            if (inObject1 == Layers::SENSOR && inObject2 == Layers::MOVING) return true;
             if (inObject1 == Layers::MOVING && inObject2 == Layers::SENSOR) return true;
 
-            return false; // 그 외 모든 물리 충돌 무시 (반발력 발생 방지)
+            return false;
         }
     };
 }
