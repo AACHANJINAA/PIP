@@ -921,19 +921,23 @@ namespace PIP::SERVER
 				// [거절] 너무 멀면(렉/핵) 기존 추적 로직 작동 -> 보정 패킷 발송됨
 				common::Vec3 currentPos = player->GetPosition();
 				common::Vec3 moveDir = move_packet._position - currentPos;
-				moveDir.y = 0;
+				// Y축 거리 체크를 위해 moveDir.y = 0; 제거
 
 				float dist = common::Length(moveDir);
 
 				// 텔레포트(5m) 혹은 속도 이동
 				if (dist > 5.0f) {
 					player->SetPosition(move_packet._position);
+					cc->SetVelocity({ 0, 0, 0 });
 				}
 				else if (dist > 0.01f) {
 					// 속도 제한을 50.0f로 넉넉하게 주어 억울한 보정 방지
 					common::Vec3 vel = common::Normalize(moveDir) * (dist / 0.02f);
 					if (common::Length(vel) > 50.0f) vel = common::Normalize(vel) * 50.0f;
 					cc->SetVelocity(vel);
+				}
+				else {
+					cc->SetVelocity({ 0, 0, 0 });
 				}
 				player->SetLastClientTargetPos(move_packet._position);
 			}
