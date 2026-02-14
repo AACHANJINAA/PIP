@@ -4,7 +4,7 @@
 
 namespace common::packet
 {
-	constexpr short SERVER_PORT = 9000;
+	constexpr short SERVER_PORT = 9001;
 	enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
 		IDLE	= 0,
 		WALK	= 1,
