@@ -109,14 +109,6 @@ void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
 
 void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>& want_mesh)
 {
-	GameFramework::instance()->WaitForGpuComplete();
-
-	if (_bone_palette_buffer)
-	{
-		_bone_palette_buffer.Reset();
-	}
-	
-	
 	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(want_mesh);
 	if (gltf_mesh == nullptr)
 	{
@@ -128,6 +120,17 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 	UINT element_size = sizeof(DirectX::XMFLOAT4X4);
 	UINT buffer_size = (UINT)(joint_size * element_size);
 	buffer_size = (buffer_size + 255) & ~255;
+
+	if (_bone_palette_buffer != nullptr) {
+		if (_bone_palette_buffer->GetDesc().Width >= buffer_size) {
+			return;
+		}
+		_bone_palette_buffer.Reset(); // 더 큰 공간이 필요할 때만 재할당
+	}
+
+	// DW벼르기 : 뼈 행렬을 진짜 바꿔야 하는 경우에는 기다리고 생성하는 것이 안전하지만
+	// 만약 바꿔야 하는 상황이 많아 문제가 발생한다면? -> 이 놈을 먼저 조져볼 예정
+	GameFramework::instance()->WaitForGpuComplete();
 
 	if (joint_size && !_bone_palette_buffer)
 	{
