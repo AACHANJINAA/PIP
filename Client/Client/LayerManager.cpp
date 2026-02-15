@@ -11,6 +11,7 @@ LayerManager::LayerManager()
     add_layer("Environment");
     add_layer("PlayerWeapon");
     add_layer("EnemyWeapon");
+    add_layer("Camera");
 }
 
 uint32_t LayerManager::get_layer_value(const std::string& name) const

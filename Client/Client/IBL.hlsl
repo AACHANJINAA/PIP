@@ -57,21 +57,25 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 
         // 3. Prefiltered Environment Map LOD 선택
     float maxMipLevel = 5.0;
-    float lod = roughness * maxMipLevel;
+    float safeRoughness = max(roughness, 0.15); // 최소 15%
+    float lod = safeRoughness * maxMipLevel;
 
         // 4. Prefiltered Map 샘플링
     float3 prefilteredColor = g_PrefilteredMap.SampleLevel(g_samLinear, R, lod).rgb;
 
         // HDR 텍스처 스케일링 (값이 너무 큰 경우)
-    prefilteredColor *= 0.001; // ← 이 줄 추가!
+    prefilteredColor *= 0.001; 
+    
+    float3 minEnvironmentLight = float3(0.3, 0.3, 0.3); // 스케일링 후 기준
+    prefilteredColor = max(prefilteredColor, minEnvironmentLight);
 
         // 5. BRDF LUT 샘플링
     float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
-
+    
         // 6. F0 계산
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
-
-        // 7. Split-Sum Approximation 최종 계산
+    
+     // 7. Split-Sum Approximation 
     return prefilteredColor * (F0 * brdf.x + brdf.y);
 }
 
@@ -85,6 +89,6 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
         // 3. Diffuse + Specular 합산 후 AO 적용
-    return (diffuse + specular) * ao; // ← iblStrength 제거!
+    return (diffuse + specular) * ao; 
 }
 #endif // _IBL_HLSL_
