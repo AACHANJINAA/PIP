@@ -14,7 +14,6 @@
 #include "TimerManager.h"
 #include "AnimationComponent.h"
 
-#include "LightManager.h"
 #include "PhysicsColliderComponent.h"
 #include "WeaponScript.h"
 #include "MonsterHPComponent.h"
