@@ -109,18 +109,10 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     albedo *= BaseColorFactor.rgb;
 
     // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
-    float3 ormSample = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-    float ao = 1.0f;
-    float roughness = RoughnessFactor;
-    float metallic = MetallicFactor;
-  
-
-    if (dot(ormSample, float3(1, 1, 1)) > 0.05f)
-    {
-        ao = ormSample.r;
-        roughness *= ormSample.g;
-        metallic *= ormSample.b;
-    }
+    float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
+    float ao = max(orm.r, 0.8); // 최소 0.8로 너무 어두워지는 것 방지
+    float roughness = orm.g * RoughnessFactor; // Factor 곱하기
+    float metallic = orm.b * MetallicFactor; // Factor 곱하기
     
      // 3. Normal Map
     float3 N = normalize(In.Normal);
