@@ -40,6 +40,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // 카메라 생성
     auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();
+    cameraObject->set_layer("Camera");
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 500.0f, 10.0f)); // 20m 높이
     cameraObject->transform()->set_local_rotation(90.0f, 0.0f, 0.0f); // 약간 아래 보기
 

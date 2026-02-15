@@ -145,6 +145,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
     float3 finalEmissive = emissiveColor * EmissiveFactor;
 
+    return float4(finalEmissive, 1.0);
          // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
