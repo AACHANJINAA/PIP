@@ -7,6 +7,7 @@ struct ConnectingSocketInfo
 {
 	std::string bone_name;
 	std::shared_ptr<GameObject> Object;
+	DirectX::XMFLOAT4X4 _localMatrix;
 };
 
 class SocketComponenet : public Behavior
@@ -22,6 +23,9 @@ public:
 	// 메쉬를 연결하면 해당 메쉬를 가진 게임오브젝트가 새로 생성되어 오브젝트 매니저에 등록 및 소켓에 연결됨
 	void add_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,
 		XMFLOAT3 loacl_pos = {0.f,0.f,0.f}, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
+
+	void add_connecting(std::string socket_name, const std::string& bone_name, std::string mesh,
+		XMFLOAT3 loacl_pos = { 0.f,0.f,0.f }, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
 
 	// 연결된 것들 수정
 	void fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,

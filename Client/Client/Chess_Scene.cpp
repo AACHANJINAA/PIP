@@ -11,6 +11,7 @@
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 #include "AnimationComponent.h"
+#include "SocketComponenet.h"
 #include "ReadGLTFMesh.h"
 
 #include "TerrainLoader.h"
@@ -247,7 +248,9 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
         renderer->set_mesh(hi_brute_Mesh);
 
         // 애니메이션 컴포넌트 추가
-        auto animation_renderer = hi_brute->add_component<AnimationComponent>();
+        hi_brute->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
+
+        auto animation_renderer = hi_brute->get_component<AnimationComponent>();
         //animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
         animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
         animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
@@ -256,6 +259,10 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         ResourceManager::instance()->create_material(material);
         ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+        // 원하는 무기 붙이기
+        auto socket_compnenet = hi_brute->get_component<SocketComponenet>();
+        socket_compnenet->add_connecting("ik_hand_l_sword", "ik_hand_l", "Resource/TESTMapData/Meshes/SM_Crate_01.gltf", {0.f,0.f,0.f}, { 0.f,0.f,0.f }, { 0.5f,0.5f,0.5f });
 
         // 스키닝 애니메이션 pso 설정
         renderer->set_pso_name("skinned");
