@@ -14,16 +14,13 @@ TextureCube g_IrradianceMap : register(t8);
 
     // t9: Prefiltered Environment Map - Specular IBL용 (Mipmap으로 Roughness 표현)
 TextureCube g_PrefilteredMap : register(t9);
-
-    // t10: BRDF LUT - Split-Sum Approximation용 (NdotV, Roughness -> scale, bias)
+   // t10: BRDF LUT - Split-Sum Approximation 용 (NdotV, Roughness -> scale, bias)
 Texture2D g_BrdfLut : register(t10);
 
     // 주의: SamplerState g_samLinear는 Gltf_Shader.hlsl에서 선언됨
     // IBL.hlsl은 Gltf_Shader.hlsl에 include되므로 자동으로 사용 가능
 
-  // ============================================================
-    // Diffuse IBL 계산
-    // ============================================================
+// Diffuse IBL 계산
 float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
 {
         // 1. F0 계산 (표면 반사율)
@@ -34,19 +31,14 @@ float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
 
         // 3. Irradiance Map 샘플링
     float3 irradiance = g_IrradianceMap.Sample(g_samLinear, N).rgb;
-
-        // HDR 텍스처 스케일링 (값이 너무 큰 경우)
-    irradiance *= 0.001; // ← 이 줄 추가!
-     // 최소 환경광 추가 (완전히 검은색 방지)
-    float3 minAmbient = float3(0.02, 0.02, 0.02); // ← 이 값 조절 (0.01~0.05)
-    irradiance = max(irradiance, minAmbient);
+    
+    irradiance *= 0.1;
+    
         // 4. Lambertian Diffuse BRDF 계산
     return kD * albedo * irradiance;
 }
 
-    // ============================================================
-    // Specular IBL 계산
-    // ============================================================
+// Specular IBL 계산
 float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness)
 {
         // 1. 반사 벡터 계산
@@ -59,24 +51,33 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
     float maxMipLevel = 5.0;
     float safeRoughness = max(roughness, 0.15); // 최소 15%
     float lod = safeRoughness * maxMipLevel;
-
-        // 4. Prefiltered Map 샘플링
+    
+     // 4. Prefiltered Map 샘플링
     float3 prefilteredColor = g_PrefilteredMap.SampleLevel(g_samLinear, R, lod).rgb;
-
-        // HDR 텍스처 스케일링 (값이 너무 큰 경우)
-    prefilteredColor *= 0.001; 
     
-    float3 minEnvironmentLight = float3(0.3, 0.3, 0.3); // 스케일링 후 기준
-    prefilteredColor = max(prefilteredColor, minEnvironmentLight);
-
-        // 5. BRDF LUT 샘플링
+    prefilteredColor *= 0.005;
+    
+       // 5. BRDF LUT 샘플링
     float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
-    
-        // 6. F0 계산
+
+       // 6. F0 계산
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
-    
-     // 7. Split-Sum Approximation 
-    return prefilteredColor * (F0 * brdf.x + brdf.y);
+
+       // 7. Single Scattering Specular 계산
+    float3 specularSingle = F0 * brdf.x + brdf.y;
+
+       // 8. Multiple Scattering Energy Compensation
+       // Ess = Single Scattering의 총 에너지
+    float Ess = brdf.x + brdf.y;
+    Ess = max(Ess, 0.001); // 0으로 나누기 방지
+
+       // Energy Compensation Factor 계산
+       // 수식: 1.0 + F0 * (1.0/Ess - 1.0)
+       // 의미: 손실된 에너지를 F0에 비례하여 복구
+    float3 energyCompensation = 1.0 + F0 * (1.0 / Ess - 1.0);
+
+       // 9. 최종 Specular = Single Scattering * Energy Compensation
+    return prefilteredColor * specularSingle * energyCompensation;
 }
 
     // IBL 통합 함수
