@@ -262,9 +262,9 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         // 원하는 무기 붙이기
         auto socket_compnenet = hi_brute->get_component<SocketComponenet>();
-        socket_compnenet->add_connecting("ik_hand_l_sword", "ik_hand_l", "Resource/TESTMapData/Meshes/SM_Crate_01.gltf", {0.f,0.f,0.f}, { 0.f,0.f,0.f }, { 0.5f,0.5f,0.5f });
+        socket_compnenet->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
 
-        // 스키닝 애니메이션 pso 설정
+        // 스키닝 애니메이션 pso 설정              
         renderer->set_pso_name("skinned");
 
         // 위치, 회전 정보
