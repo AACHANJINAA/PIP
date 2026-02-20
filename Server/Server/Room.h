@@ -75,8 +75,9 @@ namespace PIP::SERVER
 		GAME::Actor* GetActor(int64_t actor_id);
 
 	private:
-		void CreatePhysicsTerrain();
 		void PhysicsInitialize();
+		void CreatePhysicsTerrain();
+		void CreatePhysicsMapObjects();
 
 		void ProcessJobs();
 

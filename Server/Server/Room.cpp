@@ -1049,6 +1049,41 @@ namespace PIP::SERVER
 			MYERROR("Physics Terrain NOT FOUND! Ray missed.");
 		}
 	}
+
+	void Room::CreatePhysicsMapObjects()
+	{
+		const auto& mapObjects = MapDataManager::Instance()->GetMapObjects();
+		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
+
+		for (const auto& obj : mapObjects) {
+			// 1. AABB로부터 중심점(Center)과 절반 크기(Half-extents) 계산
+			common::Vec3 center = (obj._min + obj._max) * 0.5f;
+			common::Vec3 extents = (obj._max - obj._min) * 0.5f;
+
+			// 2. Jolt BoxShape 생성
+			JPH::BoxShapeSettings shapeSettings(Utils::ToJolt(extents));
+			JPH::Shape::ShapeResult shapeResult = shapeSettings.Create();
+
+			if (shapeResult.HasError()) continue;
+
+			// 3. Static Body 생성 및 등록 (NON_MOVING 레이어)
+			JPH::BodyCreationSettings bodySettings(
+				shapeResult.Get(),
+				Utils::ToJolt(center),
+				JPH::Quat::sIdentity(),
+				JPH::EMotionType::Static,
+				Layers::NON_MOVING
+			);
+
+			JPH::Body* body = bodyInterface.CreateBody(bodySettings);
+			if (body) {
+				bodyInterface.AddBody(body->GetID(), JPH::EActivation::DontActivate);
+			}
+		}
+
+		MYLOG("[Room] Physics Map Objects created: " << mapObjects.size());
+	}
+
 	void Room::PhysicsInitialize() {
 		_jobSystem = new JPH::JobSystemSingleThreaded(JPH::cMaxPhysicsJobs);
 
@@ -1065,5 +1100,6 @@ namespace PIP::SERVER
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
 		CreatePhysicsTerrain();
+		CreatePhysicsMapObjects();
 	}
 }

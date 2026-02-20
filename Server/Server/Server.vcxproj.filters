@@ -225,5 +225,8 @@
     <None Include="Monster.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
+    <None Include="..\..\Common\MapData\ExportedServerData.json">
+      <Filter>소스 파일\Common</Filter>
+    </None>
   </ItemGroup>
 </Project>
