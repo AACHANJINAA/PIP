@@ -15,25 +15,38 @@ namespace PIP
 			MYERROR("Failed to open map data file: " << mapDataPath);
 			return;
 		}
+
 		using namespace nlohmann;
 		json data = json::parse(file);
 
+		_map_objects.clear(); // 기존 데이터 초기화
+
 		for (const auto& item : data)
 		{
-			if (!item.contains("AABB")) continue;
+			// 핵심 필드인 Center가 있는지 확인
+			if (!item.contains("Center")) continue;
 
-			common::Vec3 min_v;
-			min_v.x = item["AABB"]["Min"]["X"];
-			min_v.y = item["AABB"]["Min"]["Y"];
-			min_v.z = item["AABB"]["Min"]["Z"];
+			MapObject obj;
 
-			common::Vec3 max_v;
-			max_v.x = item["AABB"]["Max"]["X"];
-			max_v.y = item["AABB"]["Max"]["Y"];
-			max_v.z = item["AABB"]["Max"]["Z"];
+			// 1. Center 파싱 (x, y, z 소문자)
+			obj._center.x = item["Center"]["x"];
+			obj._center.y = item["Center"]["y"];
+			obj._center.z = item["Center"]["z"];
 
-			_map_objects.push_back({ min_v, max_v });
+			// 2. Rotation 파싱 (x, y, z, w 소문자)
+			obj._rotation.x = item["Rotation"]["x"];
+			obj._rotation.y = item["Rotation"]["y"];
+			obj._rotation.z = item["Rotation"]["z"];
+			obj._rotation.w = item["Rotation"]["w"];
+
+			// 3. Extent 파싱 (x, y, z 소문자)
+			obj._extent.x = item["Extent"]["x"];
+			obj._extent.y = item["Extent"]["y"];
+			obj._extent.z = item["Extent"]["z"];
+
+			_map_objects.push_back(obj);
 		}
+		MYLOG("Map Data Loaded: " << _map_objects.size() << " objects (OBB)");
 	}
 
 	void MapDataManager::LoadHeightMapData(std::string_view heightMapDataJSONPath)
@@ -68,27 +81,4 @@ namespace PIP
 		return _terrainData.GetHeightAt(x, z);
 	}
 
-	bool MapDataManager::CheckForCollision(common::Vec3 target_pos, common::Vec3 player_extents)
-	{
-		// 1. 플레이어의 AABB(경계 상자) 계산
-		common::Vec3 player_min = { target_pos.x - player_extents.x, target_pos.y - player_extents.y, target_pos.z - player_extents.z };
-		common::Vec3 player_max = { target_pos.x + player_extents.x, target_pos.y + player_extents.y, target_pos.z + player_extents.z };
-
-		// 2. 모든 맵 오브젝트와 충돌 검사
-		for (const auto& map_object : _map_objects)
-		{
-			// 3. AABB 충돌 검사 로직
-			if (player_max.x > map_object._min.x &&
-				player_min.x < map_object._max.x &&
-				player_max.y > map_object._min.y &&
-				player_min.y < map_object._max.y &&
-				player_max.z > map_object._min.z &&
-				player_min.z < map_object._max.z)
-			{
-				return true; // 충돌 발생
-			}
-		}
-
-		return false; // 충돌 없음
-	}
 }

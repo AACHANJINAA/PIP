@@ -14,8 +14,9 @@ namespace PIP
 {
 	struct MapObject
 	{
-		common::Vec3 _min;
-		common::Vec3 _max;
+		common::Vec3 _center;
+		common::Quat _rotation;
+		common::Vec3 _extent; // Half-extents (반폭)
 	};
 
 	class MapDataManager : public Singleton<MapDataManager>
@@ -35,7 +36,6 @@ namespace PIP
 		float GetGroundHeight(float x, float z);
 		common::Vec3 AdjustPositionToGround(common::Vec3 position);
 
-		bool CheckForCollision(common::Vec3 target_pos, common::Vec3 player_extents);
 		bool IsInsideMap(float x, float z) const
 		{
 			const auto& info = _terrainData.GetInfo();
