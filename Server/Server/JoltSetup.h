@@ -111,7 +111,7 @@ namespace PIP
             switch (inObject1)
             {
             case Layers::NON_MOVING:
-                return inObject2 == Layers::MOVING;
+                return inObject2 == Layers::MOVING || inObject2 == Layers::NPC;
             case Layers::MOVING:
                 return true;
             case Layers::NPC:

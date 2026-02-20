@@ -41,7 +41,7 @@ namespace PIP
 			const auto& info = _terrainData.GetInfo();
 			return (x >= info.min_x && x <= info.max_x && z >= info.min_z && z <= info.max_z);
 		}
-
+		const std::vector<MapObject>& GetMapObjects() const { return _map_objects; }
 	private:
 		std::vector<MapObject> _map_objects;
 		common::TerrainData _terrainData;
