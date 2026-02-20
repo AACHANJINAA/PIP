@@ -1056,33 +1056,31 @@ namespace PIP::SERVER
 		const auto& mapObjects = MapDataManager::Instance()->GetMapObjects();
 		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
 
-		for (const auto& obj : mapObjects) {
-			// 1. AABB로부터 중심점(Center)과 절반 크기(Half-extents) 계산
-			common::Vec3 center = (obj._min + obj._max) * 0.5f;
-			common::Vec3 extents = (obj._max - obj._min) * 0.5f;
-
-			// 2. Jolt BoxShape 생성
-			JPH::BoxShapeSettings shapeSettings(Utils::ToJolt(extents));
+		for (const auto& obj : mapObjects)
+		{
+			// 1. BoxShape 생성 (Half-extents 전달)
+			JPH::BoxShapeSettings shapeSettings(Utils::ToJolt(obj._extent));
 			JPH::Shape::ShapeResult shapeResult = shapeSettings.Create();
 
 			if (shapeResult.HasError()) continue;
 
-			// 3. Static Body 생성 및 등록 (NON_MOVING 레이어)
+			// 2. Static Body 생성 (Center 위치와 Rotation 회전값 적용)
 			JPH::BodyCreationSettings bodySettings(
 				shapeResult.Get(),
-				Utils::ToJolt(center),
-				JPH::Quat::sIdentity(),
+				Utils::ToJolt(obj._center),
+				Utils::ToJolt(obj._rotation),
 				JPH::EMotionType::Static,
 				Layers::NON_MOVING
 			);
 
 			JPH::Body* body = bodyInterface.CreateBody(bodySettings);
-			if (body) {
+			if (body)
+			{
+				// 물리 세계에 추가 (Static이므로 비활성 상태로 추가)
 				bodyInterface.AddBody(body->GetID(), JPH::EActivation::DontActivate);
 			}
 		}
-
-		MYLOG("[Room] Physics Map Objects created: " << mapObjects.size());
+		MYLOG("[Room] Physics OBB Map Objects created: " << mapObjects.size());
 	}
 
 	void Room::SendMapDebugDraw(const std::shared_ptr<SESSION>& session)
@@ -1095,19 +1093,15 @@ namespace PIP::SERVER
 			debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
 			debug._size = sizeof(debug);
 
-			// 1. 중심점(Position) 계산
-			debug._position = (obj._min + obj._max) * 0.5f;
+			debug._position = obj._center;
+			debug._rotation = obj._rotation; // Quaternion 회전 포함
+			debug._extents = obj._extent;
 
-			// 2. 반폭(Extents) 계산 (Max - Min / 2)
-			debug._extents = (obj._max - obj._min) * 0.5f;
-
-			debug._rotation = { 0, 0, 0, 1 }; // AABB이므로 회전 없음
 			debug._shape_type = packet::DebugShapeType::BOX;
-			debug._duration = 600.0f; // 10분 동안 유지 (테스트용)
+			debug._duration = 600.0f; // 10분 유지
 
 			session->do_send(reinterpret_cast<const char*>(&debug), sizeof(debug));
 		}
-		MYLOG("[Debug] Sent " << mapObjects.size() << " map debug boxes to session " << session->_id);
 	}
 
 	void Room::PhysicsInitialize() {
