@@ -977,6 +977,7 @@ namespace PIP::SERVER
 		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
 		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
 
+		SendMapDebugDraw(session);
 		// --- [Step 3] 최종 입장 완료 (리스트 및 그리드맵 추가) ---
 		EnterPlayer(session);
 
@@ -1082,6 +1083,31 @@ namespace PIP::SERVER
 		}
 
 		MYLOG("[Room] Physics Map Objects created: " << mapObjects.size());
+	}
+
+	void Room::SendMapDebugDraw(const std::shared_ptr<SESSION>& session)
+	{
+		const auto& mapObjects = MapDataManager::Instance()->GetMapObjects();
+
+		for (const auto& obj : mapObjects)
+		{
+			packet::SC_PACKET_DEBUG_DRAW debug;
+			debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
+			debug._size = sizeof(debug);
+
+			// 1. 중심점(Position) 계산
+			debug._position = (obj._min + obj._max) * 0.5f;
+
+			// 2. 반폭(Extents) 계산 (Max - Min / 2)
+			debug._extents = (obj._max - obj._min) * 0.5f;
+
+			debug._rotation = { 0, 0, 0, 1 }; // AABB이므로 회전 없음
+			debug._shape_type = packet::DebugShapeType::BOX;
+			debug._duration = 600.0f; // 10분 동안 유지 (테스트용)
+
+			session->do_send(reinterpret_cast<const char*>(&debug), sizeof(debug));
+		}
+		MYLOG("[Debug] Sent " << mapObjects.size() << " map debug boxes to session " << session->_id);
 	}
 
 	void Room::PhysicsInitialize() {
