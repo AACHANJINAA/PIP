@@ -79,6 +79,8 @@ namespace PIP::SERVER
 		void CreatePhysicsTerrain();
 		void CreatePhysicsMapObjects();
 
+		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
+
 		void ProcessJobs();
 
 		// [삭제] UpdateSingleNPC는 더 이상 사용하지 않음
