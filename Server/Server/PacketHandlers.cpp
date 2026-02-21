@@ -31,7 +31,7 @@ namespace PIP::packet
 		// [수정] 구조체 자체를 스트림에 씁니다.
 		finalStream << spawn_packet_data;
 		// [추가] 이름(가변 길이)을 스트림에 씁니다.
-		finalStream << session->_player->_name;
+		finalStream << session->_player->GetName();
 
 		// [수정] 최종 크기를 계산하여 패킷 헤더에 덮어씁니다.
 		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
@@ -57,9 +57,9 @@ namespace PIP::packet
 			return;
 		}
 		// 2. 세션 객체에 이름을 저장합니다.
-		session->_player->_name = player_name;
+		session->_player->SetName(player_name);
 		
-		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player->_name << "'.");
+		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player->GetName() << "'.");
 
 		// 아바타 정보 전송 로직 제거
 
@@ -284,29 +284,45 @@ namespace PIP::packet
 
 	void Handle_C2S_ENTER_ROOM(std::shared_ptr<SERVER::SESSION> session, packet::PacketStream& stream)
 	{
-
 		packet::CS_PACKET_ENTER_ROOM enter_packet;
-		stream >> enter_packet; // 여기서 가고 싶은 room_id를 읽음
+		stream >> enter_packet;
 
-		// [중요] session->_room_id가 아니라, 패킷에 담긴 ID로 방을 직접 찾습니다!
 		SERVER::Room* target_room = SERVER::Server::Instance()->GetRoom(enter_packet._room_id);
 
-		if (!target_room) {
-			MYERROR("Target room " << enter_packet._room_id << " not found or Full");
-			return;
-		}
-		if (target_room->IsFull())
+		// [추가] 빈 방 자동 배정 로직
+		if (!target_room || target_room->IsFull())
 		{
-			SC_PACKET_ENTER_ROOM_ACK ack_packet;
-			ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
-			ack_packet._size = sizeof(ack_packet);
-			ack_packet._room_id = enter_packet._room_id;
-			ack_packet._success = false; // 입장 실패
-			session->do_send(reinterpret_cast<const char*>(&ack_packet), sizeof(ack_packet));
-			MYLOG("Room " << enter_packet._room_id << " is full. Session " << session->_id << " cannot enter.");
-			return; // [추가] 실패했으므로 여기서 함수를 끝내야 합니다!
+			MYLOG("Requested room " << enter_packet._room_id << " is full or invalid. Searching for an empty room...");
+			
+			bool found_room = false;
+			// 서버의 모든 방을 순회 (최대 100개 가정)
+			for (int i = 0; i < 100; ++i)
+			{
+				SERVER::Room* room = SERVER::Server::Instance()->GetRoom(i);
+				if (room && !room->IsFull())
+				{
+					target_room = room;
+					enter_packet._room_id = i; // 패킷의 ID도 갱신하여 클라이언트에 알림
+					found_room = true;
+					MYLOG("Auto-assigned to Room " << i);
+					break;
+				}
+			}
+
+			if (!found_room)
+			{
+				MYERROR("All rooms are full! Session " << session->_id << " cannot enter.");
+				SC_PACKET_ENTER_ROOM_ACK ack_packet;
+				ack_packet._type = PacketType::S2C_P_ENTER_ROOM_ACK;
+				ack_packet._size = sizeof(ack_packet);
+				ack_packet._room_id = enter_packet._room_id;
+				ack_packet._success = false;
+				session->do_send(reinterpret_cast<const char*>(&ack_packet), sizeof(ack_packet));
+				return;
+			}
 		}
 
+		// [기존 로직] 방 이동 또는 입장 처리
 		if (session->_room_id != -1) // [CASE 1] 이미 방에 있는 경우: 퇴장 후 입장
 		{
 			SERVER::Room* old_room = SERVER::Server::Instance()->GetRoom(session->_room_id);

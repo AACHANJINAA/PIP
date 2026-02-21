@@ -11,12 +11,13 @@
 namespace PIP::GAME
 {
 	NPC::NPC(int64_t npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp)
-		: Actor(npc_id),
+		:
 		_npc_type{ npc_type },
 		_room_id{ room_id },
 		_hp{ hp }
 		
 	{
+		SetId(npc_id);
 		SetFaction(Faction::FACTION_MONSTER);
 		// 1. 기본 이름 설정 (GameObject 멤버)
 		SetName("Monster_" + std::to_string(npc_id));

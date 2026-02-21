@@ -292,7 +292,7 @@ namespace common::packet
 	// ------------------------------------------- 채팅 관련 패킷 ------------------------------------------ //
 	struct SC_PACKET_CHAT_IN_ROOM : PacketHeader
 	{
-		long long _sender_id;
+		int64_t _sender_id;
 		uint16_t _message_length;
 	};
 	// ------------------------------------------- 디버깅용 패킷 ------------------------------------------ //

@@ -2,6 +2,8 @@
 #include "GameObject.h"
 namespace PIP::GAME
 {
+	std::atomic<int64_t> GameObject::_id_counter{ 1 };
+
 	void GameObject::Update(float deltaTime)
 	{
         for (auto& comp : _components)

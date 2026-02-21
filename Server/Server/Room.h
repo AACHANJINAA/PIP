@@ -48,12 +48,12 @@ namespace PIP::SERVER
 
 		void PushJob(std::function<void()> job);
 
-		void Broadcast(const char* data, size_t size, long long except_id = -1);
+		void Broadcast(const char* data, size_t size, int64_t except_id = -1);
 
 		// 특정 NPC를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToNPCViewers(int npc_id, const char* data, size_t size);
 		// 특정 플레이어를 보고 있는 플레이어들에게 데이터 전송
-		void BroadcastToPlayerViewers(long long player_id, const char* data, size_t size);
+		void BroadcastToPlayerViewers(int64_t player_id, const char* data, size_t size);
 
 		void BroadcastNpcBatch();
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
@@ -98,9 +98,11 @@ namespace PIP::SERVER
 		GAME::GridMap 					_gridMap;
 
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
-		std::unordered_map<long long, std::shared_ptr<SESSION>> _players;
+
+		std::unordered_map<int64_t, GAME::Actor*> _actors;
+		std::unordered_map<int64_t, std::shared_ptr<SESSION>> _players;
 		std::unordered_map<int64_t, std::unique_ptr<GAME::NPC>> _npcs;
-		int64_t _next_npc_id = 20000;
+		int64_t _next_npc_id = 1000000;
 
 		JPH::PhysicsSystem*					_physicsSystem = nullptr;
 		JPH::JobSystem*						_jobSystem = nullptr;

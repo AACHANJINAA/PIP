@@ -2,6 +2,7 @@
 #define NOMINMAX
 // STL 헤더
 #include <iostream>
+#include <stack>
 #include <atomic>
 #include <unordered_map>
 #include <functional>

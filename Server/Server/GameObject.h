@@ -12,7 +12,7 @@ namespace PIP::GAME
     class GameObject
     {
     public:
-        GameObject(int64_t id = -1) : _id{ id } {}
+        GameObject() : _id{ ++_id_counter } {}
         virtual ~GameObject() = default;
 
         void Update(float deltaTime);
@@ -31,8 +31,8 @@ namespace PIP::GAME
 		void SetName(std::string_view name) { _name = name; }
         const std::string& GetName() const { return _name; }
 
-        int64_t GetId() const { return _id; }
-
+       virtual int64_t GetId() const { return _id; }
+		void SetId(int64_t id) { _id = id; }
         // [공통 인터페이스] 특정 공격에 맞았는지 검증하고 처리
         virtual bool ValidateHit(JPH::PhysicsSystem* physics,
                                  const JPH::Shape* attackShape,
@@ -44,6 +44,8 @@ namespace PIP::GAME
 
     private:
         int64_t _id;
+        static std::atomic<int64_t> _id_counter; // 전역 카운터
+
         std::string _name;
         std::vector<std::unique_ptr<Component>> _components;
         std::unordered_map<std::type_index, Component*> _componentCache;
