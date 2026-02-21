@@ -5,28 +5,27 @@
 
 #include "HitboxComponent.h"
 #include "MapDataManager.h"
+#include "server.h"
 
 
 namespace PIP::GAME
 {
 	Player::Player(int64_t owner_id)
 		:
-		_name {"DefaultName" },
 		_hp { 100 },
 		_max_hp{ 100 },
 		_level { 0 },
 		_exp { 0 },
 		_damage{ 10 },
-		Actor(owner_id),
 		_owner_id{ owner_id }
 	{
 		SetFaction(Faction::FACTION_PLAYER);
-		// 1. Transform Ãß°¡
+		// 1. Transform ï¿½ß°ï¿½
 		AddComponent<GAME::TransformComponent>();
-		// 2. ¹°¸® ÄÁÆ®·Ñ·¯ Ãß°¡ (ÇÃ·¹ÀÌ¾îµµ ÀÌÁ¦ ¹°¸® Àû¿ë!)
+		// 2. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ß°ï¿½ (ï¿½Ã·ï¿½ï¿½Ì¾îµµ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½!)
 		AddComponent<GAME::CharacterControllerComponent>(Layers::MOVING);
 
-		// [Ãß°¡] È÷Æ®¹Ú½º ¼³Á¤ (NPC¿Í µ¿ÀÏÇÑ Å©±âÀÇ Ä¸½¶)
+		// [ï¿½ß°ï¿½] ï¿½ï¿½Æ®ï¿½Ú½ï¿½ ï¿½ï¿½ï¿½ï¿½ (NPCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ï¿½ï¿½ Ä¸ï¿½ï¿½)
 		auto hitbox = AddComponent<HitboxComponent>();
 		float height = 1.8f;
 		float radius = 0.5f;
@@ -34,18 +33,38 @@ namespace PIP::GAME
 		JPH::Ref<JPH::Shape> bodyShape = new JPH::CapsuleShape(halfCylinderHeight, radius);
 		hitbox->AddHitbox("Body", bodyShape, { 0.0f, 0.9f, 0.0f });
 
-		SetName("Player_" + std::to_string(owner_id));
+		SetName("Player_" + std::to_string(_owner_id));
+	}
+
+	void Player::init(int64_t id)
+	{
+		_owner_id = id;
+		_hp = 100;
+		_max_hp = 100;
+		_level = 0;
+		_exp = 0;
+		_damage = 10;
+		_state = common::packet::OBJECT_STATE::IDLE;
+		_hitCooldown = 0.0f;
+		_history.clear(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ç¼³ï¿½ï¿½ (AddComponentï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
+		SetPosition({ 10.0f, 10.0f, 10.0f }); // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½
+		if (auto cc = GetComponent<CharacterControllerComponent>()) {
+			cc->SetVelocity({ 0, 0, 0 });
+			cc->AddImpact({ 0, 0, 0 }); // ï¿½Ë¹ï¿½ ï¿½Ê±ï¿½È­
+		}
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
 	                         const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
 	{
-		if (_hitCooldown > 0.0f) return false; // Äð´Ù¿î ÁßÀÌ¸é ¹«½Ã
+		if (_hitCooldown > 0.0f) return false; // ï¿½ï¿½Ù¿ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-		// 1. °ú°Å ½ÃÁ¡ À§Ä¡ º¹±¸
+		// 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 		auto snapshot = GetSnapshotAt(timestamp);
 
-		// 2. È÷Æ®¹Ú½º Ãæµ¹ °Ë»ç
+		// 2. ï¿½ï¿½Æ®ï¿½Ú½ï¿½ ï¿½æµ¹ ï¿½Ë»ï¿½
 		std::string hitPart;
 		auto hc = GetComponent<HitboxComponent>();
 		if (!hc) {
@@ -54,7 +73,7 @@ namespace PIP::GAME
 		}
 		if (hc && hc->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart))
 		{
-			// 3. ½ÇÁ¦ µ¥¹ÌÁö Àû¿ë
+			// 3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			short old_hp = _hp;
 			_hp -= static_cast<short>(damage);
 			_hp = std::max<short>(_hp, 0);
@@ -66,10 +85,10 @@ namespace PIP::GAME
 				common::Vec3 dir = common::Normalize(currentPos - attackerPos);
 				dir.y = 0;
 
-				// [¼öÁ¤] AddImpulse ´ë½Å AddImpact È£Ãâ (20.0f Á¤µµ·Î °­ÇÏ°Ô)
+				// [ï¿½ï¿½ï¿½ï¿½] AddImpulse ï¿½ï¿½ï¿½ AddImpact È£ï¿½ï¿½ (20.0f ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½)
 				cc->AddImpact(dir * 20.0f);
 			}
-			_hitCooldown = 0.3f; // ÇÇ°Ý Äð´Ù¿î ¼³Á¤
+			_hitCooldown = 0.3f; // ï¿½Ç°ï¿½ ï¿½ï¿½Ù¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 			return true;
 		}
 		return false;

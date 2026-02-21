@@ -62,7 +62,7 @@ namespace PIP::SERVER
 		MYERROR("Default Constructor called, this should not happen!" << std::endl);
 	}
 	// server.cpp
-	SESSION::SESSION(long long session_id, SOCKET s, int logic_index)
+	SESSION::SESSION(int64_t session_id, SOCKET s, int logic_index)
 		: _c_socket{ s }, _id{ session_id }, _logic_thread_idx{ logic_index }
 	{
 		_state = SESSION_STATE::ST_LOBBY;
@@ -70,52 +70,45 @@ namespace PIP::SERVER
 	}
 	SESSION::~SESSION()
 	{
-		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player->_name);
+		MYLOG("[SESSION " << _id << "] Session destroyed. Name: " << _player->GetName());
 		// TODO: Logic_Worker 에서 세션 종료 패킷을 보내는 로직 추가 필요
 		closesocket(_c_socket);
 	}
 	void SESSION::do_recv()
 	{
+		// [수정] 멤버 변수 _recv_over 대신 동적으로 생성하여 shared_ptr 주입
+		// 이렇게 해야 OS가 Recv를 완료할 때까지 세션 객체가 살아있음을 보장함
+		EXP_OVER* eo = new EXP_OVER(IO_RECV, shared_from_this());
+
 		DWORD recv_flag = 0;
-		ZeroMemory(&_recv_over._over, sizeof(_recv_over._over));
+		// eo->_buffer를 직접 사용하도록 수정
+		auto ret = WSARecv(_c_socket, eo->_wsabuf.data(), 1, NULL, &recv_flag, &eo->_over, NULL);
 
-		_recv_over._wsabuf[0].buf = reinterpret_cast<CHAR*>(_recv_over._buffer.data());
-		_recv_over._wsabuf[0].len = static_cast<ULONG>(_recv_over._buffer.size());
-
-		auto ret = WSARecv(_c_socket, _recv_over._wsabuf.data(), 1, NULL,
-						   &recv_flag, &_recv_over._over, NULL);
-
-		if (0 != ret)
-		{
-			auto err_no = WSAGetLastError();
-			if (WSA_IO_PENDING != err_no)
-			{
-				print_error("WSARecv", err_no);
-				// exit(-1);
-			}
+		if (ret == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
+			delete eo; // 즉시 실패 시 참조 해제
+			// Disconnect 처리
 		}
 	}
 
 	void SESSION::do_send(const char* data, size_t size)
 	{
-		// [안전장치] 버퍼 오버플로우 방지
-		if (size > EXP_OVER::BUFFER_SIZE) {
-			MYERROR("Packet size (" << size << ") exceeds buffer size (" << EXP_OVER::BUFFER_SIZE << ")");
-			return; // 보내지 않고 리턴 (크래시 방지)
-		}
-		EXP_OVER* o = new EXP_OVER(IO_SEND);
+		if (size > EXP_OVER::BUFFER_SIZE) return;
+
+		// [수정] shared_from_this()를 넘겨서 Send 완료 전까지 세션 보호
+		EXP_OVER* o = new EXP_OVER(IO_SEND, shared_from_this());
 		memcpy(o->_buffer.data(), data, size);
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
+
 		DWORD size_sent;
-
-		/*MYLOG("[SESSION " << _id << "] Sending " << size << " bytes. Type: " << 
-			PacketTypeToString(reinterpret_cast<const packet::PacketHeader*>(data)->_type));*/
-
-		WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &(o->_over), NULL);
+		if (WSASend(_c_socket, o->_wsabuf.data(), 1, &size_sent, 0, &o->_over, NULL) == SOCKET_ERROR) {
+			if (WSAGetLastError() != WSA_IO_PENDING) {
+				delete o;
+			}
+		}
 	}
-	void SESSION::OnRecv(size_t len, Server* server_ptr)
+	void SESSION::on_recv(EXP_OVER* eo, size_t len, Server* server_ptr)
 	{
-		_recv_buffer.insert(_recv_buffer.end(), _recv_over._buffer.data(), _recv_over._buffer.data() + len);
+		_recv_buffer.insert(_recv_buffer.end(), eo->_buffer.data(), eo->_buffer.data() + len);
 		size_t processed_bytes = 0;
 		while (true)
 		{
@@ -148,10 +141,45 @@ namespace PIP::SERVER
 			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
 		}
 	}
-	
+
+	void SESSION::init(SOCKET s, int64_t id, int logic_idx) {
+		_c_socket = s;
+		_id = id;
+		_logic_thread_idx = logic_idx;
+		_room_id = -1;
+		_state = SESSION_STATE::ST_LOBBY;
+		_recv_buffer.clear();
+		_viewedNpcs.clear();
+		// _player 객체도 재사용하거나 새로 생성
+		if (!_player) _player = std::make_shared<GAME::Player>(id);
+		else _player->init(id); // Player 클래스에도 id를 초기화하는 init() 필요
+	}
+
+	void SESSION::disconnect()
+	{
+		SESSION_STATE expected = SESSION_STATE::ST_LOBBY;
+		// 중복 Close 방지
+		if (_state.compare_exchange_strong(expected, SESSION_STATE::ST_CLOSE) 
+			|| (expected = SESSION_STATE::ST_INGAME, _state.compare_exchange_strong(expected, SESSION_STATE::ST_CLOSE)))
+		{
+			closesocket(_c_socket);
+		}
+	}
+
+	void SESSION::clear()
+	{ // ReleaseSession에서 호출할 클린업
+		_state = SESSION_STATE::ST_FREE;
+		_id = -1;
+		_room_id = -1;
+		_recv_buffer.clear();
+		_viewedNpcs.clear();
+		// 소켓은 이미 disconnect에서 닫혔을 것임
+	}
+
 
 	// ---------------------------------------- server class implementation ---------------------------------
-	std::atomic<int> Server::_new_id{ 0 }; // 전역 세션 ID 생성기
+	std::atomic<int64_t> Server::_new_id{ 0 }; // 전역 세션 ID 생성기
+	std::atomic<int64_t> Server::_actor_id_gen{ 1 }; // 전역 액터 ID 생성기
 
 	/// <summary>
 	/// Server 생성자: IOCP를 생성하고 초기화합니다.
@@ -319,11 +347,11 @@ namespace PIP::SERVER
 		return _rooms[room_id].get();
 	}
 
-	void Server::AddSession(long long session_id, std::shared_ptr<SESSION> session)
+	void Server::AddSession(int64_t session_id, std::shared_ptr<SESSION> session)
 	{
 		_sessions.insert({ session_id, session });
 	}
-	std::shared_ptr<SESSION> Server::GetSession(long long session_id)
+	std::shared_ptr<SESSION> Server::GetSession(int64_t session_id)
 	{
 		auto it = _sessions.find(session_id);
 		if (it == _sessions.end())
@@ -332,14 +360,37 @@ namespace PIP::SERVER
 		}
 		return it->second;
 	}
-	void Server::RemoveSession(long long session_id)
+	void Server::RemoveSession(int64_t session_id)
 	{
 		// TODO: [성능 최적화] 잦은 메모리 할당/해제를 피하기 위해
 		//		 세션 객체를 삭제(erase)하는 대신, 상태를 초기화하고
 		//		 별도의 free_list (객체 풀)에 넣어 재사용하는 방식을 고려 필요.
 		//		 (Object Pooling 패턴)
-		_sessions[session_id] = nullptr;
+		// [수정] 맵에서 완전히 제거
+		_sessions.unsafe_erase(session_id);
 	}
+
+	std::shared_ptr<SESSION> Server::AcquireSession(SOCKET s, int64_t id, int logic_idx)
+	{
+		SESSION* raw_ptr = nullptr;
+		if (!_session_pool.try_pop(raw_ptr)) {
+			raw_ptr = new SESSION(id, s, logic_idx); // 풀이 비었으면 생성
+		}
+
+		raw_ptr->init(s, id, logic_idx);
+
+		// [커스텀 델리터] 참조 카운트가 0이 되면 ReleaseSession 호출
+		return std::shared_ptr<SESSION>(raw_ptr, [this](SESSION* p) {
+				this->ReleaseSession(p);
+			});
+	}
+	void Server::ReleaseSession(SESSION* session)
+	{
+		session->clear(); // 소켓 닫기 확인 및 버퍼 정리
+		// 세션 데이터 완전 초기화 후 풀에 삽입
+		_session_pool.push(session);
+	}
+
 	/// <summary>
 	/// TODO: session 재사용이 제대로 되는지 검증 필요!!!!!!!!!!!!!!!!
 	/// </summary>
@@ -362,53 +413,48 @@ namespace PIP::SERVER
 			ULONG_PTR key{}; // Accept의 경우 0, Recv/Send의 경우 Session ID
 			
 			BOOL ret = GetQueuedCompletionStatus(_iocp, &io_size, &key, &o, INFINITE);
+			// [수정] o(EXP_OVER)가 삭제되기 전에 세션 참조를 안전하게 획득
 			EXP_OVER* eo = reinterpret_cast<EXP_OVER*>(o);
 
-			if (o == nullptr)
+			if (eo == nullptr)
 			{
-				// 서버 종료 신호 등 특별 상황 처리
 				continue;
 			}
+
+			// CompletionKey에서 세션 포인터 획득
+			SESSION* session_ptr = reinterpret_cast<SESSION*>(key);
 
 			// 클라이언트 연결 종료 또는 에러 처리
 			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
 			{
-				std::shared_ptr<SESSION> session = GetSession(key);
-				if (session)
+				if (session_ptr)
 				{
+					// [수정] shared_from_this()를 통해 안전하게 참조 획득
+					auto session = session_ptr->shared_from_this();
 					MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
 
-					// [핵심 변경] 방의 PushJob을 사용하여 로직 스레드 내에서 안전하게 처리
-					if (session->_room_id != -1)
+					SESSION_STATE expected = SESSION_STATE::ST_LOBBY;
+					if (session->_state.compare_exchange_strong(expected, SESSION_STATE::ST_CLOSE) ||
+						(expected = SESSION_STATE::ST_INGAME, session->_state.compare_exchange_strong(expected,
+							SESSION_STATE::ST_CLOSE)))
 					{
-						Room* room = GetRoom(session->_room_id);
-						if (room)
-						{
-							// 방의 큐에 퇴장 명령을 넣습니다.
-							room->PushJob([this, session_id = session->_id, room]() 
-								{
-									std::shared_ptr<SESSION> s = GetSession(session_id);
-									if (s) {
-										room->LeavePlayer(s->_id);
-										MYLOG("[RoomJob] Session " << session_id << " left room " << room->GetRoomId());
-									}
-									// 세션 삭제는 방에서 완전히 빠진 후에 수행
-									RemoveSession(session_id);
+						if (session->_room_id != -1) {
+							Room* room = GetRoom(session->_room_id);
+							// [수정] 람다에 session(shared_ptr)을 캡처하여 로직 끝날 때까지 보존
+							room->PushJob([this, session, room]() {
+								room->LeavePlayer(session->_id);
+								// 여기서 RemoveSession(session->_id)를 호출하여 맵에서 제거
+								this->RemoveSession(session->_id);
+								// 람다가 종료되면서 session(shared_ptr)의 참조가 줄어듦 -> 0이 되면 풀로 반납
 								});
 						}
 						else {
-							// 방이 없으면 즉시 삭제
 							RemoveSession(session->_id);
 						}
-					}
-					else
-					{
-						// 방에 입장 전이라면 즉시 세션 삭제
-						RemoveSession(session->_id);
+						closesocket(session->_c_socket);
 					}
 				}
-
-				if (eo->_io_op == IO_SEND) delete eo;
+				delete eo;
 				continue;
 			}
 
@@ -427,12 +473,13 @@ namespace PIP::SERVER
 			
 			case IO_RECV:
 				{
-					std::shared_ptr<SESSION> session = GetSession(key);
-					if (session)
-					{
-						session->OnRecv(io_size, this); //수신
-						session->do_recv(); // 수신 예약
-					}
+					auto session = eo->_session_ref;
+					// [수정] 완료된 eo를 함께 넘겨줌
+					session->on_recv(eo, io_size, this);
+
+					session->do_recv(); // 다음 수신 예약
+
+					delete eo; // 처리가 끝났으니 삭제 (참조 카운트 감소)
 					break;
 				}
 			default:
@@ -515,12 +562,14 @@ namespace PIP::SERVER
 	void Server::register_new_session(SOCKET client_socket)
 	{
 		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_workers.size();
-		long long new_id = _new_id++;
-		std::shared_ptr<SESSION> p = std::make_shared<SESSION>(new_id, client_socket, logic_idx);
-		CreateIoCompletionPort(reinterpret_cast<HANDLE>(client_socket), _iocp, new_id, 0);
-		
-		AddSession(new_id, p);
-		p->do_recv();
-		MYLOG("[SERVER] New client connected. Session ID: " << new_id << ", assigned to Logic Thread:" << logic_idx);
+		int64_t new_id = _new_id++;
+
+		auto session = AcquireSession(client_socket, new_id, logic_idx);
+
+		// [핵심] CompletionKey에 ID 대신 포인터를 직접 전달 (Map 조회 제거)
+		CreateIoCompletionPort((HANDLE)client_socket, _iocp, (ULONG_PTR)session.get(), 0);
+
+		AddSession(new_id, session); // 맵에는 여전히 보관 (관리용)
+		session->do_recv();
 	}
 }

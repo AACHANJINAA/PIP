@@ -122,7 +122,7 @@ namespace PIP::GAME
         if (!owner) return false;
         if (!enemy)
         {
-            _blackboard->set("target_enemy", -1);
+            _blackboard->set("target_enemy", static_cast<int64_t>(0));
             return false;
         }
 
@@ -139,6 +139,7 @@ namespace PIP::GAME
         }
         GameObject* owner = _blackboard->get<GameObject*>("owner");
         int64_t enemy_id = _blackboard->get<int64_t>("target_enemy");
+
         Actor* enemy = room->GetActor(enemy_id);
         if (!owner || !enemy) return NodeStatus::FAILURE;
 

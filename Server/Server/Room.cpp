@@ -29,7 +29,7 @@ namespace PIP::SERVER
 
 		for (int i = 0; i < 100; ++i)
 		{
-			int64_t npcId = _next_npc_id++;
+			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
 			common::Vec3 randomPos = {
 				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
 			};
@@ -67,6 +67,7 @@ namespace PIP::SERVER
 		}
 		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
+		_actors[new_player->_id] = new_player->_player.get();
 		if (wasEmpty) {
 			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
 			for (auto& [id, npc] : _npcs) {
@@ -76,7 +77,7 @@ namespace PIP::SERVER
 			}
 		}
 	}
-	void Room::LeavePlayer(long long player_id)
+	void Room::LeavePlayer(int64_t player_id)
 	{
 		packet::SC_PACKET_LEAVE leave_packet;
 		leave_packet._type = packet::PacketType::S2C_P_LEAVE;
@@ -92,6 +93,7 @@ namespace PIP::SERVER
 				if (session->_player) _gridMap.Remove(session->_player.get());
 				session->_viewedNpcs.clear(); // [추가] 다음 방 입장을 위해 시야 목록 초기화
 			}
+			_actors.erase(player_id); // [추가] 통합 맵에서 제거
 			_players.erase(it);
 		}
 	}
@@ -117,6 +119,7 @@ namespace PIP::SERVER
 			}
 		}
 
+		_actors.erase(npcId); // [추가] 통합 맵에서 제거
 		// 3. 실제 NPC 객체 삭제 및 맵에서 제거
 		_npcs.erase(it);
 
@@ -125,6 +128,8 @@ namespace PIP::SERVER
 
 	void Room::AddNPC(std::unique_ptr<GAME::NPC> npc)
 	{
+		int64_t id = npc->GetNpcId();
+		_actors[id] = npc.get(); // [추가] 통합 맵에 등록
 		_gridMap.Add(npc.get());
 		_npcs.emplace(npc->GetNpcId(), std::move(npc));
 	}
@@ -307,8 +312,7 @@ namespace PIP::SERVER
 			for (auto& [pid, session] : _players) {
 				if (session && session->_player) {
 					common::Vec3 pos = session->_player->GetPosition();
-					MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " <<
-						pos.z);
+					//MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z);
 				}
 			}
 		}
@@ -551,7 +555,7 @@ namespace PIP::SERVER
 
 		Broadcast(finalStream.constable_data(), finalStream.Size());
 	}
-	void Room::Broadcast(const char* data, size_t size, long long except_id)
+	void Room::Broadcast(const char* data, size_t size, int64_t except_id)
 	{
 		for (auto& pair : _players)
 		{
@@ -574,7 +578,7 @@ namespace PIP::SERVER
 		}
 	}
 
-	void Room::BroadcastToPlayerViewers(long long player_id, const char* data, size_t size)
+	void Room::BroadcastToPlayerViewers(int64_t player_id, const char* data, size_t size)
 	{
 		// 플레이어 AOI는 아직 gridMap 기반으로 완벽하지 않을 수 있으나,
 		// 기본적으로 '같은 방' 혹은 '근처' 개념을 사용해야 함.
@@ -996,13 +1000,10 @@ namespace PIP::SERVER
 
 	GAME::Actor* Room::GetActor(int64_t actor_id)
 	{
-		if (auto npc = GetNPC(actor_id))
+		auto it = _actors.find(actor_id);
+		if (it != _actors.end())
 		{
-			return npc;
-		}
-		if (auto player = GetPlayer(actor_id))
-		{
-			return player;
+			return it->second; // 플레이어든 NPC든 즉시 반환
 		}
 		return nullptr;
 	}

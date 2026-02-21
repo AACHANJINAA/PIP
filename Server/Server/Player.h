@@ -9,8 +9,11 @@ namespace PIP::GAME
 	class Player : public Actor
 	{
 	public:
-		Player(long long owner_id);
+		Player(int64_t owner_id);
 		~Player() override = default;
+		void init(int64_t id);
+
+		int64_t GetId() const override { return _owner_id; } 
 
 		void SetPosition(const common::Vec3& pos)
 		{
@@ -18,7 +21,7 @@ namespace PIP::GAME
 			{
 				tc->SetPosition(pos);
 			}
-			// ¹°¸® ¿£ÁøÀÌ ÀÖ´Ù¸é °Å±âµµ ¹İ¿µ
+			// ë¬¼ë¦¬ ì»´í¬ë„ŒíŠ¸ê°€ ìˆë‹¤ë©´ ë™ê¸°í™”ë„ ë°˜ì˜
 			if (auto cc = GetComponent<GAME::CharacterControllerComponent>())
 			{
 				cc->SetPosition(pos);
@@ -34,7 +37,7 @@ namespace PIP::GAME
 			}
 		}
 
-		// [Ãß°¡] ÆĞÅ¶ ÃÖÀûÈ­ ¹× ¿ÀÂ÷ º¸Á¤¿ë Getter/Setter
+		// [ì¶”ê°€] íŒ¨í‚· ë™ê¸°í™” ì‹œ í•„ìš”í•œ ì„ì‹œ ì •ë³´ Getter/Setter
 		void SetLastClientTargetPos(const common::Vec3& pos) { _lastClientTargetPos = pos; }
 		common::Vec3 GetLastClientTargetPos() const { return _lastClientTargetPos; }
 
@@ -48,7 +51,6 @@ namespace PIP::GAME
 
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
-		std::string					_name;
 		short						_hp;
 		short						_max_hp;
 		short						_level;
@@ -56,16 +58,14 @@ namespace PIP::GAME
 		int							_damage;
 		common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 
-		// [Ãß°¡] »óÅÂ ÃßÀû º¯¼ö
-		common::Vec3 _lastClientTargetPos = { 0.0f, 0.0f, 0.0f }; // Å¬¶óÀÌ¾ğÆ®°¡ ¸¶Áö¸·À¸·Î °¡°Ú´Ù°í ÇÑ ÁÂÇ¥
-		common::Vec3 _lastSentPos = { 0.0f, 0.0f, 0.0f };         // ¼­¹ö°¡ Å¬¶ó¿¡°Ô ¸¶Áö¸·À¸·Î È®Á¤ÇØ¼­ º¸³½ ÁÂÇ¥
+		// [ì¶”ê°€] ìœ„ì¹˜ ë³´ì • ê´€ë ¨
+		common::Vec3 _lastClientTargetPos = { 0.0f, 0.0f, 0.0f }; // í´ë¼ì´ì–¸íŠ¸ê°€ ë§ˆì§€ë§‰ìœ¼ë¡œ ë³´ëƒˆë‹¤ê³  ìš°ê¸°ëŠ” ì¢Œí‘œ
+		common::Vec3 _lastSentPos = { 0.0f, 0.0f, 0.0f };         // ì„œë²„ì—ì„œ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì •í•´ì„œ ë³´ë‚¸ ì¢Œí‘œ
 
 		//JPH::BodyID _physicsBodyID;
 
 	private:
 		float _hitCooldown = 0.0f;
-		long long _owner_id; // ÀÌ ÇÃ·¹ÀÌ¾îÀÇ ¼ÒÀ¯ÀÚ ¼¼¼Ç ID	
+		int64_t _owner_id; // ì´ í”Œë ˆì´ì–´ë¥¼ ì†Œìœ í•œ ì„¸ì…˜ ID	
 	};
 }
-
-

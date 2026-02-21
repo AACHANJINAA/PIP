@@ -17,12 +17,19 @@ namespace PIP::GAME
         T get(const std::string& key) const {
             auto it = _data.find(key);
             if (it != _data.end()) {
-                // [수정] 포인터 기반 캐스팅 (예외 발생 안 함)
+                // 1. 정확한 타입 매칭 시도
                 const T* ptr = std::any_cast<T>(&it->second);
                 if (ptr) return *ptr;
 
-                // 타입 불일치 시 로그 남기기 (개발 중에만)
-                MYERROR("Bad any_cast for key: " << key << std::endl);
+                // 2. 숫자 타입 간의 유연한 변환 지원 (정수형에 한함)
+                if constexpr (std::is_integral_v<T>) {
+                    if (const int* i_ptr = std::any_cast<int>(&it->second)) return static_cast<T>(*i_ptr);
+                    if (const int64_t* l_ptr = std::any_cast<int64_t>(&it->second)) return static_cast<T>(*l_ptr);
+                    if (const uint64_t* ul_ptr = std::any_cast<uint64_t>(&it->second)) return static_cast<T>(*ul_ptr);
+                }
+
+                // 타입 불일치 시 로그 남기기
+                MYERROR("Bad any_cast for key: " << key << " (Stored type: " << it->second.type().name() << ")" << std::endl);
             }
             return T{}; // 기본값 반환
         }
