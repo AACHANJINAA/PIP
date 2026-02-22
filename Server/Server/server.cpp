@@ -574,17 +574,17 @@ namespace PIP::SERVER
 					if (count == 0) return;
 					double avg = (data.total_time_ns.load() / (double)count) / 1000000.0; // ns to ms
 					double max_val = data.max_time_ns.load() / 1000000.0;
-					MYLOG("[" << thread_idx << "][" << name << "] Avg: " << avg << "ms, Max: " << max_val << "ms, Count: " << count);
+					std::cout << "[" << thread_idx << "][" << name << "] Avg: " << avg << "ms, Max: " << max_val << "ms, Count: " << count << std::endl;
 					data.reset();
 				};
 
-				MYLOG("---------- Thread " << thread_idx << " Performance Report (Last 5s) ----------");
+				std::cout << "---------- Thread " << thread_idx << " Performance Report (Last 5s) ----------\n";
 				report("Job    ", worker.stats.job_profile);
 				report("Timer  ", worker.stats.timer_profile);
 				report("Physics", worker.stats.physics_profile);
 				report("Logic  ", worker.stats.logic_profile);
 				report("Total  ", worker.stats.total_loop_profile);
-				MYLOG("-----------------------------------------------------------------------");
+				std::cout << "-----------------------------------------------------------------------\n";
 			}
 
 			// 60FPS 유지를 위한 Sleep

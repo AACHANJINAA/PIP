@@ -110,6 +110,70 @@ namespace PIP::GAME
 		if (tc) tc->SetPosition(footPos);
 	}
 
+	void CharacterControllerComponent::LightPhysicsUpdate(float deltaTime) {
+		if (!_character) return;
+
+		common::Vec3 currentPos = GetPosition();
+		common::Vec3 vel = _aiVelocity;
+		vel.y = 0;
+
+		_verticalVelocity += _physicsSystem->GetGravity().GetY() * deltaTime;
+
+		// [1단계] 먼저 수평 이동만 적용한 위치를 봅니다.
+		common::Vec3 nextPos = currentPos + (vel + common::Vec3(0, _verticalVelocity, 0)) * deltaTime;
+
+		// [2단계] ShapeCast로 바닥 체크
+		float castDistance = std::max(3.0f, std::abs(_verticalVelocity * deltaTime) + 1.0f);
+		float startOffset = 1.0f; // 머리 위 1m부터 체크
+
+		JPH::RShapeCast shapeCast{
+			_settings->mShape,
+			JPH::Vec3::sReplicate(1.0f),
+			JPH::RMat44::sTranslation(Utils::ToJolt(nextPos) + JPH::Vec3(0, startOffset + _halfHeight, 0)),
+			JPH::Vec3(0, -(castDistance + startOffset), 0)
+		};
+
+		JPH::ShapeCastSettings castSettings;
+		JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;
+
+		_physicsSystem->GetNarrowPhaseQuery().CastShape(shapeCast, castSettings, JPH::RVec3::sZero(), collector,
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(_physicsLayer),
+			_physicsSystem->GetDefaultLayerFilter(_physicsLayer));
+
+		if (collector.HadHit()) {
+			float hitCenterY = (nextPos.y + startOffset + _halfHeight) - ((castDistance + startOffset) *
+				collector.mHit.mFraction);
+			float groundY = hitCenterY - _halfHeight;
+
+			// [핵심] 턱 높이 체크 (Step Height)
+			// 현재 위치보다 0.6m 이상 높은 곳은 "벽"으로 간주하고 이동을 차단합니다.
+			float stepHeight = groundY - currentPos.y;
+
+			if (stepHeight > 0.6f) {
+				// 너무 높음! 건물 벽이거나 높은 장애물임.
+				// 수평 이동을 취소하고 이전 위치로 되돌림 (벽에 막힌 효과)
+				nextPos.x = currentPos.x;
+				nextPos.z = currentPos.z;
+
+				// Y값은 현재 위치의 바닥을 다시 찾거나 유지
+				nextPos.y = currentPos.y;
+			}
+			else {
+				// 올라갈 수 있는 낮은 턱이나 완만한 경사임.
+				nextPos.y = groundY;
+				_verticalVelocity = -0.5f;
+			}
+		}
+
+		// 3. 최종 좌표 적용
+		JPH::RVec3 joltPos = Utils::ToJolt(nextPos);
+		joltPos.SetY(joltPos.GetY() + _halfHeight);
+		_character->SetPosition(joltPos);
+
+		auto tc = GetOwner()->GetComponent<TransformComponent>();
+		if (tc) tc->SetPosition(nextPos);
+	}
+
 	void CharacterControllerComponent::SetVelocity(const common::Vec3& velocity)
 	{
 		_aiVelocity = velocity;

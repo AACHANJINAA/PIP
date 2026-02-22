@@ -224,5 +224,6 @@ namespace PIP::GAME
 		}
 		Actor::Update(deltaTime, allocator);
 	}
+
 }
 
