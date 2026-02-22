@@ -22,7 +22,7 @@ namespace PIP::GAME
 
 		// [중요] 스레드 공유 Allocator를 사용하여 실제 물리 업데이트를 수행하는 전용 함수
 		void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator);
-
+		void LightPhysicsUpdate(float deltaTime);
 		void AddImpulse(const common::Vec3& impulse);
 		// 외부에서 가해진 힘 (넉백 등, 서서히 감쇄됨)
 		void AddImpact(const common::Vec3& force) { _impactVelocity += force; }
@@ -42,6 +42,7 @@ namespace PIP::GAME
 		bool IsGrounded() const;
 	private:
 		float _halfHeight {};
+		float _verticalVelocity = 0.0f; // 현재 수직(낙하) 속도
 
 		common::Vec3 _aiVelocity = { 0,0,0 };
 		common::Vec3 _impactVelocity = { 0,0,0 };

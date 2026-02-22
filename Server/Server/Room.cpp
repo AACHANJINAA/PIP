@@ -24,33 +24,79 @@ namespace PIP::SERVER
 	void Room::Initialize()
 	{
 		PhysicsInitialize();
-
-		_gridMap.Initialize(-1000, 1000, -1000, 1000, 100);
+		_gridMap.Initialize(-1000, 1000, -1000, 1000, 40);
 
 		for (int i = 0; i < 100; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
-			common::Vec3 randomPos = {
-				static_cast<float>(rand() % 200 - 100), 70.0f, static_cast<float>(rand() % 200 - 100)
-			};
-			
-			randomPos = MapDataManager::Instance()->AdjustPositionToGround(randomPos);
-			randomPos.y += 5.0f;
 
-			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, randomPos, 100);
+			// 1. 무작위 XZ 위치 결정 (Y는 충분히 높은 곳에서 시작)
+			common::Vec3 spawnPos = { static_cast<float>(rand() % 200 - 100), 500.0f, static_cast<float>(rand() % 200-100) };
 
-			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
-			if (controller)
+			// 2. [핵심] Jolt 물리 지형에 레이를 쏴서 실제 '정확한' 바닥 높이를 즉시 획득
+			JPH::RRayCast ray{ Utils::ToJolt(spawnPos), JPH::Vec3(0, -1000.0f, 0) };
+			JPH::RayCastResult res;
+
+			// NPC 레이어 자격으로 레이를 쏴서 지형을 찾습니다.
+			if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, res,
+				_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+				_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
 			{
-				controller->Initialize(_physicsSystem, 1.8f, 0.5f);
+				// 찾은 바닥 높이로 즉시 견인
+				spawnPos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * res.mFraction;
+			}
+			else {
+				// 바닥을 못 찾았다면 (지형 밖 등) 안전한 기본값 설정
+				spawnPos.y = MapDataManager::Instance()->AdjustPositionToGround(spawnPos).y;
 			}
 
-			float randomOffset = (rand() % 200) / 1000.0f; 
-			auto scatteredTime = std::chrono::steady_clock::now(); //- std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
-			npc->SetLastUpdateTime(scatteredTime);
-			
+			// 3. NPC 생성 및 컨트롤러 초기화 (이제 spawnPos는 바닥에 붙어있음)
+			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, spawnPos, 100);
+			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
+			controller->Initialize(_physicsSystem, 1.8f, 0.5f);
+
+			// 4. [끼임 방지] 지형을 제외한 건물/나무에 박혔는지 최종 체크
+			JPH::Shape* npcShape = (JPH::Shape*)controller->GetShape();
+			bool isStuck = true;
+			int attempts = 0;
+			JPH::IgnoreSingleBodyFilter terrainFilter(_terrainBodyID); // 지형은 무시
+
+			while (isStuck && attempts < 5) {
+				JPH::CollideShapeSettings settings;
+				JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
+
+				_physicsSystem->GetNarrowPhaseQuery().CollideShape(
+					npcShape, JPH::Vec3::sReplicate(1.0f),
+					JPH::RMat44::sTranslation(Utils::ToJolt(spawnPos) + JPH::Vec3(0, 0.9f, 0)),
+					settings, JPH::RVec3::sZero(), collector,
+					_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+					_physicsSystem->GetDefaultLayerFilter(Layers::NPC),
+					terrainFilter
+				);
+
+				if (!collector.HadHit()) {
+					isStuck = false; // 안 겹침!
+				}
+				else {
+					// 건물 등에 겹쳤다면 옆으로 3m 이동 후 바닥 높이 재조정
+					spawnPos.x += (rand() % 2 == 0 ? 3.0f : -3.0f);
+					spawnPos.z += (rand() % 2 == 0 ? 3.0f : -3.0f);
+
+					// 다시 바닥 찾기
+					JPH::RRayCast reRay{ Utils::ToJolt(spawnPos) + JPH::Vec3(0, 100.0f, 0), JPH::Vec3(0, -200.0f, 0) };
+						if (_physicsSystem->GetNarrowPhaseQuery().CastRay(reRay, res))
+							spawnPos.y = reRay.mOrigin.GetY() + reRay.mDirection.GetY() * res.mFraction;
+
+					attempts++;
+				}
+			}
+
+			// 5. 확정된 위치로 물리 좌표와 트랜스폼 동기화
+			npc->SetPosition(spawnPos);
+			npc->SetLastUpdateTime(std::chrono::steady_clock::now());
 			AddNPC(std::move(npc));
 		}
+
 	}
 
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
@@ -317,51 +363,42 @@ namespace PIP::SERVER
 		//	}
 		//}
 
-		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+		if (!_physicsSystem || _players.empty()) return;
 
-		// --- 1. 시야 내에 있는(활성화된) NPC들 찾기 ---
+		// 1. 활성 영역 NPC 찾기
 		std::unordered_set<GAME::NPC*> activeNpcs;
+		std::unordered_set<GAME::NPC*> innerNpcs;
 		for (auto& [pid, session] : _players) {
 			if (!session || !session->_player) continue;
+			common::Vec3 myPos = session->_player->GetPosition();
 
 			std::vector<GAME::GameObject*> nearby;
-			// 그리드 맵에서 내 주변(3x3)에 있는 모든 객체를 가져옴
-			_gridMap.GetNearbyObjects(session->_player->GetPosition(), nearby);
-
+			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 검색
 			for (auto* obj : nearby) {
 				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
-					activeNpcs.insert(npc); // 중복 방지를 위해 set에 저장
+					activeNpcs.insert(npc);
+					// 45m 이내면 정밀 물리
+					float distSq = common::DistanceSq(myPos, npc->GetPosition());
+					if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
 				}
 			}
 		}
 
+		// 2. NPC 물리 업데이트 (LOD 적용)
 		for (auto& [id, npc] : _npcs) {
-			// [수정] 그리드 맵 시야 안에 있는 NPC만 물리 시뮬레이션(Kinematic)을 돌림
-			if (activeNpcs.contains(npc.get())) {
-				if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
-					// [최적화] 플레이어 근처일 때만 CharacterVirtual::Update 수행
-					npc->PhysicsUpdate(deltaTime, tempAllocator);
-					
-				}
-				else if (auto pc = npc->GetComponent<GAME::PhysicsComponent>()) {
-					// 일반 리지드 바디일 경우 Jolt 엔진 수준에서 활성화/비활성화
-					auto& bi = _physicsSystem->GetBodyInterface();
-					bi.ActivateBody(pc->GetBodyID());
-				}
-			}else
-			{
-				if (auto pc = npc->GetComponent<GAME::PhysicsComponent>()) {
-					// 일반 리지드 바디일 경우 Jolt 엔진 수준에서 활성화/비활성화
-					auto& bi = _physicsSystem->GetBodyInterface();
-					bi.DeactivateBody(pc->GetBodyID());
-				}
+			auto cc = npc->GetComponent<GAME::CharacterControllerComponent>();
+			if (!cc) continue;
+
+			if (innerNpcs.contains(npc.get())) {
+				// [Tier 1] 정밀 물리 (벽 충돌 포함)
+				npc->PhysicsUpdate(deltaTime, tempAllocator);
 			}
-
-			// 기록은 리와인드를 위해 무조건 수행
-			//npc->RecordSnapshot(currentTick);
+			else if (activeNpcs.contains(npc.get())) {
+				// [Tier 2] 가벼운 물리 (중력 + 지형 보정) - AI 속도로 움직임!
+				cc->LightPhysicsUpdate(deltaTime);
+			}
 		}
-
-		// --- 2. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
+		// --- 3. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
 		for (auto& [pid, session] : _players) {
 			if (!session || !session->_player) continue;
 
@@ -418,12 +455,9 @@ namespace PIP::SERVER
 				player->SetLastSentPos(serverPos);
 			}
 
-			// 히스토리 기록 (리와인드용)
-			//player->RecordSnapshot(currentTick);
-			
 		}
 
-		// --- 3. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
+		// --- 4. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
 		// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
 		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
@@ -432,99 +466,82 @@ namespace PIP::SERVER
 	void Room::UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
 		ProcessJobs();
-		
 		if (_players.empty()) return;
-		// --- [추가] 2. 플레이어 로직 업데이트 ---
-		for (auto& [pid, session] : _players)
-		{
-			if (session && session->_player)
-			{
-				// 여기서 Player::Update(deltaTime, allocator)가 호출됩니다.
-				session->_player->Update(deltaTime, tempAllocator);
-			}
-		}
-		// --- 1. AOI 시야 갱신 (Enter/Leave) ---
+
+		// --- 1. 단계별 NPC 수집 (0~40m: Inner, 40~120m: Gray) ---
+		std::unordered_set<GAME::NPC*> activeNpcs; // 120m 전체
+		std::unordered_set<GAME::NPC*> innerNpcs;  // 40m 정밀물리
+
 		for (auto& [pid, session] : _players)
 		{
 			if (!session || !session->_player) continue;
+			common::Vec3 myPos = session->_player->GetPosition();
 
-			// 내 주변 객체들 찾기 (GridMap)
-			std::vector<GAME::GameObject*> nearbyObjects;
-			_gridMap.GetNearbyObjects(session->_player->GetPosition(), nearbyObjects);
+			std::vector<GAME::GameObject*> nearby;
+			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
 
 			std::unordered_set<int> currentNearbyIds;
-
-			// 1-1. 시야에 들어온 NPC 처리 (Enter)
-			for (auto* obj : nearbyObjects)
-			{
-				if (auto npc = dynamic_cast<GAME::NPC*>(obj))
-				{
+			for (auto* obj : nearby) {
+				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+					activeNpcs.insert(npc);
 					int npcId = npc->GetNpcId();
 					currentNearbyIds.insert(npcId);
 
-					// 새로 발견된 NPC라면?
-					if (!session->_viewedNpcs.contains(npcId))
-					{
+					// [중요] 셀 경계 문제를 방지하기 위해 '실제 거리'로 정밀 물리 대상 판정
+					float distSq = common::DistanceSq(myPos, npc->GetPosition());
+					if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
+
+					if (!session->_viewedNpcs.contains(npcId)) {
 						session->_viewedNpcs.insert(npcId);
 						SendNpcSpawnToPlayer(session, npc);
 					}
 				}
 			}
 
-			// 1-2. 시야에서 사라진 NPC 처리 (Leave)
-			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); )
-			{
-				if (!currentNearbyIds.contains(*it))
-				{
-					// 더 이상 주변에 없으므로 삭제 패킷 전송
+			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); ) {
+				if (!currentNearbyIds.contains(*it)) {
 					SendNpcLeaveToPlayer(session, *it);
 					it = session->_viewedNpcs.erase(it);
 				}
-				else
-				{
-					++it;
-				}
+				else ++it;
 			}
 		}
 
-		// --- 2. NPC AI 및 물리 업데이트 ---
+		// --- 2. NPC 업데이트 (AI 및 상태 결정) ---
 		_npcSyncTimer += deltaTime;
 		bool shouldSync = false;
 		if (_npcSyncTimer >= 0.05f) { shouldSync = true; _npcSyncTimer = 0.0f; }
 
 		auto now = std::chrono::steady_clock::now();
-		const float HEARTBEAT_INTERVAL = 0.2f;
+		for (auto& [id, npc] : _npcs) {
+			bool isActive = activeNpcs.contains(npc.get());
+			if (!isActive) continue;
 
-		for (auto& [id, npc] : _npcs)
-		{
-			std::chrono::duration<float> elapsed = now - npc->GetLastUpdateTime();
-			if (elapsed.count() >= HEARTBEAT_INTERVAL)
-			{
-				npc->Update(elapsed.count(), tempAllocator);
+			bool isInner = innerNpcs.contains(npc.get());
+			float interval = isInner ? 0.1f : 0.3f; // 근거리일수록 더 자주 AI 판단
+
+			if (std::chrono::duration<float>(now - npc->GetLastUpdateTime()).count() >= interval) {
+				npc->Update(interval, tempAllocator); // AI (BT) 실행
 				npc->SetLastUpdateTime(now);
-				auto new_pos = npc->GetPosition();
-				
+				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
 			}
-			_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
-			// 회전 처리
+
+			// --- 3. 공통: 회전 처리 (부드러운 시각 효과) ---
 			common::Vec3 vel = npc->GetVelocity();
-			if (vel.x * vel.x + vel.z * vel.z > 0.001f) {
+			if (vel.x * vel.x + vel.z * vel.z > 0.01f) {
 				float angle = std::atan2(vel.x, vel.z);
 				DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
-				common::Vec4 rot;
+				common::Quat rot;
 				XMStoreFloat4((XMFLOAT4*)&rot, q);
 				npc->SetRotation(rot);
 			}
 		}
 
-		// [추가] 모든 연산이 끝난 후 프레임당 "딱 한 번" 스냅샷 기록
+		// 플레이어 업데이트 및 스냅샷 기록 (Active 대상)
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-		for (auto& [id, npc] : _npcs) {
-			npc->RecordSnapshot(currentTick);
-		}
-		for (auto& [pid, session] : _players) {
-			session->_player->RecordSnapshot(currentTick);
-		}
+		for (auto& [pid, session] : _players) session->_player->Update(deltaTime, tempAllocator);
+		for (auto* npc : activeNpcs) npc->RecordSnapshot(currentTick);
+		for (auto& [pid, session] : _players) session->_player->RecordSnapshot(currentTick);
 
 		if (shouldSync) BroadcastNpcBatch();
 	}

@@ -23,6 +23,8 @@ namespace PIP::GAME
 		// 주변 객체 찾기 (플레이어 시야 처리용)
 		// typeFilter: 특정 타입(NPC, Player 등)만 골라낼 때 사용 (0이면 전체)
 		void GetNearbyObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter = 0) const;
+
+		void GetSameCellObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter = 0) const;
 	private:
 		// 좌표 -> 인덱스 변환
 		int GetIndex(common::Vec3 pos) const;

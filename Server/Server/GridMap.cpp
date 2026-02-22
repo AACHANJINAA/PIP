@@ -105,10 +105,10 @@ namespace PIP::GAME
     void GridMap::GetNearbyObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter) const
     {
         int cx = static_cast<int>((center.x - _minX) / _cellSize);
-        int cy = static_cast<int>((center.z - _minZ) / _cellSize);
+        int cz = static_cast<int>((center.z - _minZ) / _cellSize);
 
         // 주변 9칸 (3x3) 검사
-        for (int y = cy - 1; y <= cy + 1; ++y)
+        for (int y = cz - 1; y <= cz + 1; ++y)
         {
             for (int x = cx - 1; x <= cx + 1; ++x)
             {
@@ -123,5 +123,22 @@ namespace PIP::GAME
                 }
             }
         }
+    }
+
+    void GridMap::GetSameCellObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter) const
+    {
+        int cx = static_cast<int>((center.x - _minX) / _cellSize);
+        int cz = static_cast<int>((center.z - _minZ) / _cellSize);
+
+        // 주변 9칸 (3x3) 검사
+        int idx = GetIndex(cx, cz);
+
+        for (auto* obj : _cells[idx])
+        {
+            // (옵션) 여기서 거리 체크를 한 번 더 하면 원형 AOI가 됨
+            // 지금은 사각형(Grid) 방식이라 그냥 다 넣음
+            outList.push_back(obj);
+        }
+
     }
 }
