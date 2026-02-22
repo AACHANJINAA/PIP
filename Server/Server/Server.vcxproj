@@ -186,6 +186,7 @@
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Profiling.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="PacketHandlers.h" />
     <ClInclude Include="PacketManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Profiling.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="TransformComponent.h" />

@@ -43,8 +43,8 @@ void OtherPlayerScript::update(float deltaTime)
 
 void OtherPlayerScript::awake()
 {
-    auto render_comp = game_object()->add_component<RenderComponent>().get();
-	auto animation_comp = game_object()->add_component<AnimationComponent>().get();
+    auto render_comp = game_object()->get_component<RenderComponent>().get();
+	auto animation_comp = game_object()->get_component<AnimationComponent>().get();
 
     auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
     auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");

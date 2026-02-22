@@ -11,8 +11,8 @@ int main()
 
     // I/O 스레드는 2개, 로직 스레드는 나머지 CPU 코어 수만큼 할당합니다.
 	// (최소 1개의 로직 스레드는 보장)
-#include <timeapi.h>
-#pragma comment(lib, "winmm.lib")
+	#include <timeapi.h>
+	#pragma comment(lib, "winmm.lib")
     timeBeginPeriod(1);
 
 	std::vector<int> p_cores = GetPerformanceCoreIndices();
@@ -28,7 +28,7 @@ int main()
     SERVER::Server::Instance()->Start(io_worker_thread_count, logic_worker_thread_count);
 
     // 서버가 종료될 때까지 대기 (콘솔에서 Enter 키를 누르면 종료)
-	MYLOG("Press Enter to stop the server..." << std::endl);
+	std::cout << "Press Enter to stop the server..." << std::endl;
     std::cin.get();
 
     SERVER::Server::Instance()->Stop();

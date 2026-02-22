@@ -59,7 +59,7 @@ namespace PIP::packet
 		// 2. 세션 객체에 이름을 저장합니다.
 		session->_player->SetName(player_name);
 		
-		MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player->GetName() << "'.");
+		//MYLOG("[Login] Session " << session->_id << " logged in as '" << session->_player->GetName() << "'.");
 
 		// 아바타 정보 전송 로직 제거
 
@@ -70,7 +70,7 @@ namespace PIP::packet
 		login_ack_packet._success = true;
 
 		session->do_send(reinterpret_cast<const char*>(&login_ack_packet), sizeof(login_ack_packet));
-		MYLOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
+		//MYLOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
 	}
 
 	void Handle_C2S_MOVE(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)

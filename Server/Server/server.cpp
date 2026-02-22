@@ -492,24 +492,30 @@ namespace PIP::SERVER
 	{
 		auto& worker = _logic_workers[thread_idx];
 		auto lastTick = std::chrono::steady_clock::now();
-
+		auto lastReportTime = std::chrono::steady_clock::now();
 		JPH::TempAllocatorImpl tempAllocator(20 * 1024 * 1024);
 
 		double accumulator = 0.0;
 		const double physicsStep = 1.0 / 60.0; // 16.66ms 고정
+		const int MAX_PHYSICS_STEPS = 5;
 
 		using namespace std::chrono;
 		while (_is_running)
 		{
-			auto t_start = steady_clock::now();
+			auto t_loop_start = steady_clock::now();
+
 			// 1. 공용 잡 큐 처리 (LOGIN, ENTER_ROOM 등) - 즉시 처리!
+			auto t_job_start = steady_clock::now();
 			LogicJob logic_job;
 			while (worker.queue.try_pop(logic_job))
 			{
 				if (logic_job._task) logic_job._task();
 			}
-			auto t_job = steady_clock::now();
+			worker.stats.job_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_job_start).count());
+
+
 			// --- 2. 타이머 잡 처리 ---
+			auto t_timer_start = steady_clock::now();
 			while (!worker._timer_queue.empty() &&
 				worker._timer_queue.top()._execute_time <= std::chrono::steady_clock::now())
 			{
@@ -517,6 +523,7 @@ namespace PIP::SERVER
 				worker._timer_queue.pop();
 				if (timer_job._task) timer_job._task();
 			}
+			worker.stats.timer_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_timer_start).count());
 
 			// 2. 시간 계산
 			auto now = std::chrono::steady_clock::now();
@@ -526,8 +533,8 @@ namespace PIP::SERVER
 
 			// 3. 물리 엔진 업데이트 (밀린 시간만큼 여러 번 돌려서라도 60fps 보장)
 			auto t_phys_start = steady_clock::now();
-			int physStepCounter = 0;
-			while (accumulator >= physicsStep)
+			int steps = 0;
+			while (accumulator >= physicsStep && steps < MAX_PHYSICS_STEPS)
 			{
 				for (auto& room : _rooms) {
 					if (room->GetLogicThreadIndex() == thread_idx) {
@@ -535,23 +542,54 @@ namespace PIP::SERVER
 					}
 				}
 				accumulator -= physicsStep;
-				physStepCounter++;
+				steps++;
 			}
-			auto t_phys_end = steady_clock::now();
+			// 만약 너무 많이 밀렸다면 accumulator를 초기화하여 "Death Spiral" 방지
+			if (accumulator > physicsStep * MAX_PHYSICS_STEPS) {
+				accumulator = 0;
+				// MYLOG("[Warning] Physics lagging! Dropping frames on Thread " << thread_idx);
+			}
+			worker.stats.physics_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_phys_start).count());
 
 			// 4. 게임 로직 업데이트 (남은 시간만큼)
 			auto t_logic_start = steady_clock::now();
 			float dt = static_cast<float>(elapsed.count());
+			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
 			for (auto& room : _rooms) {
 				if (room->GetLogicThreadIndex() == thread_idx) {
 					// [변경] 할당자 전달
 					room->UpdateLogics(dt, &tempAllocator);
 				}
 			}
-			auto t_logic_end = steady_clock::now();
+			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
 
-			auto loopElapsed = steady_clock::now() - t_start;
-			auto frameDuration = milliseconds(16); // 약 60fps
+			auto t_loop_end = steady_clock::now();
+			worker.stats.total_loop_profile.add(duration_cast<nanoseconds>(t_loop_end - t_loop_start).count());
+
+			if (duration_cast<seconds>(t_loop_end - lastReportTime).count() >= 5) {
+				lastReportTime = t_loop_end;
+
+				auto report = [&](const std::string& name, ProfileData& data) {
+					int count = data.call_count.load();
+					if (count == 0) return;
+					double avg = (data.total_time_ns.load() / (double)count) / 1000000.0; // ns to ms
+					double max_val = data.max_time_ns.load() / 1000000.0;
+					MYLOG("[" << thread_idx << "][" << name << "] Avg: " << avg << "ms, Max: " << max_val << "ms, Count: " << count);
+					data.reset();
+				};
+
+				MYLOG("---------- Thread " << thread_idx << " Performance Report (Last 5s) ----------");
+				report("Job    ", worker.stats.job_profile);
+				report("Timer  ", worker.stats.timer_profile);
+				report("Physics", worker.stats.physics_profile);
+				report("Logic  ", worker.stats.logic_profile);
+				report("Total  ", worker.stats.total_loop_profile);
+				MYLOG("-----------------------------------------------------------------------");
+			}
+
+			// 60FPS 유지를 위한 Sleep
+			auto loopElapsed = steady_clock::now() - t_loop_start;
+			auto frameDuration = milliseconds(16);
 			auto sleepTime = frameDuration - loopElapsed;
 
 			if (sleepTime.count() > 0) {
