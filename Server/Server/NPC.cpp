@@ -205,7 +205,7 @@ namespace PIP::GAME
 			auto ai = GetComponent<AIComponent>();
 			if (ai) {
 				ai->GetBlackboard()->set("target_enemy", attacker->GetId());
-				MYLOG("[HIT] " << GetName() << " part: " << hitPart << " set: target_enemy");
+				//MYLOG("[HIT] " << GetName() << " part: " << hitPart << " set: target_enemy");
 			}
 
 			//MYLOG("[HIT] " << GetName() << " part: " << hitPart << " HP: " << GetHP());

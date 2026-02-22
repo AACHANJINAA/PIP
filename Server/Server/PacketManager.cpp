@@ -18,6 +18,10 @@ namespace PIP::packet
         packet::PacketHeader header = stream.PeekHeader();
 
 		SERVER::SESSION_STATE sessionState = session->_state;
+
+        if (sessionState == SERVER::SESSION_STATE::ST_CLOSE || sessionState == SERVER::SESSION_STATE::ST_FREE)
+            return;
+
        // MYLOG("[DISPATCHER] Dispatching packet type " << static_cast<int>(header._type) << " for Session ID : " 
        //     << session->_id << " in state " << static_cast<int>(sessionState));
 

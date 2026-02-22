@@ -305,17 +305,17 @@ namespace PIP::SERVER
 		if (!_physicsSystem || _players.empty()) return;
 
 		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
-		static float debugTimer = 0.0f; // static으로 선언하여 값 유지
-		debugTimer += deltaTime;
-		if (debugTimer >= 1.0f) {
-			debugTimer = 0.0f;
-			for (auto& [pid, session] : _players) {
-				if (session && session->_player) {
-					common::Vec3 pos = session->_player->GetPosition();
-					//MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z);
-				}
-			}
-		}
+		//static float debugTimer = 0.0f; // static으로 선언하여 값 유지
+		//debugTimer += deltaTime;
+		//if (debugTimer >= 1.0f) {
+		//	debugTimer = 0.0f;
+		//	for (auto& [pid, session] : _players) {
+		//		if (session && session->_player) {
+		//			common::Vec3 pos = session->_player->GetPosition();
+		//			MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z);
+		//		}
+		//	}
+		//}
 
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
 
@@ -358,7 +358,7 @@ namespace PIP::SERVER
 			}
 
 			// 기록은 리와인드를 위해 무조건 수행
-			npc->RecordSnapshot(currentTick);
+			//npc->RecordSnapshot(currentTick);
 		}
 
 		// --- 2. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
@@ -419,7 +419,7 @@ namespace PIP::SERVER
 			}
 
 			// 히스토리 기록 (리와인드용)
-			player->RecordSnapshot(currentTick);
+			//player->RecordSnapshot(currentTick);
 			
 		}
 
@@ -515,6 +515,15 @@ namespace PIP::SERVER
 				XMStoreFloat4((XMFLOAT4*)&rot, q);
 				npc->SetRotation(rot);
 			}
+		}
+
+		// [추가] 모든 연산이 끝난 후 프레임당 "딱 한 번" 스냅샷 기록
+		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+		for (auto& [id, npc] : _npcs) {
+			npc->RecordSnapshot(currentTick);
+		}
+		for (auto& [pid, session] : _players) {
+			session->_player->RecordSnapshot(currentTick);
 		}
 
 		if (shouldSync) BroadcastNpcBatch();

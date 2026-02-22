@@ -3,6 +3,7 @@
 
 #include "Room.h"
 #include "Player.h"
+#include "Profiling.h"
 
 template<typename T>
 class ThreadSafeStack {
@@ -124,6 +125,8 @@ namespace PIP::SERVER
 		concurrency::concurrent_queue<LogicJob> queue;
 		//concurrency::concurrent_priority_queue<TimerJob, std::greater<TimerJob>> _timer_queue;
 		std::priority_queue<TimerJob, std::vector<TimerJob>, std::greater<TimerJob>> _timer_queue;
+
+		PerformanceStats stats;
 
 		LogicWorker() = default;
 		LogicWorker(std::thread t) : thread(std::move(t)) {}
