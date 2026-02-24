@@ -277,7 +277,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			if (hp_bar)
 			{
 				auto hp_ui = hp_bar->get_component<UIRenderComponent>();
-				player_logic->set_hp_bar_ui(hp_ui.get());
+				player_logic->set_hp_bar_ui(hp_ui);
 			}
 			player_logic->set_hp(spawn_data._hp);
 			player_logic->set_id(_my_session_id);

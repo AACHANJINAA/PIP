@@ -30,7 +30,10 @@ public:
 	const f3& position() const { return this->transform()->local_position(); }
 
     void set_id(int64_t id) { _playerId = id; }
-    void set_hp_bar_ui(UIRenderComponent* ui) { _hpBarUI = ui; }
+    void set_hp_bar_ui(std::shared_ptr<UIRenderComponent> ui) { 
+        _hpBar_ui = ui;
+        if (ui) _hpBar_maxWidth = ui->get_size_x();
+    }
 	int64_t id() const { return _playerId; }
 
 	void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }
@@ -40,8 +43,8 @@ private:
 
     int _hp;
     int _maxHp{ 100 };
-    float _hpBarMaxWidth{ 500.0f };
-    UIRenderComponent* _hpBarUI{ nullptr };
+    float _hpBar_maxWidth{ 0.0f };
+    std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
     int64_t _playerId;
 	RenderComponent* _renderComponent{ nullptr };
 	GameObject* _camera{ nullptr };
