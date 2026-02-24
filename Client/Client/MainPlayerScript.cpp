@@ -22,9 +22,9 @@
 void MainPlayerScript::set_hp(int hp)
 {
 	_hp = std::clamp(hp, 0, _maxHp);
-	_hp = std::clamp(hp, 0, _maxHp);
+	_displayHp = static_cast<float>(_hp);
 
-	// _hpBar_ui가 null이면 매번 재탐색 (첫 공격 반영 안 되는 문제 해결)
+	// _hpBar_ui가 null이면 매번 재탐색
 	if (!_hpBar_ui)
 	{
 		auto hp_bar_obj = ObjectManager::instance()->find_by_name("HP_Bar");
