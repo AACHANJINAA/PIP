@@ -21,10 +21,12 @@
 
 void MainPlayerScript::set_hp(int hp)
 {
-	_hp = hp;
-	auto hp_ui = game_object()->get_component<MonsterHPComponent>();
-	if (hp_ui) {
-		hp_ui->set_current_hp(hp);
+	_hp = std::clamp(hp, 0, _maxHp);
+
+	if (_hpBarUI)
+	{
+		float ratio = static_cast<float>(_hp) / static_cast<float>(_maxHp);
+		_hpBarUI->set_size_x(_hpBarMaxWidth * ratio);
 	}
 }
 

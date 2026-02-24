@@ -78,6 +78,8 @@ public:
     // UI 속성 설정
     void set_screen_position(float x, float y) { _screen_position = XMFLOAT2(x, y); }
     void set_size(float width, float height) { _size = XMFLOAT2(width, height); }
+    void set_size_x(float width) { _size.x = width; }
+    float get_size_x() const { return _size.x; }
     void set_color(const XMFLOAT4& color) { _color = color; }
     void set_texture(const std::string& texture_path);
 
