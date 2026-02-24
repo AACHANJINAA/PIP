@@ -23,10 +23,11 @@ void MainPlayerScript::set_hp(int hp)
 {
 	_hp = std::clamp(hp, 0, _maxHp);
 
-	if (_hpBarUI)
+	if (_hpBar_ui)
 	{
 		float ratio = static_cast<float>(_hp) / static_cast<float>(_maxHp);
-		_hpBarUI->set_size_x(_hpBarMaxWidth * ratio);
+		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
+		_hpBar_ui->set_uv_scale(ratio, 1.0f);
 	}
 }
 

@@ -82,6 +82,7 @@ public:
     float get_size_x() const { return _size.x; }
     void set_color(const XMFLOAT4& color) { _color = color; }
     void set_texture(const std::string& texture_path);
+    void set_uv_scale(float u, float v) { _uv_scale = XMFLOAT2(u, v); }
 
 private:
     // UI ¼Ó¼º
