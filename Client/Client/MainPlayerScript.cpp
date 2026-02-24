@@ -22,17 +22,30 @@
 void MainPlayerScript::set_hp(int hp)
 {
 	_hp = std::clamp(hp, 0, _maxHp);
+	_hp = std::clamp(hp, 0, _maxHp);
 
-	if (_hpBar_ui)
+	// _hpBar_ui가 null이면 매번 재탐색 (첫 공격 반영 안 되는 문제 해결)
+	if (!_hpBar_ui)
 	{
-		float ratio = static_cast<float>(_hp) / static_cast<float>(_maxHp);
-		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
-		_hpBar_ui->set_uv_scale(ratio, 1.0f);
+		auto hp_bar_obj = ObjectManager::instance()->find_by_name("HP_Bar");
+		if (hp_bar_obj)
+			set_hp_bar_ui(hp_bar_obj->get_component<UIRenderComponent>());
 	}
+	// UI 직접 갱신은 하지 않음 — update()의 lerp가 담당
 }
 
 void MainPlayerScript::update(float deltaTime)
 {
+	// HP Bar lerp 갱신
+	if (_hpBar_ui)
+	{
+		float lerp = std::min(1.0f, deltaTime * 10.0f);
+		_displayHp += (static_cast<float>(_hp) - _displayHp) * lerp;
+		float ratio = _displayHp / static_cast<float>(_maxHp);
+		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
+		_hpBar_ui->set_uv_scale(ratio, 1.0f);
+	}
+	
 	auto current_transform = this->transform();
 	if (!current_transform) return;
 
