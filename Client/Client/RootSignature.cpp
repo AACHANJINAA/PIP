@@ -73,18 +73,17 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-	CD3DX12_DESCRIPTOR_RANGE ranges[5];
+    CD3DX12_DESCRIPTOR_RANGE ranges[6];
 
-    for (int i = 0; i < 4; ++i)
-    {
-        ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+    for (int i = 0; i < 4; ++i){
+        ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t3
     }
+    ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0,
+        D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);     // t8~t10 (IBL)
+    ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0,
+        D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);     // t4 (Occlusion)
 
-    // t8~t10 (IBL 텍스처, 하나의 테이블로 통합)
-    ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t8, t9, t10
-
-    // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
-	CD3DX12_ROOT_PARAMETER params[9]; // CBV 4개 + SRV 테이블 1개 = 5개
+    CD3DX12_ROOT_PARAMETER params[10];
 
     // 0번 월드 행렬용 CBV
 	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
@@ -103,6 +102,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
 
     // 8번 IBL 텍스처 디스크립터 테이블 (t8~t10, 하나로 통합) 
     params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
+    params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
@@ -147,7 +147,7 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-    CD3DX12_DESCRIPTOR_RANGE ranges[5];
+    CD3DX12_DESCRIPTOR_RANGE ranges[6];
     for (int i = 0; i < 4; ++i)
     {
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
@@ -155,9 +155,10 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
 
     // IBL 텍스처 추가 (t8~t10)
     ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+    ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
 
     // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
-	CD3DX12_ROOT_PARAMETER params[10]; // CBV 4개 + PBR 텍스쳐 테이블 4개 + IBL 텍스쳐 테이블 3개 + 체력 CBV 1개 = 12개
+	CD3DX12_ROOT_PARAMETER params[11]; // CBV 4개 + PBR 텍스쳐 테이블 4개 + IBL 텍스쳐 테이블 3개 + 체력 CBV 1개 = 12개
 
     // 0번 월드 행렬용 CBV
     params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
@@ -177,9 +178,9 @@ ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* d
 
     // 8번 IBL 텍스처 디스크립터 테이블 (t8~t10)
     params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
-
-    // 9번 체력용 CBV
-    params[9].InitAsConstantBufferView(8, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
+    // 10번 체력용 CBV
+    params[10].InitAsConstantBufferView(8, 1, D3D12_SHADER_VISIBILITY_PIXEL);
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
@@ -224,7 +225,7 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // 1. 텍스처(SRV)를 위한 디스크립터 범위 설정 (t0 ~ t3)
-    CD3DX12_DESCRIPTOR_RANGE ranges[5];
+    CD3DX12_DESCRIPTOR_RANGE ranges[6];
     for (int i = 0; i < 4; ++i)
     {
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
@@ -232,8 +233,9 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
 
     // IBL 텍스처 추가 (t8~t10)
     ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+    ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
 
-    CD3DX12_ROOT_PARAMETER params[10];
+    CD3DX12_ROOT_PARAMETER params[11];
 
     // [0] b0: 월드 행렬
 	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
@@ -254,7 +256,8 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
 
     // [9] b4: 스키닝 뼈대 행렬 (맨 뒤로 이동)
-    params[9].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX); // b4
+    params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
+    params[10].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX);     // bone b4
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
