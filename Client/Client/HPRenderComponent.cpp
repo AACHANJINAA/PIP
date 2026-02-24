@@ -87,7 +87,7 @@ void HPRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT fram
 
     // 3. [추가] 업데이트된 상수 버퍼를 루트 시그니처의 0번 슬롯에 직접 바인딩합니다.
     // (루트 시그니처 0번 슬롯은 월드 행렬용 CBV로 미리 약속되어 있습니다)
-    commandList->SetGraphicsRootConstantBufferView(9, _cbGameHpInfo->GetGPUVirtualAddress());
+    commandList->SetGraphicsRootConstantBufferView(10, _cbGameHpInfo->GetGPUVirtualAddress());
 
     // 월드 행렬 업데이트를 위해 필요함
     RenderComponent::render(commandList, frameIndex);

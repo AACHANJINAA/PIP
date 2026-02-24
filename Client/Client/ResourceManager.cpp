@@ -466,6 +466,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 new_mat_info.normal_texture_scale = mat_json["normalTexture"].value("scale", 1.0f);
             }
             if (mat_json.contains("emissiveTexture")) assign_texture(mat_json["emissiveTexture"], new_mat_info.emissive_texture_path);
+            if (mat_json.contains("occlusionTexture")) assign_texture(mat_json["occlusionTexture"], new_mat_info.occlusion_texture_path);
             
             // Other properties
             new_mat_info.alpha_mode = mat_json.value("alphaMode", "OPAQUE");
@@ -570,6 +571,7 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     constants.HasMetallicRoughnessTexture = !mat_info.metallic_roughness_texture_path.empty();
     constants.HasNormalTexture = !mat_info.normal_texture_path.empty();
     constants.HasEmissiveTexture = !mat_info.emissive_texture_path.empty();
+    constants.HasOcclusionTexture = !mat_info.occlusion_texture_path.empty();
 
     memcpy(mat_info.material_cbuffer_cpu_address, &constants, sizeof(GltfMaterialConstantBuffer));
 
@@ -616,6 +618,18 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     
     // 이 벡터를 루트 파라미터 4번에 테이블로 바인딩합니다.
     renderer->bind_texture_table(command_list, 4, texture_handles);
+
+    // Occlusion 전용 슬롯 (params[9] = t4)
+    if (!mat_info.occlusion_texture_path.empty())
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE occlusion_handle =
+            get_cpu_handle(mat_info.occlusion_texture_path);
+        if (occlusion_handle.ptr != 0)
+        {
+            std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> occlusion_handles = { occlusion_handle };
+            renderer->bind_texture_table(command_list, 9, occlusion_handles);
+        }
+    }
 
     // GLTF 셰이더는 IBL 텍스처가 필요함
      // GLTF 셰이더는 IBL 텍스처가 필요함

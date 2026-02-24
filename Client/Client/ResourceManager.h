@@ -95,7 +95,8 @@ private:
         int HasMetallicRoughnessTexture;
         int HasNormalTexture;
         int HasEmissiveTexture;
-        XMFLOAT2 Padding; // 16바이트 정렬을 위한 패딩
+        int HasOcclusionTexture;
+        float Padding1; // 16바이트 정렬을 위한 패딩
     };
     
     // --- glTF PBR 표준에 맞춘 MaterialInfo 구조체 ---
@@ -113,6 +114,7 @@ private:
             // Texture paths (keys to the _textures map)
         std::string base_color_texture_path;
         std::string metallic_roughness_texture_path; // ORM
+        std::string occlusion_texture_path;          // Occlusion (별도 분리 시)
         std::string normal_texture_path;
         std::string emissive_texture_path;
     

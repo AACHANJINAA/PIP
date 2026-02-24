@@ -18,13 +18,16 @@ cbuffer cbMaterial : register(b2)
     int HasMetallicRoughnessTexture;
     int HasNormalTexture;
     int HasEmissiveTexture;
-    float2 Padding; // 16바이트 정렬을 위한 패딩
+    int HasOcclusionTexture;
+    float Padding1;
+
 };
 
 Texture2D g_txDiffuse : register(t0);
 Texture2D g_txNormal : register(t1);
 Texture2D g_txORM : register(t2); // Occlusion, Roughness, Metallic
 Texture2D g_txEmissive : register(t3);
+Texture2D g_txOcclusion : register(t4);
 SamplerState g_samLinear : register(s0);
 
 // 객체별 월드 행렬
@@ -110,9 +113,15 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
     float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-    float ao = max(orm.r, 0.8); // 최소 0.8로 너무 어두워지는 것 방지
     float roughness = orm.g * RoughnessFactor; // Factor 곱하기
     float metallic = orm.b * MetallicFactor; // Factor 곱하기
+    
+    // Occlusion: 별도 텍스처가 있으면 그것을 사용, 없으면 ORM.r 사용
+    float ao;
+    if (HasOcclusionTexture > 0)
+        ao = max(g_txOcclusion.Sample(g_samLinear, In.TexCoord).r, 0.8);
+    else
+        ao = max(orm.r, 0.8);
     
      // 3. Normal Map
     float3 N = normalize(In.Normal);
@@ -134,8 +143,8 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
          // 4. Emissive
     float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
-    float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
-    float3 finalEmissive = emissiveColor * EmissiveFactor;
+    //float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
+    float3 finalEmissive = emissiveSample * EmissiveFactor;
 
          // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
