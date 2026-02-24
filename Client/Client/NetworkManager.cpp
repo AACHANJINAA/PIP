@@ -13,6 +13,7 @@
 //#include "HPRenderComponent.h"
 #include "AnimationComponent.h"
 #include "DebugDrawManager.h"
+#include "UIRenderComponent.h"
 #include "MonsterHPComponent.h"
 
 void error_display(const char* msg, int err_no)
@@ -272,6 +273,12 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 
 			auto player_logic = playerObject->add_component<MainPlayerScript>();
 			player_logic->set_name(name);
+			auto hp_bar = ObjectManager::instance()->find_by_name("HP_Bar");
+			if (hp_bar)
+			{
+				auto hp_ui = hp_bar->get_component<UIRenderComponent>();
+				player_logic->set_hp_bar_ui(hp_ui.get());
+			}
 			player_logic->set_hp(spawn_data._hp);
 			player_logic->set_id(_my_session_id);
 			player_logic->set_position(spawn_data._position);
