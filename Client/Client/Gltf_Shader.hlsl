@@ -104,12 +104,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 {
     // 1. Albedo (BaseColor) 값 설정
     float4 diffuseSample = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
-    float3 albedo = diffuseSample.rgb;
-    if (length(albedo) < 0.01f)
-    {
-        albedo = float3(1.0, 1.0, 1.0);
-    }
-    albedo *= BaseColorFactor.rgb;
+    float3 albedo = diffuseSample.rgb * BaseColorFactor.rgb;
 
     // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
     float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
