@@ -33,7 +33,7 @@ void Tool_Scene::scene_process(float deltaTime)
     ImGui::Separator();
 
     // 파일 로드 버튼
-    if (ImGui::Button("Load Character (glTF / glb)"))
+    if (ImGui::Button("Load Character (glTF)"))
     {
         std::string filePath = OpenFileDialog();
         if (!filePath.empty())
