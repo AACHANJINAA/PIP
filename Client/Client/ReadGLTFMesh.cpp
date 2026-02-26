@@ -1347,6 +1347,15 @@ XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(const std::string& bone_name) cons
 	return identity;
 }
 
+float ReadGLTFMesh::get_animation_duration(const std::string& name) const
+{
+	auto it = _animations.find(name);
+	if (it != _animations.end()) {
+		return it->second._duration;
+	}
+	return 0.0f;
+}
+
 AnimationInterpolation ReadGLTFMesh::string_to_interpolation(const std::string& str)
 {
 	if (str == "LINEAR")

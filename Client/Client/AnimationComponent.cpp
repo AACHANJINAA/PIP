@@ -11,6 +11,7 @@ AnimationComponent::AnimationComponent() : Behavior("AnimationComponent")
 void AnimationComponent::late_update(float deltaTime)
 {
 	_nowAnimationTime += deltaTime;
+	float timeBeforeUpdate = _nowAnimationTime;
 
 	// 현재 렌더링 중인 메쉬를 가져와서 애니메이션 업데이트
 	auto renderComp = game_object()->get_component<RenderComponent>();
@@ -53,12 +54,19 @@ void AnimationComponent::late_update(float deltaTime)
 	{
 		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second);
 	}
+
+	// [핵심] 시간이 줄어들었다면 리셋된 것이므로 종료 플래그 설정
+	if (_nowAnimationTime < timeBeforeUpdate) {
+		_isFinished = true;
+	}
 }
 
 void AnimationComponent::set_state(common::packet::OBJECT_STATE state)
 {
 	if (_currentState == state) return;
 	_currentState = state;
+	_isFinished = false;
+	_nowAnimationTime = 0.f;
 
 	// 1. 메쉬 교체 (등록된 메쉬가 있을 경우만)
 	auto mIt = _stateMeshMap.find(state);
@@ -78,6 +86,25 @@ void AnimationComponent::add_state_mapping(common::packet::OBJECT_STATE state, c
 {
 	_stateAnimMap[state] = animName;
 	if (mesh) _stateMeshMap[state] = mesh;
+}
+
+float AnimationComponent::get_anim_duration() const
+{
+	auto anim = _stateAnimMap.find(_currentState);
+	if (anim == _stateAnimMap.end()) return 0.0f;
+
+	auto mesh = _stateMeshMap.find(_currentState);
+	if (mesh == _stateMeshMap.end()) return 0.0f;
+
+	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second);
+	if (!gltf_mesh) return 0.0f;
+
+	return gltf_mesh->get_animation_duration(anim->second);
+}
+
+bool AnimationComponent::is_anim_finished() const
+{
+	return _isFinished;
 }
 
 void AnimationComponent::change_animation(std::string name)

@@ -161,7 +161,8 @@ public:
 
 	// DW주의 : get_socket_transform 이 함수의 순서는 update_animation 함수 호출 직후에 호출되어야 한다 그래야 방금 갱신된 위치를 가져올 수 있음 // TickGroup
 	XMFLOAT4X4 get_socket_transform(const std::string& bone_name) const; // 뼈대 이름으로 소켓 변환 행렬 얻기
-	
+
+	float get_animation_duration(const std::string& name) const;
 
 private:
 
