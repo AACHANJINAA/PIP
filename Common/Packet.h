@@ -1,4 +1,6 @@
 ﻿#pragma once
+// 테스트 주석: common::packet 네임스페이스가 포함된 파일입니다.
+// [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
 
 
@@ -305,3 +307,5 @@ namespace common::packet
 	};
 #pragma pack (pop)
 }
+
+// TEST COMMENT: This is for testing purposes.
