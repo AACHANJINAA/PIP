@@ -36,138 +36,147 @@ void MainPlayerScript::set_hp(int hp)
 
 void MainPlayerScript::update(float deltaTime)
 {
-	// HP Bar lerp 갱신
-	if (_hpBar_ui)
-	{
-		float lerp = std::min(1.0f, deltaTime * 10.0f);
-		_displayHp += (static_cast<float>(_hp) - _displayHp) * lerp;
-		float ratio = _displayHp / static_cast<float>(_maxHp);
-		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
-		_hpBar_ui->set_uv_scale(ratio, 1.0f);
-	}
-	
-	auto current_transform = this->transform();
-	if (!current_transform) return;
+	update_hp_bar(deltaTime);
 
-	auto animation_comp = game_object()->get_component<AnimationComponent>();
+	handle_input(deltaTime);
 
-	common::Vec3 move_direction{};
-	bool is_moving = false;
+	handle_state(deltaTime);
+	update_physics_and_visuals(deltaTime);
+	send_network_sync(deltaTime);
 
-	XMFLOAT3 camForward = _camera->transform()->forward();
-	XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
-	XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));
+	//// HP Bar lerp 갱신
+	//if (_hpBar_ui)
+	//{
+	//	float lerp = std::min(1.0f, deltaTime * 10.0f);
+	//	_displayHp += (static_cast<float>(_hp) - _displayHp) * lerp;
+	//	float ratio = _displayHp / static_cast<float>(_maxHp);
+	//	_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
+	//	_hpBar_ui->set_uv_scale(ratio, 1.0f);
+	//}
+	//
+	//auto current_transform = this->transform();
+	//if (!current_transform) return;
 
-	if (InputManager::instance()->IsKeyPress('W')) {
-		move_direction = Vector3::Add(move_direction, camFwdV);
-		is_moving = true;
-	}
-	if (InputManager::instance()->IsKeyPress('A')) {
-		XMFLOAT3 playerLeft = Vector3::ScalarProduct(camRightV, -1.0f, false);
-		move_direction = Vector3::Add(move_direction, playerLeft);
-		is_moving = true;
-	}
-	if (InputManager::instance()->IsKeyPress('S')) {
-		XMFLOAT3 modelBackward = Vector3::ScalarProduct(camFwdV, -1.0f, false);
-		move_direction = Vector3::Add(move_direction, modelBackward);
-		is_moving = true;
-	}
-	if (InputManager::instance()->IsKeyPress('D')) {
-		move_direction = Vector3::Add(move_direction, camRightV);
-		is_moving = true;
-	}
-	if (InputManager::instance()->IsKeyPress('Q')) {
-		move_direction = Vector3::Add(move_direction ,common::Vec3Up);
-		is_moving = true;
-	}
-	if (InputManager::instance()->IsKeyPress('E')) {
-		move_direction = Vector3::Add(move_direction ,common::Vec3Down);
-		is_moving = true;
-	}
+	//auto animation_comp = game_object()->get_component<AnimationComponent>();
+	//if (!animation_comp) return;
 
-	if (InputManager::instance()->IsKeyPress(VK_SPACE))
-	{
-		NetworkManager::instance()->SendActionPacket(
-			common::packet::ActionType::NORMAL_ATTACK,
-			0, -1,
-			current_transform->local_position(),
-			current_transform->local_rotation()
-		);
-	}
+	//common::Vec3 move_direction{};
+	//bool is_moving = false;
 
-	if (InputManager::instance()->IsKeyDown('P')) _speed += 1.f;
-	if (InputManager::instance()->IsKeyDown('M')) if(_speed > 5.f) _speed -= 1.f;
+	//XMFLOAT3 camForward = _camera->transform()->forward();
+	//XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
+	//XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));
 
-	if (InputManager::instance()->IsKeyPress(VK_SPACE)) {
-		if (_attackRangeObject) _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(true);
-	} else {
-		if (_attackRangeObject) _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(false);
-	}
-	
-	// ---------------------------------------------------------
-	// [넉백 물리 연산] 서버와 동일한 공식 (Friction 35.0f)
-	// ---------------------------------------------------------
-	float impactSpeed = common::Length(_impactVelocity);
-	if (impactSpeed > 0.1f) {
-		_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - 35.0f * deltaTime);
-	} else {
-		_impactVelocity = {0,0,0};
-	}
+	//if (InputManager::instance()->IsKeyPress('W')) {
+	//	move_direction = Vector3::Add(move_direction, camFwdV);
+	//	is_moving = true;
+	//}
+	//if (InputManager::instance()->IsKeyPress('A')) {
+	//	XMFLOAT3 playerLeft = Vector3::ScalarProduct(camRightV, -1.0f, false);
+	//	move_direction = Vector3::Add(move_direction, playerLeft);
+	//	is_moving = true;
+	//}
+	//if (InputManager::instance()->IsKeyPress('S')) {
+	//	XMFLOAT3 modelBackward = Vector3::ScalarProduct(camFwdV, -1.0f, false);
+	//	move_direction = Vector3::Add(move_direction, modelBackward);
+	//	is_moving = true;
+	//}
+	//if (InputManager::instance()->IsKeyPress('D')) {
+	//	move_direction = Vector3::Add(move_direction, camRightV);
+	//	is_moving = true;
+	//}
+	//if (InputManager::instance()->IsKeyPress('Q')) {
+	//	move_direction = Vector3::Add(move_direction ,common::Vec3Up);
+	//	is_moving = true;
+	//}
+	//if (InputManager::instance()->IsKeyPress('E')) {
+	//	move_direction = Vector3::Add(move_direction ,common::Vec3Down);
+	//	is_moving = true;
+	//}
 
-	auto anim_comp = game_object()->get_component<AnimationComponent>();
-	common::Vec3 currentPos = current_transform->local_position();
-	common::Vec3 new_pos = currentPos;
+	//if (InputManager::instance()->IsKeyPress(VK_SPACE))
+	//{
+	//	NetworkManager::instance()->SendActionPacket(
+	//		common::packet::ActionType::NORMAL_ATTACK,
+	//		0, -1,
+	//		current_transform->local_position(),
+	//		current_transform->local_rotation()
+	//	);
+	//}
 
-	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
-	if (cc) {
-		// 조작 속도(XZ) 설정
-		common::Vec3 moveVel = is_moving ? common::Normalize(move_direction) * _speed : common::Vec3{ 0, 0, 0 };
+	//if (InputManager::instance()->IsKeyDown('P')) _speed += 1.f;
+	//if (InputManager::instance()->IsKeyDown('M')) if(_speed > 5.f) _speed -= 1.f;
 
-		// [중요] 현재 Y속도를 가져와서 XZ만 교체
-		common::Vec3 currentVel = cc->get_velocity();
-		cc->set_velocity({ moveVel.x + _impactVelocity.x, currentVel.y, moveVel.z + _impactVelocity.z });
+	//if (InputManager::instance()->IsKeyPress(VK_SPACE)) {
+	//	if (_attackRangeObject) _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(true);
+	//} else {
+	//	if (_attackRangeObject) _attackRangeObject->get_component<PhysicsColliderComponent>()->set_active(false);
+	//}
+	//
+	//// ---------------------------------------------------------
+	//// [넉백 물리 연산] 서버와 동일한 공식 (Friction 35.0f)
+	//// ---------------------------------------------------------
+	//float impactSpeed = common::Length(_impactVelocity);
+	//if (impactSpeed > 0.1f) {
+	//	_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - 35.0f * deltaTime);
+	//} else {
+	//	_impactVelocity = {0,0,0};
+	//}
 
-		// [삭제] cc->step_physics(deltaTime); 호출할 필요 없음!
-		// -> GameFramework가 1/60초마다 자동으로 fixed_update를 불러줌.
+	//auto anim_comp = game_object()->get_component<AnimationComponent>();
+	//common::Vec3 currentPos = current_transform->local_position();
+	//common::Vec3 new_pos = currentPos;
 
-		// 4. [핵심] 보정 오차(Visual Offset)를 매 프레임 줄여나감 (보간)
-		// 0.1초(deltaTime * 10) 정도의 속도로 부드럽게 원래 위치로 돌아가게 합니다.
-		float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
-		_visualOffset = _visualOffset * (1.0f - lerpFactor);
+	//auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
+	//if (cc) {
+	//	// 조작 속도(XZ) 설정
+	//	common::Vec3 moveVel = is_moving ? common::Normalize(move_direction) * _speed : common::Vec3{ 0, 0, 0 };
 
-		// 5. 최종 렌더링 위치 = 물리 위치 + 보정 오프셋
-		transform()->set_local_position(cc->get_position() + _visualOffset);
-	}
+	//	// [중요] 현재 Y속도를 가져와서 XZ만 교체
+	//	common::Vec3 currentVel = cc->get_velocity();
+	//	cc->set_velocity({ moveVel.x + _impactVelocity.x, currentVel.y, moveVel.z + _impactVelocity.z });
+
+	//	// [삭제] cc->step_physics(deltaTime); 호출할 필요 없음!
+	//	// -> GameFramework가 1/60초마다 자동으로 fixed_update를 불러줌.
+
+	//	// 4. [핵심] 보정 오차(Visual Offset)를 매 프레임 줄여나감 (보간)
+	//	// 0.1초(deltaTime * 10) 정도의 속도로 부드럽게 원래 위치로 돌아가게 합니다.
+	//	float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
+	//	_visualOffset = _visualOffset * (1.0f - lerpFactor);
+
+	//	// 5. 최종 렌더링 위치 = 물리 위치 + 보정 오프셋
+	//	transform()->set_local_position(cc->get_position() + _visualOffset);
+	//}
 
 
-	if (is_moving) {
-		if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
-		move_direction = common::Normalize(move_direction);
+	//if (is_moving) {
+	//	if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
+	//	move_direction = common::Normalize(move_direction);
 
-		if (_camera && _camera->transform()) {
-			XMFLOAT3 camF = _camera->transform()->forward();
-			float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z)) - 180.f;
-			current_transform->set_local_rotation(0.0f, yawDegrees, 0.0f);
-		}
+	//	if (_camera && _camera->transform()) {
+	//		XMFLOAT3 camF = _camera->transform()->forward();
+	//		float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z)) - 180.f;
+	//		current_transform->set_local_rotation(0.0f, yawDegrees, 0.0f);
+	//	}
 
-	}
-	else if(InputManager::instance()->IsKeyPress(VK_SPACE))
-	{
-		if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
-	}
-	else 
-	{
-		if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
-	}
+	//}
+	//else if(InputManager::instance()->IsKeyPress(VK_SPACE))
+	//{
+	//	if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
+	//}
+	//else 
+	//{
+	//	if (anim_comp) anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
+	//}
 
-	// --- 20ms 주기 위치 전송 ---
-	_sendTimer += deltaTime;
-	if (_sendTimer >= SENDINTERVAL) {
-		_sendTimer = 0.f;
-		common::packet::OBJECT_STATE current_state = anim_comp ? anim_comp->get_state() : common::packet::OBJECT_STATE::IDLE;
-		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-		NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation(), current_state, currentTick);
-	}
+	//// --- 20ms 주기 위치 전송 ---
+	//_sendTimer += deltaTime;
+	//if (_sendTimer >= SENDINTERVAL) {
+	//	_sendTimer = 0.f;
+	//	common::packet::OBJECT_STATE current_state = anim_comp ? anim_comp->get_state() : common::packet::OBJECT_STATE::IDLE;
+	//	uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+	//	NetworkManager::instance()->SendMovePacket(current_transform->local_position(), current_transform->local_rotation(), current_state, currentTick);
+	//}
 }
 
 void MainPlayerScript::fixed_update(float deltaTime)
@@ -259,8 +268,138 @@ void MainPlayerScript::sync_with_server(const common::Vec3& pos, const common::Q
 
 	transform()->set_local_rotation(rot);
 }
-
-void MainPlayerScript::move_pos(common::packet::MOVE_TYPE cmd)
+//---------------------------------------------------------- private functions ----------------------------------------------------------
+//--- update() 내부에서 호출되는 기능 분리용 함수들 ---
+void MainPlayerScript::update_hp_bar(float deltaTime)
 {
-	// ... 기존 레거시 함수 유지 ...
+	if (_hpBar_ui)
+	{
+		float lerp = std::min(1.0f, deltaTime * 10.0f);
+		_displayHp += (static_cast<float>(_hp) - _displayHp) * lerp;
+		float ratio = _displayHp / static_cast<float>(_maxHp);
+		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
+		_hpBar_ui->set_uv_scale(ratio, 1.0f);
+	}
 }
+void MainPlayerScript::handle_state(float deltaTime)
+{
+	auto anim_comp = game_object()->get_component<AnimationComponent>();
+	if (!anim_comp) return;
+
+	if (_isAttacking) {
+		anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
+
+		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
+		float progress = anim_comp->get_anim_time();
+		float duration = anim_comp->get_anim_duration();
+		if (!_packetSent && progress >= (duration * 0.3f)) {
+			NetworkManager::instance()->SendActionPacket(common::packet::ActionType::NORMAL_ATTACK, 0, -1,
+				transform()->local_position(), transform()->local_rotation());
+			_packetSent = true;
+		}
+
+		// 공격 종료 체크
+		if (anim_comp->is_anim_finished()) {
+			_isAttacking = false;
+			_packetSent = false; // 중요: 다음 공격을 위해 리셋
+
+			// 즉시 서버에 IDLE 상태임을 알려야 함
+			anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
+			send_network_sync(0.0f);
+		}
+	}
+	else {
+		// 공격 중이 아닐 때만 WALK/IDLE 전환
+		if (common::Length(_currentMoveDir) > 0.01f) {
+			anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
+		}
+		else {
+			anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
+		}
+	}
+}
+void MainPlayerScript::handle_input(float deltaTime)
+{
+	common::Vec3 move_direction{};
+	bool is_moving_input = false;
+
+	XMFLOAT3 camForward = _camera->transform()->forward();
+	XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
+	XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));
+
+	// 이동 입력 처리
+	if (InputManager::instance()->IsKeyPress('W')) {
+		move_direction = Vector3::Add(move_direction, camFwdV);
+		is_moving_input = true;
+	}
+	if (InputManager::instance()->IsKeyPress('A')) {
+		move_direction = Vector3::Add(move_direction,
+			Vector3::ScalarProduct(camRightV, -1.0f)); is_moving_input = true;
+	}
+	if (InputManager::instance()->IsKeyPress('S')) {
+		move_direction = Vector3::Add(move_direction,
+			Vector3::ScalarProduct(camFwdV, -1.0f)); is_moving_input = true;
+	}
+	if (InputManager::instance()->IsKeyPress('D')) {
+		move_direction = Vector3::Add(move_direction, camRightV);
+		is_moving_input = true;
+	}
+
+	if (is_moving_input) {
+		_currentMoveDir = common::Normalize(move_direction);
+		// 이동 중이면 카메라 방향에 맞춰 회전 (기존 로직)
+		float yawDegrees = XMConvertToDegrees(atan2f(camFwdV.x, camFwdV.z)) - 180.f;
+		transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
+	}
+	else {
+		_currentMoveDir = { 0, 0, 0 };
+	}
+
+	// 공격 입력 (공격 중이 아닐 때만 새 공격 시작 가능)
+	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_SPACE)) {
+		_isAttacking = true;
+		_packetSent = false;
+		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
+	}
+}
+void MainPlayerScript::update_physics_and_visuals(float deltaTime)
+{
+	float impactSpeed = common::Length(_impactVelocity);
+	if (impactSpeed > 0.1f) {
+		// 매 프레임 35.0f의 마찰력으로 속도를 줄임
+		_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - 35.0f * deltaTime);
+	}
+	else {
+		_impactVelocity = { 0,0,0 };
+	}
+
+	auto pcc = game_object()->get_component<PhysicsCharacterControllerComponent>();
+	if (pcc) {
+		// 공격 중에도 _currentMoveDir에 값이 있다면 이동함 (이동 공격)
+		common::Vec3 moveVel = _currentMoveDir * _speed;
+		common::Vec3 currentVel = pcc->get_velocity();
+
+		pcc->set_velocity({ moveVel.x + _impactVelocity.x, currentVel.y, moveVel.z + _impactVelocity.z });
+
+		// 시각적 보정 (기존 로직)
+		float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
+		_visualOffset = _visualOffset * (1.0f - lerpFactor);
+		transform()->set_local_position(pcc->get_position() + _visualOffset);
+	}
+}
+void MainPlayerScript::send_network_sync(float deltaTime)
+{
+	_sendTimer += deltaTime;
+	if (_sendTimer >= SENDINTERVAL || deltaTime == 0.0f) { // deltaTime 0은 즉시 전송용
+		_sendTimer = 0.f;
+		auto anim_comp = game_object()->get_component<AnimationComponent>();
+		common::packet::OBJECT_STATE current_state = anim_comp ? anim_comp->get_state() :
+			common::packet::OBJECT_STATE::IDLE;
+		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+
+		NetworkManager::instance()->SendMovePacket(transform()->local_position(), transform()->local_rotation(),
+			current_state, currentTick);
+	}
+}
+
+

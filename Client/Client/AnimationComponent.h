@@ -28,12 +28,16 @@ public:
 	// DW설명 : 뼈대 변환 행렬 버퍼 얻기
 	const ComPtr<ID3D12Resource>& get_bone_palette_buffer() const { return _bone_palette_buffer; }
 
+
+	float get_anim_time() const { return _nowAnimationTime; }
+	float get_anim_duration() const;
+	bool is_anim_finished() const;
 private:
 	void change_animation(std::string name);
 	void change_mesh(const std::shared_ptr<Mesh>& want_mesh);
 	void create_bone_palette_buffer(const std::shared_ptr<Mesh>& want_mesh);
 private:
-
+	bool _isFinished = false;
 	// DW설명
 	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼 -> 그냥 이걸 넘긴다
 	// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문

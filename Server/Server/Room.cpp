@@ -422,7 +422,10 @@ namespace PIP::SERVER
 			// 2. 서버-클라이언트 오차가 0.5m 이상이면 (벽에 막힘 등 Desync 발생)
 			float desyncDistSq = common::DistanceSq(serverPos, clientTargetPos);
 
-			if (isKnockback || desyncDistSq > (0.5f * 0.5f))
+			// 3. 상태가 변경되면
+			bool isStateDirty = (player->_state != player->GetLastSentState());
+
+			if (isKnockback || desyncDistSq > (0.5f * 0.5f) || isStateDirty)
 			{
 				packet::SC_PACKET_MOVE sync_packet;
 				sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
