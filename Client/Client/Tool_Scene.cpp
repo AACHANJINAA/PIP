@@ -6,6 +6,9 @@
 #include "ToolCameraScript.h"
 #include "ImGuiManager.h"
 #include "ResourceManager.h"
+#include "ReadGLTFMesh.h"
+#include "AnimationComponent.h"
+#include "SocketComponenet.h"
 
 void Tool_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -49,18 +52,89 @@ void Tool_Scene::scene_process(float deltaTime)
 
             // 2. 새 게임 오브젝트 생성
             m_targetCharacter = ObjectManager::instance()->create_game_object("Editor_Character");
+            
+            // 메시 로드
+            auto mesh = ResourceManager::instance()->load_mesh(filePath, true);
 
             // 3. 렌더 컴포넌트 부착 및 메쉬 로드 (애니메이션 메쉬로 가정)
-            auto renderComp = m_targetCharacter->add_component<RenderComponent>();
-            renderComp->set_pso_name("skinned"); // 애니메이션 셰이더 이름에 맞게 수정
+            m_targetCharacter->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
 
-            // ResourceManager를 통해 메쉬 로드 
-            // (주의: 파일 탐색기로 얻은 절대 경로를 바로 넘깁니다)
-            auto mesh = ResourceManager::instance()->load_mesh(filePath, true, "null_name");
-            renderComp->set_mesh(mesh);
+            // 렌더러에 메시 등록
+            auto renderer = m_targetCharacter->get_component<RenderComponent>();
+            renderer->set_mesh(mesh);
 
-            // 카메라 앞쪽으로 위치 조정 (필요에 따라 수정)
-            m_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
+            // 애니메이션 컴포넌트 기본설정(T_POSE)
+            auto animation_renderer = m_targetCharacter->get_component<AnimationComponent>();
+            animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::T_POSE, "t_pose", mesh);
+            animation_renderer->set_state(common::packet::OBJECT_STATE::T_POSE);
+
+            // 재질설정
+            std::string material = "glTF_Test_material";
+
+            ResourceManager::instance()->create_material(material);
+            ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+            // 스키닝 애니메이션 pso 설정     
+            renderer->set_pso_name("skinned");
+
+            // 위치, 회전 정보
+            m_targetCharacter->transform()->set_local_rotation(0.f, 0.f, 0.f);
+            m_targetCharacter->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+            m_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
+           
+
+			////////////////////////////////// 테스트용 하이브루트 생성 (나중에 삭제)
+            //{
+            //    auto hi_brute = ObjectManager::instance()->create_game_object("SK_MagicConstruct");
+
+            //    // 메쉬 설정
+            //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf", true);
+            //    // 메쉬에 맞는 애니메이션 추가
+            //    ReadGLTFMesh* gltf_mesh = static_cast<ReadGLTFMesh*>(hi_brute_Mesh.get());
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Dodge.gltf");
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack03.gltf", "attack");
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack02.gltf");
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack01.gltf");
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf");
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Stun.gltf");
+            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Roar.gltf");
+
+            //    // 렌더 컴포넌트 추가
+            //    renderer = hi_brute->add_component<RenderComponent>();
+            //    renderer->set_mesh(hi_brute_Mesh);
+
+            //    // 애니메이션 컴포넌트 추가
+            //    hi_brute->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
+
+            //    animation_renderer = hi_brute->get_component<AnimationComponent>();
+            //    animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
+            //    animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
+            //    animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
+            //    // 재질 및 쉐이더 설정
+            //    material = "skinned_animation_SK_MagicConstruct";
+
+            //    ResourceManager::instance()->create_material(material);
+            //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+            //    // 원하는 무기 붙이기
+            //    auto socket_compnenet = hi_brute->get_component<SocketComponenet>();
+            //    socket_compnenet->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
+
+            //    // 스키닝 애니메이션 pso 설정              
+            //    renderer->set_pso_name("skinned");
+
+            //    // 위치, 회전 정보
+            //    hi_brute->transform()->set_local_rotation(0.f, 0.f, 0.f);
+            //    hi_brute->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+
+
+            //    hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
+            //}
+
+
+
+            //// 카메라 앞쪽으로 위치 조정 (필요에 따라 수정)
+            //m_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
         }
     }
 
@@ -75,7 +149,7 @@ void Tool_Scene::SpawnCamera()
     auto cameraObject = ObjectManager::instance()->create_game_object("ToolCamera");
     cameraObject->add_component<ToolCameraScript>();
     cameraObject->set_layer("Camera");
-    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 10.0f, -10.0f));
+    cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 0.5f, -2.0f));
     cameraObject->transform()->set_local_rotation(0.0f, 0.0f, 0.0f);
 }
 
