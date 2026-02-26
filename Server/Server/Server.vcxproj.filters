@@ -134,6 +134,12 @@
     <ClCompile Include="Profiling.cpp">
       <Filter>소스 파일\Server</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerControllerComponent.cpp">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCControllerComponent.cpp">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketHandlers.h">
@@ -225,6 +231,12 @@
     </ClInclude>
     <ClInclude Include="Profiling.h">
       <Filter>소스 파일\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerControllerComponent.h">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="NPCControllerComponent.h">
+      <Filter>소스 파일\Game\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

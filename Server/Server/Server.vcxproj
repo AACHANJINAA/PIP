@@ -175,6 +175,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapDataManager.cpp" />
     <ClCompile Include="NPC.cpp" />
+    <ClCompile Include="NPCControllerComponent.cpp" />
     <ClCompile Include="PacketHandlers.cpp" />
     <ClCompile Include="PacketManager.cpp" />
     <ClCompile Include="pch.cpp">
@@ -186,6 +187,7 @@
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayerControllerComponent.cpp" />
     <ClCompile Include="Profiling.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
@@ -212,12 +214,14 @@
     <ClInclude Include="LuaManager.h" />
     <ClInclude Include="MapDataManager.h" />
     <ClInclude Include="NPC.h" />
+    <ClInclude Include="NPCControllerComponent.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PacketHandlers.h" />
     <ClInclude Include="PacketManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PlayerControllerComponent.h" />
     <ClInclude Include="Profiling.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />

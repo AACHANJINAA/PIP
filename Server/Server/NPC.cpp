@@ -5,6 +5,7 @@
 #include "AIComponent.h"
 #include "BT_Nodes.h"
 #include "HitboxComponent.h"
+#include "NPCControllerComponent.h"
 #include "PhysicsComponent.h"
 
 
@@ -28,7 +29,7 @@ namespace PIP::GAME
 
 		// 3. PhysicsComponent 추가
 		// (실제 Jolt 바디 생성인 CreateBody는 Room에서 물리 시스템을 인자로 주어 호출해야 합니다)
-		AddComponent<CharacterControllerComponent>(Layers::NPC);
+		AddComponent<NPCControllerComponent>(Layers::NPC);
 
 		// [추가] 히트박스 컴포넌트 추가 및 기본 히트박스 설정
 		auto hitbox = AddComponent<HitboxComponent>();

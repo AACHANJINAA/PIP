@@ -73,10 +73,22 @@ namespace PIP::GAME
     template <typename T>
     inline T* GameObject::GetComponent()
     {
+        // 1. 정확한 타입 캐시 확인
         auto it = _componentCache.find(typeid(T));
         if (it != _componentCache.end())
         {
             return static_cast<T*>(it->second);
+        }
+
+        // 2. 캐시에 없으면 전체 컴포넌트 중 상속 관계 확인 (dynamic_cast)
+        for (auto& component : _components)
+        {
+            if (T* casted = dynamic_cast<T*>(component.get()))
+            {
+                // 성능을 위해 캐시에 저장 후 반환
+                _componentCache[typeid(T)] = casted;
+                return casted;
+            }
         }
         return nullptr;
     }
