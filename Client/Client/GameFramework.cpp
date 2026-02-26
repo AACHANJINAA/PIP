@@ -504,6 +504,13 @@ void GameFramework::ChangeSwapChainState()
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
+	// 씬에서 처리할 것이 있다면 처리해주기
+	Scene* currentScene = SceneManager::instance()->current_scene();
+	if (currentScene)
+	{
+		currentScene->scene_process(deltaTime);
+	}
+
 	// Awake와 Start가 먼저 호출되도록 순서 변경
 	ObjectManager::instance()->process_new_game_objects();
 	 
