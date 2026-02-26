@@ -442,6 +442,7 @@ namespace PIP::SERVER
 				// 전송 기록 갱신
 				player->SetLastSentPos(serverPos);
 				player->SetLastClientTargetPos(serverPos); // 의도 동기화
+				player->SetLastSentState(player->_state);
 			}
 			else if (common::DistanceSq(serverPos, lastSentPos) > (0.05f * 0.05f))
 			{
@@ -458,6 +459,7 @@ namespace PIP::SERVER
 
 				Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
 				player->SetLastSentPos(serverPos);
+				player->SetLastSentState(player->_state);
 			}
 
 		}
