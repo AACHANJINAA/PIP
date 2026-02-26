@@ -1,0 +1,53 @@
+{
+  "headers": {
+    "Authorization": "Bearer ${GITHUB_PAT}"
+  },
+  "general": {
+    "preferredEditor": "vscode",
+    "previewFeatures": true,
+    "sessionRetention": {
+      "warningAcknowledged": true,
+      "enabled": true,
+      "maxAge": "120d"
+    }
+  },
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  },
+  "experimental": {
+    "plan": true
+  },
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "write_file|replace",
+        "hooks": [
+          {
+            "name": "convention-and-diff-check",
+            "type": "command",
+            "command": "python .gemini/hooks/before_write_hook.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "matcher": "write_file|replace",
+        "hooks": [
+          {
+            "name": "encoding-and-summary",
+            "type": "command",
+            "command": "python .gemini/hooks/after_write_hook.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  },
+  "ui": {
+    "inlineThinkingMode": "full"
+  }
+}
