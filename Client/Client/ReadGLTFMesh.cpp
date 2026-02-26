@@ -189,9 +189,25 @@ void ReadGLTFMesh::release_upload_buffers()
 
 void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer)
 {
-	// 유효하지 않은 클립 인덱스 체크
-	if (!_animations.contains(animation_name))
+	// T-Pose 또는 유효하지 않은 클립 인덱스 체크
+	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
+		// [핵심] 애니메이션이 없으면 모든 뼈대를 항등행렬로 밀어버림 (T-Pose)
+		DirectX::XMFLOAT4X4 identity;
+		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
+		std::fill(_final_bone_transforms.begin(), _final_bone_transforms.end(), identity);
+
+		// GPU 상수 버퍼에 즉시 업로드하고 리턴
+		if (bone_palette_buffer)
+		{
+			void* mapped_data = nullptr;
+			D3D12_RANGE read_range = { 0, 0 };
+			if (SUCCEEDED(bone_palette_buffer->Map(0, &read_range, &mapped_data)))
+			{
+				memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
+				bone_palette_buffer->Unmap(0, nullptr);
+			}
+		}
 		return;
 	}
 
@@ -326,9 +342,24 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 
 void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name)
 {
-	// 유효하지 않은 클립 인덱스 체크
-	if (!_animations.contains(animation_name))
+	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
+		// [핵심] 애니메이션이 없으면 모든 뼈대를 항등행렬로 밀어버림 (T-Pose)
+		DirectX::XMFLOAT4X4 identity;
+		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
+		std::fill(_final_bone_transforms.begin(), _final_bone_transforms.end(), identity);
+
+		// GPU 상수 버퍼에 즉시 업로드하고 리턴
+		if (_bone_palette_buffer)
+		{
+			void* mapped_data = nullptr;
+			D3D12_RANGE read_range = { 0, 0 };
+			if (SUCCEEDED(_bone_palette_buffer->Map(0, &read_range, &mapped_data)))
+			{
+				memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
+				_bone_palette_buffer->Unmap(0, nullptr);
+			}
+		}
 		return;
 	}
 

@@ -263,7 +263,7 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
         hi_brute->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
 
         auto animation_renderer = hi_brute->get_component<AnimationComponent>();
-        //animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
+        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
         animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
         animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
         // 재질 및 쉐이더 설정
@@ -286,6 +286,52 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 25.0f, -130.0f));
     }
+    //{
+    //    auto hi_brute = ObjectManager::instance()->create_game_object("SK_MagicConstruct_gltf");
+
+    //    // 메쉬 설정
+    //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf", true);
+    //    // 메쉬에 맞는 애니메이션 추가
+    //    ReadGLTFMesh* gltf_mesh = static_cast<ReadGLTFMesh*>(hi_brute_Mesh.get());
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Dodge.gltf");
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack03.gltf", "attack");
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack02.gltf");
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack01.gltf");
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf");
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Stun.gltf");
+    //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Roar.gltf");
+
+    //    // 렌더 컴포넌트 추가
+    //    auto renderer = hi_brute->add_component<RenderComponent>();
+    //    renderer->set_mesh(hi_brute_Mesh);
+
+    //    // 애니메이션 컴포넌트 추가
+    //    hi_brute->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
+    //    
+    //    auto animation_renderer = hi_brute->get_component<AnimationComponent>();
+    //    animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::T_POSE, "t_pose", hi_brute_Mesh);
+    //    animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
+    //    animation_renderer->set_state(common::packet::OBJECT_STATE::T_POSE);
+    //    // 재질 및 쉐이더 설정
+    //    std::string material = "skinned_animation_SK_MagicConstruct_gltf";
+
+    //    ResourceManager::instance()->create_material(material);
+    //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+    //    // 원하는 무기 붙이기
+    //    auto socket_compnenet = hi_brute->get_component<SocketComponenet>();
+    //    socket_compnenet->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
+
+    //    // 스키닝 애니메이션 pso 설정              
+    //    renderer->set_pso_name("skinned");
+
+    //    // 위치, 회전 정보
+    //    hi_brute->transform()->set_local_rotation(0.f, 180.f, 0.f);
+    //    hi_brute->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
+
+
+    //    hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
+    //}
 }
 
 void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

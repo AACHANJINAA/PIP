@@ -13,6 +13,7 @@ namespace common::packet
 		JUMP	= 4,
 		LANDING = 5,
 		HOVER	= 6,
+		T_POSE  = 7,
 		// 필요 시 추가
 	};
 	enum class PacketType : uint16_t {
