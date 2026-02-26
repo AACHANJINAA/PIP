@@ -77,10 +77,10 @@ namespace PIP
         float z = static_cast<float>(lua_tonumber(L, 3));
 
         // [수정] 컴포넌트 직접 조회 방식으로 변경하여 안정성 확보
-        auto controller = obj->GetComponent<GAME::CharacterControllerComponent>();
-        if (controller)
+        auto nc = obj->GetComponent<GAME::NPCControllerComponent>();
+        if (nc)
         {
-            controller->SetVelocity({ x, y, z });
+            nc->SetVelocity({ x, y, z });
         }
         else
         {

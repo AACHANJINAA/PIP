@@ -10,9 +10,9 @@ namespace PIP::GAME
         if (!owner) return NodeStatus::FAILURE;
         auto npc = dynamic_cast<NPC*>(owner);
 
-        auto cc = owner->GetComponent<CharacterControllerComponent>();
+        auto nc = owner->GetComponent<NPCControllerComponent>();
         auto tc = owner->GetComponent<TransformComponent>();
-        if (!cc || !tc) return NodeStatus::FAILURE;
+        if (!nc || !tc) return NodeStatus::FAILURE;
 
         common::Vec3 target = _blackboard->get<common::Vec3>("target_pos");
         common::Vec3 current = tc->GetPosition();
@@ -24,7 +24,7 @@ namespace PIP::GAME
 
         // 1. 정지 판정 (거리가 충분히 가까우면 즉시 정지)
         if (distance < 0.2f) {
-            cc->SetVelocity({ 0, 0, 0 });
+            nc->SetVelocity({ 0, 0, 0 });
             _blackboard->set("target_pos", std::any());
             if (npc) npc->SetState(common::packet::OBJECT_STATE::IDLE);
             return NodeStatus::SUCCESS;
@@ -77,7 +77,7 @@ namespace PIP::GAME
 
         // 실제 속도 적용 (currentSpeed 사용!)
         common::Vec3 vel = { (dx / distance) * currentSpeed, 0, (dz / distance) * currentSpeed };
-        cc->SetVelocity(vel);
+        nc->SetVelocity(vel);
 
         if (currentSpeed < 0.1f) {
             npc->SetState(common::packet::OBJECT_STATE::IDLE);
@@ -153,9 +153,9 @@ namespace PIP::GAME
             return NodeStatus::FAILURE;
         }
 
-        auto cc = owner->GetComponent<CharacterControllerComponent>();
+        auto nc = owner->GetComponent<NPCControllerComponent>();
         auto tc = owner->GetComponent<TransformComponent>();
-        if (!cc || !tc) return NodeStatus::FAILURE;
+        if (!nc || !tc) return NodeStatus::FAILURE;
 
         // 1. 타겟과의 거리 및 방향 계산
         common::Vec3 targetPos = targetActor->GetPosition();
@@ -169,7 +169,7 @@ namespace PIP::GAME
         // 공격 사거리 내에 들어오면 상위 Sequence의 Condition_IsEnemyInRange가
         // 성공하면서 이 노드(Chase)는 중단되고 Attack 노드로 넘어갈 것입니다.
         if (distance < 0.5f) {
-            cc->SetVelocity({ 0, 0, 0 });
+            nc->SetVelocity({ 0, 0, 0 });
             npc->SetState(common::packet::OBJECT_STATE::IDLE);
             return NodeStatus::SUCCESS;
         }
@@ -187,7 +187,7 @@ namespace PIP::GAME
 
         // 4. 이동 속도 적용
         common::Vec3 dir = { dx / distance, 0, dz / distance };
-		cc->SetVelocity(dir * currentSpeed);
+        nc->SetVelocity(dir * currentSpeed);
 
         // 3. [핵심] 계산된 속도에 따라 상태(애니메이션) 결정
         if (currentSpeed < 0.1f) {
@@ -203,7 +203,7 @@ namespace PIP::GAME
 
         // [추가] 현재 공격 애니메이션 재생 중이면 이동 속도를 주지 않음
         if (npc->GetState() == common::packet::OBJECT_STATE::ATTACK) {
-            cc->SetVelocity({ 0, 0, 0 });
+            nc->SetVelocity({ 0, 0, 0 });
             return NodeStatus::RUNNING;
         }
 
@@ -254,8 +254,8 @@ namespace PIP::GAME
         if (!npc || !targetActor) return NodeStatus::FAILURE;
 
         // 1. 공격 중에는 이동을 멈춤 (문워크 방지)
-        auto cc = owner->GetComponent<CharacterControllerComponent>();
-        if (cc) cc->SetVelocity({ 0, 0, 0 });
+        auto nc = owner->GetComponent<NPCControllerComponent>();
+        if (nc) nc->SetVelocity({ 0, 0, 0 });
 
         // 2. 타겟 바라보기 (공격 방향 정렬)
         common::Vec3 targetPos = targetActor->GetPosition();

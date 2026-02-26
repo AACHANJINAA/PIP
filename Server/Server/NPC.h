@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "PhysicsComponent.h"
 #include "CharacterControllerComponent.h"
+#include "NPCControllerComponent.h"
 #include "TransformComponent.h"
 
 namespace PIP::GAME
@@ -79,7 +80,7 @@ namespace PIP::GAME
 
 		void SetVelocity(const common::Vec3& v)
 		{
-			if (auto cc = GetComponent<CharacterControllerComponent>())
+			if (auto cc = GetComponent<NPCControllerComponent>())
 			{
 				cc->SetVelocity(v);
 			}

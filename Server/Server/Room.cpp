@@ -8,6 +8,8 @@
 #include "Jolt/Physics/Collision/RayCast.h"
 #include <random>
 
+#include "PlayerControllerComponent.h"
+
 namespace PIP::SERVER
 {
 	constexpr int MAX_ROOM_PLAYERS = 4;
@@ -386,8 +388,8 @@ namespace PIP::SERVER
 
 		// 2. NPC 물리 업데이트 (LOD 적용)
 		for (auto& [id, npc] : _npcs) {
-			auto cc = npc->GetComponent<GAME::CharacterControllerComponent>();
-			if (!cc) continue;
+			auto nc = npc->GetComponent<GAME::NPCControllerComponent>();
+			if (!nc) continue;
 
 			if (innerNpcs.contains(npc.get())) {
 				// [Tier 1] 정밀 물리 (벽 충돌 포함)
@@ -395,7 +397,7 @@ namespace PIP::SERVER
 			}
 			else if (activeNpcs.contains(npc.get())) {
 				// [Tier 2] 가벼운 물리 (중력 + 지형 보정) - AI 속도로 움직임!
-				cc->LightPhysicsUpdate(deltaTime);
+				nc->LightPhysicsUpdate(deltaTime);
 			}
 		}
 		// --- 3. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
@@ -917,13 +919,13 @@ namespace PIP::SERVER
 	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet) {
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 		auto player = session->_player;
-		auto cc = player->GetComponent<GAME::CharacterControllerComponent>();
+		auto pcc = player->GetComponent<GAME::PlayerControllerComponent>();
 		// [1] 넉백 힘이 강력하게 작용 중인지 체크 (임계값 2.0f 이상)
-		bool isHeavyKnockback = common::Length(cc->GetImpactVelocity()) > 2.0f;
+		bool isHeavyKnockback = common::Length(pcc->GetImpactVelocity()) > 2.0f;
 		if (isHeavyKnockback) {
 			// [넉백 중 로직]
 			// 클라이언트 조작 속도를 0으로 만들어 물리적 밀려남만 허용함
-			cc->SetVelocity({ 0, 0, 0 });
+			pcc->SetMoveVelocity({ 0, 0, 0 });
 
 			// 이때는 클라이언트의 위치를 억지로 승인하기보다, 서버 물리 엔진이 미는 대로 둡니다.
 			// 클라이언트는 서버에서 오는 보정 패킷을 비주얼 오프셋으로 부드럽게 받아냅니다.
@@ -944,7 +946,7 @@ namespace PIP::SERVER
 				player->SetLastClientTargetPos(move_packet._position);
 
 				// 순간 이동했으므로 속도는 0으로 초기화 (관성 꼬임 방지)
-				cc->SetVelocity({ 0, 0, 0 });
+				pcc->SetMoveVelocity({ 0, 0, 0 });
 			}
 			else 
 			{
@@ -958,16 +960,16 @@ namespace PIP::SERVER
 				// 텔레포트(5m) 혹은 속도 이동
 				if (dist > 5.0f) {
 					player->SetPosition(move_packet._position);
-					cc->SetVelocity({ 0, 0, 0 });
+					pcc->SetMoveVelocity({ 0, 0, 0 });
 				}
 				else if (dist > 0.01f) {
 					// 속도 제한을 50.0f로 넉넉하게 주어 억울한 보정 방지
 					common::Vec3 vel = common::Normalize(moveDir) * (dist / 0.02f);
 					if (common::Length(vel) > 50.0f) vel = common::Normalize(vel) * 50.0f;
-					cc->SetVelocity(vel);
+					pcc->SetMoveVelocity(vel);
 				}
 				else {
-					cc->SetVelocity({ 0, 0, 0 });
+					pcc->SetMoveVelocity({ 0, 0, 0 });
 				}
 				player->SetLastClientTargetPos(move_packet._position);
 			}

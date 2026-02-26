@@ -6,6 +6,7 @@
 #include "HitboxComponent.h"
 #include "MapDataManager.h"
 #include "server.h"
+#include "PlayerControllerComponent.h"
 
 
 namespace PIP::GAME
@@ -20,12 +21,10 @@ namespace PIP::GAME
 		_owner_id{ owner_id }
 	{
 		SetFaction(Faction::FACTION_PLAYER);
-		// 1. Transform �߰�
 		AddComponent<GAME::TransformComponent>();
-		// 2. ���� ��Ʈ�ѷ� �߰� (�÷��̾ ���� ���� ����!)
-		AddComponent<GAME::CharacterControllerComponent>(Layers::MOVING);
+		AddComponent<GAME::PlayerControllerComponent>(Layers::MOVING);
 
-		// [�߰�] ��Ʈ�ڽ� ���� (NPC�� ������ ũ���� ĸ��)
+		
 		auto hitbox = AddComponent<HitboxComponent>();
 		float height = 1.8f;
 		float radius = 0.5f;
@@ -46,25 +45,24 @@ namespace PIP::GAME
 		_damage = 10;
 		_state = common::packet::OBJECT_STATE::IDLE;
 		_hitCooldown = 0.0f;
-		_history.clear(); // ���� ������� ��� ����
+		_history.clear();
 
-		// ������Ʈ �缳�� (AddComponent�� �����ڿ����� �����)
-		SetPosition({ 10.0f, 10.0f, 10.0f }); // �⺻ ���� ��ġ��
-		if (auto cc = GetComponent<CharacterControllerComponent>()) {
-			cc->SetVelocity({ 0, 0, 0 });
-			cc->AddImpact({ 0, 0, 0 }); // �˹� �ʱ�ȭ
+		SetPosition({ 10.0f, 10.0f, 10.0f });
+		if (auto pc = GetComponent<PlayerControllerComponent>()) {
+			pc->SetMoveVelocity({ 0,0,0 });
+			pc->AddImpact({ 0, 0, 0 });
 		}
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
 	                         const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
 	{
-		if (_hitCooldown > 0.0f) return false; // ��ٿ� ���̸� ����
+		if (_hitCooldown > 0.0f) return false; 
 
-		// 1. ���� ���� ��ġ ����
+		
 		auto snapshot = GetSnapshotAt(timestamp);
 
-		// 2. ��Ʈ�ڽ� �浹 �˻�
+		
 		std::string hitPart;
 		auto hc = GetComponent<HitboxComponent>();
 		if (!hc) {
@@ -85,10 +83,10 @@ namespace PIP::GAME
 				common::Vec3 dir = common::Normalize(currentPos - attackerPos);
 				dir.y = 0;
 
-				// [����] AddImpulse ��� AddImpact ȣ�� (20.0f ������ ���ϰ�)
+				
 				cc->AddImpact(dir * 20.0f);
 			}
-			_hitCooldown = 0.3f; // �ǰ� ��ٿ� ����
+			_hitCooldown = 0.3f; 
 			return true;
 		}
 		return false;
