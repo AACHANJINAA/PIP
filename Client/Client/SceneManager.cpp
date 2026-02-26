@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 
 #include "Chess_Scene.h"
+#include "Tool_Scene.h"
 #include "GameFramework.h"
 
 #include "ObjectManager.h"
@@ -28,6 +29,7 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
     build_terrain(device, command_list);
 
     register_scene<Chess_Scene>("ChessScene");
+    register_scene<Tool_Scene>("ToolScene");
     //register_scene<Lobby_Scene>("LobbyScene");
 
     change_scene("ChessScene");

@@ -3,6 +3,7 @@
 
 #include "Chess_Scene.h"
 #include "DebugDrawManager.h"
+#include "ImGuiManager.h"
 #include "Renderer.h"
 
 #include "DescriptorManager.h"
@@ -68,6 +69,10 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	Renderer::instance()->initialize(_device.Get());
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 	LightManager::instance()->initialize(_device.Get());
+
+	// ImGui 매니저 초기화 (스왑체인 버퍼 개수와 포맷 전달)
+	ImGuiManager::instance()->initialize(_hWnd, _device.Get(), _commandQueue.Get(), SWAP_CHAIN_BUFFERS, DXGI_FORMAT_R8G8B8A8_UNORM);
+
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
 	DebugDrawManager::instance()->Initialize(_device.Get());
 #endif
@@ -102,6 +107,7 @@ void GameFramework::OnDestroy()
 #endif
 	SceneManager::instance()->release();
 	ResourceManager::instance()->release();
+	ImGuiManager::instance()->release();
 }
 
 void GameFramework::CreateSwapChain()
@@ -364,6 +370,9 @@ void GameFramework::FrameAdvance()
 	auto& currentRenderAllocator = _commandAllocators[_swapChainBufferIndex];
 	auto& currentUploadAllocator = _uploadAllocators[_swapChainBufferIndex];
 
+	// 프레임 시작: ImGui에게 새 프레임 준비 지시
+	ImGuiManager::instance()->new_frame();
+
 	// 1. 씬 전환 처리 (필요시)
 	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), currentRenderAllocator.Get(), _commandList.Get());
 
@@ -381,6 +390,12 @@ void GameFramework::FrameAdvance()
 	ProcessInput();
 	update_game_logic(deltaTime);
 	update_physics(deltaTime);
+	// 씬에서 처리할 것이 있다면 처리해주기
+	Scene* NowScene = SceneManager::instance()->current_scene();
+	if (NowScene)
+	{
+		NowScene->scene_process(deltaTime);
+	}
 
 	// ---------------------------------------------------------
 	// 3. [비동기 리소스 업로드] (대기 없음!)
@@ -431,12 +446,15 @@ void GameFramework::FrameAdvance()
 	// 실제 그리기 (업로드 안 된 메쉬는 Mesh::render 내부에서 skip됨)
 	Renderer::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
-	// 씬의 후처리 렌더링
+	// 씬의 후처리
 	Scene* currentScene = SceneManager::instance()->current_scene();
 	if (currentScene)
 	{
 		currentScene->render_post_process(_commandList.Get(), _swapChainBufferIndex);
 	}
+
+	// 화면 맨 위에 ImGui 그리기 명령 전달
+	ImGuiManager::instance()->render(_commandList.Get());
 
 #ifdef _WITH_PLAYER_TOP
 	_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,
@@ -504,12 +522,6 @@ void GameFramework::ChangeSwapChainState()
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
-	// 씬에서 처리할 것이 있다면 처리해주기
-	Scene* currentScene = SceneManager::instance()->current_scene();
-	if (currentScene)
-	{
-		currentScene->scene_process(deltaTime);
-	}
 
 	// Awake와 Start가 먼저 호출되도록 순서 변경
 	ObjectManager::instance()->process_new_game_objects();

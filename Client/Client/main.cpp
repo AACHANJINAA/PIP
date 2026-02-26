@@ -4,6 +4,7 @@
 #include "GameFramework.h"
 #include "resource1.h"
 #include "InputManager.h"
+#include "imgui.h"
 
 namespace
 {
@@ -248,8 +249,16 @@ INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 //  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
 //
 //
+
+// WndProc 함수 바로 위쪽에 ImGui 외부 함수를 선언해 줍니다.
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    // 1. ImGui가 먼저 UI 조작인지 확인 (UI 클릭이면 여기서 차단)
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+        return true;
+
     switch (message)
     {
     case WM_ACTIVATE:

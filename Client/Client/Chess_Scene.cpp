@@ -10,6 +10,7 @@
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
+#include "InputManager.h"
 #include "AnimationComponent.h"
 #include "SocketComponenet.h"
 #include "ReadGLTFMesh.h"
@@ -23,6 +24,7 @@
 #include "PhysicsColliderComponent.h"
 #include "Renderer.h"
 #include "SceneManager.h"
+#include "Tool_Scene.h"
 
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -92,6 +94,16 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void Chess_Scene::release_upload_buffers()
 {
+}
+
+void Chess_Scene::scene_process(float deltaTime)
+{
+    // InputManager의 IsKeyDown을 사용하여 'T' 키가 막 눌린 시점을 감지합니다.
+    if (InputManager::instance()->IsKeyDown('T'))
+    {
+        // 씬 매니저에게 툴 씬으로 넘어가라고 요청합니다.
+        SceneManager::instance()->change_scene("ToolScene");
+    }
 }
 
 void Chess_Scene::SpawnDummyNPC(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

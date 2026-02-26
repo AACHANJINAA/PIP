@@ -13,7 +13,7 @@ private:
 
 public:
     // GameFramework::OnCreate에서 호출될 초기화 함수
-    bool initialize(HWND hWnd, ID3D12Device* device, int numFramesInFlight, DXGI_FORMAT rtvFormat);
+    bool initialize(HWND hWnd, ID3D12Device* device, ID3D12CommandQueue* commandQueue, int numFramesInFlight, DXGI_FORMAT rtvFormat);
 
     // GameFramework::OnDestroy에서 호출될 해제 함수
     void release();
