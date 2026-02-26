@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ImGuiManager.h"
 
-bool ImGuiManager::initialize(HWND hWnd, ID3D12Device* device, int numFramesInFlight, DXGI_FORMAT rtvFormat)
+bool ImGuiManager::initialize(HWND hWnd, ID3D12Device* device, ID3D12CommandQueue* commandQueue, int numFramesInFlight, DXGI_FORMAT rtvFormat)
 {
     // 1. ImGui 전용 SRV 디스크립터 힙 생성 (매우 중요)
     // ImGui는 폰트 텍스처를 GPU에 올리기 위해 최소 1개의 SRV가 필요합니다.
@@ -28,13 +28,18 @@ bool ImGuiManager::initialize(HWND hWnd, ID3D12Device* device, int numFramesInFl
     // 3. Win32 및 DX12 백엔드 초기화
     ImGui_ImplWin32_Init(hWnd);
 
-    ImGui_ImplDX12_Init(device,
-        numFramesInFlight, // SWAP_CHAIN_BUFFERS 개수
-        rtvFormat,         // GameFramework의 스왑체인 포맷 (일반적으로 DXGI_FORMAT_R8G8B8A8_UNORM)
-        _srvDescHeap.Get(),
-        _srvDescHeap->GetCPUDescriptorHandleForHeapStart(),
-        _srvDescHeap->GetGPUDescriptorHandleForHeapStart()
-    );
+    ImGui_ImplDX12_InitInfo init_info = {};
+    init_info.Device = device;
+    init_info.CommandQueue = commandQueue; // 폰트 자동 업로드를 위해 커맨드 큐 전달
+    init_info.NumFramesInFlight = numFramesInFlight;
+    init_info.RTVFormat = rtvFormat;
+    init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
+    init_info.SrvDescriptorHeap = _srvDescHeap.Get();
+
+    init_info.LegacySingleSrvCpuDescriptor = _srvDescHeap->GetCPUDescriptorHandleForHeapStart();
+    init_info.LegacySingleSrvGpuDescriptor = _srvDescHeap->GetGPUDescriptorHandleForHeapStart();
+
+    ImGui_ImplDX12_Init(&init_info);
 
     CLOG("ImGuiManager Initialized.");
     return true;

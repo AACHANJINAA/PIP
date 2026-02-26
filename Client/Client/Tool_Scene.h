@@ -17,8 +17,13 @@ public:
 	virtual void scene_process(float deltaTime) override;
 
 private:
-	// 테스트하고 싶은 객체들 넣기
-	void Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	void SpawnCamera();
 
+	// [추가] 파일 탐색기를 띄우는 헬퍼 함수
+	std::string OpenFileDialog();
+
+	// [추가] 툴 씬에서 현재 조작 중인 타겟 객체 (캐릭터)
+	std::shared_ptr<GameObject> m_targetCharacter = nullptr;
+	std::string m_loadedCharacterPath = "None";
 };
 
