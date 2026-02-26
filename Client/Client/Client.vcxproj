@@ -117,6 +117,7 @@
     <ClInclude Include="GltfTestScript.h" />
     <ClInclude Include="GltfHpShader.h" />
     <ClInclude Include="HPRenderComponent.h" />
+    <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx12.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="GltfTestScript.cpp" />
     <ClCompile Include="GltfHpShader.cpp" />
     <ClCompile Include="HPRenderComponent.cpp" />
+    <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
