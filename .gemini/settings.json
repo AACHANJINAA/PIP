@@ -49,5 +49,8 @@
   },
   "ui": {
     "inlineThinkingMode": "full"
+  },
+  "options": {
+    "temperature": 0.2
   }
 }
