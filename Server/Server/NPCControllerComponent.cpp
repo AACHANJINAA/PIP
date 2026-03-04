@@ -100,7 +100,10 @@ namespace PIP::GAME
 		JPH::ShapeCastSettings castSettings;
 		JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;
 
-		_physicsSystem->GetNarrowPhaseQuery().CastShape(shapeCast, castSettings, JPH::RVec3::sZero(), collector,
+		_physicsSystem->GetNarrowPhaseQuery().CastShape(shapeCast, 
+			castSettings, 
+			JPH::RVec3::sZero(), 
+			collector,
 			_physicsSystem->GetDefaultBroadPhaseLayerFilter(_physicsLayer),
 			_physicsSystem->GetDefaultLayerFilter(_physicsLayer));
 
