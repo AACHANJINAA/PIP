@@ -54,3 +54,6 @@ The server is designed for a **deterministic, physics-driven world**. Our primar
 - **Physics Safety:** Always use `PIP::Utils` (from `JoltHelper.h`) to convert between game types (`common::Vec3`) and Jolt types (`JPH::Vec3`).
 - **Concurrency:** Logic workers process tasks via thread-safe queues. Use `Room::PushJob` for room-specific data interactions.
 - **BT Implementation:** Design modular BT nodes (Action, Condition, Decorator) that can be reused across different NPC types.
+
+
+우리의 플랜 @.gemini/plan.md
