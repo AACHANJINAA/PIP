@@ -20,12 +20,25 @@
     "plan": true
   },
   "hooks": {
+    "BeforeAgent": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "manual-check",
+            "type": "command",
+            "command": "python .gemini/hooks/manual-check.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
     "BeforeTool": [
       {
         "matcher": "write_file|replace",
         "hooks": [
           {
-            "name": "convention-and-diff-check",
+            "name": "before-write-check",
             "type": "command",
             "command": "python .gemini/hooks/before_write_hook.py",
             "timeout": 5000
@@ -38,9 +51,9 @@
         "matcher": "write_file|replace",
         "hooks": [
           {
-            "name": "encoding-and-summary",
+            "name": "after-check",
             "type": "command",
-            "command": "python .gemini/hooks/after_write_hook.py",
+            "command": "python .gemini/hooks/after-check.py",
             "timeout": 5000
           }
         ]

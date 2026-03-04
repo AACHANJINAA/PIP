@@ -1,3 +1,20 @@
+# S.T.L (Slay The Lord) 프로젝트 지침서
+
+이 프로젝트는 DirectX 12 기반 자체 C++ 엔진과 IOCP 전용 서버로 개발되는 3D 다크 판타지 액션 RPG입니다.
+작업을 수행할 때 반드시 아래 문서들의 내용을 최우선으로 숙지하고 반영하세요.
+
+## 1. 프로젝트 3대 문서 (작업 기억)
+- 기획 및 기술 뼈대: @.gemini/plan.md
+- 세계관 및 조작 맥락: @.gemini/context.md
+- 현재 진행할 마일스톤: @.gemini/checklist.md
+
+## 2. 모듈별 기술 매뉴얼
+네트워크나 그래픽스 코드를 짤 때는 다음 규약을 반드시 지켜야 합니다.
+- 서버 규칙: @.gemini/manuals/server_rule.md
+- 네크워크 규칙 @.gemini/manuals/network_rule.md
+- 클라이언트 규칙: @.gemini/manuals/client_rule.md
+- 그래픽스 규칙: @.gemini/manuals/graphics_rule.md
+
 
 # PIP Project Overview
 
@@ -56,19 +73,3 @@ The server is designed for a **deterministic, physics-driven world**. Our primar
 - **BT Implementation:** Design modular BT nodes (Action, Condition, Decorator) that can be reused across different NPC types.
 
 
-# S.T.L (Slay The Lord) 프로젝트 지침서
-
-이 프로젝트는 DirectX 12 기반 자체 C++ 엔진과 IOCP 전용 서버로 개발되는 3D 다크 판타지 액션 RPG입니다.
-작업을 수행할 때 반드시 아래 문서들의 내용을 최우선으로 숙지하고 반영하세요.
-
-## 1. 프로젝트 3대 문서 (작업 기억)
-- 기획 및 기술 뼈대: @plan.md
-- 세계관 및 조작 맥락: @context.md
-- 현재 진행할 마일스톤: @checklist.md
-
-## 2. 모듈별 기술 매뉴얼
-네트워크나 그래픽스 코드를 짤 때는 다음 규약을 반드시 지켜야 합니다.
-- 서버 규칙: @.gemini/manuals/server_rule.txt
-- 네크워크 규칙 @.gemini/manuals/network_rule.txt
-- 클라이언트 규칙: @.gemini/manuals/client_rule.txt
-- 그래픽스 규칙: @.gemini/manuals/graphics_rule.txt
