@@ -8,7 +8,6 @@
 #include "GlbShader.h"
 #include "GltfShader.h"
 #include "PlayerShader.h"
-#include "GltfHpShader.h"
 #include "SkyboxShader.h"
 #include "GltfSkinnedShader.h"
 #include "TerrainShader.h"
@@ -40,7 +39,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<DebugRootSignatureGenerator>()); // 추가
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfRootSignatureGenerator>());
-    _rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
+    //_rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkyBoxRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<TerrainRootSignatureGenerator>());
@@ -65,8 +64,8 @@ void Renderer::initialize(ID3D12Device* device)
     auto gltf_shader = std::make_shared<GltfShader>();
     _shaderPrototypes[gltf_shader->pso_name()] = gltf_shader;
 
-    auto gltf_hp_shader = std::make_shared<GltfHpShader>();
-    _shaderPrototypes[gltf_hp_shader->pso_name()] = gltf_hp_shader;
+    //auto gltf_hp_shader = std::make_shared<GltfHpShader>();
+    //_shaderPrototypes[gltf_hp_shader->pso_name()] = gltf_hp_shader;
 
 	auto skybox_shader = std::make_shared<SkyboxShader>();
 	_shaderPrototypes[skybox_shader->pso_name()] = skybox_shader;

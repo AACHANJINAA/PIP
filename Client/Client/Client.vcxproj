@@ -115,8 +115,6 @@
     <ClInclude Include="GltfShader.h" />
     <ClInclude Include="GltfSkinnedShader.h" />
     <ClInclude Include="GltfTestScript.h" />
-    <ClInclude Include="GltfHpShader.h" />
-    <ClInclude Include="HPRenderComponent.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -203,8 +201,6 @@
     <ClCompile Include="GltfShader.cpp" />
     <ClCompile Include="GltfSkinnedShader.cpp" />
     <ClCompile Include="GltfTestScript.cpp" />
-    <ClCompile Include="GltfHpShader.cpp" />
-    <ClCompile Include="HPRenderComponent.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
