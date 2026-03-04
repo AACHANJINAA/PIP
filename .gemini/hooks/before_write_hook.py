@@ -1,66 +1,85 @@
+#!/usr/bin/env python3
 import sys
 import json
-import re
 import os
-import difflib
+
+
+def read_manual(filename):
+    """프로젝트 폴더 내의 매뉴얼 파일을 안전하게 읽어오는 함수"""
+    # 샌드박스 환경에서도 프로젝트 루트를 찾을 수 있도록 환경 변수 활용 [2]
+    project_dir = os.environ.get("GEMINI_PROJECT_DIR", os.getcwd())
+    filepath = os.path.join(project_dir, ".gemini", "manuals", filename)
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
+        return f"({filename} 매뉴얼 내용을 찾을 수 없습니다.)"
+
 
 def main():
-    # 1. 표준 입력(stdin)에서 JSON 데이터 읽기
     try:
         input_data = json.load(sys.stdin)
     except Exception:
-        # JSON 파싱 실패 시 기본적으로 통과시켜 시스템 멈춤 방지
         sys.stdout.write(json.dumps({"decision": "allow"}))
-        return
+        sys.exit(0)
 
-    # Gemini CLI 도구 호출 인자 추출 (경로 및 내용)
-    args = input_data.get("args", {})
-    filepath = args.get("path", "")
-    content = args.get("content", "")
+    tool_name = input_data.get("tool_name", "")
+    tool_input = input_data.get("tool_input", {})
 
-    # 2. 코딩 컨벤션 스캐너 로직 (정규식 기반)
-    errors = []
-    
-    # 2-1. 원시 포인터(new/delete) 사용 감지
-    if re.search(r'\bnew\s+[a-zA-Z_]', content) or re.search(r'\bdelete\b', content):
-        errors.append("C++ 메모리 원칙 위반: std::unique_ptr 대신 raw pointer가 감지되었습니다.")
-        
-    # 2-2. 클래스명 PascalCase 검사 (소문자로 시작하는 class 감지)
-    if re.search(r'\bclass\s+[a-z][a-zA-Z0-9_]*\b', content):
-        errors.append("명명 규칙 위반: 클래스명은 PascalCase여야 합니다.")
-        
-    # 2-3. 함수 snake_case 위반이나 멤버 변수 '_' 접두사 등 추가 가능
+    # 파일을 쓰거나 수정하는 툴이 아니면 즉시 통과
+    if tool_name not in ["write_file", "replace"]:
+        sys.stdout.write(json.dumps({"decision": "allow"}))
+        sys.exit(0)
 
-    # 반려(Deny) 응답
-    if errors:
-        deny_response = {
-            "decision": "deny",
-            "reason": " ".join(errors) + " 코드를 수정하세요."
-        }
-        # Strict JSON rule: stdout으로만 JSON 출력
-        sys.stdout.write(json.dumps(deny_response))
-        return
+    # 쓰려고 하는 파일 경로와 작성하려는 코드 내용 추출
+    file_path = tool_input.get("file_path", "").lower()
+    content = tool_input.get("content", "") or tool_input.get("new_string", "")
 
-    # 3. Diff 리뷰 텍스트 생성 및 출력 (통과 시)
-    if filepath and os.path.exists(filepath):
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-            old_lines = f.readlines()
-            
-        new_lines = [line + '\n' for line in content.splitlines()]
-        diff = difflib.unified_diff(
-            old_lines, new_lines, 
-            fromfile='Original File', tofile='AI Generated Content'
+    # 1. 파일 경로를 기반으로 모듈 판별
+    is_network = any(keyword in file_path for keyword in ["network", "server", "client", "packet"])
+    is_graphics = any(keyword in file_path for keyword in ["graphics", "render", "shader", "dx12"])
+
+    violation_reason = ""
+
+    # 2. 매뉴얼 검증 (무한 루프 방지를 위해 인증 주석 확인)
+    if is_network and "/* NETWORK_RULE_APPLIED */" not in content:
+        server_rule = read_manual("server_rule.txt")
+        net_rule = read_manual("network_rule.txt")
+        client_rule = read_manual("client_rule.txt")
+
+        violation_reason = (
+            f"네트워크/서버 코드를 작성할 때는 다음 매뉴얼을 반드시 준수해야 합니다.\n"
+            f"--- [서버 규칙] ---\n{server_rule}\n\n"
+            f"--- [네트워크 규칙] ---\n{net_rule}\n\n"
+            f"--- [클라이언트 규칙] ---\n{client_rule}\n\n"
+            f"위 매뉴얼을 철저히 읽고 코드를 수정한 뒤, 파일 최상단에 '/* NETWORK_RULE_APPLIED */' 주석을 추가하여 다시 저장하세요."
         )
-        diff_text = "".join(diff)
-        
-        if diff_text:
-            # 루프 붕괴를 막기 위해 Diff는 반드시 표준 에러(stderr)로 출력
-            sys.stderr.write("\n\033[93m=== [Diff Review - 검토 후 Y를 눌러 승인하세요] ===\033[0m\n")
-            sys.stderr.write(diff_text)
-            sys.stderr.write("\n\033[93m=========================================================\033[0m\n\n")
 
-    # 4. 최종 승인(Allow) 응답
+    elif is_graphics and "/* GRAPHICS_RULE_APPLIED */" not in content:
+        gfx_rule = read_manual("graphics_rule.txt")
+
+        violation_reason = (
+            f"그래픽스 코드를 작성할 때는 다음 매뉴얼을 반드시 준수해야 합니다.\n"
+            f"--- [그래픽스 규칙] ---\n{gfx_rule}\n\n"
+            f"위 매뉴얼을 철저히 읽고 코드를 수정한 뒤, 파일 최상단에 '/* GRAPHICS_RULE_APPLIED */' 주석을 추가하여 다시 저장하세요."
+        )
+
+    # 3. 위반 사항이 있으면 파일 쓰기를 차단(deny)하고 에이전트에게 매뉴얼을 피드백으로 전송
+    if violation_reason:
+        # reason 필드에 담긴 텍스트가 AI에게 '도구 실행 실패 사유'로 전달되어 자가 교정을 유도합니다.
+        response = {
+            "decision": "deny",
+            "reason": violation_reason,
+            "systemMessage": "🚨 파일 쓰기 차단됨: 모듈별 규약 누락. AI에게 매뉴얼을 전송하여 재작성을 지시합니다."
+        }
+        sys.stdout.write(json.dumps(response))
+        sys.exit(0)
+
+    # 문제 없으면 정상적으로 파일 시스템에 쓰기 허용
     sys.stdout.write(json.dumps({"decision": "allow"}))
+    sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
