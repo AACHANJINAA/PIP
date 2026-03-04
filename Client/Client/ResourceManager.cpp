@@ -633,7 +633,7 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
 
     // GLTF 셰이더는 IBL 텍스처가 필요함
      // GLTF 셰이더는 IBL 텍스처가 필요함
-    if (mat_info.shader_name == "gltf" || mat_info.shader_name == "skinned" || mat_info.shader_name == "gltf_hp")
+    if (mat_info.shader_name == "gltf" || mat_info.shader_name == "skinned")
     {
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_irradiance_handle = get_cpu_handle(_ibl_irradiance_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_prefiltered_handle = get_cpu_handle(_ibl_prefiltered_path);
