@@ -1,3 +1,5 @@
+@ARCHITECTURE_GUIDE.md 를 먼저읽고 파악해라
+
 # PIP Server Project Overview
 
 PIP is a high-precision Soul-like action game server developed in C++ using DirectX 12 (client-side) and Jolt Physics. This server is an authoritative, IOCP-based implementation designed for frame-perfect combat and synchronized physics.
