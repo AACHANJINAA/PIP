@@ -19,51 +19,58 @@
   "experimental": {
     "plan": true
   },
-  "hooks": {
-    "BeforeAgent": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "name": "manual-check",
-            "type": "command",
-            "command": "python .gemini/hooks/manual-check.py",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "BeforeTool": [
-      {
-        "matcher": "write_file|replace",
-        "hooks": [
-          {
-            "name": "before-write-check",
-            "type": "command",
-            "command": "python .gemini/hooks/before_write_hook.py",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "AfterTool": [
-      {
-        "matcher": "write_file|replace",
-        "hooks": [
-          {
-            "name": "after-check",
-            "type": "command",
-            "command": "python .gemini/hooks/after-check.py",
-            "timeout": 5000
-          }
-        ]
-      }
-    ]
-  },
+  // "hooks": {
+  //   "BeforeAgent": [
+  //     {
+  //       "matcher": "*",
+  //       "hooks": [
+  //         {
+  //           "name": "manual-check",
+  //           "type": "command",
+  //           "command": "python .gemini/hooks/manual-check.py",
+  //           "timeout": 5000
+  //         }
+  //       ]
+  //     }
+  //   ],
+  //   "BeforeTool": [
+  //     {
+  //       "matcher": "write_file|replace",
+  //       "hooks": [
+  //         {
+  //           "name": "before-write-check",
+  //           "type": "command",
+  //           "command": "python .gemini/hooks/before_write_hook.py",
+  //           "timeout": 5000
+  //         }
+  //       ]
+  //     }
+  //   ],
+  //   "AfterTool": [
+  //     {
+  //       "matcher": "write_file|replace",
+  //       "hooks": [
+  //         {
+  //           "name": "after-check",
+  //           "type": "command",
+  //           "command": "python .gemini/hooks/after-check.py",
+  //           "timeout": 5000
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // },
   "ui": {
     "inlineThinkingMode": "full"
   },
   "options": {
     "temperature": 0.2
+  },
+  "hooksConfig": {
+    "disabled": [
+      "before-write-check",
+      "after-check",
+      "manual-check"
+    ]
   }
 }

@@ -44,9 +44,9 @@ def main():
 
     # 2. 매뉴얼 검증 (무한 루프 방지를 위해 인증 주석 확인)
     if is_network and "/* NETWORK_RULE_APPLIED */" not in content:
-        server_rule = read_manual("server_rule.txt")
-        net_rule = read_manual("network_rule.txt")
-        client_rule = read_manual("client_rule.txt")
+        server_rule = read_manual("server_rule.md")
+        net_rule = read_manual("network_rule.md")
+        client_rule = read_manual("client_rule.md")
 
         violation_reason = (
             f"네트워크/서버 코드를 작성할 때는 다음 매뉴얼을 반드시 준수해야 합니다.\n"
@@ -57,7 +57,7 @@ def main():
         )
 
     elif is_graphics and "/* GRAPHICS_RULE_APPLIED */" not in content:
-        gfx_rule = read_manual("graphics_rule.txt")
+        gfx_rule = read_manual("graphics_rule.md")
 
         violation_reason = (
             f"그래픽스 코드를 작성할 때는 다음 매뉴얼을 반드시 준수해야 합니다.\n"
