@@ -31,6 +31,9 @@ public:
 	void fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,
 		XMFLOAT3 loacl_pos = { 0.f,0.f,0.f }, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
 
+	// 연결된 것들 삭제
+	void delete_connecting(std::string socket_name);
+
 private:
 	// 객체 추가 함수
 	void create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale);

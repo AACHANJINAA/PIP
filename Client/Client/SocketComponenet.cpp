@@ -178,6 +178,24 @@ void SocketComponenet::fix_connecting(std::string socket_name, const std::string
 	}
 }
 
+void SocketComponenet::delete_connecting(std::string socket_name)
+{
+	// 지우고 싶은 소켓을 찾아 삭제하는 함수임
+	for (auto it = _connectedObjects.begin(); it != _connectedObjects.end(); ++it)
+	{
+		if (it->first == socket_name)
+		{
+			// 소켓 오브젝트가 존재하면 파괴
+			if (it->second.Object)
+			{
+				Object::destroy(it->second.Object);
+			}
+			_connectedObjects.erase(it);
+			break;
+		}
+	}
+}
+
 void SocketComponenet::create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
 {
 
