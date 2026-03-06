@@ -348,14 +348,12 @@ void Tool_Scene::draw_gizmo()
     if (!mainCam) return;
 
     // -----------------------------------------------------------
-    // [핵심 수정 1] 기즈모 초기화 및 영역 설정 (순서 주의!)
+    // [UI 및 렌더링 영역 설정]
     // -----------------------------------------------------------
     ImGuiIO& io = ImGui::GetIO();
-
-    // 반드시 BeginFrame을 가장 먼저 호출해서 내부 상태를 초기화해야 합니다!
     ImGuizmo::BeginFrame();
 
-    // 그 다음에 도화지를 화면 전체(Foreground)로 덮어씌워야 UI 창에 안 잘립니다.
+    // 화면 전체를 덮는 투명한 도화지 사용 (ImGui 창 영역에 잘리지 않음)
     ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
     ImGuizmo::SetOrthographic(false);
@@ -373,46 +371,53 @@ void Tool_Scene::draw_gizmo()
     else { yPressed = false; }
 
     // -----------------------------------------------------------
-    // [핵심 수정 2] 안전한 행렬 변환 (쓰레기 값 방지)
+    // [행렬 준비] Transpose 없이 XMFLOAT4X4 메모리 구조를 그대로 사용
     // -----------------------------------------------------------
-    // XMMATRIX 주소를 바로 넘기지 않고, 안전한 16칸짜리 그릇(XMFLOAT4X4)에 담습니다.
-    XMFLOAT4X4 viewF, projF;
-    XMStoreFloat4x4(&viewF, XMMatrixTranspose(XMLoadFloat4x4(&mainCam->view_matrix())));
-    XMStoreFloat4x4(&projF, XMMatrixTranspose(XMLoadFloat4x4(&mainCam->projection_matrix())));
+    XMFLOAT4X4 viewF = mainCam->view_matrix();
+    XMFLOAT4X4 projF = mainCam->projection_matrix();
 
-    // 부모 정보 계산
+    // 부모 정보 계산 (뼈대 로컬 * 캐릭터 월드)
     auto renderComp = _targetCharacter->get_component<RenderComponent>();
     auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
-    XMMATRIX charWorld = XMLoadFloat4x4(&_targetCharacter->transform()->world_matrix());
 
-	XMFLOAT4X4 boneLocalF = gltfMesh->get_socket_transform(_boneNames[_selectedBoneIndex]);
+    XMFLOAT4X4 charWorldF = _targetCharacter->transform()->world_matrix();
+    XMMATRIX charWorld = XMLoadFloat4x4(&charWorldF);
+
+    XMFLOAT4X4 boneLocalF = gltfMesh->get_socket_transform(_boneNames[_selectedBoneIndex]);
     XMMATRIX boneLocal = XMLoadFloat4x4(&boneLocalF);
+
     XMMATRIX parentWorld = boneLocal * charWorld;
 
-    // 무기 로컬 정보 계산
+    // 무기 현재 로컬 행렬 계산
     XMMATRIX weaponLocal = XMMatrixScaling(_socketScale.x, _socketScale.y, _socketScale.z) *
         XMMatrixRotationRollPitchYaw(XMConvertToRadians(_socketRot.x),
             XMConvertToRadians(_socketRot.y),
             XMConvertToRadians(_socketRot.z)) *
         XMMatrixTranslation(_socketPos.x, _socketPos.y, _socketPos.z);
 
-    // 최종 월드 행렬
+    // 무기 최종 월드 행렬 (결과를 XMFLOAT4X4에 담음)
     XMMATRIX weaponWorld = weaponLocal * parentWorld;
     XMFLOAT4X4 modelF;
-    XMStoreFloat4x4(&modelF, XMMatrixTranspose(weaponWorld));
+    XMStoreFloat4x4(&modelF, weaponWorld);
 
     // -----------------------------------------------------------
-    // [조작] 기즈모 그리기 및 결과 역산
+    // [조작 및 역산] ImGuizmo 포인터 매핑 및 부모 영향력 제거
     // -----------------------------------------------------------
-    if (ImGuizmo::Manipulate((float*)&viewF, (float*)&projF, _currentGizmoOperation, ImGuizmo::WORLD, (float*)&modelF))
+    if (ImGuizmo::Manipulate((float*)&viewF, (float*)&projF, _currentGizmoOperation, ImGuizmo::LOCAL, (float*)&modelF))
     {
-        XMMATRIX newWeaponWorld = XMMatrixTranspose(XMLoadFloat4x4(&modelF));
+        // 1. 조작된 행렬 읽어오기
+        XMMATRIX newWeaponWorld = XMLoadFloat4x4(&modelF);
+
+        // 2. 역산: 부모 행렬 제거 (NewLocal = NewWorld * Inverse(ParentWorld))
         XMMATRIX invParentWorld = XMMatrixInverse(nullptr, parentWorld);
         XMMATRIX newWeaponLocal = newWeaponWorld * invParentWorld;
 
-        float resPos[3], resRot[3], resScale[3];
+        // 3. 분해를 위해 다시 XMFLOAT4X4에 저장
         XMFLOAT4X4 localF;
-        XMStoreFloat4x4(&localF, XMMatrixTranspose(newWeaponLocal));
+        XMStoreFloat4x4(&localF, newWeaponLocal);
+
+        // 4. 추출 (ImGuizmo는 Degree 단위로 추출해 줌)
+        float resPos[3], resRot[3], resScale[3];
         ImGuizmo::DecomposeMatrixToComponents((float*)&localF, resPos, resRot, resScale);
 
         _socketPos = { resPos[0], resPos[1], resPos[2] };
@@ -425,6 +430,7 @@ void Tool_Scene::draw_gizmo()
         }
     }
 
+    // 상태 표시 UI
     const char* modeStr = (_currentGizmoOperation == ImGuizmo::TRANSLATE) ? "TRANSLATE" :
         (_currentGizmoOperation == ImGuizmo::ROTATE) ? "ROTATE" : "SCALE";
     ImGui::GetForegroundDrawList()->AddText(ImVec2(20, 20), IM_COL32(0, 255, 0, 255), modeStr);
