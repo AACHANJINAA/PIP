@@ -2,9 +2,10 @@
 #include "BehaviorTree.h"
 #include "GameObject.h"
 #include "CharacterControllerComponent.h"
+#include "CombatDef.h"
 #include "TransformComponent.h"
 #include "MapDataManager.h"
-#include "NPC.h"
+
 
 
 namespace PIP::GAME
@@ -12,38 +13,13 @@ namespace PIP::GAME
 	class Condition_HasTarget : public Condition
 	{
 	public:
-		bool check() override
-		{
-			return _blackboard->has("target_pos");
-		}
+        bool check() override;
 	};
 
     // [행동] 랜덤 타겟 찾기
     class Action_FindRandomTarget : public Action {
     public:
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override {
-            // 임시 맵 범위 (실제로는 MapData에서 가져오는 게 좋음)
-            auto mapData = MapDataManager::Instance()->GetTerrainData();
-
-            auto max_x = mapData.GetInfo().max_x;
-			auto min_x = mapData.GetInfo().min_x;
-			auto max_z = mapData.GetInfo().max_z;
-			auto min_z = mapData.GetInfo().min_z;
-
-			float x_range = max_x - min_x;
-			float z_range = max_z - min_z;
-
-			float tx = rand() % static_cast<int>(x_range) + min_x;
-			float tz = rand() % static_cast<int>(z_range) + min_z;
-
-            // 지형 높이 보정 (Y좌표)
-            common::Vec3 targetPos = MapDataManager::Instance()->AdjustPositionToGround({ tx, 50, tz });
-
-            _blackboard->set("target_pos", targetPos);
-            _blackboard->set("stuck_timer", 0.0f); // 타이머 리셋
-
-            return NodeStatus::SUCCESS;
-        }
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 
     // [행동] 목표로 이동 (끼임 감지 포함)
@@ -85,5 +61,65 @@ namespace PIP::GAME
     public:
         Action_AttackEnemy(NPCAttackConfig config) : _config(config) {}
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+    class Condition_IsPhase : public Condition
+    {
+    public:
+        Condition_IsPhase(TainerPhase targetPhase) : _targetPhase(targetPhase) {}
+
+        bool check() override;
+
+    private:
+        TainerPhase _targetPhase;
+    };
+
+    class Condition_IsHPBelow : public Condition
+    {
+    public:
+        Condition_IsHPBelow(float ratio) : _ratio(ratio) {}
+
+        bool check() override;
+
+    private:
+        float _ratio;
+    };
+
+    class Condition_IsEnemyInDistanceRange : public Condition
+    {
+    public:
+        Condition_IsEnemyInDistanceRange(float min, float max) : _min(min), _max(max) {}
+
+        bool check() override;
+
+    private:
+        float _min, _max;
+    };
+
+    class Action_PlayBossAnimation : public Action
+    {
+    public:
+        Action_PlayBossAnimation(const std::string& animKey) : _animKey(animKey) {}
+
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+
+    private:
+        std::string _animKey;
+    };
+
+    class Action_RotateToEnemy : public Action
+    {
+    public:
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+
+    class Action_SetPhase : public Action
+    {
+    public:
+        Action_SetPhase(TainerPhase nextPhase) : _nextPhase(nextPhase) {}
+
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+
+    private:
+        TainerPhase _nextPhase;
     };
 }

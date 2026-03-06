@@ -11,12 +11,12 @@
 
 namespace PIP::GAME
 {
-	NPC::NPC(int64_t npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp)
+	NPC::NPC(int64_t npc_id, NPCType npc_type, int room_id, common::Vec3 position, int32_t hp)
 		:
 		_npc_type{ npc_type },
 		_room_id{ room_id },
-		_hp{ hp }
-		
+		_hp{ hp },
+		_maxHp{_hp}
 	{
 		SetId(npc_id);
 		SetFaction(Faction::FACTION_MONSTER);

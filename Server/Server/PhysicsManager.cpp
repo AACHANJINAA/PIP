@@ -14,7 +14,8 @@ static void TraceImpl(const char* inFMT, ...)
 static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, JPH::uint inLine)
 {
 	// ASSERT 실패 시 처리
-	MYERROR("Jolt Assert Failed: Expression: {}, Message: {}, File: {}, Line: {}", inExpression, inMessage, inFile, inLine);
+	std::string str = " Jolt Assert Failed: Expression: " + std::string(inExpression) + ", Message: " + std::string(inMessage) + ", File: " + std::string(inFile) + ", Line: " + std::to_string(inLine);
+	MYERROR(str);
 	return true; // true면 브레이크포인트
 }
 #endif

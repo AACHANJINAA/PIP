@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "CombatDef.h"
 #include "GridMap.h"
 #include "JoltSetup.h"
 #include "Server.h"
@@ -51,14 +52,14 @@ namespace PIP::SERVER
 		void Broadcast(const char* data, size_t size, int64_t except_id = -1);
 
 		// 특정 NPC를 보고 있는 플레이어들에게 데이터 전송
-		void BroadcastToNPCViewers(int npc_id, const char* data, size_t size);
+		void BroadcastToNPCViewers(int64_t npc_id, const char* data, size_t size);
 		// 특정 플레이어를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToPlayerViewers(int64_t player_id, const char* data, size_t size);
 
 		void BroadcastNpcBatch();
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
 		void SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc);
-		void SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int npcId);
+		void SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int64_t npcId);
 
 		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void HandleAction(const std::shared_ptr<PIP::SERVER::SESSION>& actor, const common::packet::CS_PACKET_ACTION& action_packet);

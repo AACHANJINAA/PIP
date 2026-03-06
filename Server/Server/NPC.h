@@ -8,15 +8,6 @@
 
 namespace PIP::GAME
 {
-	struct NPCAttackConfig {
-		JPH::Ref<JPH::Shape> shape;    // 공격 판정 모양 (Sphere, Box, Capsule 등)
-		common::Vec3 posOffset;        // NPC 중심으로부터의 오프셋
-		float damage;                  // 공격력
-		float cooldown;                // 재사용 대기시간
-		std::string animationKey;      // (선택) 클라이언트에 보낼 애니메이션 이름/번호
-		// 추가 가능: 상태 이상, 넉백 수치 등
-	};
-
 	// NPC의 상태를 나타내는 열거형
 	enum class NPCState : uint8_t
 	{
@@ -25,19 +16,25 @@ namespace PIP::GAME
 		ATTACKING,
 		DEAD
 	};
-
+	enum class NPCType : int32_t
+	{
+		error = 0,
+		Basic = 1,
+		Tainer = 2,
+		// 향후 추가될 NPC 유형들...
+	};
 	class NPC : public Actor
 	{
 	public:
-		NPC(int64_t npc_id, int npc_type, int room_id, common::Vec3 position, int32_t hp);
+		NPC(int64_t npc_id, NPCType npc_type, int room_id, common::Vec3 position, int32_t hp);
 		~NPC() override;
 
-		void SetupBT();
+		virtual void SetupBT();
 		
 
 		// Getters
 		int64_t GetNpcId()          const { return GetId(); }
-		int GetNpcType()            const { return _npc_type; }
+		NPCType GetNpcType()            const { return _npc_type; }
 
 		common::packet::OBJECT_STATE GetState() const { return _state; }
 		int GetRoomId()             const { return _room_id; }
@@ -111,17 +108,19 @@ namespace PIP::GAME
 		                 int32_t damage) override;
 		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 
-	private:
+	protected:
 		float			_hitCooldown = 0.0f;
-		int32_t         _npc_type;
+		NPCType         _npc_type;
 		int32_t         _room_id;
 		int32_t         _hp;
+		int32_t			_maxHp;
 		common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 		common::packet::OBJECT_STATE _lastSentState = common::packet::OBJECT_STATE::IDLE;
 		common::Vec3	_lastSentPos = {0,0,0};
 		common::Vec4	_lastSentRot = {0,0,0,1};
 		std::chrono::steady_clock::time_point _lastUpdateTime;
 		std::chrono::steady_clock::time_point _lastSentTime;
+
 	};
 
 }
