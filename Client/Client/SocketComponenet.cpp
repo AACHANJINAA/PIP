@@ -23,7 +23,7 @@ void SocketComponenet::late_update(float deltaTime)
 	// 모든 연결된 객체들에 대해 위치 갱신
 	for (auto& pair : _connectedObjects)
 	{
-		const auto& socket_info = pair.second;
+		auto& socket_info = pair.second;
 		int bone_index = mesh->get_bone_index_by_name(socket_info.bone_name);
 		if (bone_index < 0) continue;
 
@@ -87,7 +87,7 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 	XMStoreFloat4x4(&info._localMatrix, localMatrix);
 
 	// 구조체 벡터에 넣기
-	_connectedObjects.emplace_back(bone_name, info);
+	_connectedObjects.emplace_back(socket_name, info);
 }
 
 
@@ -139,7 +139,7 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 	XMStoreFloat4x4(&info._localMatrix, localMatrix);
 
 	// 구조체 벡터에 넣기
-	_connectedObjects.emplace_back(bone_name, info);
+	_connectedObjects.emplace_back(socket_name, info);
 }
 
 void SocketComponenet::fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, 
@@ -162,7 +162,41 @@ void SocketComponenet::fix_connecting(std::string socket_name, const std::string
 					transform->set_local_scale(loacl_scale);
 				}
 			}
+
+			XMMATRIX matScale = XMMatrixScaling(loacl_scale.x, loacl_scale.y, loacl_scale.z);
+			XMMATRIX matRotation = XMMatrixRotationRollPitchYaw(
+				XMConvertToRadians(loacl_rotation.x),
+				XMConvertToRadians(loacl_rotation.y),
+				XMConvertToRadians(loacl_rotation.z));
+			XMMATRIX matTranslation = XMMatrixTranslation(loacl_pos.x, loacl_pos.y, loacl_pos.z);
+
+			XMMATRIX localMatrix = matScale * matRotation * matTranslation;
+			XMStoreFloat4x4(&pair.second._localMatrix, localMatrix);
+
 			break;
 		}
 	}
+}
+
+void SocketComponenet::delete_connecting(std::string socket_name)
+{
+	// 지우고 싶은 소켓을 찾아 삭제하는 함수임
+	for (auto it = _connectedObjects.begin(); it != _connectedObjects.end(); ++it)
+	{
+		if (it->first == socket_name)
+		{
+			// 소켓 오브젝트가 존재하면 파괴
+			if (it->second.Object)
+			{
+				Object::destroy(it->second.Object);
+			}
+			_connectedObjects.erase(it);
+			break;
+		}
+	}
+}
+
+void SocketComponenet::create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
+{
+
 }
