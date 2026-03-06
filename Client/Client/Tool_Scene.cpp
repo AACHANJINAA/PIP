@@ -12,7 +12,7 @@
 
 void Tool_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    SpawnCamera();
+    spawn_camera();
 }
 
 void Tool_Scene::release_upload_buffers()
@@ -32,17 +32,17 @@ void Tool_Scene::scene_process(float deltaTime)
     // ==========================================
   
     // 원하는 메시 띄우기
-    SpawnWantMesh();
-    ViewBones();
-    SpawnWantSocketMesh();
-    EditSocketMesh();
+    spawn_want_mesh();
+    view_bones();
+    spawn_want_socket_mesh();
+    edit_socket_mesh();
     ImGui::End();
 
-    DrawAndPickBones();
-    DrawGizmo();
+    draw_and_pick_bones();
+    draw_gizmo();
 }
 
-void Tool_Scene::SpawnWantMesh()
+void Tool_Scene::spawn_want_mesh()
 {
     ImGui::Begin("Socket Weapon Editor");
 
@@ -52,33 +52,33 @@ void Tool_Scene::SpawnWantMesh()
     // 파일 로드 버튼
     if (ImGui::Button("Load Character (glTF)"))
     {
-        std::string filePath = OpenFileDialog();
+        std::string filePath = open_file_dialog();
         if (!filePath.empty())
         {
-            m_loadedCharacterPath = filePath;
+            _loadedCharacterPath = filePath;
 
             // 1. 기존에 캐릭터가 있다면 삭제 (메모리 누수 방지)
-            if (m_targetCharacter)
+            if (_targetCharacter)
             {
-                m_targetCharacter->destroy();
-                m_targetCharacter.reset();
+                _targetCharacter->destroy();
+                _targetCharacter.reset();
             }
 
             // 2. 새 게임 오브젝트 생성
-            m_targetCharacter = ObjectManager::instance()->create_game_object("Editor_Character");
+            _targetCharacter = ObjectManager::instance()->create_game_object("Editor_Character");
 
             // 메시 로드
             auto mesh = ResourceManager::instance()->load_mesh(filePath, true);
 
             // 3. 렌더 컴포넌트 부착 및 메쉬 로드 (애니메이션 메쉬로 가정)
-            m_targetCharacter->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
+            _targetCharacter->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
 
             // 렌더러에 메시 등록
-            auto renderer = m_targetCharacter->get_component<RenderComponent>();
+            auto renderer = _targetCharacter->get_component<RenderComponent>();
             renderer->set_mesh(mesh);
 
             // 애니메이션 컴포넌트 기본설정(T_POSE)
-            auto animation_renderer = m_targetCharacter->get_component<AnimationComponent>();
+            auto animation_renderer = _targetCharacter->get_component<AnimationComponent>();
             animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::T_POSE, "t_pose", mesh);
             animation_renderer->set_state(common::packet::OBJECT_STATE::T_POSE);
 
@@ -92,16 +92,16 @@ void Tool_Scene::SpawnWantMesh()
             renderer->set_pso_name("skinned");
 
             // 위치, 회전 정보
-            m_targetCharacter->transform()->set_local_rotation(0.f, 0.f, 0.f);
-            m_targetCharacter->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
-            m_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
+            _targetCharacter->transform()->set_local_rotation(0.f, 0.f, 0.f);
+            _targetCharacter->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+            _targetCharacter->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
 
             // 뼈대 가져오기
             auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh);
             if (gltfMesh)
             {
-                m_boneNames = gltfMesh->get_bone_names();
-                m_selectedBoneIndex = 0;
+                _boneNames = gltfMesh->get_bone_names();
+                _selectedBoneIndex = 0;
             }
 
 
@@ -156,106 +156,106 @@ void Tool_Scene::SpawnWantMesh()
 
 
             //// 카메라 앞쪽으로 위치 조정 (필요에 따라 수정)
-            //m_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
+            //_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
         }
     }
 
     // 현재 로드된 파일 이름 출력
-    ImGui::Text("Current File: %s", m_loadedCharacterPath.c_str());
+    ImGui::Text("Current File: %s", _loadedCharacterPath.c_str());
     ImGui::Spacing(); ImGui::Spacing();
 }
 
-void Tool_Scene::ViewBones()
+void Tool_Scene::view_bones()
 {
-    if (m_boneNames.empty() || !m_targetCharacter) return;
+    if (_boneNames.empty() || !_targetCharacter) return;
 
     ImGui::Text("2. Select Bone");
     ImGui::Separator();
 
     std::vector<const char*> combo_items;
-    for (const auto& name : m_boneNames) combo_items.push_back(name.c_str());
+    for (const auto& name : _boneNames) combo_items.push_back(name.c_str());
 
     // 콤보박스 값이 변경되었는지 확인
-    bool bBoneChanged = ImGui::Combo("Bones", &m_selectedBoneIndex, combo_items.data(), combo_items.size());
+    bool bBoneChanged = ImGui::Combo("Bones", &_selectedBoneIndex, combo_items.data(), combo_items.size());
 
     // 뼈대 보기 체크박스
-    ImGui::Checkbox("Show Debug Bones", &m_bShowBones);
+    ImGui::Checkbox("Show Debug Bones", &_bShowBones);
 
     ImGui::Spacing(); ImGui::Spacing();
 
     // 뼈대 선택이 바뀌었고, 현재 무기가 붙어있다면 즉시 위치를 갱신
-    if (bBoneChanged && m_weaponMesh)
+    if (bBoneChanged && _weaponMesh)
     {
-        m_socketPos = { 0.0f, 0.0f, 0.0f };
-        m_socketRot = { 0.0f, 0.0f, 0.0f };
-        m_socketScale = { 1.0f, 1.0f, 1.0f };
+        _socketPos = { 0.0f, 0.0f, 0.0f };
+        _socketRot = { 0.0f, 0.0f, 0.0f };
+        _socketScale = { 1.0f, 1.0f, 1.0f };
 
-        auto socketComp = m_targetCharacter->get_component<SocketComponenet>();
+        auto socketComp = _targetCharacter->get_component<SocketComponenet>();
         if (socketComp)
         {
-            socketComp->fix_connecting("ToolSocket", m_boneNames[m_selectedBoneIndex], m_weaponMesh, m_socketPos, m_socketRot, m_socketScale);
+            socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
         }
     }
 }
-void Tool_Scene::SpawnWantSocketMesh()
+void Tool_Scene::spawn_want_socket_mesh()
 {
-    if (m_boneNames.empty() || !m_targetCharacter) return;
+    if (_boneNames.empty() || !_targetCharacter) return;
 
     ImGui::Text("3. Attach Weapon");
     ImGui::Separator();
 
     if (ImGui::Button("Load Weapon Mesh"))
     {
-        std::string weaponPath = OpenFileDialog();
+        std::string weaponPath = open_file_dialog();
         if (!weaponPath.empty())
         {
-            m_loadedWeaponPath = weaponPath;
-            m_weaponMesh = ResourceManager::instance()->load_mesh(weaponPath);
+            _loadedWeaponPath = weaponPath;
+            _weaponMesh = ResourceManager::instance()->load_mesh(weaponPath);
 
             // 새 무기를 로드했으니 수치 초기화
-            m_socketPos = { 0.0f, 0.0f, 0.0f };
-            m_socketRot = { 0.0f, 0.0f, 0.0f };
-            m_socketScale = { 1.0f, 1.0f, 1.0f };
+            _socketPos = { 0.0f, 0.0f, 0.0f };
+            _socketRot = { 0.0f, 0.0f, 0.0f };
+            _socketScale = { 1.0f, 1.0f, 1.0f };
 
-            auto socketComp = m_targetCharacter->get_component<SocketComponenet>();
-            if (socketComp && m_weaponMesh)
+            auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+            if (socketComp && _weaponMesh)
             {
-                socketComp->add_connecting("ToolSocket", m_boneNames[m_selectedBoneIndex], m_loadedWeaponPath, m_socketPos, m_socketRot, m_socketScale);
+                socketComp->add_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _loadedWeaponPath, _socketPos, _socketRot, _socketScale);
             }
         }
     }
-    ImGui::Text("Weapon: %s", m_loadedWeaponPath.c_str());
+    ImGui::Text("Weapon: %s", _loadedWeaponPath.c_str());
     ImGui::Spacing(); ImGui::Spacing();
 }
 
-void Tool_Scene::EditSocketMesh()
+void Tool_Scene::edit_socket_mesh()
 {
-    if (!m_weaponMesh || !m_targetCharacter) return;
+    if (!_weaponMesh || !_targetCharacter) return;
 
     ImGui::Text("4. Adjust Socket Transform");
     ImGui::Separator();
 
     bool bChanged = false;
 
-    if (ImGui::DragFloat3("Position", &m_socketPos.x, 0.01f)) bChanged = true;
-    if (ImGui::DragFloat3("Rotation", &m_socketRot.x, 1.0f)) bChanged = true;
-    if (ImGui::DragFloat3("Scale", &m_socketScale.x, 0.01f)) bChanged = true;
+    if (ImGui::DragFloat3("Position", &_socketPos.x, 0.01f)) bChanged = true;
+    if (ImGui::DragFloat3("Rotation", &_socketRot.x, 1.0f)) bChanged = true;
+    if (ImGui::DragFloat3("Scale", &_socketScale.x, 0.01f)) bChanged = true;
 
     if (bChanged)
     {
-        auto socketComp = m_targetCharacter->get_component<SocketComponenet>();
+        auto socketComp = _targetCharacter->get_component<SocketComponenet>();
         if (socketComp)
         {
-            socketComp->fix_connecting("ToolSocket", m_boneNames[m_selectedBoneIndex], m_weaponMesh, m_socketPos, m_socketRot, m_socketScale);
+            socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
         }
     }
 }
 
-void Tool_Scene::DrawAndPickBones()
+void Tool_Scene::draw_and_pick_bones()
 {
-    if (!m_targetCharacter || !m_bShowBones || m_boneNames.empty()) return;
+    if (!_targetCharacter || !_bShowBones || _boneNames.empty()) return;
 
-    auto renderComp = m_targetCharacter->get_component<RenderComponent>();
+    auto renderComp = _targetCharacter->get_component<RenderComponent>();
     if (!renderComp) return;
 
     auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
@@ -268,7 +268,7 @@ void Tool_Scene::DrawAndPickBones()
     XMMATRIX viewMat = XMLoadFloat4x4(&mainCam->view_matrix());
     XMMATRIX projMat = XMLoadFloat4x4(&mainCam->projection_matrix());
     XMMATRIX viewProj = viewMat * projMat;
-    XMMATRIX worldMat = XMLoadFloat4x4(&m_targetCharacter->transform()->world_matrix());
+    XMMATRIX worldMat = XMLoadFloat4x4(&_targetCharacter->transform()->world_matrix());
 
     RECT rect;
     GetClientRect(InputManager::instance()->GetHWnd(), &rect);
@@ -281,14 +281,14 @@ void Tool_Scene::DrawAndPickBones()
     float closestDistance = 20.0f; // 클릭 인정 반경 (픽셀 단위)
     int bestBoneIndex = -1;
 
-    // ImGui의 백그라운드 도화지를 가져와서 3D 공간 위에 2D 점을 그립니다.
+    // ImGui의 백그라운드 도화지를 가져와서 3D 공간 위에 2D 점을 그림
     ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
     // 2. 모든 뼈대를 순회하며 화면 좌표로 변환
-    for (int i = 0; i < m_boneNames.size(); ++i)
+    for (int i = 0; i < _boneNames.size(); ++i)
     {
         // 뼈대의 로컬 행렬 가져오기
-        XMFLOAT4X4 boneLocal = gltfMesh->get_socket_transform(m_boneNames[i]);
+        XMFLOAT4X4 boneLocal = gltfMesh->get_socket_transform(_boneNames[i]);
         XMMATRIX boneMat = XMLoadFloat4x4(&boneLocal);
 
         // 뼈대의 최종 월드 위치 계산 (Bone Local * Character World)
@@ -313,130 +313,124 @@ void Tool_Scene::DrawAndPickBones()
         }
 
         // 4. 화면에 뼈대 그리기 (선택된 뼈대는 빨간색 크게, 나머지는 노란색 작게)
-        ImU32 color = (i == m_selectedBoneIndex) ? IM_COL32(255, 0, 0, 255) : IM_COL32(255, 255, 0, 200);
-        float radius = (i == m_selectedBoneIndex) ? 6.0f : 3.0f;
+        ImU32 color = (i == _selectedBoneIndex) ? IM_COL32(255, 0, 0, 255) : IM_COL32(255, 255, 0, 200);
+        float radius = (i == _selectedBoneIndex) ? 6.0f : 3.0f;
         drawList->AddCircleFilled(ImVec2(screenX, screenY), radius, color);
     }
 
     // 5. 클릭 처리가 발생했고, 새로운 뼈대가 선택되었다면?
     // (단, ImGui UI 창을 클릭한 게 아닐 때만 3D 클릭으로 인정)
-    if (isMouseClicked && bestBoneIndex != -1 && bestBoneIndex != m_selectedBoneIndex && !ImGui::GetIO().WantCaptureMouse)
+    if (isMouseClicked && bestBoneIndex != -1 && bestBoneIndex != _selectedBoneIndex && !ImGui::GetIO().WantCaptureMouse)
     {
-        m_selectedBoneIndex = bestBoneIndex;
+        _selectedBoneIndex = bestBoneIndex;
 
-        if (m_weaponMesh)
+        if (_weaponMesh)
         {
-            m_socketPos = { 0.0f, 0.0f, 0.0f };
-            m_socketRot = { 0.0f, 0.0f, 0.0f };
-            m_socketScale = { 1.0f, 1.0f, 1.0f };
+            _socketPos = { 0.0f, 0.0f, 0.0f };
+            _socketRot = { 0.0f, 0.0f, 0.0f };
+            _socketScale = { 1.0f, 1.0f, 1.0f };
 
-            auto socketComp = m_targetCharacter->get_component<SocketComponenet>();
+            auto socketComp = _targetCharacter->get_component<SocketComponenet>();
             if (socketComp)
             {
-                socketComp->fix_connecting("ToolSocket", m_boneNames[m_selectedBoneIndex], m_weaponMesh, m_socketPos, m_socketRot, m_socketScale);
+                socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
             }
         }
     }
 }
 
-void Tool_Scene::DrawGizmo()
+void Tool_Scene::draw_gizmo()
 {
     // 1. 기본 체크: 데이터가 없으면 실행 안 함
-    if (!m_targetCharacter || !m_weaponMesh || m_boneNames.empty()) return;
+    if (!_targetCharacter || !_weaponMesh || _boneNames.empty()) return;
 
     auto mainCam = CameraComponent::get_main();
     if (!mainCam) return;
 
     // -----------------------------------------------------------
-    // [설정] 기즈모 초기화 및 영역 설정
+    // [핵심 수정 1] 기즈모 초기화 및 영역 설정 (순서 주의!)
     // -----------------------------------------------------------
     ImGuiIO& io = ImGui::GetIO();
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
-    // [핵심] 기즈모가 창에 가려지지 않게 화면 맨 앞에 그리도록 강제 설정
-    ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
-    ImGuizmo::SetOrthographic(false);
+    // 반드시 BeginFrame을 가장 먼저 호출해서 내부 상태를 초기화해야 합니다!
     ImGuizmo::BeginFrame();
 
-    // 'Y' 키 모드 전환 (IsKeyDown은 매 프레임 호출되므로 한 번만 눌리게 하려면 엔진에 IsKeyPressed 기능이 필요하지만, 일단 현재 구조 유지)
+    // 그 다음에 도화지를 화면 전체(Foreground)로 덮어씌워야 UI 창에 안 잘립니다.
+    ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::SetOrthographic(false);
+
+    // 'Y' 키 모드 전환
     static bool yPressed = false;
     if (InputManager::instance()->IsKeyDown('Y')) {
         if (!yPressed) {
-            if (m_currentGizmoOperation == ImGuizmo::TRANSLATE) m_currentGizmoOperation = ImGuizmo::ROTATE;
-            else if (m_currentGizmoOperation == ImGuizmo::ROTATE) m_currentGizmoOperation = ImGuizmo::SCALE;
-            else m_currentGizmoOperation = ImGuizmo::TRANSLATE;
+            if (_currentGizmoOperation == ImGuizmo::TRANSLATE) _currentGizmoOperation = ImGuizmo::ROTATE;
+            else if (_currentGizmoOperation == ImGuizmo::ROTATE) _currentGizmoOperation = ImGuizmo::SCALE;
+            else _currentGizmoOperation = ImGuizmo::TRANSLATE;
             yPressed = true;
         }
     }
     else { yPressed = false; }
 
     // -----------------------------------------------------------
-    // [행렬 준비] DX12(Row) -> ImGuizmo(Column) 변환
+    // [핵심 수정 2] 안전한 행렬 변환 (쓰레기 값 방지)
     // -----------------------------------------------------------
-    // 카메라 행렬 가져오기 및 Transpose
-    XMMATRIX viewMat = XMMatrixTranspose(XMLoadFloat4x4(&mainCam->view_matrix()));
-    XMMATRIX projMat = XMMatrixTranspose(XMLoadFloat4x4(&mainCam->projection_matrix()));
+    // XMMATRIX 주소를 바로 넘기지 않고, 안전한 16칸짜리 그릇(XMFLOAT4X4)에 담습니다.
+    XMFLOAT4X4 viewF, projF;
+    XMStoreFloat4x4(&viewF, XMMatrixTranspose(XMLoadFloat4x4(&mainCam->view_matrix())));
+    XMStoreFloat4x4(&projF, XMMatrixTranspose(XMLoadFloat4x4(&mainCam->projection_matrix())));
 
-    // 부모 정보 계산 (캐릭터 월드 * 뼈대 로컬)
-    auto renderComp = m_targetCharacter->get_component<RenderComponent>();
+    // 부모 정보 계산
+    auto renderComp = _targetCharacter->get_component<RenderComponent>();
     auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
-    XMMATRIX charWorld = XMLoadFloat4x4(&m_targetCharacter->transform()->world_matrix());
+    XMMATRIX charWorld = XMLoadFloat4x4(&_targetCharacter->transform()->world_matrix());
 
-	XMFLOAT4X4 boneLocalFloat = gltfMesh->get_socket_transform(m_boneNames[m_selectedBoneIndex]);
-    XMMATRIX boneLocal = XMLoadFloat4x4(&boneLocalFloat);
-
-    // ParentWorld = 뼈대 * 캐릭터 (SocketComponenet 연산 순서와 일치)
+	XMFLOAT4X4 boneLocalF = gltfMesh->get_socket_transform(_boneNames[_selectedBoneIndex]);
+    XMMATRIX boneLocal = XMLoadFloat4x4(&boneLocalF);
     XMMATRIX parentWorld = boneLocal * charWorld;
 
-    // 현재 무기의 로컬 SRT를 행렬로 생성
-    XMMATRIX weaponLocal = XMMatrixScaling(m_socketScale.x, m_socketScale.y, m_socketScale.z) *
-        XMMatrixRotationRollPitchYaw(XMConvertToRadians(m_socketRot.x),
-            XMConvertToRadians(m_socketRot.y),
-            XMConvertToRadians(m_socketRot.z)) *
-        XMMatrixTranslation(m_socketPos.x, m_socketPos.y, m_socketPos.z);
+    // 무기 로컬 정보 계산
+    XMMATRIX weaponLocal = XMMatrixScaling(_socketScale.x, _socketScale.y, _socketScale.z) *
+        XMMatrixRotationRollPitchYaw(XMConvertToRadians(_socketRot.x),
+            XMConvertToRadians(_socketRot.y),
+            XMConvertToRadians(_socketRot.z)) *
+        XMMatrixTranslation(_socketPos.x, _socketPos.y, _socketPos.z);
 
-    // 기즈모에게 넘겨줄 "최종 월드 행렬"을 만들고 Column-Major로 변환
+    // 최종 월드 행렬
     XMMATRIX weaponWorld = weaponLocal * parentWorld;
-    float modelMatrix[16];
-    XMStoreFloat4x4((XMFLOAT4X4*)modelMatrix, XMMatrixTranspose(weaponWorld));
+    XMFLOAT4X4 modelF;
+    XMStoreFloat4x4(&modelF, XMMatrixTranspose(weaponWorld));
 
     // -----------------------------------------------------------
     // [조작] 기즈모 그리기 및 결과 역산
     // -----------------------------------------------------------
-    if (ImGuizmo::Manipulate((float*)&viewMat, (float*)&projMat, m_currentGizmoOperation, ImGuizmo::WORLD, modelMatrix))
+    if (ImGuizmo::Manipulate((float*)&viewF, (float*)&projF, _currentGizmoOperation, ImGuizmo::WORLD, (float*)&modelF))
     {
-        // 1. 조작된 월드 행렬을 다시 DX용(Row-Major)으로 복구
-        XMMATRIX newWeaponWorld = XMMatrixTranspose(XMLoadFloat4x4((XMFLOAT4X4*)modelMatrix));
-
-        // 2. [수학 지옥 탈출] NewLocal = NewWorld * Inverse(ParentWorld)
-        // 이 역산 과정에서 부모의 스케일과 회전 영향력이 완벽하게 제거됩니다.
+        XMMATRIX newWeaponWorld = XMMatrixTranspose(XMLoadFloat4x4(&modelF));
         XMMATRIX invParentWorld = XMMatrixInverse(nullptr, parentWorld);
         XMMATRIX newWeaponLocal = newWeaponWorld * invParentWorld;
 
-        // 3. ImGuizmo 함수를 이용해 SRT 추출 (Column-Major 행렬 전달 필요)
         float resPos[3], resRot[3], resScale[3];
-        XMMATRIX transposeForDecompose = XMMatrixTranspose(newWeaponLocal);
-        ImGuizmo::DecomposeMatrixToComponents((float*)&transposeForDecompose, resPos, resRot, resScale);
+        XMFLOAT4X4 localF;
+        XMStoreFloat4x4(&localF, XMMatrixTranspose(newWeaponLocal));
+        ImGuizmo::DecomposeMatrixToComponents((float*)&localF, resPos, resRot, resScale);
 
-        // 4. 추출된 데이터를 우리 변수에 대입 (ImGuizmo는 Degree로 뱉음)
-        m_socketPos = { resPos[0], resPos[1], resPos[2] };
-        m_socketRot = { resRot[0], resRot[1], resRot[2] };
-        m_socketScale = { resScale[0], resScale[1], resScale[2] };
+        _socketPos = { resPos[0], resPos[1], resPos[2] };
+        _socketRot = { resRot[0], resRot[1], resRot[2] };
+        _socketScale = { resScale[0], resScale[1], resScale[2] };
 
-        // 5. 소켓 컴포넌트에 즉시 반영
-        auto socketComp = m_targetCharacter->get_component<SocketComponenet>();
+        auto socketComp = _targetCharacter->get_component<SocketComponenet>();
         if (socketComp) {
-            socketComp->fix_connecting("ToolSocket", m_boneNames[m_selectedBoneIndex], m_weaponMesh, m_socketPos, m_socketRot, m_socketScale);
+            socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
         }
     }
 
-    // 상태 표시 텍스트
-    const char* modeStr = (m_currentGizmoOperation == ImGuizmo::TRANSLATE) ? "TRANSLATE" :
-        (m_currentGizmoOperation == ImGuizmo::ROTATE) ? "ROTATE" : "SCALE";
+    const char* modeStr = (_currentGizmoOperation == ImGuizmo::TRANSLATE) ? "TRANSLATE" :
+        (_currentGizmoOperation == ImGuizmo::ROTATE) ? "ROTATE" : "SCALE";
     ImGui::GetForegroundDrawList()->AddText(ImVec2(20, 20), IM_COL32(0, 255, 0, 255), modeStr);
 }
 
-void Tool_Scene::SpawnCamera()
+void Tool_Scene::spawn_camera()
 {
     auto cameraObject = ObjectManager::instance()->create_game_object("ToolCamera");
     cameraObject->add_component<ToolCameraScript>();
@@ -445,7 +439,7 @@ void Tool_Scene::SpawnCamera()
     cameraObject->transform()->set_local_rotation(0.0f, 0.0f, 0.0f);
 }
 
-std::string Tool_Scene::OpenFileDialog()
+std::string Tool_Scene::open_file_dialog()
 {
     OPENFILENAMEA ofn;
     CHAR szFile[260] = { 0 };
