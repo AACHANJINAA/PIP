@@ -155,14 +155,13 @@ public:
 	// 애니메이션만 있는 glTF 파일 로더 추가
 	void load_animation_only(const std::string& file_path, const std::string& want_name = "null_name");
 
-
-	// DW설명 : 소켓기능 관련 함수들
-	int get_bone_index_by_name(const std::string& name) const; // 뼈대 이름으로 인덱스 찾기
-
-	// DW주의 : get_socket_transform 이 함수의 순서는 update_animation 함수 호출 직후에 호출되어야 한다 그래야 방금 갱신된 위치를 가져올 수 있음 // TickGroup
-	XMFLOAT4X4 get_socket_transform(const std::string& bone_name) const; // 뼈대 이름으로 소켓 변환 행렬 얻기
-
 	float get_animation_duration(const std::string& name) const;
+
+public: // DW설명 : 소켓기능 관련 함수들
+	int get_bone_index_by_name(const std::string& name) const; // 뼈대 이름으로 인덱스 찾기
+	// DW주의 : get_socket_transform 이 함수의 순서는 update_animation 함수 호출 직후에 호출되어야 한다 그래야 방금 갱신된 위치를 가져올 수 있음 // TickGroup
+	XMFLOAT4X4 get_socket_transform(std::string& bone_name) const; // 뼈대 이름으로 소켓 변환 행렬 얻기
+	std::vector<std::string> get_bone_names() const;
 
 private:
 
