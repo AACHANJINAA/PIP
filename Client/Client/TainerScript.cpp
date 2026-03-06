@@ -26,7 +26,7 @@ void TainerScript::init_visual()
         const std::string basePath = "Resource/Character/Tainer/";
 
         // 1. 메인 메쉬 로드 (이 파일은 반드시 메쉬 데이터를 포함해야 함)
-        auto mainMesh = ResourceManager::instance()->load_mesh(basePath + "BP_BoneGolem_Gn.gltf", true, "idle");
+        auto mainMesh = ResourceManager::instance()->load_mesh(basePath + "A_BoneGolem_Idle.gltf", true, "idle");
         ReadGLTFMesh* gltfMesh = static_cast<ReadGLTFMesh*>(mainMesh.get());
         gltfMesh->set_shader_for_all_materials("skinned");
 

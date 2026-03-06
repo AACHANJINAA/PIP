@@ -427,10 +427,12 @@ namespace PIP::SERVER
 			if (innerNpcs.contains(npc.get())) {
 				// [Tier 1] 정밀 물리 (벽 충돌 포함)
 				npc->PhysicsUpdate(deltaTime, tempAllocator);
+				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
 			}
 			else if (activeNpcs.contains(npc.get())) {
 				// [Tier 2] 가벼운 물리 (중력 + 지형 보정) - AI 속도로 움직임!
 				nc->LightPhysicsUpdate(deltaTime);
+				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
 			}
 		}
 		// --- 3. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
@@ -443,6 +445,9 @@ namespace PIP::SERVER
 
 			// [핵심] 물리 엔진 업데이트 (조작 의도 + 넉백 + 중력)
 			player->PhysicsUpdate(deltaTime, tempAllocator);
+
+			// [추가] 플레이어의 그리드맵 위치 갱신
+			_gridMap.UpdatePosition(player.get(), player->GetPosition());
 
 			common::Vec3 serverPos = player->GetPosition();
 			common::Vec3 clientTargetPos = player->GetLastClientTargetPos();

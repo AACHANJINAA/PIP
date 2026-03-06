@@ -8,21 +8,8 @@ namespace PIP::GAME
 {
 	bool Condition_HasTarget::check()
 	{
-        // 1. 키가 아예 없거나
-        if (!_blackboard->has("target_enemy")) return false;
-
-        // 2. ID가 0(기본값)이거나 유효하지 않은 경우
-        int64_t targetId = _blackboard->get<int64_t>("target_enemy");
-        if (targetId <= 0) return false;
-
-        // 3. 실제 방에 해당 플레이어가 존재하는지 최종 확인
-		int room_id = _blackboard->get<int>("room_id");
-        auto room = SERVER::Server::Instance()->GetRoom(room_id);
-        if (!room || !room->GetPlayer(targetId)) {
-            // 존재하지 않는다면 블랙보드 클린업 후 실패 반환
-            _blackboard->set("target_enemy", (int64_t)0);
-            return false;
-        }
+        // 1. 배회 목적지(target_pos)가 있는지 확인
+        if (!_blackboard->has("target_pos")) return false;
 
         return true;
 	}
