@@ -410,6 +410,9 @@
     <ClInclude Include="ToolCameraScript.h">
       <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\ImGuizmo.h">
+      <Filter>0. Engine\9. ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -651,6 +654,9 @@
     </ClCompile>
     <ClCompile Include="ToolCameraScript.cpp">
       <Filter>1. Game\2. Scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\ImGuizmo.cpp">
+      <Filter>0. Engine\9. ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

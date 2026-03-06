@@ -192,6 +192,12 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 	// T-Pose 또는 유효하지 않은 클립 인덱스 체크
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
+		for (size_t i = 0; i < _nodes.size(); ++i) {
+			if (_nodes[i]._parent_index == -1) {
+				update_node_hierarchy((int)i, XMMatrixIdentity());
+			}
+		}
+
 		// [핵심] 애니메이션이 없으면 모든 뼈대를 항등행렬로 밀어버림 (T-Pose)
 		DirectX::XMFLOAT4X4 identity;
 		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
@@ -344,6 +350,12 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 {
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
+		for (size_t i = 0; i < _nodes.size(); ++i) {
+			if (_nodes[i]._parent_index == -1) {
+				update_node_hierarchy((int)i, XMMatrixIdentity());
+			}
+		}
+
 		// [핵심] 애니메이션이 없으면 모든 뼈대를 항등행렬로 밀어버림 (T-Pose)
 		DirectX::XMFLOAT4X4 identity;
 		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
@@ -1362,7 +1374,7 @@ int ReadGLTFMesh::get_bone_index_by_name(const std::string& name) const
 	return -1; // 못 찾음
 }
 
-XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(const std::string& bone_name) const
+XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(std::string& bone_name) const
 {
 	int node_index = get_bone_index_by_name(bone_name);
 
@@ -1376,6 +1388,16 @@ XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(const std::string& bone_name) cons
 	DirectX::XMFLOAT4X4 identity;
 	DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
 	return identity;
+}
+
+std::vector<std::string> ReadGLTFMesh::get_bone_names() const
+{
+	std::vector<std::string> names;
+	for (const auto& bone : _skeleton)
+	{
+		names.push_back(bone._name);
+	}
+	return names;
 }
 
 float ReadGLTFMesh::get_animation_duration(const std::string& name) const
