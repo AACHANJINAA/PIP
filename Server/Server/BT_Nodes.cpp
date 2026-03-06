@@ -2,9 +2,61 @@
 #include "BT_Nodes.h"
 
 #include "Server.h"
+#include "Tainer.h"
 
 namespace PIP::GAME
 {
+	bool Condition_HasTarget::check()
+	{
+        // 1. 키가 아예 없거나
+        if (!_blackboard->has("target_enemy")) return false;
+
+        // 2. ID가 0(기본값)이거나 유효하지 않은 경우
+        int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+        if (targetId <= 0) return false;
+
+        // 3. 실제 방에 해당 플레이어가 존재하는지 최종 확인
+		int room_id = _blackboard->get<int>("room_id");
+        auto room = SERVER::Server::Instance()->GetRoom(room_id);
+        if (!room || !room->GetPlayer(targetId)) {
+            // 존재하지 않는다면 블랙보드 클린업 후 실패 반환
+            _blackboard->set("target_enemy", (int64_t)0);
+            return false;
+        }
+
+        return true;
+	}
+
+	NodeStatus Action_FindRandomTarget::tick(float dt, JPH::TempAllocator* allocator)
+    {
+		// 나중에 NPC의 현재 위치를 기준으로 일정 반경 내에서 랜덤 타겟을 찾도록 개선 필요할 수도 있음
+        // 보스의 경우는 그래야함
+
+
+        // 임시 맵 범위 (실제로는 MapData에서 가져오는 게 좋음)
+        auto mapData = MapDataManager::Instance()->GetTerrainData();
+
+        auto max_x = mapData.GetInfo().max_x;
+        auto min_x = mapData.GetInfo().min_x;
+        auto max_z = mapData.GetInfo().max_z;
+        auto min_z = mapData.GetInfo().min_z;
+
+        float x_range = max_x - min_x;
+        float z_range = max_z - min_z;
+
+        float tx = rand() % static_cast<int>(x_range) + min_x;
+        float tz = rand() % static_cast<int>(z_range) + min_z;
+
+        // 지형 높이 보정 (Y좌표)
+        common::Vec3 targetPos = MapDataManager::Instance()->AdjustPositionToGround({ tx, 50, tz });
+
+        _blackboard->set("target_pos", targetPos);
+        _blackboard->set("stuck_timer", 0.0f); // 타이머 리셋
+
+        return NodeStatus::SUCCESS;
+    }
+	
+
 	NodeStatus Action_MoveToTarget::tick(float dt, JPH::TempAllocator* allocator) {
         GameObject* owner = _blackboard->get<GameObject*>("owner");
         if (!owner) return NodeStatus::FAILURE;
@@ -111,23 +163,18 @@ namespace PIP::GAME
     }
 
 	bool Condition_IsEnemyInRange::check() {
-        auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
-        if (!room)
-        {
-            return false;
-        }
-        int64_t enemy_id = _blackboard->get<int64_t>("target_enemy");
-        GameObject* owner = _blackboard->get<GameObject*>("owner");
-		GameObject* enemy = room->GetActor(enemy_id);
-        if (!owner) return false;
-        if (!enemy)
-        {
-            _blackboard->set("target_enemy", static_cast<int64_t>(0));
-            return false;
-        }
+        auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+        int64_t targetId = _blackboard->get<int64_t>("target_enemy");
 
-        auto npc = dynamic_cast<NPC*>(owner);
-        float distSq = common::DistanceSq(npc->GetPosition(), dynamic_cast<Actor*>(enemy)->GetPosition());
+        if (targetId <= 0) return false;
+		int room_id = _blackboard->get<int>("room_id");
+        auto room = SERVER::Server::Instance()->GetRoom(room_id);
+        auto target = room->GetPlayer(targetId);
+
+        // 타겟이 이미 나갔거나 죽었다면 실패
+        if (!target || target->_hp <= 0) return false;
+
+        float distSq = common::DistanceSq(owner->GetPosition(), target->GetPosition());
         return distSq <= (_range * _range);
     }
 
@@ -295,5 +342,97 @@ namespace PIP::GAME
         _attackDurationTimer = 1.5f;
         _timer = _config.cooldown; // 전체 쿨타임 세팅
         return NodeStatus::SUCCESS;
+    }
+
+	bool Condition_IsPhase::check() {
+        auto ownerObj = _blackboard->get<GameObject*>("owner");
+        auto tainer = dynamic_cast<Tainer*>(ownerObj);
+
+        return (tainer && tainer->GetCurrentPhase() == _targetPhase);
+    }
+
+	bool Condition_IsHPBelow::check() {
+        auto ownerObj = _blackboard->get<GameObject*>("owner");
+		auto maxHP = _blackboard->get<float>("max_hp");
+        auto npc = dynamic_cast<NPC*>(ownerObj);
+        if (!npc) return false;
+
+        // 보스전의 경우 최대 체력을 블랙보드에 넣어두거나 Tainer 클래스에서 가져옴
+        // 여기서는 예시로 5000을 사용하거나 npc->GetMaxHP() (구현되어 있다면)를 사용
+        float hpRatio = static_cast<float>(npc->GetHP()) / maxHP;
+        return hpRatio <= _ratio;
+    }
+
+	bool Condition_IsEnemyInDistanceRange::check() {
+        auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+        if (!owner) return false;
+
+        // 블랙보드에서 타겟 ID를 가져옴
+        int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+
+        int room_id = _blackboard->get<int>("room_id");
+        // 서버의 RoomManager 혹은 Singleton을 통해 타겟 객체 참조
+        auto room = SERVER::Server::Instance()->GetRoom(room_id);
+        if (!room) return false;
+
+        auto target = room->GetPlayer(targetId);
+        if (!target) return false;
+
+        float dist = common::Distance(owner->GetPosition(), target->GetPosition());
+        return (dist >= _min && dist <= _max);
+    }
+
+	NodeStatus Action_PlayBossAnimation::tick(float dt, JPH::TempAllocator* allocator) {
+        auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+        if (!owner) return NodeStatus::FAILURE;
+
+        // [중요] 클라이언트에 애니메이션 트리거 전송
+        // 프로젝트의 패킷 정의에 따라 SC_PACKET_ACTION_NOTIFY 등을 사용
+        /*
+        packet::SC_PACKET_ACTION_NOTIFY pkt;
+        pkt._actor_id = owner->GetId();
+        pkt._anim_key = _animKey;
+        auto room = Server::Instance()->GetRoom(owner->GetRoomId());
+        room->Broadcast(reinterpret_cast<char*>(&pkt), sizeof(pkt));
+        */
+
+        MYLOG("Boss Action: " << _animKey);
+        return NodeStatus::SUCCESS;
+    }
+
+	NodeStatus Action_RotateToEnemy::tick(float dt, JPH::TempAllocator* allocator) {
+        auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+        int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+
+        // 타겟 ID가 없으면 실패 반환 -> 다음 Selector 자식으로 넘어감
+        if (targetId <= 0) return NodeStatus::FAILURE;
+		int room_id = _blackboard->get<int>("room_id");
+        auto room = SERVER::Server::Instance()->GetRoom(room_id);
+        auto target = room->GetPlayer(targetId);
+        if (!target) return NodeStatus::FAILURE;
+
+        common::Vec3 dir = common::Normalize(target->GetPosition() - owner->GetPosition());
+        dir.y = 0;
+
+        if (common::Length(dir) > 0.001f) {
+            float angle = std::atan2(dir.x, dir.z);
+            DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
+            common::Quat rot;
+            XMStoreFloat4((XMFLOAT4*)&rot, q);
+            owner->GetComponent<TransformComponent>()->SetRotation(rot);
+        }
+
+        return NodeStatus::SUCCESS;
+    }
+
+	NodeStatus Action_SetPhase::tick(float dt, JPH::TempAllocator* allocator) {
+        auto ownerObj = _blackboard->get<GameObject*>("owner");
+        auto tainer = dynamic_cast<Tainer*>(ownerObj);
+        if (tainer) {
+            // Tainer 클래스 내부에 SetPhase(TainerPhase)가 구현되어 있어야 함
+            tainer->SetPhase(_nextPhase);
+            return NodeStatus::SUCCESS;
+        }
+        return NodeStatus::FAILURE;
     }
 }

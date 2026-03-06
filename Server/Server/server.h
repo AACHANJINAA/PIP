@@ -85,7 +85,7 @@ namespace PIP::SERVER
 		std::atomic<SESSION_STATE>			_state;
 		std::shared_ptr<GAME::Player>		_player;
 
-		std::unordered_set<int>				_viewedNpcs;
+		std::unordered_set<int64_t>			_viewedNpcs;
 	public:
 		SESSION();
 		SESSION(int64_t session_id, SOCKET s, int logic_index);

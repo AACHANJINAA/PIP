@@ -191,6 +191,7 @@
     <ClCompile Include="Profiling.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="Tainer.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +207,7 @@
     <ClInclude Include="BehaviorTree.h" />
     <ClInclude Include="BT_Nodes.h" />
     <ClInclude Include="CharacterControllerComponent.h" />
+    <ClInclude Include="CombatDef.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GridMap.h" />
@@ -225,6 +227,7 @@
     <ClInclude Include="Profiling.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />
+    <ClInclude Include="Tainer.h" />
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>

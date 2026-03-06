@@ -260,12 +260,6 @@
     <ClInclude Include="GltfShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="GltfHpShader.h">
-      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="HPRenderComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
-    </ClInclude>
     <ClInclude Include="SkyboxShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
@@ -532,12 +526,6 @@
     <ClCompile Include="WICTextureLoader12.cpp">
       <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
     </ClCompile>
-    <ClCompile Include="GltfHpShader.cpp">
-      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="HPRenderComponent.cpp">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
-    </ClCompile>
     <ClCompile Include="SkyboxShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
@@ -718,6 +706,12 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Light.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shadow_Depth.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shadow_Sample.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

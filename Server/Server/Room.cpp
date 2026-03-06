@@ -6,9 +6,8 @@
 #include "PacketHandlers.h"
 #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
 #include "Jolt/Physics/Collision/RayCast.h"
-#include <random>
-
 #include "PlayerControllerComponent.h"
+#include "CombatDef.h"
 
 namespace PIP::SERVER
 {
@@ -53,7 +52,7 @@ namespace PIP::SERVER
 			}
 
 			// 3. NPC 생성 및 컨트롤러 초기화 (이제 spawnPos는 바닥에 붙어있음)
-			auto npc = std::make_unique<GAME::NPC>(npcId, 1, _room_id, spawnPos, 100);
+			auto npc = std::make_unique<GAME::NPC>(npcId, GAME::NPCType::Basic, _room_id, spawnPos, 100);
 			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
 			controller->Initialize(_physicsSystem, 1.8f, 0.5f);
 
@@ -487,11 +486,11 @@ namespace PIP::SERVER
 			std::vector<GAME::GameObject*> nearby;
 			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
 
-			std::unordered_set<int> currentNearbyIds;
+			std::unordered_set<int64_t> currentNearbyIds;
 			for (auto* obj : nearby) {
 				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
 					activeNpcs.insert(npc);
-					int npcId = npc->GetNpcId();
+					int64_t npcId = npc->GetNpcId();
 					currentNearbyIds.insert(npcId);
 
 					// [중요] 셀 경계 문제를 방지하기 위해 '실제 거리'로 정밀 물리 대상 판정
@@ -597,7 +596,7 @@ namespace PIP::SERVER
 		}
 	}
 
-	void Room::BroadcastToNPCViewers(int npc_id, const char* data, size_t size)
+	void Room::BroadcastToNPCViewers(int64_t npc_id, const char* data, size_t size)
 	{
 		for (auto& [pid, session] : _players)
 		{
@@ -702,7 +701,7 @@ namespace PIP::SERVER
 		spawn_packet_data._size = 0;
 		spawn_packet_data._hp = npc->GetHP();
 		spawn_packet_data._npc_id = npc->GetNpcId();
-		spawn_packet_data._npc_type = npc->GetNpcType();
+		spawn_packet_data._npc_type = static_cast<int32_t>(npc->GetNpcType());
 		spawn_packet_data._position = npc->GetPosition();
 		spawn_packet_data._state = npc->GetState();
 		const std::string& npc_name = npc->GetName();
@@ -715,7 +714,7 @@ namespace PIP::SERVER
 
 		session->do_send(finalStream.constable_data(), finalStream.Size());
 	}
-	void Room::SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int npcId)
+	void Room::SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int64_t npcId)
 	{
 		packet::SC_PACKET_NPC_DESPAWN despawn_packet;
 		despawn_packet._type = common::packet::PacketType::S2C_NPC_DESPAWN;
