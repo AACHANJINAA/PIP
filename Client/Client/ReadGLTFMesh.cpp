@@ -1409,6 +1409,14 @@ float ReadGLTFMesh::get_animation_duration(const std::string& name) const
 	return 0.0f;
 }
 
+void ReadGLTFMesh::set_shader_for_all_materials(const std::string& shader_name) 
+{
+	for (const auto& mat_name : _material_names)
+	{
+		ResourceManager::instance()->set_shader_for_material(mat_name, shader_name);
+	}
+}
+
 AnimationInterpolation ReadGLTFMesh::string_to_interpolation(const std::string& str)
 {
 	if (str == "LINEAR")

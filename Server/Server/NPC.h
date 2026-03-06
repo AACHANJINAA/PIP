@@ -9,20 +9,8 @@
 namespace PIP::GAME
 {
 	// NPC의 상태를 나타내는 열거형
-	enum class NPCState : uint8_t
-	{
-		IDLE,
-		MOVING,
-		ATTACKING,
-		DEAD
-	};
-	enum class NPCType : int32_t
-	{
-		error = 0,
-		Basic = 1,
-		Tainer = 2,
-		// 향후 추가될 NPC 유형들...
-	};
+	using NPCType = common::packet::NPCType;
+	
 	class NPC : public Actor
 	{
 	public:

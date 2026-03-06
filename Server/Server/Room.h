@@ -79,6 +79,8 @@ namespace PIP::SERVER
 		void PhysicsInitialize();
 		void CreatePhysicsTerrain();
 		void CreatePhysicsMapObjects();
+		void SpawnInitialNPCs();
+		void SpawnBoss();
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
 

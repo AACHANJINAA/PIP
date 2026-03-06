@@ -15,6 +15,7 @@
 #include "DebugDrawManager.h"
 #include "UIRenderComponent.h"
 #include "MonsterHPComponent.h"
+#include "TainerScript.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -536,46 +537,35 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		return;
 	}
 
-	if (npc_spawn_packet._npc_type == 1)
+	auto NPC = ObjectManager::instance()->create_game_object(npc_name);
+	NPC->set_layer("Enemy");
+
+	NPCScript* NPC_logic = nullptr;
+
+	switch (npc_spawn_packet._npc_type)
 	{
-		//CLOG("[SPAWN_NPC]");
-		auto NPC = ObjectManager::instance()->create_game_object(npc_name);
-		auto NPC_logic = NPC->add_component<NPCScript>();
-		auto NPC_HP = NPC->add_component<MonsterHPComponent>();
-		auto animation_component = NPC->add_component<AnimationComponent>();
-		auto render_comp = NPC->add_component<RenderComponent>();
+		case common::packet::NPCType::Basic:
+			{
+				NPC_logic = NPC->add_component<NPCScript>().get();
+			}
+			break;
+		case common::packet::NPCType::Tainer:
+			{
+				NPC_logic = NPC->add_component<TainerScript>().get(); // TainerScript 부착
+			}
+			break;
+		default:
+			CLOG("Unknown NPC Type: " << (int)npc_spawn_packet._npc_type);
+			NPC_logic = NPC->add_component<NPCScript>().get();
+			break;
+	}
 
-		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
-
+	// 4. 공통 데이터 초기화
+	if (NPC_logic) {
 		NPC_logic->set_id(npc_spawn_packet._npc_id);
 		NPC_logic->set_hp(npc_spawn_packet._hp);
 		NPC_logic->set_position(npc_spawn_packet._position);
-		NPC->set_layer("Enemy");
-
-
-		auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf",	true, "walk");
-
-		auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",	true, "idle");
-
-		
-		render_comp->set_mesh(idleMesh);
-
-		animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
-		animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-		// [추가] 플레이어와 동일한 공격 애니메이션 등록
-		animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
-		// ResourceManager을 통해 재질 생성 및 쉐이더 할당
-		std::string material_name = "npc_material";
-		ResourceManager::instance()->create_material(material_name);
-		ResourceManager::instance()->set_shader_for_material(material_name, "skinned"); // [중요] skinned 쉐이더 사용
-
-		// gltf
-		render_comp->set_pso_name("skinned");
-
-		/*CLOG("[S->C] Spawned NPC ID: " << npc_spawn_packet._npc_id
-			<< " Name: " << npc_name
-			<< " Type: " << npc_spawn_packet._npc_type
-			<< " Position: " << npc_spawn_packet._position.x << "," << npc_spawn_packet._position.y);*/
+		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
 	}
 }
 void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
