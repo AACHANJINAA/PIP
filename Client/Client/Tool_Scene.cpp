@@ -201,12 +201,30 @@ void Tool_Scene::spawn_want_socket_mesh()
 {
     if (_boneNames.empty() || !_targetCharacter) return;
 
+    if (_weaponMesh)
+    {
+        ImGui::Text("Current Weapon: %s", _loadedWeaponPath.c_str());
+		ImGui::Spacing(); ImGui::Spacing();
+    }
+
     ImGui::Text("3. Attach Weapon");
     ImGui::Separator();
 
     if (ImGui::Button("Load Weapon Mesh"))
     {
         std::string weaponPath = open_file_dialog();
+        if (_weaponMesh)
+        {
+            // 기존에 붙어있던 무기가 있다면 소켓에서 제거
+            auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+            if (socketComp)
+            {
+                socketComp->delete_connecting("ToolSocket");
+            }
+            // 메모리 해제
+			_weaponMesh.reset();
+        }
+
         if (!weaponPath.empty())
         {
             _loadedWeaponPath = weaponPath;
@@ -348,14 +366,15 @@ void Tool_Scene::draw_gizmo()
     if (!mainCam) return;
 
     // -----------------------------------------------------------
-    // [UI 및 렌더링 영역 설정]
+    // [해결 1] 피킹 오프셋 해결: ImGui 메인 뷰포트 영역 사용
+    // 윈도우 창의 테두리나 타이틀 바 등에 의한 미세한 오차를 없애기 위해,
+    // ImGui가 인식하는 정확한 3D 작업 영역을 가져와 기즈모에 맵핑합니다.
     // -----------------------------------------------------------
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGuizmo::BeginFrame();
 
-    // 화면 전체를 덮는 투명한 도화지 사용 (ImGui 창 영역에 잘리지 않음)
     ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::SetRect(viewport->WorkPos.x, viewport->WorkPos.y, viewport->WorkSize.x, viewport->WorkSize.y);
     ImGuizmo::SetOrthographic(false);
 
     // 'Y' 키 모드 전환
@@ -370,9 +389,6 @@ void Tool_Scene::draw_gizmo()
     }
     else { yPressed = false; }
 
-    // -----------------------------------------------------------
-    // [행렬 준비] Transpose 없이 XMFLOAT4X4 메모리 구조를 그대로 사용
-    // -----------------------------------------------------------
     XMFLOAT4X4 viewF = mainCam->view_matrix();
     XMFLOAT4X4 projF = mainCam->projection_matrix();
 
@@ -388,12 +404,18 @@ void Tool_Scene::draw_gizmo()
 
     XMMATRIX parentWorld = boneLocal * charWorld;
 
-    // 무기 현재 로컬 행렬 계산
-    XMMATRIX weaponLocal = XMMatrixScaling(_socketScale.x, _socketScale.y, _socketScale.z) *
-        XMMatrixRotationRollPitchYaw(XMConvertToRadians(_socketRot.x),
-            XMConvertToRadians(_socketRot.y),
-            XMConvertToRadians(_socketRot.z)) *
-        XMMatrixTranslation(_socketPos.x, _socketPos.y, _socketPos.z);
+    // -----------------------------------------------------------
+    // [해결 2] 회전 축 꼬임 해결: ImGuizmo 전용 Recompose 함수 사용
+    // DirectX의 회전 조립 방식(Pitch, Yaw, Roll)과 ImGuizmo의 분해 방식이 달라
+    // 축이 꼬이는 현상을 막기 위해, 조립할 때도 ImGuizmo의 수학을 사용합니다.
+    // -----------------------------------------------------------
+    float fPos[3] = { _socketPos.x, _socketPos.y, _socketPos.z };
+    float fRot[3] = { _socketRot.x, _socketRot.y, _socketRot.z };
+    float fScale[3] = { _socketScale.x, _socketScale.y, _socketScale.z };
+
+    XMFLOAT4X4 weaponLocalF;
+    ImGuizmo::RecomposeMatrixFromComponents(fPos, fRot, fScale, (float*)&weaponLocalF);
+    XMMATRIX weaponLocal = XMLoadFloat4x4(&weaponLocalF);
 
     // 무기 최종 월드 행렬 (결과를 XMFLOAT4X4에 담음)
     XMMATRIX weaponWorld = weaponLocal * parentWorld;
@@ -401,7 +423,8 @@ void Tool_Scene::draw_gizmo()
     XMStoreFloat4x4(&modelF, weaponWorld);
 
     // -----------------------------------------------------------
-    // [조작 및 역산] ImGuizmo 포인터 매핑 및 부모 영향력 제거
+    // [조작 및 역산] ImGuizmo::LOCAL 모드 유지
+    // 객체의 로컬 축을 기준으로 기즈모가 함께 회전하도록 LOCAL 모드를 씁니다.
     // -----------------------------------------------------------
     if (ImGuizmo::Manipulate((float*)&viewF, (float*)&projF, _currentGizmoOperation, ImGuizmo::LOCAL, (float*)&modelF))
     {
@@ -431,8 +454,8 @@ void Tool_Scene::draw_gizmo()
     }
 
     // 상태 표시 UI
-    const char* modeStr = (_currentGizmoOperation == ImGuizmo::TRANSLATE) ? "TRANSLATE" :
-        (_currentGizmoOperation == ImGuizmo::ROTATE) ? "ROTATE" : "SCALE";
+    const char* modeStr = (_currentGizmoOperation == ImGuizmo::TRANSLATE) ? "TRANSLATE (LOCAL)" :
+        (_currentGizmoOperation == ImGuizmo::ROTATE) ? "ROTATE (LOCAL)" : "SCALE (LOCAL)";
     ImGui::GetForegroundDrawList()->AddText(ImVec2(20, 20), IM_COL32(0, 255, 0, 255), modeStr);
 }
 
