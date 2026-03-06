@@ -163,6 +163,7 @@ public: // DW설명 : 소켓기능 관련 함수들
 	XMFLOAT4X4 get_socket_transform(std::string& bone_name) const; // 뼈대 이름으로 소켓 변환 행렬 얻기
 	std::vector<std::string> get_bone_names() const;
 
+	void set_shader_for_all_materials(const std::string& shader_name);
 private:
 
 	void read_static_mesh(const std::string& filePath);
@@ -180,7 +181,7 @@ private:
 	void load_skins(const json& gltf_json, const std::vector<char>& binary_buffer);
 	void load_animations(const json& gltf_json, const std::vector<char>& binary_buffer);
 	void process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh);
-
+	
 
 
 	// enum 으로 바꾸는 헬퍼 함수

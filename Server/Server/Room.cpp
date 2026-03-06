@@ -4,6 +4,7 @@
 #include "MapDataManager.h"
 #include "Player.h"
 #include "PacketHandlers.h"
+#include "Tainer.h"
 #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "PlayerControllerComponent.h"
@@ -27,12 +28,18 @@ namespace PIP::SERVER
 		PhysicsInitialize();
 		_gridMap.Initialize(-1000, 1000, -1000, 1000, 40);
 
+		SpawnInitialNPCs();
+		//SpawnBoss();
+	}
+
+	void Room::SpawnInitialNPCs()
+	{
 		for (int i = 0; i < 100; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
 
 			// 1. 무작위 XZ 위치 결정 (Y는 충분히 높은 곳에서 시작)
-			common::Vec3 spawnPos = { static_cast<float>(rand() % 200 - 100), 500.0f, static_cast<float>(rand() % 200-100) };
+			common::Vec3 spawnPos = { static_cast<float>(rand() % 200 - 100), 500.0f, static_cast<float>(rand() % 200 - 100) };
 
 			// 2. [핵심] Jolt 물리 지형에 레이를 쏴서 실제 '정확한' 바닥 높이를 즉시 획득
 			JPH::RRayCast ray{ Utils::ToJolt(spawnPos), JPH::Vec3(0, -1000.0f, 0) };
@@ -85,8 +92,8 @@ namespace PIP::SERVER
 
 					// 다시 바닥 찾기
 					JPH::RRayCast reRay{ Utils::ToJolt(spawnPos) + JPH::Vec3(0, 100.0f, 0), JPH::Vec3(0, -200.0f, 0) };
-						if (_physicsSystem->GetNarrowPhaseQuery().CastRay(reRay, res))
-							spawnPos.y = reRay.mOrigin.GetY() + reRay.mDirection.GetY() * res.mFraction;
+					if (_physicsSystem->GetNarrowPhaseQuery().CastRay(reRay, res))
+						spawnPos.y = reRay.mOrigin.GetY() + reRay.mDirection.GetY() * res.mFraction;
 
 					attempts++;
 				}
@@ -97,7 +104,34 @@ namespace PIP::SERVER
 			npc->SetLastUpdateTime(std::chrono::steady_clock::now());
 			AddNPC(std::move(npc));
 		}
+	}
 
+	void Room::SpawnBoss()
+	{
+		int64_t bossId = _next_npc_id + (_room_id * 1000) + 999;
+		common::Vec3 bossSpawnPos = { 0.0f, 500.0f, 50.0f };
+
+		JPH::RRayCast ray{ Utils::ToJolt(bossSpawnPos), JPH::Vec3(0, -1000.0f, 0) };
+		JPH::RayCastResult res;
+		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, res,
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+			_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
+		{
+			bossSpawnPos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * res.mFraction;
+		}
+		else {
+			bossSpawnPos.y = MapDataManager::Instance()->AdjustPositionToGround(bossSpawnPos).y;
+		}
+
+		auto boss = std::make_unique<GAME::Tainer>(bossId, _room_id, bossSpawnPos);
+		auto controller = boss->GetComponent<GAME::CharacterControllerComponent>();
+		controller->Initialize(_physicsSystem, 2.5f, 1.0f); // 보스는 더 크게 설정
+
+		boss->SetPosition(bossSpawnPos);
+		boss->SetLastUpdateTime(std::chrono::steady_clock::now());
+
+		AddNPC(std::move(boss));
+		MYLOG("[Room " << _room_id << "] Boss Tainer Spawned at: (" << bossSpawnPos.x << ", " << bossSpawnPos.y << ", " << bossSpawnPos.z << ")");
 	}
 
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
@@ -701,7 +735,7 @@ namespace PIP::SERVER
 		spawn_packet_data._size = 0;
 		spawn_packet_data._hp = npc->GetHP();
 		spawn_packet_data._npc_id = npc->GetNpcId();
-		spawn_packet_data._npc_type = static_cast<int32_t>(npc->GetNpcType());
+		spawn_packet_data._npc_type = npc->GetNpcType();
 		spawn_packet_data._position = npc->GetPosition();
 		spawn_packet_data._state = npc->GetState();
 		const std::string& npc_name = npc->GetName();

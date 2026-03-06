@@ -7,6 +7,7 @@ class ScriptComponent : public Behavior
 {
 public:
     ScriptComponent();
+	ScriptComponent(const std::string& name) : Behavior(name) {}
     virtual ~ScriptComponent() = default;
 
     // --- 편의 기능 ---

@@ -383,3 +383,6 @@ Content/Developers/
 
 !Jolt/lib/Debug/
 !Jolt/lib/Release/
+
+.gemini/
+gha-creds-*.json

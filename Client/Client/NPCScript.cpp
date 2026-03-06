@@ -6,6 +6,8 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "MonsterHPComponent.h"
+#include "ObjectManager.h"
+#include "ResourceManager.h"
 
 void NPCScript::set_position(const XMFLOAT3& position)
 {
@@ -31,8 +33,34 @@ const XMFLOAT3& NPCScript::position() const
 	return transform() ? transform()->local_position() : dummy;
 }
 
+void NPCScript::init_visual()
+{
+	auto NPC = game_object();
+	auto animation_component = NPC->get_component<AnimationComponent>();
+	auto render_comp = NPC->get_component<RenderComponent>();
+
+	// 기본 Brute 모델 설정
+	auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true,
+		"walk");
+	auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,
+		"idle");
+
+	render_comp->set_mesh(idleMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
+
+	std::string material_name = "npc_material_" + std::to_string(id());
+	ResourceManager::instance()->create_material(material_name);
+	ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
+	render_comp->set_pso_name("skinned");
+}
+
 void NPCScript::awake()
 {
+	
+	init_visual();
+
 	_serverPos = transform()->local_position();
 	_serverRot = transform()->local_rotation();
 	_serverVel = { 0, 0, 0 };

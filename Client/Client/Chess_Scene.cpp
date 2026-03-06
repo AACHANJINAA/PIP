@@ -21,9 +21,11 @@
 
 #include "SkyboxRenderComponent.h"
 #include "CameraComponent.h"
+#include "MonsterHPComponent.h"
 #include "PhysicsColliderComponent.h"
 #include "Renderer.h"
 #include "SceneManager.h"
+#include "TainerScript.h"
 #include "Tool_Scene.h"
 
 
@@ -56,7 +58,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	//SpawnGrammy_Walk(device, commandList);
 
     Spawn_SK_MagicConstruct(device, commandList);
-
+    SpawnTestBoss(device, commandList);
 	Spawn_UI(device, commandList);
 
 	Spawn_Monster_HP_UI(device, commandList);
@@ -233,7 +235,24 @@ void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandLi
         hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 25.0f, -130.0f));
     }
 }
+void Chess_Scene::SpawnTestBoss(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    // 1. 보스 게임 오브젝트 생성
+    auto boss = ObjectManager::instance()->create_game_object("TestBoss_Tainer");
+    boss->set_layer("Enemy");
 
+    // 2. 필요 컴포넌트 추가
+    boss->add_component<MonsterHPComponent>();
+    boss->add_component<AnimationComponent>();
+    boss->add_component<RenderComponent>();
+
+    // 3. 테이너 전용 스크립트 부착 (init_visual이 여기서 호출됨)
+    auto script = boss->add_component<TainerScript>();
+
+    // 4. 초기 위치 설정 (카메라 앞에서 잘 보이도록)
+    script->set_position({ 0.0f, 0.0f, 50.0f });
+    CLOG("[Chess_Scene] Test Boss (Tainer) Spawned for visual testing.");
+}
 void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     float offsetX = 0.0f;

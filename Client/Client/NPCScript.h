@@ -1,10 +1,16 @@
 ﻿#pragma once
 #include "INetSync.h"
 #include "ScriptComponent.h"
+#include "AnimationComponent.h"
+#include "MonsterHPComponent.h"
 
 class NPCScript : public ScriptComponent, public INetSync {
 public:
-	using required_components = std::tuple<TransformComponent>;
+	NPCScript() : ScriptComponent("NPCScript") {}
+
+	using required_components = std::tuple<TransformComponent, MonsterHPComponent, AnimationComponent, RenderComponent>;
+
+	virtual void init_visual();
 
 	void awake() override;
 	void on_destroy() override;

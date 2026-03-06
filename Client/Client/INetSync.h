@@ -2,11 +2,11 @@
 // [ECS Ready] 동기화에 필요한 순수 데이터만 담은 POD 구조체
 // 나중에 이 구조체 배열만 따로 모으면 ECS의 Component Data가 됩니다.
 struct NetSnapshot {
-    common::Vec3 pos;
-    common::Vec3 vel;
-    common::Quat rot;
-    common::packet::OBJECT_STATE state;
-    uint32_t timestamp;
+    common::Vec3 pos{};
+    common::Vec3 vel{};
+    common::Quat rot{};
+    common::packet::OBJECT_STATE state {common::packet::OBJECT_STATE::IDLE};
+    uint32_t timestamp {};
 };
 
 // [Interface] 종속성 역전(DIP)을 위한 추상화 레이어

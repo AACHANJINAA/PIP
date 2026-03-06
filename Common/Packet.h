@@ -16,6 +16,8 @@ namespace common::packet
 		LANDING = 5,
 		HOVER	= 6,
 		T_POSE  = 7,
+		ROAR	= 8,
+		HITTED	= 9,
 		// 필요 시 추가
 	};
 	enum class PacketType : uint16_t {
@@ -93,6 +95,13 @@ namespace common::packet
 		CAPSULE = 2
 	};
 
+	enum class NPCType : int32_t
+	{
+		error = 0,
+		Basic = 1,
+		Tainer = 2,
+		// 향후 추가될 NPC 유형들...
+	};
 #pragma pack (push, 1)
 
 	struct PacketHeader
@@ -252,7 +261,7 @@ namespace common::packet
 	struct SC_PACKET_NPC_SPAWN : PacketHeader
 	{
 		int64_t _npc_id; // NPC의 고유 ID
-		int32_t _npc_type; // NPC의 타입 (예: 몬스터 종류)
+		NPCType _npc_type; // NPC의 타입 (예: 몬스터 종류)
 		Vec3    _position;  // NPC의 초기 위치
 		int32_t _hp;        // NPC의 초기 HP
 		OBJECT_STATE _state; // NPC의 초기 상태

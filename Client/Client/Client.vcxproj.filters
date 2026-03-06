@@ -135,6 +135,24 @@
     <Filter Include="0. Engine\0. Core\2. Manager">
       <UniqueIdentifier>{9ce72fc5-492a-4fb4-b9ff-493ad74b96be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="1. Game\2. Scripts\MainLogics">
+      <UniqueIdentifier>{4db8833c-c7e9-4154-83cf-9409ab488c50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts\CameraScript">
+      <UniqueIdentifier>{18ac4e3b-1ab0-48ea-a828-e25c4b2bb96c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts\TestingTempScript">
+      <UniqueIdentifier>{023540b9-6b64-4854-ae5a-2bb8543009d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts\MainLogics\MainPlayer">
+      <UniqueIdentifier>{ae982326-8279-434d-b13d-16d9e595c304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts\MainLogics\NPC">
+      <UniqueIdentifier>{7e5b7626-bf0e-46f0-b679-e637e9df6f15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1. Game\2. Scripts\MainLogics\OtherPlayer">
+      <UniqueIdentifier>{fc39712d-e571-4f5a-a54e-cf9eab2cf48a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -176,17 +194,8 @@
     <ClInclude Include="targetver.h">
       <Filter>5. App</Filter>
     </ClInclude>
-    <ClInclude Include="MainPlayerScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherPlayerScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClInclude>
     <ClInclude Include="ResourceManager.h">
       <Filter>0. Engine\4. Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="BoardCubeScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
     <ClInclude Include="DebugShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
@@ -233,12 +242,6 @@
     <ClInclude Include="ReadOBJMesh.h">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClInclude>
-    <ClInclude Include="FreeCameraScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClInclude>
-    <ClInclude Include="GltfTestScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>0. Engine\3. Renderer\3. Camera</Filter>
     </ClInclude>
@@ -247,9 +250,6 @@
     </ClInclude>
     <ClInclude Include="DescriptorManager.h">
       <Filter>0. Engine\4. Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="NPCScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
     <ClInclude Include="DDSTextureLoader12.h">
       <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
@@ -341,9 +341,6 @@
     <ClInclude Include="ScriptComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent</Filter>
     </ClInclude>
-    <ClInclude Include="WeaponScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClInclude>
     <ClInclude Include="DebugDrawManager.h">
       <Filter>0. Engine\3. Renderer\6. DebugRender</Filter>
     </ClInclude>
@@ -408,7 +405,31 @@
       <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClInclude>
     <ClInclude Include="ToolCameraScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
+      <Filter>1. Game\2. Scripts\CameraScript</Filter>
+    </ClInclude>
+    <ClInclude Include="FreeCameraScript.h">
+      <Filter>1. Game\2. Scripts\CameraScript</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardCubeScript.h">
+      <Filter>1. Game\2. Scripts\TestingTempScript</Filter>
+    </ClInclude>
+    <ClInclude Include="GltfTestScript.h">
+      <Filter>1. Game\2. Scripts\TestingTempScript</Filter>
+    </ClInclude>
+    <ClInclude Include="MainPlayerScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="NPCScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="TainerScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherPlayerScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\OtherPlayer</Filter>
     </ClInclude>
     <ClInclude Include="imgui\ImGuizmo.h">
       <Filter>0. Engine\9. ImGui</Filter>
@@ -445,17 +466,8 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>5. App</Filter>
     </ClCompile>
-    <ClCompile Include="MainPlayerScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayerScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
       <Filter>0. Engine\4. Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="BoardCubeScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="DebugShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
@@ -502,14 +514,8 @@
     <ClCompile Include="ReadOBJMesh.cpp">
       <Filter>0. Engine\3. Renderer\2. Meshes</Filter>
     </ClCompile>
-    <ClCompile Include="FreeCameraScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClCompile>
     <ClCompile Include="GltfShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="GltfTestScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>0. Engine\3. Renderer\3. Camera</Filter>
@@ -519,9 +525,6 @@
     </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
       <Filter>0. Engine\4. Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="NPCScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader12.cpp">
       <Filter>0. Engine\3. Renderer\4. TextureLoader</Filter>
@@ -589,9 +592,6 @@
     <ClCompile Include="ScriptComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ScriptComponent</Filter>
     </ClCompile>
-    <ClCompile Include="WeaponScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClCompile>
     <ClCompile Include="DebugDrawManager.cpp">
       <Filter>0. Engine\3. Renderer\6. DebugRender</Filter>
     </ClCompile>
@@ -653,7 +653,31 @@
       <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClCompile>
     <ClCompile Include="ToolCameraScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
+      <Filter>1. Game\2. Scripts\CameraScript</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeCameraScript.cpp">
+      <Filter>1. Game\2. Scripts\CameraScript</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardCubeScript.cpp">
+      <Filter>1. Game\2. Scripts\TestingTempScript</Filter>
+    </ClCompile>
+    <ClCompile Include="GltfTestScript.cpp">
+      <Filter>1. Game\2. Scripts\TestingTempScript</Filter>
+    </ClCompile>
+    <ClCompile Include="MainPlayerScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="TainerScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayerScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\OtherPlayer</Filter>
     </ClCompile>
     <ClCompile Include="imgui\ImGuizmo.cpp">
       <Filter>0. Engine\9. ImGui</Filter>
