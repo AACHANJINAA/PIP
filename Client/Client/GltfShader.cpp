@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GltfShader.h"
 
+#include "ShadowManager.h"
 #include "LightManager.h"
 
 const std::string& GltfShader::pso_name() const
@@ -67,6 +68,9 @@ void GltfShader::update_per_object(ID3D12GraphicsCommandList* command_list, clas
 	Shader::update_per_object(command_list, renderer, object);
 
     LightManager::instance()->bind(command_list, 3);
+
+    // 그림자 리소스 바인딩 (Gltf 루트 시그니처: Param 10 == b5, Param 11 == t11
+    ShadowManager::instance()->bind_for_lighting(command_list, 10, 11, renderer);
 }
 
 std::string GltfShader::required_root_signature() const

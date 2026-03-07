@@ -510,11 +510,11 @@ void ReadGLTFMesh::render_skinned(ID3D12GraphicsCommandList* commandList)
 	// 만약 AnimationComponent에서 제공한 버퍼가 있으면 그것을 사용
 	if(_bone_palette_buffer_from_animation_component)
 	{
-		commandList->SetGraphicsRootConstantBufferView(10, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
 	}
 	else if (_bone_palette_buffer)
 	{
-		commandList->SetGraphicsRootConstantBufferView(10, _bone_palette_buffer->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer->GetGPUVirtualAddress());
 	}
 }
 

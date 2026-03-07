@@ -115,6 +115,25 @@ void Mesh::render(ID3D12GraphicsCommandList* commandList)
 	}
 }
 
+void Mesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList)
+{
+	if (!_isUploaded) return;
+
+	commandList->IASetPrimitiveTopology(_primitiveTopology);
+	commandList->IASetVertexBuffers(0, 1, &_vertexBufferView);
+
+	if (!_indices.empty())
+	{
+		commandList->IASetIndexBuffer(&_indexBufferView);
+		// 3개의 Cascade를 한 번에 그리기 위해 인스턴스 개수를 3으로 설정
+		commandList->DrawIndexedInstanced((UINT)_indices.size(), 3, 0, 0, 0);
+	}
+	else
+	{
+		commandList->DrawInstanced(_vertexCount, 3, 0, 0);
+	}
+}
+
 BoundingOrientedBox Mesh::CreateOOBB(XMFLOAT3 min, XMFLOAT3 max)
 {
 	// 중심점 계산 (min과 max의 중간값)
