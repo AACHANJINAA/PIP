@@ -3,6 +3,7 @@
 #include "TimerManager.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "LightManager.h"
 #include "RenderComponent.h"
 
 // LIGHTS 구조체: 씬의 모든 조명 정보

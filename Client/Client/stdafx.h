@@ -120,7 +120,7 @@ constexpr uint32_t FRAME_BUFFER_HEIGHT = 800;
 
 
 // 라이팅 및 PONG_SHADER 관련 상수 [PONG]
-#define MAX_LIGHTS			8 
+//#define MAX_LIGHTS			8 
 #define MAX_MATERIALS		8
 
 #define POINT_LIGHT			1

@@ -44,26 +44,27 @@ void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandLis
 	// --- 기존 생성자에 있던 GPU 버퍼 생성 로직이 여기로 이전 ---
 
 	// 정점 버퍼 생성
-	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertexDataBuffer.data(), _vertexDataBuffer.size(),
+	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertexDataBuffer.data(), static_cast<UINT>(_vertexDataBuffer.size()),
 		D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_vertexUploadBuffer);
 
 	// 인덱스 버퍼 생성 (인덱스가 있는 경우)
 	if (!_indices.empty())
 	{
-		_indexBuffer = ::CreateBufferResource(device, commandList, _indices.data(), sizeof(UINT) * _indices.size(),
+		_indexBuffer = ::CreateBufferResource(device, commandList, _indices.data(), 
+			sizeof(UINT) * static_cast<UINT>(_indices.size()),
 			D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_indexUploadBuffer);
 	}
 
 	// 버퍼 뷰 설정
 	_vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
 	_vertexBufferView.StrideInBytes = _vertexStride;
-	_vertexBufferView.SizeInBytes = _vertexDataBuffer.size();
+	_vertexBufferView.SizeInBytes = static_cast<UINT>(_vertexDataBuffer.size());
 
 	if (!_indices.empty())
 	{
 		_indexBufferView.BufferLocation = _indexBuffer->GetGPUVirtualAddress();
 		_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-		_indexBufferView.SizeInBytes = sizeof(UINT) * _indices.size();
+		_indexBufferView.SizeInBytes = sizeof(UINT) * static_cast<UINT>(_indices.size());
 	}
 
 	// 이거 중요!
@@ -106,7 +107,7 @@ void Mesh::render(ID3D12GraphicsCommandList* commandList)
 	if (!_indices.empty())
 	{
 		commandList->IASetIndexBuffer(&_indexBufferView);
-		commandList->DrawIndexedInstanced(_indices.size(), 1, 0, 0, 0);
+		commandList->DrawIndexedInstanced(static_cast<UINT>(_indices.size()), 1, 0, 0, 0);
 	}
 	else
 	{

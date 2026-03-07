@@ -5,7 +5,7 @@
 struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
 
-#define MAX_LIGHTS 16
+constexpr uint8_t MAX_LIGHTS = 16; // 최대 조명 수 (필요에 따라 조정 가능)
 
 struct Light
 {

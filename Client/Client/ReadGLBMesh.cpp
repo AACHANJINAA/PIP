@@ -84,7 +84,7 @@ ReadGlbMesh::ReadGlbMesh(const std::string& file_path)
                 }
             }
         }
-        for (size_t i = 0; i < _nodes.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(_nodes.size()); ++i) {
             for (int child_index : _nodes[i].childrenIndices) {
                 if (child_index >= 0 && child_index < _nodes.size()) {
                     _nodes[child_index].parentIndex = i;
@@ -174,7 +174,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
         // --- 1. Vertex Buffer 생성 ---
         if (!cpu_primitive.vertices.empty())
         {
-            UINT vertex_buffer_size = sizeof(SkinnedVertex) * cpu_primitive.vertices.size();
+            UINT vertex_buffer_size = sizeof(SkinnedVertex) * static_cast<UINT>(cpu_primitive.vertices.size());
             void* vertex_data = const_cast<void*>(static_cast<const void*>(cpu_primitive.vertices.data()));
             gpu_primitive->_d3dVertexBuffer = ::CreateBufferResource(
                 device,
@@ -195,9 +195,9 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
         // --- 2. Index Buffer 생성 ---
         if (!cpu_primitive.indices.empty())
         {
-            UINT index_buffer_size = sizeof(UINT) * cpu_primitive.indices.size();
+            UINT index_buffer_size = sizeof(UINT) * static_cast<UINT>(cpu_primitive.indices.size());
 			void* index_data = const_cast<void*>(static_cast<const void*>(cpu_primitive.indices.data()));
-            gpu_primitive->_indices = cpu_primitive.indices.size();
+            gpu_primitive->_indices = static_cast<UINT>(cpu_primitive.indices.size());
             gpu_primitive->_d3dIndexBuffer = ::CreateBufferResource(device, command_list,
                 index_data, index_buffer_size, D3D12_HEAP_TYPE_DEFAULT,
                 D3D12_RESOURCE_STATE_INDEX_BUFFER, index_upload_buffer.GetAddressOf());
@@ -252,7 +252,7 @@ void ReadGlbMesh::upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList*
 
                     ComPtr<ID3D12Resource> texture_upload_heap;
                     texture_upload_heap = ::CreateBufferResource(device, command_list, nullptr,
-                        upload_buffer_size, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+                        static_cast<UINT>(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
 
                     D3D12_SUBRESOURCE_DATA texture_data = {};
                     texture_data.pData = pixels.data();
@@ -377,7 +377,7 @@ std::tuple<std::vector<unsigned char>, UINT, UINT> ReadGlbMesh::load_image_from_
     if (SUCCEEDED(hr)) hr = pConverter->Initialize(pFrame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, NULL, 0.f, WICBitmapPaletteTypeMedianCut);
 
     std::vector<unsigned char> pixels(width * height * 4);
-    if (SUCCEEDED(hr)) hr = pConverter->CopyPixels(NULL, width * 4, pixels.size(), pixels.data());
+    if (SUCCEEDED(hr)) hr = pConverter->CopyPixels(NULL, width * 4, static_cast<UINT>(pixels.size()), pixels.data());
 
     if (pConverter) pConverter->Release();
     if (pFrame) pFrame->Release();

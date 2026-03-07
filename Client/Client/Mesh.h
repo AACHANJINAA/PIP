@@ -156,7 +156,7 @@ protected:
 	void set_vertex_data_buffer(const std::vector<VertexType>& temp_vertices)
 	{
 		// 2. 메타데이터 설정
-		_vertexCount = temp_vertices.size();
+		_vertexCount = static_cast<UINT>(temp_vertices.size());
 		_vertexStride = sizeof(VertexType);
 
 		// 3. 원시 바이트 데이터를 부모 클래스의 버퍼로 복사
