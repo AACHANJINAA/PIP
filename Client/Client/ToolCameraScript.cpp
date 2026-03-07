@@ -141,18 +141,26 @@ void ToolCameraScript::process_keyboard_input(float delta_time)
         Light* sun = LightManager::instance()->get_light(0);
         if (sun)
         {
-            // 태양 방향을 Y축 기준으로 회전 (반시계 방향)
-            float angle = -delta_time * 0.5f;
-            float x = sun->m_vDirection.x * cos(angle) + sun->m_vDirection.z * sin(angle);
-            float z = -sun->m_vDirection.x * sin(angle) + sun->m_vDirection.z * cos(angle);
-            sun->m_vDirection.x = x;
+            // [수정] X축 회전: Y-Z 평면에서 회전
+            float angle = delta_time * 0.5f;
+            float y = sun->m_vDirection.y * cos(angle) -
+                sun->m_vDirection.z * sin(angle);
+            float z = sun->m_vDirection.y * sin(angle) +
+                sun->m_vDirection.z * cos(angle);
+            sun->m_vDirection.y = y;
             sun->m_vDirection.z = z;
+
+            // 방향 벡터 정규화
+            XMVECTOR dir = XMLoadFloat3(&sun->m_vDirection);
+            dir = XMVector3Normalize(dir);
+            XMStoreFloat3(&sun->m_vDirection, dir);
 
             LightManager::instance()->update();
 
             char buf[256];
             sprintf_s(buf, "Sun Direction: %.2f, %.2f, %.2f\n",
-                sun->m_vDirection.x, sun->m_vDirection.y, sun->m_vDirection.z);
+                sun->m_vDirection.x, sun->m_vDirection.y,
+                sun->m_vDirection.z);
             OutputDebugStringA(buf);
         }
     }

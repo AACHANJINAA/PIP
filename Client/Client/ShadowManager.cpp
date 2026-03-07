@@ -113,7 +113,7 @@ void ShadowManager::build_cascade_matrices()
     float terrainSize = SceneManager::instance()->get_terrain_size();
     float radii[3] = {
         terrainSize * 0.1f,  // 근거리: 지형의 10%
-        terrainSize * 0.5f,  // 중거리: 지형의 50%
+        terrainSize * 0.7f,  // 중거리: 지형의 50%
         terrainSize * 1.0f   // 원거리: 지형 전체
     };
 
@@ -128,7 +128,7 @@ void ShadowManager::build_cascade_matrices()
 
     _shadowData.splitNear = radii[0];
     _shadowData.splitMid = radii[1];
-    _shadowData.bias = 0.007f;
+    _shadowData.bias = 0.006f;
 }
 
 void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index)
@@ -198,8 +198,9 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         if (!renderComp) continue;
 
         auto shaderName = renderComp->pso_name();
-        // 현재는 gltf, terrain(glb)만 그림자 생성
-        if (shaderName == "gltf" || shaderName == "glb") {
+
+        // 현재는 gltf, skinned만 그림자 생성
+        if (shaderName == "gltf" || shaderName == "skinned") {
             renderComp->render_CascadeShadowMap(cmd, frame_index);
         }
     }
