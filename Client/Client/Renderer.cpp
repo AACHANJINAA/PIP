@@ -13,6 +13,8 @@
 #include "TerrainShader.h"
 #include "UIShader.h"
 #include "MonsterHPUIShader.h"
+#include "ShadowDepthShader.h"
+#include "ShadowManager.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -22,7 +24,6 @@
 #include "DebugDrawManager.h"
 #include "RenderComponent.h"
 #include "SkyboxRenderComponent.h"
-
 
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
@@ -39,12 +40,12 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<DebugRootSignatureGenerator>()); // 추가
     _rootSignatureGenerators.push_back(std::make_unique<DefaultRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<GltfRootSignatureGenerator>());
-    //_rootSignatureGenerators.push_back(std::make_unique<GltfHpRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkyBoxRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<SkinnedRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<TerrainRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<MonsterHPUIRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<UIRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<CsmDepthRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -64,9 +65,6 @@ void Renderer::initialize(ID3D12Device* device)
     auto gltf_shader = std::make_shared<GltfShader>();
     _shaderPrototypes[gltf_shader->pso_name()] = gltf_shader;
 
-    //auto gltf_hp_shader = std::make_shared<GltfHpShader>();
-    //_shaderPrototypes[gltf_hp_shader->pso_name()] = gltf_hp_shader;
-
 	auto skybox_shader = std::make_shared<SkyboxShader>();
 	_shaderPrototypes[skybox_shader->pso_name()] = skybox_shader;
 
@@ -81,6 +79,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto ui_shader = std::make_shared<UIShader>();
     _shaderPrototypes[ui_shader->pso_name()] = ui_shader;
+
+	auto shadow_depth_shader = std::make_shared<ShadowDepthShader>();
+	_shaderPrototypes[shadow_depth_shader->pso_name()] = shadow_depth_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -121,6 +122,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
     // 프레임 렌더링 시작 시, 동적 디스크립터 힙의 인덱스를 리셋
     _current_dynamic_descriptor_index = frame_index * _max_descriptors_per_frame;
+
     CameraComponent* camera = CameraComponent::get_main();
     if (!camera)
     {
@@ -219,14 +221,17 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
 
+        if (psoName != "skybox")
+        {
+            ID3D12DescriptorHeap* heaps[] = {
+                    _dynamic_descriptor_heap.Get() };
+                    commandList->SetDescriptorHeaps(_countof(heaps),
+                    heaps);
+        }
         if (camera)
         {
             camera->update_shader_variables(commandList, frame_index);
             camera->set_viewports_and_scissor_rects(commandList);
-        }
-        if (psoName != "skybox")
-        {
-            commandList->SetDescriptorHeaps(_countof(heaps), heaps);
         }
 
         // Skybox 전용 처리

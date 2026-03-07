@@ -48,6 +48,9 @@ public:
 
     // render 함수는 이제 Renderer에 의해 호출됩니다.
     virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
+	// render_CascadeShadowMap 함수
+	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, UINT frame_index);
+
     // --- Getters & Setters ---
     virtual void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
 

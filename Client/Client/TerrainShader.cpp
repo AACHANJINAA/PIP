@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TerrainShader.h"
 
+#include "ShadowManager.h"
 #include "LightManager.h"
 
 const std::string& TerrainShader::pso_name() const
@@ -56,4 +57,7 @@ void TerrainShader::update_per_object(ID3D12GraphicsCommandList* commandList, Re
 
     // [조명 바인딩 추가] - RootParameter[3]에 b3로 바인딩
     LightManager::instance()->bind(commandList, 3);
+
+    // 그림자 리소스 바인딩 (Terrain 루트 시그니처: Param 6 == b5, Param 7 == t11)
+    ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, renderer);
 }

@@ -35,7 +35,7 @@ float sample_csm_shadow(float3 worldPos, float viewDepth)
 
     // 4. shadow map 범위 밖이면 그림자 없음
     if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
-    return 1.0f;
+        return 1.0f;
 
     // 5. 단순 1샘플 비교 (PCF 없음)
     return g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv, (float) cascade),sp.z - g_shadowBias);

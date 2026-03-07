@@ -73,7 +73,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-    CD3DX12_DESCRIPTOR_RANGE ranges[6];
+    CD3DX12_DESCRIPTOR_RANGE ranges[7]; // 6 -> 7로 확장 (그림자용 SRV)
 
     for (int i = 0; i < 4; ++i){
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t3
@@ -83,7 +83,9 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0,
         D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);     // t4 (Occlusion)
 
-    CD3DX12_ROOT_PARAMETER params[10];
+    ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t11: shadow map
+
+	CD3DX12_ROOT_PARAMETER params[12]; // CBV 4개 + PBR 텍스처 테이블 4개 + IBL 텍스처 테이블 1개 + Occlusion 텍스처 테이블 1개 + shadow 월드 행렬 CBV + Shadow 텍스처 테이블 1개 
 
     // 0번 월드 행렬용 CBV
 	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
@@ -104,26 +106,43 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
     params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
 
+    // b5 : shadow CBV
+	params[10].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL); // b5: shadow world matrix
+	// t11 : shadow descriptor table -> srv
+	params[11].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL); // t11: shadow map
+
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
 
     //// 3. 텍스처 샘플러 설정
-    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.MipLODBias = 0;
-    d3dStaticSamplerDesc.MaxAnisotropy = 1;
-    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    d3dStaticSamplerDesc.MinLOD = 0;
-    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    d3dStaticSamplerDesc.ShaderRegister = 0; // 셰이더의 s0 레지스터에 연결
-    d3dStaticSamplerDesc.RegisterSpace = 0;
-    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	// Sampler 확장 (1개 -> 2개) -> 그림자용 샘플러 추가
+    D3D12_STATIC_SAMPLER_DESC samplers[2];
 
-    d3dRootSignatureDesc.NumStaticSamplers = 1;
-    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
+    samplers[0].Filter = D3D12_FILTER_ANISOTROPIC;
+    samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].MipLODBias = 0;
+    samplers[0].MaxAnisotropy = 1;
+    samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    samplers[0].MinLOD = 0;
+    samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    samplers[0].ShaderRegister = 0; // 셰이더의 s0 레지스터에 연결
+    samplers[0].RegisterSpace = 0;
+    samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    samplers[1] = {};
+    samplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    samplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    samplers[1].ShaderRegister = 1; // s1
+    samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    d3dRootSignatureDesc.NumParameters = 12;
+    d3dRootSignatureDesc.NumStaticSamplers = 2;
+    d3dRootSignatureDesc.pStaticSamplers = samplers;
 
     // 4. 루트 서명 생성
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
@@ -133,84 +152,6 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
 
     return pd3dGraphicsRootSignature;
 }
-
-//const std::string& GltfHpRootSignatureGenerator::name() const
-//{
-//    static const std::string gltfName = "gltf_hp";
-//    return gltfName;
-//}
-//
-//ComPtr<ID3D12RootSignature> GltfHpRootSignatureGenerator::create(ID3D12Device* device)
-//{
-//    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
-//    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
-//    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-//
-//    //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-//    CD3DX12_DESCRIPTOR_RANGE ranges[6];
-//    for (int i = 0; i < 4; ++i)
-//    {
-//        ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
-//    }
-//
-//    // IBL 텍스처 추가 (t8~t10)
-//    ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
-//    ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
-//
-//    // 2. 셰이더가 사용할 전체 파라미터 목록을 정의 <- 텍스쳐 테이블도 추가됨
-//	CD3DX12_ROOT_PARAMETER params[11]; // CBV 4개 + PBR 텍스쳐 테이블 4개 + IBL 텍스쳐 테이블 3개 + 체력 CBV 1개 = 12개
-//
-//    // 0번 월드 행렬용 CBV
-//    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
-//    // 1번 카메라용 CBV
-//	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
-//    // 2번 재질용 CBV
-//	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
-//    // 3번 조명용 CBV
-//	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
-//
-//    // 4~7번 PBR 텍스처 디스크립터 테이블 (t0~t3)
-//    for (int i = 0; i < 4; ++i)
-//    {
-//        int param_index = 4 + i;
-//        params[param_index].InitAsDescriptorTable(1, &ranges[i], D3D12_SHADER_VISIBILITY_PIXEL);
-//    }
-//
-//    // 8번 IBL 텍스처 디스크립터 테이블 (t8~t10)
-//    params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
-//    params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
-//    // 10번 체력용 CBV
-//    params[10].InitAsConstantBufferView(8, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-//
-//    d3dRootSignatureDesc.NumParameters = _countof(params);
-//    d3dRootSignatureDesc.pParameters = params;
-//
-//    //// 3. 텍스처 샘플러 설정
-//    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-//    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-//    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-//    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-//    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-//    d3dStaticSamplerDesc.MipLODBias = 0;
-//    d3dStaticSamplerDesc.MaxAnisotropy = 1;
-//    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-//    d3dStaticSamplerDesc.MinLOD = 0;
-//    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-//    d3dStaticSamplerDesc.ShaderRegister = 0; // 셰이더의 s0 레지스터에 연결
-//    d3dStaticSamplerDesc.RegisterSpace = 0;
-//    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-//
-//    d3dRootSignatureDesc.NumStaticSamplers = 1;
-//    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
-//
-//    // 4. 루트 서명 생성
-//    ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
-//    ComPtr<ID3DBlob> pd3dSignatureBlob, pd3dErrorBlob;
-//    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pd3dSignatureBlob, &pd3dErrorBlob);
-//    device->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), pd3dSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&pd3dGraphicsRootSignature));
-//
-//    return pd3dGraphicsRootSignature;
-//}
 
 const std::string& SkinnedRootSignatureGenerator::name() const
 {
@@ -225,7 +166,7 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // 1. 텍스처(SRV)를 위한 디스크립터 범위 설정 (t0 ~ t3)
-    CD3DX12_DESCRIPTOR_RANGE ranges[6];
+    CD3DX12_DESCRIPTOR_RANGE ranges[7];
     for (int i = 0; i < 4; ++i)
     {
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
@@ -234,8 +175,10 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     // IBL 텍스처 추가 (t8~t10)
     ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
     ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+	// Shadow map, SRV 추가 (t11)
+    ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
 
-    CD3DX12_ROOT_PARAMETER params[11];
+    CD3DX12_ROOT_PARAMETER params[13];
 
     // [0] b0: 월드 행렬
 	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
@@ -255,30 +198,51 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     // [8] t8~t10: IBL 텍스처 디스크립터 테이블 (GltfRootSignature와 동일)
     params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
 
-    // [9] b4: 스키닝 뼈대 행렬 (맨 뒤로 이동)
     params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
-    params[10].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX);     // bone b4
+    // b5: 그림자 상수 버퍼
+    params[10].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
+    // t11: 그림자 맵 디스크립터 테이블
+    params[11].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL);
+    // b4: 스키닝 뼈대 행렬 (맨 뒤로 이동)
+    params[12].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX);     // bone b4
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
 
-    // 3. 정적 샘플러 설정 (기존과 동일)
-    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.MipLODBias = 0;
-    d3dStaticSamplerDesc.MaxAnisotropy = 1;
-    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    d3dStaticSamplerDesc.MinLOD = 0;
-    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    d3dStaticSamplerDesc.ShaderRegister = 0;
-    d3dStaticSamplerDesc.RegisterSpace = 0;
-    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	// 3. 정적 샘플러 설정 s0 + s1 (그림자용)
 
-    d3dRootSignatureDesc.NumStaticSamplers = 1;
-    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
+    D3D12_STATIC_SAMPLER_DESC samplers[2];
+    samplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].MipLODBias = 0;
+    samplers[0].MaxAnisotropy = 1;
+    samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    samplers[0].MinLOD = 0;
+    samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    samplers[0].ShaderRegister = 0;
+    samplers[0].RegisterSpace = 0;
+    samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    // s1 추가
+    samplers[1] = {};
+    samplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    samplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].MipLODBias = 0;
+    samplers[1].MaxAnisotropy = 0;
+    samplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    samplers[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    samplers[1].MinLOD = 0;
+    samplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+    samplers[1].ShaderRegister = 1; // s1
+    samplers[1].RegisterSpace = 0;
+    samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    d3dRootSignatureDesc.NumStaticSamplers = 2;
+    d3dRootSignatureDesc.pStaticSamplers = samplers;
 
     // 4. 루트 서명 생성
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
@@ -382,13 +346,14 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // Descriptor Range for Textures
-    CD3DX12_DESCRIPTOR_RANGE ranges[2]; // ← 1에서 2로 변경
+    CD3DX12_DESCRIPTOR_RANGE ranges[3]; // ← 1에서 2로 변경
 
     ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t4
     ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t8~t10(IBL)← 추가
+    ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t11 (shadow) 
 
     // Root Parameters
-    CD3DX12_ROOT_PARAMETER params[6];
+    CD3DX12_ROOT_PARAMETER params[8];
     // [0] b0: World Matrix (cbPerObject)
     params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
     // [1] b1: Camera (cbPerFrame)
@@ -399,28 +364,50 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
 	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
 	// [4] t0~t4: Texture Descriptor Table
     params[4].InitAsDescriptorTable(1, &ranges[0]);
-    // [5] t8~t10: IBL Texture Descriptor Table ← 추가
+    // [5] t8~t10: IBL Texture Descriptor Table 
     params[5].InitAsDescriptorTable(1, &ranges[1]);
+	// [6] b5: Shadow CBV (cbShadow)
+    params[6].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
+	// [7] t11: Shadow Texture Descriptor Table
+    params[7].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
 
-    // Static Sampler (s0)
-    D3D12_STATIC_SAMPLER_DESC d3dStaticSamplerDesc = {};
-    d3dStaticSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-    d3dStaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    d3dStaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    d3dStaticSamplerDesc.MipLODBias = 0;
-    d3dStaticSamplerDesc.MaxAnisotropy = 16;
-    d3dStaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    d3dStaticSamplerDesc.MinLOD = 0;
-    d3dStaticSamplerDesc.ShaderRegister = 0;
-    d3dStaticSamplerDesc.RegisterSpace = 0;
-    d3dStaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    d3dRootSignatureDesc.NumStaticSamplers = 1;
-    d3dRootSignatureDesc.pStaticSamplers = &d3dStaticSamplerDesc;
+    D3D12_STATIC_SAMPLER_DESC samplers[2];
+    
+    samplers[0].Filter = D3D12_FILTER_ANISOTROPIC;
+    samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    samplers[0].MipLODBias = 0;
+    samplers[0].MaxAnisotropy = 16;
+    samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    samplers[0].MinLOD = 0;
+    samplers[0].ShaderRegister = 0;
+    samplers[0].RegisterSpace = 0;
+    samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    samplers[1] = {};
+    samplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    samplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    samplers[1].MipLODBias = 0;
+    samplers[1].MaxAnisotropy = 0;
+    samplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    samplers[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    samplers[1].MinLOD = 0;
+    samplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+    samplers[1].ShaderRegister = 1; // s1
+    samplers[1].RegisterSpace = 0;
+    samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    // Sampler 설정 (Gltf와 동일하게 s1 추가)
+    d3dRootSignatureDesc.NumParameters = 8;
+    d3dRootSignatureDesc.NumStaticSamplers = 2;
+    d3dRootSignatureDesc.pStaticSamplers = samplers; 
 
     // Create Root Signature
     ComPtr<ID3D12RootSignature> pd3dGraphicsRootSignature = nullptr;
@@ -584,5 +571,35 @@ ComPtr<ID3D12RootSignature> DebugRootSignatureGenerator::create(ID3D12Device* de
     ComPtr<ID3DBlob> blob, error;
     D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error);
     device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
+}
+
+const std::string& CsmDepthRootSignatureGenerator::name() const
+{
+    static const std::string n = "csm_depth";
+    return n;
+}
+
+ComPtr<ID3D12RootSignature> CsmDepthRootSignatureGenerator::create(ID3D12Device*
+    device)
+{
+    CD3DX12_ROOT_PARAMETER params[2];
+    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_VERTEX);// b0
+
+    params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);   // b1 cascades(GS에서 사용)
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error)))
+    {
+        if (error) { OutputDebugStringA((char*)error->GetBufferPointer()); }
+    }
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+
     return rootSig;
 }
