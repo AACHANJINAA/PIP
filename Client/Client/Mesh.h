@@ -145,6 +145,8 @@ public:
 
 	// 렌더링 함수는 VBV/IBV를 설정하고 DrawInstanced를 호출합니다.
 	virtual void render(ID3D12GraphicsCommandList* commandList);
+	// CSM 렌더링을 위한 별도의 렌더링 함수
+	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList);
 
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
 protected:

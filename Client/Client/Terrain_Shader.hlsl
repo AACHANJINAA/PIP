@@ -68,6 +68,7 @@ PS_Input VS_Main(VS_Input input)
 #include "Light.hlsl"
 #define g_samLinear terrainSampler 
 #include "IBL.hlsl"
+#include "Shadow_Sample.hlsl"
 
 float4 PS_Main(PS_Input input) : SV_TARGET
 {
@@ -109,8 +110,13 @@ float4 PS_Main(PS_Input input) : SV_TARGET
 
         // IBL 추가 ← 추가
     float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
+    
+    // [추가] 그림자 계산
+    float3 viewPos = mul(float4(input.PositionW, 1.0f), gmtxView).xyz;
+    float viewDepth = viewPos.z;
+    float shadowFactor = sample_csm_shadow(input.PositionW, viewDepth);
 
-    float3 finalColor = litColor.rgb + iblColor + emissive; // ← iblColor 추가
+    float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + emissive;
      
 	// Tone Mapping (HDR -> LDR)
     finalColor.rgb = finalColor.rgb / (finalColor.rgb + 1.0f);
