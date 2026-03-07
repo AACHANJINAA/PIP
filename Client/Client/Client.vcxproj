@@ -170,6 +170,8 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScriptComponent.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShadowDepthShader.h" />
+    <ClInclude Include="ShadowManager.h" />
     <ClInclude Include="SkyboxMesh.h" />
     <ClInclude Include="SkyboxRenderComponent.h" />
     <ClInclude Include="SkyboxShader.h" />
@@ -281,6 +283,8 @@
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ScriptComponent.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShadowDepthShader.cpp" />
+    <ClCompile Include="ShadowManager.cpp" />
     <ClCompile Include="SkyboxMesh.cpp" />
     <ClCompile Include="SkyboxRenderComponent.cpp" />
     <ClCompile Include="SkyboxShader.cpp" />

@@ -185,3 +185,34 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
     _mesh->render(commandList);
 }
 
+void RenderComponent::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, UINT frame_index)
+{
+    if (!_mesh) return;
+
+    // [강화된 안전 체크]
+    if (!_cbGameObjectInfo[0] || !_cbGameObjectInfo[1] ||
+        !_mappedCbGameObjectInfo[0] || !_mappedCbGameObjectInfo[1])
+    {
+        return;  // 아직 완전히 초기화되지 않음
+    }
+
+    // frame_index 범위 체크
+    if (frame_index >= 2) return;
+
+    // 1. 오브젝트의 월드 행렬 가져오기 및 Transpose 연산
+    const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
+
+    XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
+
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
+
+    XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, XMMatrixTranspose(worldInverse));
+
+    // 2. 루트 시그니처(b0 레지스터)에 상수 버퍼 바인딩
+    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
+
+    // 3. 메쉬 그리기 (인스턴스 3개)
+    _mesh->render_CascadeShadowMap(commandList);
+}
+

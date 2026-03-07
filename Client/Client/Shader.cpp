@@ -4,11 +4,12 @@
 ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = {};
-	ComPtr<ID3DBlob> vs_blob, ps_blob;
+	ComPtr<ID3DBlob> vs_blob, ps_blob, gs_blob;
 
 	pso_desc.pRootSignature = root_signature;
 	pso_desc.VS = create_vertex_shader(vs_blob);
 	pso_desc.PS = create_pixel_shader(ps_blob);
+	pso_desc.GS = create_geometry_shader(gs_blob);
 	pso_desc.InputLayout = create_input_layout();
 
 	pso_desc.RasterizerState = create_rasterizer_state();
@@ -22,9 +23,20 @@ ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootS
 	// virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive_topology_type() const { return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; }
 	pso_desc.PrimitiveTopologyType = this->primitive_topology_type();
 
-	pso_desc.NumRenderTargets = 1;
-	pso_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	pso_desc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	pso_desc.NumRenderTargets = this->get_num_render_targets(); // 가상함수 호출로 변경
+	for (UINT i = 0; i < 8; ++i)
+	{
+		if (i < pso_desc.NumRenderTargets)
+		{
+			pso_desc.RTVFormats[i] = this->get_rtv_format(i);
+		}
+		else
+		{
+			// 사용하지 않는 인덱스는 무조건 UNKNOWN으로 명시해야 D3D12 에러가 나지 않습니다.
+			pso_desc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+		}
+	}
+	pso_desc.DSVFormat = this->get_dsv_format(); // 가상 함수 호출로 변경
 	pso_desc.SampleDesc.Count = 1;
 
 	ComPtr<ID3D12PipelineState> pso;

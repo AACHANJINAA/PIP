@@ -16,6 +16,8 @@
 #include "PhysicsManager.h"
 #include "ReplicationSystem.h"
 
+#include "ShadowManager.h"
+
 
 GameFramework::GameFramework()
 	: _wndClientWidth(FRAME_BUFFER_WIDTH)
@@ -69,6 +71,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	Renderer::instance()->initialize(_device.Get());
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 	LightManager::instance()->initialize(_device.Get());
+	ShadowManager::instance()->initialize(_device.Get());
 
 	// ImGui 매니저 초기화 (스왑체인 버퍼 개수와 포맷 전달)
 	ImGuiManager::instance()->initialize(_hWnd, _device.Get(), _commandQueue.Get(), SWAP_CHAIN_BUFFERS, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -425,6 +428,16 @@ void GameFramework::FrameAdvance()
 	_commandList->Reset(currentRenderAllocator.Get(), nullptr);
 
 	ResourceManager::instance()->set_current_command_list(_commandList.Get());
+
+	// 기본 RTV 설정 전에 그림자 맵 먼저 렌더링
+	ShadowManager::instance()->update_and_execute(_commandList.Get(), _swapChainBufferIndex);
+	// 뷰포트와 가위 영역을 메인 화면 크기로 다시 복구! (ShadowManager에서 1024x1024로 바꿨으므로)
+	D3D12_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(_wndClientWidth),
+	static_cast<float>(_wndClientHeight), 0.0f, 1.0f };
+	D3D12_RECT scissorRect = { 0, 0, static_cast<LONG>(_wndClientWidth),
+	static_cast<LONG>(_wndClientHeight) };
+	_commandList->RSSetViewports(1, &viewport);
+	_commandList->RSSetScissorRects(1, &scissorRect);
 
 	// (리소스 배리어 설정: Present -> RenderTarget)
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(

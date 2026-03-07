@@ -31,6 +31,7 @@ protected:
 	virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() = 0;
 	virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) = 0;
 	virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) = 0;
+	virtual D3D12_SHADER_BYTECODE create_geometry_shader(ComPtr<ID3DBlob>& shader_blob) { return { nullptr, 0 }; } // GS는 적용이 거의 안되니 디폴트 이걸로
 
 	// --- 필요 시 파생 클래스가 재정의(override)할 수 있는 옵션들 ---
 
@@ -51,4 +52,12 @@ public:
 
 	//  [추가] 각 객체를 그리기 직전에 호출될 함수. 셰이더가 객체별 리소스 바인딩을 담당합니다.    
 	virtual void update_per_object(ID3D12GraphicsCommandList* commandList, class Renderer* renderer, GameObject* object) {}
+
+	virtual DXGI_FORMAT get_dsv_format() const {
+		return DXGI_FORMAT_D24_UNORM_S8_UINT;
+	}
+	virtual UINT get_num_render_targets() const { return 1; }
+	virtual DXGI_FORMAT get_rtv_format(UINT index = 0) const {
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
 };

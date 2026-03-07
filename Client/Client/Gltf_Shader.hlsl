@@ -63,8 +63,9 @@ static MATERIAL gMaterial =
 	 float4(0.0, 0.0, 0.0, 1.0) // Emissive
 };
 
- #include "Light.hlsl"
- #include "IBL.hlsl"
+#include "Light.hlsl"
+#include "IBL.hlsl"
+#include "Shadow_Sample.hlsl"
 
 struct VS_INPUT
 {
@@ -158,8 +159,15 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
    // 2. 환경광 계산 (IBL.hlsl의 CalculateIBL 함수)
     float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
 
-    // 3. 직접광 + 환경광 + 자체발광
-    float3 finalColor = litColor.rgb + iblColor + finalEmissive;
+    // [추가] View 공간에서의 깊이(Z) 값 계산 (어떤 Cascade를 쓸지 결정하기 위함)
+    float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
+    float viewDepth = viewPos.z;
+
+    // [추가] 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
+    float shadowFactor = sample_csm_shadow(In.WorldPosition, viewDepth);
+    
+    // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
+    float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
 
     // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
