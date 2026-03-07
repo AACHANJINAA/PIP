@@ -121,3 +121,18 @@ void LightManager::set_global_ambient(const DirectX::XMFLOAT4& ambient)
 {
     _lightsCBData.gcGlobalAmbientLight = ambient;
 }
+
+XMFLOAT3 LightManager::get_sun_direction() const
+{
+    // 첫 번째 Directional Light 찾기
+    for (const auto& light : _lights)
+    {
+        if (light.m_nType == DIRECTIONAL_LIGHT && light.m_bEnable)
+        {
+            return light.m_vDirection;
+        }
+    }
+
+    // 기본값 (찾지 못하면)
+    return XMFLOAT3(0.05f, -0.4f, -0.82f);
+}
