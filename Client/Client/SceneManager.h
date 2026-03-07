@@ -41,6 +41,8 @@ public:
 
 	std::shared_ptr<GameObject> get_skybox_object() const { return _skyboxObject; }
 	std::shared_ptr<GameObject> get_terrain_object() const { return _terrainObject; }
+
+	float get_terrain_size() const;
 private:
 	void build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 	void build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);

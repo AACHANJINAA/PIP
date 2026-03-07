@@ -53,6 +53,8 @@ public:
 
     void set_global_ambient(const DirectX::XMFLOAT4& ambient);
 
+    XMFLOAT3 get_sun_direction() const;
+
 private:
     LightManager();
     ~LightManager();

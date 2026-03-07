@@ -4,6 +4,8 @@
 #include "ObjectManager.h"
 #include "RenderComponent.h"
 #include "Renderer.h"
+#include "LightManager.h"
+#include "SceneManager.h"
 
 void ShadowManager::initialize(ID3D12Device* device)
 {
@@ -92,8 +94,8 @@ void ShadowManager::initialize(ID3D12Device* device)
 
 void ShadowManager::build_cascade_matrices()
 {
-    // 빛의 방향 세팅 (하드코딩된 값)
-    XMFLOAT3 lightDir = { 0.05f, -0.4f, -0.82f };
+    // 빛의 방향 세팅
+    XMFLOAT3 lightDir = LightManager::instance()->get_sun_direction();
     XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&lightDir));
 
     // 메인 카메라 위치 가져오기
@@ -108,7 +110,13 @@ void ShadowManager::build_cascade_matrices()
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
-    float radii[3] = { 20.0f, 80.0f, 256.0f }; // 각 Cascade 반경
+    float terrainSize = SceneManager::instance()->get_terrain_size();
+    float radii[3] = {
+        terrainSize * 0.1f,  // 근거리: 지형의 10%
+        terrainSize * 0.3f,  // 중거리: 지형의 30%
+        terrainSize * 1.0f   // 원거리: 지형 전체
+    };
+
     for (int c = 0; c < 3; c++)
     {
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
@@ -118,8 +126,8 @@ void ShadowManager::build_cascade_matrices()
         XMStoreFloat4x4(&_shadowData.lightVP[c], XMMatrixTranspose(vp));
     }
 
-    _shadowData.splitNear = 20.0f;
-    _shadowData.splitMid = 80.0f;
+    _shadowData.splitNear = radii[0];
+    _shadowData.splitMid = radii[1];
     _shadowData.bias = 0.005f;
 }
 

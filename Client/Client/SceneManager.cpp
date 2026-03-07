@@ -98,6 +98,14 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+float SceneManager::get_terrain_size() const
+{
+	if (!_terrainObject)
+		return 512.0f; // 기본값
+
+	return 512.0f; // TODO: TerrainMesh에서 실제 크기 가져오기
+}
+
 void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	if (_skyboxObject) 
