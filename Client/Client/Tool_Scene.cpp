@@ -176,7 +176,11 @@ void Tool_Scene::view_bones()
     for (const auto& name : _boneNames) combo_items.push_back(name.c_str());
 
     // 콤보박스 값이 변경되었는지 확인
-    bool bBoneChanged = ImGui::Combo("Bones", &_selectedBoneIndex, combo_items.data(), combo_items.size());
+    bool bBoneChanged = ImGui::Combo(
+        "Bones", 
+        &_selectedBoneIndex, 
+        combo_items.data(), 
+        static_cast<int>(combo_items.size()));
 
     // 뼈대 보기 체크박스
     ImGui::Checkbox("Show Debug Bones", &_bShowBones);
@@ -323,7 +327,7 @@ void Tool_Scene::draw_and_pick_bones()
         float screenY = XMVectorGetY(screenPosVec);
 
         // 3. 마우스 피킹 (가장 가까운 뼈대 찾기)
-        float distToMouse = sqrt(pow(screenX - mousePos.x, 2) + pow(screenY - mousePos.y, 2));
+        float distToMouse = sqrtf(powf(screenX - mousePos.x, 2) + powf(screenY - mousePos.y, 2));
         if (distToMouse < closestDistance)
         {
             closestDistance = distToMouse;

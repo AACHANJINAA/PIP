@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "MainPlayerScript.h"
 #include "GameFramework.h"
 #include "InputManager.h"

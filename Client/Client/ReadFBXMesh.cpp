@@ -195,7 +195,7 @@ void ReadFBXMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         memcpy(_vertexDataBuffer.data() + current_buffer_size, temp_vertices.data(), new_vertices_size);
 
         // 전체 정점 개수 업데이트
-        _vertexCount += temp_vertices.size();
+        _vertexCount += static_cast<UINT>(temp_vertices.size());
     }
 	
 }

@@ -14,7 +14,7 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{189c202d-c5cc-4122-8d15-0eb80589150e}</ProjectGuid>
-    <RootNamespace>ChessClient</RootNamespace>
+    <RootNamespace>Client</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Client</ProjectName>
   </PropertyGroup>
@@ -45,10 +45,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Jolt\lib\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Jolt\lib\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
