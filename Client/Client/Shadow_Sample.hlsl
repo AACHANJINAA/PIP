@@ -13,7 +13,7 @@ Texture2DArray g_shadowMap : register(t11);
 SamplerComparisonState g_shadowSampler : register(s1);
 
 // worldPos: 픽셀의 월드 좌표, viewDepth: 카메라 기준 view-space Z
-float sample_csm_shadow(float3 worldPos, float viewDepth)
+float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
 {
     // 1. 카메라 거리로 cascade 선택
     int cascade;
@@ -23,9 +23,11 @@ float sample_csm_shadow(float3 worldPos, float viewDepth)
         cascade = 1;
     else
         cascade = 2;
-
+    
+    float3 offsetWorldPos = worldPos + (normal * 1.0f);
+    
     // 2. 선택된 cascade의 light space 좌표로 변환
-    float4 sp = mul(float4(worldPos, 1.0f), g_shadowLightVP[cascade]);
+    float4 sp = mul(float4(offsetWorldPos, 1.0f), g_shadowLightVP[cascade]);
     sp.xyz /= sp.w;
 
     // 3. NDC → UV (Y축 반전)

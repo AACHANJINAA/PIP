@@ -164,7 +164,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float viewDepth = viewPos.z;
 
     // [추가] 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
-    float shadowFactor = sample_csm_shadow(In.WorldPosition, viewDepth);
+    float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
     
     // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
