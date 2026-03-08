@@ -80,10 +80,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)..\Common</IncludePath>
     <LibraryPath>../../Jolt\include;$(ProjectDir)\lua-5.4.2_Win64_dll17_lib;$(LibraryPath)</LibraryPath>
+    <TargetName>STL_Server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)..\Common</IncludePath>
     <LibraryPath>../../Jolt\include;$(ProjectDir)\lua-5.4.2_Win64_dll17_lib;$(LibraryPath)</LibraryPath>
+    <TargetName>STL_Server</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
