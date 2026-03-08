@@ -143,6 +143,8 @@ public:
 	void render(ID3D12GraphicsCommandList* commandList) override;
 	void release_upload_buffers() override;
 
+	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList) override;
+
 	
 	// DW설명 : 애니메이션 관련 함수들
 	void set_bone_palette_buffer_from_animation_component(ComPtr<ID3D12Resource> bone_palette_buffer) { _bone_palette_buffer_from_animation_component = bone_palette_buffer; }

@@ -187,6 +187,35 @@ void ReadGLTFMesh::release_upload_buffers()
 	}
 }
 
+void ReadGLTFMesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList)
+{
+	if (!_isUploaded) return;
+
+	// 1. 토폴로지 설정 (삼각형 리스트)
+	commandList->IASetPrimitiveTopology(_primitiveTopology);
+
+	// 2. glTF 내부의 모든 세부 메쉬(Primitives)를 순회하며 렌더링
+	for (const auto& primitive : _primitives)
+	{
+		// 각 프리미티브의 전용 정점 버퍼 바인딩
+		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
+
+		if (primitive->_indexCount > 0)
+		{
+			// 인덱스 버퍼가 있는 경우
+			commandList->IASetIndexBuffer(&primitive->_indexBufferView);
+
+			// [중요] 인스턴싱 카운트를 3으로 설정 (3개의 Cascade에 동시 렌더링)
+			commandList->DrawIndexedInstanced(primitive->_indexCount, 3, 0, 0, 0);
+		}
+		else
+		{
+			// 인덱스 버퍼가 없는 경우
+			commandList->DrawInstanced(primitive->_vertexCount, 3, 0, 0);
+		}
+	}
+}
+
 void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer)
 {
 	// T-Pose 또는 유효하지 않은 클립 인덱스 체크
