@@ -637,7 +637,8 @@ void ReadGLTFMesh::read_skinned_animation_mesh(const std::string& filePath)
 			if (node.contains("skin"))
 			{
 				// T-포즈를 유지하고 JOINTS_0, WEIGHTS_0를 읽는 헬퍼 함수
-				process_skinned_mesh(gltf_json, binary_buffer, gltf_json["meshes"][node["mesh"].get<int>()]);
+				int skin_index = node["skin"].get<int>(); // 파츠의 스킨 번호 획득
+				process_skinned_mesh(gltf_json, binary_buffer, gltf_json["meshes"][node["mesh"].get<int>()], skin_index);
 			}
 			// else 
 			// {
@@ -672,6 +673,11 @@ void ReadGLTFMesh::load_skins(const json& gltf_json, const std::vector<char>& bi
 	}
 
 	// 우리는 이 예제에서 0번 스킨만 로드한다고 가정 -> 이것도 수정예정, 아직 여러개 있는 경우를 못찾음
+
+	// DW 설명 : [마스터 스켈레톤 방식 적용] -> 또 안불러와지는 것이 있다면 나에게로...
+	// 헬멧, 장갑 등 여러 파츠로 인해 skins 배열에 여러 항목이 존재하더라도,
+	// 메인 몸통인 0번 스킨 딱 하나만 로드하여 이를 '마스터 뼈대'로 삼아버림
+	// 나머지 파츠들은 렌더링 시 이 마스터 뼈대를 참조하여 움직임
 	const json& skin = gltf_json["skins"][0];
 
 	// --- 1. 'joints' 배열 로드 (GPU 행렬 팔레트 순서) ---
@@ -966,8 +972,27 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 	}
 }
 
-void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh)
+void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh, int skin_index)
 {
+	// 마스터 스켈레톤 매핑 테이블 생성
+	std::vector<int> local_to_master_map;
+	if (gltf_json.contains("skins") && skin_index < gltf_json["skins"].size())
+	{
+		const json& current_skin = gltf_json["skins"][skin_index];
+		const auto& local_joints = current_skin["joints"];
+
+		local_to_master_map.resize(local_joints.size());
+
+		for (size_t j = 0; j < local_joints.size(); ++j)
+		{
+			int local_node_idx = local_joints[j].get<int>();
+			std::string bone_name = gltf_json["nodes"][local_node_idx].value("name", "unnamed");
+
+			// 파츠의 j번째 뼈가 마스터 스켈레톤(몸통)의 몇 번째 뼈인지 찾아 기록
+			local_to_master_map[j] = get_palette_index_by_name(bone_name);
+		}
+	}
+
 	for (const auto& primitive_json : mesh["primitives"])
 	{
 		_primitives.emplace_back(std::make_unique<GltfPrimitive>());
@@ -1138,10 +1163,17 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 
 				// Skinning Data (배열에 값 대입)
 				if (i < joint_indices_vec.size()) {
-					v._boneIndices[0] = joint_indices_vec[i].x;
-					v._boneIndices[1] = joint_indices_vec[i].y;
-					v._boneIndices[2] = joint_indices_vec[i].z;
-					v._boneIndices[3] = joint_indices_vec[i].w;
+					// 파일에 적혀있는 로컬 인덱스
+					UINT local_j0 = joint_indices_vec[i].x;
+					UINT local_j1 = joint_indices_vec[i].y;
+					UINT local_j2 = joint_indices_vec[i].z;
+					UINT local_j3 = joint_indices_vec[i].w;
+
+					// 매핑 테이블을 통해 몸통(Master) 기준의 인덱스로 변환해서 넣기
+					v._boneIndices[0] = (local_j0 < local_to_master_map.size()) ? local_to_master_map[local_j0] : 0;
+					v._boneIndices[1] = (local_j1 < local_to_master_map.size()) ? local_to_master_map[local_j1] : 0;
+					v._boneIndices[2] = (local_j2 < local_to_master_map.size()) ? local_to_master_map[local_j2] : 0;
+					v._boneIndices[3] = (local_j3 < local_to_master_map.size()) ? local_to_master_map[local_j3] : 0;
 				}
 				else {
 					v._boneIndices[0] = v._boneIndices[1] = v._boneIndices[2] = v._boneIndices[3] = 0;
@@ -1186,6 +1218,19 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 			primitive->_materialIndex = primitive_json.value("material", -1);
 		}
 	}
+}
+
+int ReadGLTFMesh::get_palette_index_by_name(const std::string& name) const
+{
+	for (size_t i = 0; i < _skeleton.size(); ++i)
+	{
+		// 이름이 같으면 GPU 행렬 팔레트의 인덱스 반환
+		if (_skeleton[i]._name == name)
+		{
+			return static_cast<int>(i);
+		}
+	}
+	return 0; // 못 찾으면 루트 뼈대(0번)로 반환한다 -> 보통 이 경우일것
 }
 
 void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::string& want_name)

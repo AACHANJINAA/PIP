@@ -58,7 +58,8 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	//SpawnGrammy_Walk(device, commandList);
 
     Spawn_SK_MagicConstruct(device, commandList);
-    SpawnTestBoss(device, commandList);
+    // SpawnTestBoss(device, commandList);
+    Spawn_Bone_Golem(device, commandList);
 	Spawn_UI(device, commandList);
 
 	Spawn_Monster_HP_UI(device, commandList);
@@ -351,6 +352,53 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
     //    hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
     //}
+}
+
+void Chess_Scene::Spawn_Bone_Golem(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    float offsetX = 100.0f;
+    float offsetY = 0.0f;
+    float offsetZ = +200.0f;
+    // DW설명 : 인사 애니메이션 오브젝트 생성
+    {
+        auto BoneGolem_Obj = ObjectManager::instance()->create_game_object("BoneGolem");
+
+        // 메쉬 설정
+        auto BoneGolem_Mesh = ResourceManager::instance()->load_mesh("Resource/BoneGolem/BoneGolem.gltf", true);
+        // 메쉬에 맞는 애니메이션 추가
+        ReadGLTFMesh* gltf_mesh = static_cast<ReadGLTFMesh*>(BoneGolem_Mesh.get());
+        gltf_mesh->load_animation_only("Resource/BoneGolem/A_BoneGolem_Attack01.gltf", "attack");
+
+        // 렌더 컴포넌트 추가
+        auto renderer = BoneGolem_Obj->add_component<RenderComponent>();
+        renderer->set_mesh(BoneGolem_Mesh);
+        // 스키닝 애니메이션 pso 설정              
+        renderer->set_pso_name("skinned");
+
+        // 애니메이션 컴포넌트 추가
+        BoneGolem_Obj->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
+
+        auto animation_renderer = BoneGolem_Obj->get_component<AnimationComponent>();
+        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "BoneGolem_mesh", BoneGolem_Mesh);
+        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", BoneGolem_Mesh);
+        animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
+        // 재질 및 쉐이더 설정
+        std::string material = "skinned_BoneGloem";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+        // 원하는 무기 붙이기
+        auto socket_compnenet = BoneGolem_Obj->get_component<SocketComponenet>();
+        //socket_compnenet->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
+
+        // 위치, 회전 정보
+        BoneGolem_Obj->transform()->set_local_rotation(0.f, 180.f, 0.f);
+        BoneGolem_Obj->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
+
+
+        BoneGolem_Obj->transform()->set_local_position(XMFLOAT3(50.0, 25.0f, -130.0f));
+    }
 }
 
 void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
