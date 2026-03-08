@@ -182,9 +182,12 @@ private:
 	void read_skinned_animation_mesh(const std::string& filePath);
 	void load_skins(const json& gltf_json, const std::vector<char>& binary_buffer);
 	void load_animations(const json& gltf_json, const std::vector<char>& binary_buffer);
-	void process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh);
-	
 
+	// 스키닝 메쉬 처리 함수
+	void process_skinned_mesh(const json& gltf_json, const std::vector<char>& binary_buffer, const json& mesh, int skin_index);
+	
+	// DW설명 : 이름을 통해 행렬 팔레트에서 해당 뼈대의 인덱스를 반환하는 함수
+	int get_palette_index_by_name(const std::string& name) const;
 
 	// enum 으로 바꾸는 헬퍼 함수
 	AnimationInterpolation string_to_interpolation(const std::string& str);

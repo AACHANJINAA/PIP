@@ -25,6 +25,7 @@ private:
     void SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void SpawnTestBoss(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+    void Spawn_Bone_Golem(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
