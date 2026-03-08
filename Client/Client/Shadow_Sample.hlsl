@@ -24,7 +24,7 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
     else
         cascade = 2;
     
-    float3 offsetWorldPos = worldPos + (normal * 1.0f);
+    float3 offsetWorldPos = worldPos + (normal * 0.1f);
     
     // 2. 선택된 cascade의 light space 좌표로 변환
     float4 sp = mul(float4(offsetWorldPos, 1.0f), g_shadowLightVP[cascade]);
