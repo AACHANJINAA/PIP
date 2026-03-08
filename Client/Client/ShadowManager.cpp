@@ -106,20 +106,20 @@ void ShadowManager::build_cascade_matrices()
         camPos = XMVectorSet(pos.x, pos.y, pos.z, 1.0f);
     }
 
-    XMVECTOR lightPos = camPos - dir * 1000.0f; // 빛을 적당히 멀리 떨어뜨림
+    XMVECTOR lightPos = camPos - dir * 2000.0f; // 빛을 적당히 멀리 떨어뜨림
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
     float terrainSize = SceneManager::instance()->get_terrain_size();
     float radii[3] = {
         terrainSize * 0.1f,  // 근거리: 지형의 10%
-        terrainSize * 0.7f,  // 중거리: 지형의 50%
+        terrainSize * 0.5f,  // 중거리: 지형의 50%
         terrainSize * 1.0f   // 원거리: 지형 전체
     };
 
     for (int c = 0; c < 3; c++)
     {
-        XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
+        XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 10000.0f);
         XMMATRIX vp = lightView * proj;
         // 행렬을 GPU에 맞게 Transpose하여 저장
         XMStoreFloat4x4(&_cascadeData.lightVP[c], XMMatrixTranspose(vp));
@@ -128,7 +128,7 @@ void ShadowManager::build_cascade_matrices()
 
     _shadowData.splitNear = radii[0];
     _shadowData.splitMid = radii[1];
-    _shadowData.bias = 0.006f;
+    _shadowData.bias = 0.0005f;
 }
 
 void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index)
