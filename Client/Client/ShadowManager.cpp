@@ -194,8 +194,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     // 패스 B: skinned 오브젝트 (bone transform 적용)
     {
         ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
-        ID3D12RootSignature* rootSig =
-            renderer->get_root_signature("csm_depth_skinned");
+        ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
 
         if (pso && rootSig) {
             cmd->SetPipelineState(pso);
@@ -213,8 +212,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                 auto animComp = obj->get_component<AnimationComponent>();
                 if (!animComp || !animComp->get_bone_palette_buffer()) continue;
 
-                cmd->SetGraphicsRootConstantBufferView(
-                    2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
+                cmd->SetGraphicsRootConstantBufferView( 2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
 
                 renderComp->render_CascadeShadowMap(cmd, frame_index);
             }
@@ -230,6 +228,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             i);
     }
+    cmd->ResourceBarrier(3, barriersR);
 }
 
 void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shadowCbParamIdx, UINT shadowSrvParamIdx, Renderer* renderer)
