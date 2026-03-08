@@ -37,6 +37,31 @@ float sample_csm_shadow(float3 worldPos, float viewDepth)
     if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
         return 1.0f;
 
-    // 5. 단순 1샘플 비교 (PCF 없음)
-    return g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv, (float) cascade),sp.z - g_shadowBias);
+    // 5. 3x3 PCF (Percentage Closer Filtering) 적용
+    float shadow = 0.0f;
+
+    // 쉐도우 맵 해상도(현재 1024)의 역수를 계산하여 텍셀 크기를 구합니다.
+    float2 texelSize = 1.0f / 1024.0f;
+
+    // 현재 픽셀 주변 3x3 영역을 샘플링합니다.
+    [unroll]
+    for (int y = -1; y <= 1; ++y)
+    {
+    [unroll]
+        for (int x = -1; x <= 1; ++x)
+        {
+            float2 offset = float2(x, y) * texelSize;
+
+        // SampleCmpLevelZero는 하드웨어 비교 기능을 사용하여 0.0(그림자) 또는 1.0(빛)을 반환합니다.
+        // (하드웨어 설정에 따라 중간값인 0.5 등이 반환될 수도 있어 부드러워집니다.)
+            shadow += g_shadowMap.SampleCmpLevelZero(
+            g_shadowSampler,
+            float3(uv + offset, (float) cascade),
+            sp.z - g_shadowBias
+        );
+        }
+    }
+
+    // 9개 샘플의 평균을 내어 최종 그림자 강도를 결정 (0.0 ~ 1.0)
+    return shadow / 9.0f;
 }
