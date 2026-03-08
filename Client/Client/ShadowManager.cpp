@@ -128,7 +128,7 @@ void ShadowManager::build_cascade_matrices()
 
     _shadowData.splitNear = radii[0];
     _shadowData.splitMid = radii[1];
-    _shadowData.bias = 0.005f; // skinned는 0.0001f 정도 사용해야할듯
+    _shadowData.bias = 0.00f; // skinned는 0.0001f 정도 사용해야할듯
 }
 
 void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index)

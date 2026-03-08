@@ -114,7 +114,7 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     // [추가] 그림자 계산
     float3 viewPos = mul(float4(input.PositionW, 1.0f), gmtxView).xyz;
     float viewDepth = viewPos.z;
-    float shadowFactor = sample_csm_shadow(input.PositionW, viewDepth);
+    float shadowFactor = sample_csm_shadow(input.PositionW, N, viewDepth);
 
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + emissive;
      
