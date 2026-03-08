@@ -603,3 +603,33 @@ ComPtr<ID3D12RootSignature> CsmDepthRootSignatureGenerator::create(ID3D12Device*
 
     return rootSig;
 }
+
+const std::string& CsmDepthSkinnedRootSignatureGenerator::name() const
+{
+    static const std::string n = "csm_depth_skinned";
+    return n;
+}
+
+ComPtr<ID3D12RootSignature>
+CsmDepthSkinnedRootSignatureGenerator::create(ID3D12Device* device)
+{
+    // param[0] = b0 : 월드 행렬
+    // param[1] = b1 : cascade LightVP 3개
+    // param[2] = b4 : 뼈대 변환 행렬 128개
+    CD3DX12_ROOT_PARAMETER params[3];
+    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_VERTEX); // b0 world
+    params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);    // b1 cascades(VS + GS)
+    params[2].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX); // b4 bones
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error);
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+
+    return rootSig;
+}
