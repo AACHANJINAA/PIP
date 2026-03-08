@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
+#include "AnimationComponent.h"
 #include "ObjectManager.h"
 #include "RenderComponent.h"
 #include "Renderer.h"
@@ -160,60 +161,75 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 
     cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-    // 5. 뷰포트 & 시저 설정
+    // 4. 뷰포트 & 시저 설정
     D3D12_VIEWPORT viewport = { 0.0f, 0.0f, 1024.0f, 1024.0f, 0.0f, 1.0f };
     D3D12_RECT scissor = { 0, 0, 1024, 1024 };
     cmd->RSSetViewports(1, &viewport);
     cmd->RSSetScissorRects(1, &scissor);
 
-    // 6. 파이프라인 및 루트 시그니처 바인딩
     auto renderer = Renderer::instance();
-    ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
-    ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
-
-    if (pso && rootSig) {
-        cmd->SetPipelineState(pso);
-        cmd->SetGraphicsRootSignature(rootSig);
-    }
-    else {
-        CD3DX12_RESOURCE_BARRIER barriersR[3];
-        for (int i = 0; i < 3; ++i) {
-            barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
-                _shadowMapArray.Get(),
-                D3D12_RESOURCE_STATE_DEPTH_WRITE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                i);
-        }
-        cmd->ResourceBarrier(3, barriersR);
-        return; // 배리어 원복 후 안전하게 종료
-    }
-    cmd->SetGraphicsRootConstantBufferView(1, _cbCascades->GetGPUVirtualAddress());
-
-    // 7. 오브젝트 그리기
     const auto& objs = ObjectManager::instance()->get_all_game_objects();
-    for (const auto& obj : objs) {
-        if (!obj || obj->is_destroyed()) continue;
 
-        auto renderComp = obj->get_component<RenderComponent>();
-        if (!renderComp) continue;
+    // 패스 A: 일반 gltf 오브젝트 (bone 없음)
+    {
+        ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
+        ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
 
-        auto shaderName = renderComp->pso_name();
+        if (pso && rootSig) {
+            cmd->SetPipelineState(pso);
+            cmd->SetGraphicsRootSignature(rootSig);
+            cmd->SetGraphicsRootConstantBufferView(1,
+                _cbCascades->GetGPUVirtualAddress());
 
-        // 현재는 gltf, skinned만 그림자 생성
-        if (shaderName == "gltf" || shaderName == "skinned") {
-            renderComp->render_CascadeShadowMap(cmd, frame_index);
+            for (const auto& obj : objs) {
+                if (!obj || obj->is_destroyed()) continue;
+                auto renderComp = obj->get_component<RenderComponent>();
+                if (!renderComp || renderComp->pso_name() != "gltf") continue;
+
+                renderComp->render_CascadeShadowMap(cmd, frame_index);
+            }
         }
     }
 
+    // 패스 B: skinned 오브젝트 (bone transform 적용)
+    {
+        ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
+        ID3D12RootSignature* rootSig =
+            renderer->get_root_signature("csm_depth_skinned");
+
+        if (pso && rootSig) {
+            cmd->SetPipelineState(pso);
+            cmd->SetGraphicsRootSignature(rootSig);
+            // param[1] = b1 cascade 행렬
+            cmd->SetGraphicsRootConstantBufferView(1,
+                _cbCascades->GetGPUVirtualAddress());
+
+            for (const auto& obj : objs) {
+                if (!obj || obj->is_destroyed()) continue;
+                auto renderComp = obj->get_component<RenderComponent>();
+                if (!renderComp || renderComp->pso_name() != "skinned") continue;
+
+                // param[2] = b4 bone 행렬 바인딩
+                auto animComp = obj->get_component<AnimationComponent>();
+                if (!animComp || !animComp->get_bone_palette_buffer()) continue;
+
+                cmd->SetGraphicsRootConstantBufferView(
+                    2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
+
+                renderComp->render_CascadeShadowMap(cmd, frame_index);
+            }
+        }
+    }
+
+    // 5. 리소스 배리어: DEPTH_WRITE → PSR (샘플링 가능 상태로 복구)
     CD3DX12_RESOURCE_BARRIER barriersR[3];
     for (int i = 0; i < 3; ++i) {
         barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             _shadowMapArray.Get(),
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            i); // <-- 명시적으로 서브리소스 인덱스(0, 1, 2) 지정
+            i);
     }
-    cmd->ResourceBarrier(3, barriersR); // 3개를 한 번에 실행
 }
 
 void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shadowCbParamIdx, UINT shadowSrvParamIdx, Renderer* renderer)

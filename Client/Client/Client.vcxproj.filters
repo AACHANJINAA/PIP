@@ -440,6 +440,9 @@
     <ClInclude Include="ShadowDepthShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowDepthSkinnedShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -694,6 +697,9 @@
     <ClCompile Include="ShadowDepthShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowDepthSkinnedShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -754,6 +760,9 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shadow_Sample.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shadow_Depth_Skinned.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

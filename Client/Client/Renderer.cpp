@@ -14,7 +14,7 @@
 #include "UIShader.h"
 #include "MonsterHPUIShader.h"
 #include "ShadowDepthShader.h"
-#include "ShadowManager.h"
+#include "ShadowDepthSkinnedShader.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -46,6 +46,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<MonsterHPUIRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<UIRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<CsmDepthRootSignatureGenerator>());
+	_rootSignatureGenerators.push_back(std::make_unique<CsmDepthSkinnedRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -82,6 +83,9 @@ void Renderer::initialize(ID3D12Device* device)
 
 	auto shadow_depth_shader = std::make_shared<ShadowDepthShader>();
 	_shaderPrototypes[shadow_depth_shader->pso_name()] = shadow_depth_shader;
+
+    auto shadow_depth_skinned_shader = std::make_shared<ShadowDepthSkinnedShader>();
+    _shaderPrototypes[shadow_depth_skinned_shader->pso_name()] = shadow_depth_skinned_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
