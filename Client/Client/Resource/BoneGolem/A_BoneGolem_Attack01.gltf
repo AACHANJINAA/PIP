@@ -919,6 +919,51 @@
 			"count": 37,
 			"type": "VEC3",
 			"componentType": 5126
+		},
+		{
+			"bufferView": 152,
+			"count": 60726,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 153,
+			"count": 12514,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.05985892, -0.00258697616, -0.286092013 ],
+			"max": [ 1.0598588, 1.84949183, 0.44642216 ]
+		},
+		{
+			"bufferView": 154,
+			"count": 12514,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 155,
+			"count": 12514,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 156,
+			"count": 12514,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 157,
+			"count": 12514,
+			"type": "VEC4",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 158,
+			"count": 12514,
+			"type": "VEC4",
+			"componentType": 5121,
+			"normalized": true
 		}
 	],
 	"animations": [
@@ -2733,7 +2778,7 @@
 	"buffers": [
 		{
 			"uri": "A_BoneGolem_Attack01.bin",
-			"byteLength": 77348
+			"byteLength": 899584
 		}
 	],
 	"bufferViews": [
@@ -3495,11 +3540,91 @@
 			"buffer": 0,
 			"byteLength": 444,
 			"byteOffset": 76904
+		},
+		{
+			"buffer": 0,
+			"byteLength": 121452,
+			"byteOffset": 77348,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 150168,
+			"byteOffset": 198800,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 150168,
+			"byteOffset": 348968,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 200224,
+			"byteOffset": 499136,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 100112,
+			"byteOffset": 699360,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 50056,
+			"byteOffset": 799472,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 50056,
+			"byteOffset": 849528,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_BoneGolem_Body_Gn",
+			"pbrMetallicRoughness":
+			{
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994,
+			"extensions":
+			{
+				"KHR_materials_specular":
+				{
+					"specularFactor": 0
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SK_Body",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 153,
+						"NORMAL": 154,
+						"TANGENT": 155,
+						"TEXCOORD_0": 156,
+						"JOINTS_0": 157,
+						"WEIGHTS_0": 158
+					},
+					"indices": 152,
+					"material": 0
+				}
+			]
 		}
 	],
 	"nodes": [
 		{
 			"skin": 0,
+			"mesh": 0,
 			"children": [ 1 ]
 		},
 		{
@@ -3798,5 +3923,8 @@
 			"skeleton": 0,
 			"joints": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50 ]
 		}
+	],
+	"extensionsUsed": [
+		"KHR_materials_specular"
 	]
 }
