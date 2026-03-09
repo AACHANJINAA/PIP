@@ -397,7 +397,7 @@ void Chess_Scene::Spawn_Bone_Golem(ID3D12Device* device, ID3D12GraphicsCommandLi
         BoneGolem_Obj->transform()->set_local_scale({ 25.0f, 25.0f, 25.0f });
 
 
-        BoneGolem_Obj->transform()->set_local_position(XMFLOAT3(50.0, 25.0f, -130.0f));
+        BoneGolem_Obj->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
     }
 }
 
