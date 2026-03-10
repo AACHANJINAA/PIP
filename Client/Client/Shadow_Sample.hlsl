@@ -49,9 +49,8 @@ float get_pcf_shadow(float3 worldPos, float3 normal, int cascade)
 // 2. 메인 CSM 샘플링 함수 (블렌딩 적용)
 float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
 {
-    // 블렌딩 영역의 크기 (현재 Cascade 범위의 약 10% 정도가 적당합니다)
-    // viewDepth가 경계값에 가까워질 때 블렌딩을 시작합니다.
-    float blendThreshold = 15.0f; // 이 수치를 조절하여 경계의 부드러움을 결정하세요.
+    // viewDepth가 경계값에 가까워질 때 블렌딩을 시작
+    float blendThreshold = 15.0f; // 이 수치를 조절하여 경계의 부드러움 조절 가능
 
     float shadow0 = 1.0f;
     float shadow1 = 1.0f;
