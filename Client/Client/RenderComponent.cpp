@@ -184,7 +184,7 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
         _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
     }
     else {
-        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
+        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1; // 상의 필요
     }
 
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
