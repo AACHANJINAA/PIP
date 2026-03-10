@@ -177,11 +177,17 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
     XMMATRIX worldInverseTranspose = XMMatrixTranspose(worldInverse);
 
     // Transpose를 한번 더 해서 저장 (HLSL에서 column-major 사용하므로)
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose,
-        XMMatrixTranspose(worldInverseTranspose));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, XMMatrixTranspose(worldInverseTranspose));
 
-    commandList->SetGraphicsRootConstantBufferView(0,
-        _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
+    // Skinned Mesh인 경우 그림자 수신을 끕니다.
+    if (_psoName == "skinned") {
+        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
+    }
+    else {
+        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
+    }
+
+    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
     _mesh->render(commandList);
 }
 

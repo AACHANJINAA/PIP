@@ -62,8 +62,7 @@ struct GS_OUTPUT_SHADOW
 };
 
 [maxvertexcount(3)]
-   void GS_ShadowDepthSkinned(triangle VS_OUTPUT_SHADOW input[3],
-                               inout TriangleStream<GS_OUTPUT_SHADOW> stream)
+void GS_ShadowDepthSkinned(triangle VS_OUTPUT_SHADOW input[3], inout TriangleStream<GS_OUTPUT_SHADOW> stream)
 {
        [unroll]
     for (int i = 0; i < 3; i++)
