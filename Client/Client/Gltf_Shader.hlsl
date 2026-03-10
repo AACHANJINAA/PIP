@@ -174,7 +174,9 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     if (g_bReceiveShadow > 0)
     {
         float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
-        shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewPos.z);
+        float realShadow = sample_csm_shadow(In.WorldPosition, N, viewPos.z);
+        
+        shadowFactor = lerp(0.5f, 1.0f, realShadow);
     }
     
     // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
