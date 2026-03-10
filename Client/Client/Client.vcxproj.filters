@@ -441,7 +441,7 @@
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
     <ClInclude Include="ShadowDepthSkinnedShader.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -698,7 +698,7 @@
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
     <ClCompile Include="ShadowDepthSkinnedShader.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

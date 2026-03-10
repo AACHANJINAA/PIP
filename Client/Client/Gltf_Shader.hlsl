@@ -35,6 +35,8 @@ cbuffer cbWorldMatrix : register(b0)
 {
     matrix g_matWorld;
     matrix g_matWorldInverseTranspose;
+    int g_bReceiveShadow; // [추가] 0이면 그림자 안 받음, 1이면 받음
+    float3 g_worldPad; // 16바이트 정렬을 위한 패딩
 };
 
 // 카메라 정보
@@ -159,12 +161,21 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
    // 2. 환경광 계산 (IBL.hlsl의 CalculateIBL 함수)
     float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
 
-    // [추가] View 공간에서의 깊이(Z) 값 계산 (어떤 Cascade를 쓸지 결정하기 위함)
+    // View 공간에서의 깊이(Z) 값 계산 (어떤 Cascade를 쓸지 결정하기 위함)
     float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
     float viewDepth = viewPos.z;
 
-    // [추가] 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
-    float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
+    // 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
+    //float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
+    
+    float shadowFactor = 1.0f;
+    
+    // 조건문으로 그림자 수신 여부 판단
+    if (g_bReceiveShadow > 0)
+    {
+        float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
+        shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewPos.z);
+    }
     
     // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
@@ -176,33 +187,24 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     return float4(finalColor, diffuseSample.a);
 }
 
-// 디버그용 노말 출력
-//float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
-//{
-//    float3 N = normalize(In.Normal);
-//    return float4(N * 0.5 + 0.5, 1.0);
-//    float normalLen = length(In.Normal);
-//    return float4(normalLen.xxx, 1.0);
-//}
-
 //////////////////////// HP 효과 픽셀 셰이더 추가 ////////////////////
 
-cbuffer cbHp : register(b8, space1)
-{
-    int g_nHp;
-};
+//cbuffer cbHp : register(b8, space1)
+//{
+//    int g_nHp;
+//};
 
-float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
-{
-    float4 color = PS_GLTF(In);
+//float4 PS_HP_GLTF(VS_OUTPUT In) : SV_TARGET
+//{
+//    float4 color = PS_GLTF(In);
  
-    // --- [고유 기능] HP 감소 효과 ---
-    float hp_r = (100 - g_nHp) / 100.0f;
-    if (color.r < hp_r)
-    {
-        color.r = hp_r;
-    }
-    // ---------------------------------
+//    // --- [고유 기능] HP 감소 효과 ---
+//    float hp_r = (100 - g_nHp) / 100.0f;
+//    if (color.r < hp_r)
+//    {
+//        color.r = hp_r;
+//    }
+//    // ---------------------------------
 
-    return float4(color);
-}
+//    return float4(color);
+//}
