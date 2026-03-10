@@ -179,12 +179,12 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
     // Transpose를 한번 더 해서 저장 (HLSL에서 column-major 사용하므로)
     XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, XMMatrixTranspose(worldInverseTranspose));
 
-    // Skinned Mesh인 경우 그림자 수신을 끕니다.
+    // 그림자 수신 토글 - 0 : mesh 표면에 그림자 x , 1 : mesh 표면에 그림자 x <- 이 부분은 그림자 농도 조절로 해결해도될듯?
     if (_psoName == "skinned") {
         _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
     }
     else {
-        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1; // 상의 필요
+        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
     }
 
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
