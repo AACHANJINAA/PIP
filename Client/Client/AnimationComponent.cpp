@@ -10,7 +10,7 @@ AnimationComponent::AnimationComponent() : Behavior("AnimationComponent")
 
 void AnimationComponent::late_update(float deltaTime)
 {
-	_nowAnimationTime += deltaTime;
+	_nowAnimationTime += deltaTime * _animationSpeed;
 	float timeBeforeUpdate = _nowAnimationTime;
 
 	// 현재 렌더링 중인 메쉬를 가져와서 애니메이션 업데이트
@@ -105,6 +105,15 @@ float AnimationComponent::get_anim_duration() const
 bool AnimationComponent::is_anim_finished() const
 {
 	return _isFinished;
+}
+
+void AnimationComponent::set_anim_speed(float wantSpeed)
+{
+	if (wantSpeed < 0.f)
+	{
+		wantSpeed = 0.f;
+	}
+	_animationSpeed = wantSpeed;
 }
 
 void AnimationComponent::change_animation(std::string name)
