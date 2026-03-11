@@ -48,7 +48,7 @@ namespace PIP::GAME
 		/*auto ai = AddComponent<AIComponent>();
 		ai->SetLuaScript("Monster.lua");*/
 		AddComponent<AIComponent>();
-		SetupBT();
+		NPC::SetupBT();
 
 
 		_lastUpdateTime = std::chrono::steady_clock::now();

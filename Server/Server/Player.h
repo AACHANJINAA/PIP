@@ -52,9 +52,11 @@ namespace PIP::GAME
 		                 uint32_t timestamp, GameObject* attacker, int32_t damage) override;
 		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 
+		void SetHP(int hp) override { _hp = hp; }
+		int32_t GetHP() const override { return _hp; }
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
-		short						_hp;
+		
 		short						_max_hp;
 		short						_level;
 		uint32_t					_exp;
@@ -70,5 +72,6 @@ namespace PIP::GAME
 	private:
 		float _hitCooldown = 0.0f;
 		int64_t _owner_id; // 이 플레이어를 소유한 세션 ID	
+		short	_hp;
 	};
 }

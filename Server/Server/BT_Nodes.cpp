@@ -150,18 +150,24 @@ namespace PIP::GAME
     }
 
 	bool Condition_IsEnemyInRange::check() {
+		if (!_blackboard->has("target_enemy")) return false;
         auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
         int64_t targetId = _blackboard->get<int64_t>("target_enemy");
 
-        if (targetId <= 0) return false;
 		int room_id = _blackboard->get<int>("room_id");
         auto room = SERVER::Server::Instance()->GetRoom(room_id);
-        auto target = room->GetPlayer(targetId);
+        auto target = room->GetActor(targetId);
 
         // 타겟이 이미 나갔거나 죽었다면 실패
-        if (!target || target->_hp <= 0) return false;
+        if (!target || target->GetHP() <= 0) return false;
 
-        float distSq = common::DistanceSq(owner->GetPosition(), target->GetPosition());
+        common::Vec3 p1 = owner->GetPosition();
+        common::Vec3 p2 = target->GetPosition();
+        
+        float dx = p1.x - p2.x;
+        float dz = p1.z - p2.z;
+        float distSq = dx * dx + dz * dz;
+
         return distSq <= (_range * _range);
     }
 
@@ -256,27 +262,19 @@ namespace PIP::GAME
 
 	NodeStatus Action_AttackEnemy::tick(float dt, JPH::TempAllocator* allocator) {
         auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
-        if (!room)
-        {
-            return NodeStatus::FAILURE;
-        }
-        // 1. 쿨타임 체크
-        if (_timer > 0) _timer -= dt;
-        if (_attackDurationTimer > 0) _attackDurationTimer -= dt;
+        if (!room) return NodeStatus::FAILURE;
 
-        // 2. 아직 공격 애니메이션 재생 중이면 무조건 RUNNING
+        // 1. 타이머 업데이트
+        if (_timer > 0.0f) _timer -= dt;
+        if (_attackDurationTimer > 0.0f) _attackDurationTimer -= dt;
+
+        // 2. 공격 동작 중인 경우 (애니메이션 대기)
         if (_attackDurationTimer > 0.0f) {
-            return NodeStatus::RUNNING;
+            return NodeStatus::RUNNING; // 아직 공격 애니메이션 중이므로 이동 노드로 못 넘어가게 함
         }
 
-        // 3. 애니메이션은 끝났는데 쿨타임이 남았다면 실패 리턴 (다른 행동 허용)
+        // 3. 쿨타임 체크 (애니메이션은 끝났는데 쿨타임이 남았다면 실패 리턴하여 다른 행동 허용)
         if (_timer > 0.0f) return NodeStatus::FAILURE;
-
-        // 4. 공격 동작 중인 경우 (애니메이션 대기)
-        if (_attackDurationTimer > 0) {
-            _attackDurationTimer -= dt;
-            return NodeStatus::RUNNING; // 아직 공격 중이므로 이동 노드로 못 넘어가게 함
-        }
         
         GameObject* owner = _blackboard->get<GameObject*>("owner");
         int64_t target_id = _blackboard->get<int64_t>("target_enemy");
@@ -287,20 +285,18 @@ namespace PIP::GAME
         auto targetActor = dynamic_cast<Actor*>(target);
         if (!npc || !targetActor) return NodeStatus::FAILURE;
 
-        // 1. 공격 중에는 이동을 멈춤 (문워크 방지)
+        // 공격 중에는 이동을 멈춤
         auto nc = owner->GetComponent<NPCControllerComponent>();
         if (nc) nc->SetVelocity({ 0, 0, 0 });
 
-        // 2. 타겟 바라보기 (공격 방향 정렬)
+        // 타겟 바라보기
         common::Vec3 targetPos = targetActor->GetPosition();
         common::Vec3 currentPos = npc->GetPosition();
-
-        // Y축 차이를 무시한 순수 수평 방향 계산
         float dx = targetPos.x - currentPos.x;
         float dz = targetPos.z - currentPos.z;
-        float dist = std::sqrt(dx * dx + dz * dz);
+        float distSq = dx * dx + dz * dz;
 
-        if (dist > 0.1f) {
+        if (distSq > 0.01f) {
             float angle = std::atan2(dx, dz);
             DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
             common::Quat rot{};
@@ -308,26 +304,20 @@ namespace PIP::GAME
             npc->SetRotation(rot);
         }
 
-        // 4. 실제 공격 판정 요청 (Room Job)
-        if (room) {
-            
-            int64_t npcId = npc->GetId(); // ID 미리 따놓기
-            room->PushJob([room, npcId, config = _config]() {
-                // 실행 시점에 안전하게 다시 찾음
-                auto* attacker = room->GetActor(npcId);
-                if (attacker) {
-                    room->ExecuteActorAction(attacker, config);// config 데이터를 캡처하여 안전하게 전달
-                }
-            });
-        }
+        // 4. 실제 공격 판정 요청
+        int64_t npcId = npc->GetId();
+        room->PushJob([room, npcId, config = _config]() {
+            auto* attacker = room->GetActor(npcId);
+            if (attacker) {
+                room->ExecuteActorAction(attacker, config);
+            }
+        });
 
-        // 5. 상태 설정 (애니메이션 재생용)
+        // 5. 상태 설정 및 타이머 세팅
         npc->SetState(common::packet::OBJECT_STATE::ATTACK);
+        _attackDurationTimer = 1.0f; // 애니메이션 지속 시간 동안 행동 잠금
+        _timer = _config.cooldown; 
 
-        // 6. 타이머 리셋 및 성공 반환
-        // [중요] 공격 애니메이션이 재생될 시간(예: 0.8초) 동안 락을 겁니다.
-        _attackDurationTimer = 1.5f;
-        _timer = _config.cooldown; // 전체 쿨타임 세팅
         return NodeStatus::SUCCESS;
     }
 
@@ -362,7 +352,7 @@ namespace PIP::GAME
         auto room = SERVER::Server::Instance()->GetRoom(room_id);
         if (!room) return false;
 
-        auto target = room->GetPlayer(targetId);
+        auto target = room->GetActor(targetId);
         if (!target) return false;
 
         float dist = common::Distance(owner->GetPosition(), target->GetPosition());

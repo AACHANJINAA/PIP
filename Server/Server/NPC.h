@@ -26,7 +26,7 @@ namespace PIP::GAME
 
 		common::packet::OBJECT_STATE GetState() const { return _state; }
 		int GetRoomId()             const { return _room_id; }
-		int32_t GetHP()             const { return _hp; }
+		int32_t GetHP()             const override { return _hp; }
 		std::chrono::steady_clock::time_point GetLastUpdateTime() const { return _lastUpdateTime; }
 
 		
