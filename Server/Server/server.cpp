@@ -566,26 +566,26 @@ namespace PIP::SERVER
 			auto t_loop_end = steady_clock::now();
 			worker.stats.total_loop_profile.add(duration_cast<nanoseconds>(t_loop_end - t_loop_start).count());
 
-			if (duration_cast<seconds>(t_loop_end - lastReportTime).count() >= 5) {
-				lastReportTime = t_loop_end;
+			//if (duration_cast<seconds>(t_loop_end - lastReportTime).count() >= 5) {
+			//	lastReportTime = t_loop_end;
 
-				auto report = [&](const std::string& name, ProfileData& data) {
-					int count = data.call_count.load();
-					if (count == 0) return;
-					double avg = (data.total_time_ns.load() / (double)count) / 1000000.0; // ns to ms
-					double max_val = data.max_time_ns.load() / 1000000.0;
-					std::cout << "[" << thread_idx << "][" << name << "] Avg: " << avg << "ms, Max: " << max_val << "ms, Count: " << count << std::endl;
-					data.reset();
-				};
+			//	auto report = [&](const std::string& name, ProfileData& data) {
+			//		int count = data.call_count.load();
+			//		if (count == 0) return;
+			//		double avg = (data.total_time_ns.load() / (double)count) / 1000000.0; // ns to ms
+			//		double max_val = data.max_time_ns.load() / 1000000.0;
+			//		MYLOG("[" << thread_idx << "][" << name << "] Avg: " << avg << "ms, Max: " << max_val << "ms, Count: " << count);
+			//		data.reset();
+			//	};
 
-				std::cout << "---------- Thread " << thread_idx << " Performance Report (Last 5s) ----------\n";
-				report("Job    ", worker.stats.job_profile);
-				report("Timer  ", worker.stats.timer_profile);
-				report("Physics", worker.stats.physics_profile);
-				report("Logic  ", worker.stats.logic_profile);
-				report("Total  ", worker.stats.total_loop_profile);
-				std::cout << "-----------------------------------------------------------------------\n";
-			}
+			//	MYLOG("---------- Thread " << thread_idx << " Performance Report (Last 5s) ----------\n");
+			//	report("Job    ", worker.stats.job_profile);
+			//	report("Timer  ", worker.stats.timer_profile);
+			//	report("Physics", worker.stats.physics_profile);
+			//	report("Logic  ", worker.stats.logic_profile);
+			//	report("Total  ", worker.stats.total_loop_profile);
+			//	MYLOG("-----------------------------------------------------------------------\n");
+			//}
 
 			// 60FPS 유지를 위한 Sleep
 			auto loopElapsed = steady_clock::now() - t_loop_start;

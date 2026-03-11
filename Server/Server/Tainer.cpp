@@ -41,6 +41,8 @@ namespace PIP::GAME
 		_grabAtk.damage = 50;
 		_grabAtk.cooldown = 10.0f;
 		_grabAtk.animationKey = "Grab";
+
+		Tainer::SetupBT();
 	}
 
 	void Tainer::SetupBT()
@@ -126,5 +128,10 @@ namespace PIP::GAME
 	void Tainer::SetPhase(const TainerPhase& new_phase)
 	{
 		_currentPhase = new_phase;
+	}
+
+	void Tainer::Update(float deltaTime, JPH::TempAllocator* allocator)
+	{
+		NPC::Update(deltaTime, allocator);
 	}
 }

@@ -27,7 +27,7 @@ public:
 	int hp() const { return _hp; }
 	const XMFLOAT3& position() const;
 
-	void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
+	virtual void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
 	void initialize_from_server(const XMFLOAT3& pos);
 
 	// --- INetSync 인터페이스 구현 ---

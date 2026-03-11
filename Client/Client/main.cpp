@@ -109,7 +109,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 최초 로그인 패킷 전송 (플레이어 이름 사용)
     NetworkManager::instance()->SendLoginPacket(PLAYER_NAME);
 
-    int room_to_enter = 1;
+	int room_to_enter = 2; // 자동으로 입장할 방 ID (예시로 2번 방)
     CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
     NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
 
