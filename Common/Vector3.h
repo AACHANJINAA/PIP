@@ -45,7 +45,14 @@ namespace common
 		XMStoreFloat(&distSq, result);
 		return distSq;
 	}
-
+	inline bool XMVector3AnyNaN(XMVECTOR v)
+	{
+		return std::isnan(v.m128_f32[0]) || std::isnan(v.m128_f32[1]) || std::isnan(v.m128_f32[2]);
+	}
+	inline bool XMVector4AnyNaN(XMVECTOR v)
+	{
+		return std::isnan(v.m128_f32[0]) || std::isnan(v.m128_f32[1]) || std::isnan(v.m128_f32[2]) || std::isnan(v.m128_f32[3]);
+	}
 	namespace VectorHelper
 	{
 		inline Vec3 operator+(const Vec3& a, const Vec3& b)

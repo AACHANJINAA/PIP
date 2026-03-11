@@ -573,6 +573,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		NPC_logic->set_hp(npc_spawn_packet._hp);
 		NPC_logic->set_position(npc_spawn_packet._position);
 		NPC_logic->initialize_from_server(npc_spawn_packet._position);
+
+		// [수정] ID가 설정된 후 명시적으로 ReplicationSystem에 등록
+		auto rs = GameFramework::instance()->get_replication_system();
+		if (rs) rs->register_entity(npc_spawn_packet._npc_id, NPC_logic);
+
 		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
 	}
 }
@@ -645,8 +650,16 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& str
 		snapshot.state = data._state;
 		snapshot.timestamp = data._time_stamp;
 
+		//[디버그 로그] 특정 NPC(예: 보스) 업데이트 확인
+		if (data._npc_id % 1000 == 999) {
+			//CLOG("[BATCH] Update for Boss " << data._npc_id << " Pos: (" << data._position.x << "," << data._position.y << "," << data._position.z << ")");
+		}
+
 		// 시스템에 전달 (매우 가벼운 직렬 처리)
-		rs->on_packet_arrival(data._npc_id, snapshot);
+		bool success = rs->on_packet_arrival(data._npc_id, snapshot);
+		if (!success && i == 0) {
+			CLOG("[BATCH] Failed to find NPC: " << data._npc_id);
+		}
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();

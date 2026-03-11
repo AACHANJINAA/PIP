@@ -66,9 +66,7 @@ void NPCScript::awake()
 	_serverVel = { 0, 0, 0 };
 	_isFirstUpdate = true;
 
-	// [의존성 주입] 프레임워크가 소유한 시스템에 자신을 등록
-	auto rs = GameFramework::instance()->get_replication_system();
-	if (rs) rs->register_entity(this->id(), this);
+	// [수정] awake에서 등록하지 않고 set_id 호출 시점에 명시적으로 등록하도록 변경
 }
 
 void NPCScript::on_destroy()
@@ -107,6 +105,7 @@ void NPCScript::initialize_from_server(const XMFLOAT3& pos)
 	_serverVel = { 0, 0, 0 };
 	_serverRot = { 0, 0, 0, 1 };
 	_accumulatedTime = 0.0f;
+	_isNewDataArrived = false; // 대기 중인 스냅샷 무시 (생성 시 좌표가 우선)
 
 	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
 	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_serverRot);
@@ -118,6 +117,10 @@ void NPCScript::initialize_from_server(const XMFLOAT3& pos)
 
 	if (transform()) {
 		transform()->set_local_position(pos);
+		// [추가] 초기 회전값도 안전하게 설정
+		XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0);
+		XMStoreFloat4(&_serverRot, qRotate180);
+		transform()->set_local_rotation(_serverRot);
 	}
 
 	_isFirstUpdate = false; // 이제 업데이트 가능 상태로 전환
@@ -160,6 +163,14 @@ void NPCScript::update(float deltaTime)
 	// 2. 위치 보간 (Lerp)
 	// ---------------------------------------------------------
 	XMVECTOR vCurrentPos = XMLoadFloat3(&transform()->local_position());
+	
+	// [NaN 체크] 현재 위치가 이미 NaN이면 서버 위치로 강제 복구
+	if (common::XMVector3AnyNaN(vCurrentPos)) {
+		vCurrentPos = vPredictedPos;
+		transform()->set_local_position(_serverPos);
+		CERROR("[NPCScript] Current position is NaN! Forcing sync with server pos.");
+	}
+
 	float distSq = XMVectorGetX(XMVector3LengthSq(vPredictedPos - vCurrentPos));
 	
 	float lerpSpeed = 10.0f;
@@ -169,7 +180,16 @@ void NPCScript::update(float deltaTime)
 		lerpSpeed = 15.0f;
 	}
 
-	XMVECTOR vNextPos = XMVectorLerp(vCurrentPos, vPredictedPos, deltaTime * lerpSpeed);
+	// [보정] deltaTime이 너무 크면(프레임 드랍 등) 보간이 튀지 않게 제한
+	float clampedDelta = std::min(deltaTime, 0.1f);
+	XMVECTOR vNextPos = XMVectorLerp(vCurrentPos, vPredictedPos, clampedDelta * lerpSpeed);
+	
+	// [NaN 방어] 보간 결과가 NaN이면 예측 위치로 즉시 설정
+	if (common::XMVector3AnyNaN(vNextPos)) {
+		vNextPos = vPredictedPos;
+		CERROR("[NPCScript] Interpolated position is NaN! Fallback to predicted pos.");
+	}
+
 	XMFLOAT3 nextPos;
 	XMStoreFloat3(&nextPos, vNextPos);
 	transform()->set_local_position(nextPos);

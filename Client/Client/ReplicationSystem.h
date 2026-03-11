@@ -11,7 +11,7 @@ public:
     void unregister_entity(int64_t id);
 
     // NetworkManager에서 호출: 시스템이 관리하는 엔티티를 찾아 데이터 전달
-    void on_packet_arrival(int64_t id, const NetSnapshot& snapshot);
+    bool on_packet_arrival(int64_t id, const NetSnapshot& snapshot);
 
     // GameFramework의 루프에서 일괄 처리
     void update(float dt);
