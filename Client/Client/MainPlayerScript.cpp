@@ -231,7 +231,7 @@ void MainPlayerScript::awake()
 	renderer->set_pso_name("skinned");
 
 	// 위치, 회전 정보
-	owner->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
+	owner->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 
 	_camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
 	if (_camera) {

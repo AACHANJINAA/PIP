@@ -4,11 +4,14 @@
 #include "AnimationComponent.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
+#include "MonsterHPComponent.h"
 
 void TainerScript::awake()
 {
 	NPCScript::awake();
-    game_object()->get_component<TransformComponent>()->set_local_scale({ 2.5,2.5 ,2.5 });
+    game_object()->get_component<TransformComponent>()->set_local_scale({ 5.f,5.f ,5.f });
+    auto hp = get_hp();
+    game_object()->get_component<MonsterHPComponent>()->set_max_hp(get_hp());
     CLOG("[TainerScript] Boss Initialization Complete.");
 }
 

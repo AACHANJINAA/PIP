@@ -39,6 +39,7 @@ void FreeCameraScript::late_update(float delta_time)
     // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
     if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
+        transform()->set_local_position({0.f, 0.f, 0.f});
         process_mouse_input(delta_time);
 	
         if (_isFreeCameraMode)
@@ -55,7 +56,7 @@ void FreeCameraScript::late_update(float delta_time)
                 if (player && player->transform())
                 {
                     XMFLOAT3 playerPos = player->transform()->position();
-                    transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 0.5f, playerPos.z });
+                    transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 5.0f, playerPos.z });
                     transform()->move_forward(_thirdPersonOffsetDistance_back);
                     transform()->move_up(_thirdPersonOffsetDistance_top);
                 }
