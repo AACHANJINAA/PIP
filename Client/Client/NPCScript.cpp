@@ -186,8 +186,8 @@ void NPCScript::update(float deltaTime)
 	
 	// [NaN 방어] 보간 결과가 NaN이면 예측 위치로 즉시 설정
 	if (common::XMVector3AnyNaN(vNextPos)) {
-		vNextPos = vPredictedPos;
 		CERROR("[NPCScript] Interpolated position is NaN! Fallback to predicted pos.");
+		vNextPos = vPredictedPos;
 	}
 
 	XMFLOAT3 nextPos;
