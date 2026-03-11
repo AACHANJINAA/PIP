@@ -271,7 +271,7 @@ namespace PIP::SERVER
 						knockDir.y = 0;
 						common::Vec3 knockForce = knockDir * 20.0f; // 넉백 세기 설정
 
-						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->_hp, p->GetPosition(), knockForce);
+						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->GetHP(), p->GetPosition(), knockForce);
 					}
 					else if (auto n = dynamic_cast<GAME::NPC*>(target)) {
 						npc_hits.emplace_back(n->GetNpcId(), (int32_t)config.damage, n->GetHP());
@@ -791,9 +791,9 @@ namespace PIP::SERVER
 				BoundingSphere targetSphere{ player_session->_player->GetPosition(), 2.0f };
 				if (attackerSphere.Intersects(targetSphere))
 				{
-					int32_t new_hp = player_session->_player->_hp - damage;
+					int32_t new_hp = player_session->_player->GetHP() - damage;
 					if (new_hp < 0) new_hp = 0;
-					player_session->_player->_hp = new_hp;
+					player_session->_player->SetHP(new_hp);
 
 					player_hits.emplace_back(player_id, damage, new_hp);
 				}
@@ -881,7 +881,7 @@ namespace PIP::SERVER
 								npc_hits.emplace_back(npc->GetNpcId(), actor->_player->_damage, npc->GetHP());
 							// Player 피격 기록
 							else if (auto player = dynamic_cast<GAME::Player*>(targetActor))
-								player_hits.emplace_back(player->GetId(), actor->_player->_damage, player->_hp);
+								player_hits.emplace_back(player->GetId(), actor->_player->_damage, player->GetHP());
 						}
 					}
 					// (확장) Player vs Player 판정도 동일한 로직으로 여기에 추가 가능
@@ -1029,7 +1029,7 @@ namespace PIP::SERVER
 
 		common::Vec3 spawnPos{ 10, 10, 10 };
 		session->_player->SetPosition(MapDataManager::Instance()->AdjustPositionToGround(spawnPos));
-		session->_player->_hp = 100;
+		session->_player->SetHP(100);
 
 		// --- [Step 2] 패킷 전송 (여기서 다 보냅니다) ---
 

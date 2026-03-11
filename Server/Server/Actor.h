@@ -58,6 +58,9 @@ namespace PIP::GAME
 
         void SetFaction(Faction factionId) { _factionId = factionId; }
         Faction GetFaction() const { return _factionId; }
+
+        virtual int32_t GetHP() const { return 0; }
+        virtual void SetHP(int hp) {}
     protected:
         std::deque<common::ObjectSnapshot> _history;
         Faction _factionId;
