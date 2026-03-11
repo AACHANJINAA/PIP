@@ -382,6 +382,7 @@ void Chess_Scene::Spawn_Bone_Golem(ID3D12Device* device, ID3D12GraphicsCommandLi
         animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "BoneGolem_mesh", BoneGolem_Mesh);
         animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", BoneGolem_Mesh);
         animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
+        animation_renderer->set_anim_speed(5.f);
         // 재질 및 쉐이더 설정
         std::string material = "skinned_BoneGloem";
 
