@@ -540,6 +540,12 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	auto NPC = ObjectManager::instance()->create_game_object(npc_name);
 	NPC->set_layer("Enemy");
 
+	// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
+	NPC->add_component<MonsterHPComponent>();
+	NPC->add_component<AnimationComponent>();
+	NPC->add_component<RenderComponent>();
+
+
 	NPCScript* NPC_logic = nullptr;
 
 	switch (npc_spawn_packet._npc_type)
@@ -552,6 +558,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		case common::packet::NPCType::Tainer:
 			{
 				NPC_logic = NPC->add_component<TainerScript>().get(); // TainerScript 부착
+				//NPC->transform()->set_local_scale({ 25.f, 25.f, 25.f });
 			}
 			break;
 		default:
@@ -565,6 +572,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		NPC_logic->set_id(npc_spawn_packet._npc_id);
 		NPC_logic->set_hp(npc_spawn_packet._hp);
 		NPC_logic->set_position(npc_spawn_packet._position);
+		NPC_logic->initialize_from_server(npc_spawn_packet._position);
 		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
 	}
 }

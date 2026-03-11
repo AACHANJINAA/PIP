@@ -10,9 +10,7 @@ namespace PIP::GAME
         Tainer(int64_t npc_id, int room_id, common::Vec3 position);
         virtual ~Tainer() override = default;
 
-        // 보스 전용 BT 설정
         void SetupBT() override;
-
         // 페이즈 관리
         TainerPhase GetCurrentPhase() const { return _currentPhase; }
         void CheckPhaseTransition();
@@ -25,6 +23,7 @@ namespace PIP::GAME
             GameObject* attacker,
             int32_t damage) override;
         void SetPhase(const TainerPhase& tainer_phase);
+        void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 
     private:
         TainerPhase _currentPhase = TainerPhase::PHASE_1;

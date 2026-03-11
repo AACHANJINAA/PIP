@@ -8,7 +8,7 @@
 
 namespace PIP::GAME
 {
-	// NPCÀÇ »óÅÂ¸¦ ³ªÅ¸³»´Â ¿­°ÅÇü
+	// NPCì˜ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚´ëŠ” ì—´ê±°í˜•
 	using NPCType = common::packet::NPCType;
 	
 	class NPC : public Actor
@@ -29,24 +29,27 @@ namespace PIP::GAME
 		int32_t GetHP()             const override { return _hp; }
 		std::chrono::steady_clock::time_point GetLastUpdateTime() const { return _lastUpdateTime; }
 
-		
-		// [¼öÁ¤] ÄÄÆ÷³ÍÆ® Á¾·ù¿¡ »ó°ü¾øÀÌ ½ÇÁ¦ »ç¿ëÇÏ´Â Jolt Shape ¹İÈ¯
-		const JPH::Shape* GetPhysicsShape() const {
-			// 1. ÀÏ¹İ ¸®Áöµå ¹Ùµğ È®ÀÎ
-			if (auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>())
-				return pc->GetShape(); // PhysicsComponent¿¡ GetShape()°¡ ÀÖ´Ù°í °¡Á¤
+		bool is_boss() const {
+			return _npc_type == common::packet::NPCType::Tainer;
+		}
 
-			// 2. ¹öÃß¾ó Ä³¸¯ÅÍ È®ÀÎ
+		// [ìˆ˜ì •] ì»´í¬ë„ŒíŠ¸ ì¢…ë¥˜ì— ìƒê´€ì—†ì´ ì‹¤ì œ ì‚¬ìš©í•˜ëŠ” Jolt Shape ë°˜í™˜
+		const JPH::Shape* GetPhysicsShape() const {
+			// 1. ì¼ë°˜ ë¦¬ì§€ë“œ ë°”ë”” í™•ì¸
+			if (auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>())
+				return pc->GetShape(); // PhysicsComponentì— GetShape()ê°€ ìˆë‹¤ê³  ê°€ì •
+
+			// 2. ë²„ì¶”ì–¼ ìºë¦­í„° í™•ì¸
 			if (auto cc = const_cast<NPC*>(this)->GetComponent<CharacterControllerComponent>())
 				return cc->GetShape();
 
 			return nullptr;
 		}
-		// [¼öÁ¤] ¸®Áöµå ¹Ùµğ ID ¹İÈ¯ (¸®Áöµå ¹Ùµğ ±â¹İÀÏ ¶§¸¸ À¯È¿)
+		// [ìˆ˜ì •] ë¦¬ì§€ë“œ ë°”ë”” ID ë°˜í™˜ (ë¦¬ì§€ë“œ ë°”ë”” ê¸°ë°˜ì¼ ë•Œë§Œ ìœ íš¨)
 		JPH::BodyID GetBodyID() const {
 			if (auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>())
 				return pc->GetBodyID();
-			return JPH::BodyID(); // Invalid ID ¹İÈ¯
+			return JPH::BodyID(); // Invalid ID ë°˜í™˜
 		}
 
 		// Setters
@@ -85,9 +88,9 @@ namespace PIP::GAME
 			_lastSentPos = GetPosition();
 			_lastSentRot = GetRotation();
 			_lastSentState = _state;
-			_lastSentTime = std::chrono::steady_clock::now(); // ½Ã°£ °»½Å
+			_lastSentTime = std::chrono::steady_clock::now(); // ì‹œê°„ ê°±ì‹ 
 		}
-		// [¸ğµâÈ­] °ø°İ °ËÁõ ¹× ÇÇ°İ Ã³¸® ÅëÇÕ ÇÔ¼ö
+		// [ëª¨ë“ˆí™”] ê³µê²© ê²€ì¦ ë° í”¼ê²© ì²˜ë¦¬ í†µí•© í•¨ìˆ˜
 		bool ValidateHit(JPH::PhysicsSystem* physics,
 		                 const JPH::Shape* attackShape,
 		                 const JPH::RMat44& attackTransform,

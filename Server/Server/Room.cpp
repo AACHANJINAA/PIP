@@ -29,7 +29,7 @@ namespace PIP::SERVER
 		_gridMap.Initialize(-1000, 1000, -1000, 1000, 40);
 
 		SpawnInitialNPCs();
-		//SpawnBoss();
+		SpawnBoss();
 	}
 
 	void Room::SpawnInitialNPCs()
@@ -109,7 +109,7 @@ namespace PIP::SERVER
 	void Room::SpawnBoss()
 	{
 		int64_t bossId = _next_npc_id + (_room_id * 1000) + 999;
-		common::Vec3 bossSpawnPos = { 0.0f, 500.0f, 50.0f };
+		common::Vec3 bossSpawnPos = { 0.0f, 500.0f, 0.0f };
 
 		JPH::RRayCast ray{ Utils::ToJolt(bossSpawnPos), JPH::Vec3(0, -1000.0f, 0) };
 		JPH::RayCastResult res;
@@ -152,7 +152,6 @@ namespace PIP::SERVER
 		if (wasEmpty) {
 			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
 			for (auto& [id, npc] : _npcs) {
-				float randomOffset = (rand() % 200) / 1000.0f; 
 				auto scatteredTime = std::chrono::steady_clock::now(); //- std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
 				npc->SetLastUpdateTime(scatteredTime);
 			}
@@ -403,6 +402,15 @@ namespace PIP::SERVER
 		// 1. 활성 영역 NPC 찾기
 		std::unordered_set<GAME::NPC*> activeNpcs;
 		std::unordered_set<GAME::NPC*> innerNpcs;
+
+		// [보스 예외 처리] 보스는 거리와 상관없이 항상 정밀 물리(Inner) 대상
+		for (auto& [id, npc] : _npcs) {
+			if (npc->is_boss()) {
+				activeNpcs.insert(npc.get());
+				innerNpcs.insert(npc.get());
+			}
+		}
+
 		for (auto& [pid, session] : _players) {
 			if (!session || !session->_player) continue;
 			common::Vec3 myPos = session->_player->GetPosition();
@@ -411,6 +419,9 @@ namespace PIP::SERVER
 			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 검색
 			for (auto* obj : nearby) {
 				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+					// 이미 보스에서 처리했을 수 있으므로 체크
+					if (npc->is_boss()) continue;
+
 					activeNpcs.insert(npc);
 					// 45m 이내면 정밀 물리
 					float distSq = common::DistanceSq(myPos, npc->GetPosition());
@@ -517,6 +528,16 @@ namespace PIP::SERVER
 		std::unordered_set<GAME::NPC*> activeNpcs; // 120m 전체
 		std::unordered_set<GAME::NPC*> innerNpcs;  // 40m 정밀물리
 
+		// [보스 예외 처리] 보스는 거리와 상관없이 항상 활성화 및 정밀 물리 대상
+		std::vector<GAME::NPC*> bosses;
+		for (auto& [id, npc] : _npcs) {
+			if (npc->is_boss()) {
+				bosses.push_back(npc.get());
+				activeNpcs.insert(npc.get());
+				innerNpcs.insert(npc.get());
+			}
+		}
+
 		for (auto& [pid, session] : _players)
 		{
 			if (!session || !session->_player) continue;
@@ -526,8 +547,22 @@ namespace PIP::SERVER
 			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
 
 			std::unordered_set<int64_t> currentNearbyIds;
+
+			// 보스는 항상 시야 리스트에 포함
+			for (auto* boss : bosses) {
+				int64_t npcId = boss->GetNpcId();
+				currentNearbyIds.insert(npcId);
+				if (!session->_viewedNpcs.contains(npcId)) {
+					session->_viewedNpcs.insert(npcId);
+					SendNpcSpawnToPlayer(session, boss);
+				}
+			}
+
 			for (auto* obj : nearby) {
 				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+					// 이미 보스에서 처리했을 수 있으므로 체크
+					if (npc->is_boss()) continue;
+
 					activeNpcs.insert(npc);
 					int64_t npcId = npc->GetNpcId();
 					currentNearbyIds.insert(npcId);
@@ -683,6 +718,11 @@ namespace PIP::SERVER
 			int count = 0;
 			for (auto* npc : dirtyNPCs)
 			{
+				if (std::isnan(npc->GetPosition().x)|| std::isnan(npc->GetPosition().y) || std::isnan(npc->GetPosition().z)) {
+					// 해당 NPC 위치가 NaN이면 전송 스킵하거나 로그 출력
+					MYLOG("[Warning] NPC Id:" << npc->GetNpcId() << "-" <<static_cast<int32_t>(npc->GetNpcType()) << " has invalid position (NaN). Skipping move packet.");
+					continue;
+				}
 				// [핵심] 시야 리스트(View List)에 있는 놈만 보낸다!
 				if (!session->_viewedNpcs.contains(npc->GetNpcId()))
 					continue;
