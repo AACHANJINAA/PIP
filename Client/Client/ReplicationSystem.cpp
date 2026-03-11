@@ -8,13 +8,15 @@ void ReplicationSystem::unregister_entity(int64_t id)
 {
 	_entities.erase(id);
 }
-void ReplicationSystem::on_packet_arrival(int64_t id, const NetSnapshot& snapshot)
+bool ReplicationSystem::on_packet_arrival(int64_t id, const NetSnapshot& snapshot)
 {
 	auto it = _entities.find(id);
 	if (it != _entities.end()) {
 		// 인터페이스를 통해 데이터만 전달 (구체적인 클래스는 모름)
 		it->second->on_receive_snapshot(snapshot);
+		return true;
 	}
+	return false;
 }
 void ReplicationSystem::update(float dt)
 {

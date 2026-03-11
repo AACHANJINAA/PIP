@@ -8,8 +8,7 @@
 void TainerScript::awake()
 {
 	NPCScript::awake();
-    //initialize_from_server({ 0, 0, 0.0f });
-    game_object()->get_component<TransformComponent>()->set_local_scale({ 25,25 ,25 });
+    game_object()->get_component<TransformComponent>()->set_local_scale({ 2.5,2.5 ,2.5 });
     CLOG("[TainerScript] Boss Initialization Complete.");
 }
 
@@ -68,29 +67,29 @@ void TainerScript::update(float deltaTime)
 	auto pos = position();
     //CLOG("(" << pos.x << "," << pos.y << "," << pos.z << ")");
 
-    // 2. [테스트] 1초마다 애니메이션 상태 변경
-    _testTimer += deltaTime;
-    if (_testTimer >= 1.0f)
-    {
-        _testTimer = 0.0f;
+    //// 2. [테스트] 1초마다 애니메이션 상태 변경
+    //_testTimer += deltaTime;
+    //if (_testTimer >= 1.0f)
+    //{
+    //    _testTimer = 0.0f;
 
-        using namespace common::packet;
-        static OBJECT_STATE testStates[] = {
-            OBJECT_STATE::IDLE,
-            OBJECT_STATE::WALK,
-            OBJECT_STATE::RUN,
-            OBJECT_STATE::ATTACK,
-            OBJECT_STATE::HITTED, 
-            OBJECT_STATE::ROAR    
-        };
+    //    using namespace common::packet;
+    //    static OBJECT_STATE testStates[] = {
+    //        OBJECT_STATE::IDLE,
+    //        OBJECT_STATE::WALK,
+    //        OBJECT_STATE::RUN,
+    //        OBJECT_STATE::ATTACK,
+    //        OBJECT_STATE::HITTED, 
+    //        OBJECT_STATE::ROAR    
+    //    };
 
-        OBJECT_STATE nextState = testStates[_testAnimIdx];
-        set_state(nextState);
+    //    OBJECT_STATE nextState = testStates[_testAnimIdx];
+    //    set_state(nextState);
 
-        CLOG("[Tainer Test] State: " << (int)nextState << " (Anim Index: " << _testAnimIdx << ")");
+    //    CLOG("[Tainer Test] State: " << (int)nextState << " (Anim Index: " << _testAnimIdx << ")");
 
-        _testAnimIdx = (_testAnimIdx + 1) % (sizeof(testStates) / sizeof(testStates[0]));
-    }
+    //    _testAnimIdx = (_testAnimIdx + 1) % (sizeof(testStates) / sizeof(testStates[0]));
+    //}
 }
 
 void TainerScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp)
