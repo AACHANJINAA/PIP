@@ -18,7 +18,6 @@ public:
 	void set_animation_time(float time);
 	void set_mesh(const std::shared_ptr<Mesh>& want_mesh);
 	*/
-
 	void set_state(common::packet::OBJECT_STATE state);
 	common::packet::OBJECT_STATE get_state() const { return _currentState; }
 	// 상태와 애니메이션 이름 매핑 (예: IDLE -> "Armature|Idle")
@@ -32,6 +31,7 @@ public:
 	float get_anim_time() const { return _nowAnimationTime; }
 	float get_anim_duration() const;
 	bool is_anim_finished() const;
+	void set_anim_speed(float wantSpeed);
 private:
 	void change_animation(std::string name);
 	void change_mesh(const std::shared_ptr<Mesh>& want_mesh);
@@ -47,6 +47,7 @@ private:
 	std::shared_ptr<Mesh> _bufferedMesh = nullptr;
 
 	float _nowAnimationTime{ 0.f };
+	float _animationSpeed{1.f}; // 애니메이션 속도 추가 1.0이 기본임
 	std::string _nowAnimationName{};
 	//std::shared_ptr<Mesh> _nowAnimationMash{}; //KJ가 DW -> Mesh 아님? ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
 
