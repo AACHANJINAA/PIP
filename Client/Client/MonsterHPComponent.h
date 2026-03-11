@@ -25,6 +25,7 @@ public:
 		if (current_hp == _currentHP) return;
 		_currentHP = std::clamp(current_hp, 0, _maxHP);
 		_isHpChanged = true;
+		_nowHpTimer = 0.f;
 		if (_currentHP <= 0)
 		{
 			_isDead = true;
