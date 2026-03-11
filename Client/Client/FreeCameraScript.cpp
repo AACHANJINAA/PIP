@@ -36,38 +36,49 @@ void FreeCameraScript::late_update(float delta_time)
             InputManager::instance()->ChangeShowCusor();
     }
 
-    // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
-    if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
+    if (_isFreeCameraMode)
     {
-        transform()->set_local_position({0.f, 0.f, 0.f});
-        process_mouse_input(delta_time);
-	
-        if (_isFreeCameraMode)
-        {
-            process_keyboard_input(delta_time);
-		}
-        else
-        {
-            // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
-            if (nullptr != ObjectManager::instance()->find_by_name("MainPlayer").get())
-            {
-                auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-                // 카메라 위치를 플레이어 위치로 동기화합니다.
-                if (player && player->transform())
-                {
-                    XMFLOAT3 playerPos = player->transform()->position();
-                    transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 5.0f, playerPos.z });
-                    transform()->move_forward(_thirdPersonOffsetDistance_back);
-                    transform()->move_up(_thirdPersonOffsetDistance_top);
-                }
-            }
-        }
+        free_camera_update(delta_time);
+    }
+    else
+    {
+        player_camera_update(delta_time);
     }
 
     // ESC 키를 누르면 커서를 보이거나 숨깁니다.
     if (InputManager::instance()->IsKeyDown(VK_ESCAPE))
     {
         InputManager::instance()->ChangeShowCusor();
+    }
+}
+
+void FreeCameraScript::free_camera_update(float delta_time)
+{
+    process_mouse_input(delta_time);
+    process_keyboard_input(delta_time);
+}
+
+void FreeCameraScript::player_camera_update(float delta_time)
+{
+    // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
+    if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
+    {
+        transform()->set_local_position({ 0.f, 0.f, 0.f });
+        process_mouse_input(delta_time);
+
+        // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
+        if (nullptr != ObjectManager::instance()->find_by_name("MainPlayer").get())
+        {
+            auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+            // 카메라 위치를 플레이어 위치로 동기화합니다.
+            if (player && player->transform())
+            {
+                XMFLOAT3 playerPos = player->transform()->position();
+                transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 5.0f, playerPos.z });
+                transform()->move_forward(_thirdPersonOffsetDistance_back);
+                transform()->move_up(_thirdPersonOffsetDistance_top);
+            }
+        }
     }
 }
 
