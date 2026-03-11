@@ -25,6 +25,10 @@ public:
     virtual void late_update(float delta_time) override;
 
 private:
+
+	void free_camera_update(float delta_time);
+	void player_camera_update(float delta_time);
+
     // 역할 이전 (from FreeCamera):
     // 마우스 입력을 처리하여 카메라를 회전시킵니다.
     void process_mouse_input(float delta_time);
