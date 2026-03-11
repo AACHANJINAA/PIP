@@ -109,7 +109,7 @@ namespace PIP::SERVER
 	void Room::SpawnBoss()
 	{
 		int64_t bossId = _next_npc_id + (_room_id * 1000) + 999;
-		common::Vec3 bossSpawnPos = { 0.0f, 500.0f, 0.0f };
+		common::Vec3 bossSpawnPos = { 10.0f, 500.0f, 20.0f };
 
 		JPH::RRayCast ray{ Utils::ToJolt(bossSpawnPos), JPH::Vec3(0, -1000.0f, 0) };
 		JPH::RayCastResult res;
