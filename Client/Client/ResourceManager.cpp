@@ -256,7 +256,7 @@ void ResourceManager::unload_unused_meshes()
 
 
 // 내부 헬퍼 함수: 텍스처를 로드하고 GPU에 업로드합니다.
-ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path, D3D12_SRV_DIMENSION view_dimension)
+ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path, bool is_srgb, D3D12_SRV_DIMENSION view_dimension)
 {
     if (file_path.empty()) {
         return nullptr;
@@ -356,8 +356,27 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srv_desc.Format = new_texture_info.resource->GetDesc().Format;
+    DXGI_FORMAT resource_format = new_texture_info.resource->GetDesc().Format;
 
+
+    if (is_srgb) {
+        // 컬러용 (BaseColor): sRGB 포맷 사용
+        if (resource_format == DXGI_FORMAT_R8G8B8A8_UNORM) resource_format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+        else if (resource_format == DXGI_FORMAT_BC1_UNORM) resource_format = DXGI_FORMAT_BC1_UNORM_SRGB;
+        else if (resource_format == DXGI_FORMAT_BC2_UNORM) resource_format = DXGI_FORMAT_BC2_UNORM_SRGB;
+        else if (resource_format == DXGI_FORMAT_BC3_UNORM) resource_format = DXGI_FORMAT_BC3_UNORM_SRGB;
+        else if (resource_format == DXGI_FORMAT_BC7_UNORM) resource_format = DXGI_FORMAT_BC7_UNORM_SRGB;
+    }
+    else {
+        // 데이터용 (ORM, Normal): Linear 포맷 사용 (sRGB 제거)
+        if (resource_format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB) resource_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        else if (resource_format == DXGI_FORMAT_BC1_UNORM_SRGB) resource_format = DXGI_FORMAT_BC1_UNORM;
+        else if (resource_format == DXGI_FORMAT_BC2_UNORM_SRGB) resource_format = DXGI_FORMAT_BC2_UNORM;
+        else if (resource_format == DXGI_FORMAT_BC3_UNORM_SRGB) resource_format = DXGI_FORMAT_BC3_UNORM;
+        else if (resource_format == DXGI_FORMAT_BC7_UNORM_SRGB) resource_format = DXGI_FORMAT_BC7_UNORM;
+    }
+
+    srv_desc.Format = resource_format;
     srv_desc.ViewDimension = view_dimension;
 
     switch (view_dimension)
@@ -445,7 +464,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                     new_mat_info.emissive_factor = { mat_json["emissiveFactor"][0], mat_json["emissiveFactor"][1], mat_json["emissiveFactor"][2] };
             }
             // Textures
-            auto assign_texture = [&](const json& texture_info, std::string& path_member) {
+            auto assign_texture = [&](const json& texture_info, std::string& path_member, bool is_srgb) {
                     if (texture_info.contains("index")) {
                             int tex_idx = texture_info["index"];
                             if (tex_idx < texture_source_uris.size() && !texture_source_uris[tex_idx].empty()) {
@@ -454,19 +473,23 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                                 path_member = full_texture_path.string();
 
 								// 이제 DDS 우선 로드 및 실패 시 WIC 로드를 수행
-                                load_texture(path_member);
+                                load_texture(path_member, is_srgb);
                             }
                     }
             };
 
-            if (pbr.contains("baseColorTexture")) assign_texture(pbr["baseColorTexture"], new_mat_info.base_color_texture_path);
-            if (pbr.contains("metallicRoughnessTexture")) assign_texture(pbr["metallicRoughnessTexture"], new_mat_info.metallic_roughness_texture_path);
+            if (pbr.contains("baseColorTexture")) 
+                assign_texture(pbr["baseColorTexture"], new_mat_info.base_color_texture_path, true);
+            if (pbr.contains("metallicRoughnessTexture")) 
+                assign_texture(pbr["metallicRoughnessTexture"], new_mat_info.metallic_roughness_texture_path, true);
             if (mat_json.contains("normalTexture")) {
-                assign_texture(mat_json["normalTexture"], new_mat_info.normal_texture_path);
+                assign_texture(mat_json["normalTexture"], new_mat_info.normal_texture_path, true);
                 new_mat_info.normal_texture_scale = mat_json["normalTexture"].value("scale", 1.0f);
             }
-            if (mat_json.contains("emissiveTexture")) assign_texture(mat_json["emissiveTexture"], new_mat_info.emissive_texture_path);
-            if (mat_json.contains("occlusionTexture")) assign_texture(mat_json["occlusionTexture"], new_mat_info.occlusion_texture_path);
+            if (mat_json.contains("emissiveTexture")) 
+                assign_texture(mat_json["emissiveTexture"], new_mat_info.emissive_texture_path, true);
+            if (mat_json.contains("occlusionTexture")) 
+                assign_texture(mat_json["occlusionTexture"], new_mat_info.occlusion_texture_path, true);
             
             // Other properties
             new_mat_info.alpha_mode = mat_json.value("alphaMode", "OPAQUE");
@@ -520,7 +543,7 @@ void ResourceManager::add_texture_to_material(const std::string& material_name, 
         // 필요에 따라 base_color_texture_path를 설정하는 것으로 가정합니다.
         // 실제 사용 시에는 텍스처 유형을 인자로 받아 처리하는 것이 좋습니다.
         it->second.base_color_texture_path = texture_path;
-        load_texture(texture_path);
+        load_texture(texture_path, true);
     } else {
         CERROR("Material not found: " << material_name);
     }
@@ -746,7 +769,7 @@ void ResourceManager::load_ibl_maps()
 
     // 3. BRDF LUT (인덱스 3, 2D 텍스처)
     _ibl_brdf_lut_path = "Resource\\SkyBox\\IBL_BRDF_LUT.dds";
-    auto brdf_info = load_texture(_ibl_brdf_lut_path);
+    auto brdf_info = load_texture(_ibl_brdf_lut_path, false);
     if (brdf_info)
     {
         _ibl_brdf_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();

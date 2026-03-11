@@ -144,7 +144,7 @@ void UIRenderComponent::initialize_quad_mesh()
 }
 void UIRenderComponent::set_texture(const std::string& texture_path)
 {
-    _texture_info = ResourceManager::instance()->load_texture(texture_path);
+    _texture_info = ResourceManager::instance()->load_texture(texture_path, true);
 
     if (!_texture_info)
     {

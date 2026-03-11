@@ -85,7 +85,7 @@ float4 PS_Main(PS_Input input) : SV_TARGET
 
     // Multiply Blending: 기본 색상과 디테일 색상을 곱하여 혼합
     float blend_strength = 0.8; // 블렌딩 강도
-    albedo += (detailColor.r - 0.5) * blend_strength;
+  //  albedo += (detailColor.r - 0.5) * blend_strength;
 
     // 나머지 텍스처들은 기본 UV 사용
     float3 sampledNormalMap = normalTexture.Sample(terrainSampler, baseUV).rgb;

@@ -182,7 +182,7 @@ void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, 
 
 void MonsterHPUIRenderComponent::set_hp_back_texture(const std::string& texture_path)
 {
-    _texture_HP_back = ResourceManager::instance()->load_texture(texture_path);
+    _texture_HP_back = ResourceManager::instance()->load_texture(texture_path, true);
 
     if (!_texture_HP_back)
     {
@@ -196,7 +196,7 @@ void MonsterHPUIRenderComponent::set_hp_back_texture(const std::string& texture_
 
 void MonsterHPUIRenderComponent::set_hp_bar_texture(const std::string& texture_path)
 {
-    _texture_HP_Bar = ResourceManager::instance()->load_texture(texture_path);
+    _texture_HP_Bar = ResourceManager::instance()->load_texture(texture_path, true);
 
     if (!_texture_HP_Bar)
     {
