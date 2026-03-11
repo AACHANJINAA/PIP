@@ -195,7 +195,7 @@ void TerrainLoader::load_textures_to_resource_manager(const std::string& materia
 	if (!detail_texture_path.empty())
 	{
 		_detailTextureKey = detail_texture_path;
-		auto* detail_tex = rm->load_texture(_detailTextureKey);
+		auto* detail_tex = rm->load_texture(_detailTextureKey, false);
 		if (!detail_tex)
 		{
 			CERROR("Failed to load detail texture: " << _detailTextureKey);
