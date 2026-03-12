@@ -90,6 +90,6 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
         }
     }
 
-    // 그림자 농도 조절 (0.3 ~ 1.0), 그림자 조절은 이제 Rendercomponent에 있는 토글이랑 이것만 만지면될듯?
-    return lerp(0.3f, 1.0f, finalShadow);
+    // 그림자 농도 조절 (0.3 ~ 1.0)
+    return lerp(0.0f, 1.0f, finalShadow);
 }

@@ -32,7 +32,6 @@ D3D12_SHADER_BYTECODE ShadowDepthShader::create_geometry_shader(ComPtr<ID3DBlob>
 D3D12_RASTERIZER_DESC ShadowDepthShader::create_rasterizer_state()
 {
     D3D12_RASTERIZER_DESC desc = Shader::create_rasterizer_state();
-    // 그림자 여드름(Shadow Acne) 방지를 위한 Depth Bias 설정 (필요 시 나중에 튜닝)
     desc.CullMode = D3D12_CULL_MODE_FRONT;
     desc.DepthBias = 0;
     desc.DepthBiasClamp = 0.0f;
