@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Actor.h"
 #include "GameObject.h"
 #include "PhysicsComponent.h"
