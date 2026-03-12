@@ -71,11 +71,10 @@ namespace PIP::GAME
 		}
 		if (hc && hc->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart))
 		{
-			// 3. ���� ������ ����
 			short old_hp = _hp;
 			_hp -= static_cast<short>(damage);
 			_hp = std::max<short>(_hp, 0);
-			MYLOG("[HitTest] HIT SUCCESS! Part: " << hitPart << " HP: " << old_hp << " -> " << _hp);
+			MYLOG("[Combat] HIT SUCCESS! Target: " << GetName() << " | Damage: " << damage << " | HP: " << old_hp << " ->" << _hp);
 
 			if (auto cc = GetComponent<CharacterControllerComponent>()) {
 				common::Vec3 currentPos = GetPosition();

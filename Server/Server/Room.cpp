@@ -125,7 +125,7 @@ namespace PIP::SERVER
 
 		auto boss = std::make_unique<GAME::Tainer>(bossId, _room_id, bossSpawnPos);
 		auto controller = boss->GetComponent<GAME::CharacterControllerComponent>();
-		controller->Initialize(_physicsSystem, 2.5f, 1.0f); // 보스는 더 크게 설정
+		controller->Initialize(_physicsSystem, 2.5f, 2.0f); // 보스는 더 크게 설정
 
 		boss->SetPosition(bossSpawnPos);
 		boss->SetLastUpdateTime(std::chrono::steady_clock::now());
