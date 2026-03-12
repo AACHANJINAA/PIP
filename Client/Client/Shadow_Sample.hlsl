@@ -91,5 +91,5 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
     }
 
     // 그림자 농도 조절 (0.3 ~ 1.0)
-    return lerp(0.0f, 1.0f, finalShadow);
+    return lerp(0.2f, 1.0f, finalShadow);
 }
