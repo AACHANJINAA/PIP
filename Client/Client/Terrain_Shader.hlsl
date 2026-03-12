@@ -27,8 +27,9 @@ cbuffer cbTerrainInfo : register(b2)
     float HeightScale;
     float MinHeight;
     float2 Tiling;
-    float2 DetailTiling; 
-    float2 Padding; // 16바이트 정렬
+    float2 DetailTiling;
+    float SpecularFactor;
+    float Padding; // 16바이트 정렬
 };
 
 struct VS_Input
@@ -84,8 +85,9 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float3 detailColor = detailTexture.Sample(terrainSampler, detailUV).rgb;
 
     // Multiply Blending: 기본 색상과 디테일 색상을 곱하여 혼합
-    float blend_strength = 0.8; // 블렌딩 강도
-  //  albedo += (detailColor.r - 0.5) * blend_strength;
+    float blend_strength = 0.3; // 블렌딩 강도
+    float3 detail_norm = detailColor * 2.0 - 1.0;
+    albedo = albedo * (1.0 + detail_norm * blend_strength);
 
     // 나머지 텍스처들은 기본 UV 사용
     float3 sampledNormalMap = normalTexture.Sample(terrainSampler, baseUV).rgb;
@@ -103,10 +105,8 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float3x3 TBN = float3x3(normalize(input.TangentW), normalize(input.BitangentW), N);
     N = normalize(mul(N_tangent, TBN));
     
-    float specular = 0.5f;
-    
      // Call the PBR Lighting function
-    float4 litColor = Lighting(P, N, V, albedo, metallic, roughness, ao, specular);
+    float4 litColor = Lighting(P, N, V, albedo, metallic, roughness, ao, SpecularFactor);
 
         // IBL 추가 ← 추가
     float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);

@@ -96,7 +96,7 @@ private:
         int HasNormalTexture;
         int HasEmissiveTexture;
         int HasOcclusionTexture;
-        float Padding1; // 16바이트 정렬을 위한 패딩
+        float SpecularFactor;
     };
     
     // --- glTF PBR 표준에 맞춘 MaterialInfo 구조체 ---
@@ -123,6 +123,7 @@ private:
         float alpha_cutoff = 0.5f;
         bool double_sided = false;
         float normal_texture_scale = 1.0f;
+        float specular_factor = 0.5f;
     
             // --- Per-material Constant Buffer Resources ---
         ComPtr<ID3D12Resource> material_cbuffer_gpu = nullptr;

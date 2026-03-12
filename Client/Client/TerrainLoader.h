@@ -14,6 +14,8 @@ public:
 		float min_height;            // 최소 높이 (정규화된 값)
 		XMFLOAT2 tiling;             // Texture Tiling Factor
 		XMFLOAT2 detail_tiling;      // Detail Texture Tiling Factor
+		float specular_factor = 0.5f;
+		float padding = 0.0f;
 
 		TerrainInfo()
 			: bounds(0.0f, 0.0f, 0.0f, 0.0f)

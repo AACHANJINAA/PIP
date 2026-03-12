@@ -32,7 +32,7 @@ float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
         // 3. Irradiance Map »ùÇÃ¸µ
     float3 irradiance = g_IrradianceMap.Sample(g_samLinear, N).rgb;
     
-    irradiance *= 0.1;
+   // irradiance *= 0.1;
     
         // 4. Lambertian Diffuse BRDF °è»ê
     return kD * albedo * irradiance;
