@@ -278,7 +278,7 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 		_displayHp += (static_cast<float>(_hp) - _displayHp) * lerp;
 		float ratio = _displayHp / static_cast<float>(_maxHp);
 		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
-		_hpBar_ui->set_uv_scale(ratio, 1.0f);
+		_hpBar_ui->set_uv_scale(1.0f, 1.0f);
 	}
 }
 void MainPlayerScript::handle_state(float deltaTime)

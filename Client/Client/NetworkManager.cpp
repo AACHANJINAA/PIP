@@ -48,11 +48,11 @@ void NetworkManager::send_packet(const char* data, size_t size)
 
 void NetworkManager::process_queued_packets()
 {
-	// 메인 스레드에서 패킷 큐를 비우는 전체 시간 측정
-	auto start = std::chrono::high_resolution_clock::now();
-	// 타입별 누적 시간을 저장할 맵
-	static std::unordered_map<uint16_t, long long> typeAccumTime;
-	typeAccumTime.clear();
+	//// 메인 스레드에서 패킷 큐를 비우는 전체 시간 측정
+	//auto start = std::chrono::high_resolution_clock::now();
+	//// 타입별 누적 시간을 저장할 맵
+	//static std::unordered_map<uint16_t, long long> typeAccumTime;
+	//typeAccumTime.clear();
 
 	// 이 함수는 '메인 스레드'의 게임 루프에서 호출됩니다.
 	std::vector<char> packetData;
@@ -67,14 +67,14 @@ void NetworkManager::process_queued_packets()
 			it->second(stream); // 실제 게임 로직(MainPlayer 이동 등) 실행
 		}
 		auto pEnd = std::chrono::high_resolution_clock::now();
-		typeAccumTime[(uint16_t)header->_type] += std::chrono::duration_cast<std::chrono::microseconds>(pEnd - pStart).count();
+		//typeAccumTime[(uint16_t)header->_type] += std::chrono::duration_cast<std::chrono::microseconds>(pEnd - pStart).count();
 	}
 
-	// 여기서 어떤 타입이 가장 오래 걸렸는지 로그 출력
-	for (auto& pair : typeAccumTime) {
-		if (pair.second > 500) // 0.5ms 이상 먹은 놈만 출력
-			CLOG("Packet Type " << pair.first << " took " << pair.second << "us");
-	}
+	//// 여기서 어떤 타입이 가장 오래 걸렸는지 로그 출력
+	//for (auto& pair : typeAccumTime) {
+	//	if (pair.second > 500) // 0.5ms 이상 먹은 놈만 출력
+	//		CLOG("Packet Type " << pair.first << " took " << pair.second << "us");
+	//}
 }
 
 void NetworkManager::network_worker()
@@ -371,13 +371,13 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 				// 물리 위치 기준으로 오차 계산
 				float distSq = common::DistanceSq(cc->get_position(), move_packet._position);
 				if (distSq > 0.5f * 0.5f) { // 0.5m 이상 차이 시 싱크
-					CLOG("Server Correction Applied. Dist: " << sqrt(distSq));
+					//CLOG("Server Correction Applied. Dist: " << sqrt(distSq));
 					script->sync_with_server(move_packet._position, move_packet._rotation);
 				}
 			}
 		}
-		CLOG("[S->C] Syncing MY player position. Server Pos=" << move_packet._position.x << "," << move_packet._position.y
-			<< " My Pos=" << (player ? player->transform()->local_position().x : 0) << "," << (player ? player->transform()->local_position().y : 0));
+		/*CLOG("[S->C] Syncing MY player position. Server Pos=" << move_packet._position.x << "," << move_packet._position.y
+			<< " My Pos=" << (player ? player->transform()->local_position().x : 0) << "," << (player ? player->transform()->local_position().y : 0));*/
 	}
 	else
 	{
@@ -433,7 +433,9 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 				auto player_logic = player->get_component<MainPlayerScript>();
 				if (player_logic && hit_info._target_id == player_logic->id())
 				{
-					CLOG("[Hit] My Player HP: " << player_logic->hp() << " -> " << hit_info._target_current_hp);
+					// [로그 추가] 패킷이 올 때마다 현재 HP와 새 HP를 출력
+					CLOG("[Network] Hit Packet Received! Current Logic HP: " << player_logic->hp() 
+						<< " -> New HP: " << hit_info._target_current_hp);
 					player_logic->set_hp(hit_info._target_current_hp);
 					player_logic->set_position(hit_info._target_position);
 					player_logic->apply_knockback(hit_info._knockback_vector);

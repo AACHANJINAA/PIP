@@ -31,7 +31,14 @@ public:
 	void set_id(int64_t id) { _playerId = id; }
 	void set_hp_bar_ui(std::shared_ptr<UIRenderComponent> ui) { 
 		_hpBar_ui = ui;
-		if (ui) _hpBar_maxWidth = ui->get_size_x();
+		if (ui) {
+			float width = ui->get_size_x();
+			// [중요] 만약 width가 0이라면 아직 초기화 전이므로,
+			// 기본값을 주거나 나중에 다시 가져오도록 로그를 찍어보세요.
+			if (width > 0) _hpBar_maxWidth = width;
+
+			//CLOG("[UI] HP Bar Linked. Max Width: " << _hpBar_maxWidth);
+		}
 	}
 	int64_t id() const { return _playerId; }
 
@@ -46,7 +53,7 @@ private:
 	void send_network_sync(float deltaTime);
 
 
-	int _hp;
+	int _hp{ 100 };
 	int _maxHp{ 100 };
 	float _displayHp{ 100.0f };          // <- 추가 (lerp용 표시 HP)
 	float _hpBar_maxWidth{ 500.0f };

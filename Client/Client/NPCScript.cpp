@@ -208,12 +208,12 @@ void NPCScript::update(float deltaTime)
 
 	transform()->set_local_rotation(_serverRot);
 
-	auto end = std::chrono::high_resolution_clock::now();
+	/*auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 	if (duration > 100) {
 		CLOG("[Profiling] NPC Update Overload (ID: " << _id << "): " << duration << "us");
-	}
+	}*/
 }
 
 void NPCScript::late_update(float deltaTime)
