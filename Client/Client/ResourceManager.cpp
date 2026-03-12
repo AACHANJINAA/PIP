@@ -481,9 +481,9 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             if (pbr.contains("baseColorTexture")) 
                 assign_texture(pbr["baseColorTexture"], new_mat_info.base_color_texture_path, true);
             if (pbr.contains("metallicRoughnessTexture")) 
-                assign_texture(pbr["metallicRoughnessTexture"], new_mat_info.metallic_roughness_texture_path, true);
+                assign_texture(pbr["metallicRoughnessTexture"], new_mat_info.metallic_roughness_texture_path, false);
             if (mat_json.contains("normalTexture")) {
-                assign_texture(mat_json["normalTexture"], new_mat_info.normal_texture_path, true);
+                assign_texture(mat_json["normalTexture"], new_mat_info.normal_texture_path, false);
                 new_mat_info.normal_texture_scale = mat_json["normalTexture"].value("scale", 1.0f);
             }
             if (mat_json.contains("emissiveTexture")) 
@@ -495,6 +495,16 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             new_mat_info.alpha_mode = mat_json.value("alphaMode", "OPAQUE");
             new_mat_info.alpha_cutoff = mat_json.value("alphaCutoff", 0.5f);
             new_mat_info.double_sided = mat_json.value("doubleSided", false);
+
+            // KHR_materials_specular extension 파싱
+            // glTF specularFactor(0~1, 기본 1.0) -> UE4 스케일(0~1, 기본 0.5) 변환
+            if (mat_json.contains("extensions")) {
+                const auto& ext = mat_json["extensions"];
+                if (ext.contains("KHR_materials_specular")) {
+                    float gltf_specular = ext["KHR_materials_specular"].value("specularFactor", 1.0f);
+                    new_mat_info.specular_factor = gltf_specular * 0.5f;
+                }
+            }
             
             loaded_material_names.push_back(mat_name); 
         }
@@ -595,6 +605,7 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     constants.HasNormalTexture = !mat_info.normal_texture_path.empty();
     constants.HasEmissiveTexture = !mat_info.emissive_texture_path.empty();
     constants.HasOcclusionTexture = !mat_info.occlusion_texture_path.empty();
+    constants.SpecularFactor = mat_info.specular_factor;
 
     memcpy(mat_info.material_cbuffer_cpu_address, &constants, sizeof(GltfMaterialConstantBuffer));
 
