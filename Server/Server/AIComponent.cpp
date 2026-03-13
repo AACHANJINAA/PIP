@@ -16,6 +16,10 @@ namespace PIP::GAME
 
 	void AIComponent::Initialize()
 	{
+		_blackboard = nullptr;
+		_L = nullptr;
+		_btRoot = nullptr;
+		_mode = AIMode::None;
 		auto bb = GetBlackboard();
 		bb->set("owner", GetOwner());
 	}

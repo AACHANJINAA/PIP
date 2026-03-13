@@ -85,7 +85,7 @@ namespace PIP::GAME
 				
 				cc->AddImpact(dir * 20.0f);
 			}
-			_hitCooldown = 0.3f; 
+			_hitCooldown = 0.5; 
 			return true;
 		}
 		return false;

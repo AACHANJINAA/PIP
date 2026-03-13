@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "Room.h"
+
+#include "AIComponent.h"
 #include "LuaManager.h"
 #include "MapDataManager.h"
 #include "Player.h"
@@ -125,7 +127,7 @@ namespace PIP::SERVER
 
 		auto boss = std::make_unique<GAME::Tainer>(bossId, _room_id, bossSpawnPos);
 		auto controller = boss->GetComponent<GAME::CharacterControllerComponent>();
-		controller->Initialize(_physicsSystem, 2.5f, 2.0f); // 보스는 더 크게 설정
+		controller->Initialize(_physicsSystem, 1.5f, 1.0f); // 보스는 더 크게 설정
 
 		boss->SetPosition(bossSpawnPos);
 		boss->SetLastUpdateTime(std::chrono::steady_clock::now());
@@ -535,6 +537,36 @@ namespace PIP::SERVER
 				bosses.push_back(npc.get());
 				activeNpcs.insert(npc.get());
 				innerNpcs.insert(npc.get());
+#ifdef _DEBUG
+				if (GetRoomId() == 0)
+				{
+					auto ai = npc->GetComponent<GAME::AIComponent>();
+					if (ai && ai->GetBlackboard()->has("debug_node_name")) {
+						auto bb = ai->GetBlackboard();
+						std::string nodeName = bb->get<std::string>("debug_node_name");
+						int status = bb->get<int>("debug_node_status");
+
+						// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
+						std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
+						std::string debugText = nodeName + " " + statusStr;
+
+						common::packet::PacketStream stream;
+						common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
+						pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
+						pkt._actor_id = npc->GetId();
+
+						stream << pkt;
+						stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
+
+						// 헤더 사이즈 갱신
+						auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
+						header->_size = (uint16_t)stream.Size();
+
+						// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
+						Broadcast(stream.mutable_data(), stream.Size());
+					}
+				}
+#endif
 			}
 		}
 
@@ -732,8 +764,8 @@ namespace PIP::SERVER
 				data._position = npc->GetPosition();
 				data._velocity = npc->GetVelocity();
 				data._rotation = npc->GetRotation();
-				data._state = npc->GetState();
 				data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+				data._state = npc->GetState();
 
 				stream << data;
 				count++;
@@ -1117,6 +1149,19 @@ namespace PIP::SERVER
 			return it->second; // 플레이어든 NPC든 즉시 반환
 		}
 		return nullptr;
+	}
+
+	std::map<int64_t, common::Vec3> Room::GetPlayersPos() const
+	{
+		std::map<int64_t, common::Vec3> positions;
+		for (const auto& [pid, session] : _players)
+		{
+			if (session && session->_player)
+			{
+				positions[pid] = session->_player->GetPosition();
+			}
+		}
+		return positions;
 	}
 
 	void Room::CreatePhysicsTerrain() {

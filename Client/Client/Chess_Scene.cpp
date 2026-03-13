@@ -286,8 +286,8 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
 
         auto animation_renderer = hi_brute->get_component<AnimationComponent>();
         animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
-        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
-        animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
+        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", hi_brute_Mesh);
+        animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK1);
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_SK_MagicConstruct";
 

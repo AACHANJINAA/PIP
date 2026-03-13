@@ -151,8 +151,19 @@ namespace PIP::GAME
 
 	bool Condition_IsEnemyInRange::check() {
 		if (!_blackboard->has("target_enemy")) return false;
-		auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
 		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+
+		auto state = owner->GetState();
+		if (state == common::packet::OBJECT_STATE::ATTACK1 ||
+			state == common::packet::OBJECT_STATE::ATTACK2 ||
+			state == common::packet::OBJECT_STATE::ATTACK3 ||
+			state == common::packet::OBJECT_STATE::ROAR ||
+			state == common::packet::OBJECT_STATE::CHARGE)
+		{
+			return true;
+		}
+
 
 		int room_id = _blackboard->get<int>("room_id");
 		auto room = SERVER::Server::Instance()->GetRoom(room_id);
@@ -242,7 +253,7 @@ namespace PIP::GAME
 		} 
 
 		// [추가] 현재 공격 애니메이션 재생 중이면 이동 속도를 주지 않음
-		if (npc->GetState() == common::packet::OBJECT_STATE::ATTACK) {
+		if (npc->GetState() == common::packet::OBJECT_STATE::ATTACK1) {
 			nc->SetVelocity({ 0, 0, 0 });
 			return NodeStatus::RUNNING;
 		}
@@ -261,63 +272,162 @@ namespace PIP::GAME
 	}
 
 	NodeStatus Action_AttackEnemy::tick(float dt, JPH::TempAllocator* allocator) {
+		_blackboard->set("debug_last_node", _nodeName);
+		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
+		if (!owner) return NodeStatus::FAILURE;
+		auto npc = dynamic_cast<NPC*>(owner);
 		auto* room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
 		if (!room) return NodeStatus::FAILURE;
 
-		// 1. 타이머 업데이트
-		if (_timer > 0.0f) _timer -= dt;
-		if (_attackDurationTimer > 0.0f) _attackDurationTimer -= dt;
-
-		// 2. 공격 동작 중인 경우 (애니메이션 대기)
-		if (_attackDurationTimer > 0.0f) {
-			return NodeStatus::RUNNING; // 아직 공격 애니메이션 중이므로 이동 노드로 못 넘어가게 함
-		}
-
-		// 3. 쿨타임 체크 (애니메이션은 끝났는데 쿨타임이 남았다면 실패 리턴하여 다른 행동 허용)
-		if (_timer > 0.0f) return NodeStatus::FAILURE;
-		
-		GameObject* owner = _blackboard->get<GameObject*>("owner");
-		int64_t target_id = _blackboard->get<int64_t>("target_enemy");
-		Actor* target = room->GetActor(target_id);
-		if (!owner || !target) return NodeStatus::FAILURE;
-
-		auto npc = dynamic_cast<NPC*>(owner);
-		auto targetActor = dynamic_cast<Actor*>(target);
-		if (!npc || !targetActor) return NodeStatus::FAILURE;
-
-		// 공격 중에는 이동을 멈춤
-		auto nc = owner->GetComponent<NPCControllerComponent>();
-		if (nc) nc->SetVelocity({ 0, 0, 0 });
-
-		// 타겟 바라보기
-		common::Vec3 targetPos = targetActor->GetPosition();
-		common::Vec3 currentPos = npc->GetPosition();
-		float dx = targetPos.x - currentPos.x;
-		float dz = targetPos.z - currentPos.z;
-		float distSq = dx * dx + dz * dz;
-
-		if (distSq > 0.01f) {
-			float angle = std::atan2(dx, dz);
-			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
-			common::Quat rot{};
-			XMStoreFloat4(&rot, q);
-			npc->SetRotation(rot);
-		}
-
-		// 4. 실제 공격 판정 요청
-		int64_t npcId = npc->GetId();
-		room->PushJob([room, npcId, config = _config]() {
-			auto* attacker = room->GetActor(npcId);
-			if (attacker) {
-				room->ExecuteActorAction(attacker, config);
+		// 1. 공격 시작 (최초 프레임)
+		if (_attackDurationTimer <= 0.0f) {
+			if (_timer > 0.0f) {
+				_timer -= dt; // 쿨타임 중
+				return NodeStatus::FAILURE;
 			}
-		});
 
-		// 5. 상태 설정 및 타이머 세팅
-		npc->SetState(common::packet::OBJECT_STATE::ATTACK);
-		_attackDurationTimer = 1.0f; // 애니메이션 지속 시간 동안 행동 잠금
-		_timer = _config.cooldown; 
+			_attackDurationTimer = _config.animationDuration;
+			_hasAttacked = false;
+			_hitTimer = 0.0f;
 
+			owner->SetState(_config.animationState);
+			_timer = _config.cooldown; // 쿨타임 세팅
+
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 });
+
+			return NodeStatus::RUNNING;
+		}
+
+		// 2. 공격 진행 중 (애니메이션 재생 중)
+		_attackDurationTimer -= dt;
+		owner->SetState(_config.animationState);
+		float elapsed = _config.animationDuration - _attackDurationTimer;
+
+		// --- 타격 판정 (지속형 vs 단발형) ---
+		if (_config.isContinuous) {
+			// [지속형] 돌진 등: 일정 주기마다 계속 판정
+			_hitTimer -= dt;
+			if (_hitTimer <= 0.0f) {
+				int64_t npcId = npc->GetId();
+				room->PushJob([room, npcId, config = _config]() {
+					auto* attacker = room->GetActor(npcId);
+					if (attacker) {
+						room->ExecuteActorAction(attacker, config);
+					}
+					});
+				_hitTimer = _config.hitInterval;
+			}
+		}
+		else {
+			// [단발형] 내려찍기 등: 정해진 타이밍에 '한 번만' 판정
+			if (!_hasAttacked && elapsed >= _config.attackTiming) {
+				int64_t npcId = npc->GetId();
+				room->PushJob([room, npcId, config = _config]() {
+					auto* attacker = room->GetActor(npcId);
+					if (attacker) {
+						room->ExecuteActorAction(attacker, config);
+					}
+					});
+				_hasAttacked = true; // 중복 판정 방지!!
+			}
+		}
+
+		// 3. 종료 판정
+		if (_attackDurationTimer <= 0.0f) {
+			_attackDurationTimer = 0.0f;
+			return NodeStatus::SUCCESS;
+		}
+
+		return NodeStatus::RUNNING;
+
+		//// 1. 타이머 업데이트
+		//if (_timer > 0.0f) _timer -= dt;
+		//if (_attackDurationTimer > 0.0f) _attackDurationTimer -= dt;
+
+		//// 2. 공격 동작 중인 경우 (애니메이션 대기)
+		//if (_attackDurationTimer > 0.0f) {
+		//	return NodeStatus::RUNNING; // 아직 공격 애니메이션 중이므로 이동 노드로 못 넘어가게 함
+		//}
+
+		//// 3. 쿨타임 체크 (애니메이션은 끝났는데 쿨타임이 남았다면 실패 리턴하여 다른 행동 허용)
+		//if (_timer > 0.0f) return NodeStatus::FAILURE;
+
+		//int64_t target_id = _blackboard->get<int64_t>("target_enemy");
+		//Actor* target = room->GetActor(target_id);
+		//if (!target) return NodeStatus::FAILURE;
+
+		//auto npc = dynamic_cast<NPC*>(owner);
+		//auto targetActor = dynamic_cast<Actor*>(target);
+		//if (!npc || !targetActor) return NodeStatus::FAILURE;
+
+		//// 공격 중에는 이동을 멈춤
+		//auto nc = owner->GetComponent<NPCControllerComponent>();
+		//if (nc) nc->SetVelocity({ 0, 0, 0 });
+
+		//// 타겟 바라보기
+		//common::Vec3 targetPos = targetActor->GetPosition();
+		//common::Vec3 currentPos = npc->GetPosition();
+		//float dx = targetPos.x - currentPos.x;
+		//float dz = targetPos.z - currentPos.z;
+		//float distSq = dx * dx + dz * dz;
+
+		//if (distSq > 0.01f) {
+		//	float angle = std::atan2(dx, dz);
+		//	DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
+		//	common::Quat rot{};
+		//	XMStoreFloat4(&rot, q);
+		//	npc->SetRotation(rot);
+		//}
+
+		//if (_config.attackTiming > 0.0f)
+		//{
+		//	// 공격 타이밍이 설정되어 있다면, 타이밍에 맞춰 공격 판정 요청
+		//	if (_attackDurationTimer <= (_config.animationDuration - _config.attackTiming))
+		//	{
+		//		int64_t npcId = npc->GetId();
+		//		room->PushJob([room, npcId, config = _config]() {
+		//			auto* attacker = room->GetActor(npcId);
+		//			if (attacker) {
+		//				room->ExecuteActorAction(attacker, config);
+		//			}
+		//		});
+		//	}
+		//	else {
+		//		return NodeStatus::RUNNING; // 아직 공격 타이밍이 안 됐으므로 대기
+		//	}
+		//}
+		//else
+		//{
+		//	// 공격 타이밍이 설정되어 있지 않다면, 애니메이션 시작과 동시에 공격 판정 요청
+		//	int64_t npcId = npc->GetId();
+		//	room->PushJob([room, npcId, config = _config]() {
+		//		auto* attacker = room->GetActor(npcId);
+		//		if (attacker) {
+		//			room->ExecuteActorAction(attacker, config);
+		//		}
+		//	});
+		//	
+		//	 // 공격 타이밍이 없으므로 애니메이션 시작과 동시에 공격 판정 요청 후 바로 대기
+		//	return NodeStatus::RUNNING;
+		//}
+
+		//// 5. 상태 설정 및 타이머 세팅
+		//npc->SetState(_config.animationState);
+		//_attackDurationTimer = _config.animationDuration; // 애니메이션 지속 시간 동안 행동 잠금
+		//_timer = _config.cooldown; 
+
+		//return NodeStatus::SUCCESS;
+	}
+
+	bool Condition_CheckFlagFalse::check()
+	{
+		if (!_blackboard->has(_flagName)) return true;
+		return _blackboard->get<bool>(_flagName) == false;
+	}
+
+	NodeStatus Action_SetFlagTrue::tick(float dt, JPH::TempAllocator* allocator) {
+		_blackboard->set(_flagName, true);
 		return NodeStatus::SUCCESS;
 	}
 
@@ -341,8 +451,13 @@ namespace PIP::GAME
 	}
 
 	bool Condition_IsEnemyInDistanceRange::check() {
-		auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
 		if (!owner) return false;
+
+		auto state = owner->GetState();
+		if (state == common::packet::OBJECT_STATE::ROAR || state == common::packet::OBJECT_STATE::CHARGE) {
+			return true;
+		}
 
 		// 블랙보드에서 타겟 ID를 가져옴
 		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
@@ -410,6 +525,264 @@ namespace PIP::GAME
 			tainer->SetPhase(_nextPhase);
 			return NodeStatus::SUCCESS;
 		}
+		return NodeStatus::FAILURE;
+	}
+
+	NodeStatus Action_Turn::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		auto owner = _blackboard->get<GameObject*>("owner");
+		auto npc = dynamic_cast<NPC*>(owner);
+		if (!npc) return NodeStatus::FAILURE;
+
+		// 1. 최초 실행 시 세팅
+		if (_timer <= 0.0f) {
+			_timer = _duration;
+		}
+
+		// 2. 타겟 방향으로 천천히 회전 (Slerp 느낌으로 구현)
+		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+		auto room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+		auto target = room->GetActor(targetId);
+		if (!target)
+		{
+			return NodeStatus::FAILURE;
+		}
+
+		if (target) {
+			common::Vec3 targetPos = target->GetPosition();
+			common::Vec3 currentPos = npc->GetPosition();
+			common::Vec3 dir = common::Normalize(targetPos - currentPos);
+			dir.y = 0;
+
+			// 현재 방향과 목표 방향 사이를 보간하여 회전 (회전 속도 조절 가능)
+			auto trans = owner->GetComponent<TransformComponent>();
+			// 간단한 구현을 위해 즉시 방향을 보지 않고 매 프레임 일정 비율만 회전
+			// (정교한 Slerp 라이브러리가 있다면 적용, 아니면 점진적 각도 변경)
+			trans->SmoothRotateTo(dir, dt * 5.0f);
+		}
+
+		_timer -= dt;
+
+		if (_timer <= 0.0f) {
+			_timer = 0.0f;
+			return NodeStatus::SUCCESS;
+		}
+
+		return NodeStatus::RUNNING;
+		// 먼저 소리를 지르고 소리지르는 애니메이션 끝나면 
+		// 타겟 위치저장 -> 그 위치로 돌진 = 타겟을 따라가면서 돌진 아님
+	}
+
+	NodeStatus Action_SettingChargeTargetPos::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		auto owner = _blackboard->get<GameObject*>("owner");
+		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+		auto room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+		auto target = room->GetActor(targetId);
+
+		if (!owner || !target) return NodeStatus::FAILURE;
+
+		common::Vec3 bossPos = owner->GetComponent<TransformComponent>()->GetPosition();
+		common::Vec3 targetPos = target->GetPosition();
+
+		// 1. 방향 계산 (플레이어 쪽으로)
+		common::Vec3 dir = common::Normalize(targetPos - bossPos);
+		dir.y = 0; // 높이 차이는 무시 (지면 돌진)
+
+		if (common::LengthSq(dir) < 0.001f) {
+			// 너무 가까우면 보스가 보는 앞 방향으로 설정
+			dir = owner->GetComponent<TransformComponent>()->GetForward();
+		}
+
+		// 2. 정확히 10m 떨어진 지점 계산
+		common::Vec3 fixedChargePos = bossPos + (dir * 10.0f);
+
+		// 3. 블랙보드에 저장
+		_blackboard->set("charge_target_pos", fixedChargePos);
+
+		return NodeStatus::SUCCESS;
+	}
+
+	NodeStatus Action_ChargeToPosition::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
+		if (!owner || !_blackboard->has("charge_target_pos")) return NodeStatus::FAILURE;
+
+		common::Vec3 targetPos = _blackboard->get<common::Vec3>("charge_target_pos");
+		common::Vec3 currentPos = owner->GetPosition();
+
+		float distSq = common::DistanceSq(targetPos, currentPos);
+		common::Vec3 dir = common::Normalize(targetPos - currentPos);
+
+		// [중요] 거리가 0.5m 이내면 도착한 것으로 간주
+		if (distSq < 0.5f * 0.5f) {
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 });
+			return NodeStatus::SUCCESS;
+		}
+
+		// 돌진 속도 적용 (10m를 빠르게 주파하기 위해 15~20 추천)
+		auto nc = owner->GetComponent<NPCControllerComponent>();
+		if (nc) {
+			nc->SetVelocity(dir * 15.0f);
+			owner->SetState(common::packet::OBJECT_STATE::CHARGE);
+		}
+
+		// 매 프레임 타격 판정 (ExecuteActorAction)
+		int room_id = _blackboard->get<int>("room_id");
+		auto room = SERVER::Server::Instance()->GetRoom(room_id);
+		if (room) {
+			room->ExecuteActorAction(owner, _config);
+		}
+
+		return NodeStatus::RUNNING;
+
+		// 플레이어가 도망가면 돌진이 빗나갈 수 있음.
+		// 몬스터의 오브젝트 스테이트는 돌진으로 만들고
+		// 애니메이션은 본골렘의 Swim으로 바인딩
+		// 본 골렘의 포효는 1초 -> 1초동안 움직임은 멈춰야함
+	}
+
+	NodeStatus Action_TargetingNearestPlayer::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		auto owner = dynamic_cast<Actor*>(_blackboard->get<GameObject*>("owner"));
+		if (!owner) return NodeStatus::FAILURE;
+		auto room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+		if (!room)
+		{
+			return NodeStatus::FAILURE;
+		}
+
+		common::Vec3 ownerPos = owner->GetPosition();
+		auto players = room->GetPlayersPos();
+		float _nearestDistSq = std::numeric_limits<float>::max();
+		for (auto [pid, pos] : players)
+		{
+			float distSq = common::DistanceSq(ownerPos, pos);
+			// 가장 가까운 플레이어를 타겟으로 설정
+			if (distSq < _nearestDistSq) {
+				_nearestDistSq = distSq;
+				_blackboard->set("target_enemy", pid);
+			}
+		}
+		return NodeStatus::SUCCESS;
+	}
+
+	NodeStatus Action_Roar::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		auto owner = _blackboard->get<GameObject*>("owner");
+		auto npc = dynamic_cast<NPC*>(owner);
+		if (!npc) return NodeStatus::FAILURE;
+
+		// _timer를 노드 멤버 변수로 추가해야 함 (기본값 0)
+		if (_timer <= 0.0f) {
+			_timer = _duration; // 포효 지속 시간 (예: 2초)
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 });
+		}
+		npc->SetState(common::packet::OBJECT_STATE::ROAR);
+		_timer -= dt;
+		if (_timer <= 0.0f) {
+			_timer = 0.0f;
+			return NodeStatus::SUCCESS;
+		}
+		return NodeStatus::RUNNING;
+	}
+
+	NodeStatus Action_ChargeAttack::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
+		if (!owner) return NodeStatus::FAILURE;
+		auto room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+		if (!room) return NodeStatus::FAILURE;
+
+		// --- Phase 0: 준비 (포효 시작) ---
+		if (_currentPhase == Phase::READY) {
+			_currentPhase = Phase::ROAR;
+			_internalTimer = 1.2f; // 포효 애니메이션 시간 (약 1.2초)
+			owner->SetState(common::packet::OBJECT_STATE::ROAR);
+
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 }); // 포효 중 정지
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 1: 포효 중 (대기) ---
+		if (_currentPhase == Phase::ROAR) {
+			_internalTimer -= dt;
+			owner->SetState(common::packet::OBJECT_STATE::ROAR); // 상태 유지
+
+			if (_internalTimer <= 0.0f) {
+				_currentPhase = Phase::TURN;
+				_internalTimer = 0.4f; // 회전 시간 (짧게)
+			}
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 2: 방향 조준 및 10m 지점 박제 ---
+		if (_currentPhase == Phase::TURN) {
+			_internalTimer -= dt;
+
+			int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+			auto target = room->GetActor(targetId);
+
+			if (target) {
+				// 타겟을 향해 부드럽게 회전
+				common::Vec3 dir = common::Normalize(target->GetPosition() - owner->GetPosition());
+				dir.y = 0;
+				owner->GetComponent<TransformComponent>()->SmoothRotateTo(dir, dt * 10.0f);
+
+				// 회전이 끝나갈 무렵 딱 한 번만 10m 앞 지점을 계산해서 저장
+				if (!_isTargetLocked && _internalTimer < 0.1f) {
+					common::Vec3 dashTarget = owner->GetPosition() + (dir * 10.0f);
+					_blackboard->set("charge_target_pos", dashTarget);
+					_isTargetLocked = true;
+				}
+			}
+
+			if (_internalTimer <= 0.0f) {
+				_currentPhase = Phase::DASHING;
+			}
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 3: 실제 돌진 (10m 주파) ---
+		if (_currentPhase == Phase::DASHING) {
+			if (!_blackboard->has("charge_target_pos")) return NodeStatus::FAILURE;
+
+			common::Vec3 targetPos = _blackboard->get<common::Vec3>("charge_target_pos");
+			common::Vec3 currentPos = owner->GetPosition();
+			float distSq = common::DistanceSq(targetPos, currentPos);
+			common::Vec3 dir = common::Normalize(targetPos - currentPos);
+
+			// 도착 판정 (0.5m 이내 도달 시 종료)
+			if (distSq < 0.5f * 0.5f) {
+				auto nc = owner->GetComponent<NPCControllerComponent>();
+				if (nc) nc->SetVelocity({ 0, 0, 0 });
+
+				// 초기화 후 성공 반환 (다음 쿨타임 후 재사용 가능하게)
+				_currentPhase = Phase::READY;
+				_isTargetLocked = false;
+				return NodeStatus::SUCCESS;
+			}
+
+			// 돌진 이동 적용
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity(dir * _speed);
+			owner->SetState(common::packet::OBJECT_STATE::CHARGE);
+
+			// 매 프레임 타격 판정 실행
+			int64_t npcId = owner->GetId();
+			room->PushJob([room, npcId, config = _config]() {
+				auto* attacker = room->GetActor(npcId);
+				if (attacker) {
+					room->ExecuteActorAction(attacker, config);
+				}
+			});
+
+			return NodeStatus::RUNNING;
+		}
+
 		return NodeStatus::FAILURE;
 	}
 }

@@ -49,12 +49,18 @@ namespace PIP::GAME
     class BTNode {
     public:
         virtual ~BTNode() = default;
+
+        // 노드 식별을 위한 이름 추가
+        void set_name(const std::string& name) { _nodeName = name; }
+        const std::string& get_name() const { return _nodeName; }
+
         virtual NodeStatus tick(float dt, JPH::TempAllocator* allocator) = 0;
 
         virtual void set_blackboard(std::shared_ptr<Blackboard> bb) { _blackboard = bb; }
 
     protected:
         std::shared_ptr<Blackboard> _blackboard;
+        std::string _nodeName; // 노드 이름
     };
 
     // --- 4. Composite Nodes (Selector, Sequence) ---
@@ -77,6 +83,11 @@ namespace PIP::GAME
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override {
             for (auto& c : _children) {
                 auto s = c->tick(dt, allocator);
+                // [디버그] 실행 중이거나 성공한 노드 정보를 블랙보드에 실시간 기록
+                if (!c->get_name().empty() && (s == NodeStatus::RUNNING || s == NodeStatus::SUCCESS)) {
+                    _blackboard->set("debug_node_name", c->get_name());
+                    _blackboard->set("debug_node_status", (int)s);
+                }
                 if (s != NodeStatus::FAILURE) return s;
             }
             return NodeStatus::FAILURE;
@@ -88,6 +99,12 @@ namespace PIP::GAME
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override {
             for (auto& c : _children) {
                 auto s = c->tick(dt, allocator);
+                // [디버그] 현재 진행 중인 노드 기록
+                 // [수정] 자식의 이름이 비어있지 않을 때만 기록!
+                if (!c->get_name().empty()) {
+                    _blackboard->set("debug_node_name", c->get_name());
+                    _blackboard->set("debug_node_status", (int)s);
+                }
                 if (s != NodeStatus::SUCCESS) return s;
             }
             return NodeStatus::SUCCESS;
@@ -202,6 +219,15 @@ namespace PIP::GAME
             }
 
             // 3. 트리에 추가
+            add_node(node);
+            return *this;
+        }
+
+        template <typename T, typename... Args>
+        BTBuilder& leaf_name(const std::string& name, Args&&... args) {
+            auto node = std::make_shared<T>(std::forward<Args>(args)...);
+            node->set_name(name); // 이름 설정
+
             add_node(node);
             return *this;
         }

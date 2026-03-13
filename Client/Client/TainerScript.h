@@ -7,8 +7,11 @@ public:
 	void init_visual() override;
 	void update(float deltaTime) override;
 	void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp) override;
-
+	void on_debug_bt_info(const std::string& nodeName) {
+		_currentBTNodeName = nodeName; // 머리 위에 그릴 텍스트 저장
+	}
 private:
 	float	_testTimer{ 0.0f };
 	int		_testAnimIdx{ 0 };
+	std::string _currentBTNodeName; // 현재 행동 트리 노드 이름을 저장하는 변수
 };

@@ -8,16 +8,24 @@ namespace common::packet
 {
 	constexpr short SERVER_PORT = 9001;
 	enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
-		IDLE	= 0,
-		WALK	= 1,
-		RUN		= 2,
-		ATTACK	= 3,
-		JUMP	= 4,
-		LANDING = 5,
-		HOVER	= 6,
-		T_POSE  = 7,
-		ROAR	= 8,
-		HITTED	= 9,
+		IDLE	,	// 대기
+		WALK	,	// 걷기
+		RUN		,	// 달리기 (필요 시 클라이언트에서 WALK와 RUN 애니메이션 구분하여 사용)
+		JUMP	,	// 점프 시작 (점프 애니메이션이 시작되는 순간)
+		LANDING ,	// 착지 (점프 후 땅에 닿는 순간)
+		HOVER	,	// 공중에 떠있는 상태 (예: 점프 중, 낙하 중)
+		T_POSE	,	// T-포즈 (디버깅용)
+		ROAR	,	// 포효
+		HITTED	,	// 피격
+		CHARGE	,	// 돌진
+
+		ATTACK1 = 101,	// 공격 (추가적으로 여러개 필요할듯)
+		ATTACK2 = 102,
+		ATTACK3 = 103,
+
+		SKILL1  = 201,	// 스킬 (추가적으로 여러개 필요할듯)
+		SKILL2  = 202,
+		SKILL3  = 203,
 		// 필요 시 추가
 	};
 	enum class PacketType : uint16_t {
@@ -60,6 +68,7 @@ namespace common::packet
 
 		//------------------------------------------- 디버깅용 패킷 --------------------------------------- //
 		S2C_P_DEBUG_DRAW = 601,
+		S2C_P_DEBUG_BT_INFO = 602,
 	};
 
 
@@ -246,11 +255,11 @@ namespace common::packet
 	// ------------------------------------------- NPC 관련 패킷 ------------------------------------------ //
 	struct NPCMoveData {
 		int64_t			_npc_id;
+		Quat			_rotation;
 		Vec3			_position;
 		Vec3			_velocity;
-		Quat			_rotation;
-		OBJECT_STATE	_state;
 		uint32_t		_time_stamp;
+		OBJECT_STATE	_state;
 	};
 
 	struct SC_PACKET_NPC_MOVE_BATCH : PacketHeader {
@@ -314,6 +323,10 @@ namespace common::packet
 		Quat           _rotation;
 		Vec3           _extents;  // Sphere: x=반경 / Box: x,y,z=반폭 / Capsule: x=반경, y=절반높이
 		float          _duration; // 지속 시간 (초)
+	};
+	struct SC_PACKET_DEBUG_BT_INFO : PacketHeader {
+		int64_t  _actor_id;
+		// 현재 실행 중인 노드 이름 -> 가변으로 들어감
 	};
 #pragma pack (pop)
 }
