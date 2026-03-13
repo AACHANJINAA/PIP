@@ -27,6 +27,7 @@ namespace PIP::SERVER
 	public:
 		Room(int room_id, int logic_thread_idx);
 		void Initialize();
+		void PushJob(std::function<void()> job);
 
 		void EnterPlayer(std::shared_ptr<SESSION> new_player);
 		void LeavePlayer(int64_t player_id);
@@ -35,28 +36,32 @@ namespace PIP::SERVER
 		void RemoveNPC(int64_t npcId);
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int64_t npc_id);
+
+
 		// NPC의 공격 및 행동 판정
 		void ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config);
 
-		void StartGame();
 
 		bool IsPlayerNearby(const common::Vec3& get_position, float size);
+
+
+		void StartGame();
 		// 물리 업데이트 (할당자 필수)
 		void UpdatePhysics(float deltaTime, JPH::TempAllocator* allocator);
-		
 		// 로직 업데이트 (할당자 선택적 허용 - AI 때문)
 		void UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator = nullptr);
 
-		void PushJob(std::function<void()> job);
+
+
+
 
 		void Broadcast(const char* data, size_t size, int64_t except_id = -1);
-
 		// 특정 NPC를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToNPCViewers(int64_t npc_id, const char* data, size_t size);
 		// 특정 플레이어를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToPlayerViewers(int64_t player_id, const char* data, size_t size);
-
 		void BroadcastNpcBatch();
+
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
 		void SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc);
 		void SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int64_t npcId);
@@ -75,6 +80,7 @@ namespace PIP::SERVER
 		GAME::Player* GetPlayer(int64_t player_id);
 		GAME::Actor* GetActor(int64_t actor_id);
 
+		std::map<int64_t, common::Vec3> GetPlayersPos() const;
 	private:
 		void PhysicsInitialize();
 		void CreatePhysicsTerrain();

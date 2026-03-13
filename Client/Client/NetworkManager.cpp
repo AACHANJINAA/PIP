@@ -701,6 +701,24 @@ void NetworkManager::HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream)
 	DebugDrawManager::instance()->AddDebugRequest(packet);
 }
 
+void NetworkManager::HANDLE_S2C_DEBUG_BT(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
+	stream >> pkt;
+
+	std::string debugText;
+	stream >> debugText; // "Action_ChaseEnemy [RUNNING]" 형태
+
+	// 해당 ID의 NPC(보스)를 찾아서 스크립트에 전달
+	auto npc = ObjectManager::instance()->find_npc(pkt._actor_id);
+	if (npc) {
+		auto tainer = npc->get_component<TainerScript>();
+		if (tainer) {
+			tainer->on_debug_bt_info(debugText);
+		}
+	}
+}
+
 bool NetworkManager::init_network()
 {
 	// 이동 응답 패킷 핸들러 등록
@@ -749,6 +767,8 @@ bool NetworkManager::init_network()
 	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_DRAW,
 		std::bind(&NetworkManager::HANDLE_S2C_DEBUG_DRAW, this, std::placeholders::_1));
 
+	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_BT_INFO,
+		std::bind(&NetworkManager::HANDLE_S2C_DEBUG_BT, this, std::placeholders::_1));
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);

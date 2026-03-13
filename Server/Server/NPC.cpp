@@ -81,6 +81,7 @@ namespace PIP::GAME
 		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // 전방 1.5m 지점
 		normalAtk.damage = 10;
 		normalAtk.cooldown = 1.2f;
+		normalAtk.animationState = common::packet::OBJECT_STATE::ATTACK1; // 공격 애니메이션 상태값
 
 		// 강력한 공격: 전방 4m 길이의 박스 형태 (범위 공격)
 		NPCAttackConfig heavyAtk;
@@ -88,6 +89,7 @@ namespace PIP::GAME
 		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
 		heavyAtk.damage = 20;
 		heavyAtk.cooldown = 4.0f;
+		heavyAtk.animationState = common::packet::OBJECT_STATE::ATTACK1; // 공격 애니메이션 상태값
 
 		BTBuilder builder;
 		// 트리 설계:

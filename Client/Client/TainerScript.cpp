@@ -2,6 +2,7 @@
 #include "TainerScript.h"
 
 #include "AnimationComponent.h"
+#include "DebugDrawManager.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 #include "MonsterHPComponent.h"
@@ -38,8 +39,12 @@ void TainerScript::init_visual()
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Walk.gltf", "walk");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Run.gltf", "run");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack.gltf", "attack");
+        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack01.gltf", "attack2");
+		gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack02.gltf", "attack3");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Hit.gltf", "hit");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Roar.gltf", "roar");
+        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Swim.gltf", "swim");
+
 
         renderComp->set_mesh(mainMesh);
 
@@ -48,7 +53,10 @@ void TainerScript::init_visual()
         animComp->add_state_mapping(OBJECT_STATE::IDLE, "idle", mainMesh);
         animComp->add_state_mapping(OBJECT_STATE::WALK, "walk", mainMesh);
         animComp->add_state_mapping(OBJECT_STATE::RUN, "run", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::ATTACK, "attack", mainMesh);
+        animComp->add_state_mapping(OBJECT_STATE::ATTACK1, "attack", mainMesh);
+        animComp->add_state_mapping(OBJECT_STATE::ATTACK2, "attack2", mainMesh);
+        animComp->add_state_mapping(OBJECT_STATE::ATTACK3, "attack3", mainMesh);
+        animComp->add_state_mapping(OBJECT_STATE::CHARGE, "swim", mainMesh);
         animComp->add_state_mapping(OBJECT_STATE::HITTED, "hit", mainMesh);
         animComp->add_state_mapping(OBJECT_STATE::ROAR, "roar", mainMesh);
         CLOG("[TainerScript] BoneGolem Boss Visuals Settings Completed.");
@@ -65,34 +73,14 @@ void TainerScript::init_visual()
 
 void TainerScript::update(float deltaTime)
 {
-    // 1. 부모의 동기화 로직 수행 (위치 보간 등)
+    
     NPCScript::update(deltaTime);
-	auto pos = position();
-    //CLOG("(" << pos.x << "," << pos.y << "," << pos.z << ")");
-
-    //// 2. [테스트] 1초마다 애니메이션 상태 변경
-    //_testTimer += deltaTime;
-    //if (_testTimer >= 1.0f)
-    //{
-    //    _testTimer = 0.0f;
-
-    //    using namespace common::packet;
-    //    static OBJECT_STATE testStates[] = {
-    //        OBJECT_STATE::IDLE,
-    //        OBJECT_STATE::WALK,
-    //        OBJECT_STATE::RUN,
-    //        OBJECT_STATE::ATTACK,
-    //        OBJECT_STATE::HITTED, 
-    //        OBJECT_STATE::ROAR    
-    //    };
-
-    //    OBJECT_STATE nextState = testStates[_testAnimIdx];
-    //    set_state(nextState);
-
-    //    CLOG("[Tainer Test] State: " << (int)nextState << " (Anim Index: " << _testAnimIdx << ")");
-
-    //    _testAnimIdx = (_testAnimIdx + 1) % (sizeof(testStates) / sizeof(testStates[0]));
-    //}
+    // 디버그 드로우 매니저를 통해 보스 머리 위에 현재 노드 이름 표시
+    if (!_currentBTNodeName.empty()) {
+        common::Vec3 headPos = position();
+        headPos.y += 5.0f; // 보스 키만큼 올림
+		CLOG("[TainerScript] Current BT Node: " << _currentBTNodeName);
+    }
 }
 
 void TainerScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp)

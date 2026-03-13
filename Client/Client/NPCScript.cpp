@@ -48,7 +48,7 @@ void NPCScript::init_visual()
 	render_comp->set_mesh(idleMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", idleMesh);
 
 	std::string material_name = "npc_material_" + std::to_string(id());
 	ResourceManager::instance()->create_material(material_name);
@@ -149,26 +149,36 @@ void NPCScript::update(float deltaTime)
 
 	// [최적화] 패킷이 0.5초 이상 안 오면 예측 이동(Dead Reckoning) 중지 (가출 방지)
 	XMVECTOR vServerVel = XMLoadFloat3(&_serverVel);
+
+	// [방어 코드 1] 서버 속도가 너무 빠르면 캡핑 (보스 넉백 등 예외 상황 방지)
+	float speedSq = XMVectorGetX(XMVector3LengthSq(vServerVel));
+	if (speedSq > 100.0f * 100.0f) { // 초속 100m 이상은 비정상으로 간주
+		vServerVel = XMVector3Normalize(vServerVel) * 100.0f;
+	}
+
 	if (_accumulatedTime > 0.3f) {
 		vServerVel = XMVectorZero();
 	}
 
-	// ---------------------------------------------------------
 	// 1. 추측 항법 (Dead Reckoning)
-	// ---------------------------------------------------------
 	XMVECTOR vServerPos = XMLoadFloat3(&_serverPos);
 	XMVECTOR vPredictedPos = vServerPos + (vServerVel * _accumulatedTime);
 
-	// ---------------------------------------------------------
+	// [방어 코드 2] 예측 위치가 서버 위치로부터 너무 멀어지면 보정 (최대 5m)
+	XMVECTOR vDiff = vPredictedPos - vServerPos;
+	if (XMVectorGetX(XMVector3LengthSq(vDiff)) > 5.0f * 5.0f) {
+		vPredictedPos = vServerPos + XMVector3Normalize(vDiff) * 5.0f;
+	}
+
 	// 2. 위치 보간 (Lerp)
-	// ---------------------------------------------------------
 	XMVECTOR vCurrentPos = XMLoadFloat3(&transform()->local_position());
-	
-	// [NaN 체크] 현재 위치가 이미 NaN이면 서버 위치로 강제 복구
-	if (common::XMVector3AnyNaN(vCurrentPos)) {
-		vCurrentPos = vPredictedPos;
+
+	// [NaN 체크 강화]
+	if (common::XMVector3AnyNaN(vCurrentPos) || common::XMVector3AnyNaN(vPredictedPos)) {
+		vCurrentPos = vServerPos;
+		vPredictedPos = vServerPos;
 		transform()->set_local_position(_serverPos);
-		CERROR("[NPCScript] Current position is NaN! Forcing sync with server pos.");
+		CERROR("[NPCScript] Critical NaN detected! Resetting to server position.");
 	}
 
 	float distSq = XMVectorGetX(XMVector3LengthSq(vPredictedPos - vCurrentPos));

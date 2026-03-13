@@ -216,7 +216,7 @@ void MainPlayerScript::awake()
 
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", idleMesh);
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
@@ -287,7 +287,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	if (!anim_comp) return;
 
 	if (_isAttacking) {
-		anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK);
+		anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK1);
 
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
 		float progress = anim_comp->get_anim_time();
