@@ -48,11 +48,11 @@ void AnimationComponent::late_update(float deltaTime)
 
 	if(_bone_palette_buffer)
 	{
-		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer);
+		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer, _isLoop);
 	}
 	else
 	{
-		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second);
+		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _isLoop);
 	}
 
 	// [핵심] 시간이 줄어들었다면 리셋된 것이므로 종료 플래그 설정
@@ -61,12 +61,13 @@ void AnimationComponent::late_update(float deltaTime)
 	}
 }
 
-void AnimationComponent::set_state(common::packet::OBJECT_STATE state)
+void AnimationComponent::set_state(common::packet::OBJECT_STATE state, bool isLoop)
 {
 	if (_currentState == state) return;
 	_currentState = state;
 	_isFinished = false;
 	_nowAnimationTime = 0.f;
+	_isLoop = isLoop;
 
 	// 1. 메쉬 교체 (등록된 메쉬가 있을 경우만)
 	auto mIt = _stateMeshMap.find(state);
