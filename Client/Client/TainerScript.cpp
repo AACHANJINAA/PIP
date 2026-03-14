@@ -59,6 +59,9 @@ void TainerScript::init_visual()
         animComp->add_state_mapping(OBJECT_STATE::CHARGE, "swim", mainMesh);
         animComp->add_state_mapping(OBJECT_STATE::HITTED, "hit", mainMesh);
         animComp->add_state_mapping(OBJECT_STATE::ROAR, "roar", mainMesh);
+
+        // DW주의 : 지금 테이너 SKILL1을 서버에서 넣어주고 있는데 클라이언트에서는 없어서 에러 발생 임시로 넣음
+        animComp->add_state_mapping(OBJECT_STATE::SKILL1, "roar", mainMesh);
         CLOG("[TainerScript] BoneGolem Boss Visuals Settings Completed.");
     }
 

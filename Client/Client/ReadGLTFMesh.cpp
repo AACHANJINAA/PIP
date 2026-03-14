@@ -216,7 +216,7 @@ void ReadGLTFMesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandLis
 	}
 }
 
-void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer)
+void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer, bool _isLoop)
 {
 	// T-Pose 또는 유효하지 않은 클립 인덱스 체크
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
@@ -250,9 +250,19 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 
 	// 1. 시간 갱신 (Looping 처리)
 	//_current_animation_time += delta_time;
-	if (clip._duration > 0.0f) {
-		delta_time = fmod(delta_time, clip._duration);
+	if (_isLoop)
+	{
+		if (clip._duration > 0.0f) {
+			delta_time = fmod(delta_time, clip._duration);
+		}
 	}
+	else
+	{
+		if (delta_time > clip._duration) {
+			delta_time = clip._duration;
+		}
+	}
+	
 
 	// 2. 채널별 키프레임 보간 수행
 	for (const auto& channel : clip._channels)
@@ -375,7 +385,7 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 	}
 }
 
-void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name)
+void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, bool _isLoop)
 {
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
@@ -408,8 +418,17 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 
 	// 1. 시간 갱신 (Looping 처리)
 	//_current_animation_time += delta_time;
-	if (clip._duration > 0.0f) {
-		delta_time = fmod(delta_time, clip._duration);
+	if (_isLoop)
+	{
+		if (clip._duration > 0.0f) {
+			delta_time = fmod(delta_time, clip._duration);
+		}
+	}
+	else
+	{
+		if (delta_time > clip._duration) {
+			delta_time = clip._duration;
+		}
 	}
 
 	// 2. 채널별 키프레임 보간 수행
