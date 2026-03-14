@@ -18,7 +18,7 @@ public:
 	void set_animation_time(float time);
 	void set_mesh(const std::shared_ptr<Mesh>& want_mesh);
 	*/
-	void set_state(common::packet::OBJECT_STATE state);
+	void set_state(common::packet::OBJECT_STATE state, bool isLoop = true);
 	common::packet::OBJECT_STATE get_state() const { return _currentState; }
 	// 상태와 애니메이션 이름 매핑 (예: IDLE -> "Armature|Idle")
 	void add_state_mapping(common::packet::OBJECT_STATE state, const std::string& animName, 
@@ -33,11 +33,17 @@ public:
 	bool is_anim_finished() const;
 	void set_anim_speed(float wantSpeed);
 private:
-	void change_animation(std::string name);
+	void change_animation(std::string name); // 루프 여부는 기본값으로 true 설정
 	void change_mesh(const std::shared_ptr<Mesh>& want_mesh);
 	void create_bone_palette_buffer(const std::shared_ptr<Mesh>& want_mesh);
+
 private:
+	// 애니메이션 루프 설정 -> 기본적으로 루프하도록 설정
+	bool _isLoop = true;
+
+	// 애니메이션이 끝났는지 설정!
 	bool _isFinished = false;
+
 	// DW설명
 	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼 -> 그냥 이걸 넘긴다
 	// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문

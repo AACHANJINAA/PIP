@@ -149,8 +149,8 @@ public:
 	// DW설명 : 애니메이션 관련 함수들
 	void set_bone_palette_buffer_from_animation_component(ComPtr<ID3D12Resource> bone_palette_buffer) { _bone_palette_buffer_from_animation_component = bone_palette_buffer; }
 
-	void update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer);
-	void update_animation(float& delta_time, std::string animation_name);
+	void update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer, bool _isLoop = true);
+	void update_animation(float& delta_time, std::string animation_name, bool _isLoop = true);
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
 	size_t get_joint_count() const { return _joints.size(); }
 

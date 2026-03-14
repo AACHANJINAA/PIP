@@ -5,6 +5,7 @@
 #include "NetworkManager.h"
 #include "ObjectManager.h"
 #include "RenderComponent.h"
+#include "ReadGLTFMesh.h"
 #include "Renderer.h"
 
 #include "ResourceManager.h"
@@ -212,11 +213,15 @@ void MainPlayerScript::awake()
 	auto walkMesh =
 		ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
 
+	// Brute_die -> idle 메쉬를 기준으로 사용하여 애니메이션만 로드 (메쉬는 재사용)
+	dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only("Resource/Character/Brute_die/Brute_die.gltf", "die");
+
 	renderer->set_mesh(walkMesh);
 
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", idleMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::DIE, "die", idleMesh);
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
@@ -286,6 +291,14 @@ void MainPlayerScript::handle_state(float deltaTime)
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
 	if (!anim_comp) return;
 
+	// DW추가 : 사망 상태 로직 추가
+	if (0 >= hp())
+	{
+		// set_state에도 애니메이션 루프 설정 추가
+		anim_comp->set_state(common::packet::OBJECT_STATE::DIE,false);
+		return;
+	}
+
 	if (_isAttacking) {
 		anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK1);
 
@@ -320,6 +333,14 @@ void MainPlayerScript::handle_state(float deltaTime)
 }
 void MainPlayerScript::handle_input(float deltaTime)
 {
+	// DW추가 : 사망 상태 로직 추가
+	if (0 >= hp())
+	{
+		// 사망 상태에서는 입력 무시
+		_currentMoveDir = { 0, 0, 0 }; // 이동 입력 초기화
+		return;
+	}
+
 	common::Vec3 move_direction{};
 	bool is_moving_input = false;
 
