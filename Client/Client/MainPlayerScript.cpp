@@ -221,7 +221,7 @@ void MainPlayerScript::awake()
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
 	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", idleMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::DIE, "die", idleMesh);
+	animation_component->add_state_mapping(common::packet::OBJECT_STATE::DEATH, "die", idleMesh);
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
@@ -295,7 +295,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	if (0 >= hp())
 	{
 		// set_state에도 애니메이션 루프 설정 추가
-		anim_comp->set_state(common::packet::OBJECT_STATE::DIE,false);
+		anim_comp->set_state(common::packet::OBJECT_STATE::DEATH,false);
 		return;
 	}
 

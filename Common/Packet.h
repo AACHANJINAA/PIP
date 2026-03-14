@@ -18,7 +18,7 @@ namespace common::packet
 		ROAR	,	// 포효
 		HITTED	,	// 피격
 		CHARGE	,	// 돌진
-		DIE		,	// 사망
+		DEATH		,	// 사망
 
 		ATTACK1 = 101,	// 공격 (추가적으로 여러개 필요할듯)
 		ATTACK2 = 102,
