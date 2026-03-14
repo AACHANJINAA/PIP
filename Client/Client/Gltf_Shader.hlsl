@@ -178,6 +178,12 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
 
+    // MASK 모드: alphaCutoff 이하의 픽셀을 폐기 (clip 함수 사용)
+    if (AlphaMode == 1) // MASK
+    {
+        clip(diffuseSample.a - AlphaCutoff); // 알파가 cutoff보다 작으면 픽셀 폐기
+    }
+    
     // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
