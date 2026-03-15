@@ -751,23 +751,37 @@ namespace PIP::GAME
 
 			common::Vec3 targetPos = _blackboard->get<common::Vec3>("charge_target_pos");
 			common::Vec3 currentPos = owner->GetPosition();
-			float distSq = common::DistanceSq(targetPos, currentPos);
-			common::Vec3 dir = common::Normalize(targetPos - currentPos);
 
-			// 도착 판정 (0.5m 이내 도달 시 종료)
-			if (distSq < 0.5f * 0.5f) {
+			// 현재 위치에서 목적지로 향하는 벡터
+			using namespace common::VectorHelper;
+			common::Vec3 toTarget = targetPos - currentPos;
+
+			// DASHING 페이즈 첫 프레임에 돌진 방향 고정
+			if (common::LengthSq(_dashDir) < 0.001f) {
+				_dashDir = common::Normalize(toTarget);
+			}
+
+			// [핵심] 도착 판정 로직 개선
+			// 1. 거리가 매우 가깝거나 (0.2m 이내)
+			// 2. 목적지를 지나쳤을 때 (목표 방향 _dashDir과 현재 남은 방향 toTarget의 내적이 음수면 지나친 것)
+			float dot = toTarget.x * _dashDir.x + toTarget.y * _dashDir.y + toTarget.z * _dashDir.z;
+			float distSq = common::LengthSq(toTarget);
+
+			if (distSq < 0.2f * 0.2f || dot < 0) {
 				auto nc = owner->GetComponent<NPCControllerComponent>();
 				if (nc) nc->SetVelocity({ 0, 0, 0 });
 
-				// 초기화 후 성공 반환 (다음 쿨타임 후 재사용 가능하게)
+				// 상태 초기화 (다음 돌진을 위해)
 				_currentPhase = Phase::READY;
 				_isTargetLocked = false;
+				_dashDir = { 0, 0, 0 };
 				return NodeStatus::SUCCESS;
 			}
 
 			// 돌진 이동 적용
+			// 매 프레임 계산하는 dir 대신, 고정된 _dashDir로 속도 적용 (회귀 방지)
 			auto nc = owner->GetComponent<NPCControllerComponent>();
-			if (nc) nc->SetVelocity(dir * _speed);
+			if (nc) nc->SetVelocity(_dashDir * _speed);
 			owner->SetState(common::packet::OBJECT_STATE::CHARGE);
 
 			// 매 프레임 타격 판정 실행

@@ -200,5 +200,7 @@ namespace PIP::GAME
         Phase _currentPhase = Phase::READY; // 현재 단계
         float _internalTimer = 0.0f;        // 단계별 대기 시간용
         bool  _isTargetLocked = false;      // 10m 지점 박제 여부
+        // [추가] 고정된 돌진 방향 저장용
+        common::Vec3 _dashDir = { 0, 0, 0 };
     };
 }
