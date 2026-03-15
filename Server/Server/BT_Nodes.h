@@ -41,15 +41,16 @@ namespace PIP::GAME
     class Condition_IsEnemyInRange : public Condition {
         float _range;
     public:
-        Condition_IsEnemyInRange(float range) : _range(range) { set_name("Condition_IsEnemyInRange"); }
+        Condition_IsEnemyInRange(float range) : _range(range) { }
         bool check() override;
     };
 
     // [행동] 적 추격
     class Action_ChaseEnemy : public Action {
         float _speed;
+        float _stopRange;
     public:
-        Action_ChaseEnemy(float speed) : _speed(speed) { set_name("Action_ChaseEnemy"); }
+        Action_ChaseEnemy(float speed, float stopRange) : _speed(speed), _stopRange{ stopRange } {}
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 
@@ -188,9 +189,7 @@ namespace PIP::GAME
 
         Action_ChargeAttack(float speed, const NPCAttackConfig& config)
             : _speed(speed), _config(config)
-        {
-            set_name("Action_ChargeAttack");
-        }
+        {}
 
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     private:
@@ -200,7 +199,7 @@ namespace PIP::GAME
         Phase _currentPhase = Phase::READY; // 현재 단계
         float _internalTimer = 0.0f;        // 단계별 대기 시간용
         bool  _isTargetLocked = false;      // 10m 지점 박제 여부
-        // [추가] 고정된 돌진 방향 저장용
-        common::Vec3 _dashDir = { 0, 0, 0 };
+		float _cooldownTimer = 0.0f;        // 재사용 대기시간 타이머
+        common::Vec3 _dashDir = { 0, 0, 0 }; // [추가] 고정된 돌진 방향 저장용
     };
 }

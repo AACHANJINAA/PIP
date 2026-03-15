@@ -113,7 +113,7 @@ namespace PIP::GAME
 						.leaf<Action_AttackEnemy>(normalAtk)
 					.end()
 					// 1-3. 공격 사거리 밖이면 추격
-					.leaf<Action_ChaseEnemy>(6.0f) // 추격 속도 6.0
+					.leaf<Action_ChaseEnemy>(6.0f, 1.5f) // 추격 속도 6.0
 				.end()
 			.end()
 			// --- [우선순위 2] 배회/정찰 로직 (전투 중이 아닐 때) ---

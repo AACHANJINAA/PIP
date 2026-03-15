@@ -18,7 +18,7 @@ namespace PIP::GAME
 		_slamAtk.shape = new JPH::SphereShape(3.0f);
 		_slamAtk.posOffset = { 0.0f, 0.0f, 3.5f };
 		_slamAtk.damage = 20;
-		_slamAtk.cooldown = 3.0f;
+		_slamAtk.cooldown = 1.0f;
 		_slamAtk.animationState = common::packet::OBJECT_STATE::ATTACK3;
 		_slamAtk.animationDuration = 1.0f; // 내려찍기 애니메이션은 1초 지속
 		_slamAtk.attackTiming = 0.5f; // 애니메이션 시작 후 0.5초에 판정 발생
@@ -29,7 +29,7 @@ namespace PIP::GAME
 		_chargeAtk.shape = new JPH::SphereShape(3.0f);
 		_chargeAtk.posOffset = { 0.0f, 2.0f, 0.0f };
 		_chargeAtk.damage = 25;
-		_chargeAtk.cooldown = 6.0f;
+		_chargeAtk.cooldown = 3.0f;
 		_chargeAtk.animationState = common::packet::OBJECT_STATE::CHARGE;
 		_chargeAtk.animationDuration = 2.0f; // 돌진 애니메이션은 2초 지속
 		_chargeAtk.hitInterval = 0.2f; // 돌진 중 0.2초마다 판정 발생
@@ -68,13 +68,18 @@ namespace PIP::GAME
 
 		BTBuilder builder;
 		auto root = builder
-			.selector()
-				.sequence()
-					// 1. 가장 가까운 플레이어를 타겟으로 잡음
-					.leaf_name<Action_TargetingNearestPlayer>("Debug_Targeting")
-					// 2. 즉시 돌진 공격 수행 (속도 18.0f, _chargeAtk 데이터 사용)
-					// Action_ChargeAttack 내부에 회전 로직이 포함되어 있다면 바로 머리를 돌려 돌진합니다.
-					.leaf_name<Action_ChargeAttack>("Debug_Charge_Only", 18.0f, _chargeAtk)
+			.sequence()
+				.leaf_name<Action_TargetingNearestPlayer>("Targeting")
+				.selector() // 공격이 먼저!
+					.sequence() // [공격 1] 내려찍기
+						.leaf_name<Condition_IsEnemyInRange>("In_Slam_Range", 4.5f)
+						.leaf_name<Action_AttackEnemy>("Slam_Attack", _slamAtk)
+					.end()
+					.sequence() // [공격 2] 돌진
+						.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 10.0f, 15.0f)
+						.leaf_name<Action_ChargeAttack>("Action_Charge", 18.0f, _chargeAtk)
+					.end()
+				.leaf_name<Action_ChaseEnemy>("Chase", 4.0f, 3.5f) // 공격 못 하면 추격
 				.end()
 			.end()
 		.build();
