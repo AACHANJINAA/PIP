@@ -8,6 +8,8 @@ class GameFramework : public Singleton<GameFramework>
 	friend Singleton<GameFramework>; // 싱글톤 접근 허용
 private:
 
+	bool _isFullscreenToggle = false; // 전체화면 전환
+
 	bool _isRendering = false;
 	
 	HINSTANCE _hInstance = nullptr;

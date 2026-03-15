@@ -321,7 +321,7 @@ void GameFramework::ProcessInput()
 	InputManager::instance()->Update();
 	if (InputManager::instance()->IsKeyDown(VK_F9))
 	{
-		ChangeSwapChainState();
+		_isFullscreenToggle = true;
 	}
 }
 
@@ -380,6 +380,14 @@ void GameFramework::FrameAdvance()
 {
 	if (_isRendering) return;
 	_isRendering = true;
+
+	// 프레임 시작 전, 화면 전환 요청이 있었다면 여기서 안전하게 처리!
+	if (_isFullscreenToggle)
+	{
+		ChangeSwapChainState();
+		_isFullscreenToggle = false;
+	}
+
 
 	// [수정] 현재 프레임 인덱스에 맞는 할당기 선택
 	auto& currentRenderAllocator = _commandAllocators[_swapChainBufferIndex];
@@ -525,6 +533,12 @@ void GameFramework::ChangeSwapChainState()
 	_swapChain->GetFullscreenState(&bFullScreenState, NULL);
 	_swapChain->SetFullscreenState(!bFullScreenState, NULL);
 
+	// 1. 전체화면/창모드 전환 후 바뀐 실제 창 크기를 다시 구해와야 함
+	RECT rcClient;
+	::GetClientRect(_hWnd, &rcClient);
+	_wndClientWidth = rcClient.right - rcClient.left;
+	_wndClientHeight = rcClient.bottom - rcClient.top;
+
 	DXGI_MODE_DESC dxgiTargetParameters;
 	dxgiTargetParameters.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	dxgiTargetParameters.Width = _wndClientWidth;
@@ -535,15 +549,22 @@ void GameFramework::ChangeSwapChainState()
 	dxgiTargetParameters.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	_swapChain->ResizeTarget(&dxgiTargetParameters);
 
+	// 2. 렌더 타겟 리소스 해제
 	for (int i = 0; i < SWAP_CHAIN_BUFFERS; i++) _renderTargetBuffers[i].Reset();
+
+	// 3. 렌더 타겟의 크기가 변했으므로, 깊이-스텐실 버퍼(DSV)도 반드시 초기화!
+	_depthStencilBuffer.Reset();
 
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 	_swapChain->GetDesc(&dxgiSwapChainDesc);
 	_swapChain->ResizeBuffers(SWAP_CHAIN_BUFFERS, _wndClientWidth,
-	_wndClientHeight, dxgiSwapChainDesc.BufferDesc.Format, dxgiSwapChainDesc.Flags);
+		_wndClientHeight, dxgiSwapChainDesc.BufferDesc.Format, dxgiSwapChainDesc.Flags);
 
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
+
+	// 4. 새로운 크기에 맞춰 뷰(View)들을 재발급
 	CreateRenderTargetViews();
+	CreateDepthStencilView(); // 바뀐 _wndClientWidth/Height로 DSV 다시 생성!
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
