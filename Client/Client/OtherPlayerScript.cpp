@@ -69,5 +69,5 @@ void OtherPlayerScript::awake()
     render_comp->set_pso_name("skinned");
 
     // 위치, 회전 정보
-    transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
+    transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 }

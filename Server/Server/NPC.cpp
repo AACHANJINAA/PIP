@@ -48,7 +48,7 @@ namespace PIP::GAME
 		/*auto ai = AddComponent<AIComponent>();
 		ai->SetLuaScript("Monster.lua");*/
 		AddComponent<AIComponent>();
-		SetupBT();
+		NPC::SetupBT();
 
 
 		_lastUpdateTime = std::chrono::steady_clock::now();
@@ -194,7 +194,11 @@ namespace PIP::GAME
 		if (hitboxComp->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart)) {
 
 			// 3. 데미지 및 넉백 (Kinematic 방식)
-			SetHP(GetHP() - damage);
+			
+			int32_t current_hp = GetHP();
+			// 현재 HP보다 데미지가 크면 0, 아니면 차이만큼 차감
+			int32_t new_hp = (current_hp > damage) ? (current_hp - damage) : 0;
+			SetHP(new_hp);
 
 			using namespace common::VectorHelper;
 			common::Vec3 knockbackDir = common::Normalize(GetPosition() - dynamic_cast<Actor*>(attacker)->GetPosition());

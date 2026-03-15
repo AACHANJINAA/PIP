@@ -57,10 +57,10 @@ namespace PIP::GAME
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		
-		short						_max_hp;
-		short						_level;
-		uint32_t					_exp;
-		int							_damage;
+		int32_t						_max_hp;
+		int32_t						_level;
+		int32_t						_exp;
+		int32_t						_damage;
 		common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 
 		// [추가] 위치 보정 관련
@@ -72,6 +72,6 @@ namespace PIP::GAME
 	private:
 		float _hitCooldown = 0.0f;
 		int64_t _owner_id; // 이 플레이어를 소유한 세션 ID	
-		short	_hp;
+		int32_t	_hp;
 	};
 }

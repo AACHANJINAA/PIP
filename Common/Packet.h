@@ -6,7 +6,7 @@
 
 namespace common::packet
 {
-	constexpr short SERVER_PORT = 9001;
+	constexpr short SERVER_PORT = 19001;
 	enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
 		IDLE	,	// 대기
 		WALK	,	// 걷기
@@ -202,13 +202,13 @@ namespace common::packet
 	// 플레이어 스폰 패킷
 	struct SC_PACKET_SPAWN_PLAYER : PacketHeader
 	{
-		int64_t _id; // long long
-		Vec3    _position; // 플레이어의 위치
-		Quat	_rotation;
-		OBJECT_STATE _state;
-		short   _hp;
-		short   _level;
-		int     _exp;
+		int64_t			_id; // long long
+		Vec3			_position; // 플레이어의 위치
+		Quat			_rotation;
+		OBJECT_STATE	_state;
+		int32_t			_hp;
+		int32_t			_level;
+		int32_t			_exp;
 		//뒤에 가변크기 name
 	};
 

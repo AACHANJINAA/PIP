@@ -272,7 +272,6 @@ namespace PIP::GAME
 	}
 
 	NodeStatus Action_AttackEnemy::tick(float dt, JPH::TempAllocator* allocator) {
-		_blackboard->set("debug_last_node", _nodeName);
 		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
 		if (!owner) return NodeStatus::FAILURE;
 		auto npc = dynamic_cast<NPC*>(owner);
