@@ -214,12 +214,13 @@ namespace PIP::GAME
 
 		float dx = targetPos.x - currentPos.x;
 		float dz = targetPos.z - currentPos.z;
-		float distance = std::sqrt(dx * dx + dz * dz);
+		float distSq = dx * dx + dz * dz;
+		float distance = std::sqrt(distSq);
 
 		// 2. 근접 시 정지 (공격 사거리보다 약간 짧게 설정하여 확실히 접근)
 		// 공격 사거리 내에 들어오면 상위 Sequence의 Condition_IsEnemyInRange가
 		// 성공하면서 이 노드(Chase)는 중단되고 Attack 노드로 넘어갈 것입니다.
-		if (distance < 0.5f) {
+		if (distance <= _stopRange) {
 			nc->SetVelocity({ 0, 0, 0 });
 			npc->SetState(common::packet::OBJECT_STATE::IDLE);
 			return NodeStatus::SUCCESS;
@@ -690,15 +691,25 @@ namespace PIP::GAME
 
 	NodeStatus Action_ChargeAttack::tick(float dt, JPH::TempAllocator* allocator)
 	{
+		// 1. [핵심] 쿨타임 감소 (매 틱 실행)
+		if (_cooldownTimer > 0.0f) _cooldownTimer -= dt;
+
 		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
 		if (!owner) return NodeStatus::FAILURE;
 		auto room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
 		if (!room) return NodeStatus::FAILURE;
 
+		// 2. 쿨타임 체크 (Ready 상태일 때만)
+		if (_currentPhase == Phase::READY && _cooldownTimer > 0.0f) {
+			return NodeStatus::FAILURE;
+		}
+
+
 		// --- Phase 0: 준비 (포효 시작) ---
 		if (_currentPhase == Phase::READY) {
 			_currentPhase = Phase::ROAR;
 			_internalTimer = 1.2f; // 포효 애니메이션 시간 (약 1.2초)
+			_cooldownTimer = _config.cooldown;
 			owner->SetState(common::packet::OBJECT_STATE::ROAR);
 
 			auto nc = owner->GetComponent<NPCControllerComponent>();
@@ -775,6 +786,7 @@ namespace PIP::GAME
 				_currentPhase = Phase::READY;
 				_isTargetLocked = false;
 				_dashDir = { 0, 0, 0 };
+				_blackboard->set("charge_target_pos", std::any());
 				return NodeStatus::SUCCESS;
 			}
 
