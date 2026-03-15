@@ -69,57 +69,67 @@ namespace PIP::GAME
 		BTBuilder builder;
 		auto root = builder
 			.selector()
-				// --- [우선순위 1] 페이즈 2 패턴 (HP 50% 이하) ---
 				.sequence()
-					.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_2) // 페이즈 체크
-					.selector()
-						.sequence() // 페이즈 2 진입 시 딱 한 번만 포효
-							.leaf_name<Condition_CheckFlagFalse>("Condition_CheckFlagFalse","is_p2_roar_done")
-							.leaf_name<Action_Roar>("Action_Roar")
-							.leaf_name<Action_SetFlagTrue>("Action_SetFlagTrue","is_p2_roar_done")
-						.end()
-						.selector()
-							// 1-1. 잡기 공격 (가장 강력함, 사거리 짧음)
-							.sequence()
-								.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange",2.0f)
-								.leaf_name<Action_AttackEnemy>("Grab Attack",_grabAtk)
-							.end()
-							// 1-2. 클로 난타 (빠른 공격, 사거리 중간)
-							.sequence()
-								.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
-								.leaf_name<Action_RotateToEnemy>("Action_RotateToEnemy") // 공격 전 타겟 방향 회전
-								.leaf_name<Action_AttackEnemy>("Claw Attack",_clawAtk)
-							.end()
-							// 1-3. 타겟 추격 (페이즈 2는 더 빠름)
-							.leaf_name<Action_ChaseEnemy>("2Phase Chasing", 7.0f)
-						.end()
-					.end()
+					// 1. 가장 가까운 플레이어를 타겟으로 잡음
+					.leaf_name<Action_TargetingNearestPlayer>("Debug_Targeting")
+					// 2. 즉시 돌진 공격 수행 (속도 18.0f, _chargeAtk 데이터 사용)
+					// Action_ChargeAttack 내부에 회전 로직이 포함되어 있다면 바로 머리를 돌려 돌진합니다.
+					.leaf_name<Action_ChargeAttack>("Debug_Charge_Only", 18.0f, _chargeAtk)
 				.end()
-				// --- [우선순위 2] 페이즈 1 패턴 (기본) ---
-				.sequence()
-					.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_1)
-					.selector()
-						// 2-1. 돌진 (특정 거리 2m~12m 사이일 때만 사용)
-						.sequence()
-							.leaf_name<Condition_CheckFlagFalse>("Charge_CD", "is_charge_cd")
-							.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 2.0f, 12.0f)
-							// 이 노드 하나가 포효(1회) -> 회전 -> 10m 돌진을 순차적으로 수행합니다.
-							.leaf_name<Action_ChargeAttack>("Action_Charge", 18.0f, _chargeAtk)
-							.leaf_name<Action_SetFlagTrue>("Set_Charge_CD", "is_charge_cd")
-						.end()
-						// 2-2. 내려찍기 (가까이 있으면 사용)
-						.sequence()
-							.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
-							.leaf_name<Action_AttackEnemy>("Slam Attack", _slamAtk)
-						.end()
-						// 2-3. 타겟 추격 (페이즈 1 속도)
-						.leaf_name<Action_ChaseEnemy>("1Phase Chasing", 4.0f)
-					.end()
-				.end()
-				// --- [우선순위 3] 공통: 타겟이 없을 경우 ---
-				.leaf_name<Action_TargetingNearestPlayer>("Action_TargetingNearestPlayer")
 			.end()
 		.build();
+		//	.selector()
+		//		// --- [우선순위 1] 페이즈 2 패턴 (HP 50% 이하) ---
+		//		.sequence()
+		//			.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_2) // 페이즈 체크
+		//			.selector()
+		//				.sequence() // 페이즈 2 진입 시 딱 한 번만 포효
+		//					.leaf_name<Condition_CheckFlagFalse>("Condition_CheckFlagFalse","is_p2_roar_done")
+		//					.leaf_name<Action_Roar>("Action_Roar")
+		//					.leaf_name<Action_SetFlagTrue>("Action_SetFlagTrue","is_p2_roar_done")
+		//				.end()
+		//				.selector()
+		//					// 1-1. 잡기 공격 (가장 강력함, 사거리 짧음)
+		//					.sequence()
+		//						.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange",2.0f)
+		//						.leaf_name<Action_AttackEnemy>("Grab Attack",_grabAtk)
+		//					.end()
+		//					// 1-2. 클로 난타 (빠른 공격, 사거리 중간)
+		//					.sequence()
+		//						.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
+		//						.leaf_name<Action_RotateToEnemy>("Action_RotateToEnemy") // 공격 전 타겟 방향 회전
+		//						.leaf_name<Action_AttackEnemy>("Claw Attack",_clawAtk)
+		//					.end()
+		//					// 1-3. 타겟 추격 (페이즈 2는 더 빠름)
+		//					.leaf_name<Action_ChaseEnemy>("2Phase Chasing", 7.0f)
+		//				.end()
+		//			.end()
+		//		.end()
+		//		// --- [우선순위 2] 페이즈 1 패턴 (기본) ---
+		//		.sequence()
+		//			.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_1)
+		//			.selector()
+		//				// 2-1. 돌진 (특정 거리 2m~12m 사이일 때만 사용)
+		//				.sequence()
+		//					.leaf_name<Condition_CheckFlagFalse>("Charge_CD", "is_charge_cd")
+		//					.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 2.0f, 12.0f)
+		//					// 이 노드 하나가 포효(1회) -> 회전 -> 10m 돌진을 순차적으로 수행합니다.
+		//					.leaf_name<Action_ChargeAttack>("Action_Charge", 18.0f, _chargeAtk)
+		//					.leaf_name<Action_SetFlagTrue>("Set_Charge_CD", "is_charge_cd")
+		//				.end()
+		//				// 2-2. 내려찍기 (가까이 있으면 사용)
+		//				.sequence()
+		//					.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
+		//					.leaf_name<Action_AttackEnemy>("Slam Attack", _slamAtk)
+		//				.end()
+		//				// 2-3. 타겟 추격 (페이즈 1 속도)
+		//				.leaf_name<Action_ChaseEnemy>("1Phase Chasing", 4.0f)
+		//			.end()
+		//		.end()
+		//		// --- [우선순위 3] 공통: 타겟이 없을 경우 ---
+		//		.leaf_name<Action_TargetingNearestPlayer>("Action_TargetingNearestPlayer")
+		//	.end()
+		//.build();
 
 		root->set_blackboard(bb);
 		ai->SetBehaviorTree(root);
