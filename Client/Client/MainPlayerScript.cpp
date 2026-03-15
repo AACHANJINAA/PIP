@@ -430,12 +430,20 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 {
 	static float alpha_background = 0.0f;
 	static float alpha_text = 0.0f;
+	static float timer = 0.0f;
 	if (0.f < hp())
 	{
+		timer = 0.f;
 		alpha_background = 0.f;
 		alpha_text = 0.f;
 		UIManager::instance()->set_visible(UILayer::MIDDLE, "Death_Background_UI", false); // 처음에는 보이지 않도록 설정
 		UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", false); // 처음에는 보이지 않도록 설정
+	}
+
+	if (timer <= 2.f)
+	{
+		timer += deltaTime;
+		return;
 	}
 
 	// 셋팅 -> 추후에 bt에서는 awake에서
