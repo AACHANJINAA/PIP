@@ -82,16 +82,16 @@ namespace PIP::GAME
 							// 1-1. 잡기 공격 (가장 강력함, 사거리 짧음)
 							.sequence()
 								.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange",2.0f)
-								.leaf_name<Action_AttackEnemy>("Action_AttackEnemy",_grabAtk)
+								.leaf_name<Action_AttackEnemy>("Grab Attack",_grabAtk)
 							.end()
 							// 1-2. 클로 난타 (빠른 공격, 사거리 중간)
 							.sequence()
 								.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
 								.leaf_name<Action_RotateToEnemy>("Action_RotateToEnemy") // 공격 전 타겟 방향 회전
-								.leaf_name<Action_AttackEnemy>("Action_AttackEnemy",_clawAtk)
+								.leaf_name<Action_AttackEnemy>("Claw Attack",_clawAtk)
 							.end()
 							// 1-3. 타겟 추격 (페이즈 2는 더 빠름)
-							.leaf_name<Action_ChaseEnemy>("Action_ChaseEnemy", 7.0f)
+							.leaf_name<Action_ChaseEnemy>("2Phase Chasing", 7.0f)
 						.end()
 					.end()
 				.end()
@@ -99,10 +99,10 @@ namespace PIP::GAME
 				.sequence()
 					.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_1)
 					.selector()
-						// 2-1. 돌진 (특정 거리 6m~10m 사이일 때만 사용)
+						// 2-1. 돌진 (특정 거리 2m~12m 사이일 때만 사용)
 						.sequence()
 							.leaf_name<Condition_CheckFlagFalse>("Charge_CD", "is_charge_cd")
-							.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 6.0f, 12.0f)
+							.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 2.0f, 12.0f)
 							// 이 노드 하나가 포효(1회) -> 회전 -> 10m 돌진을 순차적으로 수행합니다.
 							.leaf_name<Action_ChargeAttack>("Action_Charge", 18.0f, _chargeAtk)
 							.leaf_name<Action_SetFlagTrue>("Set_Charge_CD", "is_charge_cd")
@@ -110,10 +110,10 @@ namespace PIP::GAME
 						// 2-2. 내려찍기 (가까이 있으면 사용)
 						.sequence()
 							.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
-							.leaf_name<Action_AttackEnemy>("Action_AttackEnemy", _slamAtk)
+							.leaf_name<Action_AttackEnemy>("Slam Attack", _slamAtk)
 						.end()
 						// 2-3. 타겟 추격 (페이즈 1 속도)
-						.leaf_name<Action_ChaseEnemy>("Action_ChaseEnemy", 4.0f)
+						.leaf_name<Action_ChaseEnemy>("1Phase Chasing", 4.0f)
 					.end()
 				.end()
 				// --- [우선순위 3] 공통: 타겟이 없을 경우 ---
@@ -132,7 +132,6 @@ namespace PIP::GAME
 			_currentPhase = TainerPhase::PHASE_2;
 			// TODO: 페이즈 전환 패킷 브로드캐스트 (연출용)
 			MYLOG("Tainer Phase 2 Started!");
-			SetupBT(); // BT 재구성
 		}
 	}
 

@@ -21,7 +21,7 @@
 #include "MonsterHPComponent.h"
 #include "PhysicsCharacterControllerComponent.h"
 
-void MainPlayerScript::set_hp(int hp)
+void MainPlayerScript::set_hp(const int hp)
 {
 	_hp = std::clamp(hp, 0, _maxHp);
 	_displayHp = static_cast<float>(_hp);

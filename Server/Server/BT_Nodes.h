@@ -61,7 +61,7 @@ namespace PIP::GAME
         bool  _hasAttacked = false; // 중복 판정 방지 플래그
         NPCAttackConfig _config;
     public:
-        Action_AttackEnemy(const NPCAttackConfig& config) : _config(config) { set_name("Action_AttackEnemy"); }
+        Action_AttackEnemy(const NPCAttackConfig& config) : _config(config) {}
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 

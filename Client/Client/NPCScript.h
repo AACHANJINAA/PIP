@@ -34,7 +34,7 @@ public:
 	void on_receive_snapshot(const NetSnapshot& snapshot) override;
 	void apply_snapshot() override;
 private:
-	int		_hp = 100;
+	int32_t		_hp = 100;
 	int64_t _id = -1;
 	common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
 
