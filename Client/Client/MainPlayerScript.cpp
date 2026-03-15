@@ -7,6 +7,7 @@
 #include "RenderComponent.h"
 #include "ReadGLTFMesh.h"
 #include "Renderer.h"
+#include "UIManager.h"
 
 #include "ResourceManager.h"
 #include "SceneManager.h"
@@ -296,6 +297,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 	{
 		// set_state에도 애니메이션 루프 설정 추가
 		anim_comp->set_state(common::packet::OBJECT_STATE::DEATH,false);
+		// 사망 상태의 ui 업데이트
+		die_ui_update(deltaTime);
 		return;
 	}
 
@@ -421,6 +424,49 @@ void MainPlayerScript::send_network_sync(float deltaTime)
 		NetworkManager::instance()->SendMovePacket(transform()->local_position(), transform()->local_rotation(),
 			current_state, currentTick);
 	}
+}
+
+void MainPlayerScript::die_ui_update(float deltaTime)
+{
+	static float alpha_background = 0.0f;
+	static float alpha_text = 0.0f;
+	if (0.f < hp())
+	{
+		alpha_background = 0.f;
+		alpha_text = 0.f;
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Death_Background_UI", false); // 처음에는 보이지 않도록 설정
+		UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", false); // 처음에는 보이지 않도록 설정
+	}
+
+	// 셋팅 -> 추후에 bt에서는 awake에서
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "Death_Background_UI", true);
+	UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", true);
+
+	// 실제 동작 -> update에서
+	alpha_background += deltaTime * 0.5f * 0.5f;
+	alpha_text += deltaTime * 0.25f * 0.5f;
+
+	if (alpha_background >= 1.f)
+	{
+		alpha_background = 1.f;
+	}
+	if (alpha_text >= 1.f)
+	{
+		alpha_text = 1.f;
+	}
+
+	auto background = UIManager::instance()->ui_component(UILayer::MIDDLE, "Death_Background_UI");
+	auto deathUI = UIManager::instance()->ui_component(UILayer::FRONT, "Death_UI");
+	if (background)
+	{
+		background->set_color(XMFLOAT4(1, 1, 1, alpha_background)); // 배경은 반투명 검정
+
+	}
+	if(deathUI)
+	{
+		deathUI->set_color(XMFLOAT4(1, 1, 1, alpha_text)); // 배경은 반투명 검정
+	}
+	
 }
 
 

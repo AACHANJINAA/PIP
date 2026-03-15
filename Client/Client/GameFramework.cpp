@@ -5,6 +5,7 @@
 #include "DebugDrawManager.h"
 #include "ImGuiManager.h"
 #include "Renderer.h"
+#include "UIManager.h"
 
 #include "DescriptorManager.h"
 #include "InputManager.h"
@@ -72,6 +73,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 	LightManager::instance()->initialize(_device.Get());
 	ShadowManager::instance()->initialize(_device.Get());
+	UIManager::instance()->initialize(_device.Get(), _commandList.Get());
 
 	// ImGui 매니저 초기화 (스왑체인 버퍼 개수와 포맷 전달)
 	ImGuiManager::instance()->initialize(_hWnd, _device.Get(), _commandQueue.Get(), SWAP_CHAIN_BUFFERS, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -108,9 +110,15 @@ void GameFramework::OnDestroy()
 	DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pdxgiDebug));
 	if (pdxgiDebug) pdxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
 #endif
-	SceneManager::instance()->release();
-	ResourceManager::instance()->release();
 	ImGuiManager::instance()->release();
+	UIManager::instance()->release();
+	ShadowManager::instance()->release();
+	LightManager::instance()->release();
+	SceneManager::instance()->release();
+	Renderer::instance()->release();
+	ResourceManager::instance()->release();
+	DescriptorManager::instance()->release();
+	
 }
 
 void GameFramework::CreateSwapChain()
@@ -311,6 +319,10 @@ void GameFramework::ProcessNetwork()
 void GameFramework::ProcessInput()
 {
 	InputManager::instance()->Update();
+	if (InputManager::instance()->IsKeyDown(VK_F9))
+	{
+		ChangeSwapChainState();
+	}
 }
 
 //void GameFramework::AnimateObjects()

@@ -14,6 +14,7 @@
 #include "AnimationComponent.h"
 #include "SocketComponenet.h"
 #include "ReadGLTFMesh.h"
+#include "UIManager.h"
 
 #include "TerrainLoader.h"
 #include "UIRenderComponent.h"
@@ -413,6 +414,7 @@ void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     hp_frame->set_size(410.0f, 30.0f);                 // Bar보다 좀 더 큼
     hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
     hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
 
     // 2. HP Bar (앞에 렌더링될 바)
     auto hp_bar_obj = ObjectManager::instance()->create_game_object("HP_Bar");
@@ -422,6 +424,36 @@ void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     hp_bar->set_size(500.0f, 30.0f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPFrame", hp_bar_obj);
+
+
+    // 3.사망 ui 배경
+    auto death_ui_background_obj = ObjectManager::instance()->create_game_object("death_ui_background");
+    auto death_ui_background = death_ui_background_obj->add_component<UIRenderComponent>();
+
+    death_ui_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
+    death_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
+    death_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+    death_ui_background->set_texture("Resource/UI/TX_BG.dds");
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "Death_Background_UI", death_ui_background_obj);
+    UIManager::instance()->set_visible(UILayer::MIDDLE, "Death_Background_UI", false); // 처음에는 보이지 않도록 설정
+
+    // 4. 사망 ui
+    auto death_ui_obj = ObjectManager::instance()->create_game_object("death_ui");
+    auto death_ui = death_ui_obj->add_component<UIRenderComponent>();
+
+    float scaleX = (float)(FRAME_BUFFER_WIDTH) / 1920.f; // x값 기준 배율
+    
+	float scaleY = (float)(FRAME_BUFFER_HEIGHT) / 512.f; // y값 기준 배율
+    
+    death_ui->set_screen_position(0.0f, 250.0f);        // Frame보다 안쪽
+    death_ui->set_size(1920.f * scaleX, 512.f * scaleX);// Frame보다 작게
+    death_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+    death_ui->set_texture("Resource/UI/die_ui (1).dds");
+    UIManager::instance()->add_ui(UILayer::FRONT, "Death_UI", death_ui_obj);
+	UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", false); // 처음에는 보이지 않도록 설정
+
+
 }
 
 void Chess_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

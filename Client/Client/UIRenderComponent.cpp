@@ -118,8 +118,8 @@ void UIRenderComponent::initialize_screen_info()
         _cb_screen_info->Map(0, nullptr, reinterpret_cast<void**>(&_mapped_screen_info));
 
         // 화면 크기 설정 (GameFramework에서 가져올 수 있으면 가져오기)
-        _mapped_screen_info->screen_width = 1920.0f;  // TODO: 실제 화면 크기로 수정
-        _mapped_screen_info->screen_height = 1080.0f;
+        _mapped_screen_info->screen_width = FRAME_BUFFER_WIDTH;  // TODO: 실제 화면 크기로 수정
+        _mapped_screen_info->screen_height = FRAME_BUFFER_HEIGHT;
         _mapped_screen_info->padding[0] = 0.0f;
         _mapped_screen_info->padding[1] = 0.0f;
 
