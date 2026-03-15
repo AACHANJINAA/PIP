@@ -443,6 +443,9 @@
     <ClInclude Include="ShadowDepthSkinnedShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -699,6 +702,9 @@
     </ClCompile>
     <ClCompile Include="ShadowDepthSkinnedShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

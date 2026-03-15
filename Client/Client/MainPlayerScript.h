@@ -52,6 +52,9 @@ private:
 	void update_physics_and_visuals(float deltaTime);
 	void send_network_sync(float deltaTime);
 
+	// ui 띄우기 용
+	void die_ui_update(float deltaTime);
+
 
 	int _hp{ 100 };
 	int _maxHp{ 100 };

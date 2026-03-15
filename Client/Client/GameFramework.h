@@ -85,7 +85,7 @@ public:
 	void CreateCommandQueueAndList();
 	// 스왑 체인, 디바이스, 서술자 힙, 명령 큐/할당자/리스트를 생성하는 함수
 
-	void ChangeSwapChainState(); // 따라하기 5
+	void ChangeSwapChainState(); // 따라하기 5, 전체화면 <-> 창 모드 전환 시 호출
 
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();

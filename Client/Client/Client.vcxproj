@@ -189,6 +189,7 @@
     <ClInclude Include="ToolCameraScript.h" />
     <ClInclude Include="Tool_Scene.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="UIManager.h" />
     <ClInclude Include="UIRenderComponent.h" />
     <ClInclude Include="UIShader.h" />
     <ClInclude Include="WeaponScript.h" />
@@ -307,6 +308,7 @@
     <ClCompile Include="ToolCameraScript.cpp" />
     <ClCompile Include="Tool_Scene.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
+    <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="UIRenderComponent.cpp" />
     <ClCompile Include="UIShader.cpp" />
     <ClCompile Include="WeaponScript.cpp" />
