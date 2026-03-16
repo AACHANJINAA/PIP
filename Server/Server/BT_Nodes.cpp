@@ -6,6 +6,7 @@
 
 namespace PIP::GAME
 {
+	using namespace common::packet;
 	bool Condition_HasTarget::check()
 	{
 		// 1. 배회 목적지(target_pos)가 있는지 확인
@@ -65,7 +66,11 @@ namespace PIP::GAME
 		if (distance < 0.2f) {
 			nc->SetVelocity({ 0, 0, 0 });
 			_blackboard->set("target_pos", std::any());
-			if (npc) npc->SetState(common::packet::OBJECT_STATE::IDLE);
+			if (npc)
+			{
+				npc->SetState(common::packet::EntityState::IDLE);
+				npc->SetActionId(0);
+			}
 			return NodeStatus::SUCCESS;
 		}
 
@@ -110,7 +115,11 @@ namespace PIP::GAME
 		if (stuckTimer > 1.0f) {
 			_blackboard->set("target_pos", std::any()); // 목표 삭제
 			// [추가] 멈췄으니 IDLE
-			if (npc) npc->SetState(common::packet::OBJECT_STATE::IDLE);
+			if (npc)
+			{
+				npc->SetState(common::packet::EntityState::IDLE);
+				npc->SetActionId(0);
+			}
 			return NodeStatus::FAILURE;
 		}
 
@@ -119,10 +128,11 @@ namespace PIP::GAME
 		nc->SetVelocity(vel);
 
 		if (currentSpeed < 0.1f) {
-			npc->SetState(common::packet::OBJECT_STATE::IDLE);
+			npc->SetState(common::packet::EntityState::IDLE);
+			npc->SetActionId(0);
 		}
 		else {
-			npc->SetState(common::packet::OBJECT_STATE::WALK); // 배회는 보통 RUN 대신 WALK 사용
+			npc->SetState(common::packet::EntityState::MOVE); // 배회는 보통 RUN 대신 WALK 사용
 		}
 
 		// 4. 회전 (바라보기)
@@ -155,11 +165,7 @@ namespace PIP::GAME
 		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
 
 		auto state = owner->GetState();
-		if (state == common::packet::OBJECT_STATE::ATTACK1 ||
-			state == common::packet::OBJECT_STATE::ATTACK2 ||
-			state == common::packet::OBJECT_STATE::ATTACK3 ||
-			state == common::packet::OBJECT_STATE::ROAR ||
-			state == common::packet::OBJECT_STATE::CHARGE)
+		if (common::packet::EntityState::ACTION == state)
 		{
 			return true;
 		}
@@ -222,7 +228,8 @@ namespace PIP::GAME
 		// 성공하면서 이 노드(Chase)는 중단되고 Attack 노드로 넘어갈 것입니다.
 		if (distance <= _stopRange) {
 			nc->SetVelocity({ 0, 0, 0 });
-			npc->SetState(common::packet::OBJECT_STATE::IDLE);
+			npc->SetState(common::packet::EntityState::IDLE);
+			npc->SetActionId(0);
 			return NodeStatus::SUCCESS;
 		}
 
@@ -243,18 +250,17 @@ namespace PIP::GAME
 
 		// 3. [핵심] 계산된 속도에 따라 상태(애니메이션) 결정
 		if (currentSpeed < 0.1f) {
-			npc->SetState(common::packet::OBJECT_STATE::IDLE);
+			npc->SetState(common::packet::EntityState::IDLE);
 		}
 		else if (currentSpeed < _speed * 0.5f) { // 원래 속도의 50% 미만이면 걷기
-			npc->SetState(common::packet::OBJECT_STATE::WALK);
+			npc->SetState(common::packet::EntityState::MOVE);
 		}
 		else {
-			npc->SetState(common::packet::OBJECT_STATE::WALK);
-			// npc->SetState(common::packet::OBJECT_STATE::RUN); //TODO: 추격은 보통 RUN 상태이니깐 클라이언트에서 런 애니메이션 필요
+			npc->SetState(common::packet::EntityState::MOVE);
 		} 
 
 		// [추가] 현재 공격 애니메이션 재생 중이면 이동 속도를 주지 않음
-		if (npc->GetState() == common::packet::OBJECT_STATE::ATTACK1) {
+		if (npc->GetState() == common::packet::EntityState::ACTION) {
 			nc->SetVelocity({ 0, 0, 0 });
 			return NodeStatus::RUNNING;
 		}
@@ -290,7 +296,8 @@ namespace PIP::GAME
 			_hasAttacked = false;
 			_hitTimer = 0.0f;
 
-			owner->SetState(_config.animationState);
+			owner->SetState(_config.entityState);
+			owner->SetActionId(_config.actionId);
 			_timer = _config.cooldown; // 쿨타임 세팅
 
 			auto nc = owner->GetComponent<NPCControllerComponent>();
@@ -301,7 +308,8 @@ namespace PIP::GAME
 
 		// 2. 공격 진행 중 (애니메이션 재생 중)
 		_attackDurationTimer -= dt;
-		owner->SetState(_config.animationState);
+		owner->SetState(_config.entityState);
+		owner->SetActionId(_config.actionId);
 		float elapsed = _config.animationDuration - _attackDurationTimer;
 
 		// --- 타격 판정 (지속형 vs 단발형) ---
@@ -455,7 +463,8 @@ namespace PIP::GAME
 		if (!owner) return false;
 
 		auto state = owner->GetState();
-		if (state == common::packet::OBJECT_STATE::ROAR || state == common::packet::OBJECT_STATE::CHARGE) {
+		auto action_id = owner->GetActionId();
+		if (state == common::packet::EntityState::ACTION && (action_id == 11 || action_id == 12)) {
 			return true;
 		}
 
@@ -625,7 +634,8 @@ namespace PIP::GAME
 		auto nc = owner->GetComponent<NPCControllerComponent>();
 		if (nc) {
 			nc->SetVelocity(dir * 15.0f);
-			owner->SetState(common::packet::OBJECT_STATE::CHARGE);
+			owner->SetState(_config.entityState);
+			owner->SetActionId(_config.actionId); // 돌진 애니메이션 ID (예시)
 		}
 
 		// 매 프레임 타격 판정 (ExecuteActorAction)
@@ -680,7 +690,8 @@ namespace PIP::GAME
 			auto nc = owner->GetComponent<NPCControllerComponent>();
 			if (nc) nc->SetVelocity({ 0, 0, 0 });
 		}
-		npc->SetState(common::packet::OBJECT_STATE::ROAR);
+		npc->SetState(common::packet::EntityState::ACTION);
+		npc->SetActionId(ActionID::Tainer::Roar); // 포효 애니메이션 ID (예시)
 		_timer -= dt;
 		if (_timer <= 0.0f) {
 			_timer = 0.0f;
@@ -710,7 +721,8 @@ namespace PIP::GAME
 			_currentPhase = Phase::ROAR;
 			_internalTimer = 1.2f; // 포효 애니메이션 시간 (약 1.2초)
 			_cooldownTimer = _config.cooldown;
-			owner->SetState(common::packet::OBJECT_STATE::ROAR);
+			owner->SetState(_config.entityState);
+			owner->SetActionId(common::packet::ActionID::Tainer::Roar);
 
 			auto nc = owner->GetComponent<NPCControllerComponent>();
 			if (nc) nc->SetVelocity({ 0, 0, 0 }); // 포효 중 정지
@@ -720,7 +732,8 @@ namespace PIP::GAME
 		// --- Phase 1: 포효 중 (대기) ---
 		if (_currentPhase == Phase::ROAR) {
 			_internalTimer -= dt;
-			owner->SetState(common::packet::OBJECT_STATE::ROAR); // 상태 유지
+			owner->SetState(_config.entityState); // 상태 유지
+			owner->SetActionId(ActionID::Tainer::Roar);
 
 			if (_internalTimer <= 0.0f) {
 				_currentPhase = Phase::TURN;
@@ -794,7 +807,8 @@ namespace PIP::GAME
 			// 매 프레임 계산하는 dir 대신, 고정된 _dashDir로 속도 적용 (회귀 방지)
 			auto nc = owner->GetComponent<NPCControllerComponent>();
 			if (nc) nc->SetVelocity(_dashDir * _speed);
-			owner->SetState(common::packet::OBJECT_STATE::CHARGE);
+			owner->SetState(_config.entityState);
+			owner->SetActionId(ActionID::Tainer::Charge);
 
 			// 매 프레임 타격 판정 실행
 			int64_t npcId = owner->GetId();

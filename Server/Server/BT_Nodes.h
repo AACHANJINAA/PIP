@@ -10,6 +10,8 @@
 
 namespace PIP::GAME
 {
+   
+
 	class Condition_HasTarget : public Condition
 	{
 	public:

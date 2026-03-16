@@ -219,14 +219,13 @@ void MainPlayerScript::awake()
 
 	renderer->set_mesh(walkMesh);
 
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", idleMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::DEATH, "die", idleMesh);
+	animation_component->add_animation("idle", idleMesh, "idle");
+	animation_component->add_animation("walk", walkMesh, "walk");
+	animation_component->add_animation("attack", idleMesh, "attack");
+	animation_component->add_animation("die", idleMesh, "die");
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
-	animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
-	animation_component->set_state(common::packet::OBJECT_STATE::IDLE); // IDLE로 설정하면 로직이 돕니다.
+	animation_component->play("idle");
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -256,7 +255,7 @@ void MainPlayerScript::awake()
 	col->set_active(false);
 }
 
-void MainPlayerScript::sync_with_server(const common::Vec3& pos, const common::Quat& rot)
+void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
 {
 	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
 	if (!cc) return;
@@ -265,14 +264,16 @@ void MainPlayerScript::sync_with_server(const common::Vec3& pos, const common::Q
 	common::Vec3 currentPhysicsPos = cc->get_position();
 
 	// 2. 물리 위치는 서버 위치로 즉시 옮김 (서버 권위 인정)
-	cc->set_position(pos);
+	cc->set_position(movePacket._position);
 	cc->set_velocity({ 0, 0, 0 });
 
+	_state = movePacket._state;
+	_actionId = movePacket._action_id;
 	// 3. [핵심] 대신 시각적으로는 튀지 않게 오프셋을 설정
 	// "물리는 옮겼지만, 눈에 보이는 모델은 이전 위치에서 서서히 이동해라"는 뜻입니다.
-	_visualOffset = currentPhysicsPos - pos;
+	_visualOffset = currentPhysicsPos - movePacket._position;
 
-	transform()->set_local_rotation(rot);
+	transform()->set_local_rotation(movePacket._rotation);
 }
 //---------------------------------------------------------- private functions ----------------------------------------------------------
 //--- update() 내부에서 호출되는 기능 분리용 함수들 ---
@@ -296,14 +297,14 @@ void MainPlayerScript::handle_state(float deltaTime)
 	if (0 >= hp())
 	{
 		// set_state에도 애니메이션 루프 설정 추가
-		anim_comp->set_state(common::packet::OBJECT_STATE::DEATH,false);
+		anim_comp->play("die", false);
 		// 사망 상태의 ui 업데이트
 		die_ui_update(deltaTime);
 		return;
 	}
 
 	if (_isAttacking) {
-		anim_comp->set_state(common::packet::OBJECT_STATE::ATTACK1);
+		anim_comp->play("attack");
 
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
 		float progress = anim_comp->get_anim_time();
@@ -320,17 +321,17 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_packetSent = false; // 중요: 다음 공격을 위해 리셋
 
 			// 즉시 서버에 IDLE 상태임을 알려야 함
-			anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
+			anim_comp->play("idle");
 			send_network_sync(0.0f);
 		}
 	}
 	else {
 		// 공격 중이 아닐 때만 WALK/IDLE 전환
 		if (common::Length(_currentMoveDir) > 0.01f) {
-			anim_comp->set_state(common::packet::OBJECT_STATE::WALK);
+			anim_comp->play("walk");;
 		}
 		else {
-			anim_comp->set_state(common::packet::OBJECT_STATE::IDLE);
+			anim_comp->play("idle");
 		}
 	}
 }
@@ -416,13 +417,10 @@ void MainPlayerScript::send_network_sync(float deltaTime)
 	_sendTimer += deltaTime;
 	if (_sendTimer >= SENDINTERVAL || deltaTime == 0.0f) { // deltaTime 0은 즉시 전송용
 		_sendTimer = 0.f;
-		auto anim_comp = game_object()->get_component<AnimationComponent>();
-		common::packet::OBJECT_STATE current_state = anim_comp ? anim_comp->get_state() :
-			common::packet::OBJECT_STATE::IDLE;
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
 
 		NetworkManager::instance()->SendMovePacket(transform()->local_position(), transform()->local_rotation(),
-			current_state, currentTick);
+			_state, _actionId,currentTick);
 	}
 }
 

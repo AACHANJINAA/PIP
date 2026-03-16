@@ -18,26 +18,30 @@ public:
 	void late_update(float deltaTime) override;
 
 	void set_id(int64_t npc_id) { _id = npc_id; }
+	void set_npc_type(common::packet::NPCType type) { _npcType = type; } // 추가
 	void set_hp(int hp);
-	int  get_hp() { return _hp; }
+	int  get_hp() const { return _hp; }
 	void set_position(const XMFLOAT3& position);
-	void set_state(const common::packet::OBJECT_STATE& object_state);
+
+	virtual void handle_animation_branching();
 
 	int64_t id() const { return _id; }
 	int hp() const { return _hp; }
 	const XMFLOAT3& position() const;
 
-	virtual void on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp);
-	void initialize_from_server(const XMFLOAT3& pos);
+	virtual void on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_move_packet);
+	void initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN& spawnPkt);
 
 	// --- INetSync 인터페이스 구현 ---
 	void on_receive_snapshot(const NetSnapshot& snapshot) override;
 	void apply_snapshot() override;
-private:
+protected:
 	int32_t		_hp = 100;
-	int64_t _id = -1;
-	common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
+	int64_t		_id = -1;
 
+	common::packet::NPCType		_npcType = common::packet::NPCType::Basic;
+	common::packet::EntityState _state = common::packet::EntityState::IDLE;
+	int32_t _actionId = -1;
 	// --- 동기화 변수 ---
 	XMFLOAT3 _serverPos = { 0, 0, 0 };      // 서버 기준 위치
 	XMFLOAT3 _serverVel = { 0, 0, 0 };      // 서버 기준 속도

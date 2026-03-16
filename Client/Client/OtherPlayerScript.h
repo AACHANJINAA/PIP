@@ -20,7 +20,8 @@ public:
     // 서버로부터 위치 동기화 패킷을 받았을 때 호출될 함수 (예시)
     void on_sync_position(const XMFLOAT3& newPosition);
 	void on_sync_rotation(const XMFLOAT4& newRotation);
-    void on_sync_state(common::packet::OBJECT_STATE state);
+    void on_sync_state(common::packet::EntityState state);
+    void on_sync_action_id(int32_t action_id);
 
 	void set_hp(int hp) { _hp = hp; }
     int hp() const { return _hp; }
@@ -29,5 +30,7 @@ public:
 private:
     int _hp;
 	int64_t _playerId;
+	common::packet::EntityState _state;
+    int32_t _action_id = 0;
 };
 

@@ -19,7 +19,8 @@ namespace PIP::GAME
 		_slamAtk.posOffset = { 0.0f, 0.0f, 3.5f };
 		_slamAtk.damage = 20;
 		_slamAtk.cooldown = 1.0f;
-		_slamAtk.animationState = common::packet::OBJECT_STATE::ATTACK3;
+		_slamAtk.entityState = common::packet::EntityState::ACTION;
+		_slamAtk.actionId = common::packet::ActionID::Tainer::Slam;
 		_slamAtk.animationDuration = 1.0f; // 내려찍기 애니메이션은 1초 지속
 		_slamAtk.attackTiming = 0.5f; // 애니메이션 시작 후 0.5초에 판정 발생
 		_slamAtk.hitInterval = 0.0f; // 단발 공격이므로 판정 주기는 의미 없음
@@ -30,7 +31,8 @@ namespace PIP::GAME
 		_chargeAtk.posOffset = { 0.0f, 2.0f, 0.0f };
 		_chargeAtk.damage = 25;
 		_chargeAtk.cooldown = 3.0f;
-		_chargeAtk.animationState = common::packet::OBJECT_STATE::CHARGE;
+		_chargeAtk.entityState = common::packet::EntityState::ACTION;
+		_chargeAtk.actionId = common::packet::ActionID::Tainer::Charge;
 		_chargeAtk.animationDuration = 2.0f; // 돌진 애니메이션은 2초 지속
 		_chargeAtk.hitInterval = 0.2f; // 돌진 중 0.2초마다 판정 발생
 		_chargeAtk.isContinuous = true; // 돌진은 지속 공격
@@ -40,7 +42,8 @@ namespace PIP::GAME
 		_clawAtk.posOffset = { 0.0f, 1.0f, 1.5f };
 		_clawAtk.damage = 15;
 		_clawAtk.cooldown = 1.5f;
-		_clawAtk.animationState = common::packet::OBJECT_STATE::SKILL1;
+		_clawAtk.entityState = common::packet::EntityState::ACTION;
+		_clawAtk.actionId = common::packet::ActionID::Tainer::Claw;
 		_clawAtk.animationDuration = 0.5f; // 클로 난타는 빠르게 여러 번 공격
 
 		// Phase 2: Grab
@@ -48,7 +51,8 @@ namespace PIP::GAME
 		_grabAtk.posOffset = { 0.0f, 1.0f, 1.2f };
 		_grabAtk.damage = 50;
 		_grabAtk.cooldown = 10.0f;
-		_grabAtk.animationState = common::packet::OBJECT_STATE::ATTACK1;
+		_grabAtk.entityState = common::packet::EntityState::ACTION;
+		_grabAtk.actionId = common::packet::ActionID::Tainer::Grab;
 		_grabAtk.animationDuration = 1.f; 
 
 		Tainer::SetupBT();

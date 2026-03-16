@@ -10,88 +10,175 @@ AnimationComponent::AnimationComponent() : Behavior("AnimationComponent")
 
 void AnimationComponent::late_update(float deltaTime)
 {
-	_nowAnimationTime += deltaTime * _animationSpeed;
-	float timeBeforeUpdate = _nowAnimationTime;
-
-	// 현재 렌더링 중인 메쉬를 가져와서 애니메이션 업데이트
-	auto renderComp = game_object()->get_component<RenderComponent>();
-	if (!renderComp) return;
-
-	//auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
-	//if (mesh && !_nowAnimationName.empty())
-	//{
-	//	mesh->update_animation(_nowAnimationTime, _nowAnimationName);
-	//}
-
-	auto mesh = _stateMeshMap.find(_currentState);
-	auto anim = _stateAnimMap.find(_currentState);
-
-	// [추가된 부분] 맵에 상태가 등록되어 있지 않으면 에러 로그를 띄우고 리턴합니다.
-	if (mesh == _stateMeshMap.end() || anim == _stateAnimMap.end())
+	if (_currentName.empty())
 	{
-		// _currentState를 int로 변환하여 어떤 상태가 누락되었는지 확인
-		CERROR("Animation state not found: " << static_cast<int>(_currentState));
 		return;
 	}
 
-	std::shared_ptr<Mesh> targetMesh = mesh->second;
+	_nowAnimationTime += deltaTime * _animationSpeed;
+	float timeBeforeUpdate = _nowAnimationTime;
 
-	// 사용하려는 메쉬(targetMesh)가 현재 버퍼의 주인(_bufferedMesh)과 다른가?
-	// 다르다면 버퍼 크기가 맞지 않을 수 있으므로 버퍼를 재생성해야 함!
-	if (targetMesh != _bufferedMesh)
+	auto it = _animResources.find(_currentName);
+	if (it == _animResources.end())
 	{
-		change_mesh(targetMesh);
+		CERROR("<Animation Name mapping Mesh not found>  currentName: " << _currentName);
+		return;
 	}
 
-	auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(targetMesh);
+	auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(it->second.mesh);
 	if (!glTF_mesh) return;
 
-	if(_bone_palette_buffer)
-	{
-		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer, _isLoop);
+
+	// 애니메이션 업데이트 및 본 행렬 계산
+	if (_bone_palette_buffer) {
+		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _bone_palette_buffer, _isLoop);
 	}
-	else
-	{
-		std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _isLoop);
+	else {
+		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _isLoop);
 	}
 
-	// [핵심] 시간이 줄어들었다면 리셋된 것이므로 종료 플래그 설정
-	if (_nowAnimationTime < timeBeforeUpdate) {
+	// 종료 판정
+	if (!_isLoop && _nowAnimationTime < timeBeforeUpdate) {
 		_isFinished = true;
 	}
+
+	//// 현재 렌더링 중인 메쉬를 가져와서 애니메이션 업데이트
+	//auto renderComp = game_object()->get_component<RenderComponent>();
+	//if (!renderComp) return;
+
+	////auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
+	////if (mesh && !_nowAnimationName.empty())
+	////{
+	////	mesh->update_animation(_nowAnimationTime, _nowAnimationName);
+	////}
+
+	//auto mesh = _stateMeshMap.find(_currentState);
+	//auto anim = _stateAnimMap.find(_currentState);
+
+	//// [추가된 부분] 맵에 상태가 등록되어 있지 않으면 에러 로그를 띄우고 리턴합니다.
+	//if (mesh == _stateMeshMap.end() || anim == _stateAnimMap.end())
+	//{
+	//	// _currentState를 int로 변환하여 어떤 상태가 누락되었는지 확인
+	//	CERROR("Animation state not found: " << static_cast<int>(_currentState));
+	//	return;
+	//}
+
+	//std::shared_ptr<Mesh> targetMesh = mesh->second;
+
+	//// 사용하려는 메쉬(targetMesh)가 현재 버퍼의 주인(_bufferedMesh)과 다른가?
+	//// 다르다면 버퍼 크기가 맞지 않을 수 있으므로 버퍼를 재생성해야 함!
+	//if (targetMesh != _bufferedMesh)
+	//{
+	//	change_mesh(targetMesh);
+	//}
+
+	//auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(targetMesh);
+	//if (!glTF_mesh) return;
+
+	//if(_bone_palette_buffer)
+	//{
+	//	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer, _isLoop);
+	//}
+	//else
+	//{
+	//	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _isLoop);
+	//}
+
+	//// [핵심] 시간이 줄어들었다면 리셋된 것이므로 종료 플래그 설정
+	//if (_nowAnimationTime < timeBeforeUpdate) {
+	//	_isFinished = true;
+	//}
 }
 
-void AnimationComponent::set_state(common::packet::OBJECT_STATE state, bool isLoop)
+void AnimationComponent::add_animation(const std::string& name, std::shared_ptr<Mesh> mesh,
+	const std::string& actualAnimName)
 {
-	if (_currentState == state) return;
-	_currentState = state;
-	_isFinished = false;
-	_nowAnimationTime = 0.f;
+	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh);
+	if (!gltf_mesh) {
+		CERROR("Mesh is not a GLTF mesh: " << name);
+		return;
+	}
+
+	// 1. 실제 애니메이션 이름 결정
+	std::string targetName = actualAnimName.empty() ? name : actualAnimName;
+
+	// [검증] 실제 애니메이션 이름이 있는지 확인
+	if (!gltf_mesh->has_animation(targetName)) {
+		auto names = gltf_mesh->get_animation_names();
+		if (!names.empty()) {
+			CLOG("Anim '" << targetName << "' not found. Using: " << names[0]);
+			targetName = names[0];
+		}
+	}
+
+	// 3. 최종 매핑 저장
+	_animResources[name] = { mesh, targetName };
+}
+
+void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
+{
+	// 이미 재생 중인 애니메이션이면 설정값만 업데이트하고 리턴
+	if (_currentName == name) {
+		_isLoop = isLoop;
+		_animationSpeed = speed;
+		return;
+	}
+
+	auto it = _animResources.find(name);
+	if (it == _animResources.end()) {
+		CERROR("Animation Alias not found: " << name);
+		return;
+	}
+
+	_currentName = name;
+	_nowAnimationName = it->second.actualName;
 	_isLoop = isLoop;
+	_animationSpeed = speed;
+	_nowAnimationTime = 0.f;
+	_isFinished = false;
 
-	// 1. 메쉬 교체 (등록된 메쉬가 있을 경우만)
-	auto mIt = _stateMeshMap.find(state);
-	if (mIt != _stateMeshMap.end() && mIt->second) {
-		change_mesh(mIt->second);
-	}
-
-	// 2. 애니메이션 교체
-	auto aIt = _stateAnimMap.find(state);
-	if (aIt != _stateAnimMap.end()) {
-		change_animation(aIt->second);
+	// 메쉬가 다르면 교체
+	if (it->second.mesh != _bufferedMesh) {
+		change_mesh(it->second.mesh);
 	}
 }
 
-void AnimationComponent::add_state_mapping(common::packet::OBJECT_STATE state, const std::string& animName,
-	std::shared_ptr<Mesh> mesh)
-{
-	_stateAnimMap[state] = animName;
-	if (mesh) _stateMeshMap[state] = mesh;
-}
+//void AnimationComponent::set_state(common::packet::OBJECT_STATE state, bool isLoop)
+//{
+//	if (_currentState == state) return;
+//	_currentState = state;
+//	_isFinished = false;
+//	_nowAnimationTime = 0.f;
+//	_isLoop = isLoop;
+//
+//	// 1. 메쉬 교체 (등록된 메쉬가 있을 경우만)
+//	auto mIt = _stateMeshMap.find(state);
+//	if (mIt != _stateMeshMap.end() && mIt->second) {
+//		change_mesh(mIt->second);
+//	}
+//
+//	// 2. 애니메이션 교체
+//	auto aIt = _stateAnimMap.find(state);
+//	if (aIt != _stateAnimMap.end()) {
+//		change_animation(aIt->second);
+//	}
+//}
+
+//void AnimationComponent::add_state_mapping(common::packet::OBJECT_STATE state, const std::string& animName,
+//	std::shared_ptr<Mesh> mesh)
+//{
+//	_stateAnimMap[state] = animName;
+//	if (mesh) _stateMeshMap[state] = mesh;
+//}
 
 float AnimationComponent::get_anim_duration() const
 {
-	auto anim = _stateAnimMap.find(_currentState);
+	auto it = _animResources.find(_currentName);
+	if (it == _animResources.end()) return 0.0f;
+	auto gltf = std::dynamic_pointer_cast<ReadGLTFMesh>(it->second.mesh);
+	return gltf ? gltf->get_animation_duration(_nowAnimationName) : 0.0f;
+
+	/*auto anim = _stateAnimMap.find(_currentState);
 	if (anim == _stateAnimMap.end()) return 0.0f;
 
 	auto mesh = _stateMeshMap.find(_currentState);
@@ -100,31 +187,7 @@ float AnimationComponent::get_anim_duration() const
 	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second);
 	if (!gltf_mesh) return 0.0f;
 
-	return gltf_mesh->get_animation_duration(anim->second);
-}
-
-bool AnimationComponent::is_anim_finished() const
-{
-	return _isFinished;
-}
-
-void AnimationComponent::set_anim_speed(float wantSpeed)
-{
-	if (wantSpeed < 0.f)
-	{
-		wantSpeed = 0.f;
-	}
-	_animationSpeed = wantSpeed;
-}
-
-void AnimationComponent::change_animation(std::string name)
-{
-	if (_nowAnimationName == name)
-	{
-		return;
-	}
-	_nowAnimationName = name;
-	_nowAnimationTime = 0.f;
+	return gltf_mesh->get_animation_duration(anim->second);*/
 }
 
 void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
