@@ -16,14 +16,40 @@ void NPCScript::set_position(const XMFLOAT3& position)
 	}
 }
 
-void NPCScript::set_state(const common::packet::OBJECT_STATE& object_state)
+void NPCScript::handle_animation_branching()
 {
-	if (_state == object_state) return; // [최적화] 상태가 같으면 아무것도 안 함
-	_state = object_state;
-	// 애니메이션 컴포넌트에게 상태 변경 알림
-	auto animation_component = game_object()->get_component<AnimationComponent>();
-	if (animation_component) {
-		animation_component->set_state(object_state);
+	auto anim = game_object()->get_component<AnimationComponent>();
+	if (!anim) return;
+
+	using namespace common::packet;
+
+	// 1. 사망/피격 최우선 처리
+	/*if (_state == EntityState::DEAD) {
+		anim->play("Die", false);
+		return;
+	}
+	if (_state == EntityState::HITTED) {
+		anim->play("Hit", false);
+		return;
+	}*/
+
+	// 2. 액션(공격/스킬) 상태 분기
+	if (_state == EntityState::ACTION) 
+	{
+		anim->play("Attack", false);
+		return;
+	}
+
+	// 3. 이동 상태 분기 (속도에 따라 Walk/Run 결정)
+	if (_state == EntityState::MOVE) {
+		float speed = common::Length(_serverVel);
+		/*if (speed > 5.0f) anim->play("Run");
+		else anim->play("Walk");*/
+		anim->play("Walk");
+	}
+	else {
+		// 4. 대기 상태
+		anim->play("Idle");
 	}
 }
 
@@ -46,9 +72,9 @@ void NPCScript::init_visual()
 		"idle");
 
 	render_comp->set_mesh(idleMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-	animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", idleMesh);
+	animation_component->add_animation("Idle", idleMesh, "idle");
+	animation_component->add_animation("Walk", walkMesh, "walk");
+	animation_component->add_animation("Attack", idleMesh, "attack");
 
 	std::string material_name = "npc_material_" + std::to_string(id());
 	ResourceManager::instance()->create_material(material_name);
@@ -75,14 +101,15 @@ void NPCScript::on_destroy()
 	if (rs) rs->unregister_entity(this->id());
 }
 
-void NPCScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp)
+void NPCScript::on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_move_packet)
 {
-	_serverPos = pos;
-	_serverVel = vel;
+	_serverPos = npc_move_packet._position;
+	_serverVel = npc_move_packet._velocity;
 	_accumulatedTime = 0.0f; // 패킷 수신 후 시간 리셋
-
+	_state = npc_move_packet._state;
+	_actionId = npc_move_packet._action_id;
 	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
-	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&rot);
+	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&npc_move_packet._rotation);
 	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
 	XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
 
@@ -92,20 +119,25 @@ void NPCScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const
 	// 첫 패킷 수신 시 즉시 동기화
 	if (_isFirstUpdate) {
 		if (transform()) {
-			transform()->set_local_position(pos);
+			transform()->set_local_position(_serverPos);
 			transform()->set_local_rotation(_serverRot);
 		}
 		_isFirstUpdate = false;
 	}
 }
 
-void NPCScript::initialize_from_server(const XMFLOAT3& pos)
+void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN& spawnPkt)
 {
-	_serverPos = pos;
+	_serverPos = spawnPkt._position;
 	_serverVel = { 0, 0, 0 };
 	_serverRot = { 0, 0, 0, 1 };
 	_accumulatedTime = 0.0f;
 	_isNewDataArrived = false; // 대기 중인 스냅샷 무시 (생성 시 좌표가 우선)
+	_state = spawnPkt._state;
+	_actionId = spawnPkt._action_id;
+	_hp = spawnPkt._hp;
+	_id = spawnPkt._npc_id;
+	_npcType = spawnPkt._npc_type;
 
 	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
 	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_serverRot);
@@ -116,7 +148,7 @@ void NPCScript::initialize_from_server(const XMFLOAT3& pos)
 	XMStoreFloat4(&_serverRot, qFinal);
 
 	if (transform()) {
-		transform()->set_local_position(pos);
+		transform()->set_local_position(spawnPkt._position);
 		// [추가] 초기 회전값도 안전하게 설정
 		XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0);
 		XMStoreFloat4(&_serverRot, qRotate180);
@@ -224,6 +256,8 @@ void NPCScript::update(float deltaTime)
 	if (duration > 100) {
 		CLOG("[Profiling] NPC Update Overload (ID: " << _id << "): " << duration << "us");
 	}*/
+
+	handle_animation_branching();
 }
 
 void NPCScript::late_update(float deltaTime)
@@ -241,10 +275,8 @@ void NPCScript::apply_snapshot()
 {
 	if(!_isNewDataArrived) return;
 
-	// [중요] 상태 체크 로직 (애니메이션 담당자가 고칠 때까지 여기서 방어 가능)
-	if (_state != _pendingSnapshot.state) {
-		this->set_state(_pendingSnapshot.state);
-	}
+	_state = _pendingSnapshot.state;
+	_actionId = _pendingSnapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
 
 	// 데이터 적용 (매우 가벼운 대입)
 	_serverPos = _pendingSnapshot.pos;

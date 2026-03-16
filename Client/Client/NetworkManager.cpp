@@ -165,15 +165,16 @@ void NetworkManager::SendLoginPacket(const std::string& name)
 	send_packet(stream.mutable_data(), stream.Size());
 }
 
-void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::OBJECT_STATE state, uint32_t current_tick)
+void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::EntityState state, int32_t action_id, uint32_t current_tick)
 {
 	// 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
 	common::packet::CS_PACKET_MOVE packet;
 	packet._type = common::packet::PacketType::C2S_P_MOVE;
 	packet._size = sizeof(packet);
-	packet._position = position;
-	packet._rotation = rotation;
-	packet._state = state;
+	packet._position	= position;
+	packet._rotation	= rotation;
+	packet._state		= state;
+	packet._action_id	= action_id;
 	packet._client_tick = current_tick;
 	// 구조체 자체를 보내도 되지만, 일관성을 위해 PacketStream을 사용할 수 있습니다.
 	// 여기서는 구조체를 바로 보내는 더 간단한 방식을 유지합니다.
@@ -284,49 +285,10 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			player_logic->set_id(_my_session_id);
 			player_logic->set_position(spawn_data._position);
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
-			
-			//// Animationcomponent
-			//auto animation_component = playerObject->add_component<AnimationComponent>();
-			//
-			//
-			//// RenderComponent
-			//auto renderer = playerObject->add_component<RenderComponent>();
-
-			//auto playerMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
-			//renderer->set_mesh(playerMesh);
-
-			//auto idleMesh = 
-			//	ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,"idle");
-			//auto walkMesh = 
-			//	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true,"walk");
-
-			//animation_component->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "idle", idleMesh);
-			//animation_component->add_state_mapping(common::packet::OBJECT_STATE::WALK, "walk", walkMesh);
-			//animation_component->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", idleMesh);
-			//
-			//// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
-			//animation_component->set_state(common::packet::OBJECT_STATE::WALK); // 잠시 WALK로 바꿨다가
-			//animation_component->set_state(common::packet::OBJECT_STATE::IDLE); // IDLE로 설정하면 로직이 돕니다.
-
-			//// ResourceManager을 통해 재질 생성 및 쉐이더 할당
-			//std::string material_name = "player_material"; // player는 고정된 재질
-			//ResourceManager::instance()->create_material(material_name);
-			//ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
-
-			//// gltf
-			//renderer->set_pso_name("skinned");
-
-			//// 위치, 회전 정보
-			////playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
-			////playerObject->transform()->set_local_rotation(-90.f, 0.f, 0.f);
-			////playerObject->transform()->set_local_scale({ 200.0f, 200.0f, 200.0f });
-			//playerObject->transform()->set_local_scale({ 2.0f, 2.0f, 2.0f });
 		}
 		
 
-		// 매니저에 넣기
 		
-		// level, exp 등 추가 정보도 업데이트 가능
 		
 		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
 			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
@@ -372,7 +334,7 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 				float distSq = common::DistanceSq(cc->get_position(), move_packet._position);
 				if (distSq > 0.5f * 0.5f) { // 0.5m 이상 차이 시 싱크
 					//CLOG("Server Correction Applied. Dist: " << sqrt(distSq));
-					script->sync_with_server(move_packet._position, move_packet._rotation);
+					script->sync_with_server(move_packet);
 				}
 			}
 		}
@@ -534,7 +496,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		// 존재하면 위치만 강제 동기화
 		auto script = existingNPC->get_component<NPCScript>();
 		if (script) {
-			script->initialize_from_server(npc_spawn_packet._position);
+			script->initialize_from_server(npc_spawn_packet);
 		}
 		return;
 	}
@@ -571,10 +533,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 
 	// 4. 공통 데이터 초기화
 	if (NPC_logic) {
-		NPC_logic->set_id(npc_spawn_packet._npc_id);
-		NPC_logic->set_hp(npc_spawn_packet._hp);
-		NPC_logic->set_position(npc_spawn_packet._position);
-		NPC_logic->initialize_from_server(npc_spawn_packet._position);
+		NPC_logic->initialize_from_server(npc_spawn_packet);
 
 		// [수정] ID가 설정된 후 명시적으로 ReplicationSystem에 등록
 		auto rs = GameFramework::instance()->get_replication_system();
@@ -609,10 +568,7 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 		auto script = npc_object->get_component<NPCScript>();
 		if (script)
 		{
-			script->on_server_update(move_packet._position, move_packet._velocity, move_packet._rotation, move_packet._time_stamp);
-
-			// [추가] 상태 업데이트! (걷기/멈춤 반영)
-			script->set_state(move_packet._state);
+			script->on_server_update(move_packet);
 		}
 		else
 		{
@@ -650,6 +606,7 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& str
 		snapshot.vel = data._velocity;
 		snapshot.rot = data._rotation;
 		snapshot.state = data._state;
+		snapshot.action_id = data._action_id;
 		snapshot.timestamp = data._time_stamp;
 
 		//[디버그 로그] 특정 NPC(예: 보스) 업데이트 확인

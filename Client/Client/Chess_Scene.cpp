@@ -219,8 +219,8 @@ void Chess_Scene::SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandLi
         renderer->set_mesh(hi_brute_Mesh);
 
         auto animaiton_component = hi_brute->add_component<AnimationComponent>();
-        animaiton_component->add_state_mapping(common::packet::OBJECT_STATE::WALK,"walk", hi_brute_Mesh);
-		animaiton_component->set_state(common::packet::OBJECT_STATE::WALK);
+        animaiton_component->add_animation("WALK", hi_brute_Mesh, "walk");
+        animaiton_component->play("WALK");
 
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_Gramma_Walk";
@@ -286,9 +286,9 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
         hi_brute->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
 
         auto animation_renderer = hi_brute->get_component<AnimationComponent>();
-        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
-        animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK1, "attack", hi_brute_Mesh);
-        animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK1);
+        animation_renderer->add_animation("idle",  hi_brute_Mesh , "hi_brute_mesh");
+        animation_renderer->add_animation("Attack01", hi_brute_Mesh, "attack");
+        animation_renderer->play("Attack01");
         // 재질 및 쉐이더 설정
         std::string material = "skinned_animation_SK_MagicConstruct";
 

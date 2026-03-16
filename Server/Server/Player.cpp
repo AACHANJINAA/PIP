@@ -18,7 +18,8 @@ namespace PIP::GAME
 		_level { 0 },
 		_exp { 0 },
 		_damage{ 10 },
-		_owner_id{ owner_id }
+		_owner_id{ owner_id },
+		_actionId{0}
 	{
 		SetFaction(Faction::FACTION_PLAYER);
 		AddComponent<GAME::TransformComponent>();
@@ -43,11 +44,12 @@ namespace PIP::GAME
 		_level = 0;
 		_exp = 0;
 		_damage = 10;
-		_state = common::packet::OBJECT_STATE::IDLE;
+		_state = common::packet::EntityState::IDLE;
 		_hitCooldown = 0.0f;
 		_history.clear();
+		_actionId = 0;
 
-		SetPosition({ 10.0f, 10.0f, 10.0f });
+		SetPosition({ -10.0f, 10.0f, -10.0f });
 		if (auto pc = GetComponent<PlayerControllerComponent>()) {
 			pc->SetMoveVelocity({ 0,0,0 });
 			pc->AddImpact({ 0, 0, 0 });

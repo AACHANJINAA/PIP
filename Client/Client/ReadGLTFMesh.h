@@ -159,6 +159,10 @@ public:
 
 	float get_animation_duration(const std::string& name) const;
 
+	bool has_animation(const std::string& name) const;
+
+	std::vector<std::string> get_animation_names() const;
+
 public: // DW설명 : 소켓기능 관련 함수들
 	int get_bone_index_by_name(const std::string& name) const; // 뼈대 이름으로 인덱스 찾기
 	// DW주의 : get_socket_transform 이 함수의 순서는 update_animation 함수 호출 직후에 호출되어야 한다 그래야 방금 갱신된 위치를 가져올 수 있음 // TickGroup

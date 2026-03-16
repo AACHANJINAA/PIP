@@ -1455,6 +1455,20 @@ void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::
 	}
 }
 
+bool ReadGLTFMesh::has_animation(const std::string& name) const
+{
+	return _animations.contains(name);
+}
+
+std::vector<std::string> ReadGLTFMesh::get_animation_names() const
+{
+	std::vector<std::string> names;
+	for (const auto& pair : _animations) {
+		names.push_back(pair.first);
+	}
+	return names;
+}
+
 int ReadGLTFMesh::get_bone_index_by_name(const std::string& name) const
 {
 	for (size_t i = 0; i < _skeleton.size(); ++i)
@@ -1501,6 +1515,8 @@ float ReadGLTFMesh::get_animation_duration(const std::string& name) const
 	}
 	return 0.0f;
 }
+
+
 
 void ReadGLTFMesh::set_shader_for_all_materials(const std::string& shader_name) 
 {

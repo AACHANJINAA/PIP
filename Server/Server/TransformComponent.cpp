@@ -21,7 +21,7 @@ namespace PIP::GAME
 		DirectX::XMStoreFloat4((DirectX::XMFLOAT4*)&_rotation, resultQuat);
 	}
 
-	const common::Vec3& TransformComponent::GetForward() const
+	common::Vec3 TransformComponent::GetForward() const
 	{
 		// 1. 현재 회전값(Quaternion) 로드
 		DirectX::XMVECTOR q = DirectX::XMLoadFloat4((const DirectX::XMFLOAT4*)&_rotation);

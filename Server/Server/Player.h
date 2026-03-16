@@ -44,8 +44,8 @@ namespace PIP::GAME
 		void SetLastSentPos(const common::Vec3& pos) { _lastSentPos = pos; }
 		common::Vec3 GetLastSentPos() const { return _lastSentPos; }
 
-		void SetLastSentState(common::packet::OBJECT_STATE state) { _lastSentState = state; }
-		common::packet::OBJECT_STATE GetLastSentState() const { return _lastSentState; }
+		void SetLastSentState(common::packet::EntityState state) { _lastSentState = state; }
+		common::packet::EntityState GetLastSentState() const { return _lastSentState; }
 
 
 		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
@@ -61,12 +61,14 @@ namespace PIP::GAME
 		int32_t						_level;
 		int32_t						_exp;
 		int32_t						_damage;
-		common::packet::OBJECT_STATE _state = common::packet::OBJECT_STATE::IDLE;
+		common::packet::EntityState _state = common::packet::EntityState::IDLE;
+		int32_t _actionId = 0; // 현재 액션 ID (애니메이션 트리거용)
 
 		// [추가] 위치 보정 관련
 		common::Vec3 _lastClientTargetPos = { 0.0f, 0.0f, 0.0f }; // 클라이언트가 마지막으로 보냈다고 우기는 좌표
 		common::Vec3 _lastSentPos = { 0.0f, 0.0f, 0.0f };         // 서버에서 클라이언트에게 마지막으로 확정해서 보낸 좌표
-		common::packet::OBJECT_STATE _lastSentState = common::packet::OBJECT_STATE::IDLE; // 서버에서 클라이언트에게 마지막으로 보낸 상태
+		common::packet::EntityState _lastSentState = common::packet::EntityState::IDLE; // 서버에서 클라이언트에게 마지막으로 보낸 상태
+		int32_t _lastSentActionId = 0; // 서버에서 클라이언트에게 마지막으로 보낸 액션 ID
 		//JPH::BodyID _physicsBodyID;
 
 	private:
