@@ -106,6 +106,37 @@ float SceneManager::get_terrain_size() const
 	return 512.0f; // TODO: TerrainMesh에서 실제 크기 가져오기
 }
 
+// 모든 terrain을 포함하는 가장 큰 범위 계산
+//float SceneManager::get_total_terrain_size() const
+//{
+//	if (_terrainObjects.empty())
+//		return 512.0f;
+//
+//	float min_x = FLT_MAX, max_x = -FLT_MAX;
+//	float min_z = FLT_MAX, max_z = -FLT_MAX;
+//
+//	for (const auto& [name, terrain_obj] : _terrainObjects)
+//	{
+//		auto render_comp = terrain_obj->get_component<TerrainRenderComponent>();
+//		if (!render_comp) continue;
+//
+//		auto terrain_mesh =
+//			std::dynamic_pointer_cast<TerrainLoader>(render_comp->mesh());
+//		if (!terrain_mesh) continue;
+//
+//		const auto& info = terrain_mesh->get_terrain_info();
+//		min_x = std::min(min_x, info.bounds.x);
+//		max_x = std::max(max_x, info.bounds.y);
+//		min_z = std::min(min_z, info.bounds.z);
+//		max_z = std::max(max_z, info.bounds.w);
+//	}
+//
+//	float width = max_x - min_x;
+//	float depth = max_z - min_z;
+//	return std::max(width, depth);
+//}
+
+
 void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	if (_skyboxObject) 
