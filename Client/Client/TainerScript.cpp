@@ -38,9 +38,9 @@ void TainerScript::init_visual()
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Idle.gltf", "idle");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Walk.gltf", "walk");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Run.gltf", "run");
-        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack.gltf", "attack");
-        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack01.gltf", "attack2");
-		gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack02.gltf", "attack3");
+        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack.gltf", "claw_right");
+        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack01.gltf", "claw_left");
+		gltfMesh->load_animation_only(basePath + "A_BoneGolem_Attack02.gltf", "slam");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Hit.gltf", "hit");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Roar.gltf", "roar");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Swim.gltf", "swim");
@@ -50,18 +50,16 @@ void TainerScript::init_visual()
 
         // 3. 상태별 애니메이션 매핑
         using namespace common::packet;
-        animComp->add_state_mapping(OBJECT_STATE::IDLE, "idle", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::WALK, "walk", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::RUN, "run", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::ATTACK1, "attack", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::ATTACK2, "attack2", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::ATTACK3, "attack3", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::CHARGE, "swim", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::HITTED, "hit", mainMesh);
-        animComp->add_state_mapping(OBJECT_STATE::ROAR, "roar", mainMesh);
+        animComp->add_animation("idle", mainMesh);
+        animComp->add_animation("walk", mainMesh);
+        animComp->add_animation("run", mainMesh);
+        animComp->add_animation("claw_right", mainMesh);
+        animComp->add_animation("claw_left", mainMesh);
+        animComp->add_animation("slam", mainMesh);
+        animComp->add_animation("swim", mainMesh);
+        animComp->add_animation("hit", mainMesh);
+        animComp->add_animation("roar", mainMesh);
 
-        // DW주의 : 지금 테이너 SKILL1을 서버에서 넣어주고 있는데 클라이언트에서는 없어서 에러 발생 임시로 넣음
-        animComp->add_state_mapping(OBJECT_STATE::SKILL1, "swim", mainMesh);
         CLOG("[TainerScript] BoneGolem Boss Visuals Settings Completed.");
     }
 
@@ -86,8 +84,60 @@ void TainerScript::update(float deltaTime)
     }
 }
 
-void TainerScript::on_server_update(const XMFLOAT3& pos, const XMFLOAT3& vel, const XMFLOAT4& rot, uint32_t timestamp)
+void TainerScript::handle_animation_branching()
 {
-	NPCScript::on_server_update(pos, vel, rot, timestamp);
-	CLOG("[TainerScript] Received Server Update - Pos: (" << pos.x << "," << pos.y << "," << pos.z << ") Vel: (" << vel.x << "," << vel.y << "," << vel.z << ") Rot: (" << rot.x << "," << rot.y << "," << rot.z << "," << rot.w << ") Timestamp: " << timestamp);
+	using namespace common::packet;
+	auto anim_comp = game_object()->get_component<AnimationComponent>();
+	switch (_state)
+	{
+	case EntityState::IDLE:
+        anim_comp->play("idle");
+		break;
+    case EntityState::MOVE:
+	    {
+	        // 속도에 따라 걷기/달리기 분기 (예시에서는 단순히 걷기로 설정)
+	        float speed = common::Length(_serverVel);
+	        if (speed > 0.1f) {
+	            anim_comp->play("walk");
+	        }
+	        else {
+	            anim_comp->play("idle");
+	        }
+		}
+	    break;
+	case EntityState::ACTION:
+		{
+	        switch (_actionId)
+	        {
+	        case ActionID::Tainer::Charge:
+	            anim_comp->play("swim");
+				break;
+	        case ActionID::Tainer::Roar:
+				anim_comp->play("roar");
+	            break;
+            case ActionID::Tainer::Claw:
+                anim_comp->play("claw_right", false);
+				break;
+	        case ActionID::Tainer::Slam:
+                anim_comp->play("slam", false);
+				break;
+	        case ActionID::Tainer::Grab:
+				anim_comp->play("claw_left", false);
+				break;
+            default:
+				anim_comp->play("idle");
+				CLOG("[TainerScript] Unknown ActionID: " << _actionId);
+                break;
+	        }
+		}
+        break;
+	case EntityState::HITTED:
+        anim_comp->play("hit", false);
+		break;
+    default:
+		CLOG("[TainerScript] Unknown EntityState: " << static_cast<int>(_state));
+        anim_comp->play("idle");
+		break;
+	}
 }
+

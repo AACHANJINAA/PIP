@@ -5,8 +5,9 @@ struct NetSnapshot {
     common::Vec3 pos{};
     common::Vec3 vel{};
     common::Quat rot{};
-    common::packet::OBJECT_STATE state {common::packet::OBJECT_STATE::IDLE};
+    common::packet::EntityState state {common::packet::EntityState::IDLE};
     uint32_t timestamp {};
+    int32_t action_id{};
 };
 
 // [Interface] 종속성 역전(DIP)을 위한 추상화 레이어

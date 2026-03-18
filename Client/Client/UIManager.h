@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "stdafx.h"
 #include "UIRenderComponent.h"
 
@@ -33,7 +33,13 @@ public:
     // UIRenderComponent를 가져올 수 있도록 하였음 -> UI 속성 설정 변경 가능
     std::shared_ptr<UIRenderComponent> ui_component(UILayer layer, const std::string& name) const;
 
+    void set_render_vector();
+
+    // 렌더링 할 ui vector 가져오기
+    std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)>& ui_render_vector();
 
 private:
     std::array<std::unordered_map<std::string, std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)> _uiLayers;
+
+    std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)> _uiRanderVector;
 };

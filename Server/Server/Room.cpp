@@ -682,6 +682,7 @@ namespace PIP::SERVER
 		move_packet_data._velocity = npc->GetVelocity();
 		move_packet_data._rotation = npc->GetRotation();
 		move_packet_data._state = npc->GetState();
+		move_packet_data._action_id = npc->GetActionId();
 		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 
 		packet::PacketStream finalStream;
@@ -766,6 +767,7 @@ namespace PIP::SERVER
 				data._rotation = npc->GetRotation();
 				data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 				data._state = npc->GetState();
+				data._action_id = npc->GetActionId();
 
 				stream << data;
 				count++;

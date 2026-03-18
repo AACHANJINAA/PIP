@@ -7,28 +7,58 @@
 namespace common::packet
 {
 	constexpr short SERVER_PORT = 19001;
-	enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
-		IDLE	,	// 대기
-		WALK	,	// 걷기
-		RUN		,	// 달리기 (필요 시 클라이언트에서 WALK와 RUN 애니메이션 구분하여 사용)
-		JUMP	,	// 점프 시작 (점프 애니메이션이 시작되는 순간)
-		LANDING ,	// 착지 (점프 후 땅에 닿는 순간)
-		HOVER	,	// 공중에 떠있는 상태 (예: 점프 중, 낙하 중)
-		T_POSE	,	// T-포즈 (디버깅용)
-		ROAR	,	// 포효
-		HITTED	,	// 피격
-		CHARGE	,	// 돌진
-		DEATH		,	// 사망
 
-		ATTACK1 = 101,	// 공격 (추가적으로 여러개 필요할듯)
-		ATTACK2 = 102,
-		ATTACK3 = 103,
+	enum class EntityState : uint16_t 
+	{
+		IDLE = 0,
+		MOVE = 1,
+		ACTION = 2,
+		HITTED = 3,
+		DEAD = 4,
 
-		SKILL1  = 201,	// 스킬 (추가적으로 여러개 필요할듯)
-		SKILL2  = 202,
-		SKILL3  = 203,
-		// 필요 시 추가
+
+		COUNT
 	};
+
+	namespace ActionID
+	{
+		namespace Common
+		{
+			constexpr int32_t Attack = 1;
+		}
+
+		namespace Tainer
+		{
+			constexpr int32_t Roar		= 11;
+			constexpr int32_t Charge	= 12;
+			constexpr int32_t Slam		= 13;
+			constexpr int32_t Claw		= 14;
+			constexpr int32_t Grab		= 15;
+		}
+	}
+
+	//enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
+	//	IDLE	,	// 대기
+	//	WALK	,	// 걷기
+	//	RUN		,	// 달리기 (필요 시 클라이언트에서 WALK와 RUN 애니메이션 구분하여 사용)
+	//	JUMP	,	// 점프 시작 (점프 애니메이션이 시작되는 순간)
+	//	LANDING ,	// 착지 (점프 후 땅에 닿는 순간)
+	//	HOVER	,	// 공중에 떠있는 상태 (예: 점프 중, 낙하 중)
+	//	T_POSE	,	// T-포즈 (디버깅용)
+	//	ROAR	,	// 포효
+	//	HITTED	,	// 피격
+	//	CHARGE	,	// 돌진
+	//	DEATH		,	// 사망
+
+	//	ATTACK1 = 101,	// 공격 (추가적으로 여러개 필요할듯)
+	//	ATTACK2 = 102,
+	//	ATTACK3 = 103,
+
+	//	SKILL1  = 201,	// 스킬 (추가적으로 여러개 필요할듯)
+	//	SKILL2  = 202,
+	//	SKILL3  = 203,
+	//	// 필요 시 추가
+	//};
 	enum class PacketType : uint16_t {
 		error = 0,
 
@@ -112,8 +142,8 @@ namespace common::packet
 		Tainer = 2,
 		// 향후 추가될 NPC 유형들...
 	};
-#pragma pack (push, 1)
 
+#pragma pack (push, 1)
 	struct PacketHeader
 	{
 		uint16_t _size;
@@ -147,10 +177,11 @@ namespace common::packet
 	// enum class MOVE_TYPE : uint16_t
 	struct CS_PACKET_MOVE : PacketHeader
 	{
-		Vec3 _position;
-		common::Quat _rotation;
-		OBJECT_STATE _state;
-		uint32_t _client_tick; // [추가] 클라이언트의 타임스탬프
+		Vec3			_position;
+		common::Quat	_rotation;
+		EntityState		_state;
+		int32_t			_action_id;
+		uint32_t		_client_tick; // [추가] 클라이언트의 타임스탬프
 	};
 	// [신규] 클라 -> 서버: 범용 행동 패킷
 	struct CS_PACKET_ACTION : PacketHeader
@@ -205,7 +236,8 @@ namespace common::packet
 		int64_t			_id; // long long
 		Vec3			_position; // 플레이어의 위치
 		Quat			_rotation;
-		OBJECT_STATE	_state;
+		EntityState		_state;
+		int32_t			_action_id;
 		int32_t			_hp;
 		int32_t			_level;
 		int32_t			_exp;
@@ -215,10 +247,11 @@ namespace common::packet
 	// 플레이어 이동 패킷
 	struct SC_PACKET_MOVE : PacketHeader
 	{
-		int64_t _id; // long long
-		Vec3 _position;
-		common::Quat _rotation;
-		OBJECT_STATE _state;
+		int64_t			_id; // long long
+		Vec3			_position;
+		common::Quat	_rotation;
+		EntityState		_state;
+		int32_t			_action_id; // [추가]
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)
@@ -260,7 +293,8 @@ namespace common::packet
 		Vec3			_position;
 		Vec3			_velocity;
 		uint32_t		_time_stamp;
-		OBJECT_STATE	_state;
+		EntityState		_state;      // 논리 상태
+		int32_t			_action_id;  // [추가] 0이면 없음, 보스 스킬 번호 등
 	};
 
 	struct SC_PACKET_NPC_MOVE_BATCH : PacketHeader {
@@ -274,7 +308,8 @@ namespace common::packet
 		NPCType _npc_type; // NPC의 타입 (예: 몬스터 종류)
 		Vec3    _position;  // NPC의 초기 위치
 		int32_t _hp;        // NPC의 초기 HP
-		OBJECT_STATE _state; // NPC의 초기 상태
+		EntityState _state; // NPC의 초기 상태
+		int32_t _action_id;
 		// 뒤에 가변크기 name
 	};
 
@@ -285,7 +320,8 @@ namespace common::packet
 		Vec3		_velocity;
 		Quat		_rotation;
 		uint32_t	_time_stamp;
-		OBJECT_STATE _state;
+		EntityState	_state;
+		int32_t		_action_id; // [추가] 0이면 없음, 보스 스킬 번호 등
 		// 뒤에 가변 크기 name
 	};
 	// NPC 단일 피격 정보를 담는 구조체

@@ -6,7 +6,8 @@ namespace PIP::GAME
     struct NPCAttackConfig {
         JPH::Ref<JPH::Shape>            shape;                        // 공격 판정 모양 (Sphere, Box, Capsule 등)
         common::Vec3                    posOffset;                    // NPC 중심으로부터의 오프셋
-		common::packet::OBJECT_STATE    animationState;               // 공격 애니메이션 상태값 (예: ATTACK1, SKILL1 등)
+		common::packet::EntityState     entityState;                  // 공격 애니메이션 상태값 (예: ATTACK1, SKILL1 등)
+		int32_t                         actionId{ 0 };				  // 공격 행동 ID (0이면 없음, 보스 스킬 번호 등)
         float                           damage;                       // 공격력
         float                           cooldown;                     // 재사용 대기시간
 		float                           animationDuration   { 1.0f }; // 애니메이션 지속 시간 (초 단위, 기본 1초)
@@ -24,4 +25,6 @@ namespace PIP::GAME
         PHASE_1, // 거인의 압박 (내려찍기, 돌진)
         PHASE_2  // 날카로운 뼈 (클로 난타, 잡기)
     };
+
+    
 }
