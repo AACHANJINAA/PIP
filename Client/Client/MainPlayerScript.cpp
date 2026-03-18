@@ -219,10 +219,10 @@ void MainPlayerScript::awake()
 
 	renderer->set_mesh(walkMesh);
 
-	animation_component->add_animation("idle", idleMesh, "idle");
-	animation_component->add_animation("walk", walkMesh, "walk");
-	animation_component->add_animation("attack", idleMesh, "attack");
-	animation_component->add_animation("die", idleMesh, "die");
+	animation_component->add_animation("idle", idleMesh);
+	animation_component->add_animation("walk", walkMesh);
+	animation_component->add_animation("attack", idleMesh);
+	animation_component->add_animation("die", idleMesh);
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->play("idle");
@@ -304,7 +304,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	}
 
 	if (_isAttacking) {
-		anim_comp->play("attack");
+		anim_comp->play("attack", false);
 
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
 		float progress = anim_comp->get_anim_time();
