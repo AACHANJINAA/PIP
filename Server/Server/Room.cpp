@@ -914,10 +914,10 @@ namespace PIP::SERVER
 			Broadcast(stream.constable_data(), stream.Size());
 		}
 	}
-	void Room::HandleAction(const std::shared_ptr<PIP::SERVER::SESSION>& actor,
+	void Room::HandleAction(const std::shared_ptr<SESSION>& session,
 	                        const common::packet::CS_PACKET_ACTION& action_packet)
 	{
-		if (!actor || !actor->_player) return;
+		if (!session || !session->_player) return;
 
 		std::vector<packet::NPCHitInfo> npc_hits;
 		std::vector<packet::PlayerHitInfo> player_hits;
@@ -942,20 +942,20 @@ namespace PIP::SERVER
 
 				for (auto* obj : nearbyObjects) {
 					// 자기 자신은 제외
-					if (obj->GetId() == actor->_id) continue;
+					if (obj->GetId() == session->_id) continue;
 					// [수정] Actor 인터페이스로 통합 판정 (NPC/Player 공통)
 					if (auto targetActor = dynamic_cast<GAME::Actor*>(obj)) {
-						if (actor->_player->GetFaction() == targetActor->GetFaction()) continue;
+						if (session->_player->GetFaction() == targetActor->GetFaction()) continue;
 						if (targetActor->ValidateHit(_physicsSystem, attackShape.GetPtr(), attackTransform,
 						                             action_packet._client_time_stamp,
-						                             actor->_player.get(), actor->_player->_damage))
+						                             session->_player.get(), session->_player->_damage))
 						{
 							// NPC 피격 기록
 							if (auto npc = dynamic_cast<GAME::NPC*>(targetActor))
-								npc_hits.emplace_back(npc->GetNpcId(), actor->_player->_damage, npc->GetHP());
+								npc_hits.emplace_back(npc->GetNpcId(), session->_player->_damage, npc->GetHP());
 							// Player 피격 기록
 							else if (auto player = dynamic_cast<GAME::Player*>(targetActor))
-								player_hits.emplace_back(player->GetId(), actor->_player->_damage, player->GetHP());
+								player_hits.emplace_back(player->GetId(), session->_player->_damage, player->GetHP());
 						}
 					}
 					// (확장) Player vs Player 판정도 동일한 로직으로 여기에 추가 가능
@@ -1001,7 +1001,7 @@ namespace PIP::SERVER
 			packet::PacketStream stream;
 			packet::SC_PACKET_NPC_ATTACK hit_packet;
 			hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
-			hit_packet._attacker_id = actor->_id;
+			hit_packet._attacker_id = session->_id;
 			hit_packet._hit_count = 1; // 단일 전송 모드
 
 			stream << hit_packet;
@@ -1020,7 +1020,7 @@ namespace PIP::SERVER
 			packet::PacketStream stream;
 			packet::SC_PACKET_PLAYER_ATTACK header;
 			header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
-			header._attacker_id = actor->_id;
+			header._attacker_id = session->_id;
 			header._hit_count = (uint8_t)player_hits.size();
 			stream << header;
 			for (auto& h : player_hits) stream << h;
