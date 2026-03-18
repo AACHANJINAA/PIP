@@ -67,7 +67,7 @@ namespace PIP::SERVER
 		void SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int64_t npcId);
 
 		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
-		void HandleAction(const std::shared_ptr<SESSION>& actor, const common::packet::CS_PACKET_ACTION& action_packet);
+		void HandleAction(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 
