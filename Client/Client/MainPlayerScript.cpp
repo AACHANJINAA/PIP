@@ -299,7 +299,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 		// set_state에도 애니메이션 루프 설정 추가
 		anim_comp->play("die", false);
 		// 사망 상태의 ui 업데이트
-		die_ui_update(deltaTime);
+		//die_ui_update(deltaTime);
 		return;
 	}
 
