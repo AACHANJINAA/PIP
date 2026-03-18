@@ -24,7 +24,7 @@ public:
     virtual void release() override;
 
 	// UI 추가 및 제거
-    void add_ui(UILayer layer, const std::string& name, std::shared_ptr<GameObject> ui_object);
+    void add_ui(UILayer layer, const std::string& name, const std::shared_ptr<GameObject>& ui_object);
     void remove_ui(UILayer layer, const std::string& name);
 
     // Setter -> 렌더링 키고 끄기
