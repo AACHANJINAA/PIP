@@ -24,13 +24,13 @@ void UIManager::release()
     }
 }
 
-void UIManager::add_ui(UILayer layer, const std::string& name, std::shared_ptr<GameObject> ui_object)
+void UIManager::add_ui(UILayer layer, const std::string& name, const std::shared_ptr<GameObject>& ui_object)
 {
     if (ui_object == nullptr) return;
 
     auto layer_idx = static_cast<int>(layer);
 
-    if (_uiLayers[layer_idx].find(name) != _uiLayers[layer_idx].end())
+    if (_uiLayers[layer_idx].contains(name))
     {
         CERROR("UI addition failed - UI name already exists: " << name);
         return;
@@ -54,7 +54,7 @@ void UIManager::set_visible(UILayer layer, const std::string& name, bool is_visi
 
     if (it != _uiLayers[layer_idx].end())
     {
-		(*it).second->get_component<UIRenderComponent>()->set_enabled(is_visible);
+		it->second->get_component<UIRenderComponent>()->set_enabled(is_visible);
     }
     else
     {
@@ -69,7 +69,7 @@ std::shared_ptr<UIRenderComponent> UIManager::ui_component(UILayer layer, const 
 
     if (it != _uiLayers[layer_idx].end())
     {
-        return (*it).second->get_component<UIRenderComponent>();
+        return it->second->get_component<UIRenderComponent>();
     }
     CERROR("UI component retrieval failed - UI not found: " << name);
     return nullptr;
@@ -77,8 +77,6 @@ std::shared_ptr<UIRenderComponent> UIManager::ui_component(UILayer layer, const 
 
 void UIManager::set_render_vector()
 {
-    UILayer layer{ UILayer::BACKGROUND };
-
     for (auto& vec : _uiRanderVector)
     {
         vec.clear();

@@ -11,7 +11,7 @@ class Renderer : public Singleton<Renderer>
     friend Singleton<Renderer>;
 private:
     Renderer() = default;
-    ~Renderer() = default;
+    ~Renderer() override = default;
 
 public:
     void initialize(ID3D12Device* device);
