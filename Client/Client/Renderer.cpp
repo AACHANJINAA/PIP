@@ -15,6 +15,7 @@
 #include "MonsterHPUIShader.h"
 #include "ShadowDepthShader.h"
 #include "ShadowDepthSkinnedShader.h"
+#include "UIManager.h"
 
 #include "GameObject.h"
 #include "ObjectManager.h"
@@ -166,6 +167,11 @@ void Renderer::build_render_list(CameraComponent* camera)
                 renderComp->pso_name() == "Monster_HP_UI" ||
                 renderComp->pso_name() == "skybox")
             {
+                if (renderComp->pso_name() == "ui")
+                {
+                    // ui는 넘기기
+                    continue;
+                }
                 _renderMap[renderComp->pso_name()].push_back(gameObject);
                 continue;
             }
@@ -182,6 +188,17 @@ void Renderer::build_render_list(CameraComponent* camera)
                 _renderMap[renderComp->pso_name()].push_back(gameObject);
             }
         }
+    }
+
+    UIManager::instance()->set_render_vector();
+    const auto& render_vec = UIManager::instance()->ui_render_vector();
+    for (const auto& vec : render_vec)
+    {
+        for (const auto& gameObject : vec)
+        {
+            _renderMap["ui"].push_back(gameObject);
+        }
+
     }
 
     /*CLOG("Culling: " << visibleObjects << "/" << totalObjects << " visible, "
@@ -274,6 +291,27 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             }
             continue; // 다음 PSO로
         }
+
+        //if (psoName == "ui")
+        //{
+        //    const auto& render_vec = UIManager::instance()->ui_render_vector();
+        //    for (const auto& vec : render_vec)
+        //    {
+        //        for (const auto& gameObject : vec)
+        //        {
+        //            auto renderComp = gameObject->get_component<RenderComponent>();
+        //            if (!renderComp) continue;
+        //
+        //            auto mesh = renderComp->mesh();
+        //            if (!mesh) continue;
+        //
+        //            shader_prototype->update_per_object(commandList, this, gameObject.get());
+        //            gameObject->prepare_render();
+        //            renderComp->render(commandList, frame_index);
+        //        }
+        //    }
+        //    continue;
+        //}
 
         // 일반 객체 렌더링
         for (const auto& gameObject : gameObjects)

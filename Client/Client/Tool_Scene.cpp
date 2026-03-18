@@ -80,7 +80,7 @@ void Tool_Scene::spawn_want_mesh()
             // 애니메이션 컴포넌트 기본설정(T_POSE)
             auto animation_renderer = _targetCharacter->get_component<AnimationComponent>();
             animation_renderer->add_animation("t_pose", mesh);
-            animation_renderer->play("t_pos");
+            animation_renderer->play("t_pose");
 
             // 재질설정
             std::string material = "glTF_Test_material";
