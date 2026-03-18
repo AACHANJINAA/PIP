@@ -43,7 +43,7 @@ public:
 	int64_t id() const { return _playerId; }
 
 	void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }
-	void sync_with_server(const common::Vec3& pos, const common::Quat& rot);
+	void sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket);
 private:
 	// --- update 기능 분리용 private 함수 ---
 	void update_hp_bar(float deltaTime);
@@ -62,8 +62,8 @@ private:
 	float _hpBar_maxWidth{ 500.0f };
 	std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
 	int64_t _playerId;
-	RenderComponent* _renderComponent{ nullptr };
-	GameObject* _camera{ nullptr };
+	RenderComponent* _renderComponent	{ nullptr };
+	GameObject* _camera					{ nullptr };
 	std::shared_ptr<GameObject> _attackRangeObject;
 
 	// [추가] 넉백 물리 제어 변수
@@ -76,4 +76,6 @@ private:
 	bool _isAttacking = false;
 	bool _packetSent = false;
 	common::Vec3 _currentMoveDir = { 0,0,0 };
+	common::packet::EntityState _state = common::packet::EntityState::IDLE;
+	int32_t _actionId = 0;
 };

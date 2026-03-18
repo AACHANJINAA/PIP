@@ -81,7 +81,8 @@ namespace PIP::GAME
 		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // 전방 1.5m 지점
 		normalAtk.damage = 10;
 		normalAtk.cooldown = 1.2f;
-		normalAtk.animationState = common::packet::OBJECT_STATE::ATTACK1; // 공격 애니메이션 상태값
+		normalAtk.entityState = common::packet::EntityState::ACTION; // 공격 애니메이션 상태값
+		normalAtk.actionId = 1; // 일반 공격 행동 ID (예시)
 
 		// 강력한 공격: 전방 4m 길이의 박스 형태 (범위 공격)
 		NPCAttackConfig heavyAtk;
@@ -89,7 +90,8 @@ namespace PIP::GAME
 		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
 		heavyAtk.damage = 20;
 		heavyAtk.cooldown = 4.0f;
-		heavyAtk.animationState = common::packet::OBJECT_STATE::ATTACK1; // 공격 애니메이션 상태값
+		heavyAtk.entityState = common::packet::EntityState::ACTION; // 공격 애니메이션 상태값
+		heavyAtk.actionId = 1; // 일반 공격 행동 ID (예시)
 
 		BTBuilder builder;
 		// 트리 설계:
@@ -135,10 +137,10 @@ namespace PIP::GAME
 	{
 		// 1. 상태(애니메이션) 변화 체크 (최우선)
 		// IDLE <-> WALK 등 상태가 바뀌면 즉시 패킷을 보내야 합니다.
-		if (_state != _lastSentState)
-		{
-			return true;
-		}
+		if (_state != _lastSentState) return true;
+
+		// [핵심] 액션 ID 변화 감지 (이게 바뀌면 즉시 패킷 전송)
+		if (_actionId != _lastSentActionId) return true;
 
 		// 2. 위치 변화 체크
 		common::Vec3 currentPos = GetPosition();
@@ -148,7 +150,7 @@ namespace PIP::GAME
 
 		// 상태에 따른 임계값(Threshold) 차등 적용
 		// 움직이는 중일 때는 5cm, 가만히 있을 때는 10cm 이상 변해야Dirty로 간주
-		float thresholdSq = (_state == common::packet::OBJECT_STATE::IDLE) ? 0.01f : 0.0025f;
+		float thresholdSq = (_state == common::packet::EntityState::IDLE) ? 0.01f : 0.0025f;
 
 		if (distSq > thresholdSq)
 		{

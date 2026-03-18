@@ -13,7 +13,7 @@ namespace PIP::GAME
 
         const common::Vec3& GetPosition() const { return _position; }
         const common::Quat& GetRotation() const { return _rotation; }
-        const common::Vec3& GetForward() const;
+        common::Vec3 GetForward() const;
 
         JPH::Vec3 GetJoltPosition() const { return Utils::ToJolt(_position); }
         JPH::Quat GetJoltRotation() const { return Utils::ToJolt(_rotation); }

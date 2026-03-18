@@ -1,6 +1,7 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "UIManager.h"
 #include "GameObject.h"
+#include "UIRenderComponent.h"
 
 UIManager::UIManager()
 {
@@ -73,3 +74,32 @@ std::shared_ptr<UIRenderComponent> UIManager::ui_component(UILayer layer, const 
     CERROR("UI component retrieval failed - UI not found: " << name);
     return nullptr;
 }
+
+void UIManager::set_render_vector()
+{
+    UILayer layer{ UILayer::BACKGROUND };
+
+    for (auto& vec : _uiRanderVector)
+    {
+        vec.clear();
+    }
+
+    for (int i = 0 ; i < _uiLayers.size(); ++i)
+    {
+        const auto& uimap = _uiLayers[i];
+        
+        for (const auto& ui : uimap)
+        {
+            if (ui.second->get_component<UIRenderComponent>()->is_enabled())
+            {
+                _uiRanderVector[i].push_back(ui.second);
+            }
+        }
+    }
+}
+
+std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)>& UIManager::ui_render_vector()
+{
+    return _uiRanderVector;
+}
+

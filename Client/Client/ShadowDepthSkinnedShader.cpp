@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ShadowDepthSkinnedShader.h"
 
 D3D12_INPUT_LAYOUT_DESC ShadowDepthSkinnedShader::create_input_layout()
