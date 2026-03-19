@@ -136,6 +136,7 @@
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LayerManager.h" />
     <ClInclude Include="LightManager.h" />
+    <ClInclude Include="LongswordScript.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="MainPlayerAnimationScript.h" />
     <ClInclude Include="MainPlayerScript.h" />
@@ -251,6 +252,7 @@
     <ClCompile Include="INetSync.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="LightManager.cpp" />
+    <ClCompile Include="LongswordScript.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
     <ClCompile Include="InputManager.cpp" />

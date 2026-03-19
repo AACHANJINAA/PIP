@@ -1,25 +1,28 @@
 ﻿#include "stdafx.h"
 #include "MainPlayerScript.h"
-#include "GameFramework.h"
+
+
 #include "InputManager.h"
 #include "NetworkManager.h"
 #include "ObjectManager.h"
 #include "RenderComponent.h"
 #include "ReadGLTFMesh.h"
-#include "Renderer.h"
+
 #include "UIManager.h"
 
 #include "ResourceManager.h"
-#include "SceneManager.h"
+
 #include "TerrainLoader.h"
 #include "TransformComponent.h"
-#include "TimerManager.h"
+
 #include "AnimationComponent.h"
+#include "LongswordScript.h"
 
 #include "PhysicsColliderComponent.h"
 #include "WeaponScript.h"
 #include "MonsterHPComponent.h"
 #include "PhysicsCharacterControllerComponent.h"
+#include "SocketComponenet.h"
 
 void MainPlayerScript::set_hp(const int hp)
 {
@@ -210,19 +213,15 @@ void MainPlayerScript::awake()
 	}
 
 	auto idleMesh =
-		ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
-	auto walkMesh =
-		ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
+		ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true, "idle");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only("Resource/Character/DarkKnight/Anim_DKF_Attack_02.gltf", "attack02");
 
-	// Brute_die -> idle 메쉬를 기준으로 사용하여 애니메이션만 로드 (메쉬는 재사용)
-	dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only("Resource/Character/Brute_die/Brute_die.gltf", "die");
-
-	renderer->set_mesh(walkMesh);
+	renderer->set_mesh(idleMesh);
 
 	animation_component->add_animation("idle", idleMesh);
-	animation_component->add_animation("walk", walkMesh);
-	animation_component->add_animation("attack", idleMesh);
-	animation_component->add_animation("die", idleMesh);
+	animation_component->add_animation("walk", idleMesh, "idle");
+	animation_component->add_animation("attack", idleMesh, "attack02");
+	animation_component->add_animation("die", idleMesh, "idle");
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->play("idle");
@@ -246,13 +245,28 @@ void MainPlayerScript::awake()
 	}
 
 	// --- 공격 범위 콜라이더 오브젝트 생성 ---
-	_attackRangeObject = ObjectManager::instance()->create_game_object("AttackRange");
-	_attackRangeObject->transform()->set_parent(game_object()->transform());
-	_attackRangeObject->transform()->set_local_position({ 0, 0, 0 });
-	auto col = _attackRangeObject->add_component<PhysicsColliderComponent>();
-	col->initialize(PhysicsColliderComponent::ShapeType::Sphere, { 3.0f, 0, 0 }, { 0,0,0 }, { 0,0,0 }, true);
-	_attackRangeObject->add_component<WeaponScript>();
-	col->set_active(false);
+	auto socket = owner->get_component<SocketComponenet>();
+
+	// 다크나이트의 hand_l 오프셋을 참고하여 hand_r용으로 미러링한 값입니다.
+	// 좌표와 회전은 모델을 보면서 미세 조정이 필요할 수 있습니다.
+	_currentWeaponObject = socket->add_connecting(
+		"MainWeapon",
+		"hand_r", // 반대쪽 손
+		"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
+		{ -0.06f, -0.8f, 0.16f },   // hand_l 기준 X값 반전 시도
+		{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
+		{ 2.f, 2.f, 2.f }
+	);
+
+	// --- 3. 무기 오브젝트에 기능(스크립트 + 콜라이더) 추가 ---
+	if (_currentWeaponObject) {
+		// 물리 바디를 위한 콜라이더 추가
+		_currentWeaponObject->add_component<PhysicsColliderComponent>();
+
+		// 롱소드 로직 추가 (내부에서 콜라이더 initialize 호출됨)
+		_currentWeapon = _currentWeaponObject->add_component<LongswordScript>();
+		_currentWeapon->set_attack_active(true);
+	}
 }
 
 void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
@@ -292,7 +306,6 @@ void MainPlayerScript::handle_state(float deltaTime)
 {
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
 	if (!anim_comp) return;
-
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp())
 	{
@@ -311,6 +324,17 @@ void MainPlayerScript::handle_state(float deltaTime)
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
 		float progress = anim_comp->get_anim_time();
 		float duration = anim_comp->get_anim_duration();
+
+		// [추가] 특정 프레임(30% ~ 60%) 동안 히트박스 활성화
+		if (_currentWeapon) {
+			if (progress >= (duration * 0.3f) && progress <= (duration * 0.6f)) {
+				_currentWeapon->set_attack_active(true);
+			}
+			else {
+				_currentWeapon->set_attack_active(false);
+			}
+		}
+
 		if (!_packetSent && progress >= (duration * 0.3f)) {
 			NetworkManager::instance()->SendActionPacket(common::packet::ActionType::NORMAL_ATTACK, 0, -1,
 				transform()->local_position(), transform()->local_rotation());
@@ -323,6 +347,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_packetSent = false; // 중요: 다음 공격을 위해 리셋
 			_actionId = 0;
 			_state = common::packet::EntityState::IDLE;
+
+			if (_currentWeapon) _currentWeapon->set_attack_active(false);
 
 			// 즉시 서버에 IDLE 상태임을 알려야 함
  			anim_comp->play("idle");
@@ -393,6 +419,25 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_actionId = common::packet::ActionID::Common::Attack;
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
 	}
+
+	//// [추가] 스킬 입력 (R 키: 꿰뚫는 일격)
+	//if (!_isAttacking && _currentWeapon && _currentWeapon->can_use_skill() && InputManager::instance()->IsKeyDown('R')) {
+	//	_isAttacking = true;
+	//	_isChargingSkill = true;
+	//	_skillChargeTimer = 0.0f;
+	//	_packetSent = false;
+	//	_actionId = 2; // 꿰뚫는 일격 ID (가칭)
+	//	_currentWeapon->start_charge();
+	//}
+
+	//if (_isChargingSkill) {
+	//	_skillChargeTimer += deltaTime;
+	//	if (_skillChargeTimer >= 2.0f) { // 2초 캐스팅 완료
+	//		_isChargingSkill = false;
+	//		_currentWeapon->use_skill();
+	//		// 실제 서버 전송 로직은 handle_state 등에서 애니메이션과 맞춰 처리
+	//	}
+	//}
 }
 void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 {
@@ -436,7 +481,7 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 	static float alpha_background = 0.0f;
 	static float alpha_text = 0.0f;
 	static float timer = 0.0f;
-	if (0.f < hp())
+	if (0 < hp())
 	{
 		timer = 0.f;
 		alpha_background = 0.f;
@@ -456,17 +501,11 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 	UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", true);
 
 	// 실제 동작 -> update에서
-	alpha_background += deltaTime * 0.25;
+	alpha_background += static_cast<double>(deltaTime * 0.25);
 	alpha_text += deltaTime * 0.25f * 0.5f;
 
-	if (alpha_background >= 1.f)
-	{
-		alpha_background = 1.f;
-	}
-	if (alpha_text >= 1.f)
-	{
-		alpha_text = 1.f;
-	}
+	alpha_background = std::min(alpha_background, 1.f);
+	alpha_text = std::min(alpha_text, 1.f);
 
 	auto background = UIManager::instance()->ui_component(UILayer::MIDDLE, "Death_Background_UI");
 	auto deathUI = UIManager::instance()->ui_component(UILayer::FRONT, "Death_UI");

@@ -3,15 +3,17 @@
 #include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
 #include "PhysicsCharacterControllerComponent.h"    // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
 #include "AnimationComponent.h"                     // [추가]
+#include "SocketComponenet.h"
 #include "UIRenderComponent.h"  
+#include "WeaponScript.h"
 constexpr float SENDINTERVAL{ 0.02f };
 class MainPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, PhysicsCharacterControllerComponent, AnimationComponent>;
+	using required_components = std::tuple<RenderComponent, PhysicsCharacterControllerComponent, AnimationComponent, SocketComponenet>;
 
 	MainPlayerScript() = default;
-	virtual ~MainPlayerScript() = default;
+	~MainPlayerScript() override = default;
 
 	void update(float deltaTime) override;
 	void fixed_update(float deltaTime) override;
@@ -55,6 +57,9 @@ private:
 	// ui 띄우기 용
 	void die_ui_update(float deltaTime);
 
+	// 무기 오브젝트 참조 (필요 시)
+	std::shared_ptr<GameObject> _currentWeaponObject = nullptr;
+	std::shared_ptr<WeaponScript> _currentWeapon;
 
 	int32_t _hp{ 100 };
 	int32_t _maxHp{ 100 };
@@ -70,10 +75,12 @@ private:
 	common::Vec3 _impactVelocity = { 0,0,0 };
 	common::Vec3 _visualOffset = { 0, 0, 0 }; // 보정 오차 저장 변수
 
-	float _speed{5.f};
+	float _speed{ 5.f };
 	float _sendTimer{ 0.f };
 
 	bool _isAttacking = false;
+	bool _isChargingSkill = false;   // [추가]
+	float _skillChargeTimer = 0.0f;  // [추가]
 	bool _packetSent = false;
 	common::Vec3 _currentMoveDir = { 0,0,0 };
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;

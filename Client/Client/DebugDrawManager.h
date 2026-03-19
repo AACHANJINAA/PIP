@@ -1,6 +1,5 @@
 #pragma once
 
-
 struct DebugRequest {
     common::packet::DebugShapeType shapeType;
     DirectX::XMFLOAT3 position;
@@ -22,40 +21,48 @@ private:
     ~DebugDrawManager() override = default;
 
 public:
-    // 초기화: 메쉬 생성 및 상수 버퍼 준비
+    // Initialize: Create meshes and constant buffers
     void Initialize(ID3D12Device* device);
 
-    // 서버 패킷을 받아 리스트에 추가
+    // Add debug draw request from server packet
     void AddDebugRequest(const common::packet::SC_PACKET_DEBUG_DRAW& packet);
 
-    // 수명 관리 (deltaTime만큼 감소)
+    // [Add] Add debug draw request from client local call
+    void AddDebugShape(common::packet::DebugShapeType type, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 rot, DirectX::XMFLOAT3 extents, float lifeTime);
+
+    // Update: Decrease lifetime of requests
     void Update(float deltaTime);
 
-    // 실제 렌더링 (Renderer::render에서 호출됨)
+    // Render: Draw all active debug shapes (Called by Renderer)
     void Render(ID3D12GraphicsCommandList* cmdList, UINT frameIndex);
 
 private:
-    // 단위 메쉬 생성 함수들
+    // Mesh creation helpers
     void CreateUnitBox(ID3D12Device* device);
     void CreateUnitSphere(ID3D12Device* device);
+    void CreateUnitCapsule(ID3D12Device* device);
 
 private:
-    // 렌더링 요청 큐
+    // Queue of active debug draw requests
     std::vector<DebugRequest> _requests;
 
-    // --- 박스 메쉬 리소스 ---
+    // --- Box Mesh Resources ---
     ComPtr<ID3D12Resource> _boxVB;
     D3D12_VERTEX_BUFFER_VIEW _boxVBView{};
     UINT _boxVertexCount = 0;
 
-    // --- 구체 메쉬 리소스 ---
+    // --- Sphere Mesh Resources ---
     ComPtr<ID3D12Resource> _sphereVB;
     D3D12_VERTEX_BUFFER_VIEW _sphereVBView{};
     UINT _sphereVertexCount = 0;
 
-    // --- 상수 버퍼 (월드 행렬 전달용: b0) ---
-    // 프레임별로 별도 관리가 필요함 (SWAP_CHAIN_BUFFERS = 2)
+    // --- Capsule Mesh Resources ---
+    ComPtr<ID3D12Resource> _capsuleVB;
+    D3D12_VERTEX_BUFFER_VIEW _capsuleVBView{};
+    UINT _capsuleVertexCount = 0;
+
+    // --- Constant Buffer Resources (b0) ---
+    // Double buffered for swap chain
     std::array<ComPtr<ID3D12Resource>, 2> _cbWorld;
     std::array<DirectX::XMFLOAT4X4*, 2>   _mappedWorld{};
 };
-

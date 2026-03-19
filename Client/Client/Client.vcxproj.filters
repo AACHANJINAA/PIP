@@ -446,6 +446,9 @@
     <ClInclude Include="UIManager.h">
       <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClInclude>
+    <ClInclude Include="LongswordScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -705,6 +708,9 @@
     </ClCompile>
     <ClCompile Include="UIManager.cpp">
       <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="LongswordScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

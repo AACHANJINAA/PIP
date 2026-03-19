@@ -34,17 +34,17 @@ void PhysicsColliderComponent::initialize(ShapeType type, const XMFLOAT3& size, 
 
 void PhysicsColliderComponent::create_body()
 {
-    JPH::Ref<JPH::Shape> shape;
+    
     switch (_shapeType)
     {
     case ShapeType::Box:
-        shape = new JPH::BoxShape(JPH::Vec3(_size.x * 0.5f, _size.y * 0.5f, _size.z * 0.5f));
+        _shape = new JPH::BoxShape(JPH::Vec3(_size.x * 0.5f, _size.y * 0.5f, _size.z * 0.5f));
         break;
     case ShapeType::Sphere:
-        shape = new JPH::SphereShape(_size.x);
+        _shape = new JPH::SphereShape(_size.x);
         break;
     case ShapeType::Capsule:
-        shape = new JPH::CapsuleShape(_size.y, _size.x);
+        _shape = new JPH::CapsuleShape(_size.y, _size.x);
         break;
     }
 
@@ -53,7 +53,7 @@ void PhysicsColliderComponent::create_body()
     JPH::RVec3 pos = PIP::Utils::ToJolt(trans->position());
     JPH::Quat rot = PIP::Utils::ToJolt(trans->rotation());
 
-    JPH::BodyCreationSettings settings(shape, pos, rot,
+    JPH::BodyCreationSettings settings(_shape, pos, rot,
         JPH::EMotionType::Kinematic, // 트랜스폼을 수동으로 따라가야 함
         _isSensor ? PIP::Layers::SENSOR : PIP::Layers::MOVING);
 
