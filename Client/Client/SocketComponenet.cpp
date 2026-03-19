@@ -90,8 +90,12 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 	_connectedObjects.emplace_back(socket_name, info);
 }
 
-
-void SocketComponenet::add_connecting(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
+// TODO: KJ요청 : 메쉬가 없는 오브젝트도 추가할 수 있도록 하는 add_connecting 함수 오버로드
+// KJ수정 : 오브젝트 리턴
+std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& socket_name,
+                                                             const std::string& bone_name, const std::string& mesh,
+                                                             XMFLOAT3 local_pos, XMFLOAT3 local_rotation,
+                                                             XMFLOAT3 local_scale)
 {
 	// 추가하고자 하는 소켓 이름이 이미 존재하는지 확인
 	for (const auto& pair : _connectedObjects)
@@ -99,7 +103,7 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 		if (pair.first == socket_name)
 		{
 			CERROR("DW Socket Error : Socket name '" << socket_name << "' already exists. Use fix_connecting to modify it.");
-			return;
+			return nullptr;
 		}
 	}
 
@@ -120,19 +124,19 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 	auto transform = info.Object->transform();
 	if (transform)
 	{
-		transform->set_local_position(loacl_pos);
-		transform->set_local_rotation(loacl_rotation.x, loacl_rotation.y, loacl_rotation.z);
-		transform->set_local_scale(loacl_scale);
+		transform->set_local_position(local_pos);
+		transform->set_local_rotation(local_rotation.x, local_rotation.y, local_rotation.z);
+		transform->set_local_scale(local_scale);
 	}
 	// 로컬 행렬 만들어서 구조체에 저장
-	XMMATRIX matScale = XMMatrixScaling(loacl_scale.x, loacl_scale.y, loacl_scale.z);
+	XMMATRIX matScale = XMMatrixScaling(local_scale.x, local_scale.y, local_scale.z);
 
-	float pitchRad = XMConvertToRadians(loacl_rotation.x); // X축 회전
-	float yawRad = XMConvertToRadians(loacl_rotation.y); // Y축 회전
-	float rollRad = XMConvertToRadians(loacl_rotation.z); // Z축 회전
+	float pitchRad = XMConvertToRadians(local_rotation.x); // X축 회전
+	float yawRad = XMConvertToRadians(local_rotation.y); // Y축 회전
+	float rollRad = XMConvertToRadians(local_rotation.z); // Z축 회전
 	XMMATRIX matRotation = XMMatrixRotationRollPitchYaw(pitchRad, yawRad, rollRad);
 
-	XMMATRIX matTranslation = XMMatrixTranslation(loacl_pos.x, loacl_pos.y, loacl_pos.z);
+	XMMATRIX matTranslation = XMMatrixTranslation(local_pos.x, local_pos.y, local_pos.z);
 
 	XMMATRIX localMatrix = matScale * matRotation * matTranslation;
 
@@ -140,6 +144,7 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 
 	// 구조체 벡터에 넣기
 	_connectedObjects.emplace_back(socket_name, info);
+	return info.Object;
 }
 
 void SocketComponenet::fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, 

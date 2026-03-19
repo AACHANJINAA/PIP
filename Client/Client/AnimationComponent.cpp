@@ -90,17 +90,17 @@ void AnimationComponent::late_update(float deltaTime)
 	//}
 }
 
-void AnimationComponent::add_animation(const std::string& name, std::shared_ptr<Mesh> mesh,
-	const std::string& actualAnimName)
+void AnimationComponent::add_animation(const std::string& want_name, const std::shared_ptr<Mesh>& mesh,
+                                       const std::string& actualAnimName)
 {
 	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh);
 	if (!gltf_mesh) {
-		CERROR("Mesh is not a GLTF mesh: " << name);
+		CERROR("Mesh is not a GLTF mesh: " << want_name);
 		return;
 	}
 
 	// 1. 실제 애니메이션 이름 결정
-	std::string targetName = actualAnimName.empty() ? name : actualAnimName;
+	std::string targetName = actualAnimName.empty() ? want_name : actualAnimName;
 
 	// [검증] 실제 애니메이션 이름이 있는지 확인
 	if (!gltf_mesh->has_animation(targetName)) {
@@ -112,7 +112,7 @@ void AnimationComponent::add_animation(const std::string& name, std::shared_ptr<
 	}
 
 	// 3. 최종 매핑 저장
-	_animResources[name] = { mesh, targetName };
+	_animResources[want_name] = { mesh, targetName };
 }
 
 void AnimationComponent::play(const std::string& name, bool isLoop, float speed)

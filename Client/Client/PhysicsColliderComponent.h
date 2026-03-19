@@ -21,6 +21,8 @@ public:
 
 	// 공격 중에만 켜기 위해 사용
 	void set_active(bool active);
+	bool is_active() const { return _isActive; }
+	ShapeType shape_type() const { return _shapeType; }
 
 	// 특정 콜백 등록 (예: WeaponScript에서 공격 패킷 보내기용)
 	void set_on_collision_callback(std::function<void(std::shared_ptr<GameObject>)> callback)
@@ -32,11 +34,14 @@ public:
 
 	// PhysicsManager로부터 전달받는 충돌 알림
 	void OnContact(std::shared_ptr<GameObject> other);
+	const JPH::Shape* get_shape() {};
+
 private:
 	void create_body();
 
 	ShapeType	_shapeType = ShapeType::Box;
 	XMFLOAT3	_size = { 1.f, 1.f, 1.f };
+	JPH::Ref<JPH::Shape> _shape;
 	bool		_isSensor = true;
 	bool		_isActive = false;
 

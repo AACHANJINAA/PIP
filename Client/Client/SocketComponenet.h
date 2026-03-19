@@ -24,8 +24,11 @@ public:
 	void add_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,
 		XMFLOAT3 loacl_pos = {0.f,0.f,0.f}, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
 
-	void add_connecting(std::string socket_name, const std::string& bone_name, std::string mesh,
-		XMFLOAT3 loacl_pos = { 0.f,0.f,0.f }, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
+	::std::shared_ptr<GameObject> add_connecting(const std::string& socket_name,
+	                                                           const std::string& bone_name, const std::string& mesh,
+	                                                           XMFLOAT3 local_pos = {0.f, 0.f, 0.f},
+	                                                           XMFLOAT3 local_rotation = {0.f, 0.f, 0.f},
+	                                                           XMFLOAT3 local_scale = {1.f, 1.f, 1.f});
 
 	// 연결된 것들 수정
 	void fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,

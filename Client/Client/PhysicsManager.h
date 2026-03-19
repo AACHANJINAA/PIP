@@ -2,6 +2,7 @@
 #include "JoltSetup.h"
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Physics/Collision/ShapeCast.h>
 #include "../../Common/TerrainData.h" // TerrainData 참조 추가
 #ifdef _DEBUG
 static void TraceImpl(const char* inFMT, ...) {

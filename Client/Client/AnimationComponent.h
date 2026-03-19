@@ -16,7 +16,7 @@ public:
 public:
 
 	// 애니메이션 리소스 등록 (예: "Walk", walkMesh, "run_anim")
-	void add_animation(const std::string& name, std::shared_ptr<Mesh> mesh, const std::string& actualAnimName = "");
+	void add_animation(const std::string& want_name, const std::shared_ptr<Mesh>& mesh, const std::string& actualAnimName = "");
 
 	// 애니메이션 재생 (이름이 같으면 무시, 다르면 교체)
 	void play(const std::string& name, bool isLoop = true, float speed = 1.0f);

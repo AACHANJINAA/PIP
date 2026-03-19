@@ -38,7 +38,7 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf",true,"walk");
     ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolem.gltf", true);
     ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolemRd.gltf", true);
-
+    ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true, "idle");
     auto idle_brute_mesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",true,"idle");
     dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf","attack");
 	// =========================================================================
@@ -60,10 +60,11 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	// DW설명 : 그래미 워크 생성 함수 호출
 	//SpawnGrammy_Walk(device, commandList);
 
-    Spawn_SK_MagicConstruct(device, commandList);
-    Spawn_DarkKnight(device, commandList);
+    // Spawn_DarkKnight(device, commandList);
     // SpawnTestBoss(device, commandList);
     // Spawn_Bone_Golem(device, commandList);
+    // SpawnDummyNPC(device, commandList);
+    Spawn_SK_MagicConstruct(device, commandList);
 	Spawn_UI(device, commandList);
 
 	Spawn_Monster_HP_UI(device, commandList);
@@ -96,7 +97,6 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
         //ResourceManager::Instance()->upload_pending_meshes(device, commandList);
     }
 
-    SpawnDummyNPC(device, commandList);
 }
 
 void Chess_Scene::release_upload_buffers()
