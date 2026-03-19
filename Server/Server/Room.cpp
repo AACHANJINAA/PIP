@@ -542,28 +542,36 @@ namespace PIP::SERVER
 				{
 					auto ai = npc->GetComponent<GAME::AIComponent>();
 					if (ai && ai->GetBlackboard()->has("debug_node_name")) {
+						//auto bb = ai->GetBlackboard();
+						//std::string nodeName = bb->get<std::string>("debug_node_name");
+						//int status = bb->get<int>("debug_node_status");
+
+						//// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
+						//std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
+						//std::string debugText = nodeName + " " + statusStr;
+
+						//common::packet::PacketStream stream;
+						//common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
+						//pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
+						//pkt._actor_id = npc->GetId();
+
+						//stream << pkt;
+						//stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
+
+						//// 헤더 사이즈 갱신
+						//auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
+						//header->_size = (uint16_t)stream.Size();
+
+						//// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
+						//Broadcast(stream.mutable_data(), stream.Size());
+
 						auto bb = ai->GetBlackboard();
 						std::string nodeName = bb->get<std::string>("debug_node_name");
 						int status = bb->get<int>("debug_node_status");
 
-						// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
 						std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
 						std::string debugText = nodeName + " " + statusStr;
-
-						common::packet::PacketStream stream;
-						common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
-						pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
-						pkt._actor_id = npc->GetId();
-
-						stream << pkt;
-						stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
-
-						// 헤더 사이즈 갱신
-						auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
-						header->_size = (uint16_t)stream.Size();
-
-						// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
-						Broadcast(stream.mutable_data(), stream.Size());
+						//MYLOG("[DebugBT] " << npc->GetId() << " Boss" << debugText);
 					}
 				}
 #endif
@@ -634,6 +642,31 @@ namespace PIP::SERVER
 
 			if (std::chrono::duration<float>(now - npc->GetLastUpdateTime()).count() >= interval) {
 				npc->Update(interval, tempAllocator); // AI (BT) 실행
+
+				// [추가] NPC 맵 이탈 방지 및 지형 높이 보정 로직
+				common::Vec3 pos = npc->GetPosition();
+				auto mapData = PIP::MapDataManager::Instance();
+
+				// [여기에 추가!] 3. NaN(비정상 값) 체크 및 복구
+				if (std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z)) {
+					MYERROR("NPC ID: " << npc->GetId() << " has NaN position! Resetting to safe spot.");
+					pos = { 10.0f, 10.0f, 10.0f }; // 안전한 기본 위치 (마을 중앙 등)
+					npc->SetPosition(pos); // 물리 바디 위치 강제 초기화
+				}
+
+				// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
+				if (!mapData->IsInsideMap(pos.x, pos.z)) {
+					// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
+					pos = mapData->AdjustPositionToGround(pos);
+				}
+				else {
+					// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
+					pos = mapData->AdjustPositionToGround(pos);
+				}
+
+				// 최종 보정된 위치를 NPC에 적용 (물리 바디 포함)
+				npc->SetPosition(pos);
+
 				npc->SetLastUpdateTime(now);
 				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
 			}

@@ -76,14 +76,14 @@ namespace PIP::GAME
 				.leaf_name<Action_TargetingNearestPlayer>("Targeting")
 				.selector() // 공격이 먼저!
 					.sequence() // [공격 1] 내려찍기
-						.leaf_name<Condition_IsEnemyInRange>("In_Slam_Range", 4.5f)
+						.leaf_name<Condition_IsEnemyInRange>("In_Slam_Range", 6.5f)
 						.leaf_name<Action_AttackEnemy>("Slam_Attack", _slamAtk)
 					.end()
 					.sequence() // [공격 2] 돌진
 						.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 10.0f, 15.0f)
-						.leaf_name<Action_ChargeAttack>("Action_Charge", 18.0f, _chargeAtk)
+						.leaf_name<Action_ChargeAttack>("Action_Charge", 16.0f, _chargeAtk)
 					.end()
-				.leaf_name<Action_ChaseEnemy>("Chase", 4.0f, 3.5f) // 공격 못 하면 추격
+				.leaf_name<Action_ChaseEnemy>("Chase", 4.0f, 6.5f) // 공격 못 하면 추격
 				.end()
 			.end()
 		.build();

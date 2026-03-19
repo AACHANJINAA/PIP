@@ -66,6 +66,11 @@ namespace PIP::GAME
 			{
 				tc->SetPosition(newPosition);
 			}
+
+			if (auto cc = GetComponent<CharacterControllerComponent>())
+			{
+				cc->SetPosition(newPosition);
+			}
 		}
 
 		void SetVelocity(const common::Vec3& v)
