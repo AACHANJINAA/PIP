@@ -296,6 +296,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp())
 	{
+		_state = common::packet::EntityState::DEAD;
 		// set_state에도 애니메이션 루프 설정 추가
 		anim_comp->play("die", false);
 		// 사망 상태의 ui 업데이트
@@ -304,6 +305,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	}
 
 	if (_isAttacking) {
+		_state = common::packet::EntityState::ACTION;
 		anim_comp->play("attack", false);
 
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
@@ -319,6 +321,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 		if (anim_comp->is_anim_finished()) {
 			_isAttacking = false;
 			_packetSent = false; // 중요: 다음 공격을 위해 리셋
+			_actionId = 0;
+			_state = common::packet::EntityState::IDLE;
 
 			// 즉시 서버에 IDLE 상태임을 알려야 함
 			anim_comp->play("idle");
@@ -328,9 +332,11 @@ void MainPlayerScript::handle_state(float deltaTime)
 	else {
 		// 공격 중이 아닐 때만 WALK/IDLE 전환
 		if (common::Length(_currentMoveDir) > 0.01f) {
+			_state = common::packet::EntityState::MOVE;
 			anim_comp->play("walk");;
 		}
 		else {
+			_state = common::packet::EntityState::IDLE;
 			anim_comp->play("idle");
 		}
 	}
@@ -384,6 +390,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_SPACE)) {
 		_isAttacking = true;
 		_packetSent = false;
+		_actionId = common::packet::ActionID::Common::Attack;
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
 	}
 }

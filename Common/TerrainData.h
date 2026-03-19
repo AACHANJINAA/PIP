@@ -203,8 +203,8 @@ namespace common
 			int x1 = x0 + 1;
             int z1 = z0 + 1;
 
-            float fx = f_idx_x - x0; // x 방향 소수부 (0.0 ~ 1.0)
-            float fz = f_idx_z - z0; // z 방향 소수부 (0.0 ~ 1.0)
+            float fx = f_idx_x - static_cast<float>(x0); // x 방향 소수부 (0.0 ~ 1.0)
+            float fz = f_idx_z - static_cast<float>(z0); // z 방향 소수부 (0.0 ~ 1.0)
 
             // 6. 높이값 4개 조회
             // 1차원 배열 접근: _heights[row_index * width + col_index]

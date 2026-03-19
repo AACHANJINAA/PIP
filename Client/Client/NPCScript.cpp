@@ -215,18 +215,25 @@ void NPCScript::update(float deltaTime)
 
 	float distSq = XMVectorGetX(XMVector3LengthSq(vPredictedPos - vCurrentPos));
 	
+	
+	XMVECTOR vNextPos;
 	float lerpSpeed = 10.0f;
-	if (distSq > 10.0f * 10.0f) { // 10m 이상 오차 시 텔레포트
-		lerpSpeed = 1000.0f;
-	} else if (distSq > 0.5f * 0.5f) {
-		lerpSpeed = 15.0f;
+	if (distSq > 10.0f * 10.0f) {
+		// 10m 이상이면 보간하지 않고 즉시 목표 위치로 스냅 (가장 안전)
+		vNextPos = vPredictedPos;
+	}
+	else {
+		if (distSq > 0.5f * 0.5f) {
+			lerpSpeed = 15.0f;
+		}
+
+		// [중요] 보간 계수 t를 [0.0, 1.0] 범위로 제한
+		float clampedDelta = std::min(deltaTime, 0.1f);
+		float t = std::min(1.0f, clampedDelta * lerpSpeed);
+		vNextPos = XMVectorLerp(vCurrentPos, vPredictedPos, t);
 	}
 
-	// [보정] deltaTime이 너무 크면(프레임 드랍 등) 보간이 튀지 않게 제한
-	float clampedDelta = std::min(deltaTime, 0.1f);
-	XMVECTOR vNextPos = XMVectorLerp(vCurrentPos, vPredictedPos, clampedDelta * lerpSpeed);
-	
-	// [NaN 방어] 보간 결과가 NaN이면 예측 위치로 즉시 설정
+	// [NaN 방어]
 	if (common::XMVector3AnyNaN(vNextPos)) {
 		CERROR("[NPCScript] Interpolated position is NaN! Fallback to predicted pos.");
 		vNextPos = vPredictedPos;
