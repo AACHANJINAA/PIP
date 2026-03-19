@@ -431,13 +431,14 @@ namespace PIP::SERVER
 				{
 					// [수정] shared_from_this()를 통해 안전하게 참조 획득
 					auto session = session_ptr->shared_from_this();
-					MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
+					
 
 					SESSION_STATE expected = SESSION_STATE::ST_LOBBY;
 					if (session->_state.compare_exchange_strong(expected, SESSION_STATE::ST_CLOSE) ||
 						(expected = SESSION_STATE::ST_INGAME, session->_state.compare_exchange_strong(expected,
 							SESSION_STATE::ST_CLOSE)))
 					{
+						MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
 						if (session->_room_id != -1) {
 							Room* room = GetRoom(session->_room_id);
 							// [수정] 람다에 session(shared_ptr)을 캡처하여 로직 끝날 때까지 보존
@@ -454,7 +455,10 @@ namespace PIP::SERVER
 						closesocket(session->_c_socket);
 					}
 				}
-				delete eo;
+				// [해결] eo가 서버 멤버 변수인 _accept_over인 경우(IO_ACCEPT) delete 하지 않음
+				if (eo && eo->_io_op != IO_ACCEPT) {
+					delete eo;
+				}
 				continue;
 			}
 

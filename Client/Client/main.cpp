@@ -126,6 +126,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            // [추가] 네트워크가 죽었으면 루프를 탈출하도록 보강
+            if (NetworkManager::instance()->is_running() == false) {
+                break;
+            }
             // 메시지 큐가 비어있을 때, 우리의 게임 로직을 실행합니다.
         	GameFramework::instance()->FrameAdvance();
         }
