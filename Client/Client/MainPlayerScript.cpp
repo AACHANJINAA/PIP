@@ -325,7 +325,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_state = common::packet::EntityState::IDLE;
 
 			// 즉시 서버에 IDLE 상태임을 알려야 함
-			anim_comp->play("idle");
+ 			anim_comp->play("idle");
 			send_network_sync(0.0f);
 		}
 	}

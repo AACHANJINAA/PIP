@@ -25,6 +25,7 @@ public:
     void SendActionPacket(common::packet::ActionType type, int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
+    bool is_running() const { return _isRunning; }
 
 private:
 	void network_worker(); // 네트워크 스레드 함수

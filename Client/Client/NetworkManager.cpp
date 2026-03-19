@@ -27,6 +27,13 @@ void error_display(const char* msg, int err_no)
 		(LPTSTR)&lpMsgBuf, 0, NULL);
 	MessageBox(GameFramework::instance()->hWnd(), lpMsgBuf, (LPCWSTR)msg, MB_OK);
 	LocalFree(lpMsgBuf);
+
+	// 2. [핵심] 메인 윈도우에 종료 메시지 전송
+// PostMessage를 사용하면 다른 스레드에서도 메인 스레드의 메시지 큐에 이벤트를 넣을 수 있습니다.
+	HWND hWnd = GameFramework::instance()->hWnd();
+	if (hWnd) {
+		::PostMessage(hWnd, WM_CLOSE, 0, 0);
+	}
 }
 
 void NetworkManager::send_packet(const char* data, size_t size)
@@ -118,6 +125,8 @@ void NetworkManager::recv_packet()
 		// 정상적인 연결 종료 (Graceful Close)
 		_isRunning = false;
 		CLOG("Server closed the connection.");
+		// [해결] 서버 종료 시 알림 후 프로그램 종료
+		MessageBox(GameFramework::instance()->hWnd(), L"Server connection closed.", L"Network Info", MB_OK);
 		return;
 	}
 
