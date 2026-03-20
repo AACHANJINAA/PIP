@@ -34,7 +34,7 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	register_scene<Tool_Scene>("ToolScene");
 	//register_scene<Lobby_Scene>("LobbyScene");
 
-	change_scene("ChessScene");
+	change_scene("MainScene");
 }
 
 void SceneManager::release()

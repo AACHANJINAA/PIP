@@ -450,7 +450,7 @@
       <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
     </ClInclude>
     <ClInclude Include="Main_Scene.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>1. Game\1. Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -716,7 +716,7 @@
       <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
     </ClCompile>
     <ClCompile Include="Main_Scene.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

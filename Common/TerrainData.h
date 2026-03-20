@@ -152,7 +152,8 @@ namespace common
             // 높이 데이터 벡터 준비
             _heights.resize(total_pixels_from_file);
 
-            float min_h = 1.0f;
+
+            float min_h_m = (std::numeric_limits<float>::max)(); // 최소 높이(m) 추적용
             uint16_t min_raw_val = 65535;
 
             // R16 바이너리 읽기
@@ -167,42 +168,40 @@ namespace common
                 }
                 min_raw_val = (std::min)(min_raw_val, raw_val);
 
-                // 0~1 정규화
-                float norm = static_cast<float>(raw_val) / 65535.0f;
-                _heights[i] = norm;
+                // [핵심 수정] 0~1 정규화 대신 언리얼 공식 적용 및 미터(m) 단위 변환
+                // 공식: ((Raw - 32768) / 128) * ScaleZ * 0.01
+                float height_m = ((static_cast<float>(raw_val) - 32768.0f) / 128.0f) * _info.height_scale * 0.01;
+
+                _heights[i] = height_m;
 
                 // 최소 높이값 추적
-                if (norm < min_h) min_h = norm;
+                min_h_m = std::min(height_m, min_h_m);
             }
             hm_file.close();
 
-            // 정보용 최소 높이 저장
-            _info.min_height = (static_cast<float>(min_raw_val) / 65535.0f) * _info.height_scale;
-
-            //// 바닥 보정: 가장 낮은 곳을 0으로 맞추기
-            //for (size_t i = 0; i < total_pixels_from_file; ++i)
-            //{
-            //    // (현재높이 - 최소높이) * 스케일
-            //    // 결과: 지형의 가장 낮은 지점은 0.0이 되고, 나머지는 그 위로 쌓임
-            //    _heights[i] = (_heights[i] - min_h) * _info.height_scale;
-            //}
+            // 정보용 최소 높이 저장 (마찬가지로 언리얼 공식 적용)
+            _info.min_height = ((static_cast<float>(min_raw_val) - 32768.0f) / 128.0f) * _info.height_scale * 0.01;
 
             // [수정] 조건부 바닥 보정
             if (apply_floor_offset)
             {
-                // 단일 지형 또는 서버: 바닥을 0으로 맞춤
+                // 단일 지형 또는 서버: 바닥을 0m로 맞춤
                 for (size_t i = 0; i < total_pixels_from_file; ++i)
                 {
-                    _heights[i] = (_heights[i] - min_h) * _info.height_scale;
-                } 
+                    // 이미 height_m으로 스케일 계산이 끝났으므로, 최하단 높이만 빼주면 됨
+                    _heights[i] = _heights[i] - min_h_m;
+                }
             }
             else
             {
                 // 다중 타일 Landscape: 절대 높이 유지
-                for (size_t i = 0; i < total_pixels_from_file; ++i)
+                /*for (size_t i = 0; i < total_pixels_from_file; ++i)
                 {
                     _heights[i] = (_heights[i] * _info.height_scale) - 10.0f;
-                }
+                }*/
+                // 다중 타일 Landscape: 절대 높이 유지
+                // 타일 간 경계가 완벽히 맞물려야 하므로, 계산된 절대 높이를 그대로 둡니다.
+                // (기존의 곱하기나 -10.0f 빼는 로직은 삭제!)
             }
 
             std::cout << "[TerrainData] Loaded: " << json_path
