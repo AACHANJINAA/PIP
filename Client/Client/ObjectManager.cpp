@@ -93,6 +93,12 @@ void ObjectManager::remove_game_object_from_list(std::shared_ptr<GameObject> gam
     std::erase(_gameObjects, gameObject);
 }
 
+void ObjectManager::remove_game_object(std::shared_ptr<GameObject> gameObject)
+{
+    if (!gameObject) return;
+    remove_game_object_from_list(gameObject);
+}
+
 std::shared_ptr<GameObject> ObjectManager::find_by_name(const std::string& name)
 {
     auto it = std::find_if(_gameObjects.begin(), _gameObjects.end(),

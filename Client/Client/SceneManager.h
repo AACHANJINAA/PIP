@@ -5,6 +5,7 @@ enum class SCENE_NUM
 {
 	SCENE_NONE = 0, // 변경 안할 때
 	SCENE_CHESS, // 체스 씬
+	SCENE_MAIN,  // 메인 씬
 	SCENE_OTHER, // 다른 씬 (예: Pong 씬)
 	// 추가 씬 번호를 여기에 정의할 수 있습니다.
 };
@@ -40,12 +41,15 @@ public:
 		ID3D12CommandAllocator* command_allocator, ID3D12GraphicsCommandList* command_list);
 
 	std::shared_ptr<GameObject> get_skybox_object() const { return _skyboxObject; }
-	std::shared_ptr<GameObject> get_terrain_object() const { return _terrainObject; }
 
+	std::shared_ptr<GameObject> get_terrain_object() const;
+	const std::vector<std::shared_ptr<GameObject>>& get_all_landscapes() const;
 	float get_terrain_size() const;
+
 private:
 	void build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 	void build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
+	void build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // 현재 씬
@@ -55,5 +59,6 @@ private:
 
 	std::shared_ptr<GameObject> _skyboxObject;
 	std::shared_ptr<GameObject> _terrainObject;
+	std::vector<std::shared_ptr<GameObject>> _MainlandscapeObjects;
 };
 

@@ -16,6 +16,7 @@ public:
     void request_destruction(std::shared_ptr<Object> objectToDestroy);
     void process_destructions();
 	void remove_game_object_from_list(std::shared_ptr<GameObject> gameObject);
+	void remove_game_object(std::shared_ptr<GameObject> gameObject);
 
 
     std::shared_ptr<GameObject> find_by_name(const std::string& name);
