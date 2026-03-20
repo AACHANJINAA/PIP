@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Scene.h"
 
 class Main_Scene : public Scene

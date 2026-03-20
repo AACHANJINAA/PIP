@@ -501,7 +501,7 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 	UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", true);
 
 	// 실제 동작 -> update에서
-	alpha_background += static_cast<double>(deltaTime * 0.25);
+	alpha_background += deltaTime * 0.25f;
 	alpha_text += deltaTime * 0.25f * 0.5f;
 
 	alpha_background = std::min(alpha_background, 1.f);

@@ -22,12 +22,7 @@ namespace PIP::GAME
 
 
 		// 임시 맵 범위 (실제로는 MapData에서 가져오는 게 좋음)
-		auto mapData = MapDataManager::Instance()->GetTerrainData();
-
-		auto max_x = mapData.GetInfo().max_x;
-		auto min_x = mapData.GetInfo().min_x;
-		auto max_z = mapData.GetInfo().max_z;
-		auto min_z = mapData.GetInfo().min_z;
+		auto [min_x, max_x, min_z, max_z] = MapDataManager::Instance()->GetWorldBounds();
 
 		float x_range = max_x - min_x;
 		float z_range = max_z - min_z;

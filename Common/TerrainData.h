@@ -170,7 +170,7 @@ namespace common
 
                 // [핵심 수정] 0~1 정규화 대신 언리얼 공식 적용 및 미터(m) 단위 변환
                 // 공식: ((Raw - 32768) / 128) * ScaleZ * 0.01
-                float height_m = ((static_cast<float>(raw_val) - 32768.0f) / 128.0f) * _info.height_scale * 0.01;
+                float height_m = ((static_cast<float>(raw_val) - 32768.0f) / 128.0f) * _info.height_scale * 0.01f;
 
                 _heights[i] = height_m;
 
@@ -180,7 +180,7 @@ namespace common
             hm_file.close();
 
             // 정보용 최소 높이 저장 (마찬가지로 언리얼 공식 적용)
-            _info.min_height = ((static_cast<float>(min_raw_val) - 32768.0f) / 128.0f) * _info.height_scale * 0.01;
+            _info.min_height = (static_cast<float>(min_raw_val) - 32768.0f) / 128.0f * _info.height_scale * 0.01f;
 
             // [수정] 조건부 바닥 보정
             if (apply_floor_offset)

@@ -69,7 +69,7 @@ namespace PIP::SERVER
 		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void HandleAction(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
-		void Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
+		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
@@ -120,6 +120,6 @@ namespace PIP::SERVER
 		ObjectVsBroadPhaseLayerFilterImpl	_objVsBpLayerFilter;
 		ObjectLayerPairFilterImpl			_objLayerPairFilter;
 
-		JPH::BodyID _terrainBodyID;
+		std::vector<JPH::BodyID>			_terrainBodyIDs;
 	};
 }

@@ -69,7 +69,12 @@ namespace PIP::SERVER
 			JPH::Shape* npcShape = (JPH::Shape*)controller->GetShape();
 			bool isStuck = true;
 			int attempts = 0;
-			JPH::IgnoreSingleBodyFilter terrainFilter(_terrainBodyID); // 지형은 무시
+			JPH::IgnoreMultipleBodiesFilter terrainFilter; // 지형은 무시
+
+			// 2. 관리 중인 모든 지형 ID를 필터에 추가
+			for (auto id : _terrainBodyIDs) {
+				terrainFilter.IgnoreBody(id);
+			}
 
 			while (isStuck && attempts < 5) {
 				JPH::CollideShapeSettings settings;
@@ -1127,18 +1132,45 @@ namespace PIP::SERVER
 		session->_player->SetRotation(move_packet._rotation);
 		session->_player->_state = move_packet._state;
 	}
-	void Room::Execute_C2S_ROOM_ENTER(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
+	void Room::Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
 
 		// --- [Step 1] 세션 데이터 갱신 ---
 		session->_room_id = _room_id; // 현재 방 ID (this->_room_id)
 		session->_state = SERVER::SESSION_STATE::ST_INGAME;
 		session->_logic_thread_idx = _logic_thread_idx;
 
-		common::Vec3 spawnPos{ 10, 10, 10 };
-		session->_player->SetPosition(MapDataManager::Instance()->AdjustPositionToGround(spawnPos));
-		session->_player->SetHP(100);
+		EnterPlayer(session);
 
-		// --- [Step 2] 패킷 전송 (여기서 다 보냅니다) ---
+		// 1. 대략적인 스폰 위치 결정 (월드 중앙 등)
+		auto [minX, maxX, minZ, maxZ] = MapDataManager::Instance()->GetWorldBounds();
+		float tx = (minX + maxX) * 0.5f;
+		float tz = (minZ + maxZ) * 0.5f;
+
+		// 2. 충분히 높은 곳에서 아래로 레이 발사 준비
+		JPH::RRayCast ray;
+		ray.mOrigin = JPH::Vec3(tx, 500.0f, tz); // 하늘 높은 곳에서 발사
+		ray.mDirection = JPH::Vec3(0, -1000.0f, 0); // 땅바닥으로 길게 발사
+
+		// 3. 지형 레이캐스트 실행
+		JPH::RayCastResult ray_result;
+		float finalY = 0.0f;
+
+		// 지형 레이어(NON_MOVING)만 검사하도록 쿼리
+		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
+			float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
+			finalY = hitY + 2.0f; // 지면 위 2m 안착
+			MYLOG("[SPAWN] Ray Hit at Y: " << hitY << ", Spawn Y: " << finalY);
+		}
+		else {
+			// 레이가 빗나갈 경우 MapDataManager 데이터 기반으로 강제 보정
+			finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
+			MYERROR("[SPAWN] Ray Missed! Using data height: " << finalY);
+		}
+
+		// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
+		common::Vec3 spawnPos{ tx, finalY, tz };
+		session->_player->SetPosition(spawnPos);
+		session->_player->SetHP(100);
 
 		// 1. 입장 성공 ACK 전송
 		packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
@@ -1200,47 +1232,29 @@ namespace PIP::SERVER
 	}
 
 	void Room::CreatePhysicsTerrain() {
-		const auto& terrainData = MapDataManager::Instance()->GetTerrainData();
-		const auto& info = terrainData.GetInfo();
-		const auto& heightMap = terrainData.GetHeightData();
 
-		JPH::HeightFieldShapeSettings settings;
-		settings.mOffset = JPH::Vec3(info.min_x, 0.0f, info.min_z);
-
-		float dx = (info.max_x - info.min_x) / (info.width - 1);
-		float dz = (info.max_z - info.min_z) / (info.height - 1);
-		settings.mScale = JPH::Vec3(dx, 1.0f, dz);
-		settings.mSampleCount = static_cast<JPH::uint32>(info.width);
-
-		settings.mHeightSamples.resize(heightMap.size());
-		for (size_t i = 0; i < heightMap.size(); ++i) {
-			settings.mHeightSamples[i] = heightMap[i];
-		}
-
-		auto result = settings.Create();
-		if (result.HasError()) return;
-
-		JPH::BodyCreationSettings bodySettings(result.Get(), JPH::RVec3(0, 0, 0), JPH::Quat::sIdentity(),
-			JPH::EMotionType::Static, Layers::NON_MOVING);
-
+		const auto& terrainTiles = MapDataManager::Instance()->GetTerrainTiles();
 		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
-		JPH::Body* terrainBody = bodyInterface.CreateBody(bodySettings);
 
-		_terrainBodyID = terrainBody->GetID();
-		bodyInterface.AddBody(_terrainBodyID, JPH::EActivation::DontActivate);
+		for (const auto& tile : terrainTiles)
+		{
+			if (!tile.shape) continue;
+			// 무거운 Create() 과정 없이, 미리 생성된 tile.shape을 그대로 전달
+			JPH::BodyCreationSettings bodySettings(
+				tile.shape,
+				JPH::RVec3(0, 0, 0),
+				JPH::Quat::sIdentity(),
+				JPH::EMotionType::Static,
+				Layers::NON_MOVING
+			);
 
-		JPH::RRayCast ray;
-		ray.mOrigin = JPH::Vec3(0, 100, 0); 
-		ray.mDirection = JPH::Vec3(0, -200, 0); 
+			JPH::Body* terrainBody = bodyInterface.CreateBody(bodySettings);
+			_terrainBodyIDs.push_back(terrainBody->GetID());
 
-		JPH::RayCastResult ray_result;
-		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
-			float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
-			MYLOG("Physics Terrain Test Success! Height at (0,0): " << hitY);
+			bodyInterface.AddBody(terrainBody->GetID(), JPH::EActivation::DontActivate);
 		}
-		else {
-			MYERROR("Physics Terrain NOT FOUND! Ray missed.");
-		}
+		MYLOG("Physics Landscapes created: " << _terrainBodyIDs.size());
+
 	}
 
 	void Room::CreatePhysicsMapObjects()
