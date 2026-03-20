@@ -452,6 +452,9 @@
     <ClInclude Include="Main_Scene.h">
       <Filter>1. Game\1. Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="Boss_Scene.h">
+      <Filter>1. Game\1. Scenes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -716,6 +719,9 @@
       <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
     </ClCompile>
     <ClCompile Include="Main_Scene.cpp">
+      <Filter>1. Game\1. Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Boss_Scene.cpp">
       <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
   </ItemGroup>
