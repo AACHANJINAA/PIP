@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "WeaponScript.h"
 #include "GameObject.h"
 #include "DebugDrawManager.h"

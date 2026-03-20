@@ -18,7 +18,10 @@ namespace PIP
 		common::Quat _rotation;
 		common::Vec3 _extent; // Half-extents (반폭)
 	};
-
+	struct TerrainTile {
+		common::TerrainData data;
+		JPH::ShapeRefC shape; // 공유할 물리 모양 (레퍼런스 카운팅 포인터)
+	};
 	class MapDataManager : public Singleton<MapDataManager>
 	{
 		friend class Singleton<MapDataManager>;
@@ -29,22 +32,26 @@ namespace PIP
 
 		void LoadMapData(std::string_view mapDataPath);
 		void LoadHeightMapData(std::string_view heightMapDataJSONPath);
+		void LoadMainLandscapeData(std::string_view landscapeDirPath);
 
-		const common::TerrainData& GetTerrainData() const { return _terrainData; }
+		const std::vector<TerrainTile>& GetTerrainTiles() const { return _terrainTiles; }
 
 
-		float GetGroundHeight(float x, float z);
+		float GetGroundHeight(float x, float z) const;
 		common::Vec3 AdjustPositionToGround(common::Vec3 position);
 
-		bool IsInsideMap(float x, float z) const
-		{
-			const auto& info = _terrainData.GetInfo();
-			return (x >= info.min_x && x <= info.max_x && z >= info.min_z && z <= info.max_z);
-		}
+		bool IsInsideMap(float x, float z) const;
 		const std::vector<MapObject>& GetMapObjects() const { return _map_objects; }
+
+		// [추가] 월드 경계 반환 (minX, maxX, minZ, maxZ)
+		std::tuple<float, float, float, float> GetWorldBounds() const { return { _worldMinX, _worldMaxX, _worldMinZ, _worldMaxZ }; }
 	private:
 		std::vector<MapObject> _map_objects;
-		common::TerrainData _terrainData;
+		std::vector<TerrainTile> _terrainTiles;
+		float _worldMinX = std::numeric_limits<float>::max();
+		float _worldMaxX = -std::numeric_limits<float>::max();
+		float _worldMinZ = std::numeric_limits<float>::max();
+		float _worldMaxZ = -std::numeric_limits<float>::max();
 	};
 }
 

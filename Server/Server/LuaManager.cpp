@@ -100,12 +100,12 @@ namespace PIP
 
     int LuaManager::Lua_GetMapBounds(lua_State* L)
     {
-        const auto& info = MapDataManager::Instance()->GetTerrainData().GetInfo();
+        const auto& [min_x,max_x,min_z,max_z] = MapDataManager::Instance()->GetWorldBounds();
 
-        lua_pushnumber(L, info.min_x);
-        lua_pushnumber(L, info.max_x);
-        lua_pushnumber(L, info.min_z);
-        lua_pushnumber(L, info.max_z);
+        lua_pushnumber(L, min_x);
+        lua_pushnumber(L, max_x);
+        lua_pushnumber(L, min_z);
+        lua_pushnumber(L, max_z);
 
         return 4;
     }
