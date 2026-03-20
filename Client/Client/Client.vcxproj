@@ -107,6 +107,7 @@
     <ClInclude Include="BehaviorTree.h" />
     <ClInclude Include="Behavior.h" />
     <ClInclude Include="BoardCubeScript.h" />
+    <ClInclude Include="Boss_Scene.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColiderComponent.h" />
     <ClInclude Include="Component.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="BehaviorTree.cpp" />
     <ClCompile Include="Behavior.cpp" />
     <ClCompile Include="BoardCubeScript.cpp" />
+    <ClCompile Include="Boss_Scene.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColiderComponent.cpp" />
     <ClCompile Include="Component.cpp" />

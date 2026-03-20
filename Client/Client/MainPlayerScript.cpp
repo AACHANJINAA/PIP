@@ -213,15 +213,21 @@ void MainPlayerScript::awake()
 	}
 
 	auto idleMesh =
-		ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true, "idle");
-	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only("Resource/Character/DarkKnight/Anim_DKF_Attack_02.gltf", "attack02");
+		ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+
+	std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
+
 
 	renderer->set_mesh(idleMesh);
 
-	animation_component->add_animation("idle", idleMesh);
-	animation_component->add_animation("walk", idleMesh, "idle");
+	animation_component->add_animation("idle", idleMesh, "idle");
+	animation_component->add_animation("walk", idleMesh, "walk");
 	animation_component->add_animation("attack", idleMesh, "attack02");
-	animation_component->add_animation("die", idleMesh, "idle");
+	animation_component->add_animation("die", idleMesh, "death");
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->play("idle");
@@ -257,6 +263,9 @@ void MainPlayerScript::awake()
 		{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
 		{ 2.f, 2.f, 2.f }
 	);
+
+	// 무리 렌더링 끄기
+	_currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
 
 	// --- 3. 무기 오브젝트에 기능(스크립트 + 콜라이더) 추가 ---
 	if (_currentWeaponObject) {
@@ -359,7 +368,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 		// 공격 중이 아닐 때만 WALK/IDLE 전환
 		if (common::Length(_currentMoveDir) > 0.01f) {
 			_state = common::packet::EntityState::MOVE;
-			anim_comp->play("walk");;
+			anim_comp->play("walk");
 		}
 		else {
 			_state = common::packet::EntityState::IDLE;
