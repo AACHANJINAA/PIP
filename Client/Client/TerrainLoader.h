@@ -29,9 +29,12 @@ public:
 	};
 public:
 	TerrainLoader(const std::string& heightmap_json_path);
+	TerrainLoader(const std::string& metadata_json_path, bool is_landscape_tile);
+
 	virtual ~TerrainLoader() = default;
 
 	void load_textures_to_resource_manager(const std::string& material_gltf_path, const std::string& detail_texture_path);
+	void load_landscape_weightmaps(const std::vector<std::string>& weightmap_paths);
 
 	void render(ID3D12GraphicsCommandList* command_list) override;
 

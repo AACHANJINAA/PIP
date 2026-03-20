@@ -10,7 +10,7 @@ using namespace DirectX;
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
 	
-	if (!_terrainData.LoadFromJSON(heightmap_json_path))
+	if (!_terrainData.LoadFromJSON(heightmap_json_path, true))
 	{
 		CERROR("Failed to load terrain data from: " << heightmap_json_path);
 	}
@@ -32,6 +32,38 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 	create_flat_grid(grid_width, grid_height);
 
 	PhysicsManager::instance()->create_physics_terrain(_terrainData);
+}
+
+TerrainLoader::TerrainLoader(const std::string& metadata_json_path, bool is_landscape_tile)
+{
+
+	// 1. JSON 파싱 (TerrainData::LoadFromJSON이 이미 grid_info 지원함)
+	if (!_terrainData.LoadFromJSON(metadata_json_path, false))
+	{
+		CERROR("Failed to load landscape metadata from: " << metadata_json_path);
+		return;
+	}
+
+	const auto& info = _terrainData.GetInfo();
+	_heightmapTextureKey = _terrainData.GetHeightMapPath();
+
+	// 2. TerrainInfo 설정
+	_terrainInfo.bounds = XMFLOAT4(info.min_x, info.max_x, info.min_z, info.max_z);
+	_terrainInfo.size = XMFLOAT2(info.width, info.height);
+	_terrainInfo.height_scale = info.height_scale;
+	_terrainInfo.min_height = info.min_height;
+	_terrainInfo.tiling = XMFLOAT2(32.0f, 32.0f);      // 기존 16보다 2배
+	_terrainInfo.detail_tiling = XMFLOAT2(256.0f, 256.0f); // 기존 128보다 2배
+
+	// 3. Grid 메쉬 생성
+	int grid_width = static_cast<int>(info.width) - 1;
+	int grid_height = static_cast<int>(info.height) - 1;
+	create_flat_grid(grid_width, grid_height);
+	CLOG("Terrain Grid Created: " << info.width << " x " << info.height
+		<< " vertices, " << (_indices.size() / 3) << " triangles")
+
+	// MainLandscape는 Jolt 물리 지형 일단 제외
+	//PhysicsManager::instance()->create_physics_terrain(_terrainData);
 }
 
 namespace
@@ -211,6 +243,25 @@ void TerrainLoader::load_textures_to_resource_manager(const std::string& materia
 		_detailTextureKey = "__DEFAULT_WHITE__";
 	}
 }
+
+void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& weightmap_paths)
+{
+	// TODO: R8 포맷 텍스처 배열 생성 및 GPU 업로드
+	   // 각 weightmap_paths를 순회하며:
+	   // 1. R8 바이너리 파일 읽기
+	   // 2. D3D12 텍스처 리소스 생성 (DXGI_FORMAT_R8_UNORM)
+	   // 3. ResourceManager에 "Weightmap_Rock", "Weightmap_Grass" 등으로 등록
+
+	for (const auto& weightmap_path : weightmap_paths)
+	{
+		// 파일명에서 레이어 이름 추출
+		std::filesystem::path wpath(weightmap_path);
+		std::string filename = wpath.stem().string(); // "Weightmap_Rock"
+
+		// ResourceManager::instance()->load_texture_r8(filename, weightmap_path);
+	}
+}
+
 
 void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 {

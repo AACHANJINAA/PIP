@@ -34,7 +34,7 @@ namespace common
         ~TerrainData() = default;
 
         // 구현부를 헤더에 inline으로 작성하여 Header-Only 클래스로 만듭니다.
-        inline bool LoadFromJSON(const std::string& json_path)
+        inline bool LoadFromJSON(const std::string& json_path, bool apply_floor_offset = true)
         {
             std::ifstream file(json_path);
             if (!file.is_open())
@@ -51,73 +51,112 @@ namespace common
             }
             file.close();
 
-            // 필수 필드 확인 (width, height는 파일에서 직접 계산하므로 필수 체크에서 제외해도 되지만, 일단 둡니다)
-            if (!config.contains("bounds") || !config["bounds"].contains("min_x") || !config["bounds"].contains("max_x") ||
-                !config["bounds"].contains("min_z") || !config["bounds"].contains("max_z") ||
-                !config.contains("scale") || !config["scale"].contains("y") || !config.contains("heightmap_file"))
+            // ========================================
+            // [핵심 수정] 두 가지 JSON 형식 지원
+            // ========================================
+
+            // 1. MainLandscape 형식 체크 (grid_info 존재 여부)
+            if (config.contains("grid_info"))
             {
-                std::cout << "[TerrainData] JSON missing required fields in " << json_path << std::endl;
+                // MainLandscape 형식: grid_info.bounds 구조
+                const auto& grid_info = config["grid_info"];
+
+                if (!grid_info.contains("bounds"))
+                {
+                    std::cout << "[TerrainData] grid_info missing bounds" << std::endl;
+                    return false;
+                }
+
+                const auto& bounds = grid_info["bounds"];
+
+                _info.min_x = bounds.value("min_x", 0.0f);
+                _info.max_x = bounds.value("max_x", 504.0f);
+                _info.min_z = bounds.value("min_z", 0.0f);
+                _info.max_z = bounds.value("max_z", 504.0f);
+
+                // grid_info에 width, height가 있으면 읽기 (나중에 파일 크기로 덮어쓸 수 있음)
+                _info.width = grid_info.value("width", 505.0f);
+                _info.height = grid_info.value("height", 505.0f);
+            }
+            // 2. 기존 형식 체크 (최상위 bounds)
+            else if (config.contains("bounds"))
+            {
+                // 기존 ../../Common/MapData/Heightmap.json 형식
+                if (!config["bounds"].contains("min_x") || !config["bounds"].contains("max_x") ||
+                    !config["bounds"].contains("min_z") || !config["bounds"].contains("max_z"))
+                {
+                    std::cout << "[TerrainData] bounds incomplete" << std::endl;
+                    return false;
+                }
+
+                _info.min_x = config["bounds"]["min_x"].get<float>();
+                _info.max_x = config["bounds"]["max_x"].get<float>();
+                _info.min_z = config["bounds"]["min_z"].get<float>();
+                _info.max_z = config["bounds"]["max_z"].get<float>();
+            }
+            else
+            {
+                std::cout << "[TerrainData] JSON missing 'bounds' or 'grid_info'" << std::endl;
                 return false;
             }
 
-            _info.min_x = config["bounds"]["min_x"].get<float>();
-            _info.max_x = config["bounds"]["max_x"].get<float>();
-            _info.min_z = config["bounds"]["min_z"].get<float>();
-            _info.max_z = config["bounds"]["max_z"].get<float>();
-
-            // width/height는 JSON에서 읽지 않고(혹은 읽더라도), 아래에서 파일 크기로 덮어씁니다.
+            // scale.y 추출 (공통)
+            if (!config.contains("scale") || !config["scale"].contains("y"))
+            {
+                std::cout << "[TerrainData] JSON missing scale.y" << std::endl;
+                return false;
+            }
             _info.height_scale = config["scale"]["y"].get<float>();
 
+            // heightmap_file 추출 (공통)
+            if (!config.contains("heightmap_file"))
+            {
+                std::cout << "[TerrainData] JSON missing heightmap_file" << std::endl;
+                return false;
+            }
             std::string raw_filename = config["heightmap_file"].get<std::string>();
 
+            // Heightmap 파일 전체 경로 구성
             std::filesystem::path path_obj(json_path);
             std::filesystem::path dir = path_obj.parent_path();
             std::filesystem::path heightmap_full_path = dir / raw_filename;
             _heightMapPath = heightmap_full_path.string();
 
-            // ★ [수정 1] 파일 끝(ate)으로 열어서 크기 확인
+            // Heightmap R16 파일 로드
             std::ifstream hm_file(_heightMapPath, std::ios::binary | std::ios::ate);
             if (!hm_file.is_open())
             {
-                std::cout << "[TerrainData] Failed to open heightmap raw file: " << _heightMapPath << std::endl;
+                std::cout << "[TerrainData] Failed to open heightmap: " << _heightMapPath << std::endl;
                 return false;
             }
 
-            // 파일 크기 가져오기
+            // 파일 크기로부터 해상도 자동 계산
             std::streamsize fileSize = hm_file.tellg();
-            hm_file.seekg(0, std::ios::beg); // 다시 파일 처음으로 이동!
+            hm_file.seekg(0, std::ios::beg);
 
-            // ★ [수정 2] 해상도 역추적 (파일크기 / 2bytes = 픽셀수 -> 제곱근 = 해상도)
             size_t total_bytes = static_cast<size_t>(fileSize);
-            size_t total_pixels_from_file = total_bytes / 2;
+            size_t total_pixels_from_file = total_bytes / 2; // R16 = 2 bytes per pixel
             size_t calculated_resolution = static_cast<size_t>(std::sqrt(total_pixels_from_file));
 
-            // 검증: 정사각형이 맞는지 확인
+            // 정사각형 검증
             if (calculated_resolution * calculated_resolution != total_pixels_from_file)
             {
-                std::cout << "[TerrainData] Error: Heightmap file is not square or corrupted. Size: " << total_bytes << " bytes." << std::endl;
+                std::cout << "[TerrainData] Error: Heightmap not square. Size: " << total_bytes << " bytes" << std::endl;
                 return false;
             }
 
-            // _info 정보 갱신 (JSON 값 무시하고 실제 파일 규격 사용)
+            // 실제 파일 크기로 검증된 해상도로 덮어쓰기
             _info.width = static_cast<float>(calculated_resolution);
             _info.height = static_cast<float>(calculated_resolution);
 
-            //std::cout << "[TerrainData] Auto-detected Resolution: " << _info.width << " x " << _info.height << std::endl;
-
-            // 벡터 리사이즈
+            // 높이 데이터 벡터 준비
             _heights.resize(total_pixels_from_file);
 
             float min_h = 1.0f;
-            uint16_t min_raw_val = 65535; // R16 파일의 최소값 추적
+            uint16_t min_raw_val = 65535;
 
-            // R16 읽기
-            if (!hm_file.read(reinterpret_cast<char*>(_heights.data()), total_bytes)) // 벡터에 직접 읽기 (속도 최적화 가능)
-            {
-                // 직접 읽기가 어렵다면 기존 루프 방식 유지 (아래 코드는 기존 방식 유지)
-            }
-            // 위 read가 벡터 타입 문제로 복잡할 수 있으니 안전하게 기존 루프 방식 사용:
-            hm_file.seekg(0, std::ios::beg); // 다시 처음으로 (혹시 모르니)
+            // R16 바이너리 읽기
+            hm_file.seekg(0, std::ios::beg);
 
             for (size_t i = 0; i < total_pixels_from_file; ++i)
             {
@@ -132,23 +171,42 @@ namespace common
                 float norm = static_cast<float>(raw_val) / 65535.0f;
                 _heights[i] = norm;
 
-                // 최소 높이값 추적 (0.0 ~ 1.0 사이 값)
+                // 최소 높이값 추적
                 if (norm < min_h) min_h = norm;
             }
             hm_file.close();
 
-            // 정보용 min_height 저장
+            // 정보용 최소 높이 저장
             _info.min_height = (static_cast<float>(min_raw_val) / 65535.0f) * _info.height_scale;
 
-            // [수정 3] "가장 낮은 곳을 0으로 맞추기" (바닥 보정)
-            for (size_t i = 0; i < total_pixels_from_file; ++i)
+            //// 바닥 보정: 가장 낮은 곳을 0으로 맞추기
+            //for (size_t i = 0; i < total_pixels_from_file; ++i)
+            //{
+            //    // (현재높이 - 최소높이) * 스케일
+            //    // 결과: 지형의 가장 낮은 지점은 0.0이 되고, 나머지는 그 위로 쌓임
+            //    _heights[i] = (_heights[i] - min_h) * _info.height_scale;
+            //}
+
+            // [수정] 조건부 바닥 보정
+            if (apply_floor_offset)
             {
-                // (현재높이 - 최소높이) * 스케일
-                // 결과: 지형의 가장 낮은 지점은 0.0이 되고, 나머지는 그 위로 쌓임
-                _heights[i] = (_heights[i] - min_h) * _info.height_scale;
+                // 단일 지형 또는 서버: 바닥을 0으로 맞춤
+                for (size_t i = 0; i < total_pixels_from_file; ++i)
+                {
+                    _heights[i] = (_heights[i] - min_h) * _info.height_scale;
+                } 
+            }
+            else
+            {
+                // 다중 타일 Landscape: 절대 높이 유지
+                for (size_t i = 0; i < total_pixels_from_file; ++i)
+                {
+                    _heights[i] = (_heights[i] * _info.height_scale) - 10.0f;
+                }
             }
 
-            //std::cout << "[TerrainData] Loaded successfully from " << json_path << std::endl;
+            std::cout << "[TerrainData] Loaded: " << json_path
+                << " (Resolution: " << _info.width << "x" << _info.height << ")" << std::endl;
             return true;
         }
 

@@ -449,6 +449,9 @@
     <ClInclude Include="LongswordScript.h">
       <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
     </ClInclude>
+    <ClInclude Include="Main_Scene.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -711,6 +714,9 @@
     </ClCompile>
     <ClCompile Include="LongswordScript.cpp">
       <Filter>1. Game\2. Scripts\MainLogics\MainPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="Main_Scene.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

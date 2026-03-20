@@ -142,6 +142,7 @@
     <ClInclude Include="MainPlayerScript.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Main_Scene.h" />
     <ClInclude Include="MonsterHPComponent.h" />
     <ClInclude Include="MonsterHPUIRenderComponent.h" />
     <ClInclude Include="MonsterHPUIShader.h" />
@@ -260,6 +261,7 @@
     <ClCompile Include="MainPlayerScript.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Main_Scene.cpp" />
     <ClCompile Include="MonsterHPComponent.cpp" />
     <ClCompile Include="MonsterHPUIRenderComponent.cpp" />
     <ClCompile Include="MonsterHPUIShader.cpp" />

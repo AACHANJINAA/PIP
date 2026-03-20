@@ -4,6 +4,7 @@
 #include "Chess_Scene.h"
 #include "Tool_Scene.h"
 #include "GameFramework.h"
+#include "Main_Scene.h"
 
 #include "ObjectManager.h"
 #include "ResourceManager.h"
@@ -12,6 +13,7 @@
 #include "SkyboxRenderComponent.h"
 #include "TerrainLoader.h"
 #include "TerrainRenderComponent.h"
+#include "UIManager.h"
 
 SceneManager::SceneManager()
 {
@@ -26,9 +28,9 @@ SceneManager::~SceneManager()
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	build_skybox(device, command_list);
-	build_terrain(device, command_list);
 
 	register_scene<Chess_Scene>("ChessScene");
+	register_scene<Main_Scene>("MainScene");
 	register_scene<Tool_Scene>("ToolScene");
 	//register_scene<Lobby_Scene>("LobbyScene");
 
@@ -63,27 +65,52 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 	auto game_framework = GameFramework::instance();
 	game_framework->WaitForGpuComplete();
 
+    UIManager::instance()->release();
 	ObjectManager::instance()->clear_non_persistent_objects();
 	ObjectManager::instance()->process_destructions();
 	ResourceManager::instance()->unload_unused_meshes();
+   
 
-	auto it = _scene_creators.find(scene_to_load);
-	if (it == _scene_creators.end()) {
-		CERROR("scene load failed: " << scene_to_load);
-		return;
-	}
-	_currentScene = it->second(); 
-	if (!_currentScene) 
-	{
-		CERROR("scene creation failed");
-		return;
-	}
+    // [추가] 기존 지형 오브젝트 정리
+    if (_terrainObject)
+    {
+        ObjectManager::instance()->remove_game_object(_terrainObject);
+        _terrainObject.reset();
+    }
 
-	command_allocator->Reset();
-	command_list->Reset(command_allocator, nullptr);
+    for (auto& landscapeObj : _MainlandscapeObjects)
+    {
+        ObjectManager::instance()->remove_game_object(landscapeObj);
+    }
+    _MainlandscapeObjects.clear();
 
-	_currentScene->build_objects(device, command_list);
-	ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX);
+    auto it = _scene_creators.find(scene_to_load);
+    if (it == _scene_creators.end()) {
+        CERROR("scene load failed: " << scene_to_load);
+        return;
+    }
+    _currentScene = it->second();
+    if (!_currentScene)
+    {
+        CERROR("scene creation failed");
+        return;
+    }
+
+    command_allocator->Reset();
+    command_list->Reset(command_allocator, nullptr);
+
+    // [추가] 씬별 지형 로드
+    if (scene_to_load == "ChessScene")
+    {
+        build_terrain(device, command_list);
+    }
+    else if (scene_to_load == "MainScene")
+    {
+        build_main_landscapes(device, command_list);
+    }
+
+    _currentScene->build_objects(device, command_list);
+    ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX);
 
 	command_list->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { command_list };
@@ -97,6 +124,18 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 ////////////////////////////////////////////////skybox, terrain///////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+std::shared_ptr<GameObject> SceneManager::get_terrain_object() const
+{
+	// 하위 호환: 첫 번째 타일 반환
+	if (_MainlandscapeObjects.empty()) return nullptr;
+	return _MainlandscapeObjects[0];
+}
+
+const std::vector<std::shared_ptr<GameObject>>& SceneManager::get_all_landscapes() const
+{
+	return _MainlandscapeObjects;
+}
 
 float SceneManager::get_terrain_size() const
 {
@@ -167,7 +206,6 @@ void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList*
 
 void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
 {
-
 	if (_terrainObject) {
 		return;
 	}
@@ -203,3 +241,106 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 	auto pos = _terrainObject->transform()->local_position();
 	auto scale = _terrainObject->transform()->local_scale();
 }
+
+void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
+{
+    std::filesystem::path landscapeBaseDir = "Resource/MainLandscape";
+
+    if (!std::filesystem::exists(landscapeBaseDir))
+    {
+        CERROR("MainLandscape directory not found!");
+        return;
+    }
+
+    CLOG("=== Building All Landscapes ===");
+
+    int loadedCount = 0;
+
+	ResourceManager::instance()->set_current_command_list(cmdList);
+
+    // 모든 Landscape## 폴더 순회
+    for (const auto& entry : std::filesystem::directory_iterator(landscapeBaseDir))
+    {
+        if (!entry.is_directory()) continue;
+
+        std::string folderName = entry.path().filename().string();
+
+        // "Landscape"로 시작하는 폴더만 처리
+        if (folderName.find("Landscape") != 0) continue;
+
+        std::filesystem::path metadataPath = entry.path() / "metadata.json";
+
+        if (!std::filesystem::exists(metadataPath))
+        {
+            CLOG("Skipping " << folderName << " - no metadata.json");
+            continue;
+        }
+
+        // 1. metadata.json에서 월드 좌표 미리 읽기
+        std::ifstream metaFile(metadataPath);
+        nlohmann::json metaJson;
+        try {
+            metaFile >> metaJson;
+            metaFile.close();
+        }
+        catch (...) {
+            CERROR("Failed to parse: " << metadataPath);
+            continue;
+        }
+
+        float worldX = metaJson["world_position"].value("center_x", 0.0f);
+        float worldZ = metaJson["world_position"].value("center_z", 0.0f);
+
+        // 2. TerrainLoader 생성 (새로운 생성자 사용)
+        std::string metadataPathStr = metadataPath.string();
+        auto terrain = std::make_shared<TerrainLoader>(metadataPathStr, true); // 두 번째 인자 true = MainLandscape 형식
+    	
+    	//ResourceManager::instance()->set_current_command_list(cmdList);
+
+        // 3. SharedTextures 경로 구성
+        std::filesystem::path sharedTexPath = landscapeBaseDir / "SharedTextures";
+
+        // 임시: 첫 번째 레이어(Rock)의 텍스처만 로드
+        // 실제로는 metaJson["layers"]를 순회하며 모든 레이어 처리 필요
+        std::string baseTexPath = "Resource\\HeightMap\\rocky_terrain\\rocky_terrain_02_4k.gltf";
+        std::string detailTexPath = (sharedTexPath / "T_DeadGrass_Albedo.dds").string();
+
+        terrain->load_textures_to_resource_manager(baseTexPath, detailTexPath);
+
+        // 4. Weightmap 로드 (각 레이어별)
+        std::vector<std::string> weightmapPaths;
+        for (const auto& layer : metaJson["layers"])
+        {
+            std::string wmFile = layer.value("weightmap_file", "");
+            if (!wmFile.empty())
+            {
+                std::string wmPath = (entry.path() / wmFile).string();
+                weightmapPaths.push_back(wmPath);
+            }
+        }
+        terrain->load_landscape_weightmaps(weightmapPaths);
+
+		terrain->upload_to_gpu(device, cmdList, 0);
+
+        // 5. ResourceManager 등록
+        std::string meshKey = "Landscape" + folderName;
+        ResourceManager::instance()->register_manual_mesh(meshKey, terrain);
+
+        // 6. GameObject 생성
+        auto landscapeObj = ObjectManager::instance()->create_game_object(meshKey);
+        landscapeObj->set_persistent(true);
+
+        auto renderComp = landscapeObj->add_component<TerrainRenderComponent>();
+        renderComp->set_mesh(terrain);
+        renderComp->set_pso_name("terrain");
+
+        // 7. Transform 설정 (월드 좌표 배치)
+        landscapeObj->transform()->set_local_position(XMFLOAT3{0, 0.0f, 0 });
+        landscapeObj->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+
+        // 8. 벡터에 추가
+        _MainlandscapeObjects.push_back(landscapeObj);
+		loadedCount++;
+    }
+}
+

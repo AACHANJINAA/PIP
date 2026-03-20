@@ -475,7 +475,7 @@ void Chess_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     hp_bar->set_size(500.0f, 30.0f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
-    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPFrame", hp_bar_obj);
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
 
 
     // 3.사망 ui 배경
