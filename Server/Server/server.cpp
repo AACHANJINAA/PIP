@@ -219,8 +219,8 @@ namespace PIP::SERVER
 
 		//MYLOG("[SERVER] Loading Map...");
 		MapDataManager::Instance()->LoadMapData("../../Common/MapData/ExportedServerData.json");
-		/*MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");*/
-		MapDataManager::Instance()->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
+		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
+		//MapDataManager::Instance()->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		_logic_workers.resize(logic_thread_count);
 		for (int i = 0; i < 100; ++i)

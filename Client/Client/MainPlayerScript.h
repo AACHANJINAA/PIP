@@ -10,7 +10,7 @@ constexpr float SENDINTERVAL{ 0.02f };
 class MainPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, PhysicsCharacterControllerComponent, AnimationComponent, SocketComponenet>;
+	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponenet>;
 
 	MainPlayerScript() = default;
 	~MainPlayerScript() override = default;
@@ -85,4 +85,5 @@ private:
 	common::Vec3 _currentMoveDir = { 0,0,0 };
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;
 	int32_t _actionId = 0;
+	float _timer = 0.0f;
 };

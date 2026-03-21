@@ -20,7 +20,7 @@ namespace PIP::GAME
         virtual void Update(float deltaTime, JPH::TempAllocator* allocator);
 
         void PhysicsUpdate(float deltaTime);
-        void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator);
+        virtual void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator);
 
         template <typename T, typename... Args>
         T* AddComponent(Args&&... args);

@@ -20,7 +20,9 @@
 //
 //	float						m_fFOVAngle = 90.0f;
 //	float						m_fProjectRectDistance = 1.0f;
-//	float						m_fAspectRatio = float(FRAME_BUFFER_WIDTH) / float(FRAME_BUFFER_HEIGHT);
+//	float						m_fAspectRatio = float(FRAME_BUFFER_WIDTH) / float(FRAME_BUFFER_
+// 
+// );
 //
 //	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 //	XMFLOAT3					m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
