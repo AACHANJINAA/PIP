@@ -5,8 +5,6 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 
-using namespace DirectX;
-
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
 	
@@ -252,14 +250,104 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 	   // 2. D3D12 텍스처 리소스 생성 (DXGI_FORMAT_R8_UNORM)
 	   // 3. ResourceManager에 "Weightmap_Rock", "Weightmap_Grass" 등으로 등록
 
+	if (weightmap_paths.empty())
+	{
+		CERROR("No weightmap paths provided.");
+		return;
+	}
+	
+	// 1. LayerInfo 구조체 채우기
+	_layers.clear();
+	_layers.reserve(weightmap_paths.size());
+
+	std::string sharedTexpath = "Resource/MainLandscape/SharedTextures/";
+
 	for (const auto& weightmap_path : weightmap_paths)
 	{
 		// 파일명에서 레이어 이름 추출
 		std::filesystem::path wpath(weightmap_path);
 		std::string filename = wpath.stem().string(); // "Weightmap_Rock"
 
-		// ResourceManager::instance()->load_texture_r8(filename, weightmap_path);
+		// "Weightmap_" 접두사 제거하여 레이어 이름 추출
+		std::string layer_name = filename;
+		if (layer_name.find("Weightmap_") == 0)
+		{
+			layer_name = layer_name.substr(10); // "Weightmap_" 길이 = 10
+		}
+
+		// Visibility 레이어는 스킵 (렌더링에 사용 안 함)
+		if (layer_name.find("LANDSCAPE_VISIBILITY") !=
+			std::string::npos)
+		{
+			CLOG("Skipping visibility layer: " << layer_name);
+			continue;
+		}
+
+		LayerInfo layer;
+		layer.name = layer_name;
+		layer.weightmap_file = weightmap_path;
+
+		// SharedTextures에서 해당 레이어의 텍스처 경로 매핑
+		std::string base_name = "T_" + layer_name;
+
+		layer.albedo_texture = (sharedTexpath + base_name + "_Albedo.dds");
+		layer.normal_texture = (sharedTexpath + base_name + "_Normal.dds");
+		layer.roughness_texture = (sharedTexpath + base_name + "_Roughness.dds");
+
+		_layers.emplace_back(layer);
 	}
+
+	if (_layers.empty())
+	{
+		CLOG("No valid layers found after filtering");
+		return;
+	}
+
+	// 2. Weightmap Texture2DArray 생성
+	const auto& info = _terrainData.GetInfo();
+	int width = static_cast<int>(info.width);
+	int height = static_cast<int>(info.height);
+
+	std::vector<std::string> weightmap_file_paths;
+	for (const auto& layer : _layers)
+	{
+		weightmap_file_paths.push_back(layer.weightmap_file);
+	}
+
+	// 고유한 배열 이름 생성 (Landscape 이름 기반)
+	std::filesystem::path map_path(_heightmapTextureKey);
+	std::string landscape_name = map_path.parent_path().filename().string(); // "Landscape01"
+	_weightmapArrayKey = "WeightmapArray_" + landscape_name;
+
+	auto* rm = ResourceManager::instance();
+	auto* weightmap_array = rm->create_texture_array_r8(
+		_weightmapArrayKey,
+		weightmap_file_paths,
+		width,
+		height
+	);
+
+	if (!weightmap_array)
+	{
+		CERROR("Failed to create weightmap array: " <<
+			_weightmapArrayKey);
+		return;
+	}
+
+	// 3. 각 레이어의 텍스처 로드 (Albedo, Normal, Roughness)
+	for (const auto& layer : _layers)
+	{
+		// Albedo (sRGB)
+		rm->load_texture(layer.albedo_texture, true);
+
+		// Normal (Linear)
+		rm->load_texture(layer.normal_texture, false);
+
+		// Roughness (Linear)
+		rm->load_texture(layer.roughness_texture, false);
+	}
+
+	_hasLayers = true;
 }
 
 

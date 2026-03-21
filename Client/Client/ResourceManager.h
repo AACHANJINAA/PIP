@@ -199,4 +199,8 @@ public:
     }
 
     TextureInfo* load_heightmap_from_raw(const std::string& file_path, int width, int height);
+
+	// R8 포멧 텍스쳐 로드 함수 <- multi landscape layer용
+    TextureInfo* load_texture_r8(const std::string& file_path, int width, int height);
+    TextureInfo* create_texture_array_r8(const std::string& array_name, const std::vector<std::string>& file_paths, int width, int height);
 };
