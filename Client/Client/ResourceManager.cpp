@@ -163,12 +163,12 @@ std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, b
     return new_mesh;
 }
 
-void ResourceManager::process_pending_uploads(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue)
+void ResourceManager::process_pending_uploads(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue, size_t maxCount)
 {
     if (_pending_meshes.empty()) return;
 
     int uploadCount = 0;
-    while (!_pending_meshes.empty() && uploadCount < MAX_UPLOADS_PER_FRAME)
+    while (!_pending_meshes.empty() && uploadCount < maxCount)
     {
         auto mesh = _pending_meshes.front();
         _pending_meshes.pop_front();
