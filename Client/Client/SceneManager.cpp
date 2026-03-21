@@ -28,8 +28,6 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	build_skybox(device, command_list);
-
 	register_scene<Chess_Scene>("ChessScene");
 	register_scene<Main_Scene>("MainScene");
 	register_scene<Tool_Scene>("ToolScene");
@@ -51,9 +49,7 @@ void SceneManager::change_scene(const std::string& scene_name)
 	_requestedSceneName = scene_name;
 }
 
-void SceneManager::process_scene_change_if_requested(ID3D12Device* device
-	,ID3D12CommandAllocator* command_allocator
-	, ID3D12GraphicsCommandList* command_list)
+void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D12CommandAllocator* command_allocator , ID3D12GraphicsCommandList* command_list)
 {
 	if (_requestedSceneName.empty())
 	{
@@ -71,9 +67,8 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 	ObjectManager::instance()->clear_non_persistent_objects();
 	ObjectManager::instance()->process_destructions();
 	ResourceManager::instance()->unload_unused_meshes();
-   
 
-    // [추가] 기존 지형 오브젝트 정리
+    // 기존 지형 오브젝트 정리
     if (_terrainObject)
     {
         ObjectManager::instance()->remove_game_object(_terrainObject);
@@ -101,18 +96,8 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     command_allocator->Reset();
     command_list->Reset(command_allocator, nullptr);
 
-    // [추가] 씬별 지형 로드
-    if (scene_to_load == "ChessScene")
-    {
-        build_terrain(device, command_list);
-    }
-    else if (scene_to_load == "MainScene")
-    {
-        build_main_landscapes(device, command_list);
-    }
-
     _currentScene->build_objects(device, command_list);
-    ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX);
+    ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX, 16);
 
 	command_list->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { command_list };
@@ -178,7 +163,7 @@ float SceneManager::get_terrain_size() const
 //}
 
 
-void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+void SceneManager::build_skybox_if_needed(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	if (_skyboxObject) 
 	{
@@ -253,8 +238,6 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         CERROR("MainLandscape directory not found!");
         return;
     }
-
-    CLOG("=== Building All Landscapes ===");
 
     int loadedCount = 0;
 
