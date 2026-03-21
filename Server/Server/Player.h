@@ -54,6 +54,7 @@ namespace PIP::GAME
 
 		void SetHP(int hp) override { _hp = hp; }
 		int32_t GetHP() const override { return _hp; }
+		void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		

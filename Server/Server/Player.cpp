@@ -98,4 +98,9 @@ namespace PIP::GAME
 		if (_hitCooldown > 0.0f) _hitCooldown -= deltaTime;
 		Actor::Update(deltaTime, allocator);
 	}
+
+	void Player::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)
+	{
+		GameObject::PhysicsUpdate(deltaTime, allocator);
+	}
 }

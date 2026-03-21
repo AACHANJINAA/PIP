@@ -53,7 +53,7 @@ namespace PIP
 	{
 		// Common::TerrainData 로드
 		common::TerrainData new_terrain_data;
-		if (!new_terrain_data.LoadFromJSON(heightMapDataJSONPath.data()))
+		if (!new_terrain_data.LoadFromJSON(heightMapDataJSONPath.data(),false))
 		{
 			MYERROR("Failed to load height map via Common::TerrainData: " << heightMapDataJSONPath);
 		}

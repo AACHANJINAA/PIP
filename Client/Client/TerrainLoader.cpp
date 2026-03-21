@@ -10,7 +10,7 @@ using namespace DirectX;
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
 	
-	if (!_terrainData.LoadFromJSON(heightmap_json_path, true))
+	if (!_terrainData.LoadFromJSON(heightmap_json_path, false))
 	{
 		CERROR("Failed to load terrain data from: " << heightmap_json_path);
 	}
@@ -31,7 +31,7 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 	int grid_height = static_cast<int>(info.height) - 1;
 	create_flat_grid(grid_width, grid_height);
 
-	PhysicsManager::instance()->create_physics_terrain(_terrainData);
+	//PhysicsManager::instance()->create_physics_terrain(_terrainData);
 }
 
 TerrainLoader::TerrainLoader(const std::string& metadata_json_path, bool is_landscape_tile)

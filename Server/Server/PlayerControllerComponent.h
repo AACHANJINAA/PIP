@@ -10,5 +10,6 @@ namespace PIP::GAME
         void SetMoveVelocity(const common::Vec3& velocity) { _moveVelocity = velocity; }
     private:
         common::Vec3 _moveVelocity = { 0,0,0 };
+        float _timer = 0;
     };
 }

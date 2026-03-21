@@ -194,11 +194,11 @@ void MainPlayerScript::awake()
 	auto owner = game_object();
 
 	// PhysicsCharacterControllerComponent 초기화
-	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
+	/*auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
 	if (cc) {
 		cc->initialize(1.8f, 0.5f);
 		cc->set_position(transform()->local_position());
-	}
+	}*/
 	// Animationcomponent
 	auto animation_component = owner->get_component<AnimationComponent>();
 	if (!animation_component)
@@ -280,23 +280,19 @@ void MainPlayerScript::awake()
 
 void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
 {
-	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
-	if (!cc) return;
+	// 서버가 준 좌표로 물리/시각적 위치 동기화
+	common::Vec3 currentVisualPos = transform()->local_position();
 
-	// 1. 현재 클라이언트의 물리 위치와 서버 위치의 차이를 계산
-	common::Vec3 currentPhysicsPos = cc->get_position();
+	// 1. 서버 좌표를 내 '진짜' 좌표로 수용
+	// 만약 클라이언트 Jolt를 뺐다면 transform에 직접 적용
+	// _impactVelocity 등도 서버 값에 맞춰 동기화 필요할 수 있음
 
-	// 2. 물리 위치는 서버 위치로 즉시 옮김 (서버 권위 인정)
-	cc->set_position(movePacket._position);
-	cc->set_velocity({ 0, 0, 0 });
+	// 2. [중요] 보간 오프셋 계산 (끊김 방지)
+	// "현재 내 가짜 위치"와 "서버가 준 진짜 위치"의 차이를 기억해뒀다가 서서히 줄임
+	_visualOffset = currentVisualPos - movePacket._position;
 
-	_state = movePacket._state;
-	_actionId = movePacket._action_id;
-	// 3. [핵심] 대신 시각적으로는 튀지 않게 오프셋을 설정
-	// "물리는 옮겼지만, 눈에 보이는 모델은 이전 위치에서 서서히 이동해라"는 뜻입니다.
-	_visualOffset = currentPhysicsPos - movePacket._position;
-
-	transform()->set_local_rotation(movePacket._rotation);
+	transform()->set_local_position(movePacket._position); // 즉시 물리적 위치 텔레포트
+	// transform->set_local_rotation(movePacket._rotation); // 회전도 동기화
 }
 //---------------------------------------------------------- private functions ----------------------------------------------------------
 //--- update() 내부에서 호출되는 기능 분리용 함수들 ---
@@ -459,22 +455,31 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 		_impactVelocity = { 0,0,0 };
 	}
 
-	auto pcc = game_object()->get_component<PhysicsCharacterControllerComponent>();
-	if (pcc) {
-		// 공격 중에도 _currentMoveDir에 값이 있다면 이동함 (이동 공격)
-		common::Vec3 moveVel = _currentMoveDir * _speed;
-		common::Vec3 currentVel = pcc->get_velocity();
+	// [수정] 물리 엔진(cc) 대신 Transform을 직접 제어
+	common::Vec3 currentPos = transform()->local_position();
+	common::Vec3 moveVel = _currentMoveDir * _speed;
 
-		pcc->set_velocity({ moveVel.x + _impactVelocity.x, currentVel.y, moveVel.z + _impactVelocity.z });
+	// 단순 선형 예측 이동 (지형 무시하고 일단 가봄)
+	common::Vec3 predictedPos = currentPos + (moveVel + _impactVelocity) * deltaTime;
 
-		// 시각적 보정 (기존 로직)
-		float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
-		_visualOffset = _visualOffset * (1.0f - lerpFactor);
-		transform()->set_local_position(pcc->get_position() + _visualOffset);
-	}
+	// 시각적 오차 보정 (서버 보정 패킷 수신 시 발생한 오차를 서서히 줄임)
+	float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
+	_visualOffset = _visualOffset * (1.0f - lerpFactor);
+
+	// 최종 위치 적용
+	transform()->set_local_position(predictedPos + _visualOffset);
 }
 void MainPlayerScript::send_network_sync(float deltaTime)
 {
+	_timer -= deltaTime;
+	if (_timer < 0.0f)
+	{
+		_timer = 2.0f;
+		auto pos = position();
+		CLOG("player pos (" << pos.x << "," << pos.y <<"," << pos.z << ")");
+		
+	}
+
 	_sendTimer += deltaTime;
 	if (_sendTimer >= SENDINTERVAL || deltaTime == 0.0f) { // deltaTime 0은 즉시 전송용
 		_sendTimer = 0.f;

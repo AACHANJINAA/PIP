@@ -1071,66 +1071,65 @@ namespace PIP::SERVER
 		
 
 	}
+
 	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet) {
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 		auto player = session->_player;
+		if (!player) return;
+
 		auto pcc = player->GetComponent<GAME::PlayerControllerComponent>();
-		// [1] 넉백 힘이 강력하게 작용 중인지 체크 (임계값 2.0f 이상)
-		bool isHeavyKnockback = common::Length(pcc->GetImpactVelocity()) > 2.0f;
-		if (isHeavyKnockback) {
-			// [넉백 중 로직]
-			// 클라이언트 조작 속도를 0으로 만들어 물리적 밀려남만 허용함
-			pcc->SetMoveVelocity({ 0, 0, 0 });
+		if (!pcc) return;
 
-			// 이때는 클라이언트의 위치를 억지로 승인하기보다, 서버 물리 엔진이 미는 대로 둡니다.
-			// 클라이언트는 서버에서 오는 보정 패킷을 비주얼 오프셋으로 부드럽게 받아냅니다.
-			player->SetLastClientTargetPos(move_packet._position);
-		}
-		else
-		{
-			auto snapshot = player->GetSnapshotAt(move_packet._client_tick);
-			// 2. 과거 위치와 클라이언트가 보낸 위치 사이의 거리 계산
-			float moveDist = common::Distance(snapshot._position, move_packet._position);
+		// 1. 거리 체크 (너무 멀면 텔레포트/해킹 방지)
+		common::Vec3 currentPos = player->GetPosition();
+		float moveDist = common::Distance(currentPos, move_packet._position);
+		constexpr float MAX_RECONCILE_DIST = 10.0f; // 10m 이상 오차 시 강제 보정
 
-			// 3. [승인 로직] 초당 5m 속도 플레이어가 0.2초(RTT) 지연 시 약 1m 오차는 정상 범위
-			// 해킹이 아니라고 판단되면 클라이언트의 예측 위치를 서버 물리 바디에 즉시 수용
-			constexpr float MAX_RECONCILE_DIST = 5.0f;
-			if (moveDist < MAX_RECONCILE_DIST) {
-				// [A] 이동 승인: 서버 물리 바디를 클라이언트 위치로 즉시 옮겨 동기화함
-				player->SetPosition(move_packet._position);
-				player->SetLastClientTargetPos(move_packet._position);
+		// [중요] 클라이언트가 보낸 위치를 즉시 SetPosition 하지 않습니다!
+		// 대신 서버 물리 엔진(pcc)이 그 방향으로 이동하도록 유도합니다.
 
-				// 순간 이동했으므로 속도는 0으로 초기화 (관성 꼬임 방지)
+		if (moveDist < MAX_RECONCILE_DIST) {
+			// [수정] 클라이언트가 가고 싶어 하는 방향(Target)으로 속도 설정
+			// 서버의 물리 업데이트(FixedStep)에서 이 속도로 실제 이동이 수행됩니다.
+			// 이때 집(OBB)이나 경사면(Slope)에 막히면 서버 물리 엔진은 멈춥니다.
+			float dt = 0.02f; // 서버 물리 업데이트 주기 (고정값 사용)
+			common::Vec3 moveDir = move_packet._position - currentPos;
+
+			if (common::LengthSq(moveDir) > 0.0001f) {
+				common::Vec3 targetVel = moveDir / dt;
+				// 비정상적인 속도 제한 (최대 30m/s)
+				if (common::Length(targetVel) > 30.0f) targetVel = common::Normalize(targetVel) * 30.0f;
+				pcc->SetMoveVelocity(targetVel);
+			}
+			else {
 				pcc->SetMoveVelocity({ 0, 0, 0 });
 			}
-			else 
-			{
-				// [거절] 너무 멀면(렉/핵) 기존 추적 로직 작동 -> 보정 패킷 발송됨
-				common::Vec3 currentPos = player->GetPosition();
-				common::Vec3 moveDir = move_packet._position - currentPos;
-				// Y축 거리 체크를 위해 moveDir.y = 0; 제거
-
-				float dist = common::Length(moveDir);
-
-				// 텔레포트(5m) 혹은 속도 이동
-				if (dist > 5.0f) {
-					player->SetPosition(move_packet._position);
-					pcc->SetMoveVelocity({ 0, 0, 0 });
-				}
-				else if (dist > 0.01f) {
-					// 속도 제한을 50.0f로 넉넉하게 주어 억울한 보정 방지
-					common::Vec3 vel = common::Normalize(moveDir) * (dist / 0.02f);
-					if (common::Length(vel) > 50.0f) vel = common::Normalize(vel) * 50.0f;
-					pcc->SetMoveVelocity(vel);
-				}
-				else {
-					pcc->SetMoveVelocity({ 0, 0, 0 });
-				}
-				player->SetLastClientTargetPos(move_packet._position);
-			}
 		}
-		session->_player->SetRotation(move_packet._rotation);
-		session->_player->_state = move_packet._state;
+		else {
+			// [거절/해킹/심한 렉] 너무 멀면 서버 위치로 강제 소환 (텔레포트)
+			pcc->SetMoveVelocity({ 0, 0, 0 });
+			// (필요 시 여기서 강제 보정 패킷을 즉시 보냄)
+		}
+
+		// --- [핵심] 보정 패킷 생성 및 전송 ---
+		// 서버 물리 엔진이 계산한 '진짜' 위치(currentPos)를 나(Client)에게도 보냅니다.
+		common::packet::SC_PACKET_MOVE res;
+		res._type = common::packet::PacketType::S2C_P_MOVE;
+		res._size = sizeof(res);
+		res._id = player->GetId();
+		res._position = currentPos; // 서버 물리 엔진이 밀어낸 결과 좌표!
+		res._rotation = move_packet._rotation;
+		res._state = move_packet._state;
+		res._action_id = move_packet._action_id;
+
+		// 1. 나에게 보냄 (Reconciliation: "이게 너의 진짜 위치야!")
+		session->do_send(reinterpret_cast<char*>(&res), sizeof(res));
+
+		// 2. 다른 사람들에게 보냄 (Broadcasting)
+		Broadcast(reinterpret_cast<char*>(&res), sizeof(res), session->_id);
+
+		// 마지막 수신 위치 기록 (로그용)
+		player->SetLastClientTargetPos(move_packet._position);
 	}
 	void Room::Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
 

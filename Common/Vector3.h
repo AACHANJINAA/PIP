@@ -76,6 +76,10 @@ namespace common
 		{
 			return { a.x - b.x, a.y - b.y, a.z - b.z };
 		}
+		inline Vec3 operator/(const common::Vec3& lhs, float rhs)
+		{
+			return { lhs.x / rhs, lhs.y / rhs, lhs.z / rhs };
+		}
 	}
 	
 }
