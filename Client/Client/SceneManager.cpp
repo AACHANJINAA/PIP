@@ -288,7 +288,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         // 임시: 첫 번째 레이어(Rock)의 텍스처만 로드
         // 실제로는 metaJson["layers"]를 순회하며 모든 레이어 처리 필요
         std::string baseTexPath = "Resource\\HeightMap\\rocky_terrain\\rocky_terrain_02_4k.gltf";
-        std::string detailTexPath = (sharedTexPath / "T_DeadGrass_Albedo.dds").string();
+        std::string detailTexPath = (sharedTexPath / "T_Dead_Grass_Albedo.dds").string();
 
         terrain->load_textures_to_resource_manager(baseTexPath, detailTexPath);
 
@@ -305,7 +305,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         }
         terrain->load_landscape_weightmaps(weightmapPaths);
 
-		terrain->upload_to_gpu(device, cmdList, 0);
+		//terrain->upload_to_gpu(device, cmdList, 0);
 
         // 5. ResourceManager 등록
         std::string meshKey = "Landscape" + folderName;

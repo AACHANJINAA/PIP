@@ -1074,3 +1074,323 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
 
     return stored;
 }
+
+ResourceManager::TextureInfo* ResourceManager::load_texture_r8(const std::string& file_path, int width, int height)
+{
+    // 1. 캐시 확인
+    auto it = _textures.find(file_path);
+    if (it != _textures.end())
+        return &it->second;
+
+    // 2. 파일 읽기
+    std::ifstream file(file_path, std::ios::binary);
+    if (!file.is_open())
+    {
+        CERROR("R8 texture file not found: " << file_path);
+        return nullptr;
+    }
+
+    // 3. 데이터 크기 계산 및 읽기
+    size_t total_bytes = static_cast<size_t>(width) * height * 1; // R8= 1 byte per pixel
+	std::vector<uint8_t> pixel_data(total_bytes);
+
+    file.read(reinterpret_cast<char*>(pixel_data.data()), total_bytes);
+    file.close();
+
+    if (file.gcount() != static_cast<std::streamsize>(total_bytes))
+    {
+        CERROR("R8 file size mismatch: " << file_path
+            << " (expected: " << total_bytes << " bytes)");
+        return nullptr;
+    }
+
+    // 4. GPU 텍스처 리소스 생성 (DXGI_FORMAT_R8_UNORM)
+    TextureInfo new_texture_info;
+    new_texture_info.name = file_path;
+
+    D3D12_RESOURCE_DESC texture_desc = {};
+    texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    texture_desc.Width = width;
+    texture_desc.Height = height;
+    texture_desc.DepthOrArraySize = 1;
+    texture_desc.MipLevels = 1;
+    texture_desc.Format = DXGI_FORMAT_R8_UNORM; // R8 포맷
+    texture_desc.SampleDesc.Count = 1;
+    texture_desc.SampleDesc.Quality = 0;
+    texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    texture_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    auto default_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    HRESULT hr = _device->CreateCommittedResource(
+        &default_heap_props,
+        D3D12_HEAP_FLAG_NONE,
+        &texture_desc,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        IID_PPV_ARGS(&new_texture_info.resource)
+    );
+
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create R8 texture resource: " << file_path);
+        return nullptr;
+    }
+
+    // 5. 업로드 힙 생성 및 데이터 복사
+    D3D12_SUBRESOURCE_DATA subresource_data = {};
+    subresource_data.pData = pixel_data.data();
+    subresource_data.RowPitch = width * 1; // R8 = 1 byte
+    subresource_data.SlicePitch = total_bytes;
+
+    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(
+        new_texture_info.resource.Get(),
+        0,
+        1
+    );
+
+    auto upload_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    auto upload_buffer_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
+
+    hr = _device->CreateCommittedResource(
+        &upload_heap_props,
+        D3D12_HEAP_FLAG_NONE,
+        &upload_buffer_desc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(&new_texture_info.upload_heap)
+    );
+
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create upload heap for R8 texture: " <<
+            file_path);
+        return nullptr;
+    }
+
+    // 6. GPU 업로드 (CommandList 필요)
+    if (_command_list)
+    {
+        UpdateSubresources(
+            _command_list,
+            new_texture_info.resource.Get(),
+            new_texture_info.upload_heap.Get(),
+            0, 0, 1,
+            &subresource_data
+        );
+
+        // Transition to Pixel Shader Resource
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            new_texture_info.resource.Get(),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+        );
+        _command_list->ResourceBarrier(1, &barrier);
+    }
+    else
+    {
+        CERROR("CommandList not set for R8 texture upload: " <<
+            file_path);
+        return nullptr;
+    }
+
+    // 7. SRV 생성
+    if (!DescriptorManager::instance()->allocate_descriptor(
+        new_texture_info.cpu_handle,
+        new_texture_info.gpu_handle))
+    {
+        CERROR("Failed to allocate descriptor for R8 texture: " <<
+            file_path);
+        return nullptr;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Format = DXGI_FORMAT_R8_UNORM;
+    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srv_desc.Texture2D.MipLevels = 1;
+
+    _device->CreateShaderResourceView(
+        new_texture_info.resource.Get(),
+        &srv_desc,
+        new_texture_info.cpu_handle
+    );
+
+    // 8. 캐시에 저장
+    _textures[file_path] = new_texture_info;
+
+    return &_textures[file_path];
+}
+
+ResourceManager::TextureInfo* ResourceManager::create_texture_array_r8(const std::string& array_name, const std::vector<std::string>& file_paths, int width, int height)
+{
+    // 1. 캐시 확인
+    auto it = _textures.find(array_name);
+    if (it != _textures.end())
+        return &it->second;
+
+    if (file_paths.empty())
+    {
+        CERROR("No file paths provided for Texture2DArray: " <<
+            array_name);
+        return nullptr;
+    }
+
+    const size_t array_size = file_paths.size();
+    if (array_size > 16) // 안전 장치
+    {
+        CERROR("Too many layers for Texture2DArray (max 16): " <<
+            array_name);
+        return nullptr;
+    }
+
+    // 2. 모든 R8 파일 데이터 읽기
+    std::vector<std::vector<uint8_t>> all_pixel_data(array_size);
+    size_t bytes_per_slice = static_cast<size_t>(width) * height * 1; // R8 = 1 byte
+
+        for (size_t i = 0; i < array_size; ++i)
+        {
+            std::ifstream file(file_paths[i], std::ios::binary);
+            if (!file.is_open())
+            {
+                CERROR("Failed to open R8 file for array: " <<
+                    file_paths[i]);
+                return nullptr;
+            }
+
+            all_pixel_data[i].resize(bytes_per_slice);
+            file.read(reinterpret_cast<char*>(all_pixel_data[i].data()),
+                bytes_per_slice);
+            file.close();
+
+            if (file.gcount() !=
+                static_cast<std::streamsize>(bytes_per_slice))
+            {
+                CERROR("R8 file size mismatch in array: " << file_paths[i]);
+                return nullptr;
+            }
+        }
+
+    // 3. GPU Texture2DArray 리소스 생성
+    TextureInfo new_texture_info;
+    new_texture_info.name = array_name;
+
+    D3D12_RESOURCE_DESC texture_desc = {};
+    texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    texture_desc.Width = width;
+    texture_desc.Height = height;
+    texture_desc.DepthOrArraySize = static_cast<UINT16>(array_size); // Array 크기
+	texture_desc.MipLevels = 1;
+    texture_desc.Format = DXGI_FORMAT_R8_UNORM;
+    texture_desc.SampleDesc.Count = 1;
+    texture_desc.SampleDesc.Quality = 0;
+    texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    texture_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    auto default_heap_props =
+        CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    HRESULT hr = _device->CreateCommittedResource(
+        &default_heap_props,
+        D3D12_HEAP_FLAG_NONE,
+        &texture_desc,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        IID_PPV_ARGS(&new_texture_info.resource)
+    );
+
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create Texture2DArray resource: " <<
+            array_name);
+        return nullptr;
+    }
+
+    // 4. 업로드 힙 생성
+    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(
+        new_texture_info.resource.Get(),
+        0,
+        static_cast<UINT>(array_size)
+    );
+
+    auto upload_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    auto upload_buffer_desc = CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size);
+
+    hr = _device->CreateCommittedResource(
+        &upload_heap_props,
+        D3D12_HEAP_FLAG_NONE,
+        &upload_buffer_desc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(&new_texture_info.upload_heap)
+    );
+
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create upload heap for Texture2DArray: " << array_name);
+        return nullptr;
+    }
+
+    // 5. 각 슬라이스별 SubresourceData 구성
+    std::vector<D3D12_SUBRESOURCE_DATA> subresources(array_size);
+    for (size_t i = 0; i < array_size; ++i)
+    {
+        subresources[i].pData = all_pixel_data[i].data();
+        subresources[i].RowPitch = width * 1; // R8 = 1 byte
+        subresources[i].SlicePitch = bytes_per_slice;
+    }
+
+    // 6. GPU 업로드
+    if (_command_list)
+    {
+        UpdateSubresources(
+            _command_list,
+            new_texture_info.resource.Get(),
+            new_texture_info.upload_heap.Get(),
+            0, 0,
+            static_cast<UINT>(array_size),
+            subresources.data()
+        );
+
+        // Transition to Pixel Shader Resource
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            new_texture_info.resource.Get(),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+        );
+        _command_list->ResourceBarrier(1, &barrier);
+    }
+    else
+    {
+        CERROR("CommandList not set for Texture2DArray upload: " <<
+            array_name);
+        return nullptr;
+    }
+
+    // 7. SRV 생성 (Texture2DArray 뷰)
+    if (!DescriptorManager::instance()->allocate_descriptor(
+        new_texture_info.cpu_handle,
+        new_texture_info.gpu_handle))
+    {
+        CERROR("Failed to allocate descriptor for Texture2DArray: " << array_name);
+        return nullptr;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    srv_desc.Shader4ComponentMapping =
+        D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Format = DXGI_FORMAT_R8_UNORM;
+    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY; // Array 뷰
+        srv_desc.Texture2DArray.MipLevels = 1;
+    srv_desc.Texture2DArray.FirstArraySlice = 0;
+    srv_desc.Texture2DArray.ArraySize = static_cast<UINT>(array_size);
+
+    _device->CreateShaderResourceView(
+        new_texture_info.resource.Get(),
+        &srv_desc,
+        new_texture_info.cpu_handle
+    );
+
+    // 8. 캐시에 저장
+    _textures[array_name] = new_texture_info;
+
+	return &_textures[array_name];
+}
