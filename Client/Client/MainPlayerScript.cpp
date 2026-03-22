@@ -243,6 +243,9 @@ void MainPlayerScript::awake()
 	// 위치, 회전 정보
 	owner->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 
+	_logicalPosition = owner->transform()->local_position();
+	_visualOffset = { 0, 0, 0 };
+
 	_camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
 	if (_camera) {
 		XMFLOAT3 camF = _camera->transform()->forward();
@@ -280,19 +283,20 @@ void MainPlayerScript::awake()
 
 void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
 {
-	// 서버가 준 좌표로 물리/시각적 위치 동기화
-	common::Vec3 currentVisualPos = transform()->local_position();
+	/// 1. 현재 화면에 보이고 있던 최종 위치 계산
+	common::Vec3 currentVisualPos = _logicalPosition + _visualOffset;
 
-	// 1. 서버 좌표를 내 '진짜' 좌표로 수용
-	// 만약 클라이언트 Jolt를 뺐다면 transform에 직접 적용
-	// _impactVelocity 등도 서버 값에 맞춰 동기화 필요할 수 있음
+	// 2. 논리 위치는 서버 좌표로 즉시 동기화 (순간이동)
+	_logicalPosition = movePacket._position;
 
-	// 2. [중요] 보간 오프셋 계산 (끊김 방지)
-	// "현재 내 가짜 위치"와 "서버가 준 진짜 위치"의 차이를 기억해뒀다가 서서히 줄임
-	_visualOffset = currentVisualPos - movePacket._position;
+	// 3. [핵심] 화면이 튀지 않게 오프셋 재계산
+	// (이전 시각적 위치 - 새로운 논리 위치)를 오프셋으로 설정하여 화면상 위치를 유지함
+	_visualOffset = currentVisualPos - _logicalPosition;
 
-	transform()->set_local_position(movePacket._position); // 즉시 물리적 위치 텔레포트
-	// transform->set_local_rotation(movePacket._rotation); // 회전도 동기화
+	// 만약 오차가 너무 크면(예: 5m) 보간하지 않고 즉시 스냅 (텔레포트 대응)
+	if (common::LengthSq(_visualOffset) > 5.0f * 5.0f) {
+		_visualOffset = { 0, 0, 0 };
+	}
 }
 //---------------------------------------------------------- private functions ----------------------------------------------------------
 //--- update() 내부에서 호출되는 기능 분리용 함수들 ---
@@ -446,47 +450,68 @@ void MainPlayerScript::handle_input(float deltaTime)
 }
 void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 {
-	float impactSpeed = common::Length(_impactVelocity);
-	if (impactSpeed > 0.1f) {
-		// 매 프레임 35.0f의 마찰력으로 속도를 줄임
-		_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - 35.0f * deltaTime);
+
+	//float impactSpeed = common::Length(_impactVelocity);
+	//if (impactSpeed > 0.1f) {
+	//	// 서버와 동일하게 초당 40.0f씩 감쇄
+	//	float reduction = 40.0f * deltaTime;
+	//	_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - reduction);
+	//}
+	//else {
+	//	_impactVelocity = { 0, 0, 0 };
+	//}
+	// 1. TerrainLoader 정적 함수를 통해 현재 위치의 지형 높이 가져오기
+	// 지형 타일이 여러 개여도 알아서 내 발밑의 높이를 찾아줍니다.
+	float groundHeight = TerrainLoader::get_height_anywhere(_logicalPosition.x, _logicalPosition.z);
+
+	// 2. 접지 체크 및 수직 속도(중력) 계산
+	if (_logicalPosition.y > groundHeight + 0.05f) {
+		_isGrounded = false;
+		_verticalVelocity += -9.81f * deltaTime; // 서버와 동일한 중력 가속도
 	}
 	else {
-		_impactVelocity = { 0,0,0 };
+		// 지면에 닿아있는 상태
+		if (!_isGrounded) {
+			_isGrounded = true;
+			_verticalVelocity = 0.0f;
+			_logicalPosition.y = groundHeight; // 지면에 착지 스냅
+		}
 	}
 
-	// [수정] 물리 엔진(cc) 대신 Transform을 직접 제어
-	common::Vec3 currentPos = transform()->local_position();
+	// 2. 논리적 위치 예측 (Input + Knockback + Gravity)
 	common::Vec3 moveVel = _currentMoveDir * _speed;
+	_logicalPosition += (moveVel) * deltaTime;
+	_logicalPosition.y += _verticalVelocity * deltaTime;
 
-	// 단순 선형 예측 이동 (지형 무시하고 일단 가봄)
-	common::Vec3 predictedPos = currentPos + (moveVel + _impactVelocity) * deltaTime;
+	// 땅 파고듦 방지 (중요!)
+	if (_isGrounded && _logicalPosition.y < groundHeight) {
+		_logicalPosition.y = groundHeight;
+	}
 
-	// 시각적 오차 보정 (서버 보정 패킷 수신 시 발생한 오차를 서서히 줄임)
-	float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
+	// 3. 시각적 오프셋 감쇄 (부드럽게 0으로 수렴)
+	// 0.1초(deltaTime * 10) 주기로 오차를 없앰
+	float lerpFactor = std::min(1.0f, deltaTime * 15.0f);
 	_visualOffset = _visualOffset * (1.0f - lerpFactor);
 
-	// 최종 위치 적용
-	transform()->set_local_position(predictedPos + _visualOffset);
+	// 4. 최종 Transform 적용 (논리 위치 + 보정 오프셋)
+	// 이렇게 해야 렌더링은 부드럽고, 서버에 보내는 좌표는 정확해집니다.
+	transform()->set_local_position(_logicalPosition + _visualOffset);
 }
 void MainPlayerScript::send_network_sync(float deltaTime)
 {
-	_timer -= deltaTime;
-	if (_timer < 0.0f)
-	{
-		_timer = 2.0f;
-		auto pos = position();
-		CLOG("player pos (" << pos.x << "," << pos.y <<"," << pos.z << ")");
-		
-	}
-
 	_sendTimer += deltaTime;
-	if (_sendTimer >= SENDINTERVAL || deltaTime == 0.0f) { // deltaTime 0은 즉시 전송용
+	if (_sendTimer >= SENDINTERVAL) {
 		_sendTimer = 0.f;
-		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
 
-		NetworkManager::instance()->SendMovePacket(transform()->local_position(), transform()->local_rotation(),
-			_state, _actionId,currentTick);
+		// [수정] transform()->local_position() 대신 _logicalPosition을 전송!
+		// _visualOffset이 포함된 좌표를 보내면 서버 보정과 충돌하여 지터링이 발생합니다.
+		NetworkManager::instance()->SendMovePacket(
+			_logicalPosition,
+			_currentMoveDir,
+			transform()->local_rotation(),
+			_state,
+			_actionId, static_cast<uint32_t>(GetTickCount64())
+		);
 	}
 }
 

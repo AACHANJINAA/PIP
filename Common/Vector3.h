@@ -57,6 +57,18 @@ namespace common
 	{
 		return std::isnan(v.m128_f32[0]) || std::isnan(v.m128_f32[1]) || std::isnan(v.m128_f32[2]) || std::isnan(v.m128_f32[3]);
 	}
+	inline bool IsEqual(const Vec3& v1, const Vec3& v2, float epsilon = 1e-6f)
+	{
+		return DistanceSq(v1, v2) < epsilon * epsilon;
+	}
+	inline bool IsEqual(const Vec4& v1, const Vec4& v2, float epsilon = 1e-6f)
+	{
+		float dx = v1.x - v2.x;
+		float dy = v1.y - v2.y;
+		float dz = v1.z - v2.z;
+		float dw = v1.w - v2.w;
+		return (dx * dx + dy * dy + dz * dz + dw * dw) < epsilon * epsilon;
+	}
 	namespace VectorHelper
 	{
 		inline Vec3 operator+(const Vec3& a, const Vec3& b)

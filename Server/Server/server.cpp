@@ -219,8 +219,8 @@ namespace PIP::SERVER
 
 		//MYLOG("[SERVER] Loading Map...");
 		MapDataManager::Instance()->LoadMapData("../../Common/MapData/ExportedServerData.json");
-		MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
-		//MapDataManager::Instance()->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
+		//MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
+		MapDataManager::Instance()->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
 		MYLOG("[SERVER] Successful Loaded the Map");
 		_logic_workers.resize(logic_thread_count);
 		for (int i = 0; i < 100; ++i)
@@ -507,6 +507,8 @@ namespace PIP::SERVER
 		using namespace std::chrono;
 		while (_is_running)
 		{
+			
+
 			auto t_loop_start = steady_clock::now();
 
 			// 1. 공용 잡 큐 처리 (LOGIN, ENTER_ROOM 등) - 즉시 처리!
@@ -529,6 +531,17 @@ namespace PIP::SERVER
 				if (timer_job._task) timer_job._task();
 			}
 			worker.stats.timer_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_timer_start).count());
+
+
+			// --- 1. [Input Step] 모든 방의 Job Queue(이동 패킷 등) 처리 ---
+			// 물리 시뮬레이션 전에 입력이 먼저 처리되어야 합니다.
+			for (auto& room : _rooms) {
+				if (room->GetLogicThreadIndex() == thread_idx) {
+					// [중요] Room::ProcessJobs()를 여기서 호출!
+					room->ProcessJobs();
+				}
+			}
+			//TODO: 아니 어차피 이렇게 동기화 할거면 타이머 잡에서 처리하면 되잖아?!! 개 같은 제미나이
 
 			// 2. 시간 계산
 			auto now = std::chrono::steady_clock::now();

@@ -46,6 +46,7 @@ namespace PIP::SERVER
 
 
 		void StartGame();
+		void ProcessJobs();
 		// 물리 업데이트 (할당자 필수)
 		void UpdatePhysics(float deltaTime, JPH::TempAllocator* allocator);
 		// 로직 업데이트 (할당자 선택적 허용 - AI 때문)
@@ -90,7 +91,6 @@ namespace PIP::SERVER
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
 
-		void ProcessJobs();
 
 		// [삭제] UpdateSingleNPC는 더 이상 사용하지 않음
 		// void UpdateSingleNPC(int npcId);

@@ -44,7 +44,7 @@ public:
 	}
 	int64_t id() const { return _playerId; }
 
-	void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }
+	/*void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }*/
 	void sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket);
 private:
 	// --- update 기능 분리용 private 함수 ---
@@ -72,8 +72,11 @@ private:
 	std::shared_ptr<GameObject> _attackRangeObject;
 
 	// [추가] 넉백 물리 제어 변수
-	common::Vec3 _impactVelocity = { 0,0,0 };
 	common::Vec3 _visualOffset = { 0, 0, 0 }; // 보정 오차 저장 변수
+	common::Vec3 _logicalPosition = { 0, 0, 0 }; // 서버와 동기화되는 실제 예측 좌표
+	float _verticalVelocity = 0.0f;              // 수직 속도 (낙하용)
+	bool _isGrounded = true;                     // 접지 상태 (임시)
+
 
 	float _speed{ 5.f };
 	float _sendTimer{ 0.f };
