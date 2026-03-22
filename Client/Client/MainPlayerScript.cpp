@@ -255,17 +255,17 @@ void MainPlayerScript::awake()
 
 	// 다크나이트의 hand_l 오프셋을 참고하여 hand_r용으로 미러링한 값입니다.
 	// 좌표와 회전은 모델을 보면서 미세 조정이 필요할 수 있습니다.
-	_currentWeaponObject = socket->add_connecting(
-		"MainWeapon",
-		"hand_r", // 반대쪽 손
-		"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
-		{ -0.06f, -0.8f, 0.16f },   // hand_l 기준 X값 반전 시도
-		{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
-		{ 2.f, 2.f, 2.f }
-	);
-
-	// 무리 렌더링 끄기
-	_currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
+	//_currentWeaponObject = socket->add_connecting(
+	//	"MainWeapon",
+	//	"hand_r", // 반대쪽 손
+	//	"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
+	//	{ -0.06f, -0.8f, 0.16f },   // hand_l 기준 X값 반전 시도
+	//	{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
+	//	{ 2.f, 2.f, 2.f }
+	//);
+	//
+	//// 무리 렌더링 끄기
+	//_currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
 
 	// --- 3. 무기 오브젝트에 기능(스크립트 + 콜라이더) 추가 ---
 	if (_currentWeaponObject) {
