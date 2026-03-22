@@ -203,7 +203,7 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 		"../../Common/MapData/Heightmap.json"
 	);
 
-	ResourceManager::instance()->set_current_command_list(cmdList);
+	//ResourceManager::instance()->set_current_command_list(cmdList);
 
 	// 2. ResourceManager
 	terrain->load_textures_to_resource_manager(
@@ -242,7 +242,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
 
     int loadedCount = 0;
 
-	ResourceManager::instance()->set_current_command_list(cmdList);
+	//ResourceManager::instance()->set_current_command_list(cmdList);
 
     // 모든 Landscape## 폴더 순회
     for (const auto& entry : std::filesystem::directory_iterator(landscapeBaseDir))
