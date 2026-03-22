@@ -132,8 +132,8 @@ const auto& info = _terrainData.GetInfo();
 			 v._normal = get_normal_at(_terrainData, x, z);
 
 			 v._texCoord = XMFLOAT2(
-				  static_cast<float>(x) / grid_width * _terrainInfo.tiling.x,
-				  static_cast<float>(z) / grid_height * _terrainInfo.tiling.y);
+				 static_cast<float>(x) / grid_width,
+				 static_cast<float>(z) / grid_height);
 
 			 XMFLOAT3 tangent_candidate = XMFLOAT3(1.0f, 0.0f, 0.0f);
 			 XMVECTOR N_vec = XMLoadFloat3(&v._normal);
@@ -387,57 +387,16 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 		return;
 	}
 
-	auto* rm = ResourceManager::instance();
-	auto* renderer = Renderer::instance();
-
-	// 1. Terrain의 Material 정보 가져오기
-	auto* mat_info = rm->get_material_info(_materialName);
-	if (!mat_info) {
-		CERROR("Material info not found for terrain: " << _materialName);
-		return;
-	}
-
-	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
-
-	// Helper to get texture or default (ResourceManager::bind_material에서 가져온 로직)
-	auto get_tex_handle_or_default = [&](const std::string& path, const std::string& default_name) -> D3D12_CPU_DESCRIPTOR_HANDLE {
-		// Path can be empty, so check first
-		if (path.empty()) {
-			return rm->get_texture(default_name)->cpu_handle;
-		}
-		auto* tex_info = rm->get_texture(path);
-		if (tex_info && tex_info->cpu_handle.ptr != 0) {
-			return tex_info->cpu_handle;
-		}
-		// Return default if specific texture not found
-		return rm->get_texture(default_name)->cpu_handle;
-		};
-
-	// t0: Base Color Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->base_color_texture_path, "__DEFAULT_WHITE__"));
-	// t1: Normal Map Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->normal_texture_path, "__DEFAULT_NORMAL__"));
-	// t2: ORM Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->metallic_roughness_texture_path, "__DEFAULT_ORM__"));
-	// t3: Emissive Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->emissive_texture_path, "__DEFAULT_BLACK__"));
-	// t4: Detail Texture (새로 추가된 부분)
-	texture_handles.push_back(get_tex_handle_or_default(get_detail_texture_key(), "__DEFAULT_WHITE__"));
-
-	// 2. 5개의 텍스처 핸들 테이블을 루트 파라미터 4에 바인딩
-	renderer->bind_texture_table(command_list, 4, texture_handles);
-
-	// 3. Vertex/Index Buffer 바인딩
+	// Vertex/Index Buffer 바인딩
 	command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
 	command_list->IASetIndexBuffer(&_indexBufferView);
 	command_list->IASetPrimitiveTopology(_primitiveTopology);
 
-	// 4. Draw Call
+	// Draw Call
 	command_list->DrawIndexedInstanced(
 		static_cast<UINT>(_indices.size()), 1, 0, 0, 0
 	);
 }
-
 float TerrainLoader::get_height_at(float world_x, float world_z) const
 {
 	// Common::TerrainData 
