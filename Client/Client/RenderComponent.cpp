@@ -188,6 +188,9 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
     }
 
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
+
+    pre_render(commandList, Renderer::instance());
+
     _mesh->render(commandList);
 }
 
