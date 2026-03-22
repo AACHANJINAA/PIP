@@ -6,7 +6,7 @@
 #include "Renderer.h"
 
 using namespace DirectX;
-
+std::vector<TerrainLoader*> TerrainLoader::_all_terrain_loaders;
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
 	
@@ -32,6 +32,8 @@ TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 	create_flat_grid(grid_width, grid_height);
 
 	//PhysicsManager::instance()->create_physics_terrain(_terrainData);
+
+	_all_terrain_loaders.push_back(this);
 }
 
 TerrainLoader::TerrainLoader(const std::string& metadata_json_path, bool is_landscape_tile)
@@ -64,6 +66,29 @@ TerrainLoader::TerrainLoader(const std::string& metadata_json_path, bool is_land
 
 	// MainLandscape는 Jolt 물리 지형 일단 제외
 	//PhysicsManager::instance()->create_physics_terrain(_terrainData);
+	_all_terrain_loaders.push_back(this);
+}
+
+TerrainLoader::~TerrainLoader()
+{
+	auto it = std::find(_all_terrain_loaders.begin(), _all_terrain_loaders.end(), this);
+	if (it != _all_terrain_loaders.end()) {
+		_all_terrain_loaders.erase(it);
+	}
+}
+
+float TerrainLoader::get_height_anywhere(float world_x, float world_z)
+{
+	for (auto loader : _all_terrain_loaders) {
+		// TerrainData 내부에서 범위 체크를 수행하여 해당 타일이면 높이를 반환합니다.
+		// 범위 밖이면 0(또는 하한값)을 반환하므로 유효한 값을 찾을 때까지 순회합니다.
+		const auto& info = loader->_terrainData.GetInfo();
+		if (world_x >= info.min_x && world_x <= info.max_x &&
+			world_z >= info.min_z && world_z <= info.max_z) {
+			return loader->get_height_at(world_x, world_z);
+		}
+	}
+	return -1.0f; // 지형이 없는 곳의 기본 높이
 }
 
 namespace

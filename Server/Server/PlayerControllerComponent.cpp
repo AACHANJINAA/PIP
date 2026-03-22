@@ -9,85 +9,99 @@ namespace PIP::GAME
     void PlayerControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) {
         if (!_character) return;
 
-        // 1. 현재 상태 및 입력 기반 속도 계산
-        common::Vec3 currentPos = GetPosition(); // 현재 '발바닥' 위치
-        common::Vec3 vel = _moveVelocity + _impactVelocity;
-
-        // 현재 캐릭터의 수직(Y) 속도 유지 (중력 적용 전)
-        float currentYVel = _character->GetLinearVelocity().GetY();
-
-        // 수평 이동 예측 (XZ)
-        common::Vec3 nextPos = currentPos + (common::Vec3(vel.x, 0, vel.z) * deltaTime);
-
-        // 중력 적용 (공중에 있을 때 아래로 가속)
-        currentYVel += _physicsSystem->GetGravity().GetY() * deltaTime;
-        nextPos.y += currentYVel * deltaTime;
-
-        // 2. [핵심] ShapeCast로 지형 높이 직접 스캔
-        // 머리 위 1.5m에서 아래로 5m까지 캡슐 모양으로 훑음 (끼임/통과 방지)
-        float startOffset = 1.5f;
-        float castDistance = 20.0f;
-
-        JPH::RShapeCast shapeCast{
-            _character->GetShape(),
-            JPH::Vec3::sReplicate(1.0f),
-            JPH::RMat44::sTranslation(Utils::ToJolt(nextPos) + JPH::Vec3(0, startOffset + _halfHeight, 0)),
-            JPH::Vec3(0, -(castDistance + startOffset), 0)
-        };
-
-        JPH::ShapeCastSettings castSettings;
-        JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;
-
-        // 지형(NON_MOVING) 레이어에 대해서만 바닥 체크 수행
-        _physicsSystem->GetNarrowPhaseQuery().CastShape(shapeCast, castSettings, JPH::RVec3::sZero(), collector,
-            _physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::MOVING),
-            _physicsSystem->GetDefaultLayerFilter(Layers::MOVING));
-
-        if (collector.HadHit()) {
-            // 충돌 지점에서 캡슐의 '중심' 높이 계산
-            float hitCenterY = (nextPos.y + startOffset + _halfHeight) - ((castDistance + startOffset) *
-                collector.mHit.mFraction);
-            // '발바닥' 높이로 변환
-            float groundY = hitCenterY - _halfHeight;
-
-            // [턱 높이/경사 보정]
-            // 현재 높이보다 너무 높지 않은 곳(0.8m 이내)이라면 즉시 지면으로 안착
-            float stepHeight = groundY - currentPos.y;
-            if (stepHeight < 0.8f) {
-                nextPos.y = groundY;
-                currentYVel = -0.5f; // 바닥에 붙었으므로 수직 속도 초기화 (접지 안정성)
-            }
-        }
-
-        // 3. 물리 엔진 강제 동기화 (SetPosition으로 결과 고정)
-        // Jolt 내부의 CharacterVirtual 위치를 서버가 계산한 nextPos로 강제 견인
-        JPH::RVec3 finalJoltPos = Utils::ToJolt(nextPos);
-        finalJoltPos.SetY(finalJoltPos.GetY() + _halfHeight); // 중심점으로 변환하여 입력
-        _character->SetPosition(finalJoltPos);
-
-        // 속도 정보도 동기화 (XZ 입력 + Y 중력)
-        _character->SetLinearVelocity(JPH::Vec3(vel.x, currentYVel, vel.z));
-
-        // 4. Transform 컴포넌트 업데이트 (시각적 위치와 서버 로직 좌표 일치)
-        auto tc = GetOwner()->GetComponent<TransformComponent>();
-        if (tc) tc->SetPosition(nextPos);
-
-        // 5. 외부 임팩트(넉백 등) 감쇄 처리
         float impactSpeed = common::Length(_impactVelocity);
         if (impactSpeed > 0.1f) {
-            _impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction *
-                deltaTime);
+            float reduction = 40.0f * deltaTime;
+            _impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - reduction);
         }
         else {
-            _impactVelocity = common::Vec3Zero;
+            _impactVelocity = { 0, 0, 0 };
         }
-		_timer -= deltaTime;
+
+        // 2. 최종 수평 속도 합성
+        common::Vec3 horizontalInput;
+        // [핵심] 넉백 속도가 일정 이상이면 플레이어 조작(_moveVelocity)을 완전히 무시
+        if (common::LengthSq(_impactVelocity) > 5.0f * 5.0f) {
+            horizontalInput = _impactVelocity;
+        }
+        else {
+            horizontalInput = _moveVelocity + _impactVelocity;
+        }
+
+        // 1. 중력 및 속도 계산
+        JPH::Vec3 gravity = _physicsSystem->GetGravity();
+        JPH::Vec3 currentVel = _character->GetLinearVelocity();
+        // 수직 속도 (중력 누적)
+        float newYVel = currentVel.GetY() + gravity.GetY() * deltaTime;
+
+        // 땅에 있을 때 중력 캡핑 (파고듦 방지 핵심)
+        if (_character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround) {
+            newYVel = std::max(newYVel, -1.0f);
+        }
+
+        // 최종 속도 설정
+        _character->SetLinearVelocity(JPH::Vec3(horizontalInput.x, newYVel, horizontalInput.z));
+
+        // 2. ExtendedUpdate 설정 (여기서 StepUp 높이를 조절합니다)
+        JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;
+
+        // 요철을 잘 넘게 하려면 mWalkStairsStepUp을 조절 (기본값 0.4f)
+        updateSettings.mWalkStairsStepUp = JPH::Vec3(0, 1.f, 0);
+        // 경사로에서 뜨지 않게 하려면 mStickToFloorStepDown 조절
+        updateSettings.mStickToFloorStepDown = JPH::Vec3(0, 1.5f, 0);
+
+        // 3. 물리 시뮬레이션 실행 (레이어 필터 확인 필수!)
+        // 지형(NON_MOVING)이 포함된 레이어를 사용해야 합니다.
+        _character->ExtendedUpdate(deltaTime,
+            gravity,
+            updateSettings,
+            _physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::MOVING),
+            _physicsSystem->GetDefaultLayerFilter(Layers::MOVING),
+            {}, {}, *allocator);
+
+        // 4. 위치 동기화 (Jolt 결과 -> Transform)
+        JPH::RVec3 newJoltPos = _character->GetPosition();
+        common::Vec3 footPos = Utils::FromJolt(newJoltPos);
+        footPos.y -= _halfHeight;
+
+        JPH::Vec3 groundVel = _character->GetGroundVelocity();
+        if (groundVel.LengthSq() > 0.001f) {
+            MYLOG("미끄러짐의 주범: Ground Velocity 감지! " << groundVel.GetX() << ", " << groundVel.GetZ());
+        }
+
+        auto tc = GetOwner()->GetComponent<TransformComponent>();
+        if (tc) tc->SetPosition(footPos);
+
+        _timer -= deltaTime;
         if (_timer < 0.0f)
         {
+            // 1. 서버 로직에서 관리하는 발바닥 위치 (get_position() 등)
+            auto logicFootPos = GetPosition();
+
+            // 2. Jolt 물리 바디의 실제 중심 위치 (Jolt 내부의 진짜 좌표)
+            JPH::RVec3 joltBodyPos = _character->GetPosition();
+
+            // 3. Jolt가 판단하는 현재 캐릭터의 접지 상태
+            auto groundState = _character->GetGroundState();
+            const char* groundStateStr = "Unknown";
+            switch (groundState) {
+            case JPH::CharacterVirtual::EGroundState::OnGround:     groundStateStr = "OnGround"; break;
+            case JPH::CharacterVirtual::EGroundState::OnSteepGround:groundStateStr = "OnSteepGround"; break;
+            case JPH::CharacterVirtual::EGroundState::NotSupported: groundStateStr = "NotSupported"; break;
+            case JPH::CharacterVirtual::EGroundState::InAir:        groundStateStr = "InAir"; break;
+            }
+
+            // 4. 로그 출력
+            MYLOG("[Jolt Debug] Actor: " << GetOwner()->GetName()
+                << " | Logic Foot: (" << logicFootPos.x << ", " << logicFootPos.y << ", " << logicFootPos.z << ")"
+                << " | Jolt Center: (" << joltBodyPos.GetX() << ", " << joltBodyPos.GetY() << ", " << joltBodyPos.GetZ()
+                << ")"
+                << " | GroundState: " << groundStateStr);
+
             auto pos = GetPosition();
             MYLOG("player pos (" << pos.x << "," << pos.y << "," << pos.z << ")");
-			_timer = 2.0f; // 5초마다 위치 로그 출력
+            _timer = 2.0f;
         }
-		
+        _moveVelocity = { 0, 0, 0 };
     }
 }

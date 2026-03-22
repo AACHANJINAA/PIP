@@ -178,6 +178,7 @@ namespace common::packet
 	struct CS_PACKET_MOVE : PacketHeader
 	{
 		Vec3			_position;
+		Vec3            _move_dir; // [추가] 클라이언트의 이동 입력 단위 벡터 (XZ 평면)
 		common::Quat	_rotation;
 		EntityState		_state;
 		int32_t			_action_id;

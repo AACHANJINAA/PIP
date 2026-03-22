@@ -11,6 +11,10 @@ namespace PIP::GAME
 	public:
 		Player(int64_t owner_id);
 		~Player() override = default;
+		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
+		                 uint32_t timestamp, GameObject* attacker, int32_t damage) override;
+		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
+		void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
 		void init(int64_t id);
 
 		int64_t GetId() const override { return _owner_id; } 
@@ -48,13 +52,21 @@ namespace PIP::GAME
 		common::packet::EntityState GetLastSentState() const { return _lastSentState; }
 
 
-		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
-		                 uint32_t timestamp, GameObject* attacker, int32_t damage) override;
-		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 
 		void SetHP(int hp) override { _hp = hp; }
 		int32_t GetHP() const override { return _hp; }
-		void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
+
+		void SetState(const common::packet::EntityState& state) { _state = state; }
+		common::packet::EntityState GetState() const { return _state; }
+
+		void SetActionId(int32_t action_id) { _actionId = action_id; }
+		int32_t GetActionId() const { return _actionId; }
+
+		void SetSpeed(float speed) { _speed = speed; }
+		float GetSpeed() const { return _speed; }
+
+		void SetLastSentRot(common::Quat rot) { _lastSentRot = rot; }
+		const common::Quat& GetLastSentRot() const { return _lastSentRot; }
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		
@@ -63,14 +75,15 @@ namespace PIP::GAME
 		int32_t						_exp;
 		int32_t						_damage;
 		common::packet::EntityState _state = common::packet::EntityState::IDLE;
-		int32_t _actionId = 0; // 현재 액션 ID (애니메이션 트리거용)
+		int32_t						_actionId = 0; // 현재 액션 ID (애니메이션 트리거용)
+		float						_speed = 10.0f; //방향에 곱해줄 속도값
 
 		// [추가] 위치 보정 관련
 		common::Vec3 _lastClientTargetPos = { 0.0f, 0.0f, 0.0f }; // 클라이언트가 마지막으로 보냈다고 우기는 좌표
 		common::Vec3 _lastSentPos = { 0.0f, 0.0f, 0.0f };         // 서버에서 클라이언트에게 마지막으로 확정해서 보낸 좌표
 		common::packet::EntityState _lastSentState = common::packet::EntityState::IDLE; // 서버에서 클라이언트에게 마지막으로 보낸 상태
 		int32_t _lastSentActionId = 0; // 서버에서 클라이언트에게 마지막으로 보낸 액션 ID
-		//JPH::BodyID _physicsBodyID;
+		common::Quat _lastSentRot = { 0,0,0,1 }; // 서버에서 클라이언트에게 마지막으로 보낸 회전
 
 	private:
 		float _hitCooldown = 0.0f;
