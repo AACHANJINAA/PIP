@@ -74,7 +74,7 @@ void FreeCameraScript::player_camera_update(float delta_time)
             if (player && player->transform())
             {
                 XMFLOAT3 playerPos = player->transform()->position();
-                transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 5.0f, playerPos.z });
+                transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 8.0f, playerPos.z });
                 transform()->move_forward(_thirdPersonOffsetDistance_back);
                 transform()->move_up(_thirdPersonOffsetDistance_top);
             }
