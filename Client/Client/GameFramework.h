@@ -116,6 +116,8 @@ public:
 
 	// [추가] 리플리케이션 시스템 접근자
 	ReplicationSystem* get_replication_system() const { return _replicationSystem.get(); }
+
+	UINT64 next_fence_value() const;
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 

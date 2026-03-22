@@ -647,14 +647,10 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     D3D12_CPU_DESCRIPTOR_HANDLE emissive_handle = get_cpu_handle(mat_info.emissive_texture_path);
     if (emissive_handle.ptr == 0) emissive_handle = default_black_handle;
 
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
-    texture_handles.push_back(base_color_handle);  // 셰이더의 t0
-    texture_handles.push_back(normal_handle);      // 셰이더의 t1
-    texture_handles.push_back(orm_handle);         // 셰이더의 t2
-    texture_handles.push_back(emissive_handle);    // 셰이더의 t3
-    
-    // 이 벡터를 루트 파라미터 4번에 테이블로 바인딩합니다.
-    renderer->bind_texture_table(command_list, 4, texture_handles);
+    renderer->bind_texture_table(command_list, 4, { base_color_handle }); // t0
+    renderer->bind_texture_table(command_list, 5, { normal_handle });     // t1
+    renderer->bind_texture_table(command_list, 6, { orm_handle });        // t2
+    renderer->bind_texture_table(command_list, 7, { emissive_handle });   // t3
 
     // Occlusion 전용 슬롯 (params[9] = t4)
     if (!mat_info.occlusion_texture_path.empty())
@@ -676,15 +672,15 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_prefiltered_handle = get_cpu_handle(_ibl_prefiltered_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_brdf_lut_handle = get_cpu_handle(_ibl_brdf_lut_path);
 
-            if (ibl_irradiance_handle.ptr != 0 && ibl_prefiltered_handle.ptr != 0 && ibl_brdf_lut_handle.ptr != 0)
-            {
-                std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> ibl_handles;
-                ibl_handles.push_back(ibl_irradiance_handle);  // t8
-                ibl_handles.push_back(ibl_prefiltered_handle); // t9
-                ibl_handles.push_back(ibl_brdf_lut_handle);    // t10
+        if (ibl_irradiance_handle.ptr != 0 && ibl_prefiltered_handle.ptr != 0 && ibl_brdf_lut_handle.ptr != 0)
+        {
+            std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> ibl_handles;
+            ibl_handles.push_back(ibl_irradiance_handle);  // t8
+            ibl_handles.push_back(ibl_prefiltered_handle); // t9
+            ibl_handles.push_back(ibl_brdf_lut_handle);    // t10
 
-                renderer->bind_texture_table(command_list, 8, ibl_handles); // params[8~10]
-            }
+            renderer->bind_texture_table(command_list, 8, ibl_handles); // params[8~10]
+        }
     }
 }
 
