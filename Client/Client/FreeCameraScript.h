@@ -43,7 +43,7 @@ private:
 
 	// 3인칭 에서의 offset 거리
 	float _thirdPersonOffsetDistance_top = 0.0f;
-    float _thirdPersonOffsetDistance_back = -5.0f;
+    float _thirdPersonOffsetDistance_back = -2.5f;
 
     // 자주 접근하게 될 CameraComponent에 대한 캐시된 포인터
     CameraComponent* _cameraComponent;

@@ -1,16 +1,21 @@
 #include "stdafx.h"
 #include "Boss_Scene.h"
 
-#include "FreeCameraScript.h"
-#include "ObjectManager.h"
-#include "GameObject.h"
-#include "TransformComponent.h"
-#include "ResourceManager.h"
 #include "CameraComponent.h"
+#include "FreeCameraScript.h"
+#include "GameObject.h"
+#include "ObjectManager.h"
 #include "ReadGLTFMesh.h"
+#include "ResourceManager.h"
+#include "SceneManager.h"
+#include "TransformComponent.h"
 
 void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+	SceneManager::instance()->build_skybox_if_needed(device, commandList);
+
+	SceneManager::instance()->build_terrain(device, commandList);
+
 	// =========================필요한 메시 로드==================================
 	ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");

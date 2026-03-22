@@ -28,8 +28,6 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	build_skybox(device, command_list);
-
 	register_scene<Chess_Scene>("ChessScene");
 	register_scene<Main_Scene>("MainScene");
 	register_scene<Tool_Scene>("ToolScene");
@@ -51,9 +49,7 @@ void SceneManager::change_scene(const std::string& scene_name)
 	_requestedSceneName = scene_name;
 }
 
-void SceneManager::process_scene_change_if_requested(ID3D12Device* device
-	,ID3D12CommandAllocator* command_allocator
-	, ID3D12GraphicsCommandList* command_list)
+void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D12CommandAllocator* command_allocator , ID3D12GraphicsCommandList* command_list)
 {
 	if (_requestedSceneName.empty())
 	{
@@ -71,9 +67,8 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
 	ObjectManager::instance()->clear_non_persistent_objects();
 	ObjectManager::instance()->process_destructions();
 	ResourceManager::instance()->unload_unused_meshes();
-   
 
-    // [추가] 기존 지형 오브젝트 정리
+    // 기존 지형 오브젝트 정리
     if (_terrainObject)
     {
         ObjectManager::instance()->remove_game_object(_terrainObject);
@@ -101,18 +96,9 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device
     command_allocator->Reset();
     command_list->Reset(command_allocator, nullptr);
 
-    // [추가] 씬별 지형 로드
-    if (scene_to_load == "ChessScene")
-    {
-        build_terrain(device, command_list);
-    }
-    else if (scene_to_load == "MainScene")
-    {
-        build_main_landscapes(device, command_list);
-    }
-
     _currentScene->build_objects(device, command_list);
-    ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX);
+    UINT64 nextFenceValue = game_framework->next_fence_value();
+    ResourceManager::instance()->process_pending_uploads(device, command_list, nextFenceValue, 16);
 
 	command_list->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { command_list };
@@ -178,7 +164,7 @@ float SceneManager::get_terrain_size() const
 //}
 
 
-void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+void SceneManager::build_skybox_if_needed(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	if (_skyboxObject) 
 	{
@@ -217,7 +203,7 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 		"../../Common/MapData/Heightmap.json"
 	);
 
-	ResourceManager::instance()->set_current_command_list(cmdList);
+	//ResourceManager::instance()->set_current_command_list(cmdList);
 
 	// 2. ResourceManager
 	terrain->load_textures_to_resource_manager(
@@ -254,11 +240,9 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         return;
     }
 
-    CLOG("=== Building All Landscapes ===");
-
     int loadedCount = 0;
 
-	ResourceManager::instance()->set_current_command_list(cmdList);
+	//ResourceManager::instance()->set_current_command_list(cmdList);
 
     // 모든 Landscape## 폴더 순회
     for (const auto& entry : std::filesystem::directory_iterator(landscapeBaseDir))
@@ -305,7 +289,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         // 임시: 첫 번째 레이어(Rock)의 텍스처만 로드
         // 실제로는 metaJson["layers"]를 순회하며 모든 레이어 처리 필요
         std::string baseTexPath = "Resource\\HeightMap\\rocky_terrain\\rocky_terrain_02_4k.gltf";
-        std::string detailTexPath = (sharedTexPath / "T_DeadGrass_Albedo.dds").string();
+        std::string detailTexPath = (sharedTexPath / "T_Dead_Grass_Albedo.dds").string();
 
         terrain->load_textures_to_resource_manager(baseTexPath, detailTexPath);
 
@@ -322,7 +306,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         }
         terrain->load_landscape_weightmaps(weightmapPaths);
 
-		terrain->upload_to_gpu(device, cmdList, 0);
+		//terrain->upload_to_gpu(device, cmdList, 0);
 
         // 5. ResourceManager 등록
         std::string meshKey = "Landscape" + folderName;

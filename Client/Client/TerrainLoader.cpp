@@ -159,8 +159,8 @@ const auto& info = _terrainData.GetInfo();
 			 v._normal = get_normal_at(_terrainData, x, z);
 
 			 v._texCoord = XMFLOAT2(
-				  static_cast<float>(x) / grid_width * _terrainInfo.tiling.x,
-				  static_cast<float>(z) / grid_height * _terrainInfo.tiling.y);
+				 static_cast<float>(x) / grid_width,
+				 static_cast<float>(z) / grid_height);
 
 			 XMFLOAT3 tangent_candidate = XMFLOAT3(1.0f, 0.0f, 0.0f);
 			 XMVECTOR N_vec = XMLoadFloat3(&v._normal);
@@ -277,14 +277,132 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 	   // 2. D3D12 텍스처 리소스 생성 (DXGI_FORMAT_R8_UNORM)
 	   // 3. ResourceManager에 "Weightmap_Rock", "Weightmap_Grass" 등으로 등록
 
+	if (weightmap_paths.empty())
+	{
+		CERROR("No weightmap paths provided.");
+		return;
+	}
+	
+	// 1. LayerInfo 구조체 채우기
+	_layers.clear();
+	_layers.reserve(weightmap_paths.size());
+
+	std::string sharedTexpath = "Resource/MainLandscape/SharedTextures/";
+
 	for (const auto& weightmap_path : weightmap_paths)
 	{
 		// 파일명에서 레이어 이름 추출
 		std::filesystem::path wpath(weightmap_path);
 		std::string filename = wpath.stem().string(); // "Weightmap_Rock"
 
-		// ResourceManager::instance()->load_texture_r8(filename, weightmap_path);
+		// "Weightmap_" 접두사 제거하여 레이어 이름 추출
+		std::string layer_name = filename;
+		if (layer_name.find("Weightmap_") == 0)
+		{
+			layer_name = layer_name.substr(10); // "Weightmap_" 길이 = 10
+		}
+
+		// Visibility 레이어는 스킵 (렌더링에 사용 안 함)
+		if (layer_name.find("LANDSCAPE_VISIBILITY") !=
+			std::string::npos)
+		{
+			CLOG("Skipping visibility layer: " << layer_name);
+			continue;
+		}
+
+		LayerInfo layer;
+		layer.name = layer_name;
+		layer.weightmap_file = weightmap_path;
+
+		// SharedTextures에서 해당 레이어의 텍스처 경로 매핑
+		std::string base_name = "T_" + layer_name;
+
+		layer.albedo_texture = (sharedTexpath + base_name + "_Albedo.dds");
+		layer.normal_texture = (sharedTexpath + base_name + "_Normal.dds");
+		layer.roughness_texture = (sharedTexpath + base_name + "_Roughness.dds");
+
+		_layers.emplace_back(layer);
 	}
+
+	if (_layers.empty())
+	{
+		CLOG("No valid layers found after filtering");
+		return;
+	}
+
+	// 2. Weightmap Texture2DArray 생성
+	const auto& info = _terrainData.GetInfo();
+	int width = static_cast<int>(info.width);
+	int height = static_cast<int>(info.height);
+
+	std::vector<std::string> weightmap_file_paths;
+	for (const auto& layer : _layers)
+	{
+		weightmap_file_paths.push_back(layer.weightmap_file);
+	}
+
+	// 고유한 배열 이름 생성 (Landscape 이름 기반)
+	std::filesystem::path map_path(_heightmapTextureKey);
+	std::string landscape_name = map_path.parent_path().filename().string(); // "Landscape01"
+	_weightmapArrayKey = "WeightmapArray_" + landscape_name;
+
+	auto* rm = ResourceManager::instance();
+	auto* weightmap_array = rm->create_texture_array_r8(
+		_weightmapArrayKey,
+		weightmap_file_paths,
+		width,
+		height
+	);
+
+	if (!weightmap_array)
+	{
+		CERROR("Failed to create weightmap array: " <<
+			_weightmapArrayKey);
+		return;
+	}
+
+	// 3. 각 레이어의 텍스처 로드 (Albedo, Normal, Roughness)
+	for (const auto& layer : _layers)
+	{
+		// Albedo (sRGB)
+		rm->load_texture(layer.albedo_texture, true);
+
+		// Normal (Linear)
+		rm->load_texture(layer.normal_texture, false);
+
+		// Roughness (Linear)
+		rm->load_texture(layer.roughness_texture, false);
+	}
+
+	// 4. 레이어 텍스처들을 Texture2DArray로 묶기
+	std::vector<std::string> albedo_keys, normal_keys, roughness_keys;
+	for (const auto& layer : _layers)
+	{
+		albedo_keys.push_back(layer.albedo_texture);
+		normal_keys.push_back(layer.normal_texture);
+		roughness_keys.push_back(layer.roughness_texture);
+	}
+
+	_albedoArrayKey = "AlbedoArray_" + landscape_name;
+	_normalArrayKey = "NormalArray_" + landscape_name;
+	_roughnessArrayKey = "RoughnessArray_" + landscape_name;
+
+	auto* albedo_array = rm->create_texture_array_from_loaded(
+		_albedoArrayKey, albedo_keys);
+
+	auto* normal_array = rm->create_texture_array_from_loaded(
+		_normalArrayKey, normal_keys);
+
+	auto* roughness_array = rm->create_texture_array_from_loaded(
+		_roughnessArrayKey, roughness_keys);
+
+	if (!albedo_array || !normal_array || !roughness_array)
+	{
+		CERROR("Failed to create layer texture arrays for: " << landscape_name);
+		return;
+	}
+
+	_hasLayers = true;
 }
 
 
@@ -296,57 +414,16 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 		return;
 	}
 
-	auto* rm = ResourceManager::instance();
-	auto* renderer = Renderer::instance();
-
-	// 1. Terrain의 Material 정보 가져오기
-	auto* mat_info = rm->get_material_info(_materialName);
-	if (!mat_info) {
-		CERROR("Material info not found for terrain: " << _materialName);
-		return;
-	}
-
-	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
-
-	// Helper to get texture or default (ResourceManager::bind_material에서 가져온 로직)
-	auto get_tex_handle_or_default = [&](const std::string& path, const std::string& default_name) -> D3D12_CPU_DESCRIPTOR_HANDLE {
-		// Path can be empty, so check first
-		if (path.empty()) {
-			return rm->get_texture(default_name)->cpu_handle;
-		}
-		auto* tex_info = rm->get_texture(path);
-		if (tex_info && tex_info->cpu_handle.ptr != 0) {
-			return tex_info->cpu_handle;
-		}
-		// Return default if specific texture not found
-		return rm->get_texture(default_name)->cpu_handle;
-		};
-
-	// t0: Base Color Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->base_color_texture_path, "__DEFAULT_WHITE__"));
-	// t1: Normal Map Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->normal_texture_path, "__DEFAULT_NORMAL__"));
-	// t2: ORM Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->metallic_roughness_texture_path, "__DEFAULT_ORM__"));
-	// t3: Emissive Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->emissive_texture_path, "__DEFAULT_BLACK__"));
-	// t4: Detail Texture (새로 추가된 부분)
-	texture_handles.push_back(get_tex_handle_or_default(get_detail_texture_key(), "__DEFAULT_WHITE__"));
-
-	// 2. 5개의 텍스처 핸들 테이블을 루트 파라미터 4에 바인딩
-	renderer->bind_texture_table(command_list, 4, texture_handles);
-
-	// 3. Vertex/Index Buffer 바인딩
+	// Vertex/Index Buffer 바인딩
 	command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
 	command_list->IASetIndexBuffer(&_indexBufferView);
 	command_list->IASetPrimitiveTopology(_primitiveTopology);
 
-	// 4. Draw Call
+	// Draw Call
 	command_list->DrawIndexedInstanced(
 		static_cast<UINT>(_indices.size()), 1, 0, 0, 0
 	);
 }
-
 float TerrainLoader::get_height_at(float world_x, float world_z) const
 {
 	// Common::TerrainData 

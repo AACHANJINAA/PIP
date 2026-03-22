@@ -1,39 +1,35 @@
 ﻿#include "stdafx.h"
 #include "Chess_Scene.h"
 
+#include "AnimationComponent.h"
 #include "FreeCameraScript.h"
-#include "ObjectManager.h"
 #include "GameObject.h"
-
 #include "GltfAnimationScript.h"
-
-#include "TransformComponent.h"
+#include "InputManager.h"
+#include "MonsterHPComponent.h"
+#include "MonsterHPUIRenderComponent.h"
+#include "ObjectManager.h"
+#include "PhysicsColliderComponent.h"
+#include "ReadGLTFMesh.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
-#include "InputManager.h"
-#include "AnimationComponent.h"
-#include "SocketComponenet.h"
-#include "ReadGLTFMesh.h"
-#include "UIManager.h"
-
-#include "TerrainLoader.h"
-#include "UIRenderComponent.h"
-#include "MonsterHPUIRenderComponent.h"
-
-#include "SkyboxRenderComponent.h"
-#include "CameraComponent.h"
-#include "MonsterHPComponent.h"
-#include "PhysicsColliderComponent.h"
-#include "Renderer.h"
 #include "SceneManager.h"
+#include "SocketComponenet.h"
 #include "TainerScript.h"
-#include "Tool_Scene.h"
+#include "TerrainLoader.h"
+#include "TransformComponent.h"
+#include "UIManager.h"
+#include "UIRenderComponent.h"
 
 
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-	// =========================필요한 메시 로드==================================
+	// Skybox 로드
+	SceneManager::instance()->build_skybox_if_needed(device, commandList);
+    // ChessScene 전용 Terrain 로드
+    SceneManager::instance()->build_terrain(device, commandList);
 
+	// =========================필요한 메시 로드==================================
     ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
     ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf",true,"walk");
     ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolem.gltf", true);
@@ -42,7 +38,6 @@ void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     auto idle_brute_mesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf",true,"idle");
     dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf","attack");
 	// =========================================================================
-
 
 
     // 카메라 생성
