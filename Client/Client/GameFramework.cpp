@@ -353,10 +353,15 @@ void GameFramework::WaitForGpuComplete()
 	}
 }
 
+UINT64 GameFramework::next_fence_value() const
+{
+	return _currentFenceValue + 1;
+}
+
 void GameFramework::MoveToNextFrame()
 {
-	const UINT64 fenceValueToSignal = _currentFenceValue + 1;
 	_currentFenceValue++;
+	const UINT64 fenceValueToSignal = _currentFenceValue;
 
 	HRESULT hResult = _commandQueue->Signal(_fence.Get(), fenceValueToSignal);
 

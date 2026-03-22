@@ -3,6 +3,7 @@
 #include "ReadGLTFMesh.h"
 #include "GameObject.h"
 #include "GameFramework.h"
+#include "ResourceManager.h"
 
 AnimationComponent::AnimationComponent() : Behavior("AnimationComponent")
 {
@@ -225,34 +226,64 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 		if (_bone_palette_buffer->GetDesc().Width >= buffer_size) {
 			return;
 		}
-		_bone_palette_buffer.Reset(); // 더 큰 공간이 필요할 때만 재할당
+		//_bone_palette_buffer.Reset(); // 더 큰 공간이 필요할 때만 재할당 <- CJ 수정 : 이 코드로 인해 scene 전환시 GPU가 아직 이전 버퍼를 읽는 중인데도 CPU가 refcount를 0으로 만들어 버릴 수 있는 구조라 주석
 	}
 
 	// DW벼르기 : 뼈 행렬을 진짜 바꿔야 하는 경우에는 기다리고 생성하는 것이 안전하지만
 	// 만약 바꿔야 하는 상황이 많아 문제가 발생한다면? -> 이 놈을 먼저 조져볼 예정
-	GameFramework::instance()->WaitForGpuComplete();
+	//GameFramework::instance()->WaitForGpuComplete();
 
-	if (joint_size && !_bone_palette_buffer)
+	//if (joint_size && !_bone_palette_buffer)
+	//{
+	//	// 임시 객체의 주소를 바로 딸 수 없으므로, 변수로 먼저 만들어두기
+	//	CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+	//	CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+
+	//	HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
+	//		&heapProps,         // 이제 변수의 주소를 넘기므로 안전
+	//		D3D12_HEAP_FLAG_NONE,
+	//		&bufferDesc,        // 변수의 주소
+	//		D3D12_RESOURCE_STATE_GENERIC_READ,
+	//		nullptr,
+	//		IID_PPV_ARGS(&_bone_palette_buffer) // 이거 comptr에 &연산자 오버로딩이 되어있어 동작함
+	//	);
+
+	//	if (FAILED(hr))
+	//	{
+	//		// 에러 처리
+	//		return;
+	//	}
+
+	//	_bone_palette_buffer->SetName(L"BonePaletteBuffer");
+	//}
+
+	// 기존 버퍼는 즉시 Reset 금지: GPU가 아직 참조 중일 수 있음
+	ComPtr<ID3D12Resource> old_buffer = _bone_palette_buffer;
+
+	CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+	CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+
+	ComPtr<ID3D12Resource> new_buffer;
+	HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&bufferDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&new_buffer)
+	);
+	if (FAILED(hr))
 	{
-		// 임시 객체의 주소를 바로 딸 수 없으므로, 변수로 먼저 만들어두기
-		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
-		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+		return;
+	}
 
-		HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
-			&heapProps,         // 이제 변수의 주소를 넘기므로 안전
-			D3D12_HEAP_FLAG_NONE,
-			&bufferDesc,        // 변수의 주소
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&_bone_palette_buffer) // 이거 comptr에 &연산자 오버로딩이 되어있어 동작함
-		);
+	new_buffer->SetName(L"BonePaletteBuffer");
+	_bone_palette_buffer = new_buffer;
 
-		if (FAILED(hr))
-		{
-			// 에러 처리
-			return;
-		}
-
-		_bone_palette_buffer->SetName(L"BonePaletteBuffer");
+	// 이전 버퍼는 fence 이후 해제
+	if (old_buffer)
+	{
+		const UINT64 fenceValue = GameFramework::instance()->next_fence_value();
+		ResourceManager::instance()->register_upload_buffer(old_buffer, fenceValue);
 	}
 }
