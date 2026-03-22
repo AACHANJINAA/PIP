@@ -346,22 +346,23 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // Descriptor Range for Textures
-    CD3DX12_DESCRIPTOR_RANGE ranges[3]; // ← 1에서 2로 변경
+    CD3DX12_DESCRIPTOR_RANGE ranges[4]; 
 
     ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t4
     ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t8~t10(IBL)← 추가
     ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t11 (shadow) 
+    ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 12, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t12~t15 (terrain layers)
 
     // Root Parameters
-    CD3DX12_ROOT_PARAMETER params[8];
+    CD3DX12_ROOT_PARAMETER params[10];
     // [0] b0: World Matrix (cbPerObject)
-    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
+    params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); 
     // [1] b1: Camera (cbPerFrame)
-	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL); // b1
+	params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
     // [2] b2: Terrain Info (cbTerrain)
-	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); // b2
+	params[2].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL); 
     // [3] b3: Light (cbPerLight)
-	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); // b3
+	params[3].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL); 
 	// [4] t0~t4: Texture Descriptor Table
     params[4].InitAsDescriptorTable(1, &ranges[0]);
     // [5] t8~t10: IBL Texture Descriptor Table 
@@ -370,6 +371,10 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     params[6].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
 	// [7] t11: Shadow Texture Descriptor Table
     params[7].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
+	// [8] b6: Terrain Layer Info (cbTerrainLayer)
+	params[8].InitAsConstantBufferView(6, 0, D3D12_SHADER_VISIBILITY_ALL); 
+	// [9] t12~t15: Terrain Layer Textures Descriptor Table
+	params[9].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL);
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
@@ -405,7 +410,7 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     // Sampler 설정 (Gltf와 동일하게 s1 추가)
-    d3dRootSignatureDesc.NumParameters = 8;
+    d3dRootSignatureDesc.NumParameters = 10;
     d3dRootSignatureDesc.NumStaticSamplers = 2;
     d3dRootSignatureDesc.pStaticSamplers = samplers; 
 

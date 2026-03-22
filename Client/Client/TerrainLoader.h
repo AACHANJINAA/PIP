@@ -1,7 +1,17 @@
 ﻿#pragma once
 #include "Mesh.h"
-#include "json.hpp"
 #include "../../Common/TerrainData.h"
+
+struct LayerInfo
+{
+	std::string name;              // "Rock", "Grass", "Dead_Grass" 등
+	std::string weightmap_file;    // "Weightmap_Rock.r8"
+
+	// SharedTextures 경로 (로드 시 자동 매핑)
+	std::string albedo_texture;   
+	std::string normal_texture;   
+	std::string roughness_texture;
+};
 
 class TerrainLoader : public Mesh
 {
@@ -54,6 +64,15 @@ public:
 	const std::string& get_detail_texture_key() const { return _detailTextureKey; }
 	const std::string& get_normal_texture_key() const { return _normalTextureKey; }
 
+	//  Layer 시스템 Getter
+	bool has_layers() const { return _hasLayers; }
+	const std::vector<LayerInfo>& get_layers() const { return _layers; }
+	const std::string& get_weightmap_array_key() const {return _weightmapArrayKey;}
+
+	const std::string& get_albedo_array_key() const { return _albedoArrayKey; }
+	const std::string& get_normal_array_key() const { return _normalArrayKey; }
+	const std::string& get_roughness_array_key() const { return _roughnessArrayKey; }
+
 private:
 	void create_flat_grid(int grid_width, int grid_height);
 
@@ -66,8 +85,16 @@ private:
 	std::string _metallicRoughnessTextureKey; // Metallic-Roughness map
 	std::string _emissiveTextureKey; // Emissive map
 
-	TerrainInfo _terrainInfo;            // Terrain 
+	// multi landscape layer 시스템 관련
+	std::vector<LayerInfo> _layers;           // 레이어 정보 (최대 8개)
+	std::string _weightmapArrayKey;           // Texture2DArray 키(ResourceManager 캐시용)
+	bool _hasLayers = false;                  // Layer 시스템 사용 여부
 
+	std::string _albedoArrayKey;    // Albedo Texture2DArray 키
+	std::string _normalArrayKey;    // Normal Texture2DArray 키
+	std::string _roughnessArrayKey; // Roughness Texture2DArray 키
+
+	TerrainInfo _terrainInfo;            // Terrain 
 	common::TerrainData _terrainData;
 
 	// [추가] 생성된 모든 TerrainLoader를 관리하는 벡터

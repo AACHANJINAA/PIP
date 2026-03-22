@@ -19,7 +19,8 @@ public:
     std::shared_ptr<Mesh> load_mesh(const std::string& file_path, bool _isAnimated = false, std::string animation_name = "null_name");
 
 	// [신규] 메인 루프에서 호출하여 대기 중인 메쉬 업로드
-    void process_pending_uploads(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, UINT64 targetFenceValue);
+    void process_pending_uploads(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+        UINT64 targetFenceValue, size_t maxCount = MAX_UPLOADS_PER_FRAME);
     // [신규] 파일이 아닌 코드로 생성한 메쉬를 대기열에 등록
     void register_manual_mesh(const std::string& name, std::shared_ptr<Mesh> mesh);
 
@@ -76,6 +77,7 @@ public:
         ComPtr<ID3D12Resource> upload_heap = nullptr;
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle{};
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
+        D3D12_RESOURCE_STATES current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     };
 
 private:
@@ -198,4 +200,10 @@ public:
     }
 
     TextureInfo* load_heightmap_from_raw(const std::string& file_path, int width, int height);
+
+	// R8 포멧 텍스쳐 로드 함수 <- multi landscape layer용
+    TextureInfo* load_texture_r8(const std::string& file_path, int width, int height);
+    TextureInfo* create_texture_array_r8(const std::string& array_name, const std::vector<std::string>& file_paths, int width, int height);
+
+    TextureInfo* create_texture_array_from_loaded(const std::string& array_name, const std::vector<std::string>& texture_keys);
 };

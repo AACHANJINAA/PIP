@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Main_Scene.h"
+#include "SceneManager.h"
 
 #include "FreeCameraScript.h"
 #include "ObjectManager.h"
@@ -11,6 +12,12 @@
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+	// 1. Skybox 로드 (모든 Scene 공통)
+	SceneManager::instance()->build_skybox_if_needed(device, commandList);
+
+	// 2. MainScene 전용 Landscape 로드
+	SceneManager::instance()->build_main_landscapes(device, commandList);
+
 	// =========================필요한 메시 로드==================================
 	ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");

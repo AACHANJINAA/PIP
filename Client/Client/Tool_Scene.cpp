@@ -12,6 +12,8 @@
 
 void Tool_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    SceneManager::instance()->build_skybox_if_needed(device, commandList);
+
     spawn_camera();
 }
 
