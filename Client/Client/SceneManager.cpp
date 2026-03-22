@@ -97,7 +97,8 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
     command_list->Reset(command_allocator, nullptr);
 
     _currentScene->build_objects(device, command_list);
-    ResourceManager::instance()->process_pending_uploads(device, command_list, UINT_MAX, 30);
+    UINT64 nextFenceValue = game_framework->next_fence_value();
+    ResourceManager::instance()->process_pending_uploads(device, command_list, nextFenceValue, 16);
 
 	command_list->Close();
 	ID3D12CommandList* ppd3dCommandLists[] = { command_list };
