@@ -41,7 +41,10 @@ public:
 	TerrainLoader(const std::string& heightmap_json_path);
 	TerrainLoader(const std::string& metadata_json_path, bool is_landscape_tile);
 
-	virtual ~TerrainLoader() = default;
+	virtual ~TerrainLoader();
+
+	// [추가] 모든 지형 타일을 순회하여 현재 좌표의 높이를 반환하는 정적 함수
+	static float get_height_anywhere(float world_x, float world_z);
 
 	void load_textures_to_resource_manager(const std::string& material_gltf_path, const std::string& detail_texture_path);
 	void load_landscape_weightmaps(const std::vector<std::string>& weightmap_paths);
@@ -93,4 +96,7 @@ private:
 
 	TerrainInfo _terrainInfo;            // Terrain 
 	common::TerrainData _terrainData;
+
+	// [추가] 생성된 모든 TerrainLoader를 관리하는 벡터
+	static std::vector<TerrainLoader*> _all_terrain_loaders;
 };

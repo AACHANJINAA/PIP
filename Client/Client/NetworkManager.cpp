@@ -174,13 +174,15 @@ void NetworkManager::SendLoginPacket(const std::string& name)
 	send_packet(stream.mutable_data(), stream.Size());
 }
 
-void NetworkManager::SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::EntityState state, int32_t action_id, uint32_t current_tick)
+void NetworkManager::SendMovePacket(const common::Vec3& position, const common::Vec3& dir, 
+	const common::Quat& rotation, const common::packet::EntityState& state, const int32_t& action_id, const uint32_t& current_tick)
 {
 	// 페이로드가 있는 고정 크기 패킷은 구조체를 바로 사용하는 것이 편리합니다.
 	common::packet::CS_PACKET_MOVE packet;
 	packet._type = common::packet::PacketType::C2S_P_MOVE;
 	packet._size = sizeof(packet);
 	packet._position	= position;
+	packet._move_dir	= dir;
 	packet._rotation	= rotation;
 	packet._state		= state;
 	packet._action_id	= action_id;
@@ -337,18 +339,12 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 		auto player = ObjectManager::instance()->find_by_name("MainPlayer");
 		if (player) {
 			auto script = player->get_component<MainPlayerScript>();
-			auto cc = player->get_component<PhysicsCharacterControllerComponent>();
-			if (script && cc) {
-				// 물리 위치 기준으로 오차 계산
-				float distSq = common::DistanceSq(cc->get_position(), move_packet._position);
-				if (distSq > 0.5f * 0.5f) { // 0.5m 이상 차이 시 싱크
-					//CLOG("Server Correction Applied. Dist: " << sqrt(distSq));
-					script->sync_with_server(move_packet);
-				}
+			if (script) {
+				script->sync_with_server(move_packet);
 			}
 		}
-		/*CLOG("[S->C] Syncing MY player position. Server Pos=" << move_packet._position.x << "," << move_packet._position.y
-			<< " My Pos=" << (player ? player->transform()->local_position().x : 0) << "," << (player ? player->transform()->local_position().y : 0));*/
+		//CLOG("[S->C] Syncing MY player position. Server Pos=" << move_packet._position.x << "," << move_packet._position.y
+		//	<< " My Pos=" << (player ? player->transform()->local_position().x : 0) << "," << (player ? player->transform()->local_position().y : 0));
 	}
 	else
 	{
@@ -409,7 +405,7 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 						<< " -> New HP: " << hit_info._target_current_hp);
 					player_logic->set_hp(hit_info._target_current_hp);
 					player_logic->set_position(hit_info._target_position);
-					player_logic->apply_knockback(hit_info._knockback_vector);
+					//player_logic->apply_knockback(hit_info._knockback_vector);
 
 					continue; // 다음 피격 정보로
 				}

@@ -20,7 +20,7 @@ namespace PIP::GAME
         void Initialize(JPH::PhysicsSystem* physicsSystem, float height = 1.8f, float radius = 0.3f);
 
         // 하위 클래스에서 각자의 역할에 맞게 구현
-        virtual void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) = 0;
+        void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override = 0;
 
         // 공통 인터페이스
         void AddImpact(const common::Vec3& force) { _impactVelocity += force; }

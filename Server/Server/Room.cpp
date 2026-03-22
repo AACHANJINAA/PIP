@@ -466,58 +466,6 @@ namespace PIP::SERVER
 
 			// [추가] 플레이어의 그리드맵 위치 갱신
 			_gridMap.UpdatePosition(player.get(), player->GetPosition());
-
-			common::Vec3 serverPos = player->GetPosition();
-			common::Vec3 clientTargetPos = player->GetLastClientTargetPos();
-			common::Vec3 lastSentPos = player->GetLastSentPos();
-
-			// --- 패킷 전송 조건 체크 (최적화) ---
-			// 1. 넉백 중인가? (Impact 속도가 남아있음)
-			bool isKnockback = common::Length(cc->GetImpactVelocity()) > 0.1f;
-
-			// 2. 서버-클라이언트 오차가 0.5m 이상이면 (벽에 막힘 등 Desync 발생)
-			float desyncDistSq = common::DistanceSq(serverPos, clientTargetPos);
-
-			// 3. 상태가 변경되면
-			bool isStateDirty = (player->_state != player->GetLastSentState());
-
-			if (isKnockback || desyncDistSq > (0.5f * 0.5f) || isStateDirty)
-			{
-				packet::SC_PACKET_MOVE sync_packet;
-				sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
-				sync_packet._size = sizeof(sync_packet);
-				sync_packet._id = session->_id;
-				sync_packet._position = serverPos;
-				sync_packet._rotation = player->GetRotation();
-				sync_packet._state = player->_state;
-
-				
-				// 본인 포함 브로드캐스트 (강제 위치 견인)
-				Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet));
-
-				// 전송 기록 갱신
-				player->SetLastSentPos(serverPos);
-				player->SetLastClientTargetPos(serverPos); // 의도 동기화
-				player->SetLastSentState(player->_state);
-			}
-			else if (common::DistanceSq(serverPos, lastSentPos) > (0.05f * 0.05f))
-			{
-				// 3. 오차는 적지만 이동량이 유의미할 때 (5cm 이상)
-				// -> 타인에게만 전송 (대역폭 절약)
-
-				packet::SC_PACKET_MOVE sync_packet;
-				sync_packet._type = common::packet::PacketType::S2C_P_MOVE;
-				sync_packet._size = sizeof(sync_packet);
-				sync_packet._id = session->_id;
-				sync_packet._position = serverPos;
-				sync_packet._rotation = player->GetRotation();
-				sync_packet._state = player->_state;
-
-				Broadcast(reinterpret_cast<char*>(&sync_packet), sizeof(sync_packet), session->_id);
-				player->SetLastSentPos(serverPos);
-				player->SetLastSentState(player->_state);
-			}
-
 		}
 
 		// --- 4. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
@@ -528,7 +476,6 @@ namespace PIP::SERVER
 
 	void Room::UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
-		ProcessJobs();
 		if (_players.empty()) return;
 
 		// --- 1. 단계별 NPC 수집 (0~40m: Inner, 40~120m: Gray) ---
@@ -587,6 +534,40 @@ namespace PIP::SERVER
 		{
 			if (!session || !session->_player) continue;
 			common::Vec3 myPos = session->_player->GetPosition();
+
+			auto player = session->_player;
+			if (!player) continue;
+
+			common::Vec3 serverPos = player->GetPosition();
+			common::Quat serverRot = player->GetRotation();
+			auto currentState = player->GetState();
+
+			// 1. 변화량 체크 (1mm 이상 이동했거나 상태/회전이 변했다면 전송)
+			// _lastSentPos 등은 Player 클래스의 멤버 변수입니다.
+			bool isMoved = common::DistanceSq(serverPos, player->GetLastSentPos()) > 0.0001f;
+			bool isStateChanged = (currentState != player->GetLastSentState());
+			bool isRotated = !common::IsEqual(serverRot, player->GetLastSentRot());
+
+			if (isMoved || isStateChanged || isRotated) {
+				common::packet::SC_PACKET_MOVE res;
+				res._type = common::packet::PacketType::S2C_P_MOVE;
+				res._size = sizeof(res);
+				res._id = player->GetId();
+				res._position = serverPos; // 물리 업데이트 결과가 반영된 진짜 최신 좌표!
+				res._rotation = serverRot;
+				res._state = currentState;
+				res._action_id = player->_actionId;
+
+				// 나를 포함한 모든 방 인원에게 브로드캐스트
+				// 이제 클라이언트는 내가 가려고 했던 방향으로 '정확히 이동한 결과'를 받게 됩니다.
+				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
+
+				// 전송 완료 상태 기록 (다음 프레임 비교용)
+				player->SetLastSentPos(serverPos);
+				player->SetLastSentState(currentState);
+				player->SetLastSentRot(serverRot);
+			}
+
 
 			std::vector<GAME::GameObject*> nearby;
 			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
@@ -689,9 +670,12 @@ namespace PIP::SERVER
 
 		// 플레이어 업데이트 및 스냅샷 기록 (Active 대상)
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-		for (auto& [pid, session] : _players) session->_player->Update(deltaTime, tempAllocator);
+		for (auto& [pid, session] : _players)
+		{
+			session->_player->Update(deltaTime, tempAllocator);
+			session->_player->RecordSnapshot(currentTick);
+		}
 		for (auto* npc : activeNpcs) npc->RecordSnapshot(currentTick);
-		for (auto& [pid, session] : _players) session->_player->RecordSnapshot(currentTick);
 
 		if (shouldSync) BroadcastNpcBatch();
 	}
@@ -1071,66 +1055,43 @@ namespace PIP::SERVER
 		
 
 	}
+
 	void Room::Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet) {
 		if (!session || session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 		auto player = session->_player;
+		if (!player) return;
+
 		auto pcc = player->GetComponent<GAME::PlayerControllerComponent>();
-		// [1] 넉백 힘이 강력하게 작용 중인지 체크 (임계값 2.0f 이상)
-		bool isHeavyKnockback = common::Length(pcc->GetImpactVelocity()) > 2.0f;
-		if (isHeavyKnockback) {
-			// [넉백 중 로직]
-			// 클라이언트 조작 속도를 0으로 만들어 물리적 밀려남만 허용함
-			pcc->SetMoveVelocity({ 0, 0, 0 });
+		if (!pcc) return;
 
-			// 이때는 클라이언트의 위치를 억지로 승인하기보다, 서버 물리 엔진이 미는 대로 둡니다.
-			// 클라이언트는 서버에서 오는 보정 패킷을 비주얼 오프셋으로 부드럽게 받아냅니다.
-			player->SetLastClientTargetPos(move_packet._position);
-		}
-		else
-		{
-			auto snapshot = player->GetSnapshotAt(move_packet._client_tick);
-			// 2. 과거 위치와 클라이언트가 보낸 위치 사이의 거리 계산
-			float moveDist = common::Distance(snapshot._position, move_packet._position);
+		// 1. 텔레포트 체크 (검증용)
+		common::Vec3 currentServerPos = player->GetPosition();
+		float moveDist = common::Distance(currentServerPos, move_packet._position);
 
-			// 3. [승인 로직] 초당 5m 속도 플레이어가 0.2초(RTT) 지연 시 약 1m 오차는 정상 범위
-			// 해킹이 아니라고 판단되면 클라이언트의 예측 위치를 서버 물리 바디에 즉시 수용
-			constexpr float MAX_RECONCILE_DIST = 5.0f;
-			if (moveDist < MAX_RECONCILE_DIST) {
-				// [A] 이동 승인: 서버 물리 바디를 클라이언트 위치로 즉시 옮겨 동기화함
-				player->SetPosition(move_packet._position);
-				player->SetLastClientTargetPos(move_packet._position);
+		// 2. [의도 수용] 클라이언트가 보낸 방향 벡터를 그대로 사용
+		common::Vec3 moveDir = move_packet._move_dir;
 
-				// 순간 이동했으므로 속도는 0으로 초기화 (관성 꼬임 방지)
+		if (moveDist < 10.0f) { // 정상 범위 이내일 때
+			if (common::LengthSq(moveDir) > 0.0001f) {
+				// 방향 벡터에 플레이어의 진짜 속도를 곱해 물리 엔진에 설정
+				pcc->SetMoveVelocity(common::Normalize(moveDir) * player->GetSpeed());
+			}
+			else {
 				pcc->SetMoveVelocity({ 0, 0, 0 });
 			}
-			else 
-			{
-				// [거절] 너무 멀면(렉/핵) 기존 추적 로직 작동 -> 보정 패킷 발송됨
-				common::Vec3 currentPos = player->GetPosition();
-				common::Vec3 moveDir = move_packet._position - currentPos;
-				// Y축 거리 체크를 위해 moveDir.y = 0; 제거
-
-				float dist = common::Length(moveDir);
-
-				// 텔레포트(5m) 혹은 속도 이동
-				if (dist > 5.0f) {
-					player->SetPosition(move_packet._position);
-					pcc->SetMoveVelocity({ 0, 0, 0 });
-				}
-				else if (dist > 0.01f) {
-					// 속도 제한을 50.0f로 넉넉하게 주어 억울한 보정 방지
-					common::Vec3 vel = common::Normalize(moveDir) * (dist / 0.02f);
-					if (common::Length(vel) > 50.0f) vel = common::Normalize(vel) * 50.0f;
-					pcc->SetMoveVelocity(vel);
-				}
-				else {
-					pcc->SetMoveVelocity({ 0, 0, 0 });
-				}
-				player->SetLastClientTargetPos(move_packet._position);
-			}
 		}
-		session->_player->SetRotation(move_packet._rotation);
-		session->_player->_state = move_packet._state;
+		else {
+			// 너무 멀면 강제 스냅 (핵/렉 방지)
+			pcc->SetMoveVelocity({ 0, 0, 0 });
+			pcc->SetPosition(currentServerPos);
+		}
+
+		// 상태 동기화 (기존 로직 유지)
+		player->SetRotation(move_packet._rotation);
+		player->SetState(move_packet._state);
+		player->SetActionId(move_packet._action_id);
+		player->SetLastClientTargetPos(move_packet._position);
+
 	}
 	void Room::Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet) {
 
