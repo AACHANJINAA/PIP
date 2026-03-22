@@ -55,6 +55,8 @@ void ResourceManager::create_default_textures(ID3D12Device* device, ID3D12Graphi
         auto transition = CD3DX12_RESOURCE_BARRIER::Transition(new_tex_info.resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         command_list->ResourceBarrier(1, &transition);
 
+        new_tex_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
         if (!DescriptorManager::instance()->allocate_descriptor(new_tex_info.cpu_handle, new_tex_info.gpu_handle)) { CERROR("Failed to allocate descriptor for default texture: " + name); return; }
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
@@ -346,7 +348,8 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
         new_texture_info.resource.Get(),
         D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
     _command_list->ResourceBarrier(1, &transition);
-    
+    new_texture_info.current_state = D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+
     // 7. 셰이더 리소스 뷰(SRV)를 생성합니다.
     if (!DescriptorManager::instance()->allocate_descriptor(new_texture_info.cpu_handle, new_texture_info.gpu_handle))
     {
@@ -943,6 +946,8 @@ ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::
         D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     _command_list->ResourceBarrier(1, &transition);
 
+    new_texture_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
     // 5. 큐브맵용 SRV 생성 (load_texture의 로직과 동일)
     if (!DescriptorManager::instance()->allocate_descriptor(new_texture_info.cpu_handle, new_texture_info.gpu_handle))
     {
@@ -1045,6 +1050,8 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
     auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(new_tex_info.resource.Get(),
         D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     _command_list->ResourceBarrier(1, &barrier);
+
+    new_tex_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
     // 6. SRV 생성
 
@@ -1185,6 +1192,8 @@ ResourceManager::TextureInfo* ResourceManager::load_texture_r8(const std::string
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
         );
         _command_list->ResourceBarrier(1, &barrier);
+
+        new_texture_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     }
     else
     {
@@ -1357,6 +1366,8 @@ ResourceManager::TextureInfo* ResourceManager::create_texture_array_r8(const std
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
         );
         _command_list->ResourceBarrier(1, &barrier);
+    
+        new_texture_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     }
     else
     {
@@ -1393,4 +1404,175 @@ ResourceManager::TextureInfo* ResourceManager::create_texture_array_r8(const std
     _textures[array_name] = new_texture_info;
 
 	return &_textures[array_name];
+}
+
+ResourceManager::TextureInfo* ResourceManager::create_texture_array_from_loaded(const std::string& array_name, const std::vector<std::string>& texture_keys)
+{
+    // 1. 캐시 확인
+    auto it = _textures.find(array_name);
+    if (it != _textures.end())
+        return &it->second;
+
+    if (texture_keys.empty())
+    {
+        CERROR("No texture keys provided for Texture2DArray: " << array_name);
+        return nullptr;
+    }
+
+    const size_t array_size = texture_keys.size();
+    if (array_size > 16)
+    {
+        CERROR("Too many textures for Texture2DArray (max 16): " << array_name);
+        return nullptr;
+    }
+
+    // 2. 로드된 텍스처들 가져오기
+    std::vector<TextureInfo*> source_textures;
+    source_textures.reserve(array_size);
+
+    int width = 0, height = 0;
+    DXGI_FORMAT source_format = DXGI_FORMAT_UNKNOWN;
+    for (const auto& key : texture_keys)
+    {
+        auto* tex = get_texture(key);
+        if (!tex || !tex->resource)
+        {
+            CERROR("Texture not found or not loaded: " << key);
+            return nullptr;
+        }
+        source_textures.push_back(tex);
+
+        // 첫 번째 텍스처에서 크기 가져오기
+        if (width == 0)
+        {
+            D3D12_RESOURCE_DESC desc = tex->resource->GetDesc();
+            width = static_cast<int>(desc.Width);
+            height = static_cast<int>(desc.Height);
+			source_format = desc.Format;
+        }
+    }
+    if (source_format == DXGI_FORMAT_UNKNOWN)
+    {
+        CERROR("Could not detect source texture format for array: " << array_name);
+        return nullptr;
+    }
+
+
+    // 3. Texture2DArray 리소스 생성
+    TextureInfo new_texture_info;
+    new_texture_info.name = array_name;
+
+    D3D12_RESOURCE_DESC texture_desc = {};
+    texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    texture_desc.Width = width;
+    texture_desc.Height = height;
+    texture_desc.DepthOrArraySize = static_cast<UINT16>(array_size);
+    texture_desc.MipLevels = 1;
+    texture_desc.Format = source_format;
+    texture_desc.SampleDesc.Count = 1;
+    texture_desc.SampleDesc.Quality = 0;
+    texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    texture_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    auto default_heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    HRESULT hr = _device->CreateCommittedResource(
+        &default_heap_props,
+        D3D12_HEAP_FLAG_NONE,
+        &texture_desc,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        IID_PPV_ARGS(&new_texture_info.resource)
+    );
+
+    if (FAILED(hr))
+    {
+        CERROR("Failed to create Texture2DArray resource: " << array_name);
+        return nullptr;
+    }
+
+    // 4. 각 슬라이스에 원본 텍스처 복사
+    if (_command_list)
+    {
+        for (size_t i = 0; i < array_size; ++i)
+        {
+            // ===== 저장된 current_state 사용 =====
+            D3D12_RESOURCE_STATES original_state = source_textures[i]->current_state;
+
+            // COPY_SOURCE로 전환
+            auto barrier_before = CD3DX12_RESOURCE_BARRIER::Transition(
+                source_textures[i]->resource.Get(),
+                original_state,
+                D3D12_RESOURCE_STATE_COPY_SOURCE
+            );
+            _command_list->ResourceBarrier(1, &barrier_before);
+
+            // 복사
+            D3D12_TEXTURE_COPY_LOCATION dst_location = {};
+            dst_location.pResource = new_texture_info.resource.Get();
+            dst_location.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+            dst_location.SubresourceIndex = static_cast<UINT>(i);
+
+            D3D12_TEXTURE_COPY_LOCATION src_location = {};
+            src_location.pResource = source_textures[i]->resource.Get();
+            src_location.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+            src_location.SubresourceIndex = 0;
+
+            _command_list->CopyTextureRegion(&dst_location, 0, 0, 0, &src_location, nullptr);
+
+            // 원래 상태로 복원
+            auto barrier_after = CD3DX12_RESOURCE_BARRIER::Transition(
+                source_textures[i]->resource.Get(),
+                D3D12_RESOURCE_STATE_COPY_SOURCE,
+                original_state
+            );
+            _command_list->ResourceBarrier(1, &barrier_after);
+
+            // 상태 복원 확인
+            source_textures[i]->current_state = original_state;
+        }
+
+        // 배열 전체를 PIXEL_SHADER_RESOURCE로 전환
+        auto barrier_final = CD3DX12_RESOURCE_BARRIER::Transition(
+            new_texture_info.resource.Get(),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+        );
+        _command_list->ResourceBarrier(1, &barrier_final);
+
+        // 배열 상태 저장
+        new_texture_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    }
+    else
+    {
+        CERROR("CommandList not set for Texture2DArray creation: " << array_name);
+        return nullptr;
+    }
+
+    // 5. SRV 생성
+    if (!DescriptorManager::instance()->allocate_descriptor(
+        new_texture_info.cpu_handle,
+        new_texture_info.gpu_handle))
+    {
+        CERROR("Failed to allocate descriptor for Texture2DArray: " << array_name);
+        return nullptr;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Format = source_format;
+    srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+    srv_desc.Texture2DArray.MipLevels = 1;
+    srv_desc.Texture2DArray.FirstArraySlice = 0;
+    srv_desc.Texture2DArray.ArraySize = static_cast<UINT>(array_size);
+
+    _device->CreateShaderResourceView(
+        new_texture_info.resource.Get(),
+        &srv_desc,
+        new_texture_info.cpu_handle
+    );
+
+    // 6. 캐시에 저장
+    _textures[array_name] = new_texture_info;
+
+    return &_textures[array_name];
 }

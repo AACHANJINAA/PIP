@@ -77,6 +77,7 @@ public:
         ComPtr<ID3D12Resource> upload_heap = nullptr;
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle{};
         D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle{};
+        D3D12_RESOURCE_STATES current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     };
 
 private:
@@ -203,4 +204,6 @@ public:
 	// R8 포멧 텍스쳐 로드 함수 <- multi landscape layer용
     TextureInfo* load_texture_r8(const std::string& file_path, int width, int height);
     TextureInfo* create_texture_array_r8(const std::string& array_name, const std::vector<std::string>& file_paths, int width, int height);
+
+    TextureInfo* create_texture_array_from_loaded(const std::string& array_name, const std::vector<std::string>& texture_keys);
 };

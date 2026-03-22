@@ -66,6 +66,10 @@ public:
 	const std::vector<LayerInfo>& get_layers() const { return _layers; }
 	const std::string& get_weightmap_array_key() const {return _weightmapArrayKey;}
 
+	const std::string& get_albedo_array_key() const { return _albedoArrayKey; }
+	const std::string& get_normal_array_key() const { return _normalArrayKey; }
+	const std::string& get_roughness_array_key() const { return _roughnessArrayKey; }
+
 private:
 	void create_flat_grid(int grid_width, int grid_height);
 
@@ -82,6 +86,10 @@ private:
 	std::vector<LayerInfo> _layers;           // 레이어 정보 (최대 8개)
 	std::string _weightmapArrayKey;           // Texture2DArray 키(ResourceManager 캐시용)
 	bool _hasLayers = false;                  // Layer 시스템 사용 여부
+
+	std::string _albedoArrayKey;    // Albedo Texture2DArray 키
+	std::string _normalArrayKey;    // Normal Texture2DArray 키
+	std::string _roughnessArrayKey; // Roughness Texture2DArray 키
 
 	TerrainInfo _terrainInfo;            // Terrain 
 	common::TerrainData _terrainData;
