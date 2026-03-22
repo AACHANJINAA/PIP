@@ -390,49 +390,98 @@ void TerrainLoader::render(ID3D12GraphicsCommandList* command_list)
 	auto* rm = ResourceManager::instance();
 	auto* renderer = Renderer::instance();
 
-	// 1. Terrain의 Material 정보 가져오기
+	// Helper to get texture or default
+	auto get_tex_handle_or_default = [&](const std::string& path, const std::string& default_name) -> D3D12_CPU_DESCRIPTOR_HANDLE {
+		if (path.empty()) {
+			auto* tex = rm->get_texture(default_name);
+			return tex ? tex->cpu_handle : D3D12_CPU_DESCRIPTOR_HANDLE{ 0 };
+		}
+		auto* tex_info = rm->get_texture(path);
+		if (tex_info && tex_info->cpu_handle.ptr != 0) {
+			return tex_info->cpu_handle;
+		}
+		auto* def_tex = rm->get_texture(default_name);
+		return def_tex ? def_tex->cpu_handle : D3D12_CPU_DESCRIPTOR_HANDLE{ 0 };
+		};
+
+	// ===== 기본 Material 렌더링 경로 (기존 코드) =====
 	auto* mat_info = rm->get_material_info(_materialName);
 	if (!mat_info) {
 		CERROR("Material info not found for terrain: " << _materialName);
 		return;
 	}
 
-	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texture_handles;
-
-	// Helper to get texture or default (ResourceManager::bind_material에서 가져온 로직)
-	auto get_tex_handle_or_default = [&](const std::string& path, const std::string& default_name) -> D3D12_CPU_DESCRIPTOR_HANDLE {
-		// Path can be empty, so check first
-		if (path.empty()) {
-			return rm->get_texture(default_name)->cpu_handle;
-		}
-		auto* tex_info = rm->get_texture(path);
-		if (tex_info && tex_info->cpu_handle.ptr != 0) {
-			return tex_info->cpu_handle;
-		}
-		// Return default if specific texture not found
-		return rm->get_texture(default_name)->cpu_handle;
-		};
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> base_texture_handles;
 
 	// t0: Base Color Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->base_color_texture_path, "__DEFAULT_WHITE__"));
+	base_texture_handles.push_back(get_tex_handle_or_default(mat_info->base_color_texture_path, "__DEFAULT_WHITE__"));
 	// t1: Normal Map Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->normal_texture_path, "__DEFAULT_NORMAL__"));
+	base_texture_handles.push_back(get_tex_handle_or_default(mat_info->normal_texture_path, "__DEFAULT_NORMAL__"));
 	// t2: ORM Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->metallic_roughness_texture_path, "__DEFAULT_ORM__"));
+	base_texture_handles.push_back(get_tex_handle_or_default(mat_info->metallic_roughness_texture_path, "__DEFAULT_ORM__"));
 	// t3: Emissive Texture
-	texture_handles.push_back(get_tex_handle_or_default(mat_info->emissive_texture_path, "__DEFAULT_BLACK__"));
-	// t4: Detail Texture (새로 추가된 부분)
-	texture_handles.push_back(get_tex_handle_or_default(get_detail_texture_key(), "__DEFAULT_WHITE__"));
+	base_texture_handles.push_back(get_tex_handle_or_default(mat_info->emissive_texture_path, "__DEFAULT_BLACK__"));
+	// t4: Detail Texture
+	base_texture_handles.push_back(get_tex_handle_or_default(get_detail_texture_key(), "__DEFAULT_WHITE__"));
 
-	// 2. 5개의 텍스처 핸들 테이블을 루트 파라미터 4에 바인딩
-	renderer->bind_texture_table(command_list, 4, texture_handles);
+	// 기본 텍스처 테이블 바인딩 (params[4])
+	renderer->bind_texture_table(command_list, 4, base_texture_handles);
 
-	// 3. Vertex/Index Buffer 바인딩
+	// ===== Layer 시스템 사용 여부에 따라 바인딩 분기 =====
+	if (_hasLayers && !_layers.empty())
+	{
+		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> layer_texture_handles;
+
+		// t12: Weightmap Texture2DArray
+		auto* weightmap_array = rm->get_texture(_weightmapArrayKey);
+		if (weightmap_array && weightmap_array->cpu_handle.ptr != 0) {
+			layer_texture_handles.push_back(weightmap_array->cpu_handle);
+		}
+		else {
+			CERROR("Weightmap array not found: " << _weightmapArrayKey);
+			layer_texture_handles.push_back(rm->get_texture("__DEFAULT_WHITE__")->cpu_handle);
+		}
+
+		// t13: Albedo Texture2DArray
+		auto* albedo_array = rm->get_texture(_albedoArrayKey);
+		if (albedo_array && albedo_array->cpu_handle.ptr != 0) {
+			layer_texture_handles.push_back(albedo_array->cpu_handle);
+		}
+		else {
+			CERROR("Albedo array not found: " << _albedoArrayKey);
+			layer_texture_handles.push_back(rm->get_texture("__DEFAULT_WHITE__")->cpu_handle);
+		}
+
+		// t14: Normal Texture2DArray
+		auto* normal_array = rm->get_texture(_normalArrayKey);
+		if (normal_array && normal_array->cpu_handle.ptr != 0) {
+			layer_texture_handles.push_back(normal_array->cpu_handle);
+		}
+		else {
+			CERROR("Normal array not found: " << _normalArrayKey);
+			layer_texture_handles.push_back(rm->get_texture("__DEFAULT_NORMAL__")->cpu_handle);
+		}
+
+		// t15: Roughness Texture2DArray
+		auto* roughness_array = rm->get_texture(_roughnessArrayKey);
+		if (roughness_array && roughness_array->cpu_handle.ptr != 0) {
+			layer_texture_handles.push_back(roughness_array->cpu_handle);
+		}
+		else {
+			CERROR("Roughness array not found: " << _roughnessArrayKey);
+			layer_texture_handles.push_back(rm->get_texture("__DEFAULT_WHITE__")->cpu_handle);
+		}
+
+		// Layer 텍스처 테이블 바인딩 (params[9])
+		renderer->bind_texture_table(command_list, 9, layer_texture_handles);
+	}
+
+	// Vertex/Index Buffer 바인딩
 	command_list->IASetVertexBuffers(0, 1, &_vertexBufferView);
 	command_list->IASetIndexBuffer(&_indexBufferView);
 	command_list->IASetPrimitiveTopology(_primitiveTopology);
 
-	// 4. Draw Call
+	// Draw Call
 	command_list->DrawIndexedInstanced(
 		static_cast<UINT>(_indices.size()), 1, 0, 0, 0
 	);

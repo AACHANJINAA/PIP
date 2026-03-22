@@ -122,7 +122,7 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
             CERROR("Layer texture arrays not found for terrain");
             return;
         }
-        renderer->bind_texture_table(commandList, 4, layer_texture_handles);
+        renderer->bind_texture_table(commandList, 9, layer_texture_handles);
     }
     else
     {
