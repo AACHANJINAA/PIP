@@ -347,6 +347,34 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 		rm->load_texture(layer.roughness_texture, false);
 	}
 
+	// 4. 레이어 텍스처들을 Texture2DArray로 묶기
+	std::vector<std::string> albedo_keys, normal_keys, roughness_keys;
+	for (const auto& layer : _layers)
+	{
+		albedo_keys.push_back(layer.albedo_texture);
+		normal_keys.push_back(layer.normal_texture);
+		roughness_keys.push_back(layer.roughness_texture);
+	}
+
+	_albedoArrayKey = "AlbedoArray_" + landscape_name;
+	_normalArrayKey = "NormalArray_" + landscape_name;
+	_roughnessArrayKey = "RoughnessArray_" + landscape_name;
+
+	auto* albedo_array = rm->create_texture_array_from_loaded(
+		_albedoArrayKey, albedo_keys);
+
+	auto* normal_array = rm->create_texture_array_from_loaded(
+		_normalArrayKey, normal_keys);
+
+	auto* roughness_array = rm->create_texture_array_from_loaded(
+		_roughnessArrayKey, roughness_keys);
+
+	if (!albedo_array || !normal_array || !roughness_array)
+	{
+		CERROR("Failed to create layer texture arrays for: " << landscape_name);
+		return;
+	}
+
 	_hasLayers = true;
 }
 

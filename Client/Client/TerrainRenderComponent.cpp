@@ -106,24 +106,22 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
         }
         layer_texture_handles.push_back(weightmap_array->cpu_handle);
 
-        // t13~t15: Layer Albedo/Normal/Roughness Arrays 생성 필요
-        // TODO: 현재는 개별 텍스처만 로드됨 -> Texture2DArray 추가 구현 필요
-        // 임시로 첫 번째 레이어 텍스처만 바인딩 (테스트용)
-        const auto& layers = terrain_loader->get_layers();
-        if (!layers.empty())
+        // t13~t15: Layer Albedo/Normal/Roughness Arrays
+        auto* albedo_array = rm->get_texture(terrain_loader->get_albedo_array_key());
+        auto* normal_array = rm->get_texture(terrain_loader->get_normal_array_key());
+        auto* roughness_array = rm->get_texture(terrain_loader->get_roughness_array_key());
+
+        if (albedo_array && normal_array && roughness_array)
         {
-            auto* alb_tex = rm->get_texture(layers[0].albedo_texture);
-            auto* nrm_tex = rm->get_texture(layers[0].normal_texture);
-            auto* rgh_tex = rm->get_texture(layers[0].roughness_texture);
-
-            if (alb_tex && nrm_tex && rgh_tex)
-            {
-                layer_texture_handles.push_back(alb_tex->cpu_handle); // t6 (임시)
-                layer_texture_handles.push_back(nrm_tex->cpu_handle); // t7 (임시)
-                layer_texture_handles.push_back(rgh_tex->cpu_handle); // t8 (임시)
-            }
+            layer_texture_handles.push_back(albedo_array->cpu_handle);   // t13
+            layer_texture_handles.push_back(normal_array->cpu_handle);   // t14
+            layer_texture_handles.push_back(roughness_array->cpu_handle); // t15
         }
-
+        else
+        {
+            CERROR("Layer texture arrays not found for terrain");
+            return;
+        }
         renderer->bind_texture_table(commandList, 4, layer_texture_handles);
     }
     else
