@@ -194,11 +194,11 @@ void MainPlayerScript::awake()
 	auto owner = game_object();
 
 	// PhysicsCharacterControllerComponent 초기화
-	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
+	/*auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
 	if (cc) {
 		cc->initialize(1.8f, 0.5f);
 		cc->set_position(transform()->local_position());
-	}
+	}*/
 	// Animationcomponent
 	auto animation_component = owner->get_component<AnimationComponent>();
 	if (!animation_component)
@@ -243,6 +243,9 @@ void MainPlayerScript::awake()
 	// 위치, 회전 정보
 	owner->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 
+	_logicalPosition = owner->transform()->local_position();
+	_visualOffset = { 0, 0, 0 };
+
 	_camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
 	if (_camera) {
 		XMFLOAT3 camF = _camera->transform()->forward();
@@ -280,23 +283,20 @@ void MainPlayerScript::awake()
 
 void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
 {
-	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
-	if (!cc) return;
+	/// 1. 현재 화면에 보이고 있던 최종 위치 계산
+	common::Vec3 currentVisualPos = _logicalPosition + _visualOffset;
 
-	// 1. 현재 클라이언트의 물리 위치와 서버 위치의 차이를 계산
-	common::Vec3 currentPhysicsPos = cc->get_position();
+	// 2. 논리 위치는 서버 좌표로 즉시 동기화 (순간이동)
+	_logicalPosition = movePacket._position;
 
-	// 2. 물리 위치는 서버 위치로 즉시 옮김 (서버 권위 인정)
-	cc->set_position(movePacket._position);
-	cc->set_velocity({ 0, 0, 0 });
+	// 3. [핵심] 화면이 튀지 않게 오프셋 재계산
+	// (이전 시각적 위치 - 새로운 논리 위치)를 오프셋으로 설정하여 화면상 위치를 유지함
+	_visualOffset = currentVisualPos - _logicalPosition;
 
-	_state = movePacket._state;
-	_actionId = movePacket._action_id;
-	// 3. [핵심] 대신 시각적으로는 튀지 않게 오프셋을 설정
-	// "물리는 옮겼지만, 눈에 보이는 모델은 이전 위치에서 서서히 이동해라"는 뜻입니다.
-	_visualOffset = currentPhysicsPos - movePacket._position;
-
-	transform()->set_local_rotation(movePacket._rotation);
+	// 만약 오차가 너무 크면(예: 5m) 보간하지 않고 즉시 스냅 (텔레포트 대응)
+	if (common::LengthSq(_visualOffset) > 5.0f * 5.0f) {
+		_visualOffset = { 0, 0, 0 };
+	}
 }
 //---------------------------------------------------------- private functions ----------------------------------------------------------
 //--- update() 내부에서 호출되는 기능 분리용 함수들 ---
@@ -450,38 +450,68 @@ void MainPlayerScript::handle_input(float deltaTime)
 }
 void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 {
-	float impactSpeed = common::Length(_impactVelocity);
-	if (impactSpeed > 0.1f) {
-		// 매 프레임 35.0f의 마찰력으로 속도를 줄임
-		_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - 35.0f * deltaTime);
+
+	//float impactSpeed = common::Length(_impactVelocity);
+	//if (impactSpeed > 0.1f) {
+	//	// 서버와 동일하게 초당 40.0f씩 감쇄
+	//	float reduction = 40.0f * deltaTime;
+	//	_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - reduction);
+	//}
+	//else {
+	//	_impactVelocity = { 0, 0, 0 };
+	//}
+	// 1. TerrainLoader 정적 함수를 통해 현재 위치의 지형 높이 가져오기
+	// 지형 타일이 여러 개여도 알아서 내 발밑의 높이를 찾아줍니다.
+	float groundHeight = TerrainLoader::get_height_anywhere(_logicalPosition.x, _logicalPosition.z);
+
+	// 2. 접지 체크 및 수직 속도(중력) 계산
+	if (_logicalPosition.y > groundHeight + 0.05f) {
+		_isGrounded = false;
+		_verticalVelocity += -9.81f * deltaTime; // 서버와 동일한 중력 가속도
 	}
 	else {
-		_impactVelocity = { 0,0,0 };
+		// 지면에 닿아있는 상태
+		if (!_isGrounded) {
+			_isGrounded = true;
+			_verticalVelocity = 0.0f;
+			_logicalPosition.y = groundHeight; // 지면에 착지 스냅
+		}
 	}
 
-	auto pcc = game_object()->get_component<PhysicsCharacterControllerComponent>();
-	if (pcc) {
-		// 공격 중에도 _currentMoveDir에 값이 있다면 이동함 (이동 공격)
-		common::Vec3 moveVel = _currentMoveDir * _speed;
-		common::Vec3 currentVel = pcc->get_velocity();
+	// 2. 논리적 위치 예측 (Input + Knockback + Gravity)
+	common::Vec3 moveVel = _currentMoveDir * _speed;
+	_logicalPosition += (moveVel) * deltaTime;
+	_logicalPosition.y += _verticalVelocity * deltaTime;
 
-		pcc->set_velocity({ moveVel.x + _impactVelocity.x, currentVel.y, moveVel.z + _impactVelocity.z });
-
-		// 시각적 보정 (기존 로직)
-		float lerpFactor = std::min(1.0f, deltaTime * 10.0f);
-		_visualOffset = _visualOffset * (1.0f - lerpFactor);
-		transform()->set_local_position(pcc->get_position() + _visualOffset);
+	// 땅 파고듦 방지 (중요!)
+	if (_isGrounded && _logicalPosition.y < groundHeight) {
+		_logicalPosition.y = groundHeight;
 	}
+
+	// 3. 시각적 오프셋 감쇄 (부드럽게 0으로 수렴)
+	// 0.1초(deltaTime * 10) 주기로 오차를 없앰
+	float lerpFactor = std::min(1.0f, deltaTime * 15.0f);
+	_visualOffset = _visualOffset * (1.0f - lerpFactor);
+
+	// 4. 최종 Transform 적용 (논리 위치 + 보정 오프셋)
+	// 이렇게 해야 렌더링은 부드럽고, 서버에 보내는 좌표는 정확해집니다.
+	transform()->set_local_position(_logicalPosition + _visualOffset);
 }
 void MainPlayerScript::send_network_sync(float deltaTime)
 {
 	_sendTimer += deltaTime;
-	if (_sendTimer >= SENDINTERVAL || deltaTime == 0.0f) { // deltaTime 0은 즉시 전송용
+	if (_sendTimer >= SENDINTERVAL) {
 		_sendTimer = 0.f;
-		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
 
-		NetworkManager::instance()->SendMovePacket(transform()->local_position(), transform()->local_rotation(),
-			_state, _actionId,currentTick);
+		// [수정] transform()->local_position() 대신 _logicalPosition을 전송!
+		// _visualOffset이 포함된 좌표를 보내면 서버 보정과 충돌하여 지터링이 발생합니다.
+		NetworkManager::instance()->SendMovePacket(
+			_logicalPosition,
+			_currentMoveDir,
+			transform()->local_rotation(),
+			_state,
+			_actionId, static_cast<uint32_t>(GetTickCount64())
+		);
 	}
 }
 

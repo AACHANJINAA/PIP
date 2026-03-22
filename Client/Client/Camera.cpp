@@ -7,7 +7,8 @@
 //{
 //	m_xmf4x4View = Matrix4x4::Identity();
 //	m_xmf4x4Projection = Matrix4x4::Identity();
-//	m_d3dViewport = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_HEIGHT, 0.0f, 1.0f };
+//	m_d3dViewport = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_
+// , 0.0f, 1.0f };
 //	m_d3dScissorRect = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_HEIGHT };
 //	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 //	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);

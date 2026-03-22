@@ -20,7 +20,9 @@ public:
 public:
     // 클라이언트 -> 서버 패킷 전송 함수
     void SendLoginPacket(const std::string& name);
-    void SendMovePacket(common::Vec3 position, common::Quat rotation, common::packet::EntityState state, int32_t action_id,uint32_t current_tick);
+    void SendMovePacket(const common::Vec3& position, 
+        const common::Vec3& dir, const common::Quat& rotation, const common::packet::EntityState& state, 
+        const int32_t& action_id, const uint32_t& current_tick);
     void SendAttackPacket(); // 공격 패킷 전송 함수 추가
     void SendActionPacket(common::packet::ActionType type, int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
     void SendRoomListPacket();
