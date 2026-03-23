@@ -8,7 +8,7 @@ namespace PIP::GAME
 {
 	void NPCControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)
 	{
-		if (!_character) return;
+		if (!_character || !_isPhysicsActive) return;
 
 		using namespace common::VectorHelper;
 
@@ -74,7 +74,7 @@ namespace PIP::GAME
 	void NPCControllerComponent::LightPhysicsUpdate(float deltaTime)
 	{
 		// [NPC 전용 최적화] 시뮬레이션 없이 ShapeCast로 바닥만 체크하는 경량 모드
-		if (!_character) return;
+		if (!_character || !_isPhysicsActive) return;
 
 		common::Vec3 currentPos = GetPosition();
 		common::Vec3 vel = _aiVelocity;
@@ -114,7 +114,7 @@ namespace PIP::GAME
 
 			// 턱 높이 체크 (0.6m 이상은 벽으로 간주)
 			float stepHeight = groundY - currentPos.y;
-			if (stepHeight > 0.6f) {
+			if (stepHeight > 0.4f) {
 				nextPos.x = currentPos.x;
 				nextPos.z = currentPos.z;
 				nextPos.y = currentPos.y;

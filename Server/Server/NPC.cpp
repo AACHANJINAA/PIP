@@ -16,7 +16,8 @@ namespace PIP::GAME
 		_npc_type{ npc_type },
 		_room_id{ room_id },
 		_hp{ hp },
-		_maxHp{_hp}
+		_maxHp{ _hp },
+		_spawnPosition{ position }
 	{
 		SetId(npc_id);
 		SetFaction(Faction::FACTION_MONSTER);
@@ -64,6 +65,8 @@ namespace PIP::GAME
 	{
 		auto ai = GetComponent<AIComponent>();
 		if (!ai) return;
+
+		ai->Initialize();
 
 		// [핵심] ai가 이미 관리 중인 블랙보드를 가져옵니다.
 		auto bb = ai->GetBlackboard();

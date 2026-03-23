@@ -27,6 +27,9 @@ namespace PIP::GAME
         void AddImpulse(const common::Vec3& impulse);
         void SetPosition(const common::Vec3& position);
 
+        void SetPhysicsActive(bool active);
+        bool IsPhysicsActive() const { return _isPhysicsActive; }
+
         common::Vec3 GetPosition() const;
         common::Vec3 GetVelocity() const;
         bool IsGrounded() const;
@@ -35,6 +38,7 @@ namespace PIP::GAME
         const common::Vec3& GetImpactVelocity() const { return _impactVelocity; }
 
     protected:
+        bool _isPhysicsActive = true;
         float _halfHeight = 0.0f;
         common::Vec3 _impactVelocity = { 0,0,0 };
 
@@ -50,5 +54,6 @@ namespace PIP::GAME
                 JPH::CharacterContactSettings& ioSettings) override {
             }
         } _contactListener;
+
     };
 }

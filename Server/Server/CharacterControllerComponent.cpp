@@ -195,6 +195,19 @@ namespace PIP::GAME
 			_character->SetPosition(joltPos);
 		}
 	}
+
+	void CharacterControllerComponent::SetPhysicsActive(bool active)
+	{
+		_isPhysicsActive = active;
+
+		if (!_isPhysicsActive && _character)
+		{
+			// 사망 시 물리 엔진에서의 속도를 즉시 0으로 만듦
+			_character->SetLinearVelocity(JPH::Vec3::sZero());
+			_impactVelocity = { 0,0,0 };
+		}
+	}
+
 	common::Vec3 CharacterControllerComponent::GetPosition() const
 	{
 		if (!_character) return common::Vec3Zero;

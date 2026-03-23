@@ -17,7 +17,7 @@ namespace PIP::GAME
 		_max_hp{ 100 },
 		_level { 0 },
 		_exp { 0 },
-		_damage{ 10 },
+		_damage{ 50 },
 		_owner_id{ owner_id },
 		_actionId{0}
 	{
@@ -43,7 +43,7 @@ namespace PIP::GAME
 		_max_hp = 100;
 		_level = 0;
 		_exp = 0;
-		_damage = 10;
+		_damage = 50;
 		_state = common::packet::EntityState::IDLE;
 		_hitCooldown = 0.0f;
 		_history.clear();
@@ -54,6 +54,21 @@ namespace PIP::GAME
 			pc->SetMoveVelocity({ 0,0,0 });
 			pc->AddImpact({ 0, 0, 0 });
 		}
+	}
+
+	bool Player::IsDirty()
+	{
+		bool isMoved = common::DistanceSq(GetPosition(), _lastSentPos) > 0.0001f;
+		bool isStateChanged = (GetState() != _lastSentState);
+		bool isRotated = !common::IsEqual(GetRotation(), _lastSentRot);
+		return isMoved || isStateChanged || isRotated;
+	}
+
+	void Player::SyncSentData()
+	{
+		_lastSentPos = GetPosition();
+		_lastSentState = GetState();
+		_lastSentRot = GetRotation();
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,

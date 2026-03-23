@@ -39,7 +39,6 @@ namespace PIP::SERVER
 
 
 		// NPC의 공격 및 행동 판정
-		void ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config);
 
 
 		bool IsPlayerNearby(const common::Vec3& get_position, float size);
@@ -69,6 +68,7 @@ namespace PIP::SERVER
 
 		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void HandleAction(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
+		void ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 
@@ -90,8 +90,8 @@ namespace PIP::SERVER
 		void SpawnBoss();
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
-
-
+		void OnNPCDead(GAME::NPC* npc);
+		void RespawnNPC(GAME::NPC* npc);
 		// [삭제] UpdateSingleNPC는 더 이상 사용하지 않음
 		// void UpdateSingleNPC(int npcId);
 		
@@ -108,9 +108,10 @@ namespace PIP::SERVER
 
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
 
-		std::unordered_map<int64_t, GAME::Actor*> _actors;
-		std::unordered_map<int64_t, std::shared_ptr<SESSION>> _players;
+		std::unordered_map<int64_t, GAME::Actor*>				_actors;
+		std::unordered_map<int64_t, std::shared_ptr<SESSION>>	_players;
 		std::unordered_map<int64_t, std::unique_ptr<GAME::NPC>> _npcs;
+		std::vector<GAME::NPC*>									_activeNpcList;
 		int64_t _next_npc_id = 1000000;
 
 		JPH::PhysicsSystem*					_physicsSystem = nullptr;
