@@ -14,9 +14,18 @@ namespace PIP::GAME
 	};
     class Actor : public GameObject {
     public:
-        Actor() :_factionId(Faction::FACTION_UNKNOWN) {}
+        Actor() : _factionId(Faction::FACTION_UNKNOWN) {}
         virtual ~Actor() override = default;
 
+        // --- 상태 관리 메서드 ---
+        bool IsActive() const { return _isActive; }
+        virtual void SetActive(bool active) { _isActive = active; }
+
+        std::chrono::milliseconds GetRespawnDelay() const { return _respawnDelay; }
+        void SetRespawnDelay(float delay_seconds) { _respawnDelay = std::chrono::milliseconds(static_cast<int64_t>(delay_seconds * 1000.0f)); }
+
+        double GetDeathTime() const { return _deathTime; }
+        void SetDeathTime(double time) { _deathTime = time; }
         // --- 공통 데이터 접근 ---
 
         // [중요] 컴포넌트를 통해 위치와 회전을 가져오는 헬퍼 함수
@@ -64,5 +73,11 @@ namespace PIP::GAME
     protected:
         std::deque<common::ObjectSnapshot> _history;
         Faction _factionId;
+
+        // --- 새로 추가될 필드 ---
+        bool    _isActive = true;      // 활성화 상태 (false면 업데이트/렌더링 제외)
+        double  _deathTime = -1;     // 사망 시점 (서버 시간)
+        std::chrono::milliseconds _respawnDelay {10000};  // 리스폰 대기 시간
+
     };
 }

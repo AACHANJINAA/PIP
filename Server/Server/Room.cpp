@@ -476,188 +476,129 @@ namespace PIP::SERVER
 
 	void Room::UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
+		// 1. 방에 플레이어가 없으면 로직을 완전히 멈춤
 		if (_players.empty()) return;
 
-		// --- 1. 단계별 NPC 수집 (0~40m: Inner, 40~120m: Gray) ---
-		std::unordered_set<GAME::NPC*> activeNpcs; // 120m 전체
-		std::unordered_set<GAME::NPC*> innerNpcs;  // 40m 정밀물리
+		/// 1. [중요] 지난 프레임의 리스트를 비우고 새로 수집 (메모리 재할당 방지 위해 clear만)
+		_activeNpcList.clear();
+		std::unordered_set<int64_t> processedIds; // 중복 방지 (여러 플레이어 시야에 걸칠 경우)
 
-		// [보스 예외 처리] 보스는 거리와 상관없이 항상 활성화 및 정밀 물리 대상
-		std::vector<GAME::NPC*> bosses;
-		for (auto& [id, npc] : _npcs) {
-			if (npc->is_boss()) {
-				bosses.push_back(npc.get());
-				activeNpcs.insert(npc.get());
-				innerNpcs.insert(npc.get());
-#ifdef _DEBUG
-				if (GetRoomId() == 0)
-				{
-					auto ai = npc->GetComponent<GAME::AIComponent>();
-					if (ai && ai->GetBlackboard()->has("debug_node_name")) {
-						//auto bb = ai->GetBlackboard();
-						//std::string nodeName = bb->get<std::string>("debug_node_name");
-						//int status = bb->get<int>("debug_node_status");
+		// --- [Step 1] 활성 NPC 수집 (O(M)) ---
+		for (auto& [pid, session] : _players) {
+			if (!session || !session->_player) continue;
 
-						//// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
-						//std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
-						//std::string debugText = nodeName + " " + statusStr;
+			GAME::Player* player = session->_player.get();
+			common::Vec3 myPos = player->GetPosition();
 
-						//common::packet::PacketStream stream;
-						//common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
-						//pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
-						//pkt._actor_id = npc->GetId();
+			// [플레이어 이동 동기화] (기존 코드 유지)
+			if (player->IsDirty()) {
+				packet::SC_PACKET_MOVE res;
+				res._type = common::packet::PacketType::S2C_P_MOVE;
+				res._size = sizeof(res);
+				res._id = player->GetId();
+				res._position = player->GetPosition();
+				res._rotation = player->GetRotation();
+				res._state = player->GetState();
+				res._action_id = player->GetActionId();
+				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
+				player->SyncSentData();
+			}
 
-						//stream << pkt;
-						//stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
+			// [AOI 검색] 120m 내 NPC 찾기
+			std::vector<GAME::GameObject*> nearby;
+			_gridMap.GetNearbyObjects(myPos, nearby);
 
-						//// 헤더 사이즈 갱신
-						//auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
-						//header->_size = (uint16_t)stream.Size();
+			for (auto* obj : nearby) {
+				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+					// [검증] 살아있고, 아직 리스트에 없는 놈만 추가
+					if (npc->IsActive() && !processedIds.contains(npc->GetId())) {
+						_activeNpcList.push_back(npc);
+						processedIds.insert(npc->GetId());
 
-						//// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
-						//Broadcast(stream.mutable_data(), stream.Size());
-
-						auto bb = ai->GetBlackboard();
-						std::string nodeName = bb->get<std::string>("debug_node_name");
-						int status = bb->get<int>("debug_node_status");
-
-						std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
-						std::string debugText = nodeName + " " + statusStr;
-						//MYLOG("[DebugBT] " << npc->GetId() << " Boss" << debugText);
+						// 시야 진입 패킷 (기존 로직 유지)
+						if (!session->_viewedNpcs.contains(npc->GetId())) {
+							session->_viewedNpcs.insert(npc->GetId());
+							SendNpcSpawnToPlayer(session, npc);
+						}
 					}
 				}
+			}
+		}
+
+		// 보스는 거리 상관없이 항상 리스트에 추가 (있다면)
+		for (auto& [id, npc] : _npcs) {
+			if (npc->is_boss() && npc->IsActive() && !processedIds.contains(id)) {
+				_activeNpcList.push_back(npc.get());
+#ifdef _DEBUG
+				//if (GetRoomId() == 0)
+				//{
+				//	auto ai = npc->GetComponent<GAME::AIComponent>();
+				//	if (ai && ai->GetBlackboard()->has("debug_node_name")) {
+				//		//auto bb = ai->GetBlackboard();
+				//		//std::string nodeName = bb->get<std::string>("debug_node_name");
+				//		//int status = bb->get<int>("debug_node_status");
+
+				//		//// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
+				//		//std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
+				//		//std::string debugText = nodeName + " " + statusStr;
+
+				//		//common::packet::PacketStream stream;
+				//		//common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
+				//		//pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
+				//		//pkt._actor_id = npc->GetId();
+
+				//		//stream << pkt;
+				//		//stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
+
+				//		//// 헤더 사이즈 갱신
+				//		//auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
+				//		//header->_size = (uint16_t)stream.Size();
+
+				//		//// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
+				//		//Broadcast(stream.mutable_data(), stream.Size());
+
+				//		auto bb = ai->GetBlackboard();
+				//		std::string nodeName = bb->get<std::string>("debug_node_name");
+				//		int status = bb->get<int>("debug_node_status");
+
+				//		std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
+				//		std::string debugText = nodeName + " " + statusStr;
+				//		//MYLOG("[DebugBT] " << npc->GetId() << " Boss" << debugText);
+				//	}
+				//}
 #endif
 			}
 		}
 
-		for (auto& [pid, session] : _players)
-		{
-			if (!session || !session->_player) continue;
-			common::Vec3 myPos = session->_player->GetPosition();
+		// --- [Step 2] 로직 업데이트 루프 (O(M)) ---
+		// [핵심] 이제 _activeNpcList에는 120m 내의 '살아있는' NPC만 들어있습니다.
+		// 루프 내부에 if문이 거의 없어 분기 예측이 매우 안정적입니다.
+		for (GAME::NPC* npc : _activeNpcList) {
+			// AI/BT 업데이트
+			npc->Update(deltaTime, tempAllocator);
 
-			auto player = session->_player;
-			if (!player) continue;
+			// 높이 보정 및 맵 이탈 방지
+			common::Vec3 pos = npc->GetPosition();
+			auto mapData = PIP::MapDataManager::Instance();
 
-			common::Vec3 serverPos = player->GetPosition();
-			common::Quat serverRot = player->GetRotation();
-			auto currentState = player->GetState();
-
-			// 1. 변화량 체크 (1mm 이상 이동했거나 상태/회전이 변했다면 전송)
-			// _lastSentPos 등은 Player 클래스의 멤버 변수입니다.
-			bool isMoved = common::DistanceSq(serverPos, player->GetLastSentPos()) > 0.0001f;
-			bool isStateChanged = (currentState != player->GetLastSentState());
-			bool isRotated = !common::IsEqual(serverRot, player->GetLastSentRot());
-
-			if (isMoved || isStateChanged || isRotated) {
-				common::packet::SC_PACKET_MOVE res;
-				res._type = common::packet::PacketType::S2C_P_MOVE;
-				res._size = sizeof(res);
-				res._id = player->GetId();
-				res._position = serverPos; // 물리 업데이트 결과가 반영된 진짜 최신 좌표!
-				res._rotation = serverRot;
-				res._state = currentState;
-				res._action_id = player->_actionId;
-
-				// 나를 포함한 모든 방 인원에게 브로드캐스트
-				// 이제 클라이언트는 내가 가려고 했던 방향으로 '정확히 이동한 결과'를 받게 됩니다.
-				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
-
-				// 전송 완료 상태 기록 (다음 프레임 비교용)
-				player->SetLastSentPos(serverPos);
-				player->SetLastSentState(currentState);
-				player->SetLastSentRot(serverRot);
+			// [여기에 추가!] 3. NaN(비정상 값) 체크 및 복구
+			if (std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z)) {
+				MYERROR("NPC ID: " << npc->GetId() << " has NaN position! Resetting to safe spot.");
+				pos = { 10.0f, 10.0f, 10.0f }; // 안전한 기본 위치 (마을 중앙 등)
+				npc->SetPosition(pos); // 물리 바디 위치 강제 초기화
 			}
 
-
-			std::vector<GAME::GameObject*> nearby;
-			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
-
-			std::unordered_set<int64_t> currentNearbyIds;
-
-			// 보스는 항상 시야 리스트에 포함
-			for (auto* boss : bosses) {
-				int64_t npcId = boss->GetNpcId();
-				currentNearbyIds.insert(npcId);
-				if (!session->_viewedNpcs.contains(npcId)) {
-					session->_viewedNpcs.insert(npcId);
-					SendNpcSpawnToPlayer(session, boss);
-				}
+			// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
+			if (!mapData->IsInsideMap(pos.x, pos.z)) {
+				// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
+				pos = mapData->AdjustPositionToGround(pos);
 			}
-
-			for (auto* obj : nearby) {
-				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
-					// 이미 보스에서 처리했을 수 있으므로 체크
-					if (npc->is_boss()) continue;
-
-					activeNpcs.insert(npc);
-					int64_t npcId = npc->GetNpcId();
-					currentNearbyIds.insert(npcId);
-
-					// [중요] 셀 경계 문제를 방지하기 위해 '실제 거리'로 정밀 물리 대상 판정
-					float distSq = common::DistanceSq(myPos, npc->GetPosition());
-					if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
-
-					if (!session->_viewedNpcs.contains(npcId)) {
-						session->_viewedNpcs.insert(npcId);
-						SendNpcSpawnToPlayer(session, npc);
-					}
-				}
+			else {
+				// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
+				pos = mapData->AdjustPositionToGround(pos);
 			}
-
-			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); ) {
-				if (!currentNearbyIds.contains(*it)) {
-					SendNpcLeaveToPlayer(session, *it);
-					it = session->_viewedNpcs.erase(it);
-				}
-				else ++it;
-			}
-		}
-
-		// --- 2. NPC 업데이트 (AI 및 상태 결정) ---
-		_npcSyncTimer += deltaTime;
-		bool shouldSync = false;
-		if (_npcSyncTimer >= 0.05f) { shouldSync = true; _npcSyncTimer = 0.0f; }
-
-		auto now = std::chrono::steady_clock::now();
-		for (auto& [id, npc] : _npcs) {
-			bool isActive = activeNpcs.contains(npc.get());
-			if (!isActive) continue;
-
-			bool isInner = innerNpcs.contains(npc.get());
-			float interval = isInner ? 0.1f : 0.3f; // 근거리일수록 더 자주 AI 판단
-
-			if (std::chrono::duration<float>(now - npc->GetLastUpdateTime()).count() >= interval) {
-				npc->Update(interval, tempAllocator); // AI (BT) 실행
-
-				// [추가] NPC 맵 이탈 방지 및 지형 높이 보정 로직
-				common::Vec3 pos = npc->GetPosition();
-				auto mapData = PIP::MapDataManager::Instance();
-
-				// [여기에 추가!] 3. NaN(비정상 값) 체크 및 복구
-				if (std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z)) {
-					MYERROR("NPC ID: " << npc->GetId() << " has NaN position! Resetting to safe spot.");
-					pos = { 10.0f, 10.0f, 10.0f }; // 안전한 기본 위치 (마을 중앙 등)
-					npc->SetPosition(pos); // 물리 바디 위치 강제 초기화
-				}
-
-				// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
-				if (!mapData->IsInsideMap(pos.x, pos.z)) {
-					// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
-					pos = mapData->AdjustPositionToGround(pos);
-				}
-				else {
-					// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
-					pos = mapData->AdjustPositionToGround(pos);
-				}
-
-				// 최종 보정된 위치를 NPC에 적용 (물리 바디 포함)
-				npc->SetPosition(pos);
-
-				npc->SetLastUpdateTime(now);
-				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
-			}
-
-			// --- 3. 공통: 회전 처리 (부드러운 시각 효과) ---
+			npc->SetPosition(pos);
+			// 부드러운 회전 처리
 			common::Vec3 vel = npc->GetVelocity();
 			if (vel.x * vel.x + vel.z * vel.z > 0.01f) {
 				float angle = std::atan2(vel.x, vel.z);
@@ -666,18 +607,229 @@ namespace PIP::SERVER
 				XMStoreFloat4((XMFLOAT4*)&rot, q);
 				npc->SetRotation(rot);
 			}
+
+			// 리와인드용 스냅샷
+			auto now = std::chrono::steady_clock::now();
+			npc->SetLastUpdateTime(now);
+			npc->RecordSnapshot(static_cast<uint32_t>(GetTickCount64()));
 		}
 
-		// 플레이어 업데이트 및 스냅샷 기록 (Active 대상)
+		// --- [Step 3] 패킷 전송 및 클린업 (기존 로직) ---
+		_npcSyncTimer += deltaTime;
+		if (_npcSyncTimer >= 0.05f) {
+			BroadcastNpcBatch(); // 여기서도 _activeNpcList를 활용하게 고치면 더 좋습니다!
+			_npcSyncTimer = 0.0f;
+		}
+
+		// 플레이어 업데이트 및 스냅샷 기록
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-		for (auto& [pid, session] : _players)
-		{
+		for (auto& [pid, session] : _players) {
 			session->_player->Update(deltaTime, tempAllocator);
 			session->_player->RecordSnapshot(currentTick);
 		}
-		for (auto* npc : activeNpcs) npc->RecordSnapshot(currentTick);
 
-		if (shouldSync) BroadcastNpcBatch();
+//		if (_players.empty()) return;
+//
+//		// --- 1. 단계별 NPC 수집 (0~40m: Inner, 40~120m: Gray) ---
+//		std::unordered_set<GAME::NPC*> activeNpcs; // 120m 전체
+//		std::unordered_set<GAME::NPC*> innerNpcs;  // 40m 정밀물리
+//		
+//		// [보스 예외 처리] 보스는 거리와 상관없이 항상 활성화 및 정밀 물리 대상
+//		std::vector<GAME::NPC*> bosses;
+//		for (auto& [id, npc] : _npcs) {
+//			if (npc->is_boss()) {
+//				bosses.push_back(npc.get());
+//				activeNpcs.insert(npc.get());
+//				innerNpcs.insert(npc.get());
+//#ifdef _DEBUG
+//				//if (GetRoomId() == 0)
+//				//{
+//				//	auto ai = npc->GetComponent<GAME::AIComponent>();
+//				//	if (ai && ai->GetBlackboard()->has("debug_node_name")) {
+//				//		//auto bb = ai->GetBlackboard();
+//				//		//std::string nodeName = bb->get<std::string>("debug_node_name");
+//				//		//int status = bb->get<int>("debug_node_status");
+//
+//				//		//// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
+//				//		//std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
+//				//		//std::string debugText = nodeName + " " + statusStr;
+//
+//				//		//common::packet::PacketStream stream;
+//				//		//common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
+//				//		//pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
+//				//		//pkt._actor_id = npc->GetId();
+//
+//				//		//stream << pkt;
+//				//		//stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
+//
+//				//		//// 헤더 사이즈 갱신
+//				//		//auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
+//				//		//header->_size = (uint16_t)stream.Size();
+//
+//				//		//// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
+//				//		//Broadcast(stream.mutable_data(), stream.Size());
+//
+//				//		auto bb = ai->GetBlackboard();
+//				//		std::string nodeName = bb->get<std::string>("debug_node_name");
+//				//		int status = bb->get<int>("debug_node_status");
+//
+//				//		std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
+//				//		std::string debugText = nodeName + " " + statusStr;
+//				//		//MYLOG("[DebugBT] " << npc->GetId() << " Boss" << debugText);
+//				//	}
+//				//}
+//#endif
+//			}
+//		}
+//
+//		for (auto& [pid, session] : _players)
+//		{
+//			if (!session || !session->_player) continue;
+//			common::Vec3 myPos = session->_player->GetPosition();
+//
+//			auto player = session->_player;
+//			if (!player) continue;
+//
+//			common::Vec3 serverPos = player->GetPosition();
+//			common::Quat serverRot = player->GetRotation();
+//			auto currentState = player->GetState();
+//
+//			// 1. 변화량 체크 (1mm 이상 이동했거나 상태/회전이 변했다면 전송)
+//			// _lastSentPos 등은 Player 클래스의 멤버 변수입니다.
+//			bool isMoved = common::DistanceSq(serverPos, player->GetLastSentPos()) > 0.0001f;
+//			bool isStateChanged = (currentState != player->GetLastSentState());
+//			bool isRotated = !common::IsEqual(serverRot, player->GetLastSentRot());
+//
+//			if (isMoved || isStateChanged || isRotated) {
+//				common::packet::SC_PACKET_MOVE res;
+//				res._type = common::packet::PacketType::S2C_P_MOVE;
+//				res._size = sizeof(res);
+//				res._id = player->GetId();
+//				res._position = serverPos; // 물리 업데이트 결과가 반영된 진짜 최신 좌표!
+//				res._rotation = serverRot;
+//				res._state = currentState;
+//				res._action_id = player->_actionId;
+//
+//				// 나를 포함한 모든 방 인원에게 브로드캐스트
+//				// 이제 클라이언트는 내가 가려고 했던 방향으로 '정확히 이동한 결과'를 받게 됩니다.
+//				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
+//
+//				// 전송 완료 상태 기록 (다음 프레임 비교용)
+//				player->SetLastSentPos(serverPos);
+//				player->SetLastSentState(currentState);
+//				player->SetLastSentRot(serverRot);
+//			}
+//
+//
+//			std::vector<GAME::GameObject*> nearby;
+//			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
+//
+//			std::unordered_set<int64_t> currentNearbyIds;
+//
+//			// 보스는 항상 시야 리스트에 포함
+//			for (auto* boss : bosses) {
+//				int64_t npcId = boss->GetNpcId();
+//				currentNearbyIds.insert(npcId);
+//				if (!session->_viewedNpcs.contains(npcId)) {
+//					session->_viewedNpcs.insert(npcId);
+//					SendNpcSpawnToPlayer(session, boss);
+//				}
+//			}
+//
+//			for (auto* obj : nearby) {
+//				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+//					// 이미 보스에서 처리했을 수 있으므로 체크
+//					if (npc->is_boss()) continue;
+//
+//					activeNpcs.insert(npc);
+//					int64_t npcId = npc->GetNpcId();
+//					currentNearbyIds.insert(npcId);
+//
+//					// [중요] 셀 경계 문제를 방지하기 위해 '실제 거리'로 정밀 물리 대상 판정
+//					float distSq = common::DistanceSq(myPos, npc->GetPosition());
+//					if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
+//
+//					if (!session->_viewedNpcs.contains(npcId)) {
+//						session->_viewedNpcs.insert(npcId);
+//						SendNpcSpawnToPlayer(session, npc);
+//					}
+//				}
+//			}
+//
+//			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); ) {
+//				if (!currentNearbyIds.contains(*it)) {
+//					SendNpcLeaveToPlayer(session, *it);
+//					it = session->_viewedNpcs.erase(it);
+//				}
+//				else ++it;
+//			}
+//		}
+//
+//		// --- 2. NPC 업데이트 (AI 및 상태 결정) ---
+//		_npcSyncTimer += deltaTime;
+//		bool shouldSync = false;
+//		if (_npcSyncTimer >= 0.05f) { shouldSync = true; _npcSyncTimer = 0.0f; }
+//
+//		auto now = std::chrono::steady_clock::now();
+//		for (auto& [id, npc] : _npcs) {
+//			bool isActive = activeNpcs.contains(npc.get());
+//			if (!isActive) continue;
+//
+//			bool isInner = innerNpcs.contains(npc.get());
+//			float interval = isInner ? 0.1f : 0.3f; // 근거리일수록 더 자주 AI 판단
+//
+//			if (std::chrono::duration<float>(now - npc->GetLastUpdateTime()).count() >= interval) {
+//				npc->Update(interval, tempAllocator); // AI (BT) 실행
+//
+//				// [추가] NPC 맵 이탈 방지 및 지형 높이 보정 로직
+//				common::Vec3 pos = npc->GetPosition();
+//				auto mapData = PIP::MapDataManager::Instance();
+//
+//				// [여기에 추가!] 3. NaN(비정상 값) 체크 및 복구
+//				if (std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z)) {
+//					MYERROR("NPC ID: " << npc->GetId() << " has NaN position! Resetting to safe spot.");
+//					pos = { 10.0f, 10.0f, 10.0f }; // 안전한 기본 위치 (마을 중앙 등)
+//					npc->SetPosition(pos); // 물리 바디 위치 강제 초기화
+//				}
+//
+//				// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
+//				if (!mapData->IsInsideMap(pos.x, pos.z)) {
+//					// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
+//					pos = mapData->AdjustPositionToGround(pos);
+//				}
+//				else {
+//					// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
+//					pos = mapData->AdjustPositionToGround(pos);
+//				}
+//
+//				// 최종 보정된 위치를 NPC에 적용 (물리 바디 포함)
+//				npc->SetPosition(pos);
+//
+//				npc->SetLastUpdateTime(now);
+//				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
+//			}
+//
+//			// --- 3. 공통: 회전 처리 (부드러운 시각 효과) ---
+//			common::Vec3 vel = npc->GetVelocity();
+//			if (vel.x * vel.x + vel.z * vel.z > 0.01f) {
+//				float angle = std::atan2(vel.x, vel.z);
+//				DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
+//				common::Quat rot;
+//				XMStoreFloat4((XMFLOAT4*)&rot, q);
+//				npc->SetRotation(rot);
+//			}
+//		}
+//
+//		// 플레이어 업데이트 및 스냅샷 기록 (Active 대상)
+//		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+//		for (auto& [pid, session] : _players)
+//		{
+//			session->_player->Update(deltaTime, tempAllocator);
+//			session->_player->RecordSnapshot(currentTick);
+//		}
+//		for (auto* npc : activeNpcs) npc->RecordSnapshot(currentTick);
+//
+//		if (shouldSync) BroadcastNpcBatch();
 	}
 
 	void Room::PushJob(std::function<void()> job)
@@ -754,8 +906,8 @@ namespace PIP::SERVER
 
 		// 1. 움직인 NPC 수집
 		std::vector<GAME::NPC*> dirtyNPCs;
-		for (auto& [id, npc] : _npcs) {
-			if (npc->IsDirty()) dirtyNPCs.push_back(npc.get());
+		for (auto& npc : _activeNpcList) {
+			if (npc->IsDirty()) dirtyNPCs.push_back(npc);
 		}
 		if (dirtyNPCs.empty()) return;
 
@@ -974,7 +1126,13 @@ namespace PIP::SERVER
 						{
 							// NPC 피격 기록
 							if (auto npc = dynamic_cast<GAME::NPC*>(targetActor))
+							{
+								// ValidateHit 내부에서 HP가 깎였다면
+								if (npc->GetHP() <= 0 && npc->IsActive()) {
+									OnNPCDead(npc); // 사망 처리 호출
+								}
 								npc_hits.emplace_back(npc->GetNpcId(), session->_player->_damage, npc->GetHP());
+							}
 							// Player 피격 기록
 							else if (auto player = dynamic_cast<GAME::Player*>(targetActor))
 								player_hits.emplace_back(player->GetId(), session->_player->_damage, player->GetHP());
@@ -1268,6 +1426,69 @@ namespace PIP::SERVER
 			debug._duration = 600.0f; // 10분 유지
 
 			session->do_send(reinterpret_cast<const char*>(&debug), sizeof(debug));
+		}
+	}
+
+	void Room::OnNPCDead(GAME::NPC* npc)
+	{
+		int64_t npcId = npc->GetId();
+		npc->SetActive(false);
+
+		// 1. 물리 및 그리드 제거
+		if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
+			cc->SetPhysicsActive(false);
+		}
+		for (auto& [pid, session] : _players)
+		{
+			if (session->_viewedNpcs.contains(npcId))
+			{
+				SendNpcLeaveToPlayer(session, npcId);
+				session->_viewedNpcs.erase(npcId);
+			}
+		}
+
+		_gridMap.Remove(npc);
+
+		// 3. 타이머 잡 등록 (Server::AddTimerJob 사용)
+		int workerIdx = _logic_thread_idx;
+
+		// 10초(10000ms) 뒤 부활 예약
+		Server::Instance()->AddTimerJob(workerIdx, npc->GetRespawnDelay(), [this, npcId]() {
+			// 타이머 스레드에서 바로 부활시키면 레이스 컨디션 발생하므로 다시 PushJob으로 던짐
+			this->PushJob([this, npcId]() {
+				if (auto* npc = this->GetNPC(npcId)) {
+					this->RespawnNPC(npc);
+				}
+				});
+			});
+
+	}
+
+	void Room::RespawnNPC(GAME::NPC* npc)
+	{
+		// 1. 상태 및 위치 초기화
+		npc->SetHP(npc->GetMaxHP());
+		npc->SetPosition(npc->GetSpawnPosition());
+		npc->SetActive(true);
+		npc->SetupBT();
+
+		// 2. 물리 및 그리드 복구
+		if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
+			cc->SetPhysicsActive(true);
+			cc->SetPosition(npc->GetSpawnPosition());
+		}
+		_gridMap.Add(npc);
+
+		for (auto& [pid, session] : _players)
+		{
+			common::Vec3 playerPos = session->_player->GetPosition();
+			if (common::Distance(playerPos, npc->GetPosition()) <= 120.0f) {
+				session->_viewedNpcs.insert(npc->GetNpcId());
+				SendNpcSpawnToPlayer(session, npc);
+			}
+			else {
+				session->_viewedNpcs.erase(npc->GetNpcId());
+			}
 		}
 	}
 

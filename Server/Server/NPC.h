@@ -21,6 +21,8 @@ namespace PIP::GAME
 		
 
 		// Getters
+		common::Vec3 GetSpawnPosition() const { return _spawnPosition; }
+		int32_t GetMaxHP() const { return _maxHp; }
 		int64_t GetNpcId()          const { return GetId(); }
 		NPCType GetNpcType()            const { return _npc_type; }
 
@@ -49,7 +51,7 @@ namespace PIP::GAME
 		JPH::BodyID GetBodyID() const {
 			if (auto pc = const_cast<NPC*>(this)->GetComponent<PhysicsComponent>())
 				return pc->GetBodyID();
-			return JPH::BodyID(); // Invalid ID 반환
+			return {}; // Invalid ID 반환
 		}
 		int32_t GetActionId() const { return _actionId; }
 
@@ -124,6 +126,7 @@ namespace PIP::GAME
 
 		int32_t _actionId = 0; // 현재 진행 중인 행동의 ID (0이면 없음)
 		int32_t _lastSentActionId = 0; // 마지막으로 클라이언트에 전송한 행동 ID
+		common::Vec3 _spawnPosition; // 리스폰 위치 저장 (죽었을 때 원래 위치로 돌아가기 위해)
 	};
 
 }

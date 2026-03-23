@@ -50,7 +50,7 @@ namespace PIP::GAME
         auto tc = obj->GetComponent<TransformComponent>();
         if (!tc) return;
 
-        int idx = GetIndex(tc->GetPosition());
+		int idx = GetIndex(tc->GetPosition()); // TODO: 주의!! 물리 위치가 아닐수 있다. Transform 위치를 기준으로 셀에 넣는다면, 물리 객체가 있는 경우 위치 불일치 가능성 있음. (NPC 등)
         _cells[idx].insert(obj);
 
         // [수정] 이 객체가 어떤 셀에 들어갔는지 기록해야 나중에 Remove에서 찾을 수 있습니다.

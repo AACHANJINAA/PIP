@@ -67,6 +67,8 @@ namespace PIP::GAME
 
 		void SetLastSentRot(common::Quat rot) { _lastSentRot = rot; }
 		const common::Quat& GetLastSentRot() const { return _lastSentRot; }
+		bool IsDirty();
+		void SyncSentData();
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		
