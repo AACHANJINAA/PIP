@@ -1,0 +1,183 @@
+[
+	{
+		"Name": "SM_SkySphere_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_SkySphere.gltf",
+		"Materials": [
+			"M_Sky_Panning_Clouds2"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 400,
+				"Y": 400,
+				"Z": 400
+			}
+		}
+	},
+	{
+		"Name": "SM_Big_Tower_03_floor_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Big_Tower_03_floor_01.gltf",
+		"Materials": [
+			"MI_Floor_Brick_01",
+			"M_Floor_04",
+			"MI_Brick_02"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": -1.3400000000000001,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 3,
+				"Y": 1.75,
+				"Z": 3
+			}
+		}
+	},
+	{
+		"Name": "SM_Big_Tower_03_body_03_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Big_Tower_03_body_03.gltf",
+		"Materials": [
+			"MI_Styl_Wall_Brick_02",
+			"MI_Brick_02",
+			"WorldGridMaterial"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		}
+	},
+	{
+		"Name": "SM_statue_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_statue_01.gltf",
+		"Materials": [
+			"MI_Knight_02",
+			"MI_Knight_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -10,
+				"Y": 0,
+				"Z": -12
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 2.5,
+				"Z": 2.5
+			}
+		}
+	},
+	{
+		"Name": "SM_statue_2_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_statue_01.gltf",
+		"Materials": [
+			"MI_Knight_02",
+			"MI_Knight_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 10,
+				"Y": 0,
+				"Z": -12
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 2.5,
+				"Z": 2.5
+			}
+		}
+	},
+	{
+		"Name": "SM_throne_chair_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_throne_chair_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Textile"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": -18.199999999999999
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0,
+				"W": -1
+			},
+			"Scale":
+			{
+				"X": 7,
+				"Y": 7,
+				"Z": 7
+			}
+		}
+	}
+]

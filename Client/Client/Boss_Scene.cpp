@@ -14,8 +14,8 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 {
 	SceneManager::instance()->build_skybox_if_needed(device, commandList);
 
-	SceneManager::instance()->build_terrain(device, commandList);
-
+	//SceneManager::instance()->build_terrain(device, commandList);
+	
 	// =========================필요한 메시 로드==================================
 	ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
@@ -26,6 +26,7 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf", "attack");
 	// =========================================================================
 
+	load_scene_from_file("Resource/1-BossScene/ExportedClientData.json", device, commandList);
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
