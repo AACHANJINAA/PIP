@@ -218,7 +218,7 @@ namespace PIP::SERVER
 		_is_running = true;
 
 		//MYLOG("[SERVER] Loading Map...");
-		MapDataManager::Instance()->LoadMapData("../../Common/MapData/ExportedServerData.json");
+		MapDataManager::Instance()->LoadMapData("../../Common/MapData/EnvironmentMapData.json");
 		//MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
 		MapDataManager::Instance()->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
 		MYLOG("[SERVER] Successful Loaded the Map");
