@@ -1436,7 +1436,7 @@ ResourceManager::TextureInfo* ResourceManager::create_texture_array_from_loaded(
             CERROR("Texture not found or not loaded: " << key);
             return nullptr;
         }
-        source_textures.push_back(tex);
+        source_textures.emplace_back(tex);
 
         // 첫 번째 텍스처에서 크기 가져오기
         if (width == 0)

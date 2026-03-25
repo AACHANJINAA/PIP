@@ -271,7 +271,6 @@ void TerrainLoader::load_textures_to_resource_manager(const std::string& materia
 
 void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& weightmap_paths)
 {
-	// TODO: R8 포맷 텍스처 배열 생성 및 GPU 업로드
 	   // 각 weightmap_paths를 순회하며:
 	   // 1. R8 바이너리 파일 읽기
 	   // 2. D3D12 텍스처 리소스 생성 (DXGI_FORMAT_R8_UNORM)
@@ -303,8 +302,7 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 		}
 
 		// Visibility 레이어는 스킵 (렌더링에 사용 안 함)
-		if (layer_name.find("LANDSCAPE_VISIBILITY") !=
-			std::string::npos)
+		if (layer_name.find("LANDSCAPE_VISIBILITY") != std::string::npos)
 		{
 			CLOG("Skipping visibility layer: " << layer_name);
 			continue;
@@ -387,14 +385,11 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 	_normalArrayKey = "NormalArray_" + landscape_name;
 	_roughnessArrayKey = "RoughnessArray_" + landscape_name;
 
-	auto* albedo_array = rm->create_texture_array_from_loaded(
-		_albedoArrayKey, albedo_keys);
+	auto* albedo_array = rm->create_texture_array_from_loaded(_albedoArrayKey, albedo_keys);
 
-	auto* normal_array = rm->create_texture_array_from_loaded(
-		_normalArrayKey, normal_keys);
+	auto* normal_array = rm->create_texture_array_from_loaded(_normalArrayKey, normal_keys);
 
-	auto* roughness_array = rm->create_texture_array_from_loaded(
-		_roughnessArrayKey, roughness_keys);
+	auto* roughness_array = rm->create_texture_array_from_loaded(_roughnessArrayKey, roughness_keys);
 
 	if (!albedo_array || !normal_array || !roughness_array)
 	{
