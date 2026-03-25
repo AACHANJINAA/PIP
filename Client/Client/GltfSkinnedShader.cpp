@@ -46,5 +46,5 @@ void GltfSkinnedShader::update_per_object(ID3D12GraphicsCommandList* command_lis
 {
 	GltfShader::update_per_object(command_list, renderer, object);
 
-	LightManager::instance()->bind(command_list, 3);
+	//LightManager::instance()->bind(command_list, 3);
 }

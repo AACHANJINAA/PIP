@@ -141,7 +141,7 @@ void GameFramework::CreateSwapChain()
 	dxgiSwapChainDesc.OutputWindow = _hWnd;
 	dxgiSwapChainDesc.SampleDesc.Count = (_isEnableMsaa) ? 4 : 1; dxgiSwapChainDesc.SampleDesc.Quality = (_isEnableMsaa) ? (_msaa4XQualityLevels - 1) : 0;
 	dxgiSwapChainDesc.Windowed = TRUE;
-	dxgiSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	dxgiSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 	ComPtr<IDXGISwapChain> pSwapChain;
 	HRESULT hResult = _factory->CreateSwapChain(_commandQueue.Get(), &dxgiSwapChainDesc, &pSwapChain);
@@ -512,7 +512,7 @@ void GameFramework::FrameAdvance()
 	// ---------------------------------------------------------
 	// 5. [프레임 종료]
 	// ---------------------------------------------------------
-	_swapChain->Present(1, 0); // VSync 끄기 (0)
+	_swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING); // VSync 끄기 (0)
 
 	// [중요] 임시 업로드 버퍼 해제
 	// (스마트 포인터라 큐에서 빠지면 알아서 해제되지만, 명시적 호출도 가능)
