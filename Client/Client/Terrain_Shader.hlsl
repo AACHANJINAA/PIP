@@ -132,17 +132,17 @@ float4 PS_Main(PS_Input input) : SV_TARGET
             weights[3] = 1.0f;
         }
 
-        float originalWeights[MAX_TERRAIN_LAYERS];
+        float original_weights[MAX_TERRAIN_LAYERS];
         for (int i = 0; i < NumLayers; ++i)
         {
-            originalWeights[i] = weights[i];
+            original_weights[i] = weights[i];
         }
          
          // 경계로 갈수록 Rock(index 0)의 비율 증가
-        weights[0] = lerp(originalWeights[0], 1.0, edge_blend);
+        weights[0] = lerp(original_weights[0], 1.0, edge_blend);
         for (int i = 1; i < NumLayers; ++i)
         {
-            weights[i] = lerp(originalWeights[i], 0.0, edge_blend);
+            weights[i] = lerp(original_weights[i], 0.0, edge_blend);
         }
 
         // 3. 레이어별 텍스처 블렌딩
