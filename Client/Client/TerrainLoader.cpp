@@ -130,7 +130,7 @@ namespace
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 {
-const auto& info = _terrainData.GetInfo();
+	const auto& info = _terrainData.GetInfo();
 
 	int vertex_count_x = grid_width + 1;
 	int vertex_count_z = grid_height + 1;
