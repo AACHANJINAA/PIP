@@ -23,11 +23,13 @@
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "DebugDrawManager.h"
+#include "LightManager.h"
 #include "RenderComponent.h"
 #include "SkyboxRenderComponent.h"
 
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
+#include "ShadowManager.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -241,6 +243,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
+
+        if (psoName == "gltf" || psoName == "skinned")
+        {
+            LightManager::instance()->bind(commandList, 3);
+            ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+        }
 
         if (psoName != "skybox")
         {
