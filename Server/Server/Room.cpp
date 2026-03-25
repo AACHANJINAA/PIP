@@ -1432,28 +1432,37 @@ namespace PIP::SERVER
 	void Room::OnNPCDead(GAME::NPC* npc)
 	{
 		int64_t npcId = npc->GetId();
-		npc->SetActive(false);
-
+		
+		npc->SetState(packet::EntityState::DEAD);
+		npc->SetDeathAnimationTime(std::chrono::milliseconds(5000));
 		// 1. 물리 및 그리드 제거
 		if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
 			cc->SetPhysicsActive(false);
 		}
-		for (auto& [pid, session] : _players)
-		{
-			if (session->_viewedNpcs.contains(npcId))
-			{
-				SendNpcLeaveToPlayer(session, npcId);
-				session->_viewedNpcs.erase(npcId);
-			}
-		}
-
-		_gridMap.Remove(npc);
 
 		// 3. 타이머 잡 등록 (Server::AddTimerJob 사용)
 		int workerIdx = _logic_thread_idx;
 
+		// 1초뒤 실제 죽음 발생
+		Server::Instance()->AddTimerJob(workerIdx, npc->GetDeathAnimationTime(), [this, npcId]() {
+			this->PushJob([this, npcId]() {
+				if (auto* npc = this->GetNPC(npcId)) {
+					npc->SetActive(false);
+
+					for (auto& [pid, session] : _players)
+					{
+						if (session->_viewedNpcs.contains(npcId))
+						{
+							SendNpcLeaveToPlayer(session, npcId);
+							session->_viewedNpcs.erase(npcId);
+						}
+					}
+					_gridMap.Remove(npc);
+				}
+				});
+			});
 		// 10초(10000ms) 뒤 부활 예약
-		Server::Instance()->AddTimerJob(workerIdx, npc->GetRespawnDelay(), [this, npcId]() {
+		Server::Instance()->AddTimerJob(workerIdx, npc->GetRespawnDelay() + npc->GetDeathAnimationTime(), [this, npcId]() {
 			// 타이머 스레드에서 바로 부활시키면 레이스 컨디션 발생하므로 다시 PushJob으로 던짐
 			this->PushJob([this, npcId]() {
 				if (auto* npc = this->GetNPC(npcId)) {
@@ -1467,6 +1476,7 @@ namespace PIP::SERVER
 	void Room::RespawnNPC(GAME::NPC* npc)
 	{
 		// 1. 상태 및 위치 초기화
+		npc->SetState(packet::EntityState::IDLE);
 		npc->SetHP(npc->GetMaxHP());
 		npc->SetPosition(npc->GetSpawnPosition());
 		npc->SetActive(true);

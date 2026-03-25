@@ -225,9 +225,32 @@ namespace PIP::GAME
 
         template <typename T, typename... Args>
         BTBuilder& leaf_name(const std::string& name, Args&&... args) {
-            auto node = std::make_shared<T>(std::forward<Args>(args)...);
+            std::shared_ptr<BTNode> node = std::make_shared<T>(std::forward<Args>(args)...);
             node->set_name(name); // 이름 설정
 
+            add_node(node);
+            return *this;
+        }
+
+        template <typename T, typename... Args>
+        BTBuilder& leaf_name(const std::string& name, DecoratorType decType, Args&&... args) {
+            std::shared_ptr<BTNode> node = std::make_shared<T>(std::forward<Args>(args)...);
+            node->set_name(name); // 이름 설정
+            // 1. 리프 노드 생성
+
+            // 2. 데코레이터 래핑
+            switch (decType) {
+            case DecoratorType::Inverter:
+                node = std::make_shared<Inverter>(node);
+                break;
+            case DecoratorType::Succeeder:
+                node = std::make_shared<Succeeder>(node);
+                break;
+            default:
+                break;
+            }
+
+            // 3. 트리에 추가
             add_node(node);
             return *this;
         }

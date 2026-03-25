@@ -102,6 +102,9 @@ namespace PIP::GAME
 		// 2. 목표가 없거나 이동에 실패하면 새 목표를 찾는다.
 		// 트리 구성
 		auto root = builder
+			.sequence()
+			.leaf<Condition_IsAlive>()
+			.leaf<Condition_IsHitted>(DecoratorType::Inverter)
 			.selector() // 전체 동작 우선순위 결정
 			// --- [우선순위 1] 전투 로직 ---
 				.sequence()
@@ -129,6 +132,7 @@ namespace PIP::GAME
 			// --- [우선순위 3] 할 일 없으면 새로운 목적지 찾기 ---
 			.leaf<Action_FindRandomTarget>()
 			.end()
+		.end()
 		.build();
 
 		// 블랙보드 주입 및 등록
@@ -200,6 +204,9 @@ namespace PIP::GAME
 
 			// 3. 데미지 및 넉백 (Kinematic 방식)
 			
+			SetState(common::packet::EntityState::HITTED);
+			_hitCooldown = 1.0f;
+
 			int32_t current_hp = GetHP();
 			// 현재 HP보다 데미지가 크면 0, 아니면 차이만큼 차감
 			int32_t new_hp = (current_hp > damage) ? (current_hp - damage) : 0;
@@ -221,7 +228,6 @@ namespace PIP::GAME
 			}
 
 			//MYLOG("[HIT] " << GetName() << " part: " << hitPart << " HP: " << GetHP());
-			_hitCooldown = 0.2f;
 			return true;
 		}
 		return false;
@@ -233,6 +239,16 @@ namespace PIP::GAME
 		if (_hitCooldown > 0.0f) {
 			_hitCooldown -= deltaTime;
 			_hitCooldown = std::max(_hitCooldown, 0.0f);
+		}
+
+		// 2. 피격 상태(HITTED) 자동 복구 로직
+		if (GetState() == common::packet::EntityState::HITTED) {
+			// 별도의 타이머를 쓰거나 _hitCooldown을 활용
+			if (_hitCooldown <= 0) {
+				// 경직 시간이 끝나면 IDLE로 변경
+				SetState(common::packet::EntityState::IDLE);
+				// 필요하다면 여기서 AI를 다시 깨우는 로직 추가
+			}
 		}
 		Actor::Update(deltaTime, allocator);
 	}

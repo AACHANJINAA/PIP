@@ -97,6 +97,7 @@ namespace PIP::SERVER
 		
 		void SendNpcMovePacket(GAME::NPC* npc);
 
+
 	private:
 		int								_room_id;
 		int								_logic_thread_idx;

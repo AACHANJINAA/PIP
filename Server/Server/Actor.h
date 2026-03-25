@@ -24,8 +24,8 @@ namespace PIP::GAME
         std::chrono::milliseconds GetRespawnDelay() const { return _respawnDelay; }
         void SetRespawnDelay(float delay_seconds) { _respawnDelay = std::chrono::milliseconds(static_cast<int64_t>(delay_seconds * 1000.0f)); }
 
-        double GetDeathTime() const { return _deathTime; }
-        void SetDeathTime(double time) { _deathTime = time; }
+		void SetDeathAnimationTime(const std::chrono::milliseconds& duration) { _deathAnimationDuration = duration; }
+        std::chrono::milliseconds GetDeathAnimationTime() const { return _deathAnimationDuration; } // 고정값, 필요시 조정
         // --- 공통 데이터 접근 ---
 
         // [중요] 컴포넌트를 통해 위치와 회전을 가져오는 헬퍼 함수
@@ -76,8 +76,7 @@ namespace PIP::GAME
 
         // --- 새로 추가될 필드 ---
         bool    _isActive = true;      // 활성화 상태 (false면 업데이트/렌더링 제외)
-        double  _deathTime = -1;     // 사망 시점 (서버 시간)
         std::chrono::milliseconds _respawnDelay {10000};  // 리스폰 대기 시간
-
+		std::chrono::milliseconds _deathAnimationDuration{ 1000 }; // 사망 애니메이션 시간 (필요시 조정)
     };
 }

@@ -73,6 +73,8 @@ namespace PIP::GAME
 		BTBuilder builder;
 		auto root = builder
 			.sequence()
+				.leaf_name<Condition_IsAlive>("Check_Dead")
+				.leaf_name<Condition_IsHitted>("Check_Hitted", DecoratorType::Inverter)
 				.leaf_name<Action_TargetingNearestPlayer>("Targeting")
 				.selector() // 공격이 먼저!
 					.sequence() // [공격 1] 내려찍기

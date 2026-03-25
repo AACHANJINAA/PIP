@@ -17,7 +17,7 @@ namespace common::packet
 		DEAD = 4,
 
 
-		COUNT
+		COUNT,
 	};
 
 	namespace ActionID
