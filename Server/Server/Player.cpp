@@ -49,7 +49,7 @@ namespace PIP::GAME
 		_history.clear();
 		_actionId = 0;
 
-		SetPosition({ -10.0f, 10.0f, -10.0f });
+		SetPosition({ 0.0f, 10.0f, 0.0f });
 		if (auto pc = GetComponent<PlayerControllerComponent>()) {
 			pc->SetMoveVelocity({ 0,0,0 });
 			pc->AddImpact({ 0, 0, 0 });

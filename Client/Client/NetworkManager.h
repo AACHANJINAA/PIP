@@ -6,9 +6,12 @@ class NetworkManager : public Singleton<NetworkManager>
     friend class Singleton<NetworkManager>; // 싱글톤 접근 허용
     using PacketHandler = std::function<void(common::packet::PacketStream& stream)>;
 public:
+	void set_name(const std::string& name) { _name = name; }
+	void set_server_addr(const std::string& addr) { _server_addr = addr; }
+
     bool init_network();
 	void cleanup_network();
-    bool connect_to_server(std::string_view server_addr, const int& port);
+    bool connect_to_server();
 	void disconnect();
 
     // 메인 게임 루프에서 호출하여 큐에 쌓인 패킷 처리
@@ -19,7 +22,7 @@ public:
 
 public:
     // 클라이언트 -> 서버 패킷 전송 함수
-    void SendLoginPacket(const std::string& name);
+    void SendLoginPacket();
     void SendMovePacket(const common::Vec3& position, 
         const common::Vec3& dir, const common::Quat& rotation, const common::packet::EntityState& state, 
         const int32_t& action_id, const uint32_t& current_tick);
@@ -62,6 +65,9 @@ private:
 
     long long _my_session_id = -1; // 자신의 세션 ID (로그인 후 서버로부터 받음) [TODO: 임시로 여기에 저장하긴 했음]
     std::string _name;
+	std::string _server_addr = "127.0.0.1";
+	bool _isLogin = false;
+
     // 패킷 핸들러 함수 포인터 타입 정의
     std::unordered_map<common::packet::PacketType, PacketHandler> _handlers;
 
