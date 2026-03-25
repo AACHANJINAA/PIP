@@ -282,9 +282,6 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
             continue;
         }
 
-        float worldX = metaJson["world_position"].value("center_x", 0.0f);
-        float worldZ = metaJson["world_position"].value("center_z", 0.0f);
-
         // 2. TerrainLoader 생성 (새로운 생성자 사용)
         std::string metadataPathStr = metadataPath.string();
         auto terrain = std::make_shared<TerrainLoader>(metadataPathStr, true); // 두 번째 인자 true = MainLandscape 형식
@@ -296,10 +293,10 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
 
         // 임시: 첫 번째 레이어(Rock)의 텍스처만 로드
         // 실제로는 metaJson["layers"]를 순회하며 모든 레이어 처리 필요
-        std::string baseTexPath = "Resource\\HeightMap\\rocky_terrain\\rocky_terrain_02_4k.gltf";
-        std::string detailTexPath = (sharedTexPath / "T_Dead_Grass_Albedo.dds").string();
+        //std::string baseTexPath = "Resource\\HeightMap\\aerial_rocks\\aerial_rocks_04_4k.gltf";
+        //std::string detailTexPath = (sharedTexPath / "T_Dead_Grass_Albedo.dds").string();
 
-        terrain->load_textures_to_resource_manager(baseTexPath, detailTexPath);
+        //terrain->load_textures_to_resource_manager(baseTexPath, detailTexPath);
 
         // 4. Weightmap 로드 (각 레이어별)
         std::vector<std::string> weightmapPaths;

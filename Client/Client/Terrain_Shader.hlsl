@@ -123,8 +123,10 @@ float4 PS_Main(PS_Input input) : SV_TARGET
         }
         else
         {
-            // 모든 가중치가 0이면 첫 번째 레이어 사용
-            weights[0] = 1.0;
+            // set basic layer 
+            // 0 : ROCK,                 1 : Ground_2,     2 : Ground,     3 : Dead_Grass, 
+            // 4 : Underwater_Ground_01, 5 : Sand_w_Rocks, 6 : Grass,      7 : Cobblestone
+            weights[6] = 1.0;
         }
 
         // 3. 레이어별 텍스처 블렌딩
