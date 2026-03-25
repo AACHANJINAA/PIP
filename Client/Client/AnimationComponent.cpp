@@ -16,9 +16,11 @@ void AnimationComponent::late_update(float deltaTime)
 		return;
 	}
 
+	// 현재 애니메이션 시간 갱신
 	_nowAnimationTime += deltaTime * _animationSpeed;
 	float timeBeforeUpdate = _nowAnimationTime;
 
+	// 애니메이션 리소스 찾기
 	auto it = _animResources.find(_currentName);
 	if (it == _animResources.end())
 	{
@@ -27,7 +29,10 @@ void AnimationComponent::late_update(float deltaTime)
 	}
 
 	auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(it->second.mesh);
-	if (!glTF_mesh) return;
+	if (!glTF_mesh) 
+	{
+		return;
+	}
 
 
 	// 애니메이션 업데이트 및 본 행렬 계산
@@ -35,60 +40,17 @@ void AnimationComponent::late_update(float deltaTime)
 		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _bone_palette_buffer, _isLoop);
 	}
 	else {
-		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _isLoop);
+		//glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _isLoop);
 	}
+
+	// DW설명 : 이제 애니메이션 업데이트에 지금 들고있는 뼈대 행렬 벡터를 넘겨서 갱신하도록 함 -> 애니메이션 컴포넌트가 뼈대 행렬을 관리하는 형태로 변경
+	glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
+
 
 	// 종료 판정
 	if (!_isLoop && _nowAnimationTime < timeBeforeUpdate) {
 		_isFinished = true;
 	}
-
-	//// 현재 렌더링 중인 메쉬를 가져와서 애니메이션 업데이트
-	//auto renderComp = game_object()->get_component<RenderComponent>();
-	//if (!renderComp) return;
-
-	////auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
-	////if (mesh && !_nowAnimationName.empty())
-	////{
-	////	mesh->update_animation(_nowAnimationTime, _nowAnimationName);
-	////}
-
-	//auto mesh = _stateMeshMap.find(_currentState);
-	//auto anim = _stateAnimMap.find(_currentState);
-
-	//// [추가된 부분] 맵에 상태가 등록되어 있지 않으면 에러 로그를 띄우고 리턴합니다.
-	//if (mesh == _stateMeshMap.end() || anim == _stateAnimMap.end())
-	//{
-	//	// _currentState를 int로 변환하여 어떤 상태가 누락되었는지 확인
-	//	CERROR("Animation state not found: " << static_cast<int>(_currentState));
-	//	return;
-	//}
-
-	//std::shared_ptr<Mesh> targetMesh = mesh->second;
-
-	//// 사용하려는 메쉬(targetMesh)가 현재 버퍼의 주인(_bufferedMesh)과 다른가?
-	//// 다르다면 버퍼 크기가 맞지 않을 수 있으므로 버퍼를 재생성해야 함!
-	//if (targetMesh != _bufferedMesh)
-	//{
-	//	change_mesh(targetMesh);
-	//}
-
-	//auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(targetMesh);
-	//if (!glTF_mesh) return;
-
-	//if(_bone_palette_buffer)
-	//{
-	//	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _bone_palette_buffer, _isLoop);
-	//}
-	//else
-	//{
-	//	std::dynamic_pointer_cast<ReadGLTFMesh>(mesh->second)->update_animation(_nowAnimationTime, anim->second, _isLoop);
-	//}
-
-	//// [핵심] 시간이 줄어들었다면 리셋된 것이므로 종료 플래그 설정
-	//if (_nowAnimationTime < timeBeforeUpdate) {
-	//	_isFinished = true;
-	//}
 }
 
 void AnimationComponent::add_animation(const std::string& want_name, const std::shared_ptr<Mesh>& mesh,
@@ -201,8 +163,17 @@ void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
 	_nowAnimationTime = 0.f;
 
 	// DW설명 : 여기서 애니메이션을 메쉬의 뼈의 개수에 맞게 초기화 해줌
-
 	create_bone_palette_buffer(want_mesh);
+
+
+	// 새로운 메쉬에 맞게 뼈대 행렬을 만들기
+	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(want_mesh);
+	DirectX::XMFLOAT4X4 identity_matrix;
+	DirectX::XMStoreFloat4x4(&identity_matrix, DirectX::XMMatrixIdentity());
+	_boneTransforms.assign(gltf_mesh->get_joint_count(), identity_matrix);	 // assign -> clear + resize
+
+	// 애니메이션 컴포넌트에서 애니메이션 하기 위한 초기화 작업
+	gltf_mesh->nodes_inout_set(_nodes);
 
 	// 현재 버퍼가 이 메쉬용임을 기록
 	_bufferedMesh = want_mesh;

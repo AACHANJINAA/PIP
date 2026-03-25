@@ -128,6 +128,21 @@ struct AnimationClip
 	std::vector<AnimationChannel> _channels;
 };
 
+// glTF 'nodes' 배열의 상태를 관리하기 위한 구조체
+struct NodeInfo
+{
+	int _parent_index = -1;
+	std::vector<int> _children;
+
+	// 현재 애니메이션에 의해 변경되는 로컬 변환 값 (T, R, S)
+	DirectX::XMFLOAT3 _translation = { 0.0f, 0.0f, 0.0f };
+	DirectX::XMFLOAT4 _rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // Quaternion
+	DirectX::XMFLOAT3 _scale = { 1.0f, 1.0f, 1.0f };
+
+	// 계층 구조가 반영된 최종 전역 행렬 (World Transform)
+	DirectX::XMFLOAT4X4 _global_transform;
+};
+
 //====================================================================================================
 
 
@@ -141,6 +156,7 @@ public:
 
 	//virtual void render(ID3D12GraphicsCommandList* commandList) override;
 	void render(ID3D12GraphicsCommandList* commandList) override;
+	void render_instance(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) override; // 인스턴싱으로 렌더링
 	void release_upload_buffers() override;
 
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList) override;
@@ -149,9 +165,12 @@ public:
 	// DW설명 : 애니메이션 관련 함수들
 	void set_bone_palette_buffer_from_animation_component(ComPtr<ID3D12Resource> bone_palette_buffer) { _bone_palette_buffer_from_animation_component = bone_palette_buffer; }
 
+
+	void update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop = true);
 	void update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer, bool _isLoop = true);
-	void update_animation(float& delta_time, std::string animation_name, bool _isLoop = true);
+	
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
+	void render_instance_skinned(ID3D12GraphicsCommandList* commandList); // 스키닝 인스턴싱으로 렌더링
 	size_t get_joint_count() const { return _joints.size(); }
 
 	// 애니메이션만 있는 glTF 파일 로더 추가
@@ -170,6 +189,11 @@ public: // DW설명 : 소켓기능 관련 함수들
 	std::vector<std::string> get_bone_names() const;
 
 	void set_shader_for_all_materials(const std::string& shader_name);
+
+public: // DW설명 : 인스턴싱 관련 함수들
+	void nodes_inout_set(_Inout_ std::vector<NodeInfo>& nodes); // 모든 gltf 노드의 정보를 설정해주는 함수
+
+
 private:
 
 	void read_static_mesh(const std::string& filePath);
@@ -250,21 +274,6 @@ private: // DW설명 : 애니메이션 관련 멤버 변수들
 
 private: // 애니메이션을 위해 필요한 멤버들
 	
-	// glTF 'nodes' 배열의 상태를 관리하기 위한 구조체
-	struct NodeInfo
-	{
-		int _parent_index = -1;
-		std::vector<int> _children;
-
-		// 현재 애니메이션에 의해 변경되는 로컬 변환 값 (T, R, S)
-		DirectX::XMFLOAT3 _translation = { 0.0f, 0.0f, 0.0f };
-		DirectX::XMFLOAT4 _rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // Quaternion
-		DirectX::XMFLOAT3 _scale = { 1.0f, 1.0f, 1.0f };
-
-		// 계층 구조가 반영된 최종 전역 행렬 (World Transform)
-		DirectX::XMFLOAT4X4 _global_transform;
-	};
-
 	// 모든 노드의 리스트 (glTF node index와 1:1 매칭)
 	std::vector<NodeInfo> _nodes;
 
