@@ -93,6 +93,9 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float3 N = normalize(input.NormalW);
     float3 V = normalize(gvCameraPosition.xyz - P);
 
+    float2 edge_dist = min(input.UV, 1.0 - input.UV); // 0~0.5 범위
+    float edge_blend = 1.0 - saturate(min(edge_dist.x, edge_dist.y) * 10.0);
+
     float3 finalAlbedo;
     float3 finalNormalTS; // Tangent Space
     float finalRoughness;
@@ -107,26 +110,39 @@ float4 PS_Main(PS_Input input) : SV_TARGET
 
         // 1. Weightmap 샘플링 (각 레이어의 가중치 추출)
         float weights[MAX_TERRAIN_LAYERS];
-        float totalWeight = 0.0;
+        float total_weight = 0.0;
 
         for (int i = 0; i < NumLayers; ++i)
         {
             weights[i] = weightmaps.Sample(terrainSampler, float3(uv, i)).r;
-            totalWeight += weights[i];
+            total_weight += weights[i];
         }
-
+        
         // 2. 가중치 정규화 (합이 1이 되도록)
-        if (totalWeight > 0.001)
+        if (total_weight > 0.001)
         {
             for (int i = 0; i < NumLayers; ++i)
-                weights[i] /= totalWeight;
+                weights[i] /= total_weight;
         }
         else
         {
             // set basic layer 
             // 0 : ROCK,                 1 : Ground_2,     2 : Ground,     3 : Dead_Grass, 
             // 4 : Underwater_Ground_01, 5 : Sand_w_Rocks, 6 : Grass,      7 : Cobblestone
-            weights[6] = 1.0;
+            weights[3] = 1.0f;
+        }
+
+        float originalWeights[MAX_TERRAIN_LAYERS];
+        for (int i = 0; i < NumLayers; ++i)
+        {
+            originalWeights[i] = weights[i];
+        }
+         
+         // 경계로 갈수록 Rock(index 0)의 비율 증가
+        weights[0] = lerp(originalWeights[0], 1.0, edge_blend);
+        for (int i = 1; i < NumLayers; ++i)
+        {
+            weights[i] = lerp(originalWeights[i], 0.0, edge_blend);
         }
 
         // 3. 레이어별 텍스처 블렌딩
