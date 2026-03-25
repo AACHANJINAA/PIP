@@ -44,6 +44,7 @@ void TainerScript::init_visual()
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Hit.gltf", "hit");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Roar.gltf", "roar");
         gltfMesh->load_animation_only(basePath + "A_BoneGolem_Swim.gltf", "swim");
+        gltfMesh->load_animation_only(basePath + "A_BoneGolem_Death.gltf", "death");
 
 
         renderComp->set_mesh(mainMesh);
@@ -59,6 +60,7 @@ void TainerScript::init_visual()
         animComp->add_animation("swim", mainMesh);
         animComp->add_animation("hit", mainMesh);
         animComp->add_animation("roar", mainMesh);
+        animComp->add_animation("death", mainMesh);
 
         CLOG("[TainerScript] BoneGolem Boss Visuals Settings Completed.");
     }
@@ -133,6 +135,9 @@ void TainerScript::handle_animation_branching()
         break;
 	case EntityState::HITTED:
         anim_comp->play("hit", false);
+		break;
+    case EntityState::DEAD:
+        anim_comp->play("death", false);
 		break;
     default:
 		CLOG("[TainerScript] Unknown EntityState: " << static_cast<int>(_state));

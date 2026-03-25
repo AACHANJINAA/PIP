@@ -7,6 +7,16 @@
 namespace PIP::GAME
 {
 	using namespace common::packet;
+	bool Condition_IsHitted::check()
+	{
+		return dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"))->GetState() == EntityState::HITTED;
+	}
+
+	bool Condition_IsAlive::check()
+	{
+		return dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"))->GetState() != EntityState::DEAD;
+	}
+
 	bool Condition_HasTarget::check()
 	{
 		// 1. 배회 목적지(target_pos)가 있는지 확인

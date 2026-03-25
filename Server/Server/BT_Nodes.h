@@ -10,7 +10,16 @@
 
 namespace PIP::GAME
 {
-   
+    class Condition_IsHitted : public Condition
+    {
+    public:
+		bool check() override;
+    };
+    class Condition_IsAlive : public Condition
+    {
+    public:
+		bool check() override;
+    };
 
 	class Condition_HasTarget : public Condition
 	{
