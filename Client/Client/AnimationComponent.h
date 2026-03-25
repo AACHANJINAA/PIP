@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Behavior.h"
 #include "RenderComponent.h"
+#include "ReadGLTFMesh.h"
 
 class Mesh;
 class AnimationComponent : public Behavior
@@ -58,5 +59,11 @@ private:
 	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼 -> 그냥 이걸 넘긴다
 	// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문
 	ComPtr<ID3D12Resource> _bone_palette_buffer;
+	
+
+
+	// 인스턴싱을 위한 노드 정보와, 뼈대 행렬 들고있기
+	std::vector<NodeInfo> _nodes; // 노드 정보 리스트 (glTF node index와 1:1 매칭)
+	std::vector<DirectX::XMFLOAT4X4> _boneTransforms; // 뼈대 행렬 팔레트 (CPU 메모리) -> 뼈대 행렬들을 애니메이션 컴포넌트가 관리하도록 변경
 };
 

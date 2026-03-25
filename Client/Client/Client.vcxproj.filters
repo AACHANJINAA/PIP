@@ -269,14 +269,8 @@
     <ClInclude Include="GltfSkinnedShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="GltfAnimationScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClInclude>
     <ClInclude Include="TerrainShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="MainPlayerAnimationScript.h">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClInclude>
     <ClInclude Include="SkyboxRenderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
@@ -355,9 +349,6 @@
     </ClInclude>
     <ClInclude Include="Tool_Scene.h">
       <Filter>1. Game\1. Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimationComponent.h">
-      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\CameraComponent</Filter>
@@ -454,6 +445,9 @@
     </ClInclude>
     <ClInclude Include="Boss_Scene.h">
       <Filter>1. Game\1. Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -562,14 +556,8 @@
     <ClCompile Include="GltfSkinnedShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="GltfAnimationScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="MainPlayerAnimationScript.cpp">
-      <Filter>1. Game\2. Scripts</Filter>
     </ClCompile>
     <ClCompile Include="SkyboxRenderComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>

@@ -178,6 +178,31 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
 	}
 }
 
+void ReadGLTFMesh::render_instance(ID3D12GraphicsCommandList* commandList, size_t want_instance_count)
+{
+	if (!_isUploaded) return;
+
+	if (_is_animated) // 애니메이션 메쉬인 경우 스키닝 렌더링 호출
+	{
+		render_skinned(commandList);
+	}
+
+	commandList->IASetPrimitiveTopology(_primitiveTopology);
+
+	for (const auto& primitive : _primitives)
+	{
+		if (primitive->_materialIndex >= 0 && primitive->_materialIndex < _material_names.size())
+		{
+			ResourceManager::instance()->bind_material(_material_names[primitive->_materialIndex], commandList);
+		}
+
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
+		commandList->IASetIndexBuffer(&primitive->_indexBufferView);
+		commandList->DrawIndexedInstanced(primitive->_indexCount, want_instance_count, 0, 0, 0);
+	}
+}
+
 void ReadGLTFMesh::release_upload_buffers()
 {
 	for (auto& primitive : _primitives)
@@ -385,7 +410,7 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 	}
 }
 
-void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, bool _isLoop)
+void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop)
 {
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
@@ -398,19 +423,8 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 		// [핵심] 애니메이션이 없으면 모든 뼈대를 항등행렬로 밀어버림 (T-Pose)
 		DirectX::XMFLOAT4X4 identity;
 		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
-		std::fill(_final_bone_transforms.begin(), _final_bone_transforms.end(), identity);
+		std::fill(bone_transforms.begin(), bone_transforms.end(), identity);
 
-		// GPU 상수 버퍼에 즉시 업로드하고 리턴
-		if (_bone_palette_buffer)
-		{
-			void* mapped_data = nullptr;
-			D3D12_RANGE read_range = { 0, 0 };
-			if (SUCCEEDED(_bone_palette_buffer->Map(0, &read_range, &mapped_data)))
-			{
-				memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
-				_bone_palette_buffer->Unmap(0, nullptr);
-			}
-		}
 		return;
 	}
 
@@ -532,25 +546,30 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 		XMMATRIX final_matrix = inverse_bind_matrix * global_transform;
 
 		// GPU 전송을 위해 Transpose (Row-Major)
-		XMStoreFloat4x4(&_final_bone_transforms[i], XMMatrixTranspose(final_matrix));
-		// XMStoreFloat4x4(&_final_bone_transforms[i], final_matrix);
+		XMStoreFloat4x4(&bone_transforms[i], XMMatrixTranspose(final_matrix));
 	}
 
-	// 6. GPU 상수 버퍼 업로드
-	if (_bone_palette_buffer)
-	{
-		void* mapped_data = nullptr;
-		D3D12_RANGE read_range = { 0, 0 };
-
-		if (SUCCEEDED(_bone_palette_buffer->Map(0, &read_range, &mapped_data)))
-		{
-			memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
-			_bone_palette_buffer->Unmap(0, nullptr);
-		}
-	}
+	// 6. GPU 업로드
+	// 이건 바깥에서 처리할것임 -> 인스턴싱을 위해 추후에 SRV에 넣어질 예정
 }
 
 void ReadGLTFMesh::render_skinned(ID3D12GraphicsCommandList* commandList)
+{
+	// 뼈대 행렬 팔레드 GPU 상수 버퍼에 바인딩
+	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
+
+	// 만약 AnimationComponent에서 제공한 버퍼가 있으면 그것을 사용
+	if (_bone_palette_buffer_from_animation_component)
+	{
+		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
+	}
+	else if (_bone_palette_buffer)
+	{
+		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer->GetGPUVirtualAddress());
+	}
+}
+
+void ReadGLTFMesh::render_instance_skinned(ID3D12GraphicsCommandList* commandList)
 {
 	// 뼈대 행렬 팔레드 GPU 상수 버퍼에 바인딩
 	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
@@ -1524,6 +1543,12 @@ void ReadGLTFMesh::set_shader_for_all_materials(const std::string& shader_name)
 	{
 		ResourceManager::instance()->set_shader_for_material(mat_name, shader_name);
 	}
+}
+
+void ReadGLTFMesh::nodes_inout_set(std::vector<NodeInfo>& nodes)
+{
+	nodes.clear();
+	nodes = _nodes;
 }
 
 AnimationInterpolation ReadGLTFMesh::string_to_interpolation(const std::string& str)

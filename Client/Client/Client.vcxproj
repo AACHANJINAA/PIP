@@ -118,7 +118,6 @@
     <ClInclude Include="DescriptorManager.h" />
     <ClInclude Include="FreeCameraScript.h" />
     <ClInclude Include="GlbShader.h" />
-    <ClInclude Include="GltfAnimationScript.h" />
     <ClInclude Include="GltfShader.h" />
     <ClInclude Include="GltfSkinnedShader.h" />
     <ClInclude Include="GltfTestScript.h" />
@@ -139,7 +138,6 @@
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="LongswordScript.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="MainPlayerAnimationScript.h" />
     <ClInclude Include="MainPlayerScript.h" />
     <ClInclude Include="Chess_Scene.h" />
     <ClInclude Include="Camera.h" />
@@ -213,7 +211,6 @@
     <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
     <ClCompile Include="FreeCameraScript.cpp" />
-    <ClCompile Include="GltfAnimationScript.cpp" />
     <ClCompile Include="GltfShader.cpp" />
     <ClCompile Include="GltfSkinnedShader.cpp" />
     <ClCompile Include="GltfTestScript.cpp" />
@@ -259,7 +256,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GlbShader.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="MainPlayerAnimationScript.cpp" />
     <ClCompile Include="MainPlayerScript.cpp" />
     <ClCompile Include="Chess_Scene.cpp" />
     <ClCompile Include="Camera.cpp" />

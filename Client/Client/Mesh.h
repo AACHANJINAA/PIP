@@ -145,6 +145,8 @@ public:
 
 	// 렌더링 함수는 VBV/IBV를 설정하고 DrawInstanced를 호출합니다.
 	virtual void render(ID3D12GraphicsCommandList* commandList);
+	virtual void render_instance(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) {};
+
 	// CSM 렌더링을 위한 별도의 렌더링 함수
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList);
 
