@@ -6,6 +6,7 @@
 #include "GameFramework.h"
 #include "Main_Scene.h"
 #include "Boss_Scene.h"
+#include "NetworkManager.h"
 
 #include "ObjectManager.h"
 #include "ResourceManager.h"
@@ -104,8 +105,15 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	ID3D12CommandList* ppd3dCommandLists[] = { command_list };
 	game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
 	game_framework->WaitForGpuComplete();
+    //TODO: 씬 전환 후 서버에게 패킷 전송 후 방입장 요청
 
-	//ResourceManager::instance()->release_upload_buffers(UINT64_MAX); // TODO: 오류 날수 도 있음
+    // 최초 로그인 패킷 전송 (플레이어 이름 사용)
+    NetworkManager::instance()->SendLoginPacket();
+
+    int room_to_enter = 0; // 자동으로 입장할 방 ID (예시로 2번 방)
+    CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
+    NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

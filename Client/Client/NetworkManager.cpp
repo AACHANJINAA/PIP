@@ -158,20 +158,22 @@ void NetworkManager::recv_packet()
 
 
 
-void NetworkManager::SendLoginPacket(const std::string& name)
+void NetworkManager::SendLoginPacket()
 {
-	common::packet::PacketStream stream;
-	common::packet::CS_PACKET_LOGIN login_packet;
-	login_packet._type = common::packet::PacketType::C2S_P_LOGIN;
+	if (!_isLogin)
+	{
+		common::packet::PacketStream stream;
+		common::packet::CS_PACKET_LOGIN login_packet;
+		login_packet._type = common::packet::PacketType::C2S_P_LOGIN;
 
-	stream << login_packet;
-	stream << name;   // PacketStream이 알아서 [길이][내용]을 써 줌
-	_name = name;
-	// 스트림에 모든 데이터를 쓴 후, 실제 크기를 계산하여 헤더에 덮어쓴다.
-	auto* final_header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
-	final_header->_size = static_cast<uint16_t>(stream.Size());
+		stream << login_packet;
+		stream << _name;   // PacketStream이 알아서 [길이][내용]을 써 줌
+		// 스트림에 모든 데이터를 쓴 후, 실제 크기를 계산하여 헤더에 덮어쓴다.
+		auto* final_header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
+		final_header->_size = static_cast<uint16_t>(stream.Size());
 
-	send_packet(stream.mutable_data(), stream.Size());
+		send_packet(stream.mutable_data(), stream.Size());
+	}
 }
 
 void NetworkManager::SendMovePacket(const common::Vec3& position, const common::Vec3& dir, 
@@ -248,6 +250,7 @@ void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
 	{
 		_my_session_id = ack_packet._my_session_id; // [핵심] 자신의 ID 저장
 		CLOG("[S->C] Login successful! My Session ID is now: " << _my_session_id);
+		_isLogin = true;
 	}
 	else
 	{
@@ -761,7 +764,7 @@ void NetworkManager::cleanup_network()
 	// 3. Winsock 정리
 	WSACleanup();
 }
-bool NetworkManager::connect_to_server(std::string_view server_addr, const int& port)
+bool NetworkManager::connect_to_server()
 {
 	_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_socket == INVALID_SOCKET)
@@ -772,8 +775,8 @@ bool NetworkManager::connect_to_server(std::string_view server_addr, const int& 
 
 	SOCKADDR_IN addr;
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	inet_pton(AF_INET, server_addr.data(), &addr.sin_addr);
+	addr.sin_port = htons(common::packet::SERVER_PORT);
+	inet_pton(AF_INET, _server_addr.data(), &addr.sin_addr);
 
 	if (connect(_socket, (SOCKADDR*)(&addr), sizeof(addr)) == SOCKET_ERROR) {
 		// connect 에러 처리 (WSAEWOULDBLOCK은 정상)
