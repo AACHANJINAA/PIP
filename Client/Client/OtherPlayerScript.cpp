@@ -47,7 +47,7 @@ void OtherPlayerScript::update(float deltaTime)
     switch (_state)
     {
 	case common::packet::EntityState::ACTION:
-        if (_action_id == common::packet::ActionID::Common::Attack)
+        if (_action_id == 0)
         {
             anim_comp->play("attack");
         }
@@ -70,15 +70,21 @@ void OtherPlayerScript::awake()
     auto render_comp = game_object()->get_component<RenderComponent>().get();
 	auto animation_comp = game_object()->get_component<AnimationComponent>().get();
 
-    auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
-    auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
-    dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only("Resource/Character/Brute_die/Brute_die.gltf", "die");
-    render_comp->set_mesh(idleMesh);
+    auto idleMesh =
+        ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+
+    std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
+    
+	render_comp->set_mesh(idleMesh);
 
     animation_comp->add_animation("idle", idleMesh, "idle");
-    animation_comp->add_animation("walk", walkMesh, "walk");
-    animation_comp->add_animation("attack", idleMesh, "attack"); // [추가] 공격 애니메이션 매핑 안되어 있어서 오류난거였음
-    animation_comp->add_animation("die", idleMesh, "die"); // [추가] 죽음 애니메이션 추가
+    animation_comp->add_animation("walk", idleMesh, "walk");
+    animation_comp->add_animation("attack", idleMesh, "attack02");
+    animation_comp->add_animation("die", idleMesh, "death");
     
 
     animation_comp->play("idle");
