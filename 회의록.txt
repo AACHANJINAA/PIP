@@ -395,3 +395,33 @@ Content/Developers/
  - 플레이어의 장검을 사용한 전투
 3. 다음미팅
  - 3월 26일 7시 
+
+2026-03-26
+---------------
+1.  진행상황
+ - HP가  0이되면사망  => NPC의 사망 애니메이션이 없음,  보스/플레이어는 사망 애니메이션이 있음
+- Unreal에서 제작한 맵 적용(Tiling과 Layering구현)
+- 보스 구현
+- 장검 전투 구현
+2. ToDo
+ - Shader오류 수정 : 보스 갑옷의 틈새 안쪽 윗 부분이 밝게 보임
+ - CSM을 사용했음에도 보스의 발의 그림자가 너무 뭉개짐
+ - 성능 개선
+  * NPC 를 추가했을 때 느려지는데 원인을 찾아 보자
+   * CPU 병목은 Concurrency Analyzer로 파악
+   * GPU 병목은 shader debugger (MS PIX,  NVidia  NSight나 RenderDoc)를 사용해서 측정해야 한다.
+ - 이동중 땅에 파묻히는 현상 제거
+ - 보스 맵 제작
+ - 건물 그리기
+ - 논문 샘플내용을 PIP로 바꾸기.
+3. 중점연구과제
+ - GLTF Parser
+ - PBR 렌더러  ( NORMAL,  metalic_roughness, metalic_specullar, IBL, Transparency )
+ - 물리엔진 연동
+4. 5월 8일까지 논문작성 게임학회 발표논문
+ - 우리가 이러이러한 기술을 게임제작에 반영했다. (중점연구과제를 중심으로)
+ - 논문샘플 
+5. 4월 초에 중간 발표
+ - 발표 PPT : 기획발표에 사용했던 PPT에 지금까지 구현한 것 추가.
+6. 다음미팅
+ -4월9일  목요일 오후 7시
