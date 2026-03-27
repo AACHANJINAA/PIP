@@ -44,7 +44,7 @@ void AnimationComponent::late_update(float deltaTime)
 	}
 
 	// DW설명 : 이제 애니메이션 업데이트에 지금 들고있는 뼈대 행렬 벡터를 넘겨서 갱신하도록 함 -> 애니메이션 컴포넌트가 뼈대 행렬을 관리하는 형태로 변경
-	glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
+	//glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
 
 
 	// 종료 판정
