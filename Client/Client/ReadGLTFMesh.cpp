@@ -1226,6 +1226,22 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				else {
 					v._boneWeights[0] = v._boneWeights[1] = v._boneWeights[2] = v._boneWeights[3] = 0.0f;
 				}
+
+				float sum = v._boneWeights[0] + v._boneWeights[1] + v._boneWeights[2] + v._boneWeights[3];
+
+				if (sum > 0.0f) {
+					// 합이 1.0이 되도록 각각을 합으로 나누어주기
+					// 예: [0.5, 0.3, 0, 0] (합 0.8) -> [0.625, 0.375, 0, 0] (합 1.0)
+					v._boneWeights[0] /= sum;
+					v._boneWeights[1] /= sum;
+					v._boneWeights[2] /= sum;
+					v._boneWeights[3] /= sum;
+				}
+				else {
+					// 만약 가중치가 아예 없는 정점이라면, 최소한 0번 뼈(Root)라도 100% 따르게 해서 
+					// 원점으로 날아가는 것을 방지
+					v._boneWeights[0] = 1.0f;
+				}
 			}
 
 			// 4. 인덱스 버퍼 처리 (Winding Order Flip 포함)
