@@ -107,6 +107,10 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
         if (!gLights[i].m_bEnable)
             continue;
 
+        float distandce_to_Light = length(gLights[i].m_vPosition - worldPos);
+        if (gLights[i].m_nType != DIRECTIONAL_LIGHT && distandce_to_Light > gLights[i].m_fRange * 1.2f)
+            continue;
+
         float3 L;
         float attenuation = 1.0;
 
