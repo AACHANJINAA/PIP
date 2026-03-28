@@ -1180,34 +1180,41 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 			{
 				auto& v = primitive->_skinned_vertices[i];
 
+				// 위치와 노멀 좌표계 변환 (Z축 반전)
 				v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
-				// Normal로부터 Tangent 자동 생성 (GLTF Tangent 무시)
 				v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-				XMVECTOR normal = XMLoadFloat3(&v._normal);
-				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-				// Normal이 Up과 거의 평행하면 다른 축 사용
-				if (abs(XMVectorGetY(normal)) > 0.99f) {
-					up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-				}
-
-				// Tangent = normalize(cross(up, normal))
-				XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
-
-				XMFLOAT3 tangentF3;
-				XMStoreFloat3(&tangentF3, tangent);
-				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
 				v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
 
-				// Skinning Data (배열에 값 대입)
+				// 억지로 Tangent를 만들지 않고 glTF 원본 데이터를 사용합니다.
+				if (i < tangents.size())
+				{
+					// DX12(왼손 좌표계)에 맞게 Z축과 Bitangent 방향(W) 부호를 반전시켜 줍니다.
+					v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, -tangents[i].w);
+				}
+				else
+				{
+					// glTF 파일 자체에 Tangent 데이터가 아예 없는 예외적인 경우에만 임시로 계산합니다.
+					XMVECTOR normal = XMLoadFloat3(&v._normal);
+					XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+					if (abs(XMVectorGetY(normal)) > 0.99f) {
+						up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+					}
+
+					XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
+
+					XMFLOAT3 tangentF3;
+					XMStoreFloat3(&tangentF3, tangent);
+					v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
+				}
+
+				// Skinning Data (배열에 값 대입) - 이 아래는 기존과 동일합니다.
 				if (i < joint_indices_vec.size()) {
-					// 파일에 적혀있는 로컬 인덱스
 					UINT local_j0 = joint_indices_vec[i].x;
 					UINT local_j1 = joint_indices_vec[i].y;
 					UINT local_j2 = joint_indices_vec[i].z;
 					UINT local_j3 = joint_indices_vec[i].w;
 
-					// 매핑 테이블을 통해 몸통(Master) 기준의 인덱스로 변환해서 넣기
 					v._boneIndices[0] = (local_j0 < local_to_master_map.size()) ? local_to_master_map[local_j0] : 0;
 					v._boneIndices[1] = (local_j1 < local_to_master_map.size()) ? local_to_master_map[local_j1] : 0;
 					v._boneIndices[2] = (local_j2 < local_to_master_map.size()) ? local_to_master_map[local_j2] : 0;
@@ -1230,16 +1237,12 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				float sum = v._boneWeights[0] + v._boneWeights[1] + v._boneWeights[2] + v._boneWeights[3];
 
 				if (sum > 0.0f) {
-					// 합이 1.0이 되도록 각각을 합으로 나누어주기
-					// 예: [0.5, 0.3, 0, 0] (합 0.8) -> [0.625, 0.375, 0, 0] (합 1.0)
 					v._boneWeights[0] /= sum;
 					v._boneWeights[1] /= sum;
 					v._boneWeights[2] /= sum;
 					v._boneWeights[3] /= sum;
 				}
 				else {
-					// 만약 가중치가 아예 없는 정점이라면, 최소한 0번 뼈(Root)라도 100% 따르게 해서 
-					// 원점으로 날아가는 것을 방지
 					v._boneWeights[0] = 1.0f;
 				}
 			}
@@ -1254,7 +1257,13 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 				primitive->_indexCount = accessor["count"];
 				primitive->_indices.resize(primitive->_indexCount);
 
-				if (accessor["componentType"] == 5123) { // unsigned short
+				if (accessor["componentType"] == 5121) { // unsigned byte
+					const uint8_t* p_indices = reinterpret_cast<const uint8_t*>(data_ptr);
+					for (size_t i = 0; i < primitive->_indexCount; ++i) {
+						primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
+					}
+				}
+				else if (accessor["componentType"] == 5123) { // unsigned short
 					const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(data_ptr);
 					for (size_t i = 0; i < primitive->_indexCount; ++i) {
 						primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
@@ -1733,7 +1742,7 @@ void ReadGLTFMesh::process_node(const json& gltfJson, const std::vector<char>& b
 	else {
 		XMMATRIX translation_matrix = XMMatrixIdentity();
 		if (node.contains("translation")) {
-			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
+			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), -node["translation"][2].get<float>());
 		}
 		XMMATRIX rotation_matrix = XMMatrixIdentity();
 		if (node.contains("rotation")) {
@@ -1803,7 +1812,13 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			primitive->_indexCount = accessor["count"];
 			primitive->_indices.resize(primitive->_indexCount);
 
-			if (accessor["componentType"] == 5123) {
+			if (accessor["componentType"] == 5121) { // Unsigned Byte
+				const uint8_t* p_indices = reinterpret_cast<const uint8_t*>(data_ptr);
+				for (size_t i = 0; i < primitive->_indexCount; ++i) {
+					primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
+				}
+			}
+			else if (accessor["componentType"] == 5123) {
 				const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(data_ptr);
 				for (size_t i = 0; i < primitive->_indexCount; ++i) {
 					primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
@@ -1826,20 +1841,18 @@ void ReadGLTFMesh::bounding_box_merge()
 	if (!_primitives.empty())
 	{
 		// [명명법] 함수 내부 변수를 snake_case로 적용
-		BoundingOrientedBox merged_obb = _primitives[0]->_orientedBoundingBox;
-		for (size_t i = 1; i < _primitives.size(); ++i)
+		std::vector<XMFLOAT3> all_points;
+		all_points.reserve(_primitives.size() * 8);
+
+		// 여기서는 모든 점을 수집해야 하므로 0부터 시작합니다.
+		for (size_t i = 0; i < _primitives.size(); ++i)
 		{
-			std::array<XMFLOAT3, 8> corners_a, corners_b;
-			merged_obb.GetCorners(corners_a.data());
-			_primitives[i]->_orientedBoundingBox.GetCorners(corners_b.data());
-
-			std::vector<XMFLOAT3> all_points;
-			all_points.reserve(16);
-			all_points.insert(all_points.end(), corners_a.begin(), corners_a.end());
-			all_points.insert(all_points.end(), corners_b.begin(), corners_b.end());
-
-			BoundingOrientedBox::CreateFromPoints(merged_obb, all_points.size(), all_points.data(), sizeof(XMFLOAT3));
+			std::array<XMFLOAT3, 8> corners;
+			_primitives[i]->_orientedBoundingBox.GetCorners(corners.data());
+			all_points.insert(all_points.end(), corners.begin(), corners.end());
 		}
-		_orientedBoundingBox = merged_obb;
+
+		// 수집된 전체 점들을 바탕으로 단 한 번만 최종 OBB를 계산합니다.
+		BoundingOrientedBox::CreateFromPoints(_orientedBoundingBox, all_points.size(), all_points.data(), sizeof(XMFLOAT3));
 	}
 }
