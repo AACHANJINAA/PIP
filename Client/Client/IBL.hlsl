@@ -90,6 +90,6 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
         // 3. Diffuse + Specular 합산 후 AO 적용
-    return (diffuse + specular) * ao * 0.1; 
+    return (diffuse + specular) * ao; 
 }
 #endif // _IBL_HLSL_
