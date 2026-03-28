@@ -2,10 +2,18 @@
 #include "NPCControllerComponent.h"
 
 #include "GameObject.h"
+#include "MapDataManager.h"
 #include "TransformComponent.h"
 
 namespace PIP::GAME
 {
+	void NPCControllerComponent::Initialize(JPH::PhysicsSystem* system, float height, float radius)
+	{
+		CharacterControllerComponent::Initialize(system, height, radius);
+		// 생성 시점에 미리 캐싱 (GetComponent 8% 점유율 제거)
+		_cachedTransform = GetOwner()->GetComponent<TransformComponent>();
+	}
+
 	void NPCControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)
 	{
 		if (!_character || !_isPhysicsActive) return;
@@ -75,6 +83,11 @@ namespace PIP::GAME
 	{
 		// [NPC 전용 최적화] 시뮬레이션 없이 ShapeCast로 바닥만 체크하는 경량 모드
 		if (!_character || !_isPhysicsActive) return;
+		if (!_cachedTransform)
+		{
+			_cachedTransform = GetOwner()->GetComponent<TransformComponent>();
+			return; // 캐싱이 아직 안 된 상태에서는 업데이트 스킵 (다음 프레임에 반영)
+		}
 
 		common::Vec3 currentPos = GetPosition();
 		common::Vec3 vel = _aiVelocity;
@@ -84,54 +97,73 @@ namespace PIP::GAME
 		_verticalVelocity += _physicsSystem->GetGravity().GetY() * deltaTime;
 
 		// 1. 예상 위치 계산
-		common::Vec3 nextPos = currentPos + (vel + common::Vec3(0, _verticalVelocity, 0)) * deltaTime;
+		common::Vec3 nextPos = currentPos + (_aiVelocity + common::Vec3(0, _verticalVelocity, 0)) * deltaTime;
 
-		// 2. ShapeCast로 지형 체크
-		float castDistance = std::max(3.0f, std::abs(_verticalVelocity * deltaTime) + 1.0f);
-		float startOffset = 1.0f; // 머리 위 1m부터 체크
+		// [최적화 2] CastShape(65%) -> CastRay(가벼움)로 교체
+		// 지형 체크용으로 Ray만 쏴도 충분함 (NPC가 아주 크지 않은 이상)
+		float rayStartOffset = 1.0f;
+		float rayDistance = 4.0f;
 
-		JPH::RShapeCast shapeCast{
-			_settings->mShape,
-			JPH::Vec3::sReplicate(1.0f),
-			JPH::RMat44::sTranslation(Utils::ToJolt(nextPos) + JPH::Vec3(0, startOffset + _halfHeight, 0)),
-			JPH::Vec3(0, -(castDistance + startOffset), 0)
+		JPH::RRayCast ray{
+	Utils::ToJolt(nextPos) + JPH::Vec3(0, rayStartOffset, 0),
+	JPH::Vec3(0, -(rayDistance + rayStartOffset), 0)
 		};
 
-		JPH::ShapeCastSettings castSettings;
-		JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;
+		JPH::RayCastResult rayResult;
+		// 지형 레이어만 체크하여 부하 최소화
+		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, rayResult,
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+			_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
+		{
 
-		_physicsSystem->GetNarrowPhaseQuery().CastShape(shapeCast, 
-			castSettings, 
-			JPH::RVec3::sZero(), 
-			collector,
-			_physicsSystem->GetDefaultBroadPhaseLayerFilter(_physicsLayer),
-			_physicsSystem->GetDefaultLayerFilter(_physicsLayer));
+			JPH::RVec3 hitPos = ray.mOrigin + ray.mDirection * rayResult.mFraction;
+			float groundY = hitPos.GetY();
 
-		if (collector.HadHit()) {
-			float hitCenterY = (nextPos.y + startOffset + _halfHeight) - ((castDistance + startOffset) *
-				collector.mHit.mFraction);
-			float groundY = hitCenterY - _halfHeight;
+			// [최적화 3] No-Lock 인터페이스 사용 (Mutex 8% 점유율 제거)
+			// 싱글스레드 로직이므로 락 없이 직접 바디 포인터 획득
+			const JPH::BodyLockInterfaceNoLock& lockInterface = _physicsSystem->GetBodyLockInterfaceNoLock();
+			const JPH::Body* body = lockInterface.TryGetBody(rayResult.mBodyID);
 
-			// 턱 높이 체크 (0.6m 이상은 벽으로 간주)
-			float stepHeight = groundY - currentPos.y;
-			if (stepHeight > 0.4f) {
-				nextPos.x = currentPos.x;
-				nextPos.z = currentPos.z;
-				nextPos.y = currentPos.y;
+			if (body) {
+				// [확인된 함수] 바디에서 법선 벡터 직접 추출
+				JPH::Vec3 normal = body->GetWorldSpaceSurfaceNormal(rayResult.mSubShapeID2, hitPos);
+
+				// [경사로 로직 수정 핵심]
+				bool isSteep = (normal.GetY() < 0.6f); // 가파른가?
+				bool isUpward = (groundY > currentPos.y + 0.2f); // 가려는 곳이 현재보다 높은가? (마진 0.2m)
+
+				// 가파른데 + 올라가는 중이라면 -> "벽"으로 간주하고 XZ 이동 차단
+				if (isSteep && isUpward)
+				{
+					nextPos.x = currentPos.x;
+					nextPos.z = currentPos.z;
+					groundY = currentPos.y; // 높이 변화 없음
+				}
+				// 가파른데 + 내려가는 중이라면 -> 차단하지 않음 (NPC가 아래로 떨어지거나 미끄러짐)
 			}
-			else {
-				nextPos.y = groundY;
-				_verticalVelocity = -0.5f;
+
+			// 3. 최종 높이 적용
+			nextPos.y = groundY + 0.01f;
+			_verticalVelocity = -0.1f;
+		}
+		else {
+			// 레이가 빗나갔을 때 (절벽 등) - 자유 낙하를 허용하거나 안전장치 적용
+			nextPos.y = currentPos.y + _verticalVelocity * deltaTime;
+
+			// 맵 밖 안전장치
+			float mapY = MapDataManager::Instance()->GetGroundHeight(nextPos.x, nextPos.z) + 0.01f;
+			if (nextPos.y < mapY) {
+				nextPos.y = mapY + 0.01f;
+				_verticalVelocity = 0.0f;
 			}
 		}
 
-		// 3. 최종 좌표 강제 적용 및 동기화
+		// [최적화 3] Jolt 바디 위치 강제 동기화 (Update 생략)
 		JPH::RVec3 joltPos = Utils::ToJolt(nextPos);
 		joltPos.SetY(joltPos.GetY() + _halfHeight);
 		_character->SetPosition(joltPos);
 
-		if (auto tc = GetOwner()->GetComponent<TransformComponent>()) {
-			tc->SetPosition(nextPos);
-		}
+		// 캐싱된 포인터로 바로 접근
+		_cachedTransform->SetPosition(nextPos);
 	}
 }

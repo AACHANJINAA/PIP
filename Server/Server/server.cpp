@@ -549,6 +549,18 @@ namespace PIP::SERVER
 			lastTick = now;
 			accumulator += elapsed.count();
 
+			// 4. 게임 로직 업데이트 (남은 시간만큼)
+			auto t_logic_start = steady_clock::now();
+			float dt = static_cast<float>(elapsed.count());
+			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+			for (auto& room : _rooms) {
+				if (room->GetLogicThreadIndex() == thread_idx) {
+					// [변경] 할당자 전달
+					room->UpdateLogics(dt, &tempAllocator);
+				}
+			}
+			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
+
 			// 3. 물리 엔진 업데이트 (밀린 시간만큼 여러 번 돌려서라도 60fps 보장)
 			auto t_phys_start = steady_clock::now();
 			int steps = 0;
@@ -569,17 +581,6 @@ namespace PIP::SERVER
 			}
 			worker.stats.physics_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_phys_start).count());
 
-			// 4. 게임 로직 업데이트 (남은 시간만큼)
-			auto t_logic_start = steady_clock::now();
-			float dt = static_cast<float>(elapsed.count());
-			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-			for (auto& room : _rooms) {
-				if (room->GetLogicThreadIndex() == thread_idx) {
-					// [변경] 할당자 전달
-					room->UpdateLogics(dt, &tempAllocator);
-				}
-			}
-			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
 
 			auto t_loop_end = steady_clock::now();
 			worker.stats.total_loop_profile.add(duration_cast<nanoseconds>(t_loop_end - t_loop_start).count());

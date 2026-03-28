@@ -17,7 +17,7 @@ namespace PIP::GAME
         virtual ~CharacterControllerComponent() override;
 
         void Initialize() override {}
-        void Initialize(JPH::PhysicsSystem* physicsSystem, float height = 1.8f, float radius = 0.3f);
+        virtual void Initialize(JPH::PhysicsSystem* physicsSystem, float height = 1.8f, float radius = 0.3f);
 
         // 하위 클래스에서 각자의 역할에 맞게 구현
         void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override = 0;
