@@ -213,21 +213,32 @@ namespace PIP::BOT
 
         // 2. 랜덤 이동량 계산 (초당 약 3~5m 속도 느낌)
         float move_speed = 0.5f;
+        common::Vec3 prev_pos = _current_pos;
         _current_pos.x += dis(gen) * move_speed;
         _current_pos.z += dis(gen) * move_speed;
 
-        // 3. 10x10 범위 내로 강제 제한 (Anchor +- 5.0f)
-        float range = 5.0f;
+        // 3. 20x20 범위 내로 강제 제한 (Anchor +- 10.0f)
+        float range = 10.0f;
         _current_pos.x = std::clamp(_current_pos.x, _anchor_pos.x - range, _anchor_pos.x + range);
         _current_pos.z = std::clamp(_current_pos.z, _anchor_pos.z - range, _anchor_pos.z + range);
 
-        // 4. 패킷 생성 및 전송
+        // 4. move_dir 계산
+        common::Vec3 move_dir = { _current_pos.x - prev_pos.x, 0, _current_pos.z - prev_pos.z };
+        float length = std::sqrt(move_dir.x * move_dir.x + move_dir.z * move_dir.z);
+        if (length > 1e-6f) {
+            move_dir.x /= length;
+            move_dir.z /= length;
+        }
+
+        // 5. 패킷 생성 및 전송
         common::packet::CS_PACKET_MOVE pkt;
         pkt._size = sizeof(pkt);
         pkt._type = common::packet::PacketType::C2S_P_MOVE;
         pkt._position = _current_pos;
+        pkt._move_dir = move_dir;
         pkt._rotation = _current_rot;
-        pkt._state = common::packet::OBJECT_STATE::WALK;
+        pkt._state = common::packet::EntityState::MOVE;
+        pkt._action_id = 0;
         pkt._client_tick = static_cast<uint32_t>(GetTickCount64());
 
         DoWrite(reinterpret_cast<const char*>(&pkt), sizeof(pkt));

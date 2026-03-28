@@ -36,7 +36,7 @@ namespace PIP::GAME
 
         // 땅에 있을 때 중력 캡핑 (파고듦 방지 핵심)
         if (_character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround) {
-            newYVel = std::max(newYVel, -1.0f);
+            newYVel = std::max(newYVel, 0.0f);
         }
 
         // 최종 속도 설정
@@ -64,10 +64,7 @@ namespace PIP::GAME
         common::Vec3 footPos = Utils::FromJolt(newJoltPos);
         footPos.y -= _halfHeight;
 
-        JPH::Vec3 groundVel = _character->GetGroundVelocity();
-        if (groundVel.LengthSq() > 0.001f) {
-            MYLOG("미끄러짐의 주범: Ground Velocity 감지! " << groundVel.GetX() << ", " << groundVel.GetZ());
-        }
+        
 
         auto tc = GetOwner()->GetComponent<TransformComponent>();
         if (tc) tc->SetPosition(footPos);

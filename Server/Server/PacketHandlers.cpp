@@ -445,13 +445,10 @@ namespace PIP::packet
 	void Handle_C2S_ACTION(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_ACTION action_packet;
-		try {
-			stream >> action_packet;
-		}
-		catch (const std::runtime_error& e) {
-			MYERROR("[Action] Failed to read action packet: " << e.what());
-			return;
-		}
+		
+		stream >> action_packet;
+		
+		
 
 		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 		if (room) {

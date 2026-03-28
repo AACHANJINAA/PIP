@@ -51,6 +51,8 @@ namespace PIP::GAME
 		AddComponent<AIComponent>();
 		NPC::SetupBT();
 
+		_npcController = GetComponent<NPCControllerComponent>();
+		_transform = GetComponent<TransformComponent>();
 
 		_lastUpdateTime = std::chrono::steady_clock::now();
 	}

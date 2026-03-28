@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include <array>
 #include <algorithm>
+#include <cmath>
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")

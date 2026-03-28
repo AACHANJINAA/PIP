@@ -36,7 +36,7 @@ namespace PIP::SERVER
 
 	void Room::SpawnInitialNPCs()
 	{
-		for (int i = 0; i < 100; ++i)
+		for (int i = 0; i < 500; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
 
@@ -390,67 +390,27 @@ namespace PIP::SERVER
 	void Room::UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
 		if (!_physicsSystem || _players.empty()) return;
+		// [최적화] _npcs(5만 마리) 대신 _activeNpcList(시야 내 NPC)만 순회
+		std::vector<GAME::NPC*> bosss;
+		for (auto* npc : _activeNpcList) {
+			if (npc->is_boss())
+			{
+				bosss.push_back(npc); // 보스는 따로 처리하기 위해 리스트에 저장
+				continue;
+			}// 보스는 정밀 물리(PhysicsUpdate) 대상
 
-		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
-		//static float debugTimer = 0.0f; // static으로 선언하여 값 유지
-		//debugTimer += deltaTime;
-		//if (debugTimer >= 1.0f) {
-		//	debugTimer = 0.0f;
-		//	for (auto& [pid, session] : _players) {
-		//		if (session && session->_player) {
-		//			common::Vec3 pos = session->_player->GetPosition();
-		//			MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z);
-		//		}
-		//	}
-		//}
+			auto nc = npc->GetNPCController(); // 캐싱된 포인터 사용
+			if (!nc || !npc->IsActive()) continue;
 
-		if (!_physicsSystem || _players.empty()) return;
-
-		// 1. 활성 영역 NPC 찾기
-		std::unordered_set<GAME::NPC*> activeNpcs;
-		std::unordered_set<GAME::NPC*> innerNpcs;
+			nc->LightPhysicsUpdate(deltaTime);
+			_gridMap.UpdatePosition(npc, npc->GetPosition());
+		}
 
 		// [보스 예외 처리] 보스는 거리와 상관없이 항상 정밀 물리(Inner) 대상
-		for (auto& [id, npc] : _npcs) {
-			if (npc->is_boss()) {
-				activeNpcs.insert(npc.get());
-				innerNpcs.insert(npc.get());
-			}
-		}
-
-		for (auto& [pid, session] : _players) {
-			if (!session || !session->_player) continue;
-			common::Vec3 myPos = session->_player->GetPosition();
-
-			std::vector<GAME::GameObject*> nearby;
-			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 검색
-			for (auto* obj : nearby) {
-				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
-					// 이미 보스에서 처리했을 수 있으므로 체크
-					if (npc->is_boss()) continue;
-
-					activeNpcs.insert(npc);
-					// 45m 이내면 정밀 물리
-					float distSq = common::DistanceSq(myPos, npc->GetPosition());
-					if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
-				}
-			}
-		}
-
-		// 2. NPC 물리 업데이트 (LOD 적용)
-		for (auto& [id, npc] : _npcs) {
-			auto nc = npc->GetComponent<GAME::NPCControllerComponent>();
-			if (!nc) continue;
-
-			if (innerNpcs.contains(npc.get())) {
-				// [Tier 1] 정밀 물리 (벽 충돌 포함)
-				npc->PhysicsUpdate(deltaTime, tempAllocator);
-				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
-			}
-			else if (activeNpcs.contains(npc.get())) {
-				// [Tier 2] 가벼운 물리 (중력 + 지형 보정) - AI 속도로 움직임!
-				nc->LightPhysicsUpdate(deltaTime);
-				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
+		for (auto& boss : bosss) {
+			if (boss->is_boss()) {
+				boss->PhysicsUpdate(deltaTime, tempAllocator);
+				_gridMap.UpdatePosition(boss, boss->GetPosition());
 			}
 		}
 		// --- 3. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
@@ -472,6 +432,104 @@ namespace PIP::SERVER
 		// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
 		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
+
+
+		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
+		//static float debugTimer = 0.0f; // static으로 선언하여 값 유지
+		//debugTimer += deltaTime;
+		//if (debugTimer >= 1.0f) {
+		//	debugTimer = 0.0f;
+		//	for (auto& [pid, session] : _players) {
+		//		if (session && session->_player) {
+		//			common::Vec3 pos = session->_player->GetPosition();
+		//			MYLOG("[DebugPos] Player " << session->_id << " | X: " << pos.x << " Y: " << pos.y << " Z: " << pos.z);
+		//		}
+		//	}
+		//}
+
+		//if (!_physicsSystem || _players.empty()) return;
+
+		// 1. 활성 영역 NPC 찾기
+		//std::unordered_set<GAME::NPC*> activeNpcs;
+		//std::unordered_set<GAME::NPC*> innerNpcs;
+
+		
+
+		//for (auto& [pid, session] : _players) {
+		//	if (!session || !session->_player) continue;
+		//	common::Vec3 myPos = session->_player->GetPosition();
+
+		//	std::vector<GAME::GameObject*> nearby;
+		//	_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 검색
+		//	for (auto* obj : nearby) {
+		//		if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
+		//			// 이미 보스에서 처리했을 수 있으므로 체크
+		//			if (npc->is_boss()) continue;
+
+		//			activeNpcs.insert(npc);
+		//			// 45m 이내면 정밀 물리
+		//			float distSq = common::DistanceSq(myPos, npc->GetPosition());
+		//			if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
+		//		}
+		//	}
+		//}
+
+		//// 2. NPC 물리 업데이트 (LOD 적용)
+		//std::vector<GAME::NPC*> bosss;
+		//for (auto& [id, npc] : _npcs) {
+		//	auto nc = npc->GetComponent<GAME::NPCControllerComponent>();
+		//	if (!nc) continue;
+		//	if (!npc->IsActive()) continue;
+		//	if (npc->is_boss())
+		//	{
+		//		bosss.push_back(npc.get());
+		//		continue;
+		//	}
+
+		//	nc->LightPhysicsUpdate(deltaTime);
+		//	_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
+		//	//if (innerNpcs.contains(npc.get())) {
+		//	//	// [Tier 1] 정밀 물리 (벽 충돌 포함)
+		//	//	npc->PhysicsUpdate(deltaTime, tempAllocator);
+		//	//	_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
+		//	//}
+		//	//else if (activeNpcs.contains(npc.get())) {
+		//	//	// [Tier 2] 가벼운 물리 (중력 + 지형 보정) - AI 속도로 움직임!
+		//	//	nc->LightPhysicsUpdate(deltaTime);
+		//	//	_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
+		//	//}
+		//	
+		//}
+
+		//// [보스 예외 처리] 보스는 거리와 상관없이 항상 정밀 물리(Inner) 대상
+		//for (auto& boss : bosss) {
+		//	if (boss->is_boss()) {
+		//		boss->PhysicsUpdate(deltaTime, tempAllocator);
+		//		_gridMap.UpdatePosition(boss, boss->GetPosition());
+		//		//activeNpcs.insert(npc.get());
+		//		//innerNpcs.insert(npc.get());
+		//	}
+		//}
+		//// --- 3. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
+		//for (auto& [pid, session] : _players) {
+		//	if (!session || !session->_player) continue;
+
+		//	auto player = session->_player;
+		//	auto cc = player->GetComponent<GAME::CharacterControllerComponent>();
+		//	if (!cc) continue;
+
+		//	// [핵심] 물리 엔진 업데이트 (조작 의도 + 넉백 + 중력)
+		//	player->PhysicsUpdate(deltaTime, tempAllocator);
+
+		//	// [추가] 플레이어의 그리드맵 위치 갱신
+		//	_gridMap.UpdatePosition(player.get(), player->GetPosition());
+		//}
+
+		//// --- 4. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
+		//// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
+		//// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
+		//_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
+	
 	}
 
 	void Room::UpdateLogics(float deltaTime, JPH::TempAllocator* tempAllocator)
@@ -588,16 +646,16 @@ namespace PIP::SERVER
 				npc->SetPosition(pos); // 물리 바디 위치 강제 초기화
 			}
 
-			// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
-			if (!mapData->IsInsideMap(pos.x, pos.z)) {
-				// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
-				pos = mapData->AdjustPositionToGround(pos);
-			}
-			else {
-				// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
-				pos = mapData->AdjustPositionToGround(pos);
-			}
-			npc->SetPosition(pos);
+			//// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
+			//if (!mapData->IsInsideMap(pos.x, pos.z)) {
+			//	// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
+			//	pos = mapData->AdjustPositionToGround(pos);
+			//}
+			//else {
+			//	// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
+			//	pos = mapData->AdjustPositionToGround(pos);
+			//}
+			//npc->SetPosition(pos);
 			// 부드러운 회전 처리
 			common::Vec3 vel = npc->GetVelocity();
 			if (vel.x * vel.x + vel.z * vel.z > 0.01f) {
@@ -1518,6 +1576,6 @@ namespace PIP::SERVER
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
 		CreatePhysicsTerrain();
-		CreatePhysicsMapObjects();
+		//CreatePhysicsMapObjects();
 	}
 }
