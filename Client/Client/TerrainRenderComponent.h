@@ -9,6 +9,8 @@ public:
 	virtual ~TerrainRenderComponent();
 
 	virtual void pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer) override;
+
+	virtual BoundingOrientedBox get_world_bounding_box() const override;
 private:
 	ComPtr<ID3D12Resource> _terrain_info_cbuffer;
 	UINT8* _terrain_info_cbuffer_cpu_address = nullptr;

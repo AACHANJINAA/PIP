@@ -3,10 +3,13 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "TerrainLoader.h"
+#include "GameObject.h"        
+#include "TransformComponent.h"
 
 TerrainRenderComponent::TerrainRenderComponent()
 {
     set_pso_name("terrain");
+    set_frustum_culling_enabled(true);
 }
 
 TerrainRenderComponent::~TerrainRenderComponent()
@@ -154,4 +157,27 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
 
         renderer->bind_texture_table(commandList, 4, texture_handles);
     }
+}
+
+BoundingOrientedBox TerrainRenderComponent::get_world_bounding_box() const
+{
+    if (!_mesh)
+    {
+        return BoundingOrientedBox();
+    }
+
+    BoundingOrientedBox localObb = _mesh->bounding_box();
+    BoundingOrientedBox worldObb;
+
+    if (game_object() && game_object()->transform())
+    {
+        XMMATRIX worldMatrix = XMLoadFloat4x4(&game_object()->transform()->world_matrix());
+        localObb.Transform(worldObb, worldMatrix);
+    }
+    else
+    {
+        worldObb = localObb;
+    }
+
+    return worldObb;
 }

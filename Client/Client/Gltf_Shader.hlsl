@@ -141,7 +141,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
          // 4. Emissive
     float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
-    //float3 emissiveColor = (length(emissiveSample) > 0.01f) ? emissiveSample : float3(1.0, 1.0, 1.0);
     float3 finalEmissive = emissiveSample * EmissiveFactor;
 
          // 5. View vector
