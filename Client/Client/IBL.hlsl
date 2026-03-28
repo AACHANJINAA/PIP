@@ -48,7 +48,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
     float NdotV = saturate(dot(N, V));
 
         // 3. Prefiltered Environment Map LOD 선택
-    float maxMipLevel = 5.0;
+    float maxMipLevel = 3.0;
     float safeRoughness = max(roughness, 0.045); // 최소 4.5%
     float lod = safeRoughness * maxMipLevel;
     
