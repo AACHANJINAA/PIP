@@ -1742,7 +1742,7 @@ void ReadGLTFMesh::process_node(const json& gltfJson, const std::vector<char>& b
 	else {
 		XMMATRIX translation_matrix = XMMatrixIdentity();
 		if (node.contains("translation")) {
-			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
+			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), -node["translation"][2].get<float>());
 		}
 		XMMATRIX rotation_matrix = XMMatrixIdentity();
 		if (node.contains("rotation")) {
