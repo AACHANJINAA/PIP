@@ -123,6 +123,8 @@ float4 PS(GS_OUTPUT input) : SV_Target
     {
         color = g_HPBarTex.Sample(g_Sampler, input.UV);
     }
+
+    color.r *= 5.0f;
     
     return color;
 }
