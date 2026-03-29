@@ -102,8 +102,7 @@ void ShadowManager::build_cascade_matrices()
     // 메인 카메라 위치 가져오기
     XMVECTOR camPos = XMVectorSet(0, 0, 0, 1);
     if (CameraComponent::get_main()) {
-        auto pos = CameraComponent::get_main()->game_object()->transform()->
-            position();
+        auto pos = CameraComponent::get_main()->game_object()->transform()->position();
         camPos = XMVectorSet(pos.x, pos.y, pos.z, 1.0f);
     }
 
