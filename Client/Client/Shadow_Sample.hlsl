@@ -65,7 +65,7 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
         if (viewDepth > g_shadowSplitNear - blendThreshold)
         {
             shadow1 = get_pcf_shadow(worldPos, normal, 1);
-            float t = (viewDepth - (g_shadowSplitNear - blendThreshold)) / (blendThreshold * 2.0f);
+            float t = (viewDepth - (g_shadowSplitNear - blendThreshold)) / (blendThreshold);
             finalShadow = lerp(shadow0, shadow1, saturate(t));
         }
         else
