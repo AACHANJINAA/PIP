@@ -64,6 +64,10 @@ float4 PS_UI(PS_INPUT input) : SV_TARGET
     {
              // 텍스처 사용
         float4 texColor = g_Texture.Sample(g_Sampler, input.texcoord);
+        
+        texColor.rb *= 5.0f; // 밝기 보정
+        texColor.g *= 2.0f;
+
         return texColor * g_Color;
     }
     else
