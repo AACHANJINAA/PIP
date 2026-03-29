@@ -20,8 +20,9 @@ struct CbGameObjectInfo
 {
 	XMFLOAT4X4 _world;
     XMFLOAT4X4 _worldInverseTranspose;
-    int bReceiveShadow; 
-    XMFLOAT3 padding;
+    int bReceiveShadow;
+    int otherplayer_id;
+    XMFLOAT2 padding;
 };
 
 class Material_Shader

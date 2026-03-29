@@ -10,9 +10,6 @@ public:
     OtherPlayerScript() = default;
     virtual ~OtherPlayerScript() = default;
 
-
-
-
     virtual void update(float deltaTime) override;
 
     void awake() override;
@@ -33,4 +30,3 @@ private:
 	common::packet::EntityState _state;
     int32_t _action_id = 0;
 };
-

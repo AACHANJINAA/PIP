@@ -36,7 +36,8 @@ cbuffer cbWorldMatrix : register(b0)
     matrix g_matWorld;
     matrix g_matWorldInverseTranspose;
     int g_bReceiveShadow; // [추가] 0이면 그림자 안 받음, 1이면 받음
-    float3 g_worldPad; // 16바이트 정렬을 위한 패딩
+    int g_otherplayerid;
+    float2 g_worldPad; // 16바이트 정렬을 위한 패딩
 };
 
 // 카메라 정보
@@ -101,6 +102,22 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     Out.Bitangent = cross(Out.Normal, Out.Tangent) * input.Tangent.w;
 
     return Out;
+}
+
+float3 lerp_op(float3 final_color)
+{
+    float color_figure = 0.2;
+	const float3 playercolors[4] = {
+        float3(0.0, color_figure, color_figure), 
+        float3(color_figure, 0.0, 0.0),
+        float3(0.0, color_figure, 0.0),
+        float3(0.0, 0.0, color_figure) 
+    };
+
+    int colorIndex = g_otherplayerid % 4;
+
+    float lerp_figure = 0.2;
+    return lerp(final_color, playercolors[colorIndex], lerp_figure);
 }
 
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
@@ -186,6 +203,11 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
+
+    if (g_otherplayerid > -1)
+    {
+        finalColor = lerp_op(finalColor);
+    }
     
     return float4(finalColor, diffuseSample.a);
 }

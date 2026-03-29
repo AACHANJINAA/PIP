@@ -6,6 +6,8 @@
 #include "GameObject.h"
 #include "Renderer.h"
 #include "Shader.h"
+#include "OtherPlayerScript.h"
+#include "MainPlayerScript.h"
 
 Material_Shader::Material_Shader()
 {
@@ -169,8 +171,7 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
     XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
 
     // World Matrix (Transpose해서 저장)
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world,
-        XMMatrixTranspose(worldMatrix));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
 
     // WorldInverseTranspose (일관성 있게 Transpose 한번 더)
     XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
@@ -178,6 +179,23 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
 
     // Transpose를 한번 더 해서 저장 (HLSL에서 column-major 사용하므로)
     XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, XMMatrixTranspose(worldInverseTranspose));
+
+
+    // OtherPlayer인지 MainPlayer인지 구분하여 ID 설정
+    if (auto op_script = game_object()->get_component<OtherPlayerScript>())
+    {
+        // OtherPlayer: 서버에서 받은 실제 ID를 양수로 전달
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
+    }
+    else if (auto mp_script = game_object()->get_component<MainPlayerScript>())
+    {
+        // MainPlayer: 음수로 표시 (셰이더에서 원본 색상 유지용)
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
+    }
+    else {
+        // 플레이어가 아닌 오브젝트
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
+    }
 
     // 그림자 수신 토글 - 0 : mesh 표면에 그림자 x , 1 : mesh 표면에 그림자 x <- 이 부분은 그림자 농도 조절로 해결해도될듯?
     if (_psoName == "skinned") {
