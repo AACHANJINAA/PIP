@@ -59,6 +59,7 @@ private:
 	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼 -> 그냥 이걸 넘긴다
 	// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문
 	ComPtr<ID3D12Resource> _bone_palette_buffer;
+	UINT8* _mapped_bone_data = nullptr; // 매핑된 GPU 버퍼에 직접 접근하기 위한 포인터 (CPU 메모리)
 	
 
 

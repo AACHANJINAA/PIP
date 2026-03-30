@@ -36,11 +36,9 @@ void AnimationComponent::late_update(float deltaTime)
 
 
 	// 애니메이션 업데이트 및 본 행렬 계산
-	if (_bone_palette_buffer) {
-		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _bone_palette_buffer, _isLoop);
-	}
-	else {
-		//glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _isLoop);
+	if (_mapped_bone_data) 
+	{
+		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _mapped_bone_data, _isLoop);
 	}
 
 	// DW설명 : 이제 애니메이션 업데이트에 지금 들고있는 뼈대 행렬 벡터를 넘겨서 갱신하도록 함 -> 애니메이션 컴포넌트가 뼈대 행렬을 관리하는 형태로 변경
@@ -249,6 +247,10 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 	}
 
 	new_buffer->SetName(L"BonePaletteBuffer");
+
+	CD3DX12_RANGE readRange(0, 0);
+	new_buffer->Map(0, &readRange, reinterpret_cast<void**>(&_mapped_bone_data));
+
 	_bone_palette_buffer = new_buffer;
 
 	// 이전 버퍼는 fence 이후 해제
