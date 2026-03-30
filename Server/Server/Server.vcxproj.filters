@@ -146,6 +146,9 @@
     <ClCompile Include="Tainer.cpp">
       <Filter>소스 파일\Game\NPC</Filter>
     </ClCompile>
+    <ClCompile Include="glTFMeshLoader.cpp">
+      <Filter>소스 파일\Manager\MapDataManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketHandlers.h">
@@ -249,6 +252,9 @@
     </ClInclude>
     <ClInclude Include="CombatDef.h">
       <Filter>소스 파일\Game\CombatDef</Filter>
+    </ClInclude>
+    <ClInclude Include="glTFMeshLoader.h">
+      <Filter>소스 파일\Manager\MapDataManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

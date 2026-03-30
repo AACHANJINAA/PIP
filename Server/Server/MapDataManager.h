@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-
+#include "glTFMeshLoader.h"
 #include "../../Common/TerrainData.h"
 #include "../../Common/Vector3.h"
 
@@ -19,8 +19,12 @@ namespace PIP
 		common::Vec3 _extent; // Half-extents (반폭)
 	};
 	struct TerrainTile {
-		common::TerrainData data;
 		JPH::ShapeRefC shape; // 공유할 물리 모양 (레퍼런스 카운팅 포인터)
+		common::TerrainData data;
+	};
+	struct StaticMeshTile {
+		JPH::ShapeRefC shape;
+		std::string name;
 	};
 	class MapDataManager : public Singleton<MapDataManager>
 	{
@@ -33,8 +37,13 @@ namespace PIP
 		void LoadMapData(std::string_view mapDataPath);
 		void LoadHeightMapData(std::string_view heightMapDataJSONPath);
 		void LoadMainLandscapeData(std::string_view landscapeDirPath);
-
 		const std::vector<TerrainTile>& GetTerrainTiles() const { return _terrainTiles; }
+
+		// glTF에서 Shape들을 생성하여 보관 (서버 시작 시 한 번만 호출)
+		void LoadStaticMeshShapes(std::string_view gltfPath);
+		// 각 방에서 참조할 Shape 리스트 반환
+		const std::vector<StaticMeshTile>& GetStaticMeshTiles() const { return _staticMeshTiles; }
+
 
 
 		float GetGroundHeight(float x, float z) const;
@@ -48,6 +57,7 @@ namespace PIP
 	private:
 		std::vector<MapObject> _map_objects;
 		std::vector<TerrainTile> _terrainTiles;
+		std::vector<StaticMeshTile> _staticMeshTiles;
 		float _worldMinX = std::numeric_limits<float>::max();
 		float _worldMaxX = -std::numeric_limits<float>::max();
 		float _worldMinZ = std::numeric_limits<float>::max();

@@ -171,6 +171,7 @@
     <ClCompile Include="CharacterControllerComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="glTFMeshLoader.cpp" />
     <ClCompile Include="GridMap.cpp" />
     <ClCompile Include="HitboxComponent.cpp" />
     <ClCompile Include="LuaManager.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="CombatDef.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="glTFMeshLoader.h" />
     <ClInclude Include="GridMap.h" />
     <ClInclude Include="HitboxComponent.h" />
     <ClInclude Include="JoltSetup.h" />

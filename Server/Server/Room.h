@@ -86,6 +86,7 @@ namespace PIP::SERVER
 		void PhysicsInitialize();
 		void CreatePhysicsTerrain();
 		void CreatePhysicsMapObjects();
+		void CreatePhysicsStaticMeshCollisions();
 		void SpawnInitialNPCs();
 		void SpawnBoss();
 

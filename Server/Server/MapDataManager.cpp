@@ -1,5 +1,9 @@
 ﻿#include "pch.h"
 #include "MapDataManager.h"
+#include "glTFMeshLoader.h"
+#include "JoltHelper.h"
+#include "JoltSetup.h"
+#include "PhysicsManager.h"
 
 // stb_image는 이제 필요 없을 수 있음 (Common에서 처리하거나 안 쓴다면)
 // #define STB_IMAGE_IMPLEMENTATION
@@ -153,6 +157,30 @@ namespace PIP
 			}
 		}
 		MYLOG("Total Landscapes & Shapes Loaded: " << _terrainTiles.size());
+	}
+
+	void MapDataManager::LoadStaticMeshShapes(std::string_view gltfPath)
+	{
+		auto meshes = glTFMeshLoader::LoadStaticMesh(gltfPath.data());
+
+		for (const auto& meshData : meshes) {
+			JPH::TriangleList triangles;
+			for (size_t i = 0; i < meshData.indices.size(); i += 3) {
+				triangles.push_back(JPH::Triangle(
+					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i]]),
+					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 1]]),
+					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 2]])
+				));
+			}
+
+			JPH::MeshShapeSettings settings(triangles);
+			auto result = settings.Create();
+
+			if (result.IsValid()) {
+				_staticMeshTiles.push_back({ result.Get(), meshData.name });
+			}
+		}
+		MYLOG("Static Mesh Shapes Created & Cached: " << gltfPath << " (" << _staticMeshTiles.size() << " parts)");
 	}
 
 
