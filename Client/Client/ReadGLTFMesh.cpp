@@ -293,20 +293,29 @@ void ReadGLTFMesh::update_animation(float& delta_time, const std::string& animat
 		size_t prev_idx = 0;
 		size_t next_idx = 0;
 
-		if (channel._keyframes.size() == 1) {
+		if (channel._keyframes.size() <= 1) 
+		{
 			prev_idx = next_idx = 0;
 		}
 		else {
-			for (size_t i = 0; i < channel._keyframes.size() - 1; ++i) {
-				if (delta_time >= channel._keyframes[i]._time &&
-					delta_time < channel._keyframes[i + 1]._time) {
-					prev_idx = i;
-					next_idx = i + 1;
-					break;
-				}
+			// [최적화 적용] O(N) 선형 탐색을 O(log N) 이진 탐색으로 변경 -> delta_time 보다 큰 첫 번째 키프레임을 찾음
+			auto it = std::upper_bound(channel._keyframes.begin(), channel._keyframes.end(), delta_time,
+				[](float t, const Keyframe& key) {
+					return t < key._time;
+				});
+
+			if (it == channel._keyframes.begin())  // delta_time이 첫 번째 키프레임보다 작은 경우 -> 처음
+			{
+				prev_idx = next_idx = 0;
 			}
-			if (delta_time >= channel._keyframes.back()._time) {
+			else if (it == channel._keyframes.end()) // delta_time이 마지막 키프레임보다 큰 경우 -> 끝
+			{
 				prev_idx = next_idx = channel._keyframes.size() - 1;
+			}
+			else // delta_time이 두 키프레임 사이에 있는 경우 -> 가장 일반적인 경우 -> 중간
+			{
+				next_idx = std::distance(channel._keyframes.begin(), it); // 이터레이터에서 인덱스로 변환
+				prev_idx = next_idx - 1; // 바로 이전 프레임
 			}
 		}
 
