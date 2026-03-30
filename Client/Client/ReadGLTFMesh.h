@@ -167,7 +167,7 @@ public:
 
 
 	void update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop = true);
-	void update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer, bool _isLoop = true);
+	void update_animation(float& delta_time, const std::string& animation_name, UINT8* mapped_buffer, bool _isLoop = true);
 	
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
 	void render_instance_skinned(ID3D12GraphicsCommandList* commandList); // 스키닝 인스턴싱으로 렌더링

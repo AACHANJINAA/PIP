@@ -241,7 +241,7 @@ void ReadGLTFMesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandLis
 	}
 }
 
-void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, ComPtr<ID3D12Resource> bone_palette_buffer, bool _isLoop)
+void ReadGLTFMesh::update_animation(float& delta_time, const std::string& animation_name, UINT8* mapped_buffer, bool _isLoop)
 {
 	// T-Pose 또는 유효하지 않은 클립 인덱스 체크
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
@@ -257,16 +257,9 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
 		std::fill(_final_bone_transforms.begin(), _final_bone_transforms.end(), identity);
 
-		// GPU 상수 버퍼에 즉시 업로드하고 리턴
-		if (bone_palette_buffer)
+		if (mapped_buffer)
 		{
-			void* mapped_data = nullptr;
-			D3D12_RANGE read_range = { 0, 0 };
-			if (SUCCEEDED(bone_palette_buffer->Map(0, &read_range, &mapped_data)))
-			{
-				memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
-				bone_palette_buffer->Unmap(0, nullptr);
-			}
+			memcpy(mapped_buffer, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
 		}
 		return;
 	}
@@ -397,16 +390,9 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 	}
 
 	// 6. GPU 상수 버퍼 업로드
-	if (bone_palette_buffer)
+	if (mapped_buffer)
 	{
-		void* mapped_data = nullptr;
-		D3D12_RANGE read_range = { 0, 0 };
-
-		if (SUCCEEDED(bone_palette_buffer->Map(0, &read_range, &mapped_data)))
-		{
-			memcpy(mapped_data, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
-			bone_palette_buffer->Unmap(0, nullptr);
-		}
+		memcpy(mapped_buffer, _final_bone_transforms.data(), _final_bone_transforms.size() * sizeof(DirectX::XMFLOAT4X4));
 	}
 }
 
