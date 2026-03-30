@@ -25,6 +25,7 @@
 #include <stack>
 #include <thread>
 #include <concurrent_queue.h>
+#include <algorithm>
 
 //#define _WITH_SWAPCHAIN_FULLSCREEN_STATE
 // assmip

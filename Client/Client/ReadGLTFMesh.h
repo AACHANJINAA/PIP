@@ -165,8 +165,10 @@ public:
 	// DW설명 : 애니메이션 관련 함수들
 	void set_bone_palette_buffer_from_animation_component(ComPtr<ID3D12Resource> bone_palette_buffer) { _bone_palette_buffer_from_animation_component = bone_palette_buffer; }
 
-
+	// 추후 인스턴싱을 위해서 확장하고 있는 함수
 	void update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop = true);
+
+	// 현재 사용중인 것
 	void update_animation(float& delta_time, const std::string& animation_name, UINT8* mapped_buffer, bool _isLoop = true);
 	
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
