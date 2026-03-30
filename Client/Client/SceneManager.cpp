@@ -138,7 +138,7 @@ float SceneManager::get_terrain_size() const
 	if (!_terrainObject)
 		return 512.0f; // 기본값
 
-	return 512.0f; // TODO: TerrainMesh에서 실제 크기 가져오기
+	return 512.0f;
 }
 
 // 모든 terrain을 포함하는 가장 큰 범위 계산

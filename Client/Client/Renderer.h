@@ -27,6 +27,9 @@ public:
 
     ID3D12Device* get_device() const { return _device; }
 
+    const std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>>& get_render_map() const { return _renderMap; }
+
+
 private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);
