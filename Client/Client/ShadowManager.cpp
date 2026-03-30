@@ -167,7 +167,8 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     cmd->RSSetScissorRects(1, &scissor);
 
     auto renderer = Renderer::instance();
-    const auto& objs = ObjectManager::instance()->get_all_game_objects();
+    // 핵심 변경: 전체 오브젝트 대신, Renderer가 이미 컬링한 목록을 가져옵니다.
+    const auto& renderMap = renderer->get_render_map();
 
     // 패스 A: 일반 gltf 오브젝트 (bone 없음)
     {
@@ -177,15 +178,18 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         if (pso && rootSig) {
             cmd->SetPipelineState(pso);
             cmd->SetGraphicsRootSignature(rootSig);
-            cmd->SetGraphicsRootConstantBufferView(1,
-                _cbCascades->GetGPUVirtualAddress());
+            cmd->SetGraphicsRootConstantBufferView(1, _cbCascades->GetGPUVirtualAddress());
 
-            for (const auto& obj : objs) {
-                if (!obj || obj->is_destroyed()) continue;
-                auto renderComp = obj->get_component<RenderComponent>();
-                if (!renderComp || renderComp->pso_name() != "gltf") continue;
-
-                renderComp->render_CascadeShadowMap(cmd, frame_index);
+            // 변경된 루프: renderMap에서 "gltf" 키에 해당하는 것들만 순회
+            auto it = renderMap.find("gltf");
+            if (it != renderMap.end()) {
+                for (const auto& obj : it->second) {
+                    if (!obj || obj->is_destroyed()) continue;
+                    auto renderComp = obj->get_component<RenderComponent>();
+                    if (renderComp) {
+                        renderComp->render_CascadeShadowMap(cmd, frame_index);
+                    }
+                }
             }
         }
     }
@@ -198,22 +202,20 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         if (pso && rootSig) {
             cmd->SetPipelineState(pso);
             cmd->SetGraphicsRootSignature(rootSig);
-            // param[1] = b1 cascade 행렬
-            cmd->SetGraphicsRootConstantBufferView(1,
-                _cbCascades->GetGPUVirtualAddress());
+            cmd->SetGraphicsRootConstantBufferView(1, _cbCascades->GetGPUVirtualAddress());
 
-            for (const auto& obj : objs) {
-                if (!obj || obj->is_destroyed()) continue;
-                auto renderComp = obj->get_component<RenderComponent>();
-                if (!renderComp || renderComp->pso_name() != "skinned") continue;
-
-                // param[2] = b4 bone 행렬 바인딩
-                auto animComp = obj->get_component<AnimationComponent>();
-                if (!animComp || !animComp->get_bone_palette_buffer()) continue;
-
-                cmd->SetGraphicsRootConstantBufferView( 2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
-
-                renderComp->render_CascadeShadowMap(cmd, frame_index);
+            // 변경된 루프: renderMap에서 "skinned" 키에 해당하는 것들만 순회
+            auto it = renderMap.find("skinned");
+            if (it != renderMap.end()) {
+                for (const auto& obj : it->second) {
+                    if (!obj || obj->is_destroyed()) continue;
+                    auto renderComp = obj->get_component<RenderComponent>();
+                    auto animComp = obj->get_component<AnimationComponent>();
+                    if (renderComp && animComp && animComp->get_bone_palette_buffer()) {
+                        cmd->SetGraphicsRootConstantBufferView(2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
+                        renderComp->render_CascadeShadowMap(cmd, frame_index);
+                    }
+                }
             }
         }
     }
