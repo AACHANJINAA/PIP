@@ -64,7 +64,7 @@ private:
 	int32_t _hp{ 100 };
 	int32_t _maxHp{ 100 };
 	float _displayHp{ 100.0f };          // <- 추가 (lerp용 표시 HP)
-	float _hpBar_maxWidth{ 500.0f };
+	float _hpBar_maxWidth{ 100.0f };
 	std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
 	int64_t _playerId;
 	RenderComponent* _renderComponent	{ nullptr };
