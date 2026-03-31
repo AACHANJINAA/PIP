@@ -449,6 +449,12 @@
     <ClInclude Include="AnimationComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
     </ClInclude>
+    <ClInclude Include="UIFrameShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="UIFrameRenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -711,6 +717,15 @@
     </ClCompile>
     <ClCompile Include="Boss_Scene.cpp">
       <Filter>1. Game\1. Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="UI_Frame_Shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="UIFrameShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="UIFrameRenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

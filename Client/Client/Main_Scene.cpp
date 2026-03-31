@@ -10,6 +10,7 @@
 #include "CameraComponent.h"
 #include "MonsterHPUIRenderComponent.h"
 #include "ReadGLTFMesh.h"
+#include "UIFrameRenderComponent.h"
 #include "UIManager.h"
 #include "UIRenderComponent.h"
 
@@ -60,7 +61,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 {
     // 1. HP Frame (뒤에 렌더링될 프레임)
     auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
-    auto hp_frame = hp_frame_obj->add_component<UIRenderComponent>();
+    auto hp_frame = hp_frame_obj->add_component<UIFrameRenderComponent>();
 
     hp_frame->set_screen_position(30.0f, 30.0f);      // 화면 왼쪽 상단
     hp_frame->set_size(410.0f, 30.0f);                 // Bar보다 좀 더 큼
@@ -77,7 +78,6 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
-
 
     // 3.사망 ui 배경
     auto death_ui_background_obj = ObjectManager::instance()->create_game_object("death_ui_background");

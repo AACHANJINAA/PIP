@@ -350,7 +350,7 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     _command_list->ResourceBarrier(1, &transition);
     new_texture_info.current_state = D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
 
-    // 7. 셰이더 리소스 뷰(SRV)를 생성합니다.
+    // 7. 셰이더 리소스 뷰(SRV)를 생성합니다. -> 텍스쳐 등록
     if (!DescriptorManager::instance()->allocate_descriptor(new_texture_info.cpu_handle, new_texture_info.gpu_handle))
     {
         CERROR("Failed to allocate descriptor for texture: " << file_path);
