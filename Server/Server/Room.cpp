@@ -36,7 +36,7 @@ namespace PIP::SERVER
 
 	void Room::SpawnInitialNPCs()
 	{
-		for (int i = 0; i < 50; ++i)
+		for (int i = 0; i < 500; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
 
