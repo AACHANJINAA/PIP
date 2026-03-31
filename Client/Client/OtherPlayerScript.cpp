@@ -11,10 +11,19 @@
 
 void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
 {
-    // 서버가 알려준 위치로 내 GameObject의 위치를 설정
-    if (transform())
-    {
-        transform()->set_local_position(newPosition);
+    // 1. 패킷이 오기 전까지 화면에 그려지고 있던 '최종 시각적 위치' 계산
+    common::Vec3 currentVisualPos = _logicalPosition + _visualOffset;
+
+    // 2. 논리 위치는 서버가 보내준 좌표로 즉시 업데이트 (순간이동)
+    _logicalPosition = newPosition;
+
+    // 3. 화면이 툭 튀는 것을 막기 위해 오프셋 재계산
+    // (이전 시각적 위치 - 새로운 서버 위치)를 오프셋으로 설정하여 현재 렌더링 위치를 유지함
+    _visualOffset = currentVisualPos - _logicalPosition;
+
+    // 4. 만약 오차가 너무 크면(예: 5m 이상) 보간하지 않고 즉시 스냅 (텔레포트 대응)
+    if (common::LengthSq(_visualOffset) > 5.0f * 5.0f) {
+        _visualOffset = { 0, 0, 0 };
     }
 }
 
@@ -39,6 +48,22 @@ void OtherPlayerScript::on_sync_action_id(int32_t action_id)
 
 void OtherPlayerScript::update(float deltaTime)
 {
+    // [추측 항법 - 선택 사항]
+	// 만약 서버에서 속도(Velocity) 패킷도 보낸다면, 여기에 _logicalPosition += _velocity * deltaTime; 추가 가능
+
+	// 1. 시각적 오프셋을 매 프레임 조금씩 줄여나감 (0으로 수렴)
+	// deltaTime * 15.0f 정도면 약 0.1초 내외로 보정이 완료되어 매우 부드럽게 보입니다.
+    float lerpFactor = std::min(1.0f, deltaTime * _lerpFactor);
+    _visualOffset = _visualOffset * (1.0f - lerpFactor);
+
+    // [중요 - 이 부분이 빠졌습니다!]
+	// 논리 위치와 시각적 오프셋을 더해 실제 Transform에 적용
+    if (transform())
+    {
+        transform()->set_local_position(_logicalPosition + _visualOffset);
+    }
+
+
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
 	if (!anim_comp)
 	{
@@ -100,4 +125,7 @@ void OtherPlayerScript::awake()
 
     // 위치, 회전 정보
     transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+    // 초기화 시 현재 위치를 논리 위치로 설정
+    _logicalPosition = transform()->local_position();
+    _visualOffset = { 0, 0, 0 };
 }

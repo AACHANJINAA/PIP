@@ -29,4 +29,10 @@ private:
 	int64_t _playerId;
 	common::packet::EntityState _state;
     int32_t _action_id = 0;
+    // --- [추측 항법 및 보간용 변수] ---
+    common::Vec3    _logicalPosition;   // 서버가 알려준 최신 논리적 위치
+    common::Vec3    _visualOffset;      // 시각적 보간을 위한 오프셋 (이전 위치와의 차이)
+    common::Vec3    _velocity;          // 추측 항법을 위한 속도 (옵션)
+
+    float           _lerpFactor = 15.0f; // 보간 속도 (수치가 클수록 서버 위치에 빨리 도달)
 };
