@@ -66,15 +66,18 @@ void NPCScript::init_visual()
 	auto render_comp = NPC->get_component<RenderComponent>();
 
 	// 기본 Brute 모델 설정
-	auto walkMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true,
-		"walk");
-	auto idleMesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true,
-		"idle");
+	auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Character/DragonBrute/SK_DragonBrute.gltf", true);
 
-	render_comp->set_mesh(idleMesh);
-	animation_component->add_animation("Idle", idleMesh, "idle");
-	animation_component->add_animation("Walk", walkMesh, "walk");
-	animation_component->add_animation("Attack", idleMesh, "attack");
+	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Idle.gltf", "idle");
+	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Walk.gltf", "walk");
+	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Attack.gltf", "attack");
+	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Death.gltf", "die");
+
+	render_comp->set_mesh(baseMesh);
+	animation_component->add_animation("Idle", baseMesh, "idle");
+	animation_component->add_animation("Walk", baseMesh, "walk");
+	animation_component->add_animation("Attack", baseMesh, "attack");
+	animation_component->add_animation("Death", baseMesh, "die");
 
 	std::string material_name = "npc_material_" + std::to_string(id());
 	ResourceManager::instance()->create_material(material_name);

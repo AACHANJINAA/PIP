@@ -24,6 +24,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	// =========================필요한 메시 로드==================================
 	ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
+	ResourceManager::instance()->load_mesh("Resource/Character/DragonBrute/SK_DragonBrute.gltf",true);
 	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolem.gltf", true);
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolemRd.gltf", true);
@@ -75,8 +76,8 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     auto hp_bar_obj = ObjectManager::instance()->create_game_object("HP_Bar");
     auto hp_bar = hp_bar_obj->add_component<UIRenderComponent>();
 
-    hp_bar->set_screen_position(30.0f, 30.0f);        // Frame보다 안쪽
-    hp_bar->set_size(500.0f, 30.0f);                   // Frame보다 작게
+    hp_bar->set_screen_position(42.0f, 38.0f);        // Frame보다 안쪽
+    hp_bar->set_size(385.0f, 14.0f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
