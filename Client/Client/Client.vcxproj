@@ -319,6 +319,7 @@
     <ClCompile Include="UIShader.cpp" />
     <ClCompile Include="UI_Frame_Shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="WeaponScript.cpp" />
     <ClCompile Include="WICTextureLoader12.cpp" />

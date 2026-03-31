@@ -89,22 +89,7 @@ void UIFrameRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT
     _mapped_ui_frame_element->uv_offset = _uv_offset;
     _mapped_ui_frame_element->uv_scale = _uv_scale;
     _mapped_ui_frame_element->use_texture = (_texture_info != nullptr) ? 1 : 0;
-    
-    int final_id = -1;
-    // 메인 플레이어인지 확인
-    auto mainPlayer = game_object()->get_component<MainPlayerScript>();
-    if (mainPlayer) {
-        final_id = mainPlayer->id(); // 메인 플레이어의 고유 ID
-    }
-    else {
-        // 다른 플레이어인지 확인
-        auto otherPlayer = game_object()->get_component<OtherPlayerScript>();
-        if (otherPlayer) {
-            final_id = otherPlayer->id(); // 다른 플레이어의 고유 ID
-        }
-    }
-    final_id = 2;
-    _mapped_ui_frame_element->other_player_id = final_id;
+	_mapped_ui_frame_element->other_player_id = _other_player_id;
 
 
     // 상수 버퍼 바인딩 (자신의 버퍼 주소를 전달)
