@@ -626,17 +626,15 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
         return {};
         };
 
-    D3D12_CPU_DESCRIPTOR_HANDLE base_color_handle = get_cpu_handle(mat_info.base_color_texture_path);
-
     D3D12_CPU_DESCRIPTOR_HANDLE default_white_handle = get_cpu_handle("__DEFAULT_WHITE__");
     D3D12_CPU_DESCRIPTOR_HANDLE default_normal_handle = get_cpu_handle("__DEFAULT_NORMAL__");
     D3D12_CPU_DESCRIPTOR_HANDLE default_orm_handle = get_cpu_handle("__DEFAULT_ORM__");
     D3D12_CPU_DESCRIPTOR_HANDLE default_black_handle = get_cpu_handle("__DEFAULT_BLACK__");
 
-    // 만약 기본 색상 텍스처조차 없다면, 텍스처를 바인딩하지 않고 종료합니다.
-    if (base_color_handle.ptr == 0) {
-        base_color_handle = default_white_handle;
-    }
+    // load_material_fron_gltf에서 바인딩 된 주소들이 실제 GPU를 가르키는 포인터로 바뀐다.
+
+    D3D12_CPU_DESCRIPTOR_HANDLE base_color_handle = get_cpu_handle(mat_info.base_color_texture_path);
+    if (base_color_handle.ptr == 0) base_color_handle = default_white_handle;
 
     D3D12_CPU_DESCRIPTOR_HANDLE normal_handle = get_cpu_handle(mat_info.normal_texture_path);
     if (normal_handle.ptr == 0) normal_handle = default_normal_handle;

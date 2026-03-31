@@ -376,6 +376,8 @@ std::shared_ptr<Shader> Renderer::get_shader(const std::string& name) const
 
 void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& cpu_handles)
 {
+    // 여기서 root parameter 슬롯에 꽂힌다.
+
     if (cpu_handles.empty()) return;
     
     UINT num_descriptors = static_cast<UINT>(cpu_handles.size());
@@ -396,10 +398,8 @@ void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT 
         return;
     }
     
-    CD3DX12_CPU_DESCRIPTOR_HANDLE dest_cpu_handle_start(_dynamic_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
-    _current_dynamic_descriptor_index, _descriptor_size);
-    CD3DX12_GPU_DESCRIPTOR_HANDLE dest_gpu_handle_start(_dynamic_descriptor_heap->GetGPUDescriptorHandleForHeapStart(),
-    _current_dynamic_descriptor_index, _descriptor_size);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dest_cpu_handle_start(_dynamic_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), _current_dynamic_descriptor_index, _descriptor_size);
+    CD3DX12_GPU_DESCRIPTOR_HANDLE dest_gpu_handle_start(_dynamic_descriptor_heap->GetGPUDescriptorHandleForHeapStart(), _current_dynamic_descriptor_index, _descriptor_size);
     
     for (UINT i = 0; i < num_descriptors; ++i)
     {
