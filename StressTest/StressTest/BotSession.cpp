@@ -150,6 +150,7 @@ namespace PIP::BOT
             auto pkt = reinterpret_cast<const SC_PACKET_LOGIN_ACK*>(header);
             if (pkt->_success)
             {
+                _id = pkt->_my_session_id; // [중요] 서버에서 할당한 실제 세션 ID로 갱신
                 _state = BotState::ENTER_ROOM;
                 CS_PACKET_ENTER_ROOM enter_pkt;
                 enter_pkt._size = sizeof(enter_pkt);
@@ -168,10 +169,24 @@ namespace PIP::BOT
             }
             break;
         }
+        case PacketType::S2C_P_SPAWN_PLAYER:
+        {
+            auto pkt = reinterpret_cast<const SC_PACKET_SPAWN_PLAYER*>(header);
+            if (pkt->_id == _id) {
+                // [추가] 자신의 스폰 위치를 초기 위치로 설정
+                _current_pos = pkt->_position;
+                _current_rot = pkt->_rotation;
+                _anchor_pos = _current_pos;
+                _is_anchor_set = true;
+                // BOT_LOG("Bot " << _id << " spawned at (" << _current_pos.x << ", " << _current_pos.z << ")");
+            }
+            break;
+        }
         case PacketType::S2C_P_MOVE:
         {
             auto pkt = reinterpret_cast<const SC_PACKET_MOVE*>(header);
             if (pkt->_id == _id) {
+                // [보정] 서버에서 온 위치로 동기화 (Client-Side Prediction Correction)
                 _current_pos = pkt->_position;
             }
             break;
@@ -185,15 +200,36 @@ namespace PIP::BOT
     {
         if (_state != BotState::INGAME) return;
 
+        // 1. [클라이언트 측 선행 이동] 매 프레임 위치 업데이트
+        if (_is_anchor_set) {
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            static std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+
+            float speed = 4.0f; // 초당 4m 이동 시뮬레이션
+            
+            // 매 프레임 조금씩 이동 방향 결정 (간단한 랜덤 워크)
+            common::Vec3 move_delta = { dis(gen) * speed * dt, 0, dis(gen) * speed * dt };
+            _current_pos.x += move_delta.x;
+			_current_pos.y += move_delta.y;
+			_current_pos.z += move_delta.z;
+
+            // 앵커 기준 일정 범위 내로 제한 (스트레스 테스트 이탈 방지)
+            float range = 20.0f;
+            _current_pos.x = std::clamp(_current_pos.x, _anchor_pos.x - range, _anchor_pos.x + range);
+            _current_pos.z = std::clamp(_current_pos.z, _anchor_pos.z - range, _anchor_pos.z + range);
+        }
+
         _move_timer += dt;
         _action_timer += dt;
 
+        // 2. [네트워크 전송] 약 33ms 주기로 서버에 현재 내 위치 전송
         if (_move_timer >= 0.033f) {
             _move_timer = 0.0f;
             SendMove();
         }
 
-        if (_action_timer >= 0.5f) {
+        if (_action_timer >= 1.0f) { // 액션 주기는 조금 늦춤
             _action_timer = 0.0f;
             SendAction();
         }
@@ -201,41 +237,16 @@ namespace PIP::BOT
 
     void BotSession::SendMove()
     {
-        // 1. 초기 위치(Anchor) 설정 (처음 이동 패킷 보낼 때 현재 위치를 기준으로 삼음)
-        if (!_is_anchor_set) {
-            _anchor_pos = _current_pos;
-            _is_anchor_set = true;
-        }
-
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        static std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
-
-        // 2. 랜덤 이동량 계산 (초당 약 3~5m 속도 느낌)
-        float move_speed = 0.5f;
-        common::Vec3 prev_pos = _current_pos;
-        _current_pos.x += dis(gen) * move_speed;
-        _current_pos.z += dis(gen) * move_speed;
-
-        // 3. 20x20 범위 내로 강제 제한 (Anchor +- 10.0f)
-        float range = 10.0f;
-        _current_pos.x = std::clamp(_current_pos.x, _anchor_pos.x - range, _anchor_pos.x + range);
-        _current_pos.z = std::clamp(_current_pos.z, _anchor_pos.z - range, _anchor_pos.z + range);
-
-        // 4. move_dir 계산
-        common::Vec3 move_dir = { _current_pos.x - prev_pos.x, 0, _current_pos.z - prev_pos.z };
-        float length = std::sqrt(move_dir.x * move_dir.x + move_dir.z * move_dir.z);
-        if (length > 1e-6f) {
-            move_dir.x /= length;
-            move_dir.z /= length;
-        }
-
-        // 5. 패킷 생성 및 전송
+        // current_pos가 이미 Update()에서 갱신되었으므로 그대로 전송
         common::packet::CS_PACKET_MOVE pkt;
         pkt._size = sizeof(pkt);
         pkt._type = common::packet::PacketType::C2S_P_MOVE;
         pkt._position = _current_pos;
-        pkt._move_dir = move_dir;
+        
+        // 이동 방향 벡터 계산 (서버 Jolt 연산용)
+        // 여기서는 랜덤 이동이므로 정규화된 방향을 보내거나, 단순화를 위해 0이 아니면 정규화
+        pkt._move_dir = { 1.0f, 0, 0.0f }; // 단순화를 위해 전방향 전송 (필요시 Update에서 계산된 delta 사용)
+        
         pkt._rotation = _current_rot;
         pkt._state = common::packet::EntityState::MOVE;
         pkt._action_id = 0;

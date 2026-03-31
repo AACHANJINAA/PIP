@@ -68,13 +68,13 @@ void NetworkManager::process_queued_packets()
 	{
 		common::packet::PacketStream stream(packetData.data(), packetData.size());
 		auto* header = reinterpret_cast<common::packet::PacketHeader*>(packetData.data());
-		auto pStart = std::chrono::high_resolution_clock::now();
+		//auto pStart = std::chrono::high_resolution_clock::now();
 
 		auto it = _handlers.find(header->_type);
 		if (it != _handlers.end()) {
 			it->second(stream); // 실제 게임 로직(MainPlayer 이동 등) 실행
 		}
-		auto pEnd = std::chrono::high_resolution_clock::now();
+		//auto pEnd = std::chrono::high_resolution_clock::now();
 		//typeAccumTime[(uint16_t)header->_type] += std::chrono::duration_cast<std::chrono::microseconds>(pEnd - pStart).count();
 	}
 
@@ -328,6 +328,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 		other_player->transform()->set_local_position(spawn_data._position);
 		other_player->transform()->set_local_rotation(spawn_data._rotation);
 		other_player->set_layer("OtherPlayer");
+
+		// 2. [추가] 스크립트 내부 논리 좌표 초기화
+		// on_sync_position을 호출하여 _logicalPosition을 서버 좌표로 맞춰줍니다.
+		other_player_logic->on_sync_position(spawn_data._position);
+		other_player_logic->on_sync_rotation(spawn_data._rotation);
 
 		other_player_logic->set_hp(spawn_data._hp);
 		other_player_logic->set_id(spawn_data._id);

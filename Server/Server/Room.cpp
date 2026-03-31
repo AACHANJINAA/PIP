@@ -566,14 +566,20 @@ namespace PIP::SERVER
 			std::vector<GAME::GameObject*> nearby;
 			_gridMap.GetNearbyObjects(myPos, nearby);
 
+			// [추가] 현재 플레이어 주변에 있는 NPC ID들을 수집할 셋
+			std::unordered_set<int64_t> currentNearbyIds;
+
 			for (auto* obj : nearby) {
 				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
 					// [검증] 살아있고, 아직 리스트에 없는 놈만 추가
-					if (npc->IsActive() && !processedIds.contains(npc->GetId())) {
-						_activeNpcList.push_back(npc);
-						processedIds.insert(npc->GetId());
+					if (npc->IsActive()) {
+						currentNearbyIds.insert(npc->GetId());
+						if (!processedIds.contains(npc->GetId())) {
+							_activeNpcList.push_back(npc);
+							processedIds.insert(npc->GetId());
+						}
 
-						// 시야 진입 패킷 (기존 로직 유지)
+						// 시야 진입 패킷 (모든 플레이어 개별 체크)
 						if (!session->_viewedNpcs.contains(npc->GetId())) {
 							session->_viewedNpcs.insert(npc->GetId());
 							SendNpcSpawnToPlayer(session, npc);
@@ -581,12 +587,43 @@ namespace PIP::SERVER
 					}
 				}
 			}
-		}
 
-		// 보스는 거리 상관없이 항상 리스트에 추가 (있다면)
+			// [핵심 추가] AOI 이탈 체크
+			// session->_viewedNpcs(이전 프레임까지 보던 목록)와 currentNearbyIds(현재 주변 목록) 비교
+			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); ) {
+				int64_t npcId = *it;
+
+				// 보스는 거리에 상관없이 항상 보여야 하므로 체크 (서버의 전체 NPC 맵에서 확인)
+				auto npcIt = _npcs.find(npcId);
+				bool isBoss = (npcIt != _npcs.end() && npcIt->second->is_boss());
+
+				// 보스가 아니고, 현재 시야 목록(nearby)에 없다면 시야에서 나간 것임
+				if (!isBoss && !currentNearbyIds.contains(npcId)) {
+					SendNpcLeaveToPlayer(session, npcId); // S2C_NPC_DESPAWN 패킷 전송
+					it = session->_viewedNpcs.erase(it);   // 서버측 관리 목록에서도 제거
+				}
+				else {
+					++it;
+				}
+			}
+		}
+		
+
+		// 보스는 거리 상관없이 항상 리스트에 추가하고 모든 플레이어에게 전송
 		for (auto& [id, npc] : _npcs) {
-			if (npc->is_boss() && npc->IsActive() && !processedIds.contains(id)) {
-				_activeNpcList.push_back(npc.get());
+			if (npc->is_boss() && npc->IsActive()) {
+				if (!processedIds.contains(id)) {
+					_activeNpcList.push_back(npc.get());
+					processedIds.insert(id);
+				}
+
+				// 보스는 모든 플레이어에게 보여야 함
+				for (auto& [pid, session] : _players) {
+					if (!session->_viewedNpcs.contains(id)) {
+						session->_viewedNpcs.insert(id);
+						SendNpcSpawnToPlayer(session, npc.get());
+					}
+				}
 #ifdef _DEBUG
 				//if (GetRoomId() == 0)
 				//{
@@ -627,6 +664,7 @@ namespace PIP::SERVER
 #endif
 			}
 		}
+
 
 		// --- [Step 2] 로직 업데이트 루프 (O(M)) ---
 		// [핵심] 이제 _activeNpcList에는 120m 내의 '살아있는' NPC만 들어있습니다.

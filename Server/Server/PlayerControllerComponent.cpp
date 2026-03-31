@@ -69,36 +69,36 @@ namespace PIP::GAME
         auto tc = GetOwner()->GetComponent<TransformComponent>();
         if (tc) tc->SetPosition(footPos);
 
-        _timer -= deltaTime;
-        if (_timer < 0.0f)
-        {
-            // 1. 서버 로직에서 관리하는 발바닥 위치 (get_position() 등)
-            auto logicFootPos = GetPosition();
+        //_timer -= deltaTime;
+        //if (_timer < 0.0f)
+        //{
+        //    // 1. 서버 로직에서 관리하는 발바닥 위치 (get_position() 등)
+        //    auto logicFootPos = GetPosition();
 
-            // 2. Jolt 물리 바디의 실제 중심 위치 (Jolt 내부의 진짜 좌표)
-            JPH::RVec3 joltBodyPos = _character->GetPosition();
+        //    // 2. Jolt 물리 바디의 실제 중심 위치 (Jolt 내부의 진짜 좌표)
+        //    JPH::RVec3 joltBodyPos = _character->GetPosition();
 
-            // 3. Jolt가 판단하는 현재 캐릭터의 접지 상태
-            auto groundState = _character->GetGroundState();
-            const char* groundStateStr = "Unknown";
-            switch (groundState) {
-            case JPH::CharacterVirtual::EGroundState::OnGround:     groundStateStr = "OnGround"; break;
-            case JPH::CharacterVirtual::EGroundState::OnSteepGround:groundStateStr = "OnSteepGround"; break;
-            case JPH::CharacterVirtual::EGroundState::NotSupported: groundStateStr = "NotSupported"; break;
-            case JPH::CharacterVirtual::EGroundState::InAir:        groundStateStr = "InAir"; break;
-            }
+        //    // 3. Jolt가 판단하는 현재 캐릭터의 접지 상태
+        //    auto groundState = _character->GetGroundState();
+        //    const char* groundStateStr = "Unknown";
+        //    switch (groundState) {
+        //    case JPH::CharacterVirtual::EGroundState::OnGround:     groundStateStr = "OnGround"; break;
+        //    case JPH::CharacterVirtual::EGroundState::OnSteepGround:groundStateStr = "OnSteepGround"; break;
+        //    case JPH::CharacterVirtual::EGroundState::NotSupported: groundStateStr = "NotSupported"; break;
+        //    case JPH::CharacterVirtual::EGroundState::InAir:        groundStateStr = "InAir"; break;
+        //    }
 
-            // 4. 로그 출력
-            MYLOG("[Jolt Debug] Actor: " << GetOwner()->GetName()
-                << " | Logic Foot: (" << logicFootPos.x << ", " << logicFootPos.y << ", " << logicFootPos.z << ")"
-                << " | Jolt Center: (" << joltBodyPos.GetX() << ", " << joltBodyPos.GetY() << ", " << joltBodyPos.GetZ()
-                << ")"
-                << " | GroundState: " << groundStateStr);
+        //    // 4. 로그 출력
+        //    MYLOG("[Jolt Debug] Actor: " << GetOwner()->GetName()
+        //        << " | Logic Foot: (" << logicFootPos.x << ", " << logicFootPos.y << ", " << logicFootPos.z << ")"
+        //        << " | Jolt Center: (" << joltBodyPos.GetX() << ", " << joltBodyPos.GetY() << ", " << joltBodyPos.GetZ()
+        //        << ")"
+        //        << " | GroundState: " << groundStateStr);
 
-            auto pos = GetPosition();
-            MYLOG("player pos (" << pos.x << "," << pos.y << "," << pos.z << ")");
-            _timer = 2.0f;
-        }
+        //    auto pos = GetPosition();
+        //    MYLOG("player pos (" << pos.x << "," << pos.y << "," << pos.z << ")");
+        //    _timer = 2.0f;
+        //}
         _moveVelocity = { 0, 0, 0 };
     }
 }
