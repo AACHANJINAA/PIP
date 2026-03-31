@@ -32,6 +32,8 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf", "attack");
 	// =========================================================================
 
+	load_scene_from_file("Resource/MainLandscape_Meshes/LandscapeStreamingProxy_-1_-1_0_ExportedClientData.json", device, commandList);
+	//load_scene_from_file("Resource/MainLandscape_Meshes/LandscapeStreamingProxy_-1_-1_0_ExportedClientData.json", device, commandList);
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");

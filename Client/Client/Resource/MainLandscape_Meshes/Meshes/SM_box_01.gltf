@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 7101,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 2514,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.785763919, -2.6645352e-17, -0.485407323 ],
+			"max": [ 0.785781741, 0.835119605, 0.472980231 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 2514,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 2514,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 2514,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 2514,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_box_01.bin",
+			"byteLength": 154988
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 14202,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 30168,
+			"byteOffset": 14204,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 30168,
+			"byteOffset": 44372,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 40224,
+			"byteOffset": 74540,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 20112,
+			"byteOffset": 114764,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 20112,
+			"byteOffset": 134876,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Furniture_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Furniture_01_C.png"
+		},
+		{
+			"uri": "T_Furniture_01_N.png"
+		},
+		{
+			"uri": "T_Furniture_01_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Furniture_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_box_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Furniture_01_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Furniture_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Furniture_01_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Furniture_01_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

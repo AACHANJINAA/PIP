@@ -1,0 +1,174 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1314,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 419,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.989108026, -0.0251376908, -0.34273544 ],
+			"max": [ 0.989108026, 0.258797973, 0.34273544 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 419,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 419,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 419,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 419,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_stone_ladder_01.bin",
+			"byteLength": 26092
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2628,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5028,
+			"byteOffset": 2628,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5028,
+			"byteOffset": 7656,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6704,
+			"byteOffset": 12684,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3352,
+			"byteOffset": 19388,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3352,
+			"byteOffset": 22740,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Stones_BaseColor.png"
+		},
+		{
+			"uri": "MI_Stones_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Stone_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Stones",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_stone_ladder_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Stones_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Stones_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Stone_N",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}
