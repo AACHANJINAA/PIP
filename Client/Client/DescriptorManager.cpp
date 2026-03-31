@@ -27,7 +27,7 @@ bool DescriptorManager::allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& out_cpu
 	    return false; // 더 이상 할당할 수 없음
 	}
 
-	// cpu handle 계산
+	// CPU handle 계산
 	out_cpu_handle = _descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	out_cpu_handle.ptr += (_descriptorSize * _currentIndex);
 

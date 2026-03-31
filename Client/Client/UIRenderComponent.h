@@ -84,7 +84,7 @@ public:
     void set_texture(const std::string& texture_path);
     void set_uv_scale(float u, float v) { _uv_scale = XMFLOAT2(u, v); }
 
-private:
+protected:
     // UI 속성
     XMFLOAT2 _screen_position = XMFLOAT2(0.0f, 0.0f);
     XMFLOAT2 _size = XMFLOAT2(100.0f, 100.0f);
@@ -106,6 +106,6 @@ private:
 
     // Quad mesh 초기화
     void initialize_quad_mesh();
-    void initialize_constant_buffers();
+    virtual void initialize_constant_buffers();
     static void initialize_screen_info();
 };

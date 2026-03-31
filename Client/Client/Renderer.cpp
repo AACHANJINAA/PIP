@@ -15,6 +15,7 @@
 #include "MonsterHPUIShader.h"
 #include "ShadowDepthShader.h"
 #include "ShadowDepthSkinnedShader.h"
+#include "UIFrameShader.h"
 #include "UIManager.h"
 
 #include "GameObject.h"
@@ -25,7 +26,6 @@
 #include "DebugDrawManager.h"
 #include "LightManager.h"
 #include "RenderComponent.h"
-#include "SkyboxRenderComponent.h"
 
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
@@ -50,6 +50,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<UIRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<CsmDepthRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<CsmDepthSkinnedRootSignatureGenerator>());
+	_rootSignatureGenerators.push_back(std::make_unique<UIFrameRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -89,6 +90,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto shadow_depth_skinned_shader = std::make_shared<ShadowDepthSkinnedShader>();
     _shaderPrototypes[shadow_depth_skinned_shader->pso_name()] = shadow_depth_skinned_shader;
+
+    auto ui_frame_shader = std::make_shared<UIFrameShader>();
+    _shaderPrototypes[ui_frame_shader->pso_name()] = ui_frame_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -167,6 +171,7 @@ void Renderer::build_render_list(CameraComponent* camera)
             // UI와 Skybox는 bounding box 체크 없이 렌더링
             if (renderComp->pso_name() == "ui" ||
                 renderComp->pso_name() == "Monster_HP_UI" ||
+                renderComp->pso_name() == "ui_frame" ||
                 renderComp->pso_name() == "skybox")
             {
                 if (renderComp->pso_name() == "ui")
@@ -198,9 +203,12 @@ void Renderer::build_render_list(CameraComponent* camera)
     {
         for (const auto& gameObject : vec)
         {
-            _renderMap["ui"].push_back(gameObject);
+            auto renderComp = gameObject->get_component<RenderComponent>();
+            if (renderComp)
+            {
+                _renderMap[renderComp->pso_name()].push_back(gameObject);
+            }
         }
-
     }
 
     /*CLOG("Culling: " << visibleObjects << "/" << totalObjects << " visible, "
@@ -219,8 +227,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         "skinned",      // 애니메이션 메시
         "skybox",       // Skybox
         "Monster_HP_UI",// 몬스터 HP UI
+        "ui_frame",      // UI Frame
         "ui"            // UI
     };
+
+    // CJ 주절주절 : ui가 먼저 렌더링 되는게 맞지 않을까란 생각. 왜냐하면 ui가 3d mesh들 위에 그려짐으로 발생하는 RT의 픽셀 낭비 발생
+    // CJ 비난 : 어차피 alpha 테스트가 되어 있기 때문에 굳이임 -> 처음에 렌더링해버리면 우리 예전처럼 ui가 가려지는 현상 발생함
 
     for (const auto& psoName : render_order)
     {
@@ -376,7 +388,7 @@ std::shared_ptr<Shader> Renderer::get_shader(const std::string& name) const
 
 void Renderer::bind_texture_table(ID3D12GraphicsCommandList* command_list, UINT root_parameter_index, const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& cpu_handles)
 {
-    // 여기서 root parameter 슬롯에 꽂힌다.
+    // bind_material에서 만들어진 실제 GPU를 가르키는 포인터가 여기서 root parameter 슬롯에 꽂힌다.
 
     if (cpu_handles.empty()) return;
     
