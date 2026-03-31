@@ -16,7 +16,6 @@
 #include "TransformComponent.h"
 
 #include "AnimationComponent.h"
-#include "LongswordScript.h"
 
 #include "PhysicsColliderComponent.h"
 #include "WeaponScript.h"
@@ -24,10 +23,11 @@
 #include "PhysicsCharacterControllerComponent.h"
 #include "SocketComponenet.h"
 
-void MainPlayerScript::set_hp(const int hp)
+void MainPlayerScript::set_hp(int hp)
 {
 	_hp = std::clamp(hp, 0, _maxHp);
-	_displayHp = static_cast<float>(_hp);
+	
+	//_displayHp = static_cast<float>(_hp);
 
 	// _hpBar_ui가 null이면 매번 재탐색
 	if (!_hpBar_ui)
@@ -308,9 +308,10 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 		_displayHp += (static_cast<float>(_hp) - _displayHp) * lerp;
 		float ratio = _displayHp / static_cast<float>(_maxHp);
 		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
-		_hpBar_ui->set_uv_scale(1.0f, 1.0f);
+		_hpBar_ui->set_uv_scale(ratio, 1.0f);
 	}
 }
+
 void MainPlayerScript::handle_state(float deltaTime)
 {
 	auto anim_comp = game_object()->get_component<AnimationComponent>();

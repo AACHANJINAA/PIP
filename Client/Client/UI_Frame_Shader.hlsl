@@ -75,7 +75,7 @@ float4 PS_UI_FRAME(PS_INPUT input) : SV_TARGET
 	if (g_UseTexture > 0)
 	{
 		float4 texColor = g_Texture.Sample(g_Sampler, input.texcoord);
-		return texColor * g_Color * idColor * 5.0f; // ID 색상 곱하기
+		return texColor * g_Color * idColor * 3.0f; // ID 색상 곱하기
 	}
 	return g_Color * idColor;
 }
