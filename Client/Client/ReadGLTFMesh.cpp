@@ -167,7 +167,6 @@ void ReadGLTFMesh::render(ID3D12GraphicsCommandList* commandList)
 		//else
 		//{
 			// 유효하지 않은 재질 인덱스 또는 재질 이름이 없는 경우 기본 재질 등을 바인딩할 수 있습니다.
-			//CWARNING("Invalid material index or no material name for primitive.");
 			// TODO: 기본 재질 바인딩 로직 추가 (예: ResourceManager::instance()->bind_default_material(commandList);)
 		//}
 
