@@ -502,6 +502,15 @@ void NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& str
 		MessageBox(g_hwnd, L"Failed to enter room.", L"Room Entry Error", MB_OK);
 	}
 }
+void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_SCENE_AWAKE spawn_npc_count; // npc 카운트 읽기
+	stream >> spawn_npc_count; // room_count만 읽습니다.
+	int npc_count = spawn_npc_count._npc_count;
+
+
+	
+}
 void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_NPC_SPAWN npc_spawn_packet;
@@ -729,6 +738,9 @@ bool NetworkManager::init_network()
 	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK,
 		std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
 
+	// NPC 카운트 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_COUNT,
+		std::bind(&NetworkManager::HANDLE_S2C_NPC_COUNT, this, std::placeholders::_1));
 	// NPC 스폰 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_NPC_SPAWN,
 		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_NPC, this, std::placeholders::_1));

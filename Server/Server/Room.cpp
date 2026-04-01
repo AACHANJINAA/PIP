@@ -36,7 +36,7 @@ namespace PIP::SERVER
 
 	void Room::SpawnInitialNPCs()
 	{
-		for (int i = 0; i < 500; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
 
@@ -1402,6 +1402,13 @@ namespace PIP::SERVER
 		packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
 		session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
 
+		// DW추가 : npc 카운트 패킷 전송 (방 입장 시 NPC 수 알려주기)
+		packet::SC_PACKET_SCENE_AWAKE npc_count_packet;
+		npc_count_packet._type = packet::PacketType::S2C_P_NPC_COUNT;
+		npc_count_packet._size = sizeof(npc_count_packet);
+		npc_count_packet._npc_count = static_cast<uint16_t>(_npcs.size()) - 1;
+		session->do_send(reinterpret_cast<char*>(&npc_count_packet), sizeof(npc_count_packet));
+
 		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
 		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
 		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
@@ -1411,6 +1418,11 @@ namespace PIP::SERVER
 		EnterPlayer(session);
 
 		MYLOG("[Room] Session " << session->_id << " successfully entered Room " << _room_id);
+	}
+
+	void Room::Execute_C2S_NPC_COUNT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet)
+	{
+
 	}
 
 
