@@ -12,7 +12,7 @@ namespace PIP::packet
 {
 	
 	// 중복 코드를 줄이기 위한 Helper 함수
-	PacketStream MakeSpawnPlayerPacket(std::shared_ptr<PIP::SERVER::SESSION> session)
+	PacketStream MakeSpawnPlayerPacket(const std::shared_ptr<PIP::SERVER::SESSION>& session)
 	{
 		// [수정] SC_PACKET_SPAWN_PLAYER 구조체 변수를 선언하고 멤버를 채웁니다.
 		packet::SC_PACKET_SPAWN_PLAYER spawn_packet_data;
@@ -41,7 +41,7 @@ namespace PIP::packet
 	}
 
 
-	void Handle_C2S_LOGIN(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_LOGIN(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_LOGIN login_packet;
 		std::string player_name;
@@ -73,7 +73,7 @@ namespace PIP::packet
 		//MYLOG("[Login] Sent LOGIN_ACK to session " << session->_id << " with ID: " << session->_id);
 	}
 
-	void Handle_C2S_MOVE(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_MOVE(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
 	{
 
 		if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1) return;
@@ -253,7 +253,7 @@ namespace PIP::packet
 
 	}
 
-	void Handle_C2S_ATTACK(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_ATTACK(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_ATTACK attack_packet;
 		try
@@ -282,7 +282,7 @@ namespace PIP::packet
 		}
 	}
 
-	void Handle_C2S_ENTER_ROOM(std::shared_ptr<SERVER::SESSION> session, packet::PacketStream& stream)
+	void Handle_C2S_ENTER_ROOM(const std::shared_ptr<SERVER::SESSION>& session, packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_ENTER_ROOM enter_packet;
 		stream >> enter_packet;
@@ -350,7 +350,7 @@ namespace PIP::packet
 			});
 	}
 
-	void Handle_C2S_ROOM_LIST(std::shared_ptr<SERVER::SESSION> session, PacketStream& stream)
+	void Handle_C2S_ROOM_LIST(const std::shared_ptr<SERVER::SESSION>& session, PacketStream& stream)
 	{
 		packet::CS_PACKET_ROOM_LIST recv_packet;
 		try
@@ -389,7 +389,7 @@ namespace PIP::packet
 		MYLOG("Sent room list to session " << session->_id << ". Room count: " << ack_packet._room_count);
 	}
 
-	void Handle_C2S_CHAT_IN_ROOM(std::shared_ptr<SERVER::SESSION> session, packet::PacketStream& stream)
+	void Handle_C2S_CHAT_IN_ROOM(const std::shared_ptr<SERVER::SESSION>& session, packet::PacketStream& stream)
 	{
 		// 1. 채팅 메시지 읽기
 		// PacketStream의 >> 연산자는 먼저 길이를 읽고, 그 길이만큼 문자열을 읽어옵니다.
@@ -442,7 +442,7 @@ namespace PIP::packet
 		MYLOG("[CHAT] Room " << room->GetRoomId() << " | " << session->_id << ": " << message);
 	}
 
-	void Handle_C2S_ACTION(std::shared_ptr<PIP::SERVER::SESSION> session, PIP::packet::PacketStream& stream)
+	void Handle_C2S_ACTION(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
 	{
 		packet::CS_PACKET_ACTION action_packet;
 		
@@ -457,6 +457,20 @@ namespace PIP::packet
 				// Room 클래스에 새로 만들 함수 호출
 				room->HandleAction(session, action_packet);
 			});
+		}
+	}
+
+	void Handle_C2S_PLAYER_READY(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
+	{
+		packet::CS_PACKET_PLAYER_READY ready_packet;
+		stream >> ready_packet;
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+		if (room) {
+			room->PushJob([session, ready_packet, room]() {
+				if (session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
+				// Room 클래스에 새로 만들 함수 호출
+				room->Execute_C2S_PLAYER_READY(session, ready_packet);
+				});
 		}
 	}
 }

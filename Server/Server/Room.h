@@ -4,6 +4,7 @@
 #include "JoltSetup.h"
 #include "Server.h"
 #include "NPC.h"
+#include "Stage.h"
 
 namespace PIP::GAME
 {
@@ -26,6 +27,8 @@ namespace PIP::SERVER
 		static std::uniform_real_distribution<> _npcURD;
 	public:
 		Room(int room_id, int logic_thread_idx);
+		void StartGame();
+		void WaitGame();
 		void Initialize();
 		void PushJob(std::function<void()> job);
 
@@ -38,13 +41,13 @@ namespace PIP::SERVER
 		GAME::NPC* GetNPC(int64_t npc_id);
 
 
-		// NPC의 공격 및 행동 판정
+		void ChangeScene(const std::string& nextSceneName);
+		void ClearAllNPCs();
 
 
 		bool IsPlayerNearby(const common::Vec3& get_position, float size);
 
 
-		void StartGame();
 		void ProcessJobs();
 		// 물리 업데이트 (할당자 필수)
 		void UpdatePhysics(float deltaTime, JPH::TempAllocator* allocator);
@@ -71,6 +74,7 @@ namespace PIP::SERVER
 		void ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
+		void Execute_C2S_PLAYER_READY(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_PLAYER_READY& ready_packet);
 
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
@@ -82,13 +86,16 @@ namespace PIP::SERVER
 		GAME::Actor* GetActor(int64_t actor_id);
 
 		std::map<int64_t, common::Vec3> GetPlayersPos() const;
+
+		void SpawnInitialNPCs();
+		void SpawnBoss();
+		JPH::PhysicsSystem* GetPhysicsSystem() const { return _physicsSystem; }
 	private:
 		void PhysicsInitialize();
 		void CreatePhysicsTerrain();
 		void CreatePhysicsMapObjects();
 		void CreatePhysicsStaticMeshCollisions();
-		void SpawnInitialNPCs();
-		void SpawnBoss();
+		
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
 		void OnNPCDead(GAME::NPC* npc);
@@ -109,6 +116,11 @@ namespace PIP::SERVER
 		GAME::GridMap 					_gridMap;
 
 		concurrency::concurrent_queue<std::function<void()>>	_jobQueue;
+
+		std::unique_ptr<Stage> _currentStage;		// 현재 맵 정보 (맵 오브젝트, NPC 스폰 지점 등)
+		std::string            _requestedSceneName; // 전환 대기 중인 씬 이름
+		std::set<int64_t>      _readyPlayers;       // 로딩 완료 보고를 한 플레이어 목록
+
 
 		std::unordered_map<int64_t, GAME::Actor*>				_actors;
 		std::unordered_map<int64_t, std::shared_ptr<SESSION>>	_players;

@@ -63,6 +63,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         NetworkManager::instance()->cleanup_network();
         return FALSE;
     }
+    // 최초 로그인 패킷 전송 (플레이어 이름 사용)
+    NetworkManager::instance()->SendLoginPacket();
+
+    int room_to_enter = 0; // 자동으로 입장할 방 ID (예시로 2번 방)
+    CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
+    NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
+
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CHESSCLIENT));
 
 

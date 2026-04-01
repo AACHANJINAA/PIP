@@ -19,6 +19,7 @@ namespace PIP
 		common::Vec3 _extent; // Half-extents (반폭)
 	};
 	struct TerrainTile {
+		std::string name;
 		JPH::ShapeRefC shape; // 공유할 물리 모양 (레퍼런스 카운팅 포인터)
 		common::TerrainData data;
 	};
@@ -44,7 +45,13 @@ namespace PIP
 		// 각 방에서 참조할 Shape 리스트 반환
 		const std::vector<StaticMeshTile>& GetStaticMeshTiles() const { return _staticMeshTiles; }
 
+		// [추가] 수동 그룹화 정의: "그룹명"과 "포함될 타일 이름들"을 매핑
+		// 예: AddTerrainGroup("VillageStage", {"Landscape01", "Landscape02", "Landscape05"})
+		void AddTerrainGroup(const std::string& groupName, const std::vector<std::string>& tileNames);
 
+		// [추가] 그룹명을 넣어 해당 그룹에 속한 타일 포인터 리스트를 반환
+		// 예: GetTerrainGroup("VillageStage") -> 포인터 리스트 반환
+		std::vector<const TerrainTile*> GetTerrainGroup(const std::string& groupName) const;
 
 		float GetGroundHeight(float x, float z) const;
 		common::Vec3 AdjustPositionToGround(common::Vec3 position);
@@ -58,6 +65,8 @@ namespace PIP
 		std::vector<MapObject> _map_objects;
 		std::vector<TerrainTile> _terrainTiles;
 		std::vector<StaticMeshTile> _staticMeshTiles;
+		// [추가] 그룹 정의를 보관하는 맵 (그룹명 -> 타일 이름 리스트)
+		std::unordered_map<std::string, std::vector<std::string>> _manualGroups;
 		float _worldMinX = std::numeric_limits<float>::max();
 		float _worldMaxX = -std::numeric_limits<float>::max();
 		float _worldMinZ = std::numeric_limits<float>::max();

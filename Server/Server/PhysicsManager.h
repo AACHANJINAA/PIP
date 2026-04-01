@@ -6,7 +6,7 @@ namespace PIP
         PhysicsManager() = default;
 		~PhysicsManager() override = default;
     public:
-        void Initialize();
+        void initialize() override;
         void Shutdown();
 
         // 팩토리 초기화 상태 확인용

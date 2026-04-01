@@ -118,6 +118,7 @@ namespace PIP
 			if (!entry.is_directory()) continue;
 			if (entry.path().filename().string().find("Landscape") != 0) continue;
 
+			std::string folderName = entry.path().filename().string();
 			std::filesystem::path metadataPath = entry.path() / "metadata.json";
 			if (!std::filesystem::exists(metadataPath)) continue;
 
@@ -142,6 +143,7 @@ namespace PIP
 				auto result = settings.Create();
 
 				TerrainTile tile;
+				tile.name = folderName;
 				tile.data = std::move(data);
 				if (result.IsValid()) {
 					tile.shape = result.Get(); // 생성된 Shape 저장 (Ref Count 증가)
@@ -183,6 +185,33 @@ namespace PIP
 		MYLOG("Static Mesh Shapes Created & Cached: " << gltfPath << " (" << _staticMeshTiles.size() << " parts)");
 	}
 
+	void MapDataManager::AddTerrainGroup(const std::string& groupName, const std::vector<std::string>& tileNames)
+	{
+		_manualGroups[groupName] = tileNames;
+		MYLOG("[MapData] Group '" << groupName << "' defined with " << tileNames.size() << " tiles.");
+	}
+
+	std::vector<const TerrainTile*> MapDataManager::GetTerrainGroup(const std::string& groupName) const
+	{
+		std::vector<const TerrainTile*> result;
+
+		auto it = _manualGroups.find(groupName);
+		if (it == _manualGroups.end()) {
+			MYERROR("[MapData] Group '" << groupName << "' not found!");
+			return result;
+		}
+
+		// 그룹 내 정의된 타일 이름을 순회하며 실제 타일 포인터를 찾아 담음
+		for (const auto& tileName : it->second) {
+			for (const auto& tile : _terrainTiles) {
+				if (tile.name == tileName) {
+					result.push_back(&tile);
+					break;
+				}
+			}
+		}
+		return result;
+	}
 
 
 	common::Vec3 MapDataManager::AdjustPositionToGround(common::Vec3 position)

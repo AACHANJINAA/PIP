@@ -11,6 +11,7 @@
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "PlayerControllerComponent.h"
 #include "CombatDef.h"
+#include "StageManager.h"
 
 namespace PIP::SERVER
 {
@@ -30,8 +31,14 @@ namespace PIP::SERVER
 		PhysicsInitialize();
 		_gridMap.Initialize(-1000, 1000, -1000, 1000, 40);
 
-		SpawnInitialNPCs();
-		SpawnBoss();
+
+		// 1. 기본 스테이지(MainStage) 생성 및 물리 로드
+		_currentStage = StageManager::Instance()->create_stage("MainStage");
+		if (_currentStage) {
+			_currentStage->on_initialize(this); // 지형 물리 바디 등록
+		}
+		/*SpawnInitialNPCs();
+		SpawnBoss();*/
 	}
 
 	void Room::SpawnInitialNPCs()
@@ -143,6 +150,7 @@ namespace PIP::SERVER
 
 	void Room::EnterPlayer(std::shared_ptr<SESSION> new_player)
 	{
+		int64_t id = new_player->_id;
 		bool wasEmpty = _players.empty(); 
 		if (new_player->_player) {
 			_gridMap.Add(new_player->_player.get());
@@ -153,16 +161,16 @@ namespace PIP::SERVER
 				cc->Initialize(_physicsSystem, 1.8f, 0.5f);
 			}
 		}
-		_players.emplace(new_player->_id, new_player);
 		new_player->_logic_thread_idx = _logic_thread_idx;
 		_actors[new_player->_id] = new_player->_player.get();
 		if (wasEmpty) {
 			MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
 			for (auto& [id, npc] : _npcs) {
-				auto scatteredTime = std::chrono::steady_clock::now(); //- std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(randomOffset));
+				auto scatteredTime = std::chrono::steady_clock::now();
 				npc->SetLastUpdateTime(scatteredTime);
 			}
 		}
+		_players.emplace(id, std::move(new_player));
 	}
 	void Room::LeavePlayer(int64_t player_id)
 	{
@@ -229,6 +237,49 @@ namespace PIP::SERVER
 			return nullptr;
 		}
 		return it->second.get();
+	}
+
+	void Room::ChangeScene(const std::string& nextSceneName)
+	{
+		// 1. 기존 스테이지 정리 (NPC 및 물리 바디 제거)
+		if (_currentStage) {
+			_currentStage->on_exit(this);
+		}
+
+		_readyPlayers.clear();
+		_requestedSceneName = nextSceneName;
+
+		// 2. 새로운 스테이지 생성 및 물리 초기화 (지형 로드)
+		_currentStage = StageManager::Instance()->create_stage(nextSceneName);
+		if (_currentStage) {
+			_currentStage->on_initialize(this);
+		}
+
+		// 3. 모든 클라이언트에게 씬 전환 명령 전송
+		packet::PacketStream stream;
+		packet::SC_PACKET_CHANGE_SCENE change_packet;
+		change_packet._type = packet::PacketType::S2C_P_CHANGE_SCENE;
+		change_packet._size = sizeof(change_packet) + static_cast<uint16_t>(nextSceneName.size());
+		stream << change_packet;
+		stream << nextSceneName; // 패킷 뒤에 씬 이름 문자열 추가
+		auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+		h_ptr->_size = (uint16_t)stream.Size(); // 전체 패킷 크기로 업데이트
+
+		Broadcast(stream.constable_data(), stream.Size());
+	}
+
+	void Room::ClearAllNPCs()
+	{
+		// 맵을 순회하며 모든 NPC 제거 (Despawn 패킷 포함)
+		std::vector<int64_t> npcIds;
+		for (auto& [id, npc] : _npcs) npcIds.push_back(id);
+
+		for (int64_t id : npcIds) {
+			RemoveNPC(id); // 기존에 구현된 RemoveNPC 호출 (그리드 및 시야 정리)
+		}
+		_npcs.clear();
+		_activeNpcList.clear();
+		MYLOG("[Room] All NPCs cleared for scene transition.");
 	}
 
 	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config)
@@ -371,6 +422,12 @@ namespace PIP::SERVER
 	{
 		_room_state = RoomState::PLAYING;
 		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
+	}
+
+	void Room::WaitGame()
+	{
+		_room_state = RoomState::WAITING;
+		MYLOG("Room " << _room_id << " is now in WAITING state.");
 	}
 
 	bool Room::IsPlayerNearby(const common::Vec3& get_position, float size)
@@ -724,208 +781,11 @@ namespace PIP::SERVER
 			session->_player->RecordSnapshot(currentTick);
 		}
 
-//		if (_players.empty()) return;
-//
-//		// --- 1. 단계별 NPC 수집 (0~40m: Inner, 40~120m: Gray) ---
-//		std::unordered_set<GAME::NPC*> activeNpcs; // 120m 전체
-//		std::unordered_set<GAME::NPC*> innerNpcs;  // 40m 정밀물리
-//		
-//		// [보스 예외 처리] 보스는 거리와 상관없이 항상 활성화 및 정밀 물리 대상
-//		std::vector<GAME::NPC*> bosses;
-//		for (auto& [id, npc] : _npcs) {
-//			if (npc->is_boss()) {
-//				bosses.push_back(npc.get());
-//				activeNpcs.insert(npc.get());
-//				innerNpcs.insert(npc.get());
-//#ifdef _DEBUG
-//				//if (GetRoomId() == 0)
-//				//{
-//				//	auto ai = npc->GetComponent<GAME::AIComponent>();
-//				//	if (ai && ai->GetBlackboard()->has("debug_node_name")) {
-//				//		//auto bb = ai->GetBlackboard();
-//				//		//std::string nodeName = bb->get<std::string>("debug_node_name");
-//				//		//int status = bb->get<int>("debug_node_status");
-//
-//				//		//// 상태를 문자열로 변환 (0:SUCCESS, 1:FAILURE, 2:RUNNING)
-//				//		//std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
-//				//		//std::string debugText = nodeName + " " + statusStr;
-//
-//				//		//common::packet::PacketStream stream;
-//				//		//common::packet::SC_PACKET_DEBUG_BT_INFO pkt;
-//				//		//pkt._type = common::packet::PacketType::S2C_P_DEBUG_BT_INFO;
-//				//		//pkt._actor_id = npc->GetId();
-//
-//				//		//stream << pkt;
-//				//		//stream << debugText; // 가변 문자열(노드 이름 + 상태) 추가
-//
-//				//		//// 헤더 사이즈 갱신
-//				//		//auto* header = reinterpret_cast<common::packet::PacketHeader*>(stream.mutable_data());
-//				//		//header->_size = (uint16_t)stream.Size();
-//
-//				//		//// [중요] stream.mutable_data()를 보내야 전체 내용이 전달됩니다!
-//				//		//Broadcast(stream.mutable_data(), stream.Size());
-//
-//				//		auto bb = ai->GetBlackboard();
-//				//		std::string nodeName = bb->get<std::string>("debug_node_name");
-//				//		int status = bb->get<int>("debug_node_status");
-//
-//				//		std::string statusStr = (status == 2) ? "[RUNNING]" : (status == 0 ? "[SUCCESS]" : "[FAILURE]");
-//				//		std::string debugText = nodeName + " " + statusStr;
-//				//		//MYLOG("[DebugBT] " << npc->GetId() << " Boss" << debugText);
-//				//	}
-//				//}
-//#endif
-//			}
-//		}
-//
-//		for (auto& [pid, session] : _players)
-//		{
-//			if (!session || !session->_player) continue;
-//			common::Vec3 myPos = session->_player->GetPosition();
-//
-//			auto player = session->_player;
-//			if (!player) continue;
-//
-//			common::Vec3 serverPos = player->GetPosition();
-//			common::Quat serverRot = player->GetRotation();
-//			auto currentState = player->GetState();
-//
-//			// 1. 변화량 체크 (1mm 이상 이동했거나 상태/회전이 변했다면 전송)
-//			// _lastSentPos 등은 Player 클래스의 멤버 변수입니다.
-//			bool isMoved = common::DistanceSq(serverPos, player->GetLastSentPos()) > 0.0001f;
-//			bool isStateChanged = (currentState != player->GetLastSentState());
-//			bool isRotated = !common::IsEqual(serverRot, player->GetLastSentRot());
-//
-//			if (isMoved || isStateChanged || isRotated) {
-//				common::packet::SC_PACKET_MOVE res;
-//				res._type = common::packet::PacketType::S2C_P_MOVE;
-//				res._size = sizeof(res);
-//				res._id = player->GetId();
-//				res._position = serverPos; // 물리 업데이트 결과가 반영된 진짜 최신 좌표!
-//				res._rotation = serverRot;
-//				res._state = currentState;
-//				res._action_id = player->_actionId;
-//
-//				// 나를 포함한 모든 방 인원에게 브로드캐스트
-//				// 이제 클라이언트는 내가 가려고 했던 방향으로 '정확히 이동한 결과'를 받게 됩니다.
-//				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
-//
-//				// 전송 완료 상태 기록 (다음 프레임 비교용)
-//				player->SetLastSentPos(serverPos);
-//				player->SetLastSentState(currentState);
-//				player->SetLastSentRot(serverRot);
-//			}
-//
-//
-//			std::vector<GAME::GameObject*> nearby;
-//			_gridMap.GetNearbyObjects(myPos, nearby); // 3x3 (120m) 검색
-//
-//			std::unordered_set<int64_t> currentNearbyIds;
-//
-//			// 보스는 항상 시야 리스트에 포함
-//			for (auto* boss : bosses) {
-//				int64_t npcId = boss->GetNpcId();
-//				currentNearbyIds.insert(npcId);
-//				if (!session->_viewedNpcs.contains(npcId)) {
-//					session->_viewedNpcs.insert(npcId);
-//					SendNpcSpawnToPlayer(session, boss);
-//				}
-//			}
-//
-//			for (auto* obj : nearby) {
-//				if (auto npc = dynamic_cast<GAME::NPC*>(obj)) {
-//					// 이미 보스에서 처리했을 수 있으므로 체크
-//					if (npc->is_boss()) continue;
-//
-//					activeNpcs.insert(npc);
-//					int64_t npcId = npc->GetNpcId();
-//					currentNearbyIds.insert(npcId);
-//
-//					// [중요] 셀 경계 문제를 방지하기 위해 '실제 거리'로 정밀 물리 대상 판정
-//					float distSq = common::DistanceSq(myPos, npc->GetPosition());
-//					if (distSq <= 45.0f * 45.0f) innerNpcs.insert(npc);
-//
-//					if (!session->_viewedNpcs.contains(npcId)) {
-//						session->_viewedNpcs.insert(npcId);
-//						SendNpcSpawnToPlayer(session, npc);
-//					}
-//				}
-//			}
-//
-//			for (auto it = session->_viewedNpcs.begin(); it != session->_viewedNpcs.end(); ) {
-//				if (!currentNearbyIds.contains(*it)) {
-//					SendNpcLeaveToPlayer(session, *it);
-//					it = session->_viewedNpcs.erase(it);
-//				}
-//				else ++it;
-//			}
-//		}
-//
-//		// --- 2. NPC 업데이트 (AI 및 상태 결정) ---
-//		_npcSyncTimer += deltaTime;
-//		bool shouldSync = false;
-//		if (_npcSyncTimer >= 0.05f) { shouldSync = true; _npcSyncTimer = 0.0f; }
-//
-//		auto now = std::chrono::steady_clock::now();
-//		for (auto& [id, npc] : _npcs) {
-//			bool isActive = activeNpcs.contains(npc.get());
-//			if (!isActive) continue;
-//
-//			bool isInner = innerNpcs.contains(npc.get());
-//			float interval = isInner ? 0.1f : 0.3f; // 근거리일수록 더 자주 AI 판단
-//
-//			if (std::chrono::duration<float>(now - npc->GetLastUpdateTime()).count() >= interval) {
-//				npc->Update(interval, tempAllocator); // AI (BT) 실행
-//
-//				// [추가] NPC 맵 이탈 방지 및 지형 높이 보정 로직
-//				common::Vec3 pos = npc->GetPosition();
-//				auto mapData = PIP::MapDataManager::Instance();
-//
-//				// [여기에 추가!] 3. NaN(비정상 값) 체크 및 복구
-//				if (std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z)) {
-//					MYERROR("NPC ID: " << npc->GetId() << " has NaN position! Resetting to safe spot.");
-//					pos = { 10.0f, 10.0f, 10.0f }; // 안전한 기본 위치 (마을 중앙 등)
-//					npc->SetPosition(pos); // 물리 바디 위치 강제 초기화
-//				}
-//
-//				// 1. 맵 경계 체크 (IsInsideMap이 false면 맵 밖임)
-//				if (!mapData->IsInsideMap(pos.x, pos.z)) {
-//					// 맵 밖으로 나갔다면 안전한 위치(AdjustPositionToGround)로 강제 견인
-//					pos = mapData->AdjustPositionToGround(pos);
-//				}
-//				else {
-//					// 2. 맵 안쪽이라도 땅 밑으로 꺼지거나 공중에 뜨는 것을 방지 (높이 보정)
-//					pos = mapData->AdjustPositionToGround(pos);
-//				}
-//
-//				// 최종 보정된 위치를 NPC에 적용 (물리 바디 포함)
-//				npc->SetPosition(pos);
-//
-//				npc->SetLastUpdateTime(now);
-//				_gridMap.UpdatePosition(npc.get(), npc->GetPosition());
-//			}
-//
-//			// --- 3. 공통: 회전 처리 (부드러운 시각 효과) ---
-//			common::Vec3 vel = npc->GetVelocity();
-//			if (vel.x * vel.x + vel.z * vel.z > 0.01f) {
-//				float angle = std::atan2(vel.x, vel.z);
-//				DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
-//				common::Quat rot;
-//				XMStoreFloat4((XMFLOAT4*)&rot, q);
-//				npc->SetRotation(rot);
-//			}
-//		}
-//
-//		// 플레이어 업데이트 및 스냅샷 기록 (Active 대상)
-//		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-//		for (auto& [pid, session] : _players)
-//		{
-//			session->_player->Update(deltaTime, tempAllocator);
-//			session->_player->RecordSnapshot(currentTick);
-//		}
-//		for (auto* npc : activeNpcs) npc->RecordSnapshot(currentTick);
-//
-//		if (shouldSync) BroadcastNpcBatch();
+		// 5. 스테이지 전용 업데이트 (보스 페이즈, 트리거 등)
+		if (_currentStage) {
+			_currentStage->update(this, deltaTime);
+		}
+
 	}
 
 	void Room::PushJob(std::function<void()> job)
@@ -946,7 +806,7 @@ namespace PIP::SERVER
 		if (!npc) return;
 
 		packet::SC_PACKET_NPC_MOVE move_packet_data;
-		move_packet_data._type = common::packet::PacketType::S2C_NPC_MOVE;
+		move_packet_data._type = common::packet::PacketType::S2C_P_NPC_MOVE;
 		move_packet_data._npc_id = npc->GetNpcId();
 		move_packet_data._position = npc->GetPosition();
 		move_packet_data._velocity = npc->GetVelocity();
@@ -1014,7 +874,7 @@ namespace PIP::SERVER
 
 			packet::PacketStream stream;
 			packet::SC_PACKET_NPC_MOVE_BATCH header;
-			header._type = packet::PacketType::S2C_NPC_MOVE_BATCH;
+			header._type = packet::PacketType::S2C_P_NPC_MOVE_BATCH;
 			header._count = 0;
 			stream << header;
 
@@ -1080,7 +940,7 @@ namespace PIP::SERVER
 	void Room::SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc)
 	{
 		packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
-		spawn_packet_data._type = common::packet::PacketType::S2C_NPC_SPAWN;
+		spawn_packet_data._type = common::packet::PacketType::S2C_P_NPC_SPAWN;
 		spawn_packet_data._size = 0;
 		spawn_packet_data._hp = npc->GetHP();
 		spawn_packet_data._npc_id = npc->GetNpcId();
@@ -1100,7 +960,7 @@ namespace PIP::SERVER
 	void Room::SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int64_t npcId)
 	{
 		packet::SC_PACKET_NPC_DESPAWN despawn_packet;
-		despawn_packet._type = common::packet::PacketType::S2C_NPC_DESPAWN;
+		despawn_packet._type = common::packet::PacketType::S2C_P_NPC_DESPAWN;
 		despawn_packet._size = sizeof(despawn_packet);
 		despawn_packet._npc_id = npcId;
 		session->do_send(reinterpret_cast<const char*>(&despawn_packet), sizeof(despawn_packet));
@@ -1356,38 +1216,6 @@ namespace PIP::SERVER
 
 		EnterPlayer(session);
 
-		// 1. 대략적인 스폰 위치 결정 (월드 중앙 등)
-		auto [minX, maxX, minZ, maxZ] = MapDataManager::Instance()->GetWorldBounds();
-		float tx = (minX + maxX) * 0.5f;
-		float tz = (minZ + maxZ) * 0.5f;
-
-		// 2. 충분히 높은 곳에서 아래로 레이 발사 준비
-		JPH::RRayCast ray;
-		ray.mOrigin = JPH::Vec3(tx, 500.0f, tz); // 하늘 높은 곳에서 발사
-		ray.mDirection = JPH::Vec3(0, -1000.0f, 0); // 땅바닥으로 길게 발사
-
-		// 3. 지형 레이캐스트 실행
-		JPH::RayCastResult ray_result;
-		float finalY = 0.0f;
-
-		// 지형 레이어(NON_MOVING)만 검사하도록 쿼리
-		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
-			float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
-			finalY = hitY + 2.0f; // 지면 위 2m 안착
-			MYLOG("[SPAWN] Ray Hit at Y: " << hitY << ", Spawn Y: " << finalY);
-		}
-		else {
-			// 레이가 빗나갈 경우 MapDataManager 데이터 기반으로 강제 보정
-			finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
-			MYERROR("[SPAWN] Ray Missed! Using data height: " << finalY);
-		}
-
-		// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
-		common::Vec3 spawnPos{ tx, finalY, tz };
-		session->_player->SetPosition(spawnPos);
-		session->_player->SetHP(100);
-
-		// 1. 입장 성공 ACK 전송
 		packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
 		ack_packet._type = packet::PacketType::S2C_P_ENTER_ROOM_ACK;
 		ack_packet._size = sizeof(ack_packet);
@@ -1395,22 +1223,149 @@ namespace PIP::SERVER
 		ack_packet._success = true;
 		session->do_send(reinterpret_cast<char*>(&ack_packet), sizeof(ack_packet));
 
-		// 2. 다른 플레이어들의 정보를 나에게 전송
-		SendRoomInfoToNewPlayer(session);
+		// 3. [핵심] 클라이언트에게 현재 방의 씬으로 전환하라고 명령 (로딩 시작 유도)
+		if (_currentStage) {
+			std::string sceneName = _currentStage->get_stage_name();
 
-		// 3. 나의 스폰 패킷 생성 및 전송
-		packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
-		session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
+			packet::PacketStream stream;
+			packet::SC_PACKET_CHANGE_SCENE change_packet;
+			change_packet._type = packet::PacketType::S2C_P_CHANGE_SCENE;
+			stream << change_packet;
+			stream << sceneName; // 가변 길이 씬 이름 추가
 
-		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
-		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
-		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
+			auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h_ptr->_size = (uint16_t)stream.Size();
 
-		SendMapDebugDraw(session);
-		// --- [Step 3] 최종 입장 완료 (리스트 및 그리드맵 추가) ---
-		EnterPlayer(session);
+			session->do_send(reinterpret_cast<const char*>(stream.constable_data()), stream.Size());
+			MYLOG("[Room] Sent CHANGE_SCENE(" << sceneName << ") to Session " << session->_id);
+		}
+
+		//common::Vec3 spawn_pos = _currentStage->get_spawn_pos();
+		//float tx = spawn_pos.x;
+		//float tz = spawn_pos.z;
+
+		//// 2. 충분히 높은 곳에서 아래로 레이 발사 준비
+		//JPH::RRayCast ray;
+		//ray.mOrigin = JPH::Vec3(tx, 500.0f, tz); // 하늘 높은 곳에서 발사
+		//ray.mDirection = JPH::Vec3(0, -1000.0f, 0); // 땅바닥으로 길게 발사
+
+		//// 3. 지형 레이캐스트 실행
+		//JPH::RayCastResult ray_result;
+		//float finalY = 0.0f;
+
+		//// 지형 레이어(NON_MOVING)만 검사하도록 쿼리
+		//if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
+		//	float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
+		//	finalY = hitY + 2.0f; // 지면 위 2m 안착
+		//	MYLOG("[SPAWN] Ray Hit at Y: " << hitY << ", Spawn Y: " << finalY);
+		//}
+		//else {
+		//	// 레이가 빗나갈 경우 MapDataManager 데이터 기반으로 강제 보정
+		//	finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
+		//	MYERROR("[SPAWN] Ray Missed! Using data height: " << finalY);
+		//}
+
+		//// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
+		//common::Vec3 spawnPos{ tx, finalY, tz };
+		//session->_player->SetPosition(spawnPos);
+		//session->_player->SetHP(100);
+
+		//// 1. 입장 성공 ACK 전송
+		//packet::SC_PACKET_ENTER_ROOM_ACK ack_packet;
+		//ack_packet._type = packet::PacketType::S2C_P_ENTER_ROOM_ACK;
+		//ack_packet._size = sizeof(ack_packet);
+		//ack_packet._room_id = _room_id;
+		//ack_packet._success = true;
+		//session->do_send(reinterpret_cast<char*>(&ack_packet), sizeof(ack_packet));
+
+		//// 2. 다른 플레이어들의 정보를 나에게 전송
+		//SendRoomInfoToNewPlayer(session);
+
+		//// 3. 나의 스폰 패킷 생성 및 전송
+		//packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
+		//session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
+
+		//// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
+		//// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
+		//Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
+
+		//SendMapDebugDraw(session);
+		
 
 		MYLOG("[Room] Session " << session->_id << " successfully entered Room " << _room_id);
+	}
+
+	void Room::Execute_C2S_PLAYER_READY(const std::shared_ptr<SESSION>& session,
+		const common::packet::CS_PACKET_PLAYER_READY& ready_packet)
+	{
+		_readyPlayers.insert(session->_id);
+
+		MYLOG("[Room " << _room_id << "] Session " << session->_id << " is READY for scene: " << _requestedSceneName);
+
+		// 방에 있는 모든 플레이어가 로딩을 마쳤는가?
+		if (_readyPlayers.size() == _players.size()) {
+			MYLOG("[Room " << _room_id << "] All players READY! Starting Stage: " << _requestedSceneName);
+
+			// 1. 스테이지 진입 (NPC 및 보스 스폰)
+			if (_currentStage) {
+				_currentStage->on_enter(this);
+			}
+
+			common::Vec3 spawn_pos = _currentStage->get_spawn_pos();
+			float tx = spawn_pos.x;
+			float tz = spawn_pos.z;
+
+			// 2. 충분히 높은 곳에서 아래로 레이 발사 준비
+			JPH::RRayCast ray;
+			ray.mOrigin = JPH::Vec3(tx, 500.0f, tz); // 하늘 높은 곳에서 발사
+			ray.mDirection = JPH::Vec3(0, -1000.0f, 0); // 땅바닥으로 길게 발사
+
+			// 3. 지형 레이캐스트 실행
+			JPH::RayCastResult ray_result;
+			float finalY = 0.0f;
+
+			// 지형 레이어(NON_MOVING)만 검사하도록 쿼리
+			if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
+				float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
+				finalY = hitY + 2.0f; // 지면 위 2m 안착
+				MYLOG("[SPAWN] Ray Hit at Y: " << hitY << ", Spawn Y: " << finalY);
+			}
+			else {
+				// 레이가 빗나갈 경우 MapDataManager 데이터 기반으로 강제 보정
+				finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
+				MYERROR("[SPAWN] Ray Missed! Using data height: " << finalY);
+			}
+
+			// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
+			common::Vec3 spawnPos{ tx, finalY, tz };
+			session->_player->SetPosition(spawnPos);
+			session->_player->SetHP(100);
+
+			SendRoomInfoToNewPlayer(session);
+
+			// 3. 나의 스폰 패킷 생성 및 전송
+			packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
+			session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
+
+			// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
+			// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
+			Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
+
+			// 3. 게임 시작 알림 브로드캐스트
+			packet::SC_PACKET_ALL_PLAYERS_READY all_ready;
+			all_ready._type = packet::PacketType::S2C_P_ALL_PLAYERS_READY;
+			all_ready._size = sizeof(all_ready);
+			Broadcast(reinterpret_cast<const char*>(&all_ready), sizeof(all_ready));
+			
+			if (_players.size() == 1) {
+				MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
+				for (auto& [id, npc] : _npcs) {
+					auto scatteredTime = std::chrono::steady_clock::now();
+					npc->SetLastUpdateTime(scatteredTime);
+				}
+			}
+			_readyPlayers.clear(); // 다음 씬 전환을 위해 초기화
+		}
 	}
 
 
@@ -1637,7 +1592,7 @@ namespace PIP::SERVER
 
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
-		CreatePhysicsTerrain();
+		//CreatePhysicsTerrain();
 		//CreatePhysicsMapObjects();
 	}
 }
