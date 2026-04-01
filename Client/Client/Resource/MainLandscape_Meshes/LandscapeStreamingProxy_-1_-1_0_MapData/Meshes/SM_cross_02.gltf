@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1590,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 455,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.665495813, -2.67403828e-16, -0.122003086 ],
+			"max": [ 0.665495813, 2.64651418, 0.121995285 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 455,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 455,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 455,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 455,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_cross_02.bin",
+			"byteLength": 28660
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 3180,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5460,
+			"byteOffset": 3180,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5460,
+			"byteOffset": 8640,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7280,
+			"byteOffset": 14100,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3640,
+			"byteOffset": 21380,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3640,
+			"byteOffset": 25020,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Grave_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Grave_C.png"
+		},
+		{
+			"uri": "T_Grave_N.png"
+		},
+		{
+			"uri": "T_Grave_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Grave",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_cross_02",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Grave_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Grave_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Grave_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Grave_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

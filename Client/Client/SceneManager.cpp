@@ -179,7 +179,7 @@ void SceneManager::build_skybox_if_needed(ID3D12Device* device, ID3D12GraphicsCo
 		return;
 	}
 
-	ResourceManager::instance()->load_skybox("Resource\\SkyBox\\skybox_texture.dds");
+	ResourceManager::instance()->load_skybox("Resource\\SkyBox\\night_field\\night_field_skybox.dds");
 
 	ResourceManager::instance()->load_ibl_maps();
 	
