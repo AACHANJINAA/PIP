@@ -12,7 +12,12 @@
 
 void Tool_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    SceneManager::instance()->build_skybox_if_needed(device, commandList);
+    SceneManager::instance()->build_skybox(device, commandList,
+        "Resource\\SkyBox\\",
+        "night_field\\night_field_skybox.dds",
+        "night_field\\night_field_diffsue.dds",
+        "night_field\\night_field_specular.dds",
+        "IBL_BRDF_LUT.dds");
 
     spawn_camera();
 }
