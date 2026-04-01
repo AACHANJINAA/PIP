@@ -113,6 +113,15 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     UIManager::instance()->add_ui(UILayer::FRONT, "Death_UI", death_ui_obj);
     UIManager::instance()->set_visible(UILayer::FRONT, "Death_UI", false); // 처음에는 보이지 않도록 설정
 
+    // 5.로고
+    auto logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
+    auto logo_ui_background = logo_ui_background_obj->add_component<UIRenderComponent>();
+
+    logo_ui_background->set_screen_position(FRAME_BUFFER_WIDTH - 410.0f, 0.0f);        // Frame보다 안쪽
+    logo_ui_background->set_size( 412.5f, 250.f);// Frame보다 작게
+    logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+    logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "UI_Background_UI", logo_ui_background_obj);
 
 }
 
