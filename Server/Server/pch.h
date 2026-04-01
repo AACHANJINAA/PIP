@@ -27,7 +27,7 @@
 #include <variant>
 #include <typeindex>
 #include <unordered_set>
-
+#include <set>
 
 // 윈도우 헤더 
 #include <WS2tcpip.h>
@@ -175,7 +175,7 @@ protected:
 public:
 	Singleton(const Singleton&) = delete;
 	Singleton& operator=(const Singleton&) = delete;
-
+	virtual void initialize() {}
 	static T* Instance()
 	{
 		static T instance;
