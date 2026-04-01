@@ -15,9 +15,9 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	SceneManager::instance()->build_skybox(device, commandList, 
 		"Resource\\SkyBox\\", 
-		"night_field\\night_field_skybox.dds", 
-		"night_field\\night_field_diffuse.dds", 
-		"night_field\\night_field_specular.dds",
+		"space\\space_skybox.dds", 
+		"space\\space_diffuse.dds", 
+		"space\\space_specular.dds",
 		"IBL_BRDF_LUT.dds");
 
 	// =========================필요한 메시 로드==================================
