@@ -33,6 +33,12 @@ void NPCScript::handle_animation_branching()
 		return;
 	}*/
 
+	// 1. 사망 처리
+	if (_state == EntityState::DEAD) {
+		anim->play("Death", false);
+		return;
+	}
+
 	// 2. 액션(공격/스킬) 상태 분기
 	if (_state == EntityState::ACTION) 
 	{
