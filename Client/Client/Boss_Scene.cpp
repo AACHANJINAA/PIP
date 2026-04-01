@@ -15,13 +15,11 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	SceneManager::instance()->build_skybox(device, commandList, 
 		"Resource\\SkyBox\\", 
-		"night_field\\night_field_skybox.dds", 
-		"night_field\\night_field_diffsue.dds", 
-		"night_field\\night_field_specular.dds",
+		"space\\space_skybox.dds", 
+		"space\\space_diffuse.dds", 
+		"space\\space_specular.dds",
 		"IBL_BRDF_LUT.dds");
 
-	//SceneManager::instance()->build_terrain(device, commandList);
-	
 	// =========================필요한 메시 로드==================================
 	ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 	ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
