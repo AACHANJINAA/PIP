@@ -85,6 +85,7 @@ namespace common::packet
 		S2C_P_ENTER_ROOM_ACK = 202,
 		C2S_P_ROOM_LIST = 203,
 		S2C_P_ROOM_LIST_ACK = 204,
+		S2C_P_NPC_COUNT = 205,
 
 		//------------------------------------------ 채팅 관련 패킷 ------------------------------------------ //
 		C2S_P_CHAT_IN_ROOM = 301, // 클라 -> 서버: 방 내부 채팅 메시지
@@ -229,6 +230,11 @@ namespace common::packet
 	{
 		bool _success; // 방 들어갈수 있는 지 없는지 (true: 가능, false: 불가능)
 		int _room_id;  // 들어갈 방 아이디 ( false면 의미 없음)
+	};
+
+	struct SC_PACKET_SCENE_AWAKE : PacketHeader
+	{
+		size_t _npc_count; // npc개수
 	};
 
 	// 플레이어 스폰 패킷
