@@ -736,7 +736,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
 void ResourceManager::load_ibl_maps()
 {
     // 1. Irradiance Map (인덱스 1)
-    _ibl_irradiance_path = "Resource\\SkyBox\\IBL_diffuse.dds";
+    _ibl_irradiance_path = "Resource\\SkyBox\\night_field\\night_field_diffuse.dds";
     auto irradiance_info = load_cubemap_from_dds(_ibl_irradiance_path);
     if (irradiance_info)
     {
@@ -756,7 +756,7 @@ void ResourceManager::load_ibl_maps()
     }
 
     // 2. Prefiltered Environment Map (인덱스 2)
-    _ibl_prefiltered_path = "Resource\\SkyBox\\IBL_specular.dds";
+    _ibl_prefiltered_path = "Resource\\SkyBox\\night_field\\night_field_specular.dds";
     auto prefiltered_info = load_cubemap_from_dds(_ibl_prefiltered_path);
     if (prefiltered_info)
     {
