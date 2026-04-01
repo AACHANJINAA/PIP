@@ -1406,7 +1406,10 @@ namespace PIP::SERVER
 		packet::SC_PACKET_SCENE_AWAKE npc_count_packet;
 		npc_count_packet._type = packet::PacketType::S2C_P_NPC_COUNT;
 		npc_count_packet._size = sizeof(npc_count_packet);
-		npc_count_packet._npc_count = static_cast<uint16_t>(_npcs.size()) - 1;
+		npc_count_packet._boss_count = 1; // 보스 마리 수
+		npc_count_packet._boss_start_id = _next_npc_id + (_room_id * 1000) + 999; // 보스 ID
+		npc_count_packet._npc_count = static_cast<uint16_t>(_npcs.size()) - npc_count_packet._boss_count;
+		npc_count_packet._npc_start_id = _next_npc_id + (_room_id * 1000); // 일반 NPC ID 시작 인덱스 번호
 		session->do_send(reinterpret_cast<char*>(&npc_count_packet), sizeof(npc_count_packet));
 
 		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)

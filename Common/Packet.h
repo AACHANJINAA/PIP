@@ -234,7 +234,10 @@ namespace common::packet
 
 	struct SC_PACKET_SCENE_AWAKE : PacketHeader
 	{
-		size_t _npc_count; // npc개수
+		int64_t _npc_count; // npc개수
+		int64_t _npc_start_id; // npc 아이디
+		int64_t _boss_count; // 보스개수
+		int64_t _boss_start_id; // 보스 아이디
 	};
 
 	// 플레이어 스폰 패킷

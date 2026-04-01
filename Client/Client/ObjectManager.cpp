@@ -221,3 +221,8 @@ void ObjectManager::unregister_npc(int64_t id)
 {
     _npcMap.erase(id);
 }
+
+void ObjectManager::spawn_monster(size_t how_many_you_want_npc_count)
+{
+
+}
