@@ -1335,7 +1335,7 @@ namespace PIP::SERVER
 					npc->SetLastUpdateTime(scatteredTime);
 				}
 			}
-			_readyPlayers.clear();
+			//_readyPlayers.clear();
 		}
 	}
 

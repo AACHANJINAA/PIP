@@ -714,7 +714,7 @@ void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream
 	stream >> packet;
 
 	// DW수정 : 오브젝트 풀링 때문에 무시 테스트
-	//return;
+	return;
 
 	// NPC 찾아서 삭제
 	auto npc = ObjectManager::instance()->find_npc(packet._npc_id);
@@ -740,6 +740,7 @@ void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& strea
 	{
 		client_scene_name = "MainScene";
 	}
+	SceneManager::instance()->set_network_scene_name(client_scene_name);
 	SceneManager::instance()->change_scene(client_scene_name);
 
 	CLOG("Scene change requested by server: " << nextSceneName);

@@ -68,7 +68,8 @@ public:
     virtual void release_upload_buffers() = 0;
 
 	// 씬이 처리해야 할 일이 있다면 처리해주는 함수
-	virtual void scene_process(float deltaTime) {};
+	virtual void scene_process(float deltaTime) {}
+	virtual void on_scene_loaded();
 
 	void set_scene_name(const std::string& name) { _sceneName = name; }
 	const std::string& scene_name() const { return _sceneName; }

@@ -4,6 +4,7 @@
 #include "CameraComponent.h"
 #include "FreeCameraScript.h"
 #include "GameObject.h"
+#include "NetworkManager.h"
 #include "ObjectManager.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
@@ -52,3 +53,4 @@ void Boss_Scene::scene_process(float deltaTime)
 {
 	// 씬 업데이트 로직 (필요시)
 }
+
