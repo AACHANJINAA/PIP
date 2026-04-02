@@ -6,8 +6,6 @@
 #include "GameFramework.h"
 #include "Main_Scene.h"
 #include "Boss_Scene.h"
-#include "Title_Scene.h"
-
 #include "NetworkManager.h"
 
 #include "ObjectManager.h"
@@ -35,10 +33,9 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	register_scene<Main_Scene>("MainScene");
 	register_scene<Tool_Scene>("ToolScene");
 	register_scene<Boss_Scene>("BossScene");
-	register_scene<Title_Scene>("TitleScene");
 	//register_scene<Lobby_Scene>("LobbyScene");
 
-	change_scene("TitleScene");
+	//change_scene("MainScene");
 }
 
 void SceneManager::release()
@@ -120,17 +117,13 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	game_framework->WaitForGpuComplete();
     //TODO: 씬 전환 후 서버에게 패킷 전송 후 방입장 요청
 
-	_currentScene->on_scene_loaded();
-    if (_currentScene->scene_name() == _networkWantSceneName)
-    {
-        common::packet::CS_PACKET_PLAYER_READY ready_packet;
-        ready_packet._type = common::packet::PacketType::C2S_P_PLAYER_READY;
-        ready_packet._size = sizeof(ready_packet);
+    // 2. [추가] 씬 전환 및 리소스 로딩이 완벽히 끝났다면 서버에 보고!
+	common::packet::CS_PACKET_PLAYER_READY ready_packet;
+    ready_packet._type = common::packet::PacketType::C2S_P_PLAYER_READY;
+    ready_packet._size = sizeof(ready_packet);
 
-        // NetworkManager를 통해 서버로 전송
-        NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&ready_packet), sizeof(ready_packet));
-		_networkWantSceneName = ""; // 요청 씬과 일치하는 경우, 요청 씬 이름 초기화
-    }
+    // NetworkManager를 통해 서버로 전송
+    NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&ready_packet), sizeof(ready_packet));
     CLOG("Scene Loading Complete! Sent READY to Server. Scene: " << _requestedSceneName);
 
 }

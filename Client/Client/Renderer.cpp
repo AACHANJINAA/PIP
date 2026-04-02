@@ -304,7 +304,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             for (const auto& gameObject : gameObjects)
             {
                 auto renderComp = gameObject->get_component<RenderComponent>();
-                if (renderComp)
+                if (renderComp && renderComp->is_enabled())
                 {
                     renderComp->render(commandList, frame_index);
                 }

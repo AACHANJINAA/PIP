@@ -587,7 +587,7 @@ void GameFramework::update_game_logic(float deltaTime)
 	// .FreeCameraScript가 입력을 받아 자신의 Transform을 업데이트
 	for (const auto& gameObject : allGameObjects)
 	{
-		if (gameObject && !gameObject->is_destroyed())
+		if (gameObject && !gameObject->is_destroyed() && gameObject->is_enable())
 		{
 			gameObject->update(deltaTime);
 		}
@@ -596,7 +596,7 @@ void GameFramework::update_game_logic(float deltaTime)
 	// LateUpdate는 뷰 행렬 계산 후에도 ㄱㅊ
 	for (const auto& gameObject : allGameObjects)
 	{
-		if (gameObject && !gameObject->is_destroyed())
+		if (gameObject && !gameObject->is_destroyed() && gameObject->is_enable())
 		{
 			gameObject->late_update(deltaTime);
 		}
@@ -627,7 +627,7 @@ void GameFramework::update_physics(float elapsedTime)
 		// 1. Transform -> Physics Body 동기화
 		for (const auto& gameObject : allGameObjects)
 		{
-			if (gameObject && !gameObject->is_destroyed())
+			if (gameObject && !gameObject->is_destroyed() && gameObject->is_enable())
 			{
 				gameObject->fixed_update(fixedTimeStep);
 			}

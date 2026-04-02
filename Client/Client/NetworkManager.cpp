@@ -522,7 +522,7 @@ void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
 		// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
 		NPC->add_component<MonsterHPComponent>();
 		NPC->add_component<AnimationComponent>();
-		NPC->add_component<RenderComponent>();
+		NPC->add_component<RenderComponent>()->set_enabled(false);
 
 
 		NPCScript* NPC_logic = nullptr;
@@ -570,10 +570,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	auto existingNPC = ObjectManager::instance()->find_npc(npc_spawn_packet._npc_id);
 	if (existingNPC)
 	{
-		// 존재하면 위치만 강제 동기화 및 화면에 보이게 하기
-		auto script = existingNPC->get_component<NPCScript>();
-		existingNPC->get_component<RenderComponent>()->set_enabled(true);
-		if (script) {
+		// [수정] 풀에서 찾은 경우 렌더링을 켜고 초기화 진행
+		if (auto render = existingNPC->get_component<RenderComponent>()) {
+			render->set_enabled(true);
+		}
+		if (auto script = existingNPC->get_component<NPCScript>()) {
 			script->initialize_from_server(npc_spawn_packet);
 		}
 		return;

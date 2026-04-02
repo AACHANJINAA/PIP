@@ -187,6 +187,7 @@ void ObjectManager::clear_non_persistent_objects()
         Object::destroy(game_object);
     }
 
+    _npcMap.clear();
     // process_destructions()가 다음 프레임에 실제로 메모리에서 제거할 것입니다.
 }
 
