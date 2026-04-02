@@ -187,6 +187,7 @@
     <ClInclude Include="TerrainRenderComponent.h" />
     <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TimerManager.h" />
+    <ClInclude Include="Title_Scene.h" />
     <ClInclude Include="ToolCameraScript.h" />
     <ClInclude Include="Tool_Scene.h" />
     <ClInclude Include="TransformComponent.h" />
@@ -309,6 +310,7 @@
     <ClCompile Include="TerrainRenderComponent.cpp" />
     <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TimerManager.cpp" />
+    <ClCompile Include="Title_Scene.cpp" />
     <ClCompile Include="ToolCameraScript.cpp" />
     <ClCompile Include="Tool_Scene.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
