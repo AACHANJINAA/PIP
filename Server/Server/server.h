@@ -27,7 +27,7 @@ namespace PIP::SERVER
 {
 	class Server;
 	class SESSION;
-	enum IO_OP : std::uint8_t
+	enum class IO_OP : std::uint8_t
 	{
 		IO_RECV = 0,
 		IO_SEND = 1,
@@ -83,7 +83,7 @@ namespace PIP::SERVER
 		int									_logic_thread_idx; // 담당 로직 스레드의 인덱스
 		int									_room_id = -1;
 
-		EXP_OVER							_recv_over{ IO_RECV };
+		EXP_OVER							_recv_over{ IO_OP::IO_RECV };
 		int									_prev_size = 0;
 
 		std::atomic<SESSION_STATE>			_state;

@@ -1298,8 +1298,20 @@ namespace PIP::SERVER
 	void Room::Execute_C2S_PLAYER_READY(const std::shared_ptr<SESSION>& session,
 		const common::packet::CS_PACKET_PLAYER_READY& ready_packet)
 	{
-		_readyPlayers.insert(session->_id);
+		if (_readyPlayers.contains(session->_id)) {
+			return;
+		}
+		// [Case 1] 이미 게임이 진행 중인 방에 들어온 경우 (Late Joiner)
+		if (_room_state == RoomState::PLAYING) {
+			MYLOG("[Room " << _room_id << "] Late Joiner Ready: Session " << session->_id);
 
+			SetupPlayerSpawn(session);
+
+			// *참고: NPC는 UpdateLogics의 AOI 로직에 의해 다음 루프에서 자동으로 스폰 패킷이 날아갑니다.
+			return;
+		}
+
+		_readyPlayers.insert(session->_id);
 		MYLOG("[Room " << _room_id << "] Session " << session->_id << " is READY for scene: " << _requestedSceneName);
 
 		// 방에 있는 모든 플레이어가 로딩을 마쳤는가?
@@ -1311,63 +1323,68 @@ namespace PIP::SERVER
 				_currentStage->on_enter(this);
 			}
 
-			common::Vec3 spawn_pos = _currentStage->get_spawn_pos();
-			float tx = spawn_pos.x;
-			float tz = spawn_pos.z;
-
-			// 2. 충분히 높은 곳에서 아래로 레이 발사 준비
-			JPH::RRayCast ray;
-			ray.mOrigin = JPH::Vec3(tx, 500.0f, tz); // 하늘 높은 곳에서 발사
-			ray.mDirection = JPH::Vec3(0, -1000.0f, 0); // 땅바닥으로 길게 발사
-
-			// 3. 지형 레이캐스트 실행
-			JPH::RayCastResult ray_result;
-			float finalY = 0.0f;
-
-			// 지형 레이어(NON_MOVING)만 검사하도록 쿼리
-			if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
-				float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
-				finalY = hitY + 2.0f; // 지면 위 2m 안착
-				MYLOG("[SPAWN] Ray Hit at Y: " << hitY << ", Spawn Y: " << finalY);
+			// 2. [핵심] 대기 중인 모든 플레이어를 루프 돌며 스폰 처리!!
+			for (auto& [id, player_session] : _players) {
+				SetupPlayerSpawn(player_session);
 			}
-			else {
-				// 레이가 빗나갈 경우 MapDataManager 데이터 기반으로 강제 보정
-				finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
-				MYERROR("[SPAWN] Ray Missed! Using data height: " << finalY);
-			}
-
-			// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
-			common::Vec3 spawnPos{ tx, finalY, tz };
-			session->_player->SetPosition(spawnPos);
-			session->_player->SetHP(100);
-
-			SendRoomInfoToNewPlayer(session);
-
-			// 3. 나의 스폰 패킷 생성 및 전송
-			packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
-			session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
-
-			// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
-			// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
-			Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
-
-			// 3. 게임 시작 알림 브로드캐스트
-			packet::SC_PACKET_ALL_PLAYERS_READY all_ready;
-			all_ready._type = packet::PacketType::S2C_P_ALL_PLAYERS_READY;
-			all_ready._size = sizeof(all_ready);
-			Broadcast(reinterpret_cast<const char*>(&all_ready), sizeof(all_ready));
 			
-			if (_players.size() == 1) {
-				MYLOG("First player entered Room " << _room_id << ". Waking up NPCs...");
+			if (_players.size() >= 1) {
+				MYLOG("First player or more player entered Room " << _room_id << ". Waking up NPCs...");
 				for (auto& [id, npc] : _npcs) {
 					auto scatteredTime = std::chrono::steady_clock::now();
 					npc->SetLastUpdateTime(scatteredTime);
 				}
 			}
-			_readyPlayers.clear(); // 다음 씬 전환을 위해 초기화
+			_readyPlayers.clear();
 		}
 	}
 
+	void  Room::SetupPlayerSpawn(const std::shared_ptr<SESSION>& session) {
+		common::Vec3 spawn_pos = _currentStage->get_spawn_pos();
+		float tx = spawn_pos.x;
+		float tz = spawn_pos.z;
+
+		// 2. 충분히 높은 곳에서 아래로 레이 발사 준비
+		JPH::RRayCast ray;
+		ray.mOrigin = JPH::Vec3(tx, 500.0f, tz); // 하늘 높은 곳에서 발사
+		ray.mDirection = JPH::Vec3(0, -1000.0f, 0); // 땅바닥으로 길게 발사
+
+		// 3. 지형 레이캐스트 실행
+		JPH::RayCastResult ray_result;
+		float finalY = 0.0f;
+
+		// 지형 레이어(NON_MOVING)만 검사하도록 쿼리
+		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
+			float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
+			finalY = hitY + 2.0f; // 지면 위 2m 안착
+			MYLOG("[SPAWN] Ray Hit at Y: " << hitY << ", Spawn Y: " << finalY);
+		}
+		else {
+			// 레이가 빗나갈 경우 MapDataManager 데이터 기반으로 강제 보정
+			finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
+			MYERROR("[SPAWN] Ray Missed! Using data height: " << finalY);
+		}
+
+		// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
+		common::Vec3 spawnPos{ tx, finalY, tz };
+		session->_player->SetPosition(spawnPos);
+		session->_player->SetHP(100);
+
+		SendRoomInfoToNewPlayer(session);
+
+		// 3. 나의 스폰 패킷 생성 및 전송
+		packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
+		session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
+
+		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
+		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
+		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
+#ifdef _DEBUG
+		// 5. 기타 환경 정보(디버그 드로 등) 전송
+		SendMapDebugDraw(session);
+#endif
+
+	}
 
 	GAME::Player* Room::GetPlayer(int64_t player_id)
 	{

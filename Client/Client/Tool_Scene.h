@@ -10,6 +10,7 @@ class GameObject;
 class Tool_Scene : public Scene
 {
 public:
+	using Scene::Scene;
 	Tool_Scene() = default;
 	virtual ~Tool_Scene() = default;
 	// --- Scene의 순수 가상 함수 오버라이드 ---
