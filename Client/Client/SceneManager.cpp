@@ -129,7 +129,43 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////skybox, terrain///////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////skybox///////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SceneManager::build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+    const std::string shared_folder_path, const std::string base_path, const std::string spcular_path, const std::string diffuse_path, const std::string brdf_path)
+{
+    if (_skyboxObject)
+    {
+        return;
+    }
+
+    ResourceManager::instance()->load_skybox(shared_folder_path + base_path);
+
+    ResourceManager::instance()->load_ibl_maps(
+        shared_folder_path + spcular_path, 
+        shared_folder_path + diffuse_path, 
+        shared_folder_path + brdf_path);
+
+    _skyboxObject = ObjectManager::instance()->create_game_object("skybox");
+    _skyboxObject->set_persistent(true);
+
+    auto rendercomp = _skyboxObject->add_component<SkyboxRenderComponent>();
+
+    auto skyboxmesh = std::make_shared<SkyboxMesh>(device, command_list);
+
+    rendercomp->set_mesh(skyboxmesh);
+    rendercomp->set_pso_name("skybox");
+
+
+    _skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+    _skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
+
+    ResourceManager::instance()->register_manual_mesh("SkyBox", skyboxmesh);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////terrain///////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -151,65 +187,6 @@ float SceneManager::get_terrain_size() const
 		return 512.0f; // 기본값
 
 	return 512.0f;
-}
-
-// 모든 terrain을 포함하는 가장 큰 범위 계산
-//float SceneManager::get_total_terrain_size() const
-//{
-//	if (_terrainObjects.empty())
-//		return 512.0f;
-//
-//	float min_x = FLT_MAX, max_x = -FLT_MAX;
-//	float min_z = FLT_MAX, max_z = -FLT_MAX;
-//
-//	for (const auto& [name, terrain_obj] : _terrainObjects)
-//	{
-//		auto render_comp = terrain_obj->get_component<TerrainRenderComponent>();
-//		if (!render_comp) continue;
-//
-//		auto terrain_mesh =
-//			std::dynamic_pointer_cast<TerrainLoader>(render_comp->mesh());
-//		if (!terrain_mesh) continue;
-//
-//		const auto& info = terrain_mesh->get_terrain_info();
-//		min_x = std::min(min_x, info.bounds.x);
-//		max_x = std::max(max_x, info.bounds.y);
-//		min_z = std::min(min_z, info.bounds.z);
-//		max_z = std::max(max_z, info.bounds.w);
-//	}
-//
-//	float width = max_x - min_x;
-//	float depth = max_z - min_z;
-//	return std::max(width, depth);
-//}
-
-
-void SceneManager::build_skybox_if_needed(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
-{
-	if (_skyboxObject) 
-	{
-		return;
-	}
-
-	ResourceManager::instance()->load_skybox("Resource\\SkyBox\\night_field\\night_field_skybox.dds");
-
-	ResourceManager::instance()->load_ibl_maps();
-	
-	_skyboxObject = ObjectManager::instance()->create_game_object("skybox");
-	_skyboxObject->set_persistent(true);
-
-	auto rendercomp = _skyboxObject->add_component<SkyboxRenderComponent>();
-
-	auto skyboxmesh = std::make_shared<SkyboxMesh>(device, command_list);
-
-	rendercomp->set_mesh(skyboxmesh);
-	rendercomp->set_pso_name("skybox");
-
-
-	_skyboxObject->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
-	_skyboxObject->transform()->set_local_position({ 0.0f, 0.0f, 0.0f });
-
-	ResourceManager::instance()->register_manual_mesh("SkyBox", skyboxmesh);
 }
 
 void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)

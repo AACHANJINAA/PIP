@@ -503,6 +503,61 @@ void NetworkManager::HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& str
 		MessageBox(g_hwnd, L"Failed to enter room.", L"Room Entry Error", MB_OK);
 	}
 }
+void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_SCENE_AWAKE spawn_npc_count; // npc 카운트 읽기
+	stream >> spawn_npc_count; // room_count만 읽습니다.
+	int64_t npc_count = spawn_npc_count._npc_count;
+	int64_t npc_start_id = spawn_npc_count._npc_start_id;
+	int64_t boss_count = spawn_npc_count._boss_count;
+	int64_t boss_start_id = spawn_npc_count._boss_start_id;
+	
+	// npc pool spawn
+	for (int64_t i = 0; i < npc_count; ++i)
+	{
+		int64_t npc_id = npc_start_id + i;
+		auto NPC = ObjectManager::instance()->create_game_object("npc_pool" + std::to_string(npc_id));
+		NPC->set_layer("Enemy");
+
+		// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
+		NPC->add_component<MonsterHPComponent>();
+		NPC->add_component<AnimationComponent>();
+		NPC->add_component<RenderComponent>();
+
+
+		NPCScript* NPC_logic = nullptr;
+
+		NPC_logic = NPC->add_component<NPCScript>().get();
+
+		auto rs = GameFramework::instance()->get_replication_system();
+		if (rs) rs->register_entity(npc_id, NPC_logic);
+
+		ObjectManager::instance()->register_npc(npc_id, NPC);
+	}
+
+	// boss pool spawn
+	for (int64_t i = 0; i < boss_count; ++i)
+	{
+		int64_t boss_id = boss_start_id + i;
+		auto Boss = ObjectManager::instance()->create_game_object("boss_pool" + std::to_string(boss_id));
+		Boss->set_layer("Enemy");
+
+		// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
+		Boss->add_component<MonsterHPComponent>();
+		Boss->add_component<AnimationComponent>();
+		Boss->add_component<RenderComponent>();
+
+
+		NPCScript* NPC_logic = nullptr;
+
+		NPC_logic = Boss->add_component<TainerScript>().get();
+
+		auto rs = GameFramework::instance()->get_replication_system();
+		if (rs) rs->register_entity(boss_id, NPC_logic);
+
+		ObjectManager::instance()->register_npc(boss_id, Boss);
+	}
+}
 void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_NPC_SPAWN npc_spawn_packet;
@@ -515,8 +570,9 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	auto existingNPC = ObjectManager::instance()->find_npc(npc_spawn_packet._npc_id);
 	if (existingNPC)
 	{
-		// 존재하면 위치만 강제 동기화
+		// 존재하면 위치만 강제 동기화 및 화면에 보이게 하기
 		auto script = existingNPC->get_component<NPCScript>();
+		existingNPC->get_component<RenderComponent>()->set_enabled(true);
 		if (script) {
 			script->initialize_from_server(npc_spawn_packet);
 		}
@@ -657,6 +713,9 @@ void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream
 	common::packet::SC_PACKET_NPC_DESPAWN packet;
 	stream >> packet;
 
+	// DW수정 : 오브젝트 풀링 때문에 무시 테스트
+	return;
+
 	// NPC 찾아서 삭제
 	auto npc = ObjectManager::instance()->find_npc(packet._npc_id);
 	if (npc)
@@ -755,6 +814,9 @@ bool NetworkManager::init_network()
 	RegisterHandler(common::packet::PacketType::S2C_P_LOGIN_ACK,
 		std::bind(&NetworkManager::HANDLE_S2C_LOGIN_ACK, this, std::placeholders::_1));
 
+	// NPC 카운트 패킷 핸들러 등록
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_COUNT,
+		std::bind(&NetworkManager::HANDLE_S2C_NPC_COUNT, this, std::placeholders::_1));
 	// NPC 스폰 패킷 핸들러 등록
 	RegisterHandler(common::packet::PacketType::S2C_P_NPC_SPAWN,
 		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_NPC, this, std::placeholders::_1));

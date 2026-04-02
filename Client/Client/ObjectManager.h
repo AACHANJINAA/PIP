@@ -38,6 +38,8 @@ public:
 
 	void register_npc(int64_t id, std::shared_ptr<GameObject> npc);
 	void unregister_npc(int64_t id);
+
+    void spawn_monster(size_t how_many_you_want_npc_count);
 private:
     
     std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : 트리 구조로 바꿔야할 가능성 있음
