@@ -714,14 +714,15 @@ void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream
 	stream >> packet;
 
 	// DW수정 : 오브젝트 풀링 때문에 무시 테스트
-	return;
+	//return;
 
 	// NPC 찾아서 삭제
 	auto npc = ObjectManager::instance()->find_npc(packet._npc_id);
 	if (npc)
 	{
-		ObjectManager::instance()->unregister_npc(packet._npc_id);
-		npc->destroy();
+		npc->get_component<RenderComponent>()->set_enabled(false);
+		/*ObjectManager::instance()->unregister_npc(packet._npc_id);
+		npc->destroy();*/
 		// CLOG("[S->C] NPC Despawned (AOI): " << packet._npc_id);
 	}
 }
