@@ -25,6 +25,9 @@ public:
 	void on_collision_stay(const std::shared_ptr<GameObject>& other);
 	void on_collision_exit(const std::shared_ptr<GameObject>& other);
 
+	void set_enable(bool enable) { _enable = enable; }
+	bool is_enable() const { return _enable; }
+	
 	// [변경] 레이어 타입을 uint32_t로 변경
 	uint32_t layer_mask() const { return _layerMask; }
 
@@ -127,7 +130,7 @@ private:
 	std::vector<std::shared_ptr<Component>> _components;
 	std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
 	uint32_t                                _layerMask = 0;
-
+	bool _enable = true;
 	mutable bool _isIterating = false; // [추가] 순회 중 상태를 나타내는 플래그
 };
 //public:

@@ -45,7 +45,7 @@ namespace PIP::SERVER
 	{
 		for (int i = 0; i < 100; ++i)
 		{
-			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
+			int64_t npcId = _next_npc_id + (_room_id * 1000LL) + i;
 
 			// 1. 무작위 XZ 위치 결정 (Y는 충분히 높은 곳에서 시작)
 			common::Vec3 spawnPos = { static_cast<float>(rand() % 200 - 100), 500.0f, static_cast<float>(rand() % 200 - 100) };
@@ -602,6 +602,9 @@ namespace PIP::SERVER
 		for (auto& [pid, session] : _players) {
 			if (!session || !session->_player) continue;
 
+			// [추가] 아직 준비가 되지 않은(로딩 중인) 플레이어에게는 AOI 패킷을 보내지 않음
+			if (!_readyPlayers.contains(pid)) continue;
+
 			GAME::Player* player = session->_player.get();
 			common::Vec3 myPos = player->GetPosition();
 
@@ -676,6 +679,9 @@ namespace PIP::SERVER
 
 				// 보스는 모든 플레이어에게 보여야 함
 				for (auto& [pid, session] : _players) {
+					// [추가] 로딩 중인 유저에게 미리 시야를 열어주지 마세요!
+					if (!_readyPlayers.contains(pid)) continue;
+
 					if (!session->_viewedNpcs.contains(id)) {
 						session->_viewedNpcs.insert(id);
 						SendNpcSpawnToPlayer(session, npc.get());
@@ -1301,6 +1307,7 @@ namespace PIP::SERVER
 		if (_readyPlayers.contains(session->_id)) {
 			return;
 		}
+		_readyPlayers.insert(session->_id);
 		// [Case 1] 이미 게임이 진행 중인 방에 들어온 경우 (Late Joiner)
 		if (_room_state == RoomState::PLAYING) {
 			MYLOG("[Room " << _room_id << "] Late Joiner Ready: Session " << session->_id);
@@ -1311,7 +1318,6 @@ namespace PIP::SERVER
 			return;
 		}
 
-		_readyPlayers.insert(session->_id);
 		MYLOG("[Room " << _room_id << "] Session " << session->_id << " is READY for scene: " << _requestedSceneName);
 
 		// 방에 있는 모든 플레이어가 로딩을 마쳤는가?
