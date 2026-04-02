@@ -176,6 +176,7 @@
     <ClCompile Include="HitboxComponent.cpp" />
     <ClCompile Include="LuaManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainStage.cpp" />
     <ClCompile Include="MapDataManager.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="NPCControllerComponent.cpp" />
@@ -194,6 +195,7 @@
     <ClCompile Include="Profiling.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="StageManager.cpp" />
     <ClCompile Include="Tainer.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
   </ItemGroup>
@@ -218,6 +220,7 @@
     <ClInclude Include="HitboxComponent.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
+    <ClInclude Include="MainStage.h" />
     <ClInclude Include="MapDataManager.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="NPCControllerComponent.h" />
@@ -231,6 +234,8 @@
     <ClInclude Include="Profiling.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />
+    <ClInclude Include="Stage.h" />
+    <ClInclude Include="StageManager.h" />
     <ClInclude Include="Tainer.h" />
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>

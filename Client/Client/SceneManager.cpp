@@ -35,7 +35,7 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	register_scene<Boss_Scene>("BossScene");
 	//register_scene<Lobby_Scene>("LobbyScene");
 
-	change_scene("MainScene");
+	//change_scene("MainScene");
 }
 
 void SceneManager::release()
@@ -52,11 +52,20 @@ void SceneManager::change_scene(const std::string& scene_name)
 
 void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D12CommandAllocator* command_allocator , ID3D12GraphicsCommandList* command_list)
 {
+    
 	if (_requestedSceneName.empty())
 	{
 		return;
 	}
 
+    // [근본 해결 가드] 현재 이미 그 씬에 있다면 무시한다!
+    if (_currentScene && _currentScene->scene_name() == _requestedSceneName) {
+        CLOG("Already in scene " << scene_name << ". Ignoring redundant request.");
+        _requestedSceneName = "";
+        // (선택 사항) 이미 로딩된 상태라면 여기서 바로 서버에 READY를 다시 보내줄 수도 있지만,
+        // 서버가 중복 명령을 내리지 않게 하는 것이 더 깔끔합니다.
+        return;
+    }
 
 	std::string scene_to_load = _requestedSceneName;
 	_requestedSceneName.clear();
@@ -88,6 +97,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
         return;
     }
     _currentScene = it->second();
+    _currentScene->set_scene_name(scene_to_load);
     if (!_currentScene)
     {
         CERROR("scene creation failed");
@@ -107,12 +117,14 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	game_framework->WaitForGpuComplete();
     //TODO: 씬 전환 후 서버에게 패킷 전송 후 방입장 요청
 
-    // 최초 로그인 패킷 전송 (플레이어 이름 사용)
-    NetworkManager::instance()->SendLoginPacket();
+    // 2. [추가] 씬 전환 및 리소스 로딩이 완벽히 끝났다면 서버에 보고!
+	common::packet::CS_PACKET_PLAYER_READY ready_packet;
+    ready_packet._type = common::packet::PacketType::C2S_P_PLAYER_READY;
+    ready_packet._size = sizeof(ready_packet);
 
-    int room_to_enter = 0; // 자동으로 입장할 방 ID (예시로 2번 방)
-    CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
-    NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
+    // NetworkManager를 통해 서버로 전송
+    NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&ready_packet), sizeof(ready_packet));
+    CLOG("Scene Loading Complete! Sent READY to Server. Scene: " << _requestedSceneName);
 
 }
 

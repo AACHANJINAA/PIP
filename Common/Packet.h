@@ -85,6 +85,9 @@ namespace common::packet
 		S2C_P_ENTER_ROOM_ACK = 202,
 		C2S_P_ROOM_LIST = 203,
 		S2C_P_ROOM_LIST_ACK = 204,
+		C2S_P_PLAYER_READY = 205,		// [신규] 플레이어 준비 완료 패킷 (게임 시작 트리거용)
+		S2C_P_ALL_PLAYERS_READY = 206,	// [신규] 모든 플레이어 준비 완료 패킷 (게임 시작 트리거용)
+		S2C_P_CHANGE_SCENE = 207,		// [신규] 씬 변경 패킷 (어떤 씬 로딩 할지 보냄)
 		S2C_P_NPC_COUNT = 205,
 
 		//------------------------------------------ 채팅 관련 패킷 ------------------------------------------ //
@@ -92,11 +95,11 @@ namespace common::packet
 		S2C_P_CHAT_IN_ROOM = 302, // 서버 -> 클라: 방 내부 채팅 메시지 전달
 
 		//------------------------------------------ NPC 관련 패킷 ------------------------------------------ //
-		S2C_NPC_SPAWN = 501,
-		S2C_NPC_MOVE = 502,
-		S2C_NPC_DESPAWN = 503,
-		S2C_NPC_UPDATE_HP = 504,
-		S2C_NPC_MOVE_BATCH = 505,
+		S2C_P_NPC_SPAWN = 501,
+		S2C_P_NPC_MOVE = 502,
+		S2C_P_NPC_DESPAWN = 503,
+		S2C_P_NPC_UPDATE_HP = 504,
+		S2C_P_NPC_MOVE_BATCH = 505,
 
 		//------------------------------------------- 디버깅용 패킷 --------------------------------------- //
 		S2C_P_DEBUG_DRAW = 601,
@@ -208,7 +211,11 @@ namespace common::packet
 		uint16_t _message_length;
 	};
 	
-
+	struct CS_PACKET_PLAYER_READY : PacketHeader
+	{
+		// 플레이어가 준비 완료 상태임을 알리는 패킷 (추가 데이터 필요 없음)
+		// 확인용으로 뒤에 바뀐 씬 이름 붙을수 있음
+	};
 
 	// ------------------------------------------ server to client ------------------------------------------ // 
 	// 서버 -> 클라
@@ -288,12 +295,18 @@ namespace common::packet
 		uint8_t _hit_count;
 		// 이 헤더 뒤에 _hit_count 만큼의 PlayerHitInfo 구조체가 이어집니다.
 	};
-
-	
 	// 접속 종료 패킷
 	struct SC_PACKET_LEAVE : PacketHeader
 	{
 		int64_t _id; // long long
+	};
+	struct SC_PACKET_CHANGE_SCENE : PacketHeader
+	{
+		// 씬 변경 패킷 뒤에 이름이 들어옴
+	};
+	struct SC_PACKET_ALL_PLAYERS_READY : PacketHeader
+	{
+		// 모든 플레이어가 준비 완료 상태임을 알리는 패킷 (추가 데이터 필요 없음)
 	};
 
 	// ------------------------------------------- NPC 관련 패킷 ------------------------------------------ //

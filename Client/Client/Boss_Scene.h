@@ -4,7 +4,8 @@
 class Boss_Scene : public Scene
 {
 public:
-    Boss_Scene() = default;
+    using Scene::Scene;
+	Boss_Scene() = default;
     virtual ~Boss_Scene() = default;
 
     // --- Scene의 순수 가상 함수 오버라이드 ---

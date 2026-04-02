@@ -11,11 +11,11 @@ class ThreadSafeStack {
 	std::mutex _mutex;
 public:
 	void push(T val) {
-		std::lock_guard<std::mutex> lock(_mutex);
+		std::lock_guard lock(_mutex);
 		_stack.push(val);
 	}
 	bool try_pop(T& val) {
-		std::lock_guard<std::mutex> lock(_mutex);
+		std::lock_guard lock(_mutex);
 		if (_stack.empty()) return false;
 		val = _stack.top();
 		_stack.pop();
@@ -27,7 +27,7 @@ namespace PIP::SERVER
 {
 	class Server;
 	class SESSION;
-	enum IO_OP : std::uint8_t
+	enum class IO_OP : std::uint8_t
 	{
 		IO_RECV = 0,
 		IO_SEND = 1,
@@ -39,27 +39,32 @@ namespace PIP::SERVER
 	{
 	public:
 		static constexpr size_t BUFFER_SIZE = 4096;
-
+		EXP_OVER()
+		{
+			ZeroMemory(&_over, sizeof(_over));
+			_wsabuf[0].buf = reinterpret_cast<CHAR*>(_buffer.data());
+			_wsabuf[0].len = static_cast<ULONG>(_buffer.size());
+		}
 		EXP_OVER(IO_OP io_op, const std::shared_ptr<SESSION>& session = nullptr)
-					:_io_op(io_op), _accept_socket(INVALID_SOCKET), _session_ref(session)
+					:_io_op(io_op), _session_ref(session)
 		{
 			ZeroMemory(&_over, sizeof(_over));
 
 			_wsabuf[0].buf = reinterpret_cast<CHAR*>(_buffer.data());
 			_wsabuf[0].len = static_cast<ULONG>(_buffer.size());
 		}
+		~EXP_OVER() = default;
 
 		WSAOVERLAPPED			_over;
 		IO_OP					_io_op;
-		SOCKET					_accept_socket;
-		std::array<UCHAR, BUFFER_SIZE>	_buffer;
+		std::array<char, BUFFER_SIZE>	_buffer;
 		std::array<WSABUF, 1>	_wsabuf;
 
 		// [핵심] I/O가 진행되는 동안 세션이 파괴되거나 풀로 돌아가지 않게 보장
 		std::shared_ptr<SESSION>     _session_ref;
 	};
 
-	extern EXP_OVER g_accept_over;
+	
 
 	
 	enum class SESSION_STATE : char
@@ -78,9 +83,8 @@ namespace PIP::SERVER
 		int									_logic_thread_idx; // 담당 로직 스레드의 인덱스
 		int									_room_id = -1;
 
-		//EXP_OVER							_recv_over{ IO_RECV };
-
-		std::vector<char>					_recv_buffer; // 수신 버퍼: 클라이언트로부터 받은 데이터를 임시 저장
+		EXP_OVER							_recv_over{ IO_OP::IO_RECV };
+		int									_prev_size = 0;
 
 		std::atomic<SESSION_STATE>			_state;
 		std::shared_ptr<GAME::Player>		_player;
@@ -93,7 +97,7 @@ namespace PIP::SERVER
 
 		void do_recv();
 		void do_send(const char* data, size_t size);
-		void on_recv(EXP_OVER* eo, size_t len, Server* server_ptr);
+		void on_recv(size_t len, Server* server_ptr);
 
 		// 세션 재사용을 위한 초기화 함수
 		void init(SOCKET s, int64_t id, int logic_idx);
@@ -144,11 +148,13 @@ namespace PIP::SERVER
 		friend class Singleton<Server>;
 	private:
 		Server();
-		~Server();
+		~Server() override;
 	public:
 
+		void initialize() override;
 		void Start(int io_thread_count, int logic_thread_count);
 		void Stop();
+
 
 		// Room에서 타이머 잡을 추가할 수 있도록 헬퍼 함수 추가
 		void AddTimerJob(int worker_idx, std::chrono::milliseconds delay, std::function<void()> task);
@@ -170,16 +176,15 @@ namespace PIP::SERVER
 
 	private:
 		// 서버 내부 동작 함수들 (클래스 외부에서 호출될 필요 없음)
-		void do_accept();
+		void do_accept(SOCKET& client_socket, EXP_OVER& accept_over);
 		void IO_worker();
 		void Logic_worker(int thread_idx);
-		void register_new_session(SOCKET client_socket);
+		void register_new_session(const SOCKET& client_socket);
 
 	private:
 		HANDLE						_iocp;
 		static std::atomic<int64_t>	_new_id;
 		SOCKET						_listen_socket;
-		EXP_OVER					_accept_over;
 
 		std::vector<std::thread>	_io_threads;
 		std::vector<LogicWorker>	_logic_workers;
@@ -190,7 +195,7 @@ namespace PIP::SERVER
 		// [추가] 서버가 관리하는 룸 목록
 		std::vector<std::unique_ptr<Room>> _rooms;
 
-		concurrency::concurrent_unordered_map<int64_t, std::shared_ptr<SESSION>> _sessions; // 임시 세션 저장소
+		concurrency::concurrent_unordered_map<int64_t, std::shared_ptr<SESSION>> _sessions; // 임시 세션 저장소 (참조 카운터용)
 		ThreadSafeStack<SESSION*> _session_pool;
 
 		static std::atomic<int64_t> _actor_id_gen;

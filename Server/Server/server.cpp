@@ -5,6 +5,8 @@
 #include "Player.h"
 #include "MapDataManager.h"
 #include "PacketManager.h"
+#include "PhysicsManager.h"
+#include "StageManager.h"
 
 namespace PIP::SERVER
 {
@@ -48,9 +50,9 @@ namespace PIP::SERVER
 			return "C2S_P_CHAT_IN_ROOM";
 		case PacketType::S2C_P_CHAT_IN_ROOM:
 			return "S2C_P_CHAT_IN_ROOM";
-		case PacketType::S2C_NPC_SPAWN:
+		case PacketType::S2C_P_NPC_SPAWN:
 			return "S2C_NPC_SPAWN";
-		case PacketType::S2C_NPC_MOVE:
+		case PacketType::S2C_P_NPC_MOVE:
 			return "S2C_NPC_MOVE";
 		default:
 			return "Unknown";
@@ -76,17 +78,17 @@ namespace PIP::SERVER
 	}
 	void SESSION::do_recv()
 	{
-		// [수정] 멤버 변수 _recv_over 대신 동적으로 생성하여 shared_ptr 주입
-		// 이렇게 해야 OS가 Recv를 완료할 때까지 세션 객체가 살아있음을 보장함
-		EXP_OVER* eo = new EXP_OVER(IO_RECV, shared_from_this());
-
 		DWORD recv_flag = 0;
 		// eo->_buffer를 직접 사용하도록 수정
-		auto ret = WSARecv(_c_socket, eo->_wsabuf.data(), 1, NULL, &recv_flag, &eo->_over, NULL);
+		ZeroMemory(&_recv_over._over, sizeof(_recv_over._over));
+		// 버퍼의 남은 지점(_prev_size)부터 받도록 설정
+		_recv_over._wsabuf[0].buf = reinterpret_cast<CHAR*>(_recv_over._buffer.data() + _prev_size);
+		_recv_over._wsabuf[0].len = static_cast<ULONG>(_recv_over._buffer.size() - _prev_size);
+		auto ret = WSARecv(_c_socket, _recv_over._wsabuf.data(), 1, NULL,
+			&recv_flag, &_recv_over._over, NULL);
 
 		if (ret == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
-			delete eo; // 즉시 실패 시 참조 해제
-			// Disconnect 처리
+			disconnect();
 		}
 	}
 
@@ -95,7 +97,7 @@ namespace PIP::SERVER
 		if (size > EXP_OVER::BUFFER_SIZE) return;
 
 		// [수정] shared_from_this()를 넘겨서 Send 완료 전까지 세션 보호
-		EXP_OVER* o = new EXP_OVER(IO_SEND, shared_from_this());
+		EXP_OVER* o = new EXP_OVER(IO_OP::IO_SEND, shared_from_this());
 		memcpy(o->_buffer.data(), data, size);
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 
@@ -106,26 +108,28 @@ namespace PIP::SERVER
 			}
 		}
 	}
-	void SESSION::on_recv(EXP_OVER* eo, size_t len, Server* server_ptr)
+	void SESSION::on_recv(size_t len, Server* server_ptr)
 	{
-		_recv_buffer.insert(_recv_buffer.end(), eo->_buffer.data(), eo->_buffer.data() + len);
-		size_t processed_bytes = 0;
+		_prev_size += static_cast<int>(len);
+		auto* buffer_start = _recv_over._buffer.data();
+		int processed_bytes = 0;
 		while (true)
 		{
-			if (_recv_buffer.size() - processed_bytes < sizeof(packet::PacketHeader)) break;
+			int available = _prev_size - processed_bytes;
+			if (available < sizeof(packet::PacketHeader)) break;
 
-			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_buffer[processed_bytes]);
+			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_over._buffer[processed_bytes]);
 			constexpr int MAX_PACKET_SIZE = 4096;
-			if (header->_size < sizeof(packet::PacketHeader) || header->_size > MAX_PACKET_SIZE)
-			{
-				_recv_buffer.clear();
-				break;
+			if (header->_size < sizeof(packet::PacketHeader) || header->_size > 4096) {
+				disconnect(); // 패킷 헤더 오류 시 연결 끊기
+				return;
 			}
-			if (_recv_buffer.size() - processed_bytes < header->_size) break;
+			if ((uint16_t)available < header->_size) break;
+			
 
 			auto task =
 				[session = shared_from_this(),
-				stream = packet::PacketStream(_recv_buffer.data() + processed_bytes, header->_size)]
+				stream = packet::PacketStream(_recv_over._buffer.data() + processed_bytes, header->_size)]
 			() mutable
 			{
 				packet::PacketManager::Instance()->Dispatch(session, stream);
@@ -136,9 +140,10 @@ namespace PIP::SERVER
 			processed_bytes += header->_size;
 		}
 
-		if (processed_bytes > 0)
-		{
-			_recv_buffer.erase(_recv_buffer.begin(), _recv_buffer.begin() + processed_bytes);
+		// 남은 데이터 앞으로 밀기
+		_prev_size -= processed_bytes;
+		if (_prev_size > 0 && processed_bytes > 0) {
+			memmove(buffer_start, buffer_start + processed_bytes, _prev_size);
 		}
 	}
 
@@ -148,7 +153,10 @@ namespace PIP::SERVER
 		_logic_thread_idx = logic_idx;
 		_room_id = -1;
 		_state = SESSION_STATE::ST_LOBBY;
-		_recv_buffer.clear();
+		_recv_over._buffer = {};
+		ZeroMemory(&_recv_over._over, sizeof(_recv_over._over));
+		_recv_over._wsabuf[0].buf = reinterpret_cast<CHAR*>(_recv_over._buffer.data());
+		_recv_over._wsabuf[0].len = static_cast<ULONG>(_recv_over._buffer.size());
 		_viewedNpcs.clear();
 		// _player 객체도 재사용하거나 새로 생성
 		if (!_player) _player = std::make_shared<GAME::Player>(id);
@@ -157,13 +165,17 @@ namespace PIP::SERVER
 
 	void SESSION::disconnect()
 	{
-		SESSION_STATE expected = SESSION_STATE::ST_LOBBY;
-		// 중복 Close 방지
-		if (_state.compare_exchange_strong(expected, SESSION_STATE::ST_CLOSE) 
-			|| (expected = SESSION_STATE::ST_INGAME, _state.compare_exchange_strong(expected, SESSION_STATE::ST_CLOSE)))
+		// 어떤 상태였든 간에 무조건 ST_CLOSE로 바꾸고, "바꾸기 전의 상태"를 가져옵니다.
+		SESSION_STATE old_state = _state.exchange(SESSION_STATE::ST_CLOSE);
+
+		// 이전 상태가 이미 CLOSE였거나 FREE(풀에 있는 상태)였다면 이미 누군가 닫은 것입니다.
+		if (old_state == SESSION_STATE::ST_CLOSE || old_state == SESSION_STATE::ST_FREE)
 		{
-			closesocket(_c_socket);
+			return;
 		}
+
+		// 그 외의 상태(LOBBY, INGAME 등)였다면 내가 처음으로 닫는 것이므로 소켓을 닫습니다.
+		closesocket(_c_socket);
 	}
 
 	void SESSION::clear()
@@ -171,7 +183,7 @@ namespace PIP::SERVER
 		_state = SESSION_STATE::ST_FREE;
 		_id = -1;
 		_room_id = -1;
-		_recv_buffer.clear();
+		_recv_over._buffer = {};
 		_viewedNpcs.clear();
 		// 소켓은 이미 disconnect에서 닫혔을 것임
 	}
@@ -184,7 +196,7 @@ namespace PIP::SERVER
 	/// <summary>
 	/// Server 생성자: IOCP를 생성하고 초기화합니다.
 	/// </summary>
-	Server::Server() : _accept_over{ IO_ACCEPT }, _is_running{ false }, _logic_thread_balancer{ 0 }, _iocp{ nullptr }
+	Server::Server() : _is_running{ false }, _logic_thread_balancer{ 0 }, _iocp{ nullptr }
 	{
 		_iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
 	}
@@ -192,6 +204,23 @@ namespace PIP::SERVER
 	{
 		Stop();
 		CloseHandle(_iocp);
+	}
+	void Server::initialize()
+	{
+		PIP::PhysicsManager::Instance()->initialize();
+		MYLOG("PhysicsManager Initialized." << std::endl);
+		PIP::packet::PacketManager::Instance()->initialize();
+		MYLOG("PacketManager Initialized." << std::endl);
+		SERVER::StageManager::Instance()->initialize();
+		MYLOG("StageManager Initialized." << std::endl);
+
+		MYLOG("[SERVER] Loading Map...");
+		auto mdm = MapDataManager::Instance();
+		mdm->LoadMapData("../../Common/MapData/ExportedServerData.json");
+		//mdm->LoadHeightMapData("../../Common/MapData/Heightmap.json");
+		mdm->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
+		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04" });
+		MYLOG("[SERVER] Successful Loaded the Map");
 	}
 	void Server::Start(int io_thread_count, int logic_thread_count)
 	{
@@ -205,54 +234,6 @@ namespace PIP::SERVER
 		{
 			MYERROR("WSAStartup 실패\n");
 		}
-
-		PIP::packet::PacketManager::Instance()->Initialize();
-		MYLOG("PacketManager Initialized." << std::endl);
-
-		// 프로세스 우선순위를 높임
-		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-
-		// P-Core만 사용하도록 프로세스 친화도 설정
-		PinThreadToPerformanceCores();
-
-		_is_running = true;
-
-		//MYLOG("[SERVER] Loading Map...");
-		MapDataManager::Instance()->LoadMapData("../../Common/MapData/ExportedServerData.json");
-		//MapDataManager::Instance()->LoadHeightMapData("../../Common/MapData/Heightmap.json");
-		MapDataManager::Instance()->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
-		MYLOG("[SERVER] Successful Loaded the Map");
-		_logic_workers.resize(logic_thread_count);
-		for (int i = 0; i < 100; ++i)
-		{
-			int logic_idx = i % logic_thread_count;
-			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
-			_rooms.back()->Initialize();
-		}
-		MYLOG("[SERVER] Room count: " << _rooms.size());
-
-		// 로직 워커 생성
-		for (int i = 0; i < logic_thread_count; ++i)
-		{
-			// 이미 있는 워커 객체의 thread 멤버에 새 스레드를 대입
-			_logic_workers[i].thread = std::thread([this, i]() {
-				PinThreadToPerformanceCores();
-				Logic_worker(i);
-				});
-		}
-		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_thread_count << ", Room count: " << _rooms.size());
-
-		// I/O 스레드 생성
-		for (int i = 0; i < io_thread_count; ++i)
-		{
-			_io_threads.emplace_back([this]() {
-				// P-Core만 사용하도록 CPU 친화도 설정
-				PinThreadToPerformanceCores();
-				IO_worker();
-				});
-		}
-		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
-		
 
 		// 리슨 소켓 설정 및 Accept 준비
 		_listen_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -272,11 +253,49 @@ namespace PIP::SERVER
 		}
 		listen(_listen_socket, SOMAXCONN);
 		MYLOG("Server listening on port " << common::packet::SERVER_PORT << "...");
-
-		do_accept();
-
-		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
 		
+		// 프로세스 우선순위를 높임
+		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
+		// P-Core만 사용하도록 프로세스 친화도 설정
+		PinThreadToPerformanceCores();
+
+		// I/O 스레드 생성
+		_is_running = true;
+		for (int i = 0; i < io_thread_count; ++i)
+		{
+			_io_threads.emplace_back([this]() {
+				// P-Core만 사용하도록 CPU 친화도 설정
+				PinThreadToPerformanceCores();
+				IO_worker();
+				});
+		}
+
+
+		_logic_workers.resize(logic_thread_count);
+		int room_size = 1;
+		_rooms.reserve(room_size);
+		for (int i = 0; i < room_size; ++i)
+		{
+			int logic_idx = i % logic_thread_count;
+			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
+			_rooms.back()->Initialize();
+		}
+		MYLOG("[SERVER] Room count: " << _rooms.size());
+
+		// 로직 워커 생성
+		for (int i = 0; i < logic_thread_count; ++i)
+		{
+			// 이미 있는 워커 객체의 thread 멤버에 새 스레드를 대입
+			_logic_workers[i].thread = std::thread([this, i]() {
+				PinThreadToPerformanceCores();
+				Logic_worker(i);
+				});
+		}
+		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_thread_count << ", Room count: " << _rooms.size());
+
+		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
+		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
 	}
 	void Server::Stop()
 	{
@@ -317,6 +336,8 @@ namespace PIP::SERVER
 
 		MYLOG("Server stopped.");
 	}
+
+	
 
 	void Server::AddTimerJob(int worker_idx, std::chrono::milliseconds delay, std::function<void()> task)
 	{
@@ -363,12 +384,7 @@ namespace PIP::SERVER
 	}
 	void Server::RemoveSession(int64_t session_id)
 	{
-		// TODO: [성능 최적화] 잦은 메모리 할당/해제를 피하기 위해
-		//		 세션 객체를 삭제(erase)하는 대신, 상태를 초기화하고
-		//		 별도의 free_list (객체 풀)에 넣어 재사용하는 방식을 고려 필요.
-		//		 (Object Pooling 패턴)
-		// [수정] 맵에서 완전히 제거
-		_sessions.unsafe_erase(session_id);
+		_sessions[session_id] = nullptr; // 먼저 참조를 끊어서 다른 스레드가 접근하지 못하게 함
 	}
 
 	std::shared_ptr<SESSION> Server::AcquireSession(SOCKET s, int64_t id, int logic_idx)
@@ -392,21 +408,21 @@ namespace PIP::SERVER
 		_session_pool.push(session);
 	}
 
-	/// <summary>
-	/// TODO: session 재사용이 제대로 되는지 검증 필요!!!!!!!!!!!!!!!!
-	/// </summary>
-
-	void Server::do_accept()
+	void Server::do_accept(SOCKET& client_socket, EXP_OVER& accept_over)
 	{
-		SOCKET c_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
-		_accept_over._accept_socket = c_socket; // EXP_OVER 구조체에 클라이언트 소켓 저장
-
-		AcceptEx(_listen_socket, c_socket, _accept_over._buffer.data(), 0,
-				 sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, NULL, &_accept_over._over);
+		client_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
+		ZeroMemory(accept_over._buffer.data(), accept_over._buffer.size());
+		ZeroMemory(&accept_over._over, sizeof(accept_over._over));
+		AcceptEx(_listen_socket, client_socket, accept_over._buffer.data(), 0,
+				 sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, NULL, &accept_over._over);
 	}
 	void Server::IO_worker()
 	{
 		MYLOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
+		SOCKET client_socket = INVALID_SOCKET;
+		EXP_OVER accept_over{IO_OP::IO_ACCEPT };
+		do_accept(client_socket, accept_over);
+
 		while (_is_running)
 		{
 			DWORD io_size{};
@@ -426,7 +442,7 @@ namespace PIP::SERVER
 			SESSION* session_ptr = reinterpret_cast<SESSION*>(key);
 
 			// 클라이언트 연결 종료 또는 에러 처리
-			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
+			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_OP::IO_RECV || eo->_io_op == IO_OP::IO_SEND)))
 			{
 				if (session_ptr)
 				{
@@ -453,11 +469,10 @@ namespace PIP::SERVER
 						else {
 							RemoveSession(session->_id);
 						}
-						closesocket(session->_c_socket);
 					}
 				}
 				// [해결] eo가 서버 멤버 변수인 _accept_over인 경우(IO_ACCEPT) delete 하지 않음
-				if (eo && eo->_io_op != IO_ACCEPT) {
+				if (eo && eo->_io_op == IO_OP::IO_SEND) {
 					delete eo;
 				}
 				continue;
@@ -465,26 +480,22 @@ namespace PIP::SERVER
 
 			switch (eo->_io_op)
 			{
-			case IO_ACCEPT:
-				// 새 클라이언트 접속 처리
-				register_new_session(eo->_accept_socket);
-				do_accept(); // 다음 클라이언트를 받기 위해 다시 Accept 요청
+			case IO_OP::IO_ACCEPT:
+				// 새 클라이언트 연결 처리
+				register_new_session(client_socket);
+				do_accept(client_socket, accept_over); // 다음 클라이언트를 받기 위해 다시 Accept 요청
 				break;
 						
-			case IO_SEND:
+			case IO_OP::IO_SEND:
 				// Send 완료 처리
 				delete eo;
 				break;
 			
-			case IO_RECV:
+			case IO_OP::IO_RECV:
 				{
-					auto session = eo->_session_ref;
-					// [수정] 완료된 eo를 함께 넘겨줌
-					session->on_recv(eo, io_size, this);
-
+					SESSION* session = reinterpret_cast<SESSION*>(key);
+					session->on_recv(io_size, this);
 					session->do_recv(); // 다음 수신 예약
-
-					delete eo; // 처리가 끝났으니 삭제 (참조 카운트 감소)
 					break;
 				}
 			default:
@@ -549,18 +560,6 @@ namespace PIP::SERVER
 			lastTick = now;
 			accumulator += elapsed.count();
 
-			// 4. 게임 로직 업데이트 (남은 시간만큼)
-			auto t_logic_start = steady_clock::now();
-			float dt = static_cast<float>(elapsed.count());
-			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-			for (auto& room : _rooms) {
-				if (room->GetLogicThreadIndex() == thread_idx) {
-					// [변경] 할당자 전달
-					room->UpdateLogics(dt, &tempAllocator);
-				}
-			}
-			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
-
 			// 3. 물리 엔진 업데이트 (밀린 시간만큼 여러 번 돌려서라도 60fps 보장)
 			auto t_phys_start = steady_clock::now();
 			int steps = 0;
@@ -581,6 +580,17 @@ namespace PIP::SERVER
 			}
 			worker.stats.physics_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_phys_start).count());
 
+			// 4. 게임 로직 업데이트 (남은 시간만큼)
+			auto t_logic_start = steady_clock::now();
+			float dt = static_cast<float>(elapsed.count());
+			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+			for (auto& room : _rooms) {
+				if (room->GetLogicThreadIndex() == thread_idx) {
+					// [변경] 할당자 전달
+					room->UpdateLogics(dt, &tempAllocator);
+				}
+			}
+			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
 
 			auto t_loop_end = steady_clock::now();
 			worker.stats.total_loop_profile.add(duration_cast<nanoseconds>(t_loop_end - t_loop_start).count());
@@ -616,7 +626,7 @@ namespace PIP::SERVER
 			}
 		}
 	}
-	void Server::register_new_session(SOCKET client_socket)
+	void Server::register_new_session(const SOCKET& client_socket)
 	{
 		int logic_idx = _logic_thread_balancer.fetch_add(1) % _logic_workers.size();
 		int64_t new_id = _new_id++;
@@ -626,7 +636,7 @@ namespace PIP::SERVER
 		// [핵심] CompletionKey에 ID 대신 포인터를 직접 전달 (Map 조회 제거)
 		CreateIoCompletionPort((HANDLE)client_socket, _iocp, (ULONG_PTR)session.get(), 0);
 
-		AddSession(new_id, session); // 맵에는 여전히 보관 (관리용)
 		session->do_recv();
+		_sessions.insert({ new_id, std::move(session) });
 	}
 }
