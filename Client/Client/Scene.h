@@ -54,6 +54,7 @@ class Scene
 {
 public:
     Scene() = default;
+	Scene(const std::string& name) : _sceneName(name) {}
     virtual ~Scene();
 
     // =================================================================
@@ -69,6 +70,8 @@ public:
 	// 씬이 처리해야 할 일이 있다면 처리해주는 함수
 	virtual void scene_process(float deltaTime) {};
 
+	void set_scene_name(const std::string& name) { _sceneName = name; }
+	const std::string& scene_name() const { return _sceneName; }
     // =================================================================
     // 2. 유틸리티 함수 (선택적으로 유지)
     // =================================================================
@@ -80,4 +83,5 @@ public:
 	virtual void render_post_process(ID3D12GraphicsCommandList* commandList, UINT frame_index) {}
 
 protected:
+	std::string _sceneName;
 };

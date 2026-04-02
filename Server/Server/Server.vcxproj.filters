@@ -66,6 +66,12 @@
     <Filter Include="소스 파일\Game\CombatDef">
       <UniqueIdentifier>{f41cac6a-a964-44bb-ac79-4722fe8883a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\Stage">
+      <UniqueIdentifier>{2400a8f8-58ce-4817-8bcb-31a7ad36684e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Game\Stage\Stages">
+      <UniqueIdentifier>{e3e2de1b-2652-4bee-acc0-0561287dc608}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -148,6 +154,12 @@
     </ClCompile>
     <ClCompile Include="glTFMeshLoader.cpp">
       <Filter>소스 파일\Manager\MapDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="StageManager.cpp">
+      <Filter>소스 파일\Game\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="MainStage.cpp">
+      <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +267,15 @@
     </ClInclude>
     <ClInclude Include="glTFMeshLoader.h">
       <Filter>소스 파일\Manager\MapDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage.h">
+      <Filter>소스 파일\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="StageManager.h">
+      <Filter>소스 파일\Game\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="MainStage.h">
+      <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

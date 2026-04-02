@@ -15,6 +15,7 @@
 #include "DebugDrawManager.h"
 #include "UIRenderComponent.h"
 #include "MonsterHPComponent.h"
+#include "SceneManager.h"
 #include "TainerScript.h"
 #include "UIFrameRenderComponent.h"
 
@@ -725,6 +726,31 @@ void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream
 	}
 }
 
+void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_CHANGE_SCENE pkt;
+	stream >> pkt;
+
+	std::string nextSceneName;
+	stream >> nextSceneName; // 가변 길이 씬 이름 파싱
+
+	std::string client_scene_name;
+	if ("MainStage" == nextSceneName)
+	{
+		client_scene_name = "MainScene";
+	}
+	SceneManager::instance()->change_scene(client_scene_name);
+
+	CLOG("Scene change requested by server: " << nextSceneName);
+}
+
+void NetworkManager::Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream)
+{
+	//TODO: 실제로는 여기서 씬이 전환되어야함 -> 
+	// 예를 들어 로딩화면 보여주고 있다가 로딩 다 되어도 대기하고 있다가 이 패킷이 오면 로딩씬 제거하고 게임씬 보여주기
+	CLOG("All players are ready. Game starts now!");
+}
+
 void NetworkManager::HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_DEBUG_DRAW packet;
@@ -792,16 +818,16 @@ bool NetworkManager::init_network()
 	RegisterHandler(common::packet::PacketType::S2C_P_NPC_COUNT,
 		std::bind(&NetworkManager::HANDLE_S2C_NPC_COUNT, this, std::placeholders::_1));
 	// NPC 스폰 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_NPC_SPAWN,
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_SPAWN,
 		std::bind(&NetworkManager::HANDLE_S2C_SPAWN_NPC, this, std::placeholders::_1));
 	// NPC 이동 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE,
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_MOVE,
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC, this, std::placeholders::_1));
 	// NPC 이동 Batch 패킷 핸들러 등록
-	RegisterHandler(common::packet::PacketType::S2C_NPC_MOVE_BATCH,
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_MOVE_BATCH,
 		std::bind(&NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH, this, std::placeholders::_1));
 
-	RegisterHandler(common::packet::PacketType::S2C_NPC_DESPAWN, 
+	RegisterHandler(common::packet::PacketType::S2C_P_NPC_DESPAWN,
 		std::bind(&NetworkManager::HANDLE_S2C_DESPAWN_NPC, this, std::placeholders::_1));
 
 	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_DRAW,
@@ -809,6 +835,11 @@ bool NetworkManager::init_network()
 
 	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_BT_INFO,
 		std::bind(&NetworkManager::HANDLE_S2C_DEBUG_BT, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_CHANGE_SCENE,
+		std::bind(&NetworkManager::HANDLE_S2C_CHANGE_SCENE, this, std::placeholders::_1));
+	RegisterHandler(common::packet::PacketType::S2C_P_ALL_PLAYERS_READY,
+		std::bind(&NetworkManager::Handle_S2C_ALL_PLAYERS_READY, this, std::placeholders::_1));
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -862,8 +893,8 @@ bool NetworkManager::connect_to_server()
 		}
 	}
 	// 네이글 끄는 코드
-	int nodelay = 1;
-	setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&nodelay, sizeof(nodelay));
+	//int nodelay = 1;
+	//setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&nodelay, sizeof(nodelay));
 
 	_isRunning = true;
 	_networkThread = std::thread(&NetworkManager::network_worker, this);

@@ -2,7 +2,7 @@
 #include "PacketManager.h"
 namespace PIP::packet
 {
-	void PacketManager::Initialize()
+	void PacketManager::initialize()
 	{
 		// Packet.h에 정의된 이름으로 수정
 		RegisterHandler(PacketType::C2S_P_LOGIN, Handle_C2S_LOGIN);
@@ -11,6 +11,7 @@ namespace PIP::packet
 		RegisterHandler(PacketType::C2S_P_ENTER_ROOM, Handle_C2S_ENTER_ROOM);
 		RegisterHandler(PacketType::C2S_P_ROOM_LIST, Handle_C2S_ROOM_LIST);
 		RegisterHandler(PacketType::C2S_P_CHAT_IN_ROOM, Handle_C2S_CHAT_IN_ROOM);
+        RegisterHandler(PacketType::C2S_P_PLAYER_READY, Handle_C2S_PLAYER_READY);
 	}
 
 	void PacketManager::Dispatch(const std::shared_ptr<PIP::SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
@@ -49,6 +50,7 @@ namespace PIP::packet
                     case packet::PacketType::C2S_P_CHAT_IN_ROOM:
                     case packet::PacketType::C2S_P_ENTER_ROOM: // 인게임 중 다른 방으로 이동
                     case packet::PacketType::C2S_P_ROOM_LIST:  // 인게임 중 방 목록 요청
+					case packet::PacketType::C2S_P_PLAYER_READY: // 게임 시작 준비 패킷
                         bIsValidPacket = true;
                         break;
                 }

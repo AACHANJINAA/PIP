@@ -4,6 +4,7 @@
 class Main_Scene : public Scene
 {
 public:
+    using Scene::Scene;
     Main_Scene() = default;
     virtual ~Main_Scene() = default;
 
