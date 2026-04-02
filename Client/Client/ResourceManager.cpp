@@ -733,10 +733,10 @@ D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
     return _skybox_cpu_handle;
 }
 
-void ResourceManager::load_ibl_maps()
+void ResourceManager::load_ibl_maps(const std::string specular_path, const std::string diffuse_path, const std::string brdf_path)
 {
     // 1. Irradiance Map (인덱스 1)
-    _ibl_irradiance_path = "Resource\\SkyBox\\night_field\\night_field_diffuse.dds";
+    _ibl_irradiance_path = diffuse_path;
     auto irradiance_info = load_cubemap_from_dds(_ibl_irradiance_path);
     if (irradiance_info)
     {
@@ -756,7 +756,7 @@ void ResourceManager::load_ibl_maps()
     }
 
     // 2. Prefiltered Environment Map (인덱스 2)
-    _ibl_prefiltered_path = "Resource\\SkyBox\\night_field\\night_field_specular.dds";
+	_ibl_prefiltered_path = specular_path;
     auto prefiltered_info = load_cubemap_from_dds(_ibl_prefiltered_path);
     if (prefiltered_info)
     {
@@ -776,7 +776,7 @@ void ResourceManager::load_ibl_maps()
     }
 
     // 3. BRDF LUT (인덱스 3, 2D 텍스처)
-    _ibl_brdf_lut_path = "Resource\\SkyBox\\IBL_BRDF_LUT.dds";
+    _ibl_brdf_lut_path = brdf_path;
     auto brdf_info = load_texture(_ibl_brdf_lut_path, false);
     if (brdf_info)
     {

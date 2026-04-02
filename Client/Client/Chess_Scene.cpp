@@ -24,7 +24,12 @@
 void Chess_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 	// Skybox 로드
-	SceneManager::instance()->build_skybox_if_needed(device, commandList);
+    SceneManager::instance()->build_skybox(device, commandList,
+        "Resource\\SkyBox\\",
+        "night_field\\night_field_skybox.dds",
+        "night_field\\night_field_diffuse.dds",
+        "night_field\\night_field_specular.dds",
+        "IBL_BRDF_LUT.dds");
     // ChessScene 전용 Terrain 로드
     SceneManager::instance()->build_terrain(device, commandList);
 

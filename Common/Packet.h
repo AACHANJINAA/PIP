@@ -88,6 +88,7 @@ namespace common::packet
 		C2S_P_PLAYER_READY = 205,		// [신규] 플레이어 준비 완료 패킷 (게임 시작 트리거용)
 		S2C_P_ALL_PLAYERS_READY = 206,	// [신규] 모든 플레이어 준비 완료 패킷 (게임 시작 트리거용)
 		S2C_P_CHANGE_SCENE = 207,		// [신규] 씬 변경 패킷 (어떤 씬 로딩 할지 보냄)
+		S2C_P_NPC_COUNT = 205,
 
 		//------------------------------------------ 채팅 관련 패킷 ------------------------------------------ //
 		C2S_P_CHAT_IN_ROOM = 301, // 클라 -> 서버: 방 내부 채팅 메시지
@@ -236,6 +237,14 @@ namespace common::packet
 	{
 		bool _success; // 방 들어갈수 있는 지 없는지 (true: 가능, false: 불가능)
 		int _room_id;  // 들어갈 방 아이디 ( false면 의미 없음)
+	};
+
+	struct SC_PACKET_SCENE_AWAKE : PacketHeader
+	{
+		int64_t _npc_count; // npc개수
+		int64_t _npc_start_id; // npc 아이디
+		int64_t _boss_count; // 보스개수
+		int64_t _boss_start_id; // 보스 아이디
 	};
 
 	// 플레이어 스폰 패킷

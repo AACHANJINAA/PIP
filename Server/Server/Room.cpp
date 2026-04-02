@@ -43,7 +43,7 @@ namespace PIP::SERVER
 
 	void Room::SpawnInitialNPCs()
 	{
-		for (int i = 0; i < 500; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000) + i;
 
@@ -1375,6 +1375,16 @@ namespace PIP::SERVER
 		// 3. 나의 스폰 패킷 생성 및 전송
 		packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
 		session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
+
+		// DW추가 : npc 카운트 패킷 전송 (방 입장 시 NPC 수 알려주기)
+		packet::SC_PACKET_SCENE_AWAKE npc_count_packet;
+		npc_count_packet._type = packet::PacketType::S2C_P_NPC_COUNT;
+		npc_count_packet._size = sizeof(npc_count_packet);
+		npc_count_packet._boss_count = 1; // 보스 마리 수
+		npc_count_packet._boss_start_id = _next_npc_id + (_room_id * 1000) + 999; // 보스 ID
+		npc_count_packet._npc_count = static_cast<uint16_t>(_npcs.size()) - npc_count_packet._boss_count;
+		npc_count_packet._npc_start_id = _next_npc_id + (_room_id * 1000); // 일반 NPC ID 시작 인덱스 번호
+		session->do_send(reinterpret_cast<char*>(&npc_count_packet), sizeof(npc_count_packet));
 
 		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
 		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리

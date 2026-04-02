@@ -46,7 +46,8 @@ public:
 	const std::vector<std::shared_ptr<GameObject>>& get_all_landscapes() const;
 	float get_terrain_size() const;
 
-	void build_skybox_if_needed(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+	void build_skybox(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+		const std::string shared_folder_path, const std::string base_path, const std::string spcular_path, const std::string diffuse_path, const std::string brdf_path);
 	void build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 	void build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 

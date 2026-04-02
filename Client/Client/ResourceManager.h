@@ -34,7 +34,7 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv_gpu() const;
 
     // IBL Maps Load 함수 및 SRV 핸들러
-    void load_ibl_maps();
+    void load_ibl_maps(const std::string specular_path, const std::string emissive_path, const std::string brdf_path);
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_irradiance_srv();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_prefiltered_srv();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_brdf_lut_srv();
