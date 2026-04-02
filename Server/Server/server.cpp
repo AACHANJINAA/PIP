@@ -216,7 +216,7 @@ namespace PIP::SERVER
 
 		MYLOG("[SERVER] Loading Map...");
 		auto mdm = MapDataManager::Instance();
-		mdm->LoadMapData("../../Common/MapData/ExportedServerData.json");
+		//mdm->LoadMapData("../../Common/MapData/ExportedServerData.json");
 		//mdm->LoadHeightMapData("../../Common/MapData/Heightmap.json");
 		mdm->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
 		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04" });

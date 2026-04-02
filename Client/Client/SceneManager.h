@@ -32,7 +32,8 @@ public:
 	}
 	// [추가] 새로운 씬으로 전환하는 것을 총괄하는 함수
 	void change_scene(const std::string& scene_name);
-
+	void set_network_scene_name(const std::string& scene_name) { _networkWantSceneName = scene_name; }
+	const std::string& get_network_scene_name() { return _networkWantSceneName; }
 	// (현재 씬을 반환하는 getter 등 다른 유틸리티 함수...)
 	Scene* current_scene() const { return _currentScene.get(); }
 
@@ -54,6 +55,7 @@ public:
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // 현재 씬
 	std::string _requestedSceneName{};
+	std::string _networkWantSceneName{};
 	// [추가] 씬의 이름(string)과 씬을 생성하는 함수(function)를 매핑하는 팩토리 맵
 	std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> _scene_creators;
 

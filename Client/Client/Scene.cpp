@@ -21,6 +21,10 @@ Scene::~Scene()
    
 }
 
+void Scene::on_scene_loaded()
+{
+}
+
 void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,ID3D12GraphicsCommandList* commandList)
 {
     std::ifstream file(filename);
