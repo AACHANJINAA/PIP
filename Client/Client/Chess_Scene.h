@@ -9,6 +9,7 @@ class GameObject;
 class Chess_Scene : public Scene
 {
 public:
+    using Scene::Scene;
     Chess_Scene() = default;
     virtual ~Chess_Scene() = default;
 

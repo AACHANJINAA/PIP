@@ -35,7 +35,7 @@ void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	register_scene<Boss_Scene>("BossScene");
 	//register_scene<Lobby_Scene>("LobbyScene");
 
-	change_scene("MainScene");
+	//change_scene("MainScene");
 }
 
 void SceneManager::release()
@@ -52,11 +52,20 @@ void SceneManager::change_scene(const std::string& scene_name)
 
 void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D12CommandAllocator* command_allocator , ID3D12GraphicsCommandList* command_list)
 {
+    
 	if (_requestedSceneName.empty())
 	{
 		return;
 	}
 
+    // [근본 해결 가드] 현재 이미 그 씬에 있다면 무시한다!
+    if (_currentScene && _currentScene->scene_name() == _requestedSceneName) {
+        CLOG("Already in scene " << scene_name << ". Ignoring redundant request.");
+        _requestedSceneName = "";
+        // (선택 사항) 이미 로딩된 상태라면 여기서 바로 서버에 READY를 다시 보내줄 수도 있지만,
+        // 서버가 중복 명령을 내리지 않게 하는 것이 더 깔끔합니다.
+        return;
+    }
 
 	std::string scene_to_load = _requestedSceneName;
 	_requestedSceneName.clear();

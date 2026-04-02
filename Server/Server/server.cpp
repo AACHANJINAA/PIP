@@ -97,7 +97,7 @@ namespace PIP::SERVER
 		if (size > EXP_OVER::BUFFER_SIZE) return;
 
 		// [수정] shared_from_this()를 넘겨서 Send 완료 전까지 세션 보호
-		EXP_OVER* o = new EXP_OVER(IO_SEND, shared_from_this());
+		EXP_OVER* o = new EXP_OVER(IO_OP::IO_SEND, shared_from_this());
 		memcpy(o->_buffer.data(), data, size);
 		o->_wsabuf[0].len = static_cast<ULONG>(size);
 
@@ -273,8 +273,9 @@ namespace PIP::SERVER
 
 
 		_logic_workers.resize(logic_thread_count);
-		_rooms.reserve(100);
-		for (int i = 0; i < 100; ++i)
+		int room_size = 1;
+		_rooms.reserve(room_size);
+		for (int i = 0; i < room_size; ++i)
 		{
 			int logic_idx = i % logic_thread_count;
 			_rooms.push_back(std::make_unique<Room>(i, logic_idx));
@@ -419,7 +420,7 @@ namespace PIP::SERVER
 	{
 		MYLOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
 		SOCKET client_socket = INVALID_SOCKET;
-		EXP_OVER accept_over{ IO_ACCEPT };
+		EXP_OVER accept_over{IO_OP::IO_ACCEPT };
 		do_accept(client_socket, accept_over);
 
 		while (_is_running)
@@ -441,7 +442,7 @@ namespace PIP::SERVER
 			SESSION* session_ptr = reinterpret_cast<SESSION*>(key);
 
 			// 클라이언트 연결 종료 또는 에러 처리
-			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_RECV || eo->_io_op == IO_SEND)))
+			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_OP::IO_RECV || eo->_io_op == IO_OP::IO_SEND)))
 			{
 				if (session_ptr)
 				{
@@ -471,7 +472,7 @@ namespace PIP::SERVER
 					}
 				}
 				// [해결] eo가 서버 멤버 변수인 _accept_over인 경우(IO_ACCEPT) delete 하지 않음
-				if (eo && eo->_io_op != IO_ACCEPT) {
+				if (eo && eo->_io_op == IO_OP::IO_SEND) {
 					delete eo;
 				}
 				continue;
@@ -479,18 +480,18 @@ namespace PIP::SERVER
 
 			switch (eo->_io_op)
 			{
-			case IO_ACCEPT:
+			case IO_OP::IO_ACCEPT:
 				// 새 클라이언트 연결 처리
 				register_new_session(client_socket);
 				do_accept(client_socket, accept_over); // 다음 클라이언트를 받기 위해 다시 Accept 요청
 				break;
 						
-			case IO_SEND:
+			case IO_OP::IO_SEND:
 				// Send 완료 처리
 				delete eo;
 				break;
 			
-			case IO_RECV:
+			case IO_OP::IO_RECV:
 				{
 					SESSION* session = reinterpret_cast<SESSION*>(key);
 					session->on_recv(io_size, this);
@@ -559,18 +560,6 @@ namespace PIP::SERVER
 			lastTick = now;
 			accumulator += elapsed.count();
 
-			// 4. 게임 로직 업데이트 (남은 시간만큼)
-			auto t_logic_start = steady_clock::now();
-			float dt = static_cast<float>(elapsed.count());
-			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
-			for (auto& room : _rooms) {
-				if (room->GetLogicThreadIndex() == thread_idx) {
-					// [변경] 할당자 전달
-					room->UpdateLogics(dt, &tempAllocator);
-				}
-			}
-			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
-
 			// 3. 물리 엔진 업데이트 (밀린 시간만큼 여러 번 돌려서라도 60fps 보장)
 			auto t_phys_start = steady_clock::now();
 			int steps = 0;
@@ -591,6 +580,17 @@ namespace PIP::SERVER
 			}
 			worker.stats.physics_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_phys_start).count());
 
+			// 4. 게임 로직 업데이트 (남은 시간만큼)
+			auto t_logic_start = steady_clock::now();
+			float dt = static_cast<float>(elapsed.count());
+			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+			for (auto& room : _rooms) {
+				if (room->GetLogicThreadIndex() == thread_idx) {
+					// [변경] 할당자 전달
+					room->UpdateLogics(dt, &tempAllocator);
+				}
+			}
+			worker.stats.logic_profile.add(duration_cast<nanoseconds>(steady_clock::now() - t_logic_start).count());
 
 			auto t_loop_end = steady_clock::now();
 			worker.stats.total_loop_profile.add(duration_cast<nanoseconds>(t_loop_end - t_loop_start).count());

@@ -28,7 +28,7 @@ public:
 		static_assert(std::is_base_of<Scene, T>::value, "T must be a descendant of Scene");
 
 		// scene_name을 키로, 해당 씬을 생성하는 람다 함수를 값으로 map에 저장합니다.
-		_scene_creators[scene_name] = []() { return std::make_unique<T>(); };
+		_scene_creators[scene_name] = [scene_name]() { return std::make_unique<T>(scene_name); };
 	}
 	// [추가] 새로운 씬으로 전환하는 것을 총괄하는 함수
 	void change_scene(const std::string& scene_name);
@@ -52,7 +52,7 @@ public:
 
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // 현재 씬
-	std::string _requestedSceneName;
+	std::string _requestedSceneName{};
 	// [추가] 씬의 이름(string)과 씬을 생성하는 함수(function)를 매핑하는 팩토리 맵
 	std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> _scene_creators;
 
