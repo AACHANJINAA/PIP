@@ -39,7 +39,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// =========================================================================
 
     // 오두막
-	load_scene_from_file("Resource/MainLandscape_Meshes/LandscapeStreamingProxy_-1_-1_0_MapData/LandscapeStreamingProxy_-1_-1_0_ExportedClientData.json", device, commandList);
+	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
