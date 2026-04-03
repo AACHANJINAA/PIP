@@ -82,7 +82,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     auto hp_bar = hp_bar_obj->add_component<UIRenderComponent>();
 
     hp_bar->set_screen_position(42.0f, 38.0f);        // Frame보다 안쪽
-    hp_bar->set_size(385.0f, 14.0f);                   // Frame보다 작게
+    hp_bar->set_size(390.0f, 14.0f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
