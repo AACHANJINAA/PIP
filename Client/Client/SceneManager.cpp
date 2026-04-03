@@ -6,8 +6,9 @@
 #include "GameFramework.h"
 #include "Main_Scene.h"
 #include "Boss_Scene.h"
-#include "NetworkManager.h"
+#include "Title_Scene.h"
 
+#include "NetworkManager.h"
 #include "ObjectManager.h"
 #include "ResourceManager.h"
 
@@ -29,13 +30,15 @@ SceneManager::~SceneManager()
 
 void SceneManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
+    register_scene<Title_Scene>("TitleScene");
 	register_scene<Chess_Scene>("ChessScene");
 	register_scene<Main_Scene>("MainScene");
 	register_scene<Tool_Scene>("ToolScene");
 	register_scene<Boss_Scene>("BossScene");
+	
 	//register_scene<Lobby_Scene>("LobbyScene");
 
-	//change_scene("MainScene");
+	change_scene("TitleScene");
 }
 
 void SceneManager::release()
