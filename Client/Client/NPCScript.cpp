@@ -65,6 +65,17 @@ const XMFLOAT3& NPCScript::position() const
 	return transform() ? transform()->local_position() : dummy;
 }
 
+NPCScript::NPCScript() : ScriptComponent("NPCScript")
+{
+
+}
+
+
+NPCScript::~NPCScript()
+{
+	
+}
+
 void NPCScript::init_visual()
 {
 	auto NPC = game_object();
@@ -145,7 +156,7 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	_state = spawnPkt._state;
 	_actionId = spawnPkt._action_id;
 	_hp = spawnPkt._hp;
-	_id = spawnPkt._npc_id;
+	set_id(spawnPkt._npc_id);
 	_npcType = spawnPkt._npc_type;
 
 	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
@@ -280,6 +291,12 @@ void NPCScript::late_update(float deltaTime)
 {
 	// HP 바 업데이트 등 필요한 로직 수행
 }
+
+void NPCScript::set_id(int64_t npc_id)
+{
+	_id = npc_id;
+}
+
 // --- INetSync 인터페이스 구현 ---
 void NPCScript::on_receive_snapshot(const NetSnapshot& snapshot)
 {
@@ -289,6 +306,10 @@ void NPCScript::on_receive_snapshot(const NetSnapshot& snapshot)
 }
 void NPCScript::apply_snapshot()
 {
+	if (!game_object()->is_enable() || game_object()->is_destroyed())
+	{
+		return;
+	}
 	if(!_isNewDataArrived) return;
 
 	_state = _pendingSnapshot.state;

@@ -154,7 +154,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 #endif
 }
 
-void Renderer::build_render_list(CameraComponent* camera)
+void Renderer::build_render_list(const CameraComponent* camera)
 {
     _renderMap.clear();
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
@@ -162,7 +162,7 @@ void Renderer::build_render_list(CameraComponent* camera)
 
     for (const auto& gameObject : allGameObjects)
     {
-        if (!gameObject || gameObject->is_destroyed()) continue;
+        if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
 
@@ -203,6 +203,10 @@ void Renderer::build_render_list(CameraComponent* camera)
     {
         for (const auto& gameObject : vec)
         {
+			if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed())
+			{
+				continue;
+			}
             auto renderComp = gameObject->get_component<RenderComponent>();
             if (renderComp)
             {
@@ -240,6 +244,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         if (it == _renderMap.end() || it->second.empty()) continue;
 
         const auto& gameObjects = it->second;
+        // 어차피 _renderMap에서 게임오브젝트의 상태를 보고 컬링해서 들어옴
 
         // PSO와 루트 시그니처 설정
         ID3D12PipelineState* pso = get_pso(psoName);

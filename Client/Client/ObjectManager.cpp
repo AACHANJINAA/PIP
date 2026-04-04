@@ -22,7 +22,7 @@ std::shared_ptr<GameObject> ObjectManager::create_game_object(const std::string&
     return newGameObject;
 }
 
-void ObjectManager::request_destruction(std::shared_ptr<Object> objectToDestroy)
+void ObjectManager::request_destruction(const std::shared_ptr<Object>& objectToDestroy)
 {
     _destructionQueue.push_back(objectToDestroy);
 }
@@ -31,11 +31,28 @@ void ObjectManager::process_destructions()
 {
     if (_destructionQueue.empty()) return;
 
-    auto queueToProcess = _destructionQueue;
-    _destructionQueue.clear();
+    auto queueToProcess = std::move(_destructionQueue);
 
-    for (auto& obj : queueToProcess)
+	auto destroy_time_start = std::chrono::steady_clock::now();
+    for (auto it = queueToProcess.begin(); it != queueToProcess.end(); ++it)
     {
+		auto obj = *it;
+		if (!obj)
+		{
+			continue;
+		}
+        if (obj->is_persistent())
+        {
+            continue;
+        }
+    	auto destroy_time_end = std::chrono::steady_clock::now();
+		auto duration = 
+            std::chrono::duration_cast<std::chrono::milliseconds>(destroy_time_end - destroy_time_start).count();
+		if (duration > 500.f)
+		{
+			std::move(it, queueToProcess.end(), std::back_inserter(_destructionQueue));
+            break;
+		}
         if (!obj) continue;
 
         if (auto gameObj = std::dynamic_pointer_cast<GameObject>(obj))
@@ -54,7 +71,7 @@ void ObjectManager::process_destructions()
         }
     }
 }
-void ObjectManager::remove_game_object_from_list(std::shared_ptr<GameObject> gameObject)
+void ObjectManager::remove_game_object_from_list(const std::shared_ptr<GameObject>& gameObject)
 {
     if (!gameObject) return;
 
@@ -93,7 +110,7 @@ void ObjectManager::remove_game_object_from_list(std::shared_ptr<GameObject> gam
     std::erase(_gameObjects, gameObject);
 }
 
-void ObjectManager::remove_game_object(std::shared_ptr<GameObject> gameObject)
+void ObjectManager::remove_game_object(const std::shared_ptr<GameObject>& gameObject)
 {
     if (!gameObject) return;
     remove_game_object_from_list(gameObject);
@@ -214,7 +231,7 @@ std::shared_ptr<GameObject> ObjectManager::find_npc(int64_t id)
         return it->second;
     return nullptr;
 }
-void ObjectManager::register_npc(int64_t id, std::shared_ptr<GameObject> npc)
+void ObjectManager::register_npc(int64_t id, const std::shared_ptr<GameObject>& npc)
 {
     _npcMap[id] = npc;
 }

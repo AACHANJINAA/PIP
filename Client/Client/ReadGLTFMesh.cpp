@@ -198,7 +198,7 @@ void ReadGLTFMesh::render_instance(ID3D12GraphicsCommandList* commandList, size_
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
 		commandList->IASetIndexBuffer(&primitive->_indexBufferView);
-		commandList->DrawIndexedInstanced(primitive->_indexCount, want_instance_count, 0, 0, 0);
+		commandList->DrawIndexedInstanced(primitive->_indexCount, static_cast<UINT>(want_instance_count), 0, 0, 0);
 	}
 }
 
@@ -1292,6 +1292,9 @@ int ReadGLTFMesh::get_palette_index_by_name(const std::string& name) const
 
 void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::string& want_name)
 {
+	if (want_name != "null_name" && _animations.contains(want_name)) {
+		return;
+	}
 	json gltf_json;
 	std::vector<char> binary_buffer;
 
@@ -1485,7 +1488,7 @@ void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::
 			}
 			else {
 				// 디버깅: 매칭 실패한 뼈 이름 출력 (필요 시 주석 해제)
-				// CLOG("Warning: Bone mismatch in animation load: " << bone_name);
+				CLOG("Warning: Bone mismatch in animation load: " << bone_name);
 			}
 		}
 		_animations.emplace(anim_name, clip);

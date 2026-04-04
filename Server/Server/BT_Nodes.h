@@ -29,7 +29,9 @@ namespace PIP::GAME
 
     // [행동] 랜덤 타겟 찾기
     class Action_FindRandomTarget : public Action {
+		float _range;
     public:
+        Action_FindRandomTarget(float range = 500.0f) : _range{range}{}
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 

@@ -2,12 +2,13 @@
 #include "INetSync.h"
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
+#include "GameFramework.h"
 #include "MonsterHPComponent.h"
 
 class NPCScript : public ScriptComponent, public INetSync {
 public:
-	NPCScript() : ScriptComponent("NPCScript") {}
-
+	NPCScript();
+	~NPCScript() override;
 	using required_components = std::tuple<TransformComponent, MonsterHPComponent, AnimationComponent, RenderComponent>;
 
 	virtual void init_visual();
@@ -17,7 +18,7 @@ public:
 	void update(float deltaTime) override;
 	void late_update(float deltaTime) override;
 
-	void set_id(int64_t npc_id) { _id = npc_id; }
+	void set_id(int64_t npc_id);
 	void set_npc_type(common::packet::NPCType type) { _npcType = type; } // 추가
 	void set_hp(int hp);
 	int  get_hp() const { return _hp; }

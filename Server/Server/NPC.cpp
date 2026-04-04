@@ -132,7 +132,7 @@ namespace PIP::GAME
 				.leaf<Action_MoveToTarget>(3.0f) // 정찰 속도 3.0
 			.end()
 			// --- [우선순위 3] 할 일 없으면 새로운 목적지 찾기 ---
-			.leaf<Action_FindRandomTarget>()
+			.leaf<Action_FindRandomTarget>(30.0f)
 			.end()
 		.end()
 		.build();

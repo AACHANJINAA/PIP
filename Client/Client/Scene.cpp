@@ -100,14 +100,11 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             const auto& transformJson = objectJson["Transform"];
             auto transformComp = gameObject->transform();
 
-            float offsetX = 0.0f;  // 필요시 조정
-            float offsetY = 0.0f;   // 100.0f에서 0으로 변경 - 너무 높음
-            float offsetZ = 0.0f;
 
             transformComp->set_local_position({
-                transformJson["Location"].value("X", 0.0f) + offsetX,
-                transformJson["Location"].value("Y", 0.0f) + offsetY,
-                transformJson["Location"].value("Z", 0.0f) + offsetZ
+                transformJson["Location"].value("X", 0.0f),
+                transformJson["Location"].value("Y", 0.0f),
+                transformJson["Location"].value("Z", 0.0f)
                 });
             transformComp->set_local_rotation(XMFLOAT4{
                 transformJson["Rotation"].value("X", 0.0f),

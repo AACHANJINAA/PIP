@@ -13,10 +13,10 @@ private:
 
 public:
     std::shared_ptr<GameObject> create_game_object(const std::string& name = "GameObject");
-    void request_destruction(std::shared_ptr<Object> objectToDestroy);
+    void request_destruction(const std::shared_ptr<Object>& objectToDestroy);
     void process_destructions();
-	void remove_game_object_from_list(std::shared_ptr<GameObject> gameObject);
-	void remove_game_object(std::shared_ptr<GameObject> gameObject);
+	void remove_game_object_from_list(const std::shared_ptr<GameObject>& gameObject);
+	void remove_game_object(const std::shared_ptr<GameObject>& gameObject);
 
 
     std::shared_ptr<GameObject> find_by_name(const std::string& name);
@@ -36,7 +36,7 @@ public:
 
     std::shared_ptr<GameObject> find_npc(int64_t id);
 
-	void register_npc(int64_t id, std::shared_ptr<GameObject> npc);
+	void register_npc(int64_t id, const std::shared_ptr<GameObject>& npc);
 	void unregister_npc(int64_t id);
 
     void spawn_monster(size_t how_many_you_want_npc_count);

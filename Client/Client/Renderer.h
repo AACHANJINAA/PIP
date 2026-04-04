@@ -34,7 +34,7 @@ private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);
 
-    void build_render_list(CameraComponent* camera);
+    void build_render_list(const CameraComponent* camera);
     void draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
 
     // [변경] 개별 ComPtr 대신, 이름으로 루트 시그니처를 관리하는 map을 사용합니다.

@@ -119,15 +119,20 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
 	game_framework->WaitForGpuComplete();
     //TODO: 씬 전환 후 서버에게 패킷 전송 후 방입장 요청
+	_currentScene->on_scene_loaded();
+	if (_currentScene->scene_name() == _networkWantSceneName)
+	{
+        // 2. [추가] 씬 전환 및 리소스 로딩이 완벽히 끝났다면 서버에 보고!
+        common::packet::CS_PACKET_PLAYER_READY ready_packet;
+        ready_packet._type = common::packet::PacketType::C2S_P_PLAYER_READY;
+        ready_packet._size = sizeof(ready_packet);
 
-    // 2. [추가] 씬 전환 및 리소스 로딩이 완벽히 끝났다면 서버에 보고!
-	common::packet::CS_PACKET_PLAYER_READY ready_packet;
-    ready_packet._type = common::packet::PacketType::C2S_P_PLAYER_READY;
-    ready_packet._size = sizeof(ready_packet);
-
-    // NetworkManager를 통해 서버로 전송
-    NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&ready_packet), sizeof(ready_packet));
-    CLOG("Scene Loading Complete! Sent READY to Server. Scene: " << _requestedSceneName);
+        // NetworkManager를 통해 서버로 전송
+        NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&ready_packet), sizeof(ready_packet));
+        CLOG("Scene Loading Complete! Sent READY to Server. Scene: " << _requestedSceneName);
+		_networkWantSceneName = ""; // 씬 로딩 완료 후 요청 초기화
+	}
+    CLOG("Scene Loading Complete! Not Send Ready to Server. Scene: " << _requestedSceneName);
 
 }
 

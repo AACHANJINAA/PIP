@@ -48,7 +48,7 @@ namespace PIP::SERVER
 			int64_t npcId = _next_npc_id + (_room_id * 1000LL) + i;
 
 			// 1. 무작위 XZ 위치 결정 (Y는 충분히 높은 곳에서 시작)
-			common::Vec3 spawnPos = { static_cast<float>(rand() % 200 - 100), 500.0f, static_cast<float>(rand() % 200 - 100) };
+			common::Vec3 spawnPos = { static_cast<float>(rand() % 100 - 50), 500.0f, static_cast<float>(rand() % 100 - 50) };
 
 			// 2. [핵심] Jolt 물리 지형에 레이를 쏴서 실제 '정확한' 바닥 높이를 즉시 획득
 			JPH::RRayCast ray{ Utils::ToJolt(spawnPos), JPH::Vec3(0, -1000.0f, 0) };
