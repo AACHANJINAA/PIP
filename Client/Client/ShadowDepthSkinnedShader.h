@@ -21,6 +21,5 @@ protected:
     // GltfSkinnedShader의 입력 레이아웃과 완전히 동일해야 함
     virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override;
     virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
-    virtual D3D12_SHADER_BYTECODE create_geometry_shader(ComPtr<ID3DBlob>& shader_blob) override;
     virtual D3D12_RASTERIZER_DESC create_rasterizer_state() override;
 };

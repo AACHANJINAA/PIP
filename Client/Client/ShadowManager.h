@@ -1,11 +1,17 @@
 #pragma once
 #include "stdafx.h"
 
-struct CbCascades
+// 256바이트 정렬을 위한 헬퍼 구조체
+struct CbCascadeSingle
 {
-    XMFLOAT4X4 lightVP[3];
+    XMFLOAT4X4 lightVP;
+    float padding[48]; // 64바이트(행렬) + 192바이트 = 256바이트 맞춤
 };
 
+struct CbCascades
+{
+    CbCascadeSingle cascades[3]; // 총 3개의 Cascade 행렬
+};
 struct CbShadow
 {
     XMFLOAT4X4 lightVP[3];

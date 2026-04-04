@@ -12,7 +12,7 @@ cbuffer cbShadow : register(b5)
 Texture2DArray g_shadowMap : register(t11);
 SamplerComparisonState g_shadowSampler : register(s1);
 
-// 1. Poisson Disk 오프셋 상수 배열 (미리 계산된 불규칙한 원형 배치)
+// 1. Poisson Disk 오프셋 상수 배열 (미리 계산된 불규칙한 원형 배치) -> 픽셀 사이 일정한 거리유지
 static const float2 PoissonDisk[9] =
 {
     float2(0.0f, 0.0f),
@@ -42,7 +42,7 @@ float get_pcf_shadow_advanced(float3 worldPos, float3 normal, int cascade, float
     g_shadowMap.GetDimensions(width, height, elements);
     float2 texelSize = 1.0f / float2(width, height);
 
-    // IGN (Interleaved Gradient Noise) 기반 랜덤 회전값 생성
+    // IGN (Interleaved Gradient Noise) 기반 랜덤 회전값 생성 -> 시각적으로 더 자연스러운 노이즈 패턴
     float noise = frac(52.9829189f * frac(dot(screenPos, float2(0.06711056f, 0.00583715f))));
     float angle = noise * 6.2831853f; // 2 * PI
     
