@@ -25,8 +25,8 @@ public:
 	void on_collision_stay(const std::shared_ptr<GameObject>& other);
 	void on_collision_exit(const std::shared_ptr<GameObject>& other);
 
-	void set_enable(bool enable) { _enable = enable; }
-	bool is_enable() const { return _enable; }
+	void set_enabled(bool enabled) { _enabled = enabled; }
+	bool is_enable() const { return _enabled; }
 	
 	// [변경] 레이어 타입을 uint32_t로 변경
 	uint32_t layer_mask() const { return _layerMask; }
@@ -84,7 +84,7 @@ public:
 		return nullptr;
 	}
 
-	void remove_component(std::shared_ptr<Component> component);
+	void remove_component(const std::shared_ptr<Component>& component);
 	const std::vector<std::shared_ptr<Component>>& components() const { return _components; }
 private:
 	// 의존성을 재귀적으로 추가하기 위한 템플릿 도우미 함수
@@ -130,7 +130,7 @@ private:
 	std::vector<std::shared_ptr<Component>> _components;
 	std::shared_ptr<TransformComponent>     _transform; // 필수 컴포넌트인 Transform에 대한 빠른 접근 포인터
 	uint32_t                                _layerMask = 0;
-	bool _enable = true;
+	bool _enabled = true;
 	mutable bool _isIterating = false; // [추가] 순회 중 상태를 나타내는 플래그
 };
 //public:

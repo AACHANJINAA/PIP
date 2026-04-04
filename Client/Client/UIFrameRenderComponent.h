@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "ResourceManager.h"
 #include "UIRenderComponent.h"
 
@@ -11,7 +11,7 @@ struct cbUIFrameElement
     XMFLOAT2 uv_offset;         // UV 오프셋
     XMFLOAT2 uv_scale;          // UV 스케일
     int use_texture;            // 텍스처 사용 여부 (1: 사용, 0: 단색)
-    int other_player_id;        // 다른 플레이어
+    int64_t other_player_id;        // 다른 플레이어
     XMFLOAT2 padding;
 };
 
@@ -23,7 +23,7 @@ public:
 
     virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
 
-    void set_other_player_id(int id) { _other_player_id = id; }
+    void set_other_player_id(int64_t id) { _other_player_id = id; }
 
 protected:
     virtual void initialize_constant_buffers() override;
@@ -35,5 +35,5 @@ private:
     ComPtr<ID3D12Resource> _cb_ui_frame_element;
     cbUIFrameElement* _mapped_ui_frame_element = nullptr;
 
-    int _other_player_id = 0;
+    int64_t _other_player_id = 0;
 };

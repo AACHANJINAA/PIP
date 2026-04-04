@@ -10,8 +10,12 @@ Object::Object(const std::string& name)
 {
     // 생성 시 고유 ID가 자동으로 할당됩니다.
 }
-void Object::destroy(std::shared_ptr<Object> obj_to_destroy, float delay)
+void Object::destroy(const std::shared_ptr<Object>& obj_to_destroy, float delay)
 {
+    if (obj_to_destroy->is_persistent()) {
+        // 영속 객체는 destroy 요청을 무시하거나 경고를 남깁니다.
+        return;
+    }
     if (!obj_to_destroy || obj_to_destroy->is_destroyed()) return;
 
 	//TODO: delay 기능 구현 필요

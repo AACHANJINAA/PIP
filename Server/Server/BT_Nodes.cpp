@@ -27,18 +27,25 @@ namespace PIP::GAME
 
 	NodeStatus Action_FindRandomTarget::tick(float dt, JPH::TempAllocator* allocator)
 	{
-		// 나중에 NPC의 현재 위치를 기준으로 일정 반경 내에서 랜덤 타겟을 찾도록 개선 필요할 수도 있음
-		// 보스의 경우는 그래야함
+		GameObject* owner = _blackboard->get<GameObject*>("owner");
+		if (!owner)
+		{
+			return NodeStatus::FAILURE;
+		}
+		auto tc = owner->GetComponent<TransformComponent>();
+		if (!tc)
+		{
+			return NodeStatus::FAILURE;
+		}
+		common::Vec3 currentPos = tc->GetPosition();
 
+		// 2. 현재 위치 기준 [-_range, _range] 범위의 랜덤 오프셋 계산
+		// 기존의 정수형 rand() % 대신, 실수 범위(-_range ~ +_range)의 랜덤값을 생성합니다.
+		float offsetX = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * _range;
+		float offsetZ = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * _range;
 
-		// 임시 맵 범위 (실제로는 MapData에서 가져오는 게 좋음)
-		auto [min_x, max_x, min_z, max_z] = MapDataManager::Instance()->GetWorldBounds();
-
-		float x_range = max_x - min_x;
-		float z_range = max_z - min_z;
-
-		float tx = rand() % static_cast<int>(x_range) + min_x;
-		float tz = rand() % static_cast<int>(z_range) + min_z;
+		float tx = currentPos.x + offsetX;
+		float tz = currentPos.z + offsetZ;
 
 		// 지형 높이 보정 (Y좌표)
 		common::Vec3 targetPos = MapDataManager::Instance()->AdjustPositionToGround({ tx, 50, tz });

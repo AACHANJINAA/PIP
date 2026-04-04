@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "UIFrameShader.h"
 
 const std::string& UIFrameShader::pso_name() const

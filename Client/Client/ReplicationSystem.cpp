@@ -1,11 +1,22 @@
 ﻿#include "stdafx.h"
 #include "ReplicationSystem.h"
+
+#include "NPCScript.h"
+
 void ReplicationSystem::register_entity(int64_t id, INetSync* entity)
 {
+	if (_entities.contains(id))
+	{
+		CLOG("Entity with ID " << id << " is already registered. Overwriting.");
+	}
 	_entities[id] = entity;
 }
 void ReplicationSystem::unregister_entity(int64_t id)
 {
+	if (!_entities.contains(id))
+	{
+		CLOG("Attempted to unregister non-existent entity with ID " << id);
+	}
 	_entities.erase(id);
 }
 bool ReplicationSystem::on_packet_arrival(int64_t id, const NetSnapshot& snapshot)

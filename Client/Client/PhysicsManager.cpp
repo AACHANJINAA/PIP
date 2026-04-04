@@ -39,13 +39,6 @@ void PhysicsManager::update(float deltaTime)
 {
     if (!_physicsSystem) return;
 
-    //static int logCounter = 0;
-    //if (logCounter++ % 600 == 0) { // 10초마다
-    //    std::cout << "[Physics] Active Bodies: " << _physicsSystem->GetNumActiveBodies(JPH::EBodyType::RigidBody)
-    //        << std::endl;
-    //}
-
-
     // 1. 물리 시뮬레이션 수행
     _physicsSystem->Update(deltaTime, 1, _tempAllocator, _jobSystem);
 

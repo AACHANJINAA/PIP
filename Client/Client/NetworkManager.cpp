@@ -522,15 +522,13 @@ void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
 		// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
 		NPC->add_component<MonsterHPComponent>();
 		NPC->add_component<AnimationComponent>();
-		NPC->add_component<RenderComponent>()->set_enabled(false);
+		NPC->add_component<RenderComponent>();
+		NPC->set_enabled(false); // 처음에는 비활성화 상태로 풀에 저장
 
-
-		NPCScript* NPC_logic = nullptr;
-
-		NPC_logic = NPC->add_component<NPCScript>().get();
+		auto NPC_logic= NPC->add_component<NPCScript>();
 
 		auto rs = GameFramework::instance()->get_replication_system();
-		if (rs) rs->register_entity(npc_id, NPC_logic);
+		if (rs) rs->register_entity(npc_id, NPC_logic.get());
 
 		ObjectManager::instance()->register_npc(npc_id, NPC);
 	}
@@ -546,11 +544,9 @@ void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
 		Boss->add_component<MonsterHPComponent>();
 		Boss->add_component<AnimationComponent>();
 		Boss->add_component<RenderComponent>();
+		Boss->set_enabled(false); // 처음에는 비활성화 상태로 풀에 저장
 
-
-		NPCScript* NPC_logic = nullptr;
-
-		NPC_logic = Boss->add_component<TainerScript>().get();
+		auto NPC_logic = Boss->add_component<TainerScript>().get();
 
 		auto rs = GameFramework::instance()->get_replication_system();
 		if (rs) rs->register_entity(boss_id, NPC_logic);
@@ -571,9 +567,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	if (existingNPC)
 	{
 		// [수정] 풀에서 찾은 경우 렌더링을 켜고 초기화 진행
-		if (auto render = existingNPC->get_component<RenderComponent>()) {
-			render->set_enabled(true);
-		}
+		existingNPC->set_enabled(true);
 		if (auto script = existingNPC->get_component<NPCScript>()) {
 			script->initialize_from_server(npc_spawn_packet);
 		}
@@ -659,7 +653,7 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 	else
 	{
 		// 디버깅을 위한 로그
-		CLOG("[S->C] Move NPC Error: Object not found with name: " << npc_name);
+		CERROR("[S->C] Move NPC Error: Object not found with name: " << npc_name);
 	}
 }
 
@@ -714,14 +708,11 @@ void NetworkManager::HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream
 	common::packet::SC_PACKET_NPC_DESPAWN packet;
 	stream >> packet;
 
-	// DW수정 : 오브젝트 풀링 때문에 무시 테스트
-	return;
-
 	// NPC 찾아서 삭제
 	auto npc = ObjectManager::instance()->find_npc(packet._npc_id);
 	if (npc)
 	{
-		npc->get_component<RenderComponent>()->set_enabled(false);
+		npc->set_enabled(false);
 		/*ObjectManager::instance()->unregister_npc(packet._npc_id);
 		npc->destroy();*/
 		// CLOG("[S->C] NPC Despawned (AOI): " << packet._npc_id);

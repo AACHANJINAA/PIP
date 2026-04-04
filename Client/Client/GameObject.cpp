@@ -182,10 +182,15 @@ void GameObject::add_glTF_conponent_pack()
 	add_component<SocketComponenet>();
 }
 
-void GameObject::remove_component(std::shared_ptr<Component> component)
+void GameObject::remove_component(const std::shared_ptr<Component>& component)
 {
 	if (component)
 	{
+		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
+		{
+			// 비활성화 상태여도 파괴 시점의 정리는 필요하므로 무조건 호출합니다.
+			behavior->on_destroy();
+		}
 		if (_transform == component)
 		{
 			return;

@@ -43,7 +43,7 @@ namespace PIP::GAME
 		_max_hp = 100;
 		_level = 0;
 		_exp = 0;
-		_damage = 100;
+		_damage = 50;
 		_state = common::packet::EntityState::IDLE;
 		_hitCooldown = 0.0f;
 		_history.clear();

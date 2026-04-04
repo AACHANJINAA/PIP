@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "RenderComponent.h"
 #include "UIRenderComponent.h"
 #include "UIFrameRenderComponent.h"

@@ -26,7 +26,7 @@ public:
     void set_persistent(bool is_persistent) { _isPersistent = is_persistent; }
 
     // --- [변경] destroy 함수 ---
-    static void destroy(std::shared_ptr<Object> obj_to_destroy, float delay = 0.0f);
+    static void destroy(const std::shared_ptr<Object>& obj_to_destroy, float delay = 0.0f);
 protected:
     std::string _name;
     uint64_t _uniqueId;
