@@ -271,13 +271,13 @@ void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
     }
     else // 만약 자유 시점 카메라가 아니라면? -> 제약걸기
     {
-        if (XMConvertToDegrees(total_pitch_rad) > 70.f) // 카메라 고개 내리는 각도
+        if (XMConvertToDegrees(total_pitch_rad) > 60.f) // 카메라 고개 내리는 각도
         {
-            total_pitch_rad = XMConvertToRadians(70.f);
+            total_pitch_rad = XMConvertToRadians(60.f);
         }
-        else if (XMConvertToDegrees(total_pitch_rad) < -70.f) // 윗방향 보는 각도
+        else if (XMConvertToDegrees(total_pitch_rad) < -60.f) // 윗방향 보는 각도
         {
-            total_pitch_rad = XMConvertToRadians(-70.f);
+            total_pitch_rad = XMConvertToRadians(-60.f);
 		}
     }
 
