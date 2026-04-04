@@ -33,7 +33,9 @@ void FreeCameraScript::late_update(float delta_time)
     {
         _isFreeCameraMode = !_isFreeCameraMode; // 자유 카메라 모드 토글
         // 자유 카메라 모드가 켜지면 커서 숨김, 꺼지면 커서 보임
-            InputManager::instance()->ChangeShowCusor();
+        InputManager::instance()->ChangeShowCusor();
+
+        transform()->set_camera_rotation_mode(_isFreeCameraMode);
     }
 
     if (_isFreeCameraMode)

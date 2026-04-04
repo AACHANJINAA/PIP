@@ -50,6 +50,11 @@ public:
 	// --------------- Helper Functions ---------------
 	// DW설명 : 카메라 전용 회전 함수
     void camera_rotate(float pitch, float yaw, float roll);
+	bool _cameraRotationMode; // true면 free_camera_rotate, false면 일반 rotate
+    void set_camera_rotation_mode(bool enable) {
+        bool previous_mode = _cameraRotationMode;
+        _cameraRotationMode = enable;
+	}
     
     static common::Quat apply_offset_rotation(const common::Quat& base_quat, 
         float pitch_offset_deg, 

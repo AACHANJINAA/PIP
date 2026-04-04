@@ -258,13 +258,27 @@ void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
     total_yaw_rad += XMConvertToRadians(yaw);
     total_pitch_rad += XMConvertToRadians(pitch);
 
-    if (XMConvertToDegrees(total_pitch_rad) > 89.f)
+    if(_cameraRotationMode)
     {
-        total_pitch_rad = XMConvertToRadians(89.f);
+        if (XMConvertToDegrees(total_pitch_rad) > 89.f)
+        {
+            total_pitch_rad = XMConvertToRadians(89.f);
+        }
+        else if (XMConvertToDegrees(total_pitch_rad) < -89.f)
+        {
+            total_pitch_rad = XMConvertToRadians(-89.f);
+        }
     }
-    else if (XMConvertToDegrees(total_pitch_rad) < -89.f)
+    else // 만약 자유 시점 카메라가 아니라면? -> 제약걸기
     {
-        total_pitch_rad = XMConvertToRadians(-89.f);
+        if (XMConvertToDegrees(total_pitch_rad) > 70.f) // 카메라 고개 내리는 각도
+        {
+            total_pitch_rad = XMConvertToRadians(70.f);
+        }
+        else if (XMConvertToDegrees(total_pitch_rad) < -70.f) // 윗방향 보는 각도
+        {
+            total_pitch_rad = XMConvertToRadians(-70.f);
+		}
     }
 
     // Yaw는 항상 월드 Y축(0,1,0)을 기준으로 합니다.

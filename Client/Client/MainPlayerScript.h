@@ -89,6 +89,9 @@ private:
 	// [추가] 서버와 동일한 보간용 현재 속도 변수
 	common::Vec3 _currentVelocity = { 0, 0, 0 };
 
+	// 방향 회전을 위한 변수 추가
+	float _currentyaw = 0.0f; // 캐릭터의 현재 Yaw (회전) 값
+
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;
 	int32_t _actionId = 0;
 	float _timer = 0.0f;
