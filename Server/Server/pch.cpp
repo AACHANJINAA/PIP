@@ -21,3 +21,8 @@ void PIP::print_error(const char* msg, int err_no)
 
 	LocalFree(lpMsgBuf);
 }
+
+namespace PIP::SERVER
+{
+
+}
