@@ -127,11 +127,11 @@ void Mesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList)
 	{
 		commandList->IASetIndexBuffer(&_indexBufferView);
 		// 3개의 Cascade를 한 번에 그리기 위해 인스턴스 개수를 3으로 설정
-		commandList->DrawIndexedInstanced((UINT)_indices.size(), 3, 0, 0, 0);
+		commandList->DrawIndexedInstanced((UINT)_indices.size(), 1, 0, 0, 0);
 	}
 	else
 	{
-		commandList->DrawInstanced(_vertexCount, 3, 0, 0);
+		commandList->DrawInstanced(_vertexCount, 1, 0, 0);
 	}
 }
 

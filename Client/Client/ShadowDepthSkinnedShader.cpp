@@ -22,12 +22,6 @@ D3D12_SHADER_BYTECODE ShadowDepthSkinnedShader::create_vertex_shader(ComPtr<ID3D
     return compile_shader_from_file(L"Shadow_Depth_Skinned.hlsl", "VS_ShadowDepthSkinned", "vs_5_1", shader_blob);
 }
 
-D3D12_SHADER_BYTECODE
-ShadowDepthSkinnedShader::create_geometry_shader(ComPtr<ID3DBlob>& shader_blob)
-{
-    return compile_shader_from_file(L"Shadow_Depth_Skinned.hlsl", "GS_ShadowDepthSkinned", "gs_5_1", shader_blob);
-}
-
 D3D12_RASTERIZER_DESC ShadowDepthSkinnedShader::create_rasterizer_state()
 {
     D3D12_RASTERIZER_DESC desc = Shader::create_rasterizer_state();

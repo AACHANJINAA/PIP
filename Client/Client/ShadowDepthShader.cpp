@@ -24,11 +24,6 @@ D3D12_SHADER_BYTECODE ShadowDepthShader::create_pixel_shader(ComPtr<ID3DBlob>& s
     return { nullptr, 0 };
 }
 
-D3D12_SHADER_BYTECODE ShadowDepthShader::create_geometry_shader(ComPtr<ID3DBlob>& shader_blob)
-{
-	return compile_shader_from_file(L"Shadow_Depth.hlsl", "GS_ShadowDepth", "gs_5_1", shader_blob);
-}
-
 D3D12_RASTERIZER_DESC ShadowDepthShader::create_rasterizer_state()
 {
     D3D12_RASTERIZER_DESC desc = Shader::create_rasterizer_state();
