@@ -22,9 +22,7 @@ namespace PIP::SERVER
 	class SESSION;
 	class Room
 	{
-		static std::random_device _rd;
-		static std::mt19937 _gen;
-		static std::uniform_real_distribution<> _npcURD;
+		
 	public:
 		Room(int room_id, int logic_thread_idx);
 		void StartGame();

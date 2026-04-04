@@ -17,9 +17,6 @@ namespace PIP::SERVER
 {
 	constexpr int MAX_ROOM_PLAYERS = 4;
 
-	std::random_device Room::_rd {};
-	std::mt19937 Room::_gen{ _rd() };
-	std::uniform_real_distribution<> Room::_npcURD{ -1.0, 1.0 };
 	Room::Room(int room_id, int logic_thread_idx)
 		: _room_id{ room_id }, _logic_thread_idx{ logic_thread_idx }, _max_players{ MAX_ROOM_PLAYERS }, _room_state{ RoomState::WAITING }
 	{
@@ -48,10 +45,16 @@ namespace PIP::SERVER
 			int64_t npcId = _next_npc_id + (_room_id * 1000LL) + i;
 
 			// 1. 무작위 XZ 위치 결정 (Y는 충분히 높은 곳에서 시작)
-			common::Vec3 spawnPos = { static_cast<float>(rand() % 100 - 50), 500.0f, static_cast<float>(rand() % 100 - 50) };
+			common::Vec3 spawnPos = _currentStage->get_spawn_pos();
+			std::uniform_real_distribution<float> dist(-100.0f, 100.0f);
+			common::Vec3 real_spawn_pos = {
+				spawnPos.x + dist(gen),
+				spawnPos.y + 50.0f, // 충분히 높은 곳에서 시작
+				spawnPos.z + dist(gen)
+			};
 
 			// 2. [핵심] Jolt 물리 지형에 레이를 쏴서 실제 '정확한' 바닥 높이를 즉시 획득
-			JPH::RRayCast ray{ Utils::ToJolt(spawnPos), JPH::Vec3(0, -1000.0f, 0) };
+			JPH::RRayCast ray{ Utils::ToJolt(real_spawn_pos), JPH::Vec3(0, -1000.0f, 0) };
 			JPH::RayCastResult res;
 
 			// NPC 레이어 자격으로 레이를 쏴서 지형을 찾습니다.
@@ -60,15 +63,15 @@ namespace PIP::SERVER
 				_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
 			{
 				// 찾은 바닥 높이로 즉시 견인
-				spawnPos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * res.mFraction;
+				real_spawn_pos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * res.mFraction;
 			}
 			else {
 				// 바닥을 못 찾았다면 (지형 밖 등) 안전한 기본값 설정
-				spawnPos.y = MapDataManager::Instance()->AdjustPositionToGround(spawnPos).y;
+				real_spawn_pos.y = MapDataManager::Instance()->AdjustPositionToGround(real_spawn_pos).y;
 			}
 
 			// 3. NPC 생성 및 컨트롤러 초기화 (이제 spawnPos는 바닥에 붙어있음)
-			auto npc = std::make_unique<GAME::NPC>(npcId, GAME::NPCType::Basic, _room_id, spawnPos, 100);
+			auto npc = std::make_unique<GAME::NPC>(npcId, GAME::NPCType::Basic, _room_id, real_spawn_pos, 100);
 			auto controller = npc->GetComponent<GAME::CharacterControllerComponent>();
 			controller->Initialize(_physicsSystem, 1.8f, 0.5f);
 
@@ -89,7 +92,7 @@ namespace PIP::SERVER
 
 				_physicsSystem->GetNarrowPhaseQuery().CollideShape(
 					npcShape, JPH::Vec3::sReplicate(1.0f),
-					JPH::RMat44::sTranslation(Utils::ToJolt(spawnPos) + JPH::Vec3(0, 0.9f, 0)),
+					JPH::RMat44::sTranslation(Utils::ToJolt(real_spawn_pos) + JPH::Vec3(0, 0.9f, 0)),
 					settings, JPH::RVec3::sZero(), collector,
 					_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
 					_physicsSystem->GetDefaultLayerFilter(Layers::NPC),
@@ -101,20 +104,20 @@ namespace PIP::SERVER
 				}
 				else {
 					// 건물 등에 겹쳤다면 옆으로 3m 이동 후 바닥 높이 재조정
-					spawnPos.x += (rand() % 2 == 0 ? 3.0f : -3.0f);
-					spawnPos.z += (rand() % 2 == 0 ? 3.0f : -3.0f);
+					real_spawn_pos.x += (rand() % 2 == 0 ? 3.0f : -3.0f);
+					real_spawn_pos.z += (rand() % 2 == 0 ? 3.0f : -3.0f);
 
 					// 다시 바닥 찾기
-					JPH::RRayCast reRay{ Utils::ToJolt(spawnPos) + JPH::Vec3(0, 100.0f, 0), JPH::Vec3(0, -200.0f, 0) };
+					JPH::RRayCast reRay{ Utils::ToJolt(real_spawn_pos) + JPH::Vec3(0, 100.0f, 0), JPH::Vec3(0, -200.0f, 0) };
 					if (_physicsSystem->GetNarrowPhaseQuery().CastRay(reRay, res))
-						spawnPos.y = reRay.mOrigin.GetY() + reRay.mDirection.GetY() * res.mFraction;
+						real_spawn_pos.y = reRay.mOrigin.GetY() + reRay.mDirection.GetY() * res.mFraction;
 
 					attempts++;
 				}
 			}
 
 			// 5. 확정된 위치로 물리 좌표와 트랜스폼 동기화
-			npc->SetPosition(spawnPos);
+			npc->SetPosition(real_spawn_pos);
 			npc->SetLastUpdateTime(std::chrono::steady_clock::now());
 			AddNPC(std::move(npc));
 		}

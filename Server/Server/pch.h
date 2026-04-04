@@ -102,7 +102,12 @@ namespace common {
         common::Quat _rotation;
     };
 }
-
+namespace PIP::SERVER
+{
+    static std::random_device rd;
+    static std::mt19937 gen;
+    static std::uniform_real_distribution<float> npcURD;
+}
 
 // 디버그 빌드에서만 로그가 동작하도록 설정
 #ifdef _DEBUG
