@@ -2,6 +2,7 @@
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
+#include "GameFramework.h"
 #include "ObjectManager.h"
 #include "RenderComponent.h"
 #include "Renderer.h"
@@ -16,7 +17,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     texDesc.Alignment = 0;
     texDesc.Width = 1024;
     texDesc.Height = 1024;
-    texDesc.DepthOrArraySize = 3; // 3 Cascades
+    texDesc.DepthOrArraySize = 3; // 3 Cascade
     texDesc.MipLevels = 1;
     texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     texDesc.SampleDesc.Count = 1;
@@ -40,27 +41,32 @@ void ShadowManager::initialize(ID3D12Device* device)
 
     // 2. DSV Heap 생성 (CPU Only, 1 Descriptor)
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 1;
+    dsvHeapDesc.NumDescriptors = 3;
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&_dsvHeap));
 
-    UINT dsvSize = device->GetDescriptorHandleIncrementSize
-    (D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    UINT dsvSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
     CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle
     (_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-    D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-    dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-    dsvDesc.Texture2DArray.FirstArraySlice = 0;
-    dsvDesc.Texture2DArray.ArraySize = 3;
-    dsvDesc.Texture2DArray.MipSlice = 0;
-    device->CreateDepthStencilView(_shadowMapArray.Get(), &dsvDesc, dsvHandle);
+    for (int i = 0; i < 3; ++i)
+    {
+        D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+        dsvDesc.Texture2DArray.FirstArraySlice = i; // 슬라이스 0, 1, 2 각 지정
+    	dsvDesc.Texture2DArray.ArraySize = 1;       // 한 번에 하나씩만 그림
+        dsvDesc.Texture2DArray.MipSlice = 0;
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE hDsv(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
+        device->CreateDepthStencilView(_shadowMapArray.Get(), &dsvDesc, hDsv);
+    }
    
-    // 3. SRV Heap 생성 (CPU Only, 1 Descriptor for the Array)
+    // 3. SRV Heap 생성 
     D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-    srvHeapDesc.NumDescriptors = 1;
+    srvHeapDesc.NumDescriptors = 3;
     srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvHeap));
@@ -113,7 +119,7 @@ void ShadowManager::build_cascade_matrices()
     float terrainSize = SceneManager::instance()->get_terrain_size();
     float radii[3] = {
         terrainSize * 0.1f,  // 근거리: 지형의 10%
-        terrainSize * 0.7f,  // 중거리: 지형의 70%
+        terrainSize * 0.5f,  // 중거리: 지형의 70%
         terrainSize * 1.0f   // 원거리: 지형 전체
     };
 
@@ -122,7 +128,7 @@ void ShadowManager::build_cascade_matrices()
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
         XMMATRIX vp = lightView * proj;
         // 행렬을 GPU에 맞게 Transpose하여 저장
-        XMStoreFloat4x4(&_cascadeData.lightVP[c], XMMatrixTranspose(vp));
+        XMStoreFloat4x4(&_cascadeData.cascades[c].lightVP,XMMatrixTranspose(vp));
         XMStoreFloat4x4(&_shadowData.lightVP[c], XMMatrixTranspose(vp));
     }
 
@@ -133,94 +139,93 @@ void ShadowManager::build_cascade_matrices()
 
 void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index)
 {
-    // [수정] 현재 프레임 인덱스 업데이트(lighting 패스에서 올바른 CB를 참조하기 위함)
     _currentFrameIndex = frame_index;
 
-    // 1. 행렬 계산 및 데이터 업로드
+    // 1. 행렬 빌드 및 복사
     build_cascade_matrices();
     memcpy(_mappedCbCascades, &_cascadeData, sizeof(CbCascades));
     memcpy(_mappedCbShadow[frame_index], &_shadowData, sizeof(CbShadow));
 
-    // [수정 2] 시작할 때 배리어를 칩니다. (READ -> WRITE)
-    CD3DX12_RESOURCE_BARRIER barriersW[3]; 
+    // 2. Resource Barrier: PSR -> DEPTH_WRITE (모든 슬라이스)
+    CD3DX12_RESOURCE_BARRIER barriersW[3];
     for (int i = 0; i < 3; ++i) {
         barriersW[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             _shadowMapArray.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            i); // <-- 명시적으로 서브리소스 인덱스(0, 1, 2) 지정
+            i);
     }
-    cmd->ResourceBarrier(3, barriersW); // 3개를 한 번에 실행
+    cmd->ResourceBarrier(3, barriersW);
 
-    // 3. 렌더타겟 설정
-    // DSV를 0번 슬라이스 주소 하나만 넘겨줌 (배열 크기가 3으로 잡혀있어서 가능
-    CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle
-    (_dsvHeap->GetCPUDescriptorHandleForHeapStart());
-    cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
-
-    cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
-    // 4. 뷰포트 & 시저 설정
+    // 공통 뷰포트/시저 설정
     D3D12_VIEWPORT viewport = { 0.0f, 0.0f, 1024.0f, 1024.0f, 0.0f, 1.0f };
     D3D12_RECT scissor = { 0, 0, 1024, 1024 };
     cmd->RSSetViewports(1, &viewport);
     cmd->RSSetScissorRects(1, &scissor);
 
     auto renderer = Renderer::instance();
-    // 핵심 변경: 전체 오브젝트 대신, Renderer가 이미 컬링한 목록을 가져옵니다.
     const auto& renderMap = renderer->get_render_map();
+    UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-    // 패스 A: 일반 gltf 오브젝트 (bone 없음)
+    // 3번의 Draw Call 루프 (각 Cascade마다 한 번씩)
+    for (int i = 0; i < 3; ++i)
     {
-        ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
-        ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
+        // A. 현재 Cascade용 DSV 바인딩 및 Clear
+        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
+        cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
+        cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-        if (pso && rootSig) {
-            cmd->SetPipelineState(pso);
-            cmd->SetGraphicsRootSignature(rootSig);
-            cmd->SetGraphicsRootConstantBufferView(1, _cbCascades->GetGPUVirtualAddress());
+        // B. 현재 Cascade 전용 상수 버퍼 주소 계산 (256바이트 오프셋)
+        D3D12_GPU_VIRTUAL_ADDRESS currentCbAddress = _cbCascades->GetGPUVirtualAddress() + (i * sizeof(CbCascadeSingle));
 
-            // 변경된 루프: renderMap에서 "gltf" 키에 해당하는 것들만 순회
-            auto it = renderMap.find("gltf");
-            if (it != renderMap.end()) {
-                for (const auto& obj : it->second) {
-                    if (!obj || obj->is_destroyed()) continue;
-                    auto renderComp = obj->get_component<RenderComponent>();
-                    if (renderComp) {
-                        renderComp->render_CascadeShadowMap(cmd, frame_index);
+        // C. 일반 객체 렌더링 (gltf)
+        {
+            ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
+            ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
+
+            if (pso && rootSig) {
+                cmd->SetPipelineState(pso);
+                cmd->SetGraphicsRootSignature(rootSig);
+                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress); // b1에 현재 Cascade 행렬 바인딩
+
+                auto it = renderMap.find("gltf");
+                if (it != renderMap.end()) {
+                    for (const auto& obj : it->second) {
+                        if (!obj || obj->is_destroyed()) continue;
+                        auto renderComp = obj->get_component<RenderComponent>();
+                        if (renderComp) renderComp->render_CascadeShadowMap(cmd, frame_index);
+                    }
+                }
+            }
+        }
+
+        // D. 애니메이션 객체 렌더링 (skinned)
+        {
+            ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
+            ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
+
+            if (pso && rootSig) {
+                cmd->SetPipelineState(pso);
+                cmd->SetGraphicsRootSignature(rootSig);
+                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress); // b1에 현재 Cascade 행렬 바인딩
+
+                auto it = renderMap.find("skinned");
+                if (it != renderMap.end()) {
+                    for (const auto& obj : it->second) {
+                        if (!obj || obj->is_destroyed()) continue;
+                        auto renderComp = obj->get_component<RenderComponent>();
+                        auto animComp = obj->get_component<AnimationComponent>();
+                        if (renderComp && animComp && animComp->get_bone_palette_buffer()) {
+                            cmd->SetGraphicsRootConstantBufferView(2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
+                            renderComp->render_CascadeShadowMap(cmd, frame_index);
+                        }
                     }
                 }
             }
         }
     }
 
-    // 패스 B: skinned 오브젝트 (bone transform 적용)
-    {
-        ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
-        ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
-
-        if (pso && rootSig) {
-            cmd->SetPipelineState(pso);
-            cmd->SetGraphicsRootSignature(rootSig);
-            cmd->SetGraphicsRootConstantBufferView(1, _cbCascades->GetGPUVirtualAddress());
-
-            // 변경된 루프: renderMap에서 "skinned" 키에 해당하는 것들만 순회
-            auto it = renderMap.find("skinned");
-            if (it != renderMap.end()) {
-                for (const auto& obj : it->second) {
-                    if (!obj || obj->is_destroyed()) continue;
-                    auto renderComp = obj->get_component<RenderComponent>();
-                    auto animComp = obj->get_component<AnimationComponent>();
-                    if (renderComp && animComp && animComp->get_bone_palette_buffer()) {
-                        cmd->SetGraphicsRootConstantBufferView(2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
-                        renderComp->render_CascadeShadowMap(cmd, frame_index);
-                    }
-                }
-            }
-        }
-    }
-
-    // 5. 리소스 배리어: DEPTH_WRITE → PSR (샘플링 가능 상태로 복구)
+    // 3. Resource Barrier: DEPTH_WRITE -> PSR (모든 슬라이스)
     CD3DX12_RESOURCE_BARRIER barriersR[3];
     for (int i = 0; i < 3; ++i) {
         barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
