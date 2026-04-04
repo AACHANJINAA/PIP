@@ -86,6 +86,9 @@ private:
 	float _skillChargeTimer = 0.0f;  // [추가]
 	bool _packetSent = false;
 	common::Vec3 _currentMoveDir = { 0,0,0 };
+	// [추가] 서버와 동일한 보간용 현재 속도 변수
+	common::Vec3 _currentVelocity = { 0, 0, 0 };
+
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;
 	int32_t _actionId = 0;
 	float _timer = 0.0f;

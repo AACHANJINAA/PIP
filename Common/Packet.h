@@ -11,10 +11,11 @@ namespace common::packet
 	enum class EntityState : uint16_t 
 	{
 		IDLE = 0,
-		MOVE = 1,
-		ACTION = 2,
-		HITTED = 3,
-		DEAD = 4,
+		MOVE,
+		RUN,
+		ACTION,
+		HITTED,
+		DEAD,
 
 
 		COUNT,

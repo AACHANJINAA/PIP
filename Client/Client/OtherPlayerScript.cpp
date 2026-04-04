@@ -80,6 +80,9 @@ void OtherPlayerScript::update(float deltaTime)
     case common::packet::EntityState::MOVE:
         anim_comp->play("walk");
 		break;
+    case common::packet::EntityState::RUN:
+        anim_comp->play("run");
+        break;
 	case common::packet::EntityState::IDLE:
 		anim_comp->play("idle");
 		break;
@@ -101,6 +104,7 @@ void OtherPlayerScript::awake()
     std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
     
@@ -108,6 +112,7 @@ void OtherPlayerScript::awake()
 
     animation_comp->add_animation("idle", idleMesh, "idle");
     animation_comp->add_animation("walk", idleMesh, "walk");
+    animation_comp->add_animation("run", idleMesh, "run");
     animation_comp->add_animation("attack", idleMesh, "attack02");
     animation_comp->add_animation("die", idleMesh, "death");
     
