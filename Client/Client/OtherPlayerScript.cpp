@@ -81,7 +81,7 @@ void OtherPlayerScript::update(float deltaTime)
         anim_comp->play("walk");
 		break;
     case common::packet::EntityState::RUN:
-        anim_comp->play("run");
+        anim_comp->play("run", true, (15.f / 10.f)); // 다른 플레이어는 하드코딩 -> 속도를 가지고 있지 않음
         break;
 	case common::packet::EntityState::IDLE:
 		anim_comp->play("idle");

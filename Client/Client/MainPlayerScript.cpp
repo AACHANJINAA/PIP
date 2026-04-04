@@ -400,24 +400,33 @@ void MainPlayerScript::handle_input(float deltaTime)
 	XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
 	XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));
 
+	bool is_foward = false;
+
 	if (false == _isAttacking) // 공격 중이 아닐 때만 이동 입력 처리
 	{
 		// 이동 입력 처리
 		if (InputManager::instance()->IsKeyPress('W')) {
 			move_direction = Vector3::Add(move_direction, camFwdV);
 			is_moving_input = true;
+			is_foward = true;
 		}
 		if (InputManager::instance()->IsKeyPress('A')) {
 			move_direction = Vector3::Add(move_direction,
 				Vector3::ScalarProduct(camRightV, -1.0f)); is_moving_input = true;
+
+			is_foward = false;
 		}
 		if (InputManager::instance()->IsKeyPress('S')) {
 			move_direction = Vector3::Add(move_direction,
 				Vector3::ScalarProduct(camFwdV, -1.0f)); is_moving_input = true;
+
+			is_foward = false;
 		}
 		if (InputManager::instance()->IsKeyPress('D')) {
 			move_direction = Vector3::Add(move_direction, camRightV);
 			is_moving_input = true;
+
+			is_foward = false;
 		}
 
 		if (InputManager::instance()->IsKeyPress(VK_LSHIFT)) {
@@ -429,11 +438,57 @@ void MainPlayerScript::handle_input(float deltaTime)
 		}
 	}
 
+
+	// 방향 갱신
 	if (is_moving_input) {
+
+		// 방향벡터 갱신
 		_currentMoveDir = common::Normalize(move_direction);
-		// 이동 중이면 카메라 방향에 맞춰 회전 (기존 로직)
-		float yawDegrees = XMConvertToDegrees(atan2f(camFwdV.x, camFwdV.z)) - 180.f;
-		transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
+
+		float targetYaw = XMConvertToDegrees(atan2f(move_direction.x, move_direction.z)) - 180.f;
+		float currentYaw = _currentyaw;
+		// Yaw 보간 (360도 회전 고려)
+		float yawDiff = targetYaw - currentYaw;
+
+		while (yawDiff > 180.f) yawDiff -= 360.f;
+		while (yawDiff < -180.f) yawDiff += 360.f;
+
+		float lerpFactor = std::min(1.0f, deltaTime * 10.0f); // 회전 속도 조절
+		_currentyaw += yawDiff * lerpFactor;
+
+		if (_currentyaw > 360.f) _currentyaw -= 360.f;
+		if (_currentyaw < -360.f) _currentyaw += 360.f;
+
+		transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
+
+		//if(is_foward)
+		//{
+		//	// 이동 중이면 카메라 방향에 맞춰 회전 (기존 로직)
+		//	float yawDegrees = XMConvertToDegrees(atan2f(camFwdV.x, camFwdV.z)) - 180.f;
+		//	transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
+		//}
+		//else
+		//{
+		//	// w키만 누르고 이동하는게 아니라면 이동 방향에 맞춰 회전 (추가 로직)
+		//	// 선형 보간을 사용하여 이동 방향으로 부드럽게 회전하도록 개선
+		//	// 회전은 목표 회전과 현재 회전 사이의 차이를 계산해서 더 작은 각도로 회전하도록 합니다.
+		//	float targetYaw = XMConvertToDegrees(atan2f(move_direction.x, move_direction.z)) - 180.f;
+		//	float currentYaw = _currentyaw;
+		//	// Yaw 보간 (360도 회전 고려)
+		//	float yawDiff = targetYaw - currentYaw;
+
+		//	while (yawDiff > 180.f) yawDiff -= 360.f;
+		//	while (yawDiff < -180.f) yawDiff += 360.f;
+
+		//	float lerpFactor = std::min(1.0f, deltaTime * 10.0f); // 회전 속도 조절
+		//	_currentyaw += yawDiff * lerpFactor;
+
+		//	if (_currentyaw > 360.f) _currentyaw -= 360.f;
+		//	if (_currentyaw < -360.f) _currentyaw += 360.f;
+
+		//	transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
+		//}
+		
 	}
 	else {
 		_currentMoveDir = { 0, 0, 0 };
@@ -590,5 +645,4 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 	}
 	
 }
-
 
