@@ -213,7 +213,7 @@ float4 PS_Main(PS_Input input) : SV_TARGET
          // Shadow
     float3 view_pos = mul(float4(input.PositionW, 1.0f), gmtxView).xyz;
     float view_depth = view_pos.z;
-    float shadow_factor = sample_csm_shadow(input.PositionW, N, view_depth);
+    float shadow_factor = sample_csm_shadow(input.PositionW, N, view_depth, input.PositionH.xy);
 
     float3 final_color = (lit_color.rgb * shadow_factor) + ibl_color;
 
