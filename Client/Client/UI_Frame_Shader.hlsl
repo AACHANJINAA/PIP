@@ -59,23 +59,26 @@ PS_INPUT VS_UI_FRAME(VS_INPUT input)
 }
 
 
-static const float4 PlayerColors[4] =
+static const float3 PlayerColors[4] =
 {
-	float4(0.2, 2.0, 2.0, 1.0), // 0: purple
-     float4(2.0, 0.2, 0.2, 1.0), // 1: Red
-     float4(0.2, 1.5, 0.2, 1.0), // 2: Green
-     float4(0.2, 0.2, 2.0, 1.0) // 3: Blue
+    float3(0.863f, 0.078f, 0.235f), // crimson red
+	float3(0.0f, 1.0f, 0.498f), // spring green
+    float3(1.0f, 0.843f, 0.0f), // gold
+	float3(0.541f, 0.169f, 0.886f), // violet
 };
+
      // 픽셀 셰이더
 float4 PS_UI_FRAME(PS_INPUT input) : SV_TARGET
 {
+    float4 final_color = (0.0f, 0.0f, 0.0f, 1.0f);
 	// ID에 맞는 색상 선택 (범위 제한 % 4)
-	float4 idColor = PlayerColors[uint(g_otherplayerid) % 4];
+	float3 idColor = PlayerColors[uint(g_otherplayerid) % 4];
 
 	if (g_UseTexture > 0)
 	{
 		float4 texColor = g_Texture.Sample(g_Sampler, input.texcoord);
-		return texColor * g_Color * idColor * 3.0f; // ID 색상 곱하기
-	}
-	return g_Color * idColor;
+        final_color = texColor * g_Color * float4(idColor * 10.0f, 1.0f); // ID 색상 곱하기
+    }
+
+	return final_color;
 }

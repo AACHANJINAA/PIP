@@ -106,12 +106,11 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
 
 float3 lerp_op(float3 final_color)
 {
-    float color_figure = 0.2;
 	const float3 playercolors[4] = {
-        float3(0.0, color_figure, color_figure), 
-        float3(color_figure, 0.0, 0.0),
-        float3(0.0, color_figure, 0.0),
-        float3(0.0, 0.0, color_figure) 
+        float3(0.863f, 0.078f, 0.235f), // crimson red
+		float3(0.0f, 1.0f, 0.498f), // spring green
+		float3(1.0f, 0.843f, 0.0f), // gold
+		float3(0.541f, 0.169f, 0.886f), // violet
     };
 
     int colorIndex = g_otherplayerid % 4;
