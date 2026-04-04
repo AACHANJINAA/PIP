@@ -218,6 +218,7 @@ void MainPlayerScript::awake()
 	std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
@@ -226,6 +227,7 @@ void MainPlayerScript::awake()
 
 	animation_component->add_animation("idle", idleMesh, "idle");
 	animation_component->add_animation("walk", idleMesh, "walk");
+	animation_component->add_animation("run", idleMesh, "run");
 	animation_component->add_animation("attack", idleMesh, "attack02");
 	animation_component->add_animation("die", idleMesh, "death");
 
@@ -367,7 +369,11 @@ void MainPlayerScript::handle_state(float deltaTime)
 	}
 	else {
 		// 공격 중이 아닐 때만 WALK/IDLE 전환
-		if (common::Length(_currentMoveDir) > 0.01f) {
+		if (_speed > 10.f && common::Length(_currentMoveDir) > 0.01f) { // 달리기 속도 15라서 10 이상으로 체크해줌
+			_state = common::packet::EntityState::RUN;
+			anim_comp->play("run",true,(_speed / 10.f)); // 애니메이션 속도를 현재 속도의 비율로 조절해야 함 -> 달리기 속도 15이지만 애니메이션 발과 맞는 속도는 10이다.
+		}
+		else if (common::Length(_currentMoveDir) > 0.01f) {
 			_state = common::packet::EntityState::MOVE;
 			anim_comp->play("walk");
 		}
@@ -394,22 +400,33 @@ void MainPlayerScript::handle_input(float deltaTime)
 	XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
 	XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));
 
-	// 이동 입력 처리
-	if (InputManager::instance()->IsKeyPress('W')) {
-		move_direction = Vector3::Add(move_direction, camFwdV);
-		is_moving_input = true;
-	}
-	if (InputManager::instance()->IsKeyPress('A')) {
-		move_direction = Vector3::Add(move_direction,
-			Vector3::ScalarProduct(camRightV, -1.0f)); is_moving_input = true;
-	}
-	if (InputManager::instance()->IsKeyPress('S')) {
-		move_direction = Vector3::Add(move_direction,
-			Vector3::ScalarProduct(camFwdV, -1.0f)); is_moving_input = true;
-	}
-	if (InputManager::instance()->IsKeyPress('D')) {
-		move_direction = Vector3::Add(move_direction, camRightV);
-		is_moving_input = true;
+	if (false == _isAttacking) // 공격 중이 아닐 때만 이동 입력 처리
+	{
+		// 이동 입력 처리
+		if (InputManager::instance()->IsKeyPress('W')) {
+			move_direction = Vector3::Add(move_direction, camFwdV);
+			is_moving_input = true;
+		}
+		if (InputManager::instance()->IsKeyPress('A')) {
+			move_direction = Vector3::Add(move_direction,
+				Vector3::ScalarProduct(camRightV, -1.0f)); is_moving_input = true;
+		}
+		if (InputManager::instance()->IsKeyPress('S')) {
+			move_direction = Vector3::Add(move_direction,
+				Vector3::ScalarProduct(camFwdV, -1.0f)); is_moving_input = true;
+		}
+		if (InputManager::instance()->IsKeyPress('D')) {
+			move_direction = Vector3::Add(move_direction, camRightV);
+			is_moving_input = true;
+		}
+
+		if (InputManager::instance()->IsKeyPress(VK_LSHIFT)) {
+			_speed = 15.f; // 달리기 속도 -> 서버와 동일하게 해주어야 함
+		}
+		else
+		{
+			_speed = 5.f; // 걷기 속도 -> 서버와 동일하게 해주어야 함
+		}
 	}
 
 	if (is_moving_input) {
@@ -479,10 +496,23 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 		}
 	}
 
-	// 2. 논리적 위치 예측 (Input + Knockback + Gravity)
-	common::Vec3 moveVel = _currentMoveDir * _speed;
-	_logicalPosition += (moveVel) * deltaTime;
+	// [핵심 수정] 서버와 동일한 Lerp 가감속 공식 적용
+	common::Vec3 targetVelocity = _currentMoveDir * _speed;
+	float moveDeceleration = 15.0f; // 서버와 무조건 같은 값이어야 함
+	float t = std::min(deltaTime * moveDeceleration, 1.0f);
+
+
+	// 현재 속도를 목표 속도로 서서히 변화시킴
+	_currentVelocity = _currentVelocity + (targetVelocity - _currentVelocity) * t;
+
+	// 보간된 _currentVelocity를 사용해서 이동
+	_logicalPosition += _currentVelocity * deltaTime;
 	_logicalPosition.y += _verticalVelocity * deltaTime;
+
+	//// 2. 논리적 위치 예측 (Input + Knockback + Gravity)
+	//common::Vec3 moveVel = _currentMoveDir * _speed;
+	//_logicalPosition += (moveVel) * deltaTime;
+	//_logicalPosition.y += _verticalVelocity * deltaTime;
 
 	// 땅 파고듦 방지 (중요!)
 	if (_isGrounded && _logicalPosition.y < groundHeight) {

@@ -1191,10 +1191,25 @@ namespace PIP::SERVER
 		// 2. [의도 수용] 클라이언트가 보낸 방향 벡터를 그대로 사용
 		common::Vec3 moveDir = move_packet._move_dir;
 
-		if (moveDist < 10.0f) { // 정상 범위 이내일 때
+		if (moveDist < 10.0f) { // 정상 범위 이내일 때 (클라이언트와 서버의 순간적인 거리 차이가 10 이하여야 함)
 			if (common::LengthSq(moveDir) > 0.0001f) {
 				// 방향 벡터에 플레이어의 진짜 속도를 곱해 물리 엔진에 설정
-				pcc->SetMoveVelocity(common::Normalize(moveDir) * player->GetSpeed());
+				float currentTargetSpeed = 0.0f;
+
+				switch (move_packet._state) {
+				case common::packet::EntityState::RUN:
+					currentTargetSpeed = 15.0f; // 달리기 속도 (기획에 맞게 수정)
+					break;
+				case common::packet::EntityState::MOVE: // 걷기 상태가 있다면
+					currentTargetSpeed = 5.0f;  // 걷기 속도
+					break;
+				default:
+					currentTargetSpeed = 0.f; // 기본값 10.0f
+					break;
+				}
+
+				player->SetSpeed(currentTargetSpeed);
+				pcc->SetMoveVelocity(common::Normalize(moveDir) * currentTargetSpeed);
 			}
 			else {
 				pcc->SetMoveVelocity({ 0, 0, 0 });

@@ -18,6 +18,11 @@ namespace PIP::GAME
             _impactVelocity = { 0, 0, 0 };
         }
 
+        // 부드러운 가감속 (Lerp) 적용
+        float moveDeceleration = 15.0f; // 가감속 계수 (클라이언트와 동일해야 함!)
+        float t = std::min(deltaTime * moveDeceleration, 1.0f);
+        _currentMoveVelocity = _currentMoveVelocity + (_targetMoveVelocity - _currentMoveVelocity) * t;
+
         // 2. 최종 수평 속도 합성
         common::Vec3 horizontalInput;
         // [핵심] 넉백 속도가 일정 이상이면 플레이어 조작(_moveVelocity)을 완전히 무시
@@ -25,7 +30,11 @@ namespace PIP::GAME
             horizontalInput = _impactVelocity;
         }
         else {
-            horizontalInput = _moveVelocity + _impactVelocity;
+            // 혹시몰라서 기존 코드 남겨놓음
+            // horizontalInput = _moveVelocity + _impactVelocity;
+
+            // [수정] _moveVelocity 대신 _currentMoveVelocity 사용
+            horizontalInput = _currentMoveVelocity + _impactVelocity;
         }
 
         // 1. 중력 및 속도 계산
@@ -99,6 +108,9 @@ namespace PIP::GAME
         //    MYLOG("player pos (" << pos.x << "," << pos.y << "," << pos.z << ")");
         //    _timer = 2.0f;
         //}
-        _moveVelocity = { 0, 0, 0 };
+
+
+		// 이것도 수정 -> 혹시 몰라서 남겨놓음
+        // _moveVelocity = { 0, 0, 0 };
     }
 }
