@@ -20,7 +20,6 @@ protected:
     virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override;
     virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
     virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
-	virtual D3D12_SHADER_BYTECODE create_geometry_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
     // Depth-only이므로 Rasterizer 및 DepthStencil 설정 변경
     virtual D3D12_RASTERIZER_DESC create_rasterizer_state() override;
