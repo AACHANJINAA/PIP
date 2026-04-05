@@ -40,7 +40,7 @@ namespace PIP::SERVER
 
 	void Room::SpawnInitialNPCs()
 	{
-		for (int i = 0; i < 100; ++i)
+		for (int i = 0; i < 500; ++i)
 		{
 			int64_t npcId = _next_npc_id + (_room_id * 1000LL) + i;
 
@@ -1201,10 +1201,10 @@ namespace PIP::SERVER
 
 				switch (move_packet._state) {
 				case common::packet::EntityState::RUN:
-					currentTargetSpeed = 15.0f; // 달리기 속도 (기획에 맞게 수정)
+					currentTargetSpeed = common::move_speed::player_run_speed; // 달리기 속도 (기획에 맞게 수정)
 					break;
 				case common::packet::EntityState::MOVE: // 걷기 상태가 있다면
-					currentTargetSpeed = 5.0f;  // 걷기 속도
+					currentTargetSpeed = common::move_speed::player_walk_speed;  // 걷기 속도
 					break;
 				default:
 					currentTargetSpeed = 0.f; // 기본값 10.0f
