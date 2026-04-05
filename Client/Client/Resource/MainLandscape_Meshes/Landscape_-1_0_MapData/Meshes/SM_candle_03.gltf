@@ -1,0 +1,296 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 10008,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1988,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.15647468, -0.000836200721, -0.198866993 ],
+			"max": [ 0.177106529, 0.367875695, 0.228939056 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1988,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1988,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1988,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1988,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 60,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 40,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.0906409323, 0.140572637, -0.123566046 ],
+			"max": [ 0.119920462, 0.426215887, 0.125084817 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 40,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 40,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 40,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 40,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_candle_03.bin",
+			"byteLength": 133644
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 20016,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 23856,
+			"byteOffset": 20016,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 23856,
+			"byteOffset": 43872,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 31808,
+			"byteOffset": 67728,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15904,
+			"byteOffset": 99536,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15904,
+			"byteOffset": 115440,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 60,
+			"byteOffset": 131344,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 480,
+			"byteOffset": 131404,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 480,
+			"byteOffset": 131884,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 640,
+			"byteOffset": 132364,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 320,
+			"byteOffset": 133004,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 320,
+			"byteOffset": 133324,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Candle_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_candle_C.png"
+		},
+		{
+			"uri": "T_candle_N.png"
+		},
+		{
+			"uri": "T_candle_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Candle",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994
+		},
+		{
+			"name": "MI_Candle_light",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0, 0, 0, 0.690196097 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			},
+			"emissiveFactor": [ 1, 0.764705956, 0.313725501 ],
+			"alphaMode": "BLEND",
+			"doubleSided": true,
+			"extensions":
+			{
+				"KHR_materials_ior":
+				{
+					"ior": 1
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_candle_03",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_candle_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Candle_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_candle_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_candle_M",
+			"sampler": 0,
+			"source": 3
+		}
+	],
+	"extensionsUsed": [
+		"KHR_materials_ior"
+	]
+}

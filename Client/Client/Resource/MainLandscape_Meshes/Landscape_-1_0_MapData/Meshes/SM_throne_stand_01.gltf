@@ -1,0 +1,315 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 24048,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 10366,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -2.6082406, -0.064623639, -2.37678361 ],
+			"max": [ 2.60824037, 0.799935818, 2.37048769 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 10366,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 10366,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 10366,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 10366,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 96,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 50,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.49906397, -0.0593004934, -1.31017983 ],
+			"max": [ 1.49826384, 0.818645179, 2.39644122 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 50,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 50,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 50,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 50,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_throne_stand_01.bin",
+			"byteLength": 631488
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 48096,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 124392,
+			"byteOffset": 48096,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 124392,
+			"byteOffset": 172488,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 165856,
+			"byteOffset": 296880,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 82928,
+			"byteOffset": 462736,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 82928,
+			"byteOffset": 545664,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96,
+			"byteOffset": 628592,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 600,
+			"byteOffset": 628688,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 600,
+			"byteOffset": 629288,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 800,
+			"byteOffset": 629888,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 400,
+			"byteOffset": 630688,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 400,
+			"byteOffset": 631088,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "MI_Flag_BaseColor.png"
+		},
+		{
+			"uri": "MI_Flag_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Flag_Normal.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Flag",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_throne_stand_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Flag_BaseColor",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Flag_MetallicRoughness",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Flag_Normal",
+			"sampler": 0,
+			"source": 5
+		}
+	]
+}

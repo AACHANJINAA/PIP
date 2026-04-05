@@ -1,0 +1,236 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 18612,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 4174,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.216111556, -0.0159322731, -0.473580986 ],
+			"max": [ 0.216111138, 0.538716972, 0.473580897 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 4174,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 4174,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 4174,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 4174,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 144,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 54,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.166174501, 0.12002375, -0.416291386 ],
+			"max": [ 0.129010156, 0.536762655, 0.466276437 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 54,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 54,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 54,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 54,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_CineCam.bin",
+			"byteLength": 274136
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 37224,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 50088,
+			"byteOffset": 37224,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 50088,
+			"byteOffset": 87312,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 66784,
+			"byteOffset": 137400,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 33392,
+			"byteOffset": 204184,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 33392,
+			"byteOffset": 237576,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 144,
+			"byteOffset": 270968,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 648,
+			"byteOffset": 271112,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 648,
+			"byteOffset": 271760,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 864,
+			"byteOffset": 272408,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 432,
+			"byteOffset": 273272,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 432,
+			"byteOffset": 273704,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_CineMat_CameraBody",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0.0431372561, 0.0431372561, 0.0431372561, 1 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.200000003
+			},
+			"extensions":
+			{
+				"KHR_materials_specular":
+				{
+					"specularFactor": 0.300000012
+				}
+			}
+		},
+		{
+			"name": "MI_CineMat_CamViewFinder",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0, 0, 0, 1 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_CineCam",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"extensionsUsed": [
+		"KHR_materials_specular"
+	]
+}
