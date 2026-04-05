@@ -215,10 +215,24 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                         if (!obj || obj->is_destroyed()) continue;
                         auto renderComp = obj->get_component<RenderComponent>();
                         auto animComp = obj->get_component<AnimationComponent>();
-                        if (renderComp && animComp && animComp->get_bone_palette_buffer()) {
-                            cmd->SetGraphicsRootConstantBufferView(2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
+                        // DW수정 : 선형 할당기 구조에 맞춰 바인딩 -> 선형 할당기로부터 받아오기
+                        if (renderComp && animComp) 
+                        {
+                            // 선형 할당기에서 할당받은 이번 프레임의 뼈대 주소를 가져오기
+                            D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+
+                            if (boneGpuAddr != 0) 
+                            {
+                                // csm_depth_skinned 루트 시그니처에 맞게 2번 파라미터에 뼈대 주소 바인딩
+                                cmd->SetGraphicsRootConstantBufferView(2, boneGpuAddr);
+                            }
                             renderComp->render_CascadeShadowMap(cmd, frame_index);
                         }
+
+                       /* if (renderComp && animComp && animComp->get_bone_palette_buffer()) {
+                            cmd->SetGraphicsRootConstantBufferView(2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
+                            renderComp->render_CascadeShadowMap(cmd, frame_index);
+                        }*/
                     }
                 }
             }

@@ -32,8 +32,12 @@ public:
 	void set_anim_speed(float wantSpeed) { _animationSpeed = std::max(wantSpeed, 0.0f); }
 
 
-	// DW설명 : 뼈대 변환 행렬 버퍼 얻기
-	const ComPtr<ID3D12Resource>& get_bone_palette_buffer() const { return _bone_palette_buffer; }
+	//// DW설명 : 뼈대 변환 행렬 버퍼 얻기 -> 작동 안함
+	//const ComPtr<ID3D12Resource>& get_bone_palette_buffer() const { return _bone_palette_buffer; }
+
+	// DW설명 : 뼈대 변환 행렬 버퍼의 GPU 가상 주소 얻기 (렌더링 시 셰이더에 전달하기 위해)
+	D3D12_GPU_VIRTUAL_ADDRESS get_bone_gpu_virtual_address() const { return _currentBoneGPUAddr; }
+
 private:
 	void change_mesh(const std::shared_ptr<Mesh>& want_mesh);
 	void create_bone_palette_buffer(const std::shared_ptr<Mesh>& want_mesh);
@@ -55,11 +59,19 @@ private:
 
 	std::shared_ptr<Mesh> _currentMesh{};
 	std::shared_ptr<Mesh> _bufferedMesh = nullptr; // 현재 버퍼가 어떤 메쉬를 기준으로 생성된 뼈 팔레트 행렬 상수 버퍼인지 확인용
-	// DW설명
-	// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼 -> 그냥 이걸 넘긴다
-	// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문
-	ComPtr<ID3D12Resource> _bone_palette_buffer;
-	UINT8* _mapped_bone_data = nullptr; // 매핑된 GPU 버퍼에 직접 접근하기 위한 포인터 (CPU 메모리)
+	
+	
+	//// DW설명 -> 이것 작동 안함
+	//// 최종 뼈대 변환 행렬을 담을 GPU 상수 버퍼 -> 그냥 이걸 넘긴다
+	//// 뼈 행렬까지 각자 가지고 있을 필요는 없다 -> 상태 비의존적으로 제작하였기 때문
+	//ComPtr<ID3D12Resource> _bone_palette_buffer;
+	//UINT8* _mapped_bone_data = nullptr; // 매핑된 GPU 버퍼에 직접 접근하기 위한 포인터 (CPU 메모리)
+
+
+	// DW설명 : GPU 가상 주소는 버퍼가 GPU에 업로드된 후에 얻을 수 있음 -> 버퍼가 생성되고 데이터가 업로드된 후에 이 주소를 얻어서 저장해둬야 함
+	// 즉 매 프레임 할당기에서 빌려올 주소와 크기를 기억할 변수들임
+	D3D12_GPU_VIRTUAL_ADDRESS _currentBoneGPUAddr = 0;
+	size_t _bonePaletteSize = 0;
 	
 
 

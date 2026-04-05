@@ -1,6 +1,7 @@
 #pragma once
 #include "TimerManager.h"
 #include "Scene.h"
+#include "LinearAllocator.h"
 // static constexpr UINT SWAP_CHAIN_BUFFERS = 2;
 class ReplicationSystem;
 class GameFramework : public Singleton<GameFramework>
@@ -67,6 +68,8 @@ private:
 	// [추가] 리플리케이션 시스템 소유 (unique_ptr로 생명주기 관리)
 	std::unique_ptr<ReplicationSystem> _replicationSystem;
 
+	// [추가] 프레임당 상수 버퍼 할당을 위한 선형 할당기
+	std::unique_ptr<LinearAllocator> _linearAllocator;
 
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
@@ -74,7 +77,6 @@ private:
 	GameFramework();
 	~GameFramework();
 public:
-
 
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	// 프레임워크를 초기화하는 함수(주 윈도우가 생성되면 호출됨)
@@ -116,6 +118,9 @@ public:
 
 	// [추가] 리플리케이션 시스템 접근자
 	ReplicationSystem* get_replication_system() const { return _replicationSystem.get(); }
+
+	// [추가] 선형 할당기 접근자
+	LinearAllocator* linear_allocator() const { return _linearAllocator.get(); }
 
 	UINT64 next_fence_value() const;
 public:
