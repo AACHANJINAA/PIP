@@ -47,7 +47,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	_hInstance = hInstance;
 	_hWnd = hMainWnd;
 
-	//Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다. 
+	// Direct3D 디바이스, 명령 큐와 명령 리스트, 스왑 체인 등을 생성하는 함수를 호출한다.
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	CreateRtvAndDsvDescriptorHeaps();
@@ -67,6 +67,10 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	}
 	// [추가] 리플리케이션 시스템 초기화
 	_replicationSystem = std::make_unique<ReplicationSystem>();
+
+	// [추가] 선형 할당기 초기화 (예: 총 32MB, 프레임당 16MB) -> 부족할 시 추가하기 // 두번째 인자는 총 할당할 메모리 크기, 세번째 인자로 두번째 인자만큼 할당한 것을 나누어 줄거임
+	_linearAllocator = std::make_unique<LinearAllocator>(_device.Get(), 32 * 1024 * 1024, SWAP_CHAIN_BUFFERS);
+
 	DescriptorManager::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
@@ -397,6 +401,9 @@ void GameFramework::FrameAdvance()
 	// [수정] 현재 프레임 인덱스에 맞는 할당기 선택
 	auto& currentRenderAllocator = _commandAllocators[_swapChainBufferIndex];
 	auto& currentUploadAllocator = _uploadAllocators[_swapChainBufferIndex];
+
+	// [추가] 선형 할당기의 오프셋을 현재 렌더링 프레임의 시작 위치로 리셋
+	_linearAllocator->reset(_swapChainBufferIndex);
 
 	// 프레임 시작: ImGui에게 새 프레임 준비 지시
 	ImGuiManager::instance()->new_frame();
