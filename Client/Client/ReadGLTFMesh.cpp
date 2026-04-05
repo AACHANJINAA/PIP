@@ -1844,6 +1844,13 @@ void ReadGLTFMesh::bounding_box_merge()
 		// 여기서는 모든 점을 수집해야 하므로 0부터 시작합니다.
 		for (size_t i = 0; i < _primitives.size(); ++i)
 		{
+			auto& obb = _primitives[i]->_orientedBoundingBox;
+			if (std::isnan(obb.Center.x) || std::isnan(obb.Extents.x) || std::isnan(obb.Orientation.x))
+			{
+				// 깨진 데이터는 무시해버림
+				continue;
+			}
+
 			std::array<XMFLOAT3, 8> corners;
 			_primitives[i]->_orientedBoundingBox.GetCorners(corners.data());
 			all_points.insert(all_points.end(), corners.begin(), corners.end());
