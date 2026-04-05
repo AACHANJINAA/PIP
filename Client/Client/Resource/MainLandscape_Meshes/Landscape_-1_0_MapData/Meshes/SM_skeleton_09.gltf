@@ -1,0 +1,318 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 15771,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 6757,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.309252828, -0.00290657743, -0.126315519 ],
+			"max": [ 0.309255689, 1.88604605, 0.282443166 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 6757,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 6757,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 6757,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 6757,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 4200,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 2273,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.188537434, 1.19214416, -0.0880286172 ],
+			"max": [ 0.141566649, 3.06217146, 0.176409885 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 2273,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 2273,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 2273,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 2273,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_skeleton_09.bin",
+			"byteLength": 545624
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 31542,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 81084,
+			"byteOffset": 31544,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 81084,
+			"byteOffset": 112628,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 108112,
+			"byteOffset": 193712,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 54056,
+			"byteOffset": 301824,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 54056,
+			"byteOffset": 355880,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8400,
+			"byteOffset": 409936,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 27276,
+			"byteOffset": 418336,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 27276,
+			"byteOffset": 445612,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 36368,
+			"byteOffset": 472888,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 18184,
+			"byteOffset": 509256,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 18184,
+			"byteOffset": 527440,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Metall_Trim_styl_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Metall_Trim_styl_01_Occlusion.png"
+		},
+		{
+			"uri": "T_Skeleton_C.png"
+		},
+		{
+			"uri": "T_Skeleton_M.png"
+		},
+		{
+			"uri": "T_Skeleton_N.png"
+		},
+		{
+			"uri": "T_fMetalTrimStyl_C.png"
+		},
+		{
+			"uri": "T_fMetalTrimStyl_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Skeleton",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		},
+		{
+			"name": "MI_Metall_Trim_styl_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
+			},
+			"occlusionTexture":
+			{
+				"index": 6
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_skeleton_09",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Skeleton_C",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Skeleton_M",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "T_Skeleton_N",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "T_fMetalTrimStyl_C",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Metall_Trim_styl_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_fMetalTrimStyl_N",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Metall_Trim_styl_01_Occlusion",
+			"sampler": 0,
+			"source": 1
+		}
+	]
+}

@@ -1,0 +1,187 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 21120,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 10880,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.647448957, -0.00679228175, -0.647446513 ],
+			"max": [ 5.40308332, 3.71299362, 5.40308571 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 10880,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 10880,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 10880,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 10880,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_ceiling_01.bin",
+			"byteLength": 651520
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 42240,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 130560,
+			"byteOffset": 42240,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 130560,
+			"byteOffset": 172800,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 174080,
+			"byteOffset": 303360,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 87040,
+			"byteOffset": 477440,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 87040,
+			"byteOffset": 564480,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Arches_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_arches_C.png"
+		},
+		{
+			"uri": "T_arches_N.png"
+		},
+		{
+			"uri": "T_arches_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Arches_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_ceiling_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_arches_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Arches_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_arches_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_arches_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

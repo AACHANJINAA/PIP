@@ -1,0 +1,307 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1617,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 287,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.14830434, -0.000906955334, -1.15940535 ],
+			"max": [ 1.14403546, 0.579116404, 1.15505862 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 287,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 287,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 287,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 287,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 7794,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 2470,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.10662293, -0.0839386806, -1.07507622 ],
+			"max": [ 0.95803231, 0.726622403, 0.946151733 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 2470,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 2470,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 2470,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 2470,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_gold_heap_01.bin",
+			"byteLength": 173216
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 3234,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3444,
+			"byteOffset": 3236,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3444,
+			"byteOffset": 6680,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4592,
+			"byteOffset": 10124,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2296,
+			"byteOffset": 14716,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2296,
+			"byteOffset": 17012,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15588,
+			"byteOffset": 19308,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 29640,
+			"byteOffset": 34896,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 29640,
+			"byteOffset": 64536,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 39520,
+			"byteOffset": 94176,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 19760,
+			"byteOffset": 133696,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 19760,
+			"byteOffset": 153456,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Treasure_Coins_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Treasure_Coins_Normal.png"
+		},
+		{
+			"uri": "MI_Treasure_Coins_Occlusion.png"
+		},
+		{
+			"uri": "T_Treasure_C.png"
+		},
+		{
+			"uri": "T_Treasure_M.png"
+		},
+		{
+			"uri": "T_Treasure_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Treasure_Coins",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0, 0, 0, 1 ],
+				"metallicRoughnessTexture":
+				{
+					"index": 0
+				}
+			},
+			"normalTexture":
+			{
+				"index": 1
+			},
+			"occlusionTexture":
+			{
+				"index": 2
+			}
+		},
+		{
+			"name": "MI_Treasure",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
+			},
+			"occlusionTexture":
+			{
+				"index": 4
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_gold_heap_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Treasure_Coins_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Treasure_Coins_Normal",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Treasure_Coins_Occlusion",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Treasure_C",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "T_Treasure_M",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "T_Treasure_N",
+			"sampler": 0,
+			"source": 5
+		}
+	]
+}

@@ -1,0 +1,226 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 360,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 126,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -2.2474277, -1.10763997e-16, -2.29401255 ],
+			"max": [ 0.0161458142, 0.340322345, -3.82110466e-06 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 126,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 126,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 126,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 126,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_floor_cap_01.bin",
+			"byteLength": 7416
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 360,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1512,
+			"byteOffset": 360,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1512,
+			"byteOffset": 1872,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2016,
+			"byteOffset": 3384,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1008,
+			"byteOffset": 5400,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1008,
+			"byteOffset": 6408,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Styl_Wall_Concrete_SM_floor_cap_01_BaseColor.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Concrete_SM_floor_cap_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Concrete_SM_floor_cap_01_Normal.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Concrete_SM_floor_cap_01_Occlusion.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Styl_Wall_Concrete_SM_floor_cap_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00832657143, -0.00828064978 ],
+							"scale": [ 1.03252637, 1.02683187 ]
+						}
+					}
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00832657143, -0.00828064978 ],
+							"scale": [ 1.03252637, 1.02683187 ]
+						}
+					}
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00832657143, -0.00828064978 ],
+						"scale": [ 1.03252637, 1.02683187 ]
+					}
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 3,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00832657143, -0.00828064978 ],
+						"scale": [ 1.03252637, 1.02683187 ]
+					}
+				}
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_floor_cap_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Styl_Wall_Concrete_SM_floor_cap_01_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Styl_Wall_Concrete_SM_floor_cap_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Styl_Wall_Concrete_SM_floor_cap_01_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Styl_Wall_Concrete_SM_floor_cap_01_Occlusion",
+			"sampler": 0,
+			"source": 3
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}
