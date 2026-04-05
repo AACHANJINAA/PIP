@@ -49,7 +49,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
     title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     title_ui_background->set_texture("Resource/UI/Title_UI.dds");
-    UIManager::instance()->add_ui(UILayer::BACKGROUND, "UI_Background_UI", title_ui_background_obj);
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "Title_UI", title_ui_background_obj);
 
     // logo
     auto logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
@@ -59,5 +59,5 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     logo_ui_background->set_size(412.5f, 250.f);// Frame보다 작게
     logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
-    UIManager::instance()->add_ui(UILayer::MIDDLE, "UI_Background_UI", logo_ui_background_obj);
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", logo_ui_background_obj);
 }
