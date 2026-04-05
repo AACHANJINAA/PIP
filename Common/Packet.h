@@ -392,4 +392,16 @@ namespace common::packet
 #pragma pack (pop)
 }
 
+namespace common::anim_speed // 수정하지 말것
+{
+	constexpr float player_walk_animation = 2.0f;
+	constexpr float player_run_animation = 2.5f;
+}
+
+namespace common::move_speed // 실제 이동속도 이므로 더 빨라저야 한다면 수정할것
+{
+	constexpr float player_walk_speed = 2.0f;
+	constexpr float player_run_speed = 5.f;
+}
+
 // TEST COMMENT: This is for testing purposes.

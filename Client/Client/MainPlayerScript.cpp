@@ -369,13 +369,13 @@ void MainPlayerScript::handle_state(float deltaTime)
 	}
 	else {
 		// 공격 중이 아닐 때만 WALK/IDLE 전환
-		if (_speed > 10.f && common::Length(_currentMoveDir) > 0.01f) { // 달리기 속도 15라서 10 이상으로 체크해줌
+		if (_speed >= common::move_speed::player_run_speed && common::Length(_currentMoveDir) > 0.01f) { // 달리기 속도 15라서 10 이상으로 체크해줌
 			_state = common::packet::EntityState::RUN;
-			anim_comp->play("run",true,(_speed / 10.f)); // 애니메이션 속도를 현재 속도의 비율로 조절해야 함 -> 달리기 속도 15이지만 애니메이션 발과 맞는 속도는 10이다.
+			anim_comp->play("run",true,(_speed / common::anim_speed::player_run_animation)); // 애니메이션 속도를 현재 속도의 비율로 조절해야 함 -> 달리기 속도 15이지만 애니메이션 발과 맞는 속도는 10이다.
 		}
 		else if (common::Length(_currentMoveDir) > 0.01f) {
 			_state = common::packet::EntityState::MOVE;
-			anim_comp->play("walk");
+			anim_comp->play("walk", true, (_speed / common::anim_speed::player_walk_animation));
 		}
 		else {
 			_state = common::packet::EntityState::IDLE;
@@ -430,11 +430,11 @@ void MainPlayerScript::handle_input(float deltaTime)
 		}
 
 		if (InputManager::instance()->IsKeyPress(VK_LSHIFT)) {
-			_speed = 15.f; // 달리기 속도 -> 서버와 동일하게 해주어야 함
+			_speed = common::move_speed::player_run_speed ; // 달리기 속도 -> 서버와 동일하게 해주어야 함
 		}
 		else
 		{
-			_speed = 5.f; // 걷기 속도 -> 서버와 동일하게 해주어야 함
+			_speed = common::move_speed::player_walk_speed; // 걷기 속도 -> 서버와 동일하게 해주어야 함
 		}
 	}
 
