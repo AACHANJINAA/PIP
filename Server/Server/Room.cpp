@@ -1510,29 +1510,29 @@ namespace PIP::SERVER
 		MYLOG("[Room] Physics OBB Map Objects created: " << mapObjects.size());
 	}
 
-	void Room::CreatePhysicsStaticMeshCollisions()
-	{
-		// 방마다 개별적으로 존재하는 물리 시스템의 BodyInterface
-		auto& body_interface = _physicsSystem->GetBodyInterface();
+	//void Room::CreatePhysicsStaticMeshCollisions()
+	//{
+	//	// 방마다 개별적으로 존재하는 물리 시스템의 BodyInterface
+	//	auto& body_interface = _physicsSystem->GetBodyInterface();
 
-		// 전역적으로 관리되는 Shape 리스트 가져오기
-		const auto& shared_shapes = MapDataManager::Instance()->GetStaticMeshTiles();
+	//	// 전역적으로 관리되는 Shape 리스트 가져오기
+	//	const auto& shared_shapes = MapDataManager::Instance()->GetStaticMeshTiles();
 
-		for (const auto& tile : shared_shapes)
-		{
-			// 동일한 Shape을 참조하여 각 방에 맞는 Body 생성
-			JPH::BodyCreationSettings settings(
-				tile.shape,
-				JPH::RVec3::sZero(),
-				JPH::Quat::sIdentity(),
-				JPH::EMotionType::Static,
-				Layers::NON_MOVING
-			);
+	//	for (const auto& tile : shared_shapes)
+	//	{
+	//		// 동일한 Shape을 참조하여 각 방에 맞는 Body 생성
+	//		JPH::BodyCreationSettings settings(
+	//			tile.shape,
+	//			JPH::RVec3::sZero(),
+	//			JPH::Quat::sIdentity(),
+	//			JPH::EMotionType::Static,
+	//			Layers::NON_MOVING
+	//		);
 
-			// 실제 바디 생성 (메모리에는 Shape 데이터가 중복되지 않음!)
-			body_interface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
-		}
-	}
+	//		// 실제 바디 생성 (메모리에는 Shape 데이터가 중복되지 않음!)
+	//		body_interface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
+	//	}
+	//}
 
 	void Room::SendMapDebugDraw(const std::shared_ptr<SESSION>& session)
 	{

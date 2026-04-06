@@ -7,8 +7,6 @@
 using namespace PIP;
 int main()
 {
-
-
 	// I/O 스레드는 2개, 로직 스레드는 나머지 CPU 코어 수만큼 할당합니다.
 	// (최소 1개의 로직 스레드는 보장)
 	#include <timeapi.h>

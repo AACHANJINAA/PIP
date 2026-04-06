@@ -24,7 +24,8 @@ namespace PIP
          * @return 추출된 메쉬 데이터 리스트
          */
         static std::vector<MeshData> LoadStaticMesh(const std::string& filePath);
-
+        static std::vector<MeshData> LoadStaticMeshWithTransform(const std::string& filePath, const DirectX::XMFLOAT4X4&
+            externalTransform);
     private:
         // glTF JSON 및 연결된 .bin 파일을 로드합니다.
         static bool LoadGltfFile(const std::string& filename, nlohmann::json& outJson, std::vector<char>& outBinBuffer);
@@ -38,7 +39,7 @@ namespace PIP
                                int nodeIndex, const DirectX::XMFLOAT4X4& parentTransform, std::vector<MeshData>& outMeshes);
         
         // 실제 메쉬 프리미티브에서 정점(Position)과 인덱스 데이터를 추출합니다.
-        static void ProcessMesh(const nlohmann::json& gltfJson, const std::vector<char>& binaryBuffer, 
-                               const nlohmann::json& meshJson, const DirectX::XMFLOAT4X4& transform, std::vector<MeshData>& outMeshes);
+        static void ProcessMesh(const nlohmann::json& gltfJson, const std::vector<char>& binaryBuffer,
+                                const nlohmann::json& meshJson, const XMFLOAT4X4& transform, std::vector<MeshData>& outMeshes, bool isMirrored);
     };
 }

@@ -18,27 +18,37 @@ namespace PIP
 		{
 			return outMeshes;
 		}
+		int scene_idx = gltfJson.value("scene", 0);
+		const json& scene = gltfJson["scenes"][scene_idx];
 
 		XMFLOAT4X4 identity;
 		XMStoreFloat4x4(&identity, XMMatrixIdentity());
 
-		// 기본 씬 로드
-		if (gltfJson.contains("scenes") && gltfJson.contains("scene"))
-		{
-			int sceneIdx = gltfJson["scene"];
-			for (int nodeIdx : gltfJson["scenes"][sceneIdx]["nodes"])
-			{
-				ProcessNode(gltfJson, binaryBuffer, nodeIdx, identity, outMeshes);
-			}
-		}
-		else if (gltfJson.contains("nodes"))
-		{
-			for (int i = 0; i < (int)gltfJson["nodes"].size(); ++i)
-			{
-				ProcessNode(gltfJson, binaryBuffer, i, identity, outMeshes);
-			}
+		
+		for (const auto& node_idx : scene["nodes"]) {
+			ProcessNode(gltfJson, binaryBuffer, node_idx.get<int>(), identity, outMeshes);
 		}
 
+		return outMeshes;
+	}
+
+	std::vector<MeshData> glTFMeshLoader::LoadStaticMeshWithTransform(const std::string& filePath,
+		const DirectX::XMFLOAT4X4& externalTransform)
+	{
+
+		json gltfJson;
+		std::vector<char> binaryBuffer;
+		std::vector<MeshData> outMeshes;
+
+		if (!LoadGltfFile(filePath, gltfJson, binaryBuffer)) return outMeshes;
+
+		// 외부에서 전달받은 transform을 시작점으로 노드 순회 시작
+		if (gltfJson.contains("scenes") && gltfJson.contains("scene")) {
+			int sceneIdx = gltfJson["scene"];
+			for (int nodeIdx : gltfJson["scenes"][sceneIdx]["nodes"]) {
+				ProcessNode(gltfJson, binaryBuffer, nodeIdx, externalTransform, outMeshes);
+			}
+		}
 		return outMeshes;
 	}
 
@@ -98,8 +108,7 @@ namespace PIP
 
 			XMMATRIX trans_mat = XMMatrixIdentity();
 			if (node.contains("translation"))
-				// 클라이언트(ReadGLTFMesh.cpp:1745)와 동일하게 Z축 반전 적용
-				trans_mat = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), -node["translation"][2].get<float>());
+				trans_mat = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
 
 			localMat = scale_mat * rot_mat * trans_mat;
 		}
@@ -108,10 +117,13 @@ namespace PIP
 		XMFLOAT4X4 world_transform;
 		XMStoreFloat4x4(&world_transform, worldMat);
 
+		XMVECTOR det = XMMatrixDeterminant(worldMat);
+		bool isMirrored = XMVectorGetX(det) < 0.0f;
+
 		if (node.contains("mesh"))
 		{
 			int meshIdx = node["mesh"].get<int>();
-			ProcessMesh(gltfJson, binaryBuffer, gltfJson["meshes"][meshIdx], world_transform, outMeshes);
+			ProcessMesh(gltfJson, binaryBuffer, gltfJson["meshes"][meshIdx], world_transform, outMeshes, isMirrored);
 		}
 
 		if (node.contains("children"))
@@ -124,7 +136,7 @@ namespace PIP
 	}
 
 	void glTFMeshLoader::ProcessMesh(const json& gltfJson, const std::vector<char>& binaryBuffer, 
-								   const json& meshJson, const XMFLOAT4X4& transform, std::vector<MeshData>& outMeshes)
+								   const json& meshJson, const XMFLOAT4X4& transform, std::vector<MeshData>& outMeshes, bool isMirrored)
 	{
 		XMMATRIX worldMat = XMLoadFloat4x4(&transform);
 
@@ -176,6 +188,15 @@ namespace PIP
 				else if (componentType == 5125) // UNSIGNED_INT
 				{
 					memcpy(meshData.indices.data(), dataPtr, count * sizeof(uint32_t));
+				}
+			}
+			if (isMirrored)
+			{
+				// 축이 뒤집힌(Mirrored) 메쉬라면 삼각형의 Winding Order를 반전시켜
+				// "안팎이 뒤집히는" 현상을 방지합니다.
+				for (size_t i = 0; i < meshData.indices.size(); i += 3)
+				{
+					std::swap(meshData.indices[i + 1], meshData.indices[i + 2]);
 				}
 			}
 			outMeshes.push_back(std::move(meshData));

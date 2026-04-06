@@ -161,29 +161,129 @@ namespace PIP
 		MYLOG("Total Landscapes & Shapes Loaded: " << _terrainTiles.size());
 	}
 
-	void MapDataManager::LoadStaticMeshShapes(std::string_view gltfPath)
+	void MapDataManager::LoadStaticMeshShapes(const std::string& tileName, std::string_view gltfPath)
 	{
 		auto meshes = glTFMeshLoader::LoadStaticMesh(gltfPath.data());
 
+		JPH::TriangleList allTriangles;
 		for (const auto& meshData : meshes) {
-			JPH::TriangleList triangles;
+			
 			for (size_t i = 0; i < meshData.indices.size(); i += 3) {
-				triangles.push_back(JPH::Triangle(
+				allTriangles.push_back(JPH::Triangle(
 					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i]]),
 					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 1]]),
 					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 2]])
 				));
 			}
 
-			JPH::MeshShapeSettings settings(triangles);
+		}
+
+		if (!allTriangles.empty()) {
+			JPH::MeshShapeSettings settings(allTriangles);
 			auto result = settings.Create();
 
 			if (result.IsValid()) {
-				_staticMeshTiles.push_back({ result.Get(), meshData.name });
+				// 2292개의 Body 대신, "Tile-1-1"이라는 이름의 거대한 Shape 딱 하나만 저장!
+				_staticMeshTiles.push_back({ tileName, "Merged_StaticMeshes", result.Get() });
 			}
 		}
-		MYLOG("Static Mesh Shapes Created & Cached: " << gltfPath << " (" << _staticMeshTiles.size() << " parts)");
+		MYLOG("Merged " << meshes.size() << " primitives into 1 Single Physics Shape for tile: " << tileName);
 	}
+	void MapDataManager::LoadAllStaticMeshes(std::string_view baseDirPath)
+	{
+		namespace fs = std::filesystem;
+		for (const auto& entry : fs::directory_iterator(baseDirPath))
+		{
+			if (entry.is_directory())
+			{
+				std::string tileName = entry.path().filename().string();
+				// 폴더명과 동일한 이름의 .gltf 파일이 있는지 확인 (Unreal Batch Export 규칙)
+				fs::path gltfPath = entry.path() / (tileName + ".gltf");
+
+				if (fs::exists(gltfPath))
+				{
+					LoadStaticMeshShapes(tileName, gltfPath.string());
+				}
+			}
+		}
+		MYLOG("All Static Mesh Tiles Loaded from: " << baseDirPath);
+	}
+
+	void MapDataManager::LoadExportedScene(const std::string& groupName, std::string_view jsonPath)
+	{
+		std::ifstream file(jsonPath.data());
+		if (!file.is_open()) return;
+
+		nlohmann::json sceneJson;
+		file >> sceneJson;
+
+		std::filesystem::path basePath = std::filesystem::path(jsonPath).parent_path();
+
+		for (const auto& objJson : sceneJson) {
+			std::string meshFile = objJson.value("MeshFile", "");
+			if (meshFile.empty()) continue;
+
+			// 1. Transform 행렬 계산 (Location, Rotation, Scale)
+			const auto& transJson = objJson["Transform"];
+
+			// 클라이언트와 동일하게 Z축 반전 적용하여 행렬 생성
+			XMMATRIX scaleMat = XMMatrixScaling(transJson["Scale"]["X"], transJson["Scale"]["Y"],
+				transJson["Scale"]["Z"]);
+			XMMATRIX rotMat = XMMatrixRotationQuaternion(XMVectorSet(
+				transJson["Rotation"]["X"], transJson["Rotation"]["Y"],
+				transJson["Rotation"]["Z"], transJson["Rotation"]["W"])); // Z 반전
+			XMMATRIX locMat = XMMatrixTranslation(
+				transJson["Location"]["X"], transJson["Location"]["Y"],
+				transJson["Location"]["Z"]); // Z 반전
+
+			XMMATRIX worldMat = scaleMat * rotMat * locMat;
+			XMFLOAT4X4 externalTransform;
+			XMStoreFloat4x4(&externalTransform, worldMat);
+
+			// 2. 개별 glTF 로드 (위에서 만든 행렬 적용)
+			std::string fullPath = (basePath / meshFile).string();
+			auto meshes = glTFMeshLoader::LoadStaticMeshWithTransform(fullPath, externalTransform);
+
+			// 3. Jolt Shape 생성 및 저장
+			for (auto& meshData : meshes) {
+				JPH::TriangleList triangles;
+				for (size_t i = 0; i < meshData.indices.size(); i += 3) {
+					triangles.push_back(JPH::Triangle(
+						PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i]]),
+						PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 1]]),
+						PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 2]])
+					));
+				}
+
+				auto result = JPH::MeshShapeSettings(triangles).Create();
+				if (result.IsValid()) {
+					// 그룹 이름(groupName)을 tileName으로 사용하여 나중에 한 번에 찾을 수 있게 함
+					_staticMeshTiles.push_back({ groupName, meshData.name, result.Get() });
+				}
+			}
+		}
+		MYLOG("Loaded Exported Scene for [" << groupName << "] from " << jsonPath);
+	}
+
+	std::vector<const StaticMeshTile*> MapDataManager::GetStaticMeshGroup(const std::string& groupName) const
+	{
+		std::vector<const StaticMeshTile*> result;
+
+		auto it = _manualGroups.find(groupName);
+		if (it == _manualGroups.end()) return result;
+
+		// 그룹에 등록된 타일 이름들 ("Tile_X-1_Y-1" 등)을 순회하며
+		// 해당 타일에 속한 모든 StaticMeshTile의 포인터를 담음
+		for (const auto& targetTileName : it->second) {
+			for (const auto& smTile : _staticMeshTiles) {
+				if (smTile.tileName == targetTileName) {
+					result.push_back(&smTile);
+				}
+			}
+		}
+		return result;
+	}
+
 
 	void MapDataManager::AddTerrainGroup(const std::string& groupName, const std::vector<std::string>& tileNames)
 	{
