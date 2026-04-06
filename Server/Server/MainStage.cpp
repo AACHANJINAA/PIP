@@ -33,17 +33,71 @@ namespace PIP::SERVER
         MYLOG("[MainStage] Physics terrain loaded. Count: " << terrain_num);
 
 
-        // 2. 고정 메쉬(Static Mesh Collisions) 로드
-        const auto& shared_shapes = MapDataManager::Instance()->GetStaticMeshTiles();
-        for (const auto& tile : shared_shapes)
+        // 2. 정적 메쉬(Static Mesh Collisions) 그룹 로드
+		// 동일한 groupName을 사용하여 해당 타일에 속한 모든 오브젝트 메쉬를 가져옵니다.
+        auto meshGroup = MapDataManager::Instance()->GetStaticMeshGroup("MainStage");
+        for (const auto* tile : meshGroup)
         {
-            JPH::BodyCreationSettings settings(tile.shape, JPH::RVec3::sZero(), JPH::Quat::sIdentity(),
-                JPH::EMotionType::Static, Layers::NON_MOVING);
+            if (!tile->shape) continue;
+
+            JPH::BodyCreationSettings settings(
+                tile->shape,
+                JPH::RVec3::sZero(),
+                JPH::Quat::sIdentity(),
+                JPH::EMotionType::Static,
+                Layers::NON_MOVING
+            );
+
             JPH::BodyID id = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
             _stageBodyIDs.push_back(id);
         }
 
-        MYLOG("[MainStage] Physics objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
+        MYLOG("[MainStage] Physics Static Mesh objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
+
+        /*{
+            MYLOG("[DEBUG] Starting Debug Raycast Test at X:-360, Z:-212");
+
+            // 1. 레이 설정: 위(100)에서 아래(-100)로 200만큼 쏨
+            JPH::Vec3 rayOrigin(-360.0f, 100.0f, -212.0f);
+            JPH::Vec3 rayDirection(0.0f, -200.0f, 0.0f);
+            JPH::RRayCast ray(rayOrigin, rayDirection);
+
+            JPH::RayCastResult result;
+
+            // 2. 레이캐스트 실행 (NON_MOVING 레이어만 검사)
+            // BroadPhaseLayers::NON_MOVING과 Layers::NON_MOVING 상수는 프로젝트 설정에 맞춰 확인 필요
+
+            if (physicsSystem->GetNarrowPhaseQuery().CastRay(ray, result
+                ,JPH::SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::NON_MOVING)
+				,JPH::SpecifiedObjectLayerFilter(Layers::NON_MOVING)))
+            
+            {
+                // 3. 충돌 지점 계산
+                JPH::Vec3 hitPos = ray.GetPointOnRay(result.mFraction);
+
+                MYLOG("==========================================================");
+                MYLOG("[DEBUG] !!! RAYCAST HIT SUCCESS !!!");
+                MYLOG("[DEBUG] Hit Position - X: " << hitPos.GetX() << " Y: " << hitPos.GetY() << " Z: " <<
+                    hitPos.GetZ());
+
+                // 어떤 Body에 맞았는지 확인
+                JPH::BodyLockRead lock(physicsSystem->GetBodyLockInterface(), result.mBodyID);
+                if (lock.Succeeded())
+                {
+                    const JPH::Body& body = lock.GetBody();
+                    MYLOG("[DEBUG] Hit Body ID: " << result.mBodyID.GetIndex());
+                    MYLOG("[DEBUG] Hit Body Layer: " << (int)body.GetObjectLayer());
+                }
+                MYLOG("==========================================================");
+            }
+            else
+            {
+                MYLOG("==========================================================");
+                MYLOG("[DEBUG] !!! RAYCAST FAILED !!! Nothing detected at this coordinate.");
+                MYLOG("[DEBUG] Expected X: -360, Z: -212, but ray passed through.");
+                MYLOG("==========================================================");
+            }
+        }*/
     }
 
     void MainStage::on_enter(Room* room)
@@ -70,8 +124,8 @@ namespace PIP::SERVER
         // 1. 이 스테이지에서 만든 물리 바디 모두 제거
         auto& bodyInterface = room->GetPhysicsSystem()->GetBodyInterface();
         if (!_stageBodyIDs.empty()) {
-            bodyInterface.RemoveBodies(_stageBodyIDs.data(), (int)_stageBodyIDs.size());
-            bodyInterface.DestroyBodies(_stageBodyIDs.data(), (int)_stageBodyIDs.size());
+            bodyInterface.RemoveBodies(_stageBodyIDs.data(), static_cast<int>(_stageBodyIDs.size()));
+            bodyInterface.DestroyBodies(_stageBodyIDs.data(), static_cast<int>(_stageBodyIDs.size()));
             _stageBodyIDs.clear();
         }
 
@@ -81,6 +135,7 @@ namespace PIP::SERVER
 
     const common::Vec3 MainStage::get_spawn_pos() const
     {
-		return { 0.0f, 0.0f, 0.0f }; // 월드 중앙 등 원하는 위치로 반환
+		return { -360.0f, 6.43f, -212.0f }; // 월드 중앙 등 원하는 위치로 반환
     }
+
 }

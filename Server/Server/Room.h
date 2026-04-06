@@ -93,7 +93,7 @@ namespace PIP::SERVER
 		void PhysicsInitialize();
 		void CreatePhysicsTerrain();
 		void CreatePhysicsMapObjects();
-		void CreatePhysicsStaticMeshCollisions();
+		/*void CreatePhysicsStaticMeshCollisions();*/
 		
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);

@@ -23,9 +23,11 @@ namespace PIP
 		JPH::ShapeRefC shape; // 공유할 물리 모양 (레퍼런스 카운팅 포인터)
 		common::TerrainData data;
 	};
+	// StaticMeshTile 구조체 변경
 	struct StaticMeshTile {
+		std::string tileName; // e.g., "Tile_X-1_Y-1"
+		std::string meshName; // glTF 내부의 메쉬 이름
 		JPH::ShapeRefC shape;
-		std::string name;
 	};
 	class MapDataManager : public Singleton<MapDataManager>
 	{
@@ -41,9 +43,11 @@ namespace PIP
 		const std::vector<TerrainTile>& GetTerrainTiles() const { return _terrainTiles; }
 
 		// glTF에서 Shape들을 생성하여 보관 (서버 시작 시 한 번만 호출)
-		void LoadStaticMeshShapes(std::string_view gltfPath);
-		// 각 방에서 참조할 Shape 리스트 반환
-		const std::vector<StaticMeshTile>& GetStaticMeshTiles() const { return _staticMeshTiles; }
+		void LoadStaticMeshShapes(const std::string& tileName, std::string_view gltfPath);
+		void LoadAllStaticMeshes(std::string_view baseDirPath); ;// [추가] 특정 폴더 내의 모든 Tile_... 형식의 glTF를 자동 로드
+		void LoadExportedScene(const std::string& groupName, std::string_view jsonPath);
+
+		std::vector<const StaticMeshTile*> GetStaticMeshGroup(const std::string& groupName) const;// 각 방에서 참조할 Shape 리스트 반환
 
 		// [추가] 수동 그룹화 정의: "그룹명"과 "포함될 타일 이름들"을 매핑
 		// 예: AddTerrainGroup("VillageStage", {"Landscape01", "Landscape02", "Landscape05"})
