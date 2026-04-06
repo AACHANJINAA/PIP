@@ -86,36 +86,36 @@ void ReadGLTFMesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCo
 
 	// 2. [추가] 애니메이션 뼈대용 상수 버퍼(Constant Buffer) 생성
 	//    이 버퍼는 매 프레임 CPU에서 갱신되므로 D3D12_HEAP_TYPE_UPLOAD로 생성합니다.
-	if (!_joints.empty() && !_bone_palette_buffer)
-	{
-		UINT element_size = sizeof(DirectX::XMFLOAT4X4);
-		UINT buffer_size = (UINT)(_joints.size() * element_size);
-		buffer_size = (buffer_size + 255) & ~255;
+	//if (!_joints.empty() && !_bone_palette_buffer)
+	//{
+	//	UINT element_size = sizeof(DirectX::XMFLOAT4X4);
+	//	UINT buffer_size = (UINT)(_joints.size() * element_size);
+	//	buffer_size = (buffer_size + 255) & ~255;
 
-		if (!_joints.empty() && !_bone_palette_buffer)
-		{
-			// [수정] 임시 객체의 주소를 바로 딸 수 없으므로, 변수로 먼저 만듭니다.
-			CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
-			CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+	//	if (!_joints.empty() && !_bone_palette_buffer)
+	//	{
+	//		// [수정] 임시 객체의 주소를 바로 딸 수 없으므로, 변수로 먼저 만듭니다.
+	//		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+	//		CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
 
-			HRESULT hr = device->CreateCommittedResource(
-				&heapProps,         // 이제 변수의 주소를 넘기므로 안전합니다.
-				D3D12_HEAP_FLAG_NONE,
-				&bufferDesc,        // 변수의 주소
-				D3D12_RESOURCE_STATE_GENERIC_READ,
-				nullptr,
-				IID_PPV_ARGS(&_bone_palette_buffer)
-			);
+	//		HRESULT hr = device->CreateCommittedResource(
+	//			&heapProps,         // 이제 변수의 주소를 넘기므로 안전합니다.
+	//			D3D12_HEAP_FLAG_NONE,
+	//			&bufferDesc,        // 변수의 주소
+	//			D3D12_RESOURCE_STATE_GENERIC_READ,
+	//			nullptr,
+	//			IID_PPV_ARGS(&_bone_palette_buffer)
+	//		);
 
-			if (FAILED(hr))
-			{
-				// 에러 처리
-				return;
-			}
+	//		if (FAILED(hr))
+	//		{
+	//			// 에러 처리
+	//			return;
+	//		}
 
-			_bone_palette_buffer->SetName(L"BonePaletteBuffer");
-		}
-	}
+	//		_bone_palette_buffer->SetName(L"BonePaletteBuffer");
+	//	}
+	//}
 
 	// 3. 첫 번째 프리미티브 정보를 기본 클래스에 복사 (기존 로직)
 	if (!_primitives.empty())
@@ -553,14 +553,14 @@ void ReadGLTFMesh::render_skinned(ID3D12GraphicsCommandList* commandList)
 	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
 
 	// 만약 AnimationComponent에서 제공한 버퍼가 있으면 그것을 사용
-	if (_bone_palette_buffer_from_animation_component)
+	/*if (_bone_palette_buffer_from_animation_component)
 	{
 		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
 	}
 	else if (_bone_palette_buffer)
 	{
 		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer->GetGPUVirtualAddress());
-	}
+	}*/
 }
 
 void ReadGLTFMesh::render_instance_skinned(ID3D12GraphicsCommandList* commandList)
@@ -569,14 +569,14 @@ void ReadGLTFMesh::render_instance_skinned(ID3D12GraphicsCommandList* commandLis
 	// SkinnedRootSignatureGenerator에서 뼈대 버퍼는 8번 파라미터 (b4)로 정의
 
 	// 만약 AnimationComponent에서 제공한 버퍼가 있으면 그것을 사용
-	if(_bone_palette_buffer_from_animation_component)
-	{
-		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
-	}
-	else if (_bone_palette_buffer)
-	{
-		commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer->GetGPUVirtualAddress());
-	}
+	//if(_bone_palette_buffer_from_animation_component)
+	//{
+	//	commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer_from_animation_component->GetGPUVirtualAddress());
+	//}
+	//else if (_bone_palette_buffer)
+	//{
+	//	commandList->SetGraphicsRootConstantBufferView(12, _bone_palette_buffer->GetGPUVirtualAddress());
+	//}
 }
 
 void ReadGLTFMesh::read_static_mesh(const std::string& filePath)

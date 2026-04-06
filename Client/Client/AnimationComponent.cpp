@@ -36,10 +36,29 @@ void AnimationComponent::late_update(float deltaTime)
 
 
 	// 애니메이션 업데이트 및 본 행렬 계산
-	if (_mapped_bone_data) 
+	// [수정] 애니메이션 업데이트 및 본 행렬 계산
+	if (_bonePaletteSize > 0)
 	{
-		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _mapped_bone_data, _isLoop);
+		// 1. CPU 메모리(_boneTransforms 벡터)에 뼈대 애니메이션 결과를 먼저 계산합니다. -> _boneTransforms 이건 애니메이션 컴포넌트마다 하나씩 따로 들고있음
+		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
+
+		// 2. 선형 할당기 창구에 가서 "나 이만큼 메모리 필요해!" 하고 즉시 빌려오기 (오버헤드 0) -> GPU에 올릴 뼈대 행렬 데이터 크기만큼 빌려오기
+		auto alloc = GameFramework::instance()->linear_allocator()->allocate(_bonePaletteSize);
+
+		if (alloc.cpuPtr != nullptr)
+		{
+			// 3. 빌려온 CPU 포인터 위치에 계산해둔 뼈대 벡터 데이터를 쫙 복사해 넣습니다. -> CPU 메모리에 뼈대 행렬 데이터를 복사
+			memcpy(alloc.cpuPtr, _boneTransforms.data(), _bonePaletteSize);
+
+			// 4. 렌더러가 쓸 수 있게 방금 할당받은 GPU 가상 주소표를 업데이트합니다. -> GPU 가상 주소 업데이트
+			_currentBoneGPUAddr = alloc.gpuAddr;
+		}
 	}
+	
+	//if (_mapped_bone_data) 
+	//{
+	//	glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _mapped_bone_data, _isLoop);
+	//}
 
 	// DW설명 : 이제 애니메이션 업데이트에 지금 들고있는 뼈대 행렬 벡터를 넘겨서 갱신하도록 함 -> 애니메이션 컴포넌트가 뼈대 행렬을 관리하는 형태로 변경
 	//glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
@@ -188,15 +207,20 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 
 	size_t joint_size = gltf_mesh->get_joint_count();
 	UINT element_size = sizeof(DirectX::XMFLOAT4X4);
-	UINT buffer_size = (UINT)(joint_size * element_size);
-	buffer_size = (buffer_size + 255) & ~255;
 
-	if (_bone_palette_buffer != nullptr) {
-		if (_bone_palette_buffer->GetDesc().Width >= buffer_size) {
-			return;
-		}
-		//_bone_palette_buffer.Reset(); // 더 큰 공간이 필요할 때만 재할당 <- CJ 수정 : 이 코드로 인해 scene 전환시 GPU가 아직 이전 버퍼를 읽는 중인데도 CPU가 refcount를 0으로 만들어 버릴 수 있는 구조라 주석
-	}
+	// DW설명 : 단순히 뼈대 행렬의 개수 * 행렬 크기로 버퍼 크기를 계산함
+	_bonePaletteSize = joint_size * element_size;
+
+
+	//UINT buffer_size = (UINT)(joint_size * element_size);
+	//buffer_size = (buffer_size + 255) & ~255;
+
+	//if (_bone_palette_buffer != nullptr) {
+	//	if (_bone_palette_buffer->GetDesc().Width >= buffer_size) {
+	//		return;
+	//	}
+	//	//_bone_palette_buffer.Reset(); // 더 큰 공간이 필요할 때만 재할당 <- CJ 수정 : 이 코드로 인해 scene 전환시 GPU가 아직 이전 버퍼를 읽는 중인데도 CPU가 refcount를 0으로 만들어 버릴 수 있는 구조라 주석
+	//}
 
 	// DW벼르기 : 뼈 행렬을 진짜 바꿔야 하는 경우에는 기다리고 생성하는 것이 안전하지만
 	// 만약 바꿔야 하는 상황이 많아 문제가 발생한다면? -> 이 놈을 먼저 조져볼 예정
@@ -227,36 +251,36 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 	//}
 
 	// 기존 버퍼는 즉시 Reset 금지: GPU가 아직 참조 중일 수 있음
-	ComPtr<ID3D12Resource> old_buffer = _bone_palette_buffer;
+	//ComPtr<ID3D12Resource> old_buffer = _bone_palette_buffer;
 
-	CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
-	CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
+	//CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+	//CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
 
-	ComPtr<ID3D12Resource> new_buffer;
-	HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
-		&heapProps,
-		D3D12_HEAP_FLAG_NONE,
-		&bufferDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&new_buffer)
-	);
-	if (FAILED(hr))
-	{
-		return;
-	}
+	//ComPtr<ID3D12Resource> new_buffer;
+	//HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
+	//	&heapProps,
+	//	D3D12_HEAP_FLAG_NONE,
+	//	&bufferDesc,
+	//	D3D12_RESOURCE_STATE_GENERIC_READ,
+	//	nullptr,
+	//	IID_PPV_ARGS(&new_buffer)
+	//);
+	//if (FAILED(hr))
+	//{
+	//	return;
+	//}
 
-	new_buffer->SetName(L"BonePaletteBuffer");
+	//new_buffer->SetName(L"BonePaletteBuffer");
 
-	CD3DX12_RANGE readRange(0, 0);
-	new_buffer->Map(0, &readRange, reinterpret_cast<void**>(&_mapped_bone_data));
+	//CD3DX12_RANGE readRange(0, 0);
+	//new_buffer->Map(0, &readRange, reinterpret_cast<void**>(&_mapped_bone_data));
 
-	_bone_palette_buffer = new_buffer;
+	//_bone_palette_buffer = new_buffer;
 
-	// 이전 버퍼는 fence 이후 해제
-	if (old_buffer)
-	{
-		const UINT64 fenceValue = GameFramework::instance()->next_fence_value();
-		ResourceManager::instance()->register_upload_buffer(old_buffer, fenceValue);
-	}
+	//// 이전 버퍼는 fence 이후 해제
+	//if (old_buffer)
+	//{
+	//	const UINT64 fenceValue = GameFramework::instance()->next_fence_value();
+	//	ResourceManager::instance()->register_upload_buffer(old_buffer, fenceValue);
+	//}
 }
