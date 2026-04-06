@@ -20,6 +20,7 @@
 
 #include "GameObject.h"
 #include "ObjectManager.h"
+#include "AnimationComponent.h"
 
 #include "Camera.h"
 #include "CameraComponent.h"
@@ -346,6 +347,22 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
             auto mesh = renderComp->mesh();
             if (!mesh) continue;
+
+            if (psoName == "skinned") // DW설명 : 애니메이션 컴포넌트에서 뼈대 상수 버퍼 주소 받아오기
+            {
+                auto animComp = gameObject->get_component<AnimationComponent>();
+                if (animComp)
+                {
+                    // AnimationComponent(선형 할당기)에서 받아둔 뼈대 주소 획득
+                    D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+
+                    if (boneGpuAddr != 0)
+                    {
+                        // 12번 루트 파라미터(b4 레지스터)에 뼈대 상수 버퍼 바인딩
+                        commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
+                    }
+                }
+            }
 
             shader_prototype->update_per_object(commandList, this, gameObject.get());
             gameObject->prepare_render();
