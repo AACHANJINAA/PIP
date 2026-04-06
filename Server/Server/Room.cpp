@@ -1194,7 +1194,7 @@ namespace PIP::SERVER
 		// 2. [의도 수용] 클라이언트가 보낸 방향 벡터를 그대로 사용
 		common::Vec3 moveDir = move_packet._move_dir;
 
-		if (moveDist < 10.0f) { // 정상 범위 이내일 때 (클라이언트와 서버의 순간적인 거리 차이가 10 이하여야 함)
+		if (moveDist < common::move_speed::one_frame_max_speed) { // 정상 범위 이내일 때 (클라이언트와 서버의 순간적인 거리 차이가 one_frame_max_speed 이하여야 함)
 			if (common::LengthSq(moveDir) > 0.0001f) {
 				// 방향 벡터에 플레이어의 진짜 속도를 곱해 물리 엔진에 설정
 				float currentTargetSpeed = 0.0f;

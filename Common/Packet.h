@@ -400,8 +400,10 @@ namespace common::anim_speed // 수정하지 말것
 
 namespace common::move_speed // 실제 이동속도 이므로 더 빨라저야 한다면 수정할것
 {
+	constexpr float one_frame_max_speed = 50.f; // 한 프레임에 최대 갈 수 있는 거리
+
 	constexpr float player_walk_speed = 2.0f;
-	constexpr float player_run_speed = 5.f;
+	constexpr float player_run_speed = 50.f;
 }
 
 // TEST COMMENT: This is for testing purposes.
