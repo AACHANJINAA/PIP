@@ -14,8 +14,8 @@ void ShadowManager::initialize(ID3D12Device* device)
     D3D12_RESOURCE_DESC texDesc = {};
     texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     texDesc.Alignment = 0;
-    texDesc.Width = 1024;
-    texDesc.Height = 1024;
+    texDesc.Width = _shadowmapSize;
+    texDesc.Height = _shadowmapSize;
     texDesc.DepthOrArraySize = 3; // 3 Cascade
     texDesc.MipLevels = 1;
     texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -117,7 +117,7 @@ void ShadowManager::build_cascade_matrices()
 
     float terrainSize = SceneManager::instance()->get_terrain_size();
     float radii[3] = {
-        terrainSize * 0.1f,  // 근거리: 지형의 10%
+        terrainSize * 0.2f,  // 근거리: 지형의 10%
         terrainSize * 0.5f,  // 중거리: 지형의 70%
         terrainSize * 1.0f   // 원거리: 지형 전체
     };
@@ -127,7 +127,7 @@ void ShadowManager::build_cascade_matrices()
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
 
         // 텍셀 스내핑 (Texel Snapping) - 지글거림 제거
-        const float shadowMapResolution = 1024.0f;
+        const float shadowMapResolution = (float)_shadowmapSize;
         XMMATRIX lightViewProj = lightView * proj;
 
         // 1. 월드 원점을 섀도우 맵 픽셀 공간으로 투영
@@ -188,8 +188,8 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     cmd->ResourceBarrier(3, barriersW);
 
     // 공통 뷰포트/시저 설정
-    D3D12_VIEWPORT viewport = { 0.0f, 0.0f, 1024.0f, 1024.0f, 0.0f, 1.0f };
-    D3D12_RECT scissor = { 0, 0, 1024, 1024 };
+    D3D12_VIEWPORT viewport = { 0.0f, 0.0f, (float)_shadowmapSize, (float)_shadowmapSize, 0.0f, 1.0f };
+    D3D12_RECT scissor = {0, 0, _shadowmapSize, _shadowmapSize };
     cmd->RSSetViewports(1, &viewport);
     cmd->RSSetScissorRects(1, &scissor);
 
