@@ -309,10 +309,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			player_logic->set_position(spawn_data._position);
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
 		}
-		
 
-		
-		
 		CLOG("[S->C] My player spawned/updated: ID=" << spawn_data._id
 			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
 			<<"HP=" << spawn_data._hp 

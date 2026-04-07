@@ -15,9 +15,9 @@ struct CbCascades
 struct CbShadow
 {
     XMFLOAT4X4 lightVP[3];
-    float splitNear; // 20.0f
-    float splitMid;  // 80.0f
-    float bias;      // 0.005f
+    float splitNear; 
+    float splitMid;  
+    float bias;      
     float pad;
 };
 
@@ -35,6 +35,10 @@ private:
     ~ShadowManager() = default;
 
     void build_cascade_matrices();
+
+    int _shadowmapSize = 4096;
+
+    float shadow_max_distance = 300.0f;
 
     ComPtr<ID3D12Resource>       _shadowMapArray;
     ComPtr<ID3D12DescriptorHeap> _dsvHeap;        // CPU only, 3 slots
