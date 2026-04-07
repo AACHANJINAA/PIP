@@ -223,7 +223,95 @@ namespace PIP::SERVER
 
 		MYLOG("[Room] NPC " << npcId << " has been removed and cleaned up.");
 	}
+	GAME::NPC* Room::spawn_npc(GAME::NPCType type, const common::Vec3& pos, const std::string& name)
+	{
+		// 1. NPC 고유 ID 생성 (방 번호 기반으로 충돌 방지)
+		int64_t npc_id = _next_npc_id + (_room_id * 10000LL) + _npcs.size();
 
+		// 2. 타입별 객체 생성 (확장 포인트)
+		std::unique_ptr<GAME::NPC> new_npc;
+		float radius = 0.5f;
+		float height = 1.8f;
+
+		if (type == GAME::NPCType::Tainer) {
+			new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, pos);
+			radius = 1.0f; height = 1.5f; // 보스 규격
+		}
+		else {
+			new_npc = std::make_unique<GAME::NPC>(npc_id, type, _room_id, pos, 100);
+		}
+
+		if (!name.empty()) new_npc->SetName(name);
+
+		// 3. 물리 컨트롤러 초기화
+		auto cc = new_npc->GetComponent<GAME::CharacterControllerComponent>();
+		cc->Initialize(_physicsSystem, height, radius);
+
+		// 4. [핵심] 안전한 위치 찾기 (지형 레이캐스트 + 건물 끼임 체크)
+		JPH::Shape* npc_shape = (JPH::Shape*)cc->GetShape();
+		common::Vec3 safe_pos = find_safe_spawn_position(pos, npc_shape);
+
+		// 5. 확정된 위치로 물리 및 트랜스폼 설정
+		new_npc->SetPosition(safe_pos);
+		new_npc->SetLastUpdateTime(std::chrono::steady_clock::now());
+
+		GAME::NPC* ptr = new_npc.get();
+		AddNPC(std::move(new_npc));
+
+		return ptr;
+	}
+	common::Vec3 Room::find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape)
+	{
+		common::Vec3 current_pos = pos;
+		bool is_stuck = true;
+		int attempts = 0;
+
+		// 지형은 무시하고 건물/오브젝트만 체크하기 위한 필터 설정
+		JPH::IgnoreMultipleBodiesFilter terrain_filter;
+		for (auto id : _terrainBodyIDs) {
+			terrain_filter.IgnoreBody(id);
+		}
+
+		while (is_stuck && attempts < 5)
+		{
+			// 1. [Raycast] 하늘에서 레이를 쏴서 바닥(지형) 높이 찾기
+			JPH::RRayCast ray{ Utils::ToJolt(current_pos + common::Vec3(0, 50, 0)), JPH::Vec3(0, -100, 0) };
+			JPH::RayCastResult ray_res;
+
+			if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_res,
+				_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+				_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
+			{
+				current_pos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_res.mFraction;
+			}
+
+			// 2. [CollideShape] 찾은 바닥 위치에서 건물과 겹치는지 체크
+			JPH::CollideShapeSettings settings;
+			JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
+
+			// 약간 위(0.9m)에서 체크 (발밑이 지형에 살짝 걸리는 것 방지)
+			_physicsSystem->GetNarrowPhaseQuery().CollideShape(
+				npc_shape, JPH::Vec3::sReplicate(1.0f),
+				JPH::RMat44::sTranslation(Utils::ToJolt(current_pos) + JPH::Vec3(0, 0.9f, 0)),
+				settings, JPH::RVec3::sZero(), collector,
+				_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+				_physicsSystem->GetDefaultLayerFilter(Layers::NPC),
+				terrain_filter
+			);
+
+			if (!collector.HadHit()) {
+				is_stuck = false; // 안 끼었음!
+			}
+			else {
+				// 끼었다면 근처로 무작위 이동 후 재시도
+				current_pos.x += (rand() % 2 == 0 ? 3.0f : -3.0f);
+				current_pos.z += (rand() % 2 == 0 ? 3.0f : -3.0f);
+				attempts++;
+			}
+		}
+
+		return current_pos;
+	}
 	void Room::AddNPC(std::unique_ptr<GAME::NPC> npc)
 	{
 		int64_t id = npc->GetNpcId();
@@ -797,6 +885,8 @@ namespace PIP::SERVER
 
 	}
 
+	
+
 	void Room::PushJob(std::function<void()> job)
 	{
 		_jobQueue.push(std::move(job));
@@ -833,6 +923,9 @@ namespace PIP::SERVER
 
 		Broadcast(finalStream.constable_data(), finalStream.Size());
 	}
+
+	
+
 	void Room::Broadcast(const char* data, size_t size, int64_t except_id)
 	{
 		for (auto& pair : _players)

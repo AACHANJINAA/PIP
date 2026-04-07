@@ -55,7 +55,6 @@ namespace PIP::SERVER
 
 
 
-
 		void Broadcast(const char* data, size_t size, int64_t except_id = -1);
 		// 특정 NPC를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToNPCViewers(int64_t npc_id, const char* data, size_t size);
@@ -86,10 +85,11 @@ namespace PIP::SERVER
 
 		std::map<int64_t, common::Vec3> GetPlayersPos() const;
 
-		void SpawnInitialNPCs();
-		void SpawnBoss();
+		GAME::NPC* spawn_npc(GAME::NPCType type, const common::Vec3& pos, const std::string& name = "");
 		JPH::PhysicsSystem* GetPhysicsSystem() const { return _physicsSystem; }
 	private:
+		void SpawnBoss();
+		void SpawnInitialNPCs();
 		void PhysicsInitialize();
 		void CreatePhysicsTerrain();
 		void CreatePhysicsMapObjects();
@@ -103,7 +103,7 @@ namespace PIP::SERVER
 		// void UpdateSingleNPC(int npcId);
 		
 		void SendNpcMovePacket(GAME::NPC* npc);
-
+		common::Vec3 find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape);
 
 	private:
 		int								_room_id;

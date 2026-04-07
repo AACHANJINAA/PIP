@@ -104,12 +104,19 @@ namespace PIP::SERVER
     {
         MYLOG("[MainStage] Spawning NPCs and Boss...");
 
-        // 1. 기존 Room에 있던 SpawnInitialNPCs 로직 수행 (500마리 등)
-        room->SpawnInitialNPCs();
+        // 1. 잡몹 500마리 무작위 배치 (MainStage의 규칙)
+        common::Vec3 center = get_spawn_pos();
+        for (int i = 0; i < 500; ++i) {
+            float rx = std::uniform_real_distribution<float>(-100, 100)(gen);
+            float rz = std::uniform_real_distribution<float>(-100, 100)(gen);
 
-        // 2. 보스 스폰 (Tainer)
-        room->SpawnBoss(); // 기존 함수를 유지하거나 이리로 옮김
-        room->StartGame(); // 게임 상태 PLAYING으로 전환
+            room->spawn_npc(GAME::NPCType::Basic, { center.x + rx, center.y, center.z + rz });
+        }
+
+        // 2. 보스 테이너 배치
+        room->spawn_npc(GAME::NPCType::Tainer, { 10, 5, 20 }, "Tainer the Gatekeeper");
+
+        room->StartGame();
     }
 
     void MainStage::update(Room* room, float dt)
