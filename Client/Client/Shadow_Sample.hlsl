@@ -98,7 +98,18 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
 // 메인 CSM 샘플링 함수 (블렌딩 적용)
 float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
 {
-    float blendThreshold = 15.0f;
+    float maxShadowDistance = 300.0f; // TODO : 최대거리 수정할거면 얘도 CB로 받아오자. 
+    float fadeRange = 30.0f; // 끝에서부터 서서히 사라질 구간 길이 (270m ~ 300m)
+
+    // 1. 조기 종료 (Early-Out) 최적화
+    // 픽셀의 거리가 그림자 최대 거리를 완전히 벗어났다면, 
+    // 무거운 PCF 연산을 아예 돌리지 않고 즉시 '그림자 없음(1.0)' 반환
+    if (viewDepth >= maxShadowDistance)
+    {
+        return 1.0f;
+    }
+
+    float blendThreshold = 20.0f;
 
     float shadow0 = 1.0f;
     float shadow1 = 1.0f;
@@ -136,6 +147,7 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
             finalShadow = shadow1;
         }
     }
-    
+
+    //// 환경광(Ambient) 등을 고려한 최종 최소 그림자 밝기(0.1f) 적용하여 반환
     return lerp(0.1f, 1.0f, finalShadow);
 }
