@@ -70,6 +70,9 @@ namespace PIP::GAME
 
         virtual int32_t GetHP() const { return 0; }
         virtual void SetHP(int hp) {}
+
+        virtual common::packet::EntityState GetState() const { return common::packet::EntityState::COUNT; }
+		virtual void SetState(const common::packet::EntityState& state) {}
     protected:
         std::deque<common::ObjectSnapshot> _history;
         Faction _factionId;

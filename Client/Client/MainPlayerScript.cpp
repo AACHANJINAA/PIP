@@ -536,19 +536,19 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 	// 지형 타일이 여러 개여도 알아서 내 발밑의 높이를 찾아줍니다.
 	float groundHeight = TerrainLoader::get_height_anywhere(_logicalPosition.x, _logicalPosition.z);
 
-	// 2. 접지 체크 및 수직 속도(중력) 계산
-	if (_logicalPosition.y > groundHeight + 0.05f) {
-		_isGrounded = false;
-		_verticalVelocity += -9.81f * deltaTime; // 서버와 동일한 중력 가속도
-	}
-	else {
-		// 지면에 닿아있는 상태
-		if (!_isGrounded) {
-			_isGrounded = true;
-			_verticalVelocity = 0.0f;
-			_logicalPosition.y = groundHeight; // 지면에 착지 스냅
-		}
-	}
+	//// 2. 접지 체크 및 수직 속도(중력) 계산
+	//if (_logicalPosition.y > groundHeight + 0.05f) {
+	//	_isGrounded = false;
+	//	_verticalVelocity += -9.81f * deltaTime; // 서버와 동일한 중력 가속도
+	//}
+	//else {
+	//	// 지면에 닿아있는 상태
+	//	if (!_isGrounded) {
+	//		_isGrounded = true;
+	//		_verticalVelocity = 0.0f;
+	//		_logicalPosition.y = groundHeight; // 지면에 착지 스냅
+	//	}
+	//}
 
 	// [핵심 수정] 서버와 동일한 Lerp 가감속 공식 적용
 	common::Vec3 targetVelocity = _currentMoveDir * _speed;
