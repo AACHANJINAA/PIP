@@ -56,8 +56,8 @@ namespace PIP::GAME
 		void SetHP(int hp) override { _hp = hp; }
 		int32_t GetHP() const override { return _hp; }
 
-		void SetState(const common::packet::EntityState& state) { _state = state; }
-		common::packet::EntityState GetState() const { return _state; }
+		void SetState(const common::packet::EntityState& state) override { _state = state; }
+		common::packet::EntityState GetState() const override { return _state; }
 
 		void SetActionId(int32_t action_id) { _actionId = action_id; }
 		int32_t GetActionId() const { return _actionId; }

@@ -194,6 +194,20 @@ namespace PIP::SERVER
 			_actors.erase(player_id); // [추가] 통합 맵에서 제거
 			_players.erase(it);
 		}
+		if (_players.empty()) {
+			MYLOG("Last player left. Resetting all NPC AI states...");
+			for (auto& [id, npc] : _npcs) {
+				if (auto ai = npc->GetComponent<GAME::AIComponent>()) {
+					auto bb = ai->GetBlackboard();
+					bb->set("target_enemy", std::any()); // 타겟 삭제
+					bb->set("target_pos", std::any());   // 배회 목적지 삭제
+					bb->set("stuck_timer", 0.0f);        // 끼임 타이머 리셋
+					// 필요 시 BT 자체를 새로 Setup (NPC::SetupBT 호출)
+					npc->SetupBT();
+				}
+				npc->SetState(common::packet::EntityState::IDLE);
+			}
+		}
 	}
 
 	void Room::RemoveNPC(int64_t npcId)
@@ -1743,6 +1757,17 @@ namespace PIP::SERVER
 
 		session->_player->SetState(common::packet::EntityState::DEAD);
 		MYLOG("[Room] Player " << session->_id << " is DEAD. Respawning in 5s...");
+
+		int64_t dead_player_id = session->_id;
+		// 모든 NPC를 순회하며 타겟팅 초기화
+		for (auto& [npc_id, npc] : _npcs) {
+			if (auto ai = npc->GetComponent<GAME::AIComponent>()) {
+				auto bb = ai->GetBlackboard();
+				if (bb->has("target_enemy") && bb->get<int64_t>("target_enemy") == dead_player_id) {
+					bb->set("target_enemy", std::any()); // 타겟 상실
+				}
+			}
+		}
 
 		int64_t playerId = session->_id;
 		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(5000), [this, playerId]() {

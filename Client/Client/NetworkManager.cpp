@@ -272,8 +272,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	stream >> name;
 	if (name != _name)
 	{
-		_name = name;// 서버에서 보내준 이름으로 업데이트
 		CLOG(" [S->C] Updated player name from server: " << _name << " 아마 에러임");
+		_name = name;// 서버에서 보내준 이름으로 업데이트
 	}
 	// 이제 spawn_data 구조체와 name 변수에 올바른 값이 들어있습니다.
 	// 이 값들을 사용하여 플레이어 객체를 생성하거나 업데이트합니다.
@@ -868,7 +868,8 @@ bool NetworkManager::init_network()
 		std::bind(&NetworkManager::HANDLE_S2C_CHANGE_SCENE, this, std::placeholders::_1));
 	RegisterHandler(common::packet::PacketType::S2C_P_ALL_PLAYERS_READY,
 		std::bind(&NetworkManager::Handle_S2C_ALL_PLAYERS_READY, this, std::placeholders::_1));
-
+	RegisterHandler(common::packet::PacketType::S2C_P_PLAYER_RESURRECT,
+		std::bind(&NetworkManager::HANDLE_S2C_PLAYER_RESURRECT, this, std::placeholders::_1));
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != 0) {
