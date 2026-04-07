@@ -74,12 +74,10 @@ namespace common::packet
 		C2S_P_MOVE = 92,
 
 		//------------------------------------------ Action 관련 패킷 ------------------------------------------ //
-		//C2S_P_ATTACK = 101, // 범용 행동 패킷으로 대체되어 사용되지 않음
 		C2S_P_ACTION = 105, // [신규] 범용 행동 패킷
-
-		// S2C_P_ATTACK = 102, // 다중 공격을 위해 아래 패킷들로 대체되어 사용되지 않음
 		S2C_P_PLAYER_ATTACK = 103, // 플레이어 다중 피격 정보
 		S2C_P_NPC_ATTACK = 104,    // NPC 다중 피격 정보
+		S2C_P_PLAYER_RESURRECT = 106, // [신규] 플레이어 부활 패킷 (죽은 플레이어가 부활할 때 브로드캐스트)
 
 		//------------------------------------------ 방 관련 패킷 ------------------------------------------ //
 		C2S_P_ENTER_ROOM = 201,
@@ -261,7 +259,11 @@ namespace common::packet
 		int32_t			_exp;
 		//뒤에 가변크기 name
 	};
-
+	struct SC_PACKET_PLAYER_RESURRECT : PacketHeader {
+		int64_t _id;
+		Vec3    _position;
+		int32_t _hp;
+	};
 	// 플레이어 이동 패킷
 	struct SC_PACKET_MOVE : PacketHeader
 	{

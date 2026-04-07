@@ -41,10 +41,9 @@ void MainPlayerScript::set_hp(int hp)
 
 void MainPlayerScript::update(float deltaTime)
 {
+	die_ui_update(deltaTime);
 	update_hp_bar(deltaTime);
-
 	handle_input(deltaTime);
-
 	handle_state(deltaTime);
 	update_physics_and_visuals(deltaTime);
 	send_network_sync(deltaTime);
@@ -325,7 +324,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 		// set_state에도 애니메이션 루프 설정 추가
 		anim_comp->play("die", false);
 		// 사망 상태의 ui 업데이트
-		die_ui_update(deltaTime);
+		//die_ui_update(deltaTime);
 		return;
 	}
 

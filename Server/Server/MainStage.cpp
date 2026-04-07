@@ -142,7 +142,7 @@ namespace PIP::SERVER
 
     const common::Vec3 MainStage::get_spawn_pos() const
     {
-		return { -360.0f, 6.43f, -212.0f }; // 월드 중앙 등 원하는 위치로 반환
+		return { -360.0f, 6.43f, -210.0f }; // 월드 중앙 등 원하는 위치로 반환
     }
 
 }

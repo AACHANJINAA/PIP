@@ -268,18 +268,18 @@ namespace PIP::packet
 		}
 
 		// 1. 세션과 방의 유효성 검사
-		
-		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
-		if (room)
-		{
-			room->PushJob([room, session]()
-				{
-					if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1)
-						return;
-					// 2. 실제 공격 처리는 Room 객체에 위임
-					room->HandleAttack(session);
-				});
-		}
+		MYERROR("[ERROR] <Legacy> -> CS_PACKET_ATTACK");
+		//SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+		//if (room)
+		//{
+		//	room->PushJob([room, session]()
+		//		{
+		//			if (session->_state != SERVER::SESSION_STATE::ST_INGAME || session->_room_id == -1)
+		//				return;
+		//			// 2. 실제 공격 처리는 Room 객체에 위임
+		//			room->HandleAttack(session);
+		//		});
+		//}
 	}
 
 	void Handle_C2S_ENTER_ROOM(const std::shared_ptr<SERVER::SESSION>& session, packet::PacketStream& stream)

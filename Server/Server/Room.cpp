@@ -420,6 +420,13 @@ namespace PIP::SERVER
 						common::Vec3 knockForce = knockDir * 20.0f; // 넉백 세기 설정
 
 						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->GetHP(), p->GetPosition(), knockForce);
+
+						if (p->GetHP() <= 0) {
+							auto it = _players.find(p->GetId());
+							if (it != _players.end()) {
+								OnPlayerDead(it->second); // 플레이어 사망 처리 호출
+							}
+						}
 					}
 					else if (auto n = dynamic_cast<GAME::NPC*>(target)) {
 						npc_hits.emplace_back(n->GetNpcId(), (int32_t)config.damage, n->GetHP());
@@ -1068,7 +1075,7 @@ namespace PIP::SERVER
 		session->do_send(reinterpret_cast<const char*>(&despawn_packet), sizeof(despawn_packet));
 	}
 
-	void Room::HandleAttack(const std::shared_ptr<SESSION>& attacker) {
+	/*void Room::HandleAttack(const std::shared_ptr<SESSION>& attacker) {
 		if (attacker == nullptr) return;
 
 		BoundingSphere attackerSphere{ attacker->_player->GetPosition(), 5.0f };
@@ -1145,7 +1152,7 @@ namespace PIP::SERVER
 
 			Broadcast(stream.constable_data(), stream.Size());
 		}
-	}
+	}*/
 	void Room::HandleAction(const std::shared_ptr<SESSION>& session,
 	                        const common::packet::CS_PACKET_ACTION& action_packet)
 	{
@@ -1193,7 +1200,16 @@ namespace PIP::SERVER
 							}
 							// Player 피격 기록
 							else if (auto player = dynamic_cast<GAME::Player*>(targetActor))
+							{
+								if (player->GetHP() <= 0) {
+									auto it = _players.find(player->GetId());
+									if (it != _players.end()) {
+										OnPlayerDead(it->second); // 플레이어 사망 처리 호출
+									}
+								}
 								player_hits.emplace_back(player->GetId(), session->_player->_damage, player->GetHP());
+							}
+
 						}
 					}
 					// (확장) Player vs Player 판정도 동일한 로직으로 여기에 추가 가능
@@ -1719,6 +1735,45 @@ namespace PIP::SERVER
 				session->_viewedNpcs.erase(npc->GetNpcId());
 			}
 		}
+	}
+
+	void Room::OnPlayerDead(const std::shared_ptr<SESSION>& session)
+	{
+		if (!session || !session->_player) return;
+
+		session->_player->SetState(common::packet::EntityState::DEAD);
+		MYLOG("[Room] Player " << session->_id << " is DEAD. Respawning in 5s...");
+
+		int64_t playerId = session->_id;
+		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(5000), [this, playerId]() {
+			this->PushJob([this, playerId]() {
+				auto it = _players.find(playerId);
+				if (it != _players.end()) this->RespawnPlayer(it->second);
+				});
+			});
+	}
+	void Room::RespawnPlayer(const std::shared_ptr<SESSION>& session)
+	{
+		auto player = session->_player;
+		common::Vec3 spawnPos = _currentStage->get_spawn_pos();
+
+		player->SetHP(player->_max_hp);
+		player->SetPosition(spawnPos);
+		player->SetState(common::packet::EntityState::IDLE);
+
+		if (auto cc = player->GetComponent<GAME::CharacterControllerComponent>()) {
+			cc->SetPosition(spawnPos);
+		}
+
+		// 부활 패킷 브로드캐스트
+		packet::SC_PACKET_PLAYER_RESURRECT res_pkt;
+		res_pkt._type = packet::PacketType::S2C_P_PLAYER_RESURRECT;
+		res_pkt._size = sizeof(res_pkt);
+		res_pkt._id = session->_id;
+		res_pkt._position = spawnPos;
+		res_pkt._hp = player->GetHP();
+
+		Broadcast(reinterpret_cast<char*>(&res_pkt), sizeof(res_pkt));
 	}
 
 	void Room::PhysicsInitialize() {

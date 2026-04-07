@@ -66,7 +66,7 @@ namespace PIP::SERVER
 		void SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc);
 		void SendNpcLeaveToPlayer(const std::shared_ptr<SESSION>& session, int64_t npcId);
 
-		void HandleAttack(const std::shared_ptr<SESSION>& attacker);
+		//void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void HandleAction(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
 		void ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
@@ -99,8 +99,9 @@ namespace PIP::SERVER
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
 		void OnNPCDead(GAME::NPC* npc);
 		void RespawnNPC(GAME::NPC* npc);
-		// [삭제] UpdateSingleNPC는 더 이상 사용하지 않음
-		// void UpdateSingleNPC(int npcId);
+
+		void OnPlayerDead(const std::shared_ptr<SESSION>& session);
+		void RespawnPlayer(const std::shared_ptr<SESSION>& session);
 		
 		void SendNpcMovePacket(GAME::NPC* npc);
 		common::Vec3 find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape);
