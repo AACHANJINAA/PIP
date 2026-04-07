@@ -1832,12 +1832,10 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 
 		if (texcoords.empty()) {
 			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
-			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates.");
 		}
 
 		if (texcoords.empty()) {
 			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
-			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates.");
 		}
 		std::vector<XMFLOAT4> tangents = primitive_json["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitive_json["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
 
