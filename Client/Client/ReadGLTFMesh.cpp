@@ -1038,13 +1038,33 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 		if (primitive_json["attributes"].contains("NORMAL"))
 			normals = get_attribute_data<XMFLOAT3>(gltf_json, binary_buffer, primitive_json["attributes"]["NORMAL"]);
 
-		// 단순한 UV 로딩: TEXCOORD_1 먼저, 없으면 TEXCOORD_0
-		std::vector<XMFLOAT2> texcoords;
-		if (primitive_json["attributes"].contains("TEXCOORD_1")) {
-			texcoords = get_attribute_data<XMFLOAT2>(gltf_json, binary_buffer, primitive_json["attributes"]["TEXCOORD_1"]);
+		//Material이 요구하는 UV 채널 확인 후 읽기
+			std::vector<XMFLOAT2> texcoords;
+		int material_index = primitive_json.value("material", -1);
+
+		// Material이 요구하는 UV 채널 확인
+		int required_uv_channel = 0;  // 기본값
+		if (material_index >= 0 && material_index < _material_names.size()) {
+			auto mat_info = ResourceManager::instance()->get_material_info(_material_names[material_index]);
+			if (mat_info) {
+				// BaseColor UV 채널 사용 (대부분의 텍스처가 동일한 채널 사용)
+				required_uv_channel = mat_info->base_color_uv_channel;
+			}
 		}
-		else if (primitive_json["attributes"].contains("TEXCOORD_0")) {
+
+		// 요구되는 UV 채널 읽기
+		std::string uv_attr_name = "TEXCOORD_" + std::to_string(required_uv_channel);
+		if (primitive_json["attributes"].contains(uv_attr_name)) {
+			texcoords = get_attribute_data<XMFLOAT2>(gltf_json, binary_buffer, primitive_json["attributes"][uv_attr_name]);
+		}
+		else if (required_uv_channel != 0 && primitive_json["attributes"].contains("TEXCOORD_0")) {
+			// Fallback: 요구된 채널이 없으면 TEXCOORD_0 사용
 			texcoords = get_attribute_data<XMFLOAT2>(gltf_json, binary_buffer, primitive_json["attributes"]["TEXCOORD_0"]);
+		}
+
+		if (texcoords.empty()) {
+			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
+			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates.");
 		}
 
 		std::vector<XMFLOAT4> tangents;
@@ -1785,14 +1805,34 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 
 		std::vector<XMFLOAT3> positions = get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitive_json["attributes"]["POSITION"]);
 		std::vector<XMFLOAT3> normals = primitive_json["attributes"].contains("NORMAL") ? get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitive_json["attributes"]["NORMAL"]) : std::vector<XMFLOAT3>();
-
-		// 단순한 UV 로딩: TEXCOORD_1 먼저, 없으면 TEXCOORD_0
+		
+		// Material이 요구하는 UV 채널 확인 후 읽기
 		std::vector<XMFLOAT2> texcoords;
-		if (primitive_json["attributes"].contains("TEXCOORD_1")) {
-			texcoords = get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"]["TEXCOORD_1"]);
+		int material_index = primitive_json.value("material", -1);
+
+		// Material이 요구하는 UV 채널 확인
+		int required_uv_channel = 0;  // 기본값
+		if (material_index >= 0 && material_index < _material_names.size()) {
+			auto mat_info = ResourceManager::instance()->get_material_info(_material_names[material_index]);
+			if (mat_info) {
+				// BaseColor UV 채널 사용 (대부분의 텍스처가 동일한 채널 사용)
+				required_uv_channel = mat_info->base_color_uv_channel;
+			}
 		}
-		else if (primitive_json["attributes"].contains("TEXCOORD_0")) {
+
+		// 요구되는 UV 채널 읽기
+		std::string uv_attr_name = "TEXCOORD_" + std::to_string(required_uv_channel);
+		if (primitive_json["attributes"].contains(uv_attr_name)) {
+			texcoords = get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"][uv_attr_name]);
+		}
+		else if (required_uv_channel != 0 && primitive_json["attributes"].contains("TEXCOORD_0")) {
+			// Fallback: 요구된 채널이 없으면 TEXCOORD_0 사용
 			texcoords = get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"]["TEXCOORD_0"]);
+		}
+
+		if (texcoords.empty()) {
+			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
+			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates.");
 		}
 
 		if (texcoords.empty()) {
