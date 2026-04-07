@@ -179,7 +179,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float viewDepth = viewPos.z;
 
     // 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
-    float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth, In.Position.xy);
+    float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
     
     // 조건문으로 그림자 수신 여부 판단
     //if (g_bReceiveShadow > 0)

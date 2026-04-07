@@ -3,7 +3,6 @@
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
 #include "GameFramework.h"
-#include "ObjectManager.h"
 #include "RenderComponent.h"
 #include "Renderer.h"
 #include "LightManager.h"
@@ -126,9 +125,40 @@ void ShadowManager::build_cascade_matrices()
     for (int c = 0; c < 3; c++)
     {
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
+
+        // 텍셀 스내핑 (Texel Snapping) - 지글거림 제거
+        const float shadowMapResolution = 1024.0f;
+        XMMATRIX lightViewProj = lightView * proj;
+
+        // 1. 월드 원점을 섀도우 맵 픽셀 공간으로 투영
+        XMVECTOR shadowOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+        shadowOrigin = XMVector4Transform(shadowOrigin, lightViewProj);
+
+        // 2. NDC 공간을 픽셀 단위로 스케일 업
+        shadowOrigin = XMVectorScale(shadowOrigin, shadowMapResolution / 2.0f);
+
+        // 3. 텍셀 스내핑 (반올림)
+        XMVECTOR roundedOrigin = XMVectorRound(shadowOrigin);
+
+        // 4. 오차 계산
+        XMVECTOR roundOffset = XMVectorSubtract(roundedOrigin, shadowOrigin);
+
+        // 5. 오차를 NDC 스케일로 축소
+        roundOffset = XMVectorScale(roundOffset, 2.0f / shadowMapResolution);
+
+        // 6. Z와 W축은 0으로 초기화 (X, Y만 보정)
+        roundOffset = XMVectorSetZ(roundOffset, 0.0f);
+        roundOffset = XMVectorSetW(roundOffset, 0.0f);
+
+        // 7. 투영 행렬에 오프셋 적용
+        XMMATRIX shadowProjOffset = XMMatrixTranslationFromVector(roundOffset);
+        proj = XMMatrixMultiply(proj, shadowProjOffset);
+
+        // 8. 최종 VP 행렬
         XMMATRIX vp = lightView * proj;
-        // 행렬을 GPU에 맞게 Transpose하여 저장
-        XMStoreFloat4x4(&_cascadeData.cascades[c].lightVP,XMMatrixTranspose(vp));
+
+        // 셰이더용 GPU에 맞게 Transpose하여 저장
+        XMStoreFloat4x4(&_cascadeData.cascades[c].lightVP, XMMatrixTranspose(vp));
         XMStoreFloat4x4(&_shadowData.lightVP[c], XMMatrixTranspose(vp));
     }
 
