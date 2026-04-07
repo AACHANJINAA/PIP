@@ -468,6 +468,43 @@ void NetworkManager::HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream)
 		}
 	}
 }
+
+void NetworkManager::HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_PLAYER_RESURRECT resurrect_packet;
+	stream >> resurrect_packet;
+	if (resurrect_packet._id == _my_session_id)
+	{
+		auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+		if (player)
+		{
+			auto player_logic = player->get_component<MainPlayerScript>();
+			if (player_logic && resurrect_packet._id == player_logic->id())
+			{
+				player_logic->set_hp(resurrect_packet._hp);
+				player_logic->set_position(resurrect_packet._position);
+				player_logic->transform()->set_local_rotation({0,0,0,1});
+			}
+		}
+	}
+	else
+	{
+		auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
+		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
+		auto it = std::ranges::find_if(other_players, [&](const std::shared_ptr<GameObject>& other) {
+			auto other_script = other->get_component<OtherPlayerScript>();
+			return other_script && resurrect_packet._id == other_script->id();
+			});
+		if (it != other_players.end())
+		{
+			auto other_player_script = (*it)->get_component<OtherPlayerScript>();
+			other_player_script->set_hp(resurrect_packet._hp);
+			other_player_script->on_sync_position(resurrect_packet._position);
+			other_player_script->on_sync_rotation({0,0,0,1});
+		}
+	}
+}
+
 void NetworkManager::HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_ROOM_LIST_ACK room_list_ack;

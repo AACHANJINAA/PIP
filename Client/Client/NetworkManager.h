@@ -42,21 +42,30 @@ private:
 
     // 개별 패킷 처리 함수들 (private)
     void HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream);
-    void HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& stream);
-    void HANDLE_S2C_MOVE(common::packet::PacketStream& stream);
     void HANDLE_S2C_LEAVE(common::packet::PacketStream& stream);
-    void HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stream);
-    void HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream);
+
     void HANDLE_S2C_ROOM_LIST_ACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_ENTER_ROOM_ACK(common::packet::PacketStream& stream);
+
+    void HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& stream);
+
+    void HANDLE_S2C_MOVE(common::packet::PacketStream& stream);
+
+    void HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stream);
+    void HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream);
+	void HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& stream);
 
     void HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream);
     void HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream);
     void HANDLE_S2C_DESPAWN_NPC(common::packet::PacketStream& stream);
+
 	void HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream);
 	void HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& stream);
+
     void HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& stream);
     void Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream);
+
+
 	// --- 디버그용 함수들 ---
     void HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream);
     void HANDLE_S2C_DEBUG_BT(common::packet::PacketStream& stream);
