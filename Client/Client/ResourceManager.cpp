@@ -467,7 +467,8 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                     new_mat_info.emissive_factor = { mat_json["emissiveFactor"][0], mat_json["emissiveFactor"][1], mat_json["emissiveFactor"][2] };
             }
             // Textures
-            auto assign_texture = [&](const json& texture_info, std::string& path_member, bool is_srgb) {
+            auto assign_texture = [&](const json& texture_info, std::string& path_member, bool is_srgb,
+                XMFLOAT2& uv_offset, XMFLOAT2& uv_scale, float& uv_rotation) {
                     if (texture_info.contains("index")) {
                             int tex_idx = texture_info["index"];
                             if (tex_idx < texture_source_uris.size() && !texture_source_uris[tex_idx].empty()) {
@@ -479,20 +480,68 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                                 load_texture(path_member, is_srgb);
                             }
                     }
+                    // KHR_texture_transform 파싱
+                    if (texture_info.contains("extensions")) {
+                        const auto& ext = texture_info["extensions"];
+                        if (ext.contains("KHR_texture_transform")) {
+                            const auto& transform = ext["KHR_texture_transform"];
+
+                            if (transform.contains("offset")) {
+                                uv_offset.x = transform["offset"][0];
+                                uv_offset.y = transform["offset"][1];
+                            }
+                            if (transform.contains("scale")) {
+                                uv_scale.x = transform["scale"][0];
+                                uv_scale.y = transform["scale"][1];
+                            }
+                            if (transform.contains("rotation")) {
+                                uv_rotation = transform["rotation"];
+                            }
+                        }
+                    }
             };
 
-            if (pbr.contains("baseColorTexture")) 
-                assign_texture(pbr["baseColorTexture"], new_mat_info.base_color_texture_path, true);
-            if (pbr.contains("metallicRoughnessTexture")) 
-                assign_texture(pbr["metallicRoughnessTexture"], new_mat_info.metallic_roughness_texture_path, false);
+            if (pbr.contains("baseColorTexture"))
+                assign_texture(pbr["baseColorTexture"],
+                    new_mat_info.base_color_texture_path,
+                    true,
+                    new_mat_info.base_color_uv_offset,
+                    new_mat_info.base_color_uv_scale,
+                    new_mat_info.base_color_uv_rotation);
+
+            if (pbr.contains("metallicRoughnessTexture"))
+                assign_texture(pbr["metallicRoughnessTexture"],
+                    new_mat_info.metallic_roughness_texture_path,
+                    false,
+                    new_mat_info.metallic_roughness_uv_offset,
+                    new_mat_info.metallic_roughness_uv_scale,
+                    new_mat_info.metallic_roughness_uv_rotation);
+
             if (mat_json.contains("normalTexture")) {
-                assign_texture(mat_json["normalTexture"], new_mat_info.normal_texture_path, false);
+                assign_texture(mat_json["normalTexture"],
+                    new_mat_info.normal_texture_path,
+                    false,
+                    new_mat_info.normal_uv_offset,
+                    new_mat_info.normal_uv_scale,
+                    new_mat_info.normal_uv_rotation);
                 new_mat_info.normal_texture_scale = mat_json["normalTexture"].value("scale", 1.0f);
             }
-            if (mat_json.contains("emissiveTexture")) 
-                assign_texture(mat_json["emissiveTexture"], new_mat_info.emissive_texture_path, true);
-            if (mat_json.contains("occlusionTexture")) 
-                assign_texture(mat_json["occlusionTexture"], new_mat_info.occlusion_texture_path, true);
+
+            if (mat_json.contains("emissiveTexture"))
+                assign_texture(mat_json["emissiveTexture"],
+                    new_mat_info.emissive_texture_path,
+                    true,
+                    new_mat_info.base_color_uv_offset,
+                    new_mat_info.base_color_uv_scale,
+                    new_mat_info.base_color_uv_rotation);
+
+            if (mat_json.contains("occlusionTexture"))
+                assign_texture(mat_json["occlusionTexture"],
+                    new_mat_info.occlusion_texture_path,
+                    true,
+                    new_mat_info.metallic_roughness_uv_offset,
+                    new_mat_info.metallic_roughness_uv_scale,
+                    new_mat_info.metallic_roughness_uv_rotation);
             
             // Other properties
             new_mat_info.alpha_mode = mat_json.value("alphaMode", "OPAQUE");
@@ -609,6 +658,19 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     constants.HasEmissiveTexture = !mat_info.emissive_texture_path.empty();
     constants.HasOcclusionTexture = !mat_info.occlusion_texture_path.empty();
     constants.SpecularFactor = mat_info.specular_factor;
+
+    // UV Transform 값 복사 추가
+    constants.BaseColorUVOffset = mat_info.base_color_uv_offset;
+    constants.BaseColorUVScale = mat_info.base_color_uv_scale;
+    constants.BaseColorUVRotation = mat_info.base_color_uv_rotation;
+
+    constants.NormalUVOffset = mat_info.normal_uv_offset;
+    constants.NormalUVScale = mat_info.normal_uv_scale;
+    constants.NormalUVRotation = mat_info.normal_uv_rotation;
+
+    constants.MetallicRoughnessUVOffset = mat_info.metallic_roughness_uv_offset;
+    constants.MetallicRoughnessUVScale = mat_info.metallic_roughness_uv_scale;
+    constants.MetallicRoughnessUVRotation = mat_info.metallic_roughness_uv_rotation;
 
     memcpy(mat_info.material_cbuffer_cpu_address, &constants, sizeof(GltfMaterialConstantBuffer));
 

@@ -1038,9 +1038,14 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 		if (primitive_json["attributes"].contains("NORMAL"))
 			normals = get_attribute_data<XMFLOAT3>(gltf_json, binary_buffer, primitive_json["attributes"]["NORMAL"]);
 
+		// 단순한 UV 로딩: TEXCOORD_1 먼저, 없으면 TEXCOORD_0
 		std::vector<XMFLOAT2> texcoords;
-		if (primitive_json["attributes"].contains("TEXCOORD_0"))
+		if (primitive_json["attributes"].contains("TEXCOORD_1")) {
+			texcoords = get_attribute_data<XMFLOAT2>(gltf_json, binary_buffer, primitive_json["attributes"]["TEXCOORD_1"]);
+		}
+		else if (primitive_json["attributes"].contains("TEXCOORD_0")) {
 			texcoords = get_attribute_data<XMFLOAT2>(gltf_json, binary_buffer, primitive_json["attributes"]["TEXCOORD_0"]);
+		}
 
 		std::vector<XMFLOAT4> tangents;
 		if (primitive_json["attributes"].contains("TANGENT"))
@@ -1780,11 +1785,19 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 
 		std::vector<XMFLOAT3> positions = get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitive_json["attributes"]["POSITION"]);
 		std::vector<XMFLOAT3> normals = primitive_json["attributes"].contains("NORMAL") ? get_attribute_data<XMFLOAT3>(gltfJson, binaryBuffer, primitive_json["attributes"]["NORMAL"]) : std::vector<XMFLOAT3>();
-		std::vector<XMFLOAT2> texcoords = primitive_json["attributes"].contains("TEXCOORD_0") ? get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"]["TEXCOORD_0"]) : std::vector<XMFLOAT2>();
-		if (texcoords.empty())
-		{
+
+		// 단순한 UV 로딩: TEXCOORD_1 먼저, 없으면 TEXCOORD_0
+		std::vector<XMFLOAT2> texcoords;
+		if (primitive_json["attributes"].contains("TEXCOORD_1")) {
+			texcoords = get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"]["TEXCOORD_1"]);
+		}
+		else if (primitive_json["attributes"].contains("TEXCOORD_0")) {
+			texcoords = get_attribute_data<XMFLOAT2>(gltfJson, binaryBuffer, primitive_json["attributes"]["TEXCOORD_0"]);
+		}
+
+		if (texcoords.empty()) {
 			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
-			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates(TEXCOORD_0).");
+			CLOG("Warning: Mesh '" + name() + "', Primitive in mesh '" + mesh_name + "' has no texture coordinates.");
 		}
 		std::vector<XMFLOAT4> tangents = primitive_json["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitive_json["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
 
