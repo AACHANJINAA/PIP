@@ -99,6 +99,22 @@ private:
         int HasEmissiveTexture;
         int HasOcclusionTexture;
         float SpecularFactor;
+
+        // UV Transform 추가
+        XMFLOAT2 BaseColorUVOffset;
+        XMFLOAT2 BaseColorUVScale;
+        float BaseColorUVRotation;
+        float pad1;
+
+        XMFLOAT2 NormalUVOffset;
+        XMFLOAT2 NormalUVScale;
+        float NormalUVRotation;
+        float pad2;
+
+        XMFLOAT2 MetallicRoughnessUVOffset;
+        XMFLOAT2 MetallicRoughnessUVScale;
+        float MetallicRoughnessUVRotation;
+        float pad3;
     };
     
     // --- glTF PBR 표준에 맞춘 MaterialInfo 구조체 ---
@@ -130,6 +146,20 @@ private:
             // --- Per-material Constant Buffer Resources ---
         ComPtr<ID3D12Resource> material_cbuffer_gpu = nullptr;
         UINT8 * material_cbuffer_cpu_address = nullptr;
+    
+
+        // KHR_texture_transform 지원 추가
+        XMFLOAT2 base_color_uv_offset = { 0.0f, 0.0f };
+        XMFLOAT2 base_color_uv_scale = { 1.0f, 1.0f };
+        float base_color_uv_rotation = 0.0f;
+
+        XMFLOAT2 normal_uv_offset = { 0.0f, 0.0f };
+        XMFLOAT2 normal_uv_scale = { 1.0f, 1.0f };
+        float normal_uv_rotation = 0.0f;
+
+        XMFLOAT2 metallic_roughness_uv_offset = { 0.0f, 0.0f };
+        XMFLOAT2 metallic_roughness_uv_scale = { 1.0f, 1.0f };
+        float metallic_roughness_uv_rotation = 0.0f;
     };
 
     // --- GPU 리소스 ---
