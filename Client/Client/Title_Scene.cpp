@@ -48,16 +48,16 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
     title_ui_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
     title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
     title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
-    title_ui_background->set_texture("Resource/UI/Title_UI.dds");
+    title_ui_background->set_texture("Resource/UI/PIP_GAMES.dds");
     UIManager::instance()->add_ui(UILayer::BACKGROUND, "Title_UI", title_ui_background_obj);
 
-    // logo
-    auto logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
-    auto logo_ui_background = logo_ui_background_obj->add_component<UIRenderComponent>();
+    // 우측 상당 logo
+    //auto logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
+    //auto logo_ui_background = logo_ui_background_obj->add_component<UIRenderComponent>();
 
-    logo_ui_background->set_screen_position(FRAME_BUFFER_WIDTH - 410.0f, 0.0f);        // Frame보다 안쪽
-    logo_ui_background->set_size(412.5f, 250.f);// Frame보다 작게
-    logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
-    logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
-    UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", logo_ui_background_obj);
+    //logo_ui_background->set_screen_position(FRAME_BUFFER_WIDTH - 410.0f, 0.0f);        // Frame보다 안쪽
+    //logo_ui_background->set_size(412.5f, 250.f);// Frame보다 작게
+    //logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+    //logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
+    //UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", logo_ui_background_obj);
 }
