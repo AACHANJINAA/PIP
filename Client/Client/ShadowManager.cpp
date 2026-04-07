@@ -117,8 +117,8 @@ void ShadowManager::build_cascade_matrices()
 
     float terrainSize = SceneManager::instance()->get_terrain_size();
     float radii[3] = {
-        terrainSize * 0.2f,  // 근거리: 지형의 10%
-        terrainSize * 0.5f,  // 중거리: 지형의 70%
+        terrainSize * 0.1f,  // 근거리: 지형의 10%
+        terrainSize * 0.3f,  // 중거리: 지형의 70%
         terrainSize * 1.0f   // 원거리: 지형 전체
     };
 
