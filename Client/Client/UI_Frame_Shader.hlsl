@@ -72,12 +72,12 @@ float4 PS_UI_FRAME(PS_INPUT input) : SV_TARGET
 {
     float4 final_color = (0.0f, 0.0f, 0.0f, 1.0f);
 	// ID에 맞는 색상 선택 (범위 제한 % 4)
-	float3 idColor = PlayerColors[uint(g_otherplayerid) % 4];
+	float3 idColor = PlayerColors[g_otherplayerid % 4];
 
 	if (g_UseTexture > 0)
 	{
 		float4 texColor = g_Texture.Sample(g_Sampler, input.texcoord);
-        final_color = texColor * g_Color * float4(idColor * 10.0f, 1.0f); // ID 색상 곱하기
+        final_color = texColor * g_Color * float4(idColor * 5.0f, 1.0f); // ID 색상 곱하기
     }
 
 	return final_color;
