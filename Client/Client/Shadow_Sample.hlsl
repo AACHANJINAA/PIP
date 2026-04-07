@@ -12,92 +12,91 @@ cbuffer cbShadow : register(b5)
 Texture2DArray g_shadowMap : register(t11);
 SamplerComparisonState g_shadowSampler : register(s1);
 
-// 1. Poisson Disk 오프셋 상수 배열 (미리 계산된 불규칙한 원형 배치) -> 픽셀 사이 일정한 거리유지
-static const float2 PoissonDisk[9] =
+// Poisson Disk 오프셋 상수 배열 (미리 계산된 불규칙한 원형 배치) -> 픽셀 사이 일정한 거리유지
+static const float2 PoissonDisk[16] =
 {
-    float2(0.0f, 0.0f),
-    float2(0.27f, -0.62f), float2(-0.84f, 0.22f),
-    float2(0.39f, 0.69f), float2(-0.16f, -0.92f),
-    float2(0.96f, -0.19f), float2(-0.64f, -0.63f),
-    float2(-0.73f, 0.66f), float2(0.66f, 0.59f)
+    float2(-0.94201624f, -0.39906216f),
+     float2(0.94558609f, -0.76890725f),
+     float2(-0.094184101f, -0.92938870f),
+     float2(0.34495938f, 0.29387760f),
+     float2(-0.91588581f, 0.45771432f),
+     float2(-0.81544232f, -0.87912464f),
+     float2(-0.38277543f, 0.27676845f),
+     float2(0.97484398f, 0.75648379f),
+     float2(0.44323325f, -0.97511554f),
+     float2(0.53742981f, -0.47373420f),
+     float2(-0.26496911f, -0.41893023f),
+     float2(0.79197514f, 0.19090188f),
+     float2(-0.24188840f, 0.99706507f),
+     float2(-0.81409955f, 0.91437590f),
+     float2(0.19984126f, 0.78641367f),
+     float2(0.14383161f, -0.14100790f)
 };
 
-// 2. 개선된 PCF 샘플링 함수 (해상도 동적 대응 + 푸아송 디스크 + 화면 노이즈 회전)
-float get_pcf_shadow_advanced(float3 worldPos, float3 normal, int cascade, float2 screenPos)
+// 개선된 PCF 샘플링 함수 (해상도 동적 대응 + 푸아송 디스크 + 화면 노이즈 회전)
+float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float viewDepth)
 {
     float normalOffsets[3] = { 0.05f, 0.1f, 0.2f };
-	float3 offsetWorldPos = worldPos + (normal * normalOffsets[cascade]);
+    float3 offsetWorldPos = worldPos + (normal * normalOffsets[cascade]);
     float4 sp = mul(float4(offsetWorldPos, 1.0f), g_shadowLightVP[cascade]);
     sp.xyz /= sp.w;
-
+ 
     float2 uv;
     uv.x = sp.x * 0.5f + 0.5f;
     uv.y = -sp.y * 0.5f + 0.5f;
-
+ 
     if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
         return 1.0f;
-
-    // 동적으로 텍스처 해상도 가져오기
+ 
+     // 동적으로 텍스처 해상도 가져오기
     uint width, height, elements;
     g_shadowMap.GetDimensions(width, height, elements);
     float2 texelSize = 1.0f / float2(width, height);
-
-    // IGN (Interleaved Gradient Noise) 기반 랜덤 회전값 생성 -> 시각적으로 더 자연스러운 노이즈 패턴
-    float noise = frac(52.9829189f * frac(dot(screenPos, float2(0.06711056f, 0.00583715f))));
-    float angle = noise * 6.2831853f; // 2 * PI
-    
-    // 회전 행렬 구성
+ 
+     // 월드 좌표 기반 고정 노이즈 (지글거림 방지)
+    float noise = frac(52.9829189f * frac(dot(worldPos.xz, float2(0.06711056f, 0.00583715f))));
+    float angle = noise * 6.2831853f;
+     
     float s, c;
     sincos(angle, s, c);
     float2x2 rotationMat = float2x2(c, -s, s, c);
-
+ 
+   
+     // viewDepth 기반 동적 필터 크기 (카메라 기준 - 안정적!)
+     // viewDepth는 카메라로부터의 거리 (0 ~ FarZ)
+     
+     // Cascade별 기본 필터 크기
+    float baseFilterRadii[3] = { 0.8f, 1.5f, 3.0f };
+     
+     // viewDepth를 0~1로 정규화 (Cascade 2의 끝 범위 기준)
+    float maxViewDepth = g_shadowSplitMid + 100.0f; // Cascade 2 커버 범위
+    float normalizedDepth = saturate(viewDepth / maxViewDepth);
+     
+     // 카메라에 가까우면 선명(0.5배), 멀면 부드럽게(2.5배)
+    float depthScale = lerp(0.5f, 2.5f, normalizedDepth);
+    float filterRadius = baseFilterRadii[cascade] * depthScale;
+ 
     float shadow = 0.0f;
-    float filterRadii[3] = { 0.8f, 1.5f, 2.5f }; // Cascade 0: 매우 작게, 2: 크게
-    float filterRadius = filterRadii[cascade];
-
-    // 3x3 격자 대신 회전된 푸아송 디스크 샘플링
-    [unroll]
-    for (int i = 0; i < 9; ++i)
+     
+     // 16개 샘플로 부드러운 그림자
+     [unroll]
+    for (int i = 0; i < 16; ++i)
     {
-        // 디스크 오프셋을 픽셀 위치 기반으로 랜덤하게 회전시킴
         float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
         float2 offset = rotatedOffset * texelSize * filterRadius;
-        
+         
         shadow += g_shadowMap.SampleCmpLevelZero(
-            g_shadowSampler,
-            float3(uv + offset, (float) cascade),
-            sp.z - g_shadowBias
-        );
+             g_shadowSampler,
+             float3(uv + offset, (float) cascade),
+             sp.z - g_shadowBias
+         );
     }
-    
-    return shadow / 9.0f;
+     
+    return shadow / 16.0f;
 }
 
-//float get_pcf_shadow_simple(float3 worldPos, float3 normal, int cascade)
-//{
-//    float3 offsetWorldPos = worldPos + (normal * 0.05f); // Normal Offset 줄임
-//    float4 sp = mul(float4(offsetWorldPos, 1.0f), g_shadowLightVP[cascade]);
-//    sp.xyz /= sp.w;
-
-//    float2 uv;
-//    uv.x = sp.x * 0.5f + 0.5f;
-//    uv.y = -sp.y * 0.5f + 0.5f;
-
-//    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
-//        return 1.0f;
-
-//         // 단일 샘플 (보간 없음)
-//    float shadow = g_shadowMap.SampleCmpLevelZero(
-//             g_shadowSampler,
-//             float3(uv, (float) cascade),
-//             sp.z - g_shadowBias
-//         );
-
-//    return shadow;
-//}
-
-// 2. 메인 CSM 샘플링 함수 (블렌딩 적용)
-float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth, float2 screenPos)
+// 메인 CSM 샘플링 함수 (블렌딩 적용)
+float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
 {
     float blendThreshold = 15.0f;
 
@@ -108,11 +107,11 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth, float2 
     // Cascade 0 -> 1 경계 확인
     if (viewDepth < g_shadowSplitNear + blendThreshold)
     {
-        shadow0 = get_pcf_shadow_advanced(worldPos, normal, 0, screenPos);
+        shadow0 = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth);
 
         if (viewDepth > g_shadowSplitNear - blendThreshold)
         {
-            shadow1 = get_pcf_shadow_advanced(worldPos, normal, 1, screenPos);
+            shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
             float t = (viewDepth - (g_shadowSplitNear - blendThreshold)) / (blendThreshold);
             finalShadow = lerp(shadow0, shadow1, saturate(t));
         }
@@ -124,11 +123,11 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth, float2 
     // Cascade 1 -> 2 경계 확인
     else
     {
-        shadow1 = get_pcf_shadow_advanced(worldPos, normal, 1, screenPos);
+        shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
 
         if (viewDepth > g_shadowSplitMid - blendThreshold)
         {
-            float shadow2 = get_pcf_shadow_advanced(worldPos, normal, 2, screenPos);
+            float shadow2 = get_pcf_shadow_pcss(worldPos, normal, 2, viewDepth);
             float t = (viewDepth - (g_shadowSplitMid - blendThreshold)) / (blendThreshold * 2.0f);
             finalShadow = lerp(shadow1, shadow2, saturate(t));
         }
