@@ -6,7 +6,6 @@
 #include "RenderComponent.h"
 #include "Renderer.h"
 #include "LightManager.h"
-#include "SceneManager.h"
 
 void ShadowManager::initialize(ID3D12Device* device)
 {
@@ -115,11 +114,10 @@ void ShadowManager::build_cascade_matrices()
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
-    float terrainSize = SceneManager::instance()->get_terrain_size();
     float radii[3] = {
-        terrainSize * 0.1f,  // 근거리: 지형의 10%
-        terrainSize * 0.3f,  // 중거리: 지형의 70%
-        terrainSize * 1.0f   // 원거리: 지형 전체
+		shadow_max_distance * 0.1f,  // 근거리: 지형의 10%
+        shadow_max_distance * 0.3f,  // 중거리: 지형의 30%
+        shadow_max_distance * 1.0f   // 원거리: 지형 전체
     };
 
     for (int c = 0; c < 3; c++)
