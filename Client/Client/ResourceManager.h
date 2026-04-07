@@ -147,6 +147,10 @@ private:
         ComPtr<ID3D12Resource> material_cbuffer_gpu = nullptr;
         UINT8 * material_cbuffer_cpu_address = nullptr;
     
+        // UV 채널 정보 추가
+        int base_color_uv_channel = 0;
+        int normal_uv_channel = 0;
+        int metallic_roughness_uv_channel = 0;
 
         // KHR_texture_transform 지원 추가
         XMFLOAT2 base_color_uv_offset = { 0.0f, 0.0f };

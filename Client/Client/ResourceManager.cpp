@@ -468,43 +468,47 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             }
             // Textures
             auto assign_texture = [&](const json& texture_info, std::string& path_member, bool is_srgb,
-                XMFLOAT2& uv_offset, XMFLOAT2& uv_scale, float& uv_rotation) {
-                    if (texture_info.contains("index")) {
-                            int tex_idx = texture_info["index"];
-                            if (tex_idx < texture_source_uris.size() && !texture_source_uris[tex_idx].empty()) {
-                                //gltf의 상대 경로 및 기본 경로를 조합하여 전체 경로로 만듦
-                                std::filesystem::path full_texture_path = base_path / texture_source_uris[tex_idx];
-                                path_member = full_texture_path.string();
+                int& uv_channel, XMFLOAT2& uv_offset, XMFLOAT2& uv_scale, float& uv_rotation) {
 
-								// 이제 DDS 우선 로드 및 실패 시 WIC 로드를 수행
-                                load_texture(path_member, is_srgb);
-                            }
-                    }
-                    // KHR_texture_transform 파싱
-                    if (texture_info.contains("extensions")) {
-                        const auto& ext = texture_info["extensions"];
-                        if (ext.contains("KHR_texture_transform")) {
-                            const auto& transform = ext["KHR_texture_transform"];
+            	uv_channel = texture_info.value("texCoord", 0);
 
-                            if (transform.contains("offset")) {
-                                uv_offset.x = transform["offset"][0];
-                                uv_offset.y = transform["offset"][1];
-                            }
-                            if (transform.contains("scale")) {
-                                uv_scale.x = transform["scale"][0];
-                                uv_scale.y = transform["scale"][1];
-                            }
-                            if (transform.contains("rotation")) {
-                                uv_rotation = transform["rotation"];
-                            }
+                if (texture_info.contains("index")) {
+                        int tex_idx = texture_info["index"];
+                        if (tex_idx < texture_source_uris.size() && !texture_source_uris[tex_idx].empty()) {
+                            //gltf의 상대 경로 및 기본 경로를 조합하여 전체 경로로 만듦
+                            std::filesystem::path full_texture_path = base_path / texture_source_uris[tex_idx];
+                            path_member = full_texture_path.string();
+
+							// 이제 DDS 우선 로드 및 실패 시 WIC 로드를 수행
+                            load_texture(path_member, is_srgb);
+                        }
+                }
+                // KHR_texture_transform 파싱
+                if (texture_info.contains("extensions")) {
+                    const auto& ext = texture_info["extensions"];
+                    if (ext.contains("KHR_texture_transform")) {
+                        const auto& transform = ext["KHR_texture_transform"];
+
+                        if (transform.contains("offset")) {
+                            uv_offset.x = transform["offset"][0];
+                            uv_offset.y = transform["offset"][1];
+                        }
+                        if (transform.contains("scale")) {
+                            uv_scale.x = transform["scale"][0];
+                            uv_scale.y = transform["scale"][1];
+                        }
+                        if (transform.contains("rotation")) {
+                            uv_rotation = transform["rotation"];
                         }
                     }
+                }
             };
 
             if (pbr.contains("baseColorTexture"))
                 assign_texture(pbr["baseColorTexture"],
                     new_mat_info.base_color_texture_path,
                     true,
+					new_mat_info.base_color_uv_channel,
                     new_mat_info.base_color_uv_offset,
                     new_mat_info.base_color_uv_scale,
                     new_mat_info.base_color_uv_rotation);
@@ -513,6 +517,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 assign_texture(pbr["metallicRoughnessTexture"],
                     new_mat_info.metallic_roughness_texture_path,
                     false,
+					new_mat_info.metallic_roughness_uv_channel,
                     new_mat_info.metallic_roughness_uv_offset,
                     new_mat_info.metallic_roughness_uv_scale,
                     new_mat_info.metallic_roughness_uv_rotation);
@@ -521,6 +526,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 assign_texture(mat_json["normalTexture"],
                     new_mat_info.normal_texture_path,
                     false,
+					new_mat_info.normal_uv_channel,
                     new_mat_info.normal_uv_offset,
                     new_mat_info.normal_uv_scale,
                     new_mat_info.normal_uv_rotation);
@@ -531,6 +537,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 assign_texture(mat_json["emissiveTexture"],
                     new_mat_info.emissive_texture_path,
                     true,
+					new_mat_info.base_color_uv_channel,
                     new_mat_info.base_color_uv_offset,
                     new_mat_info.base_color_uv_scale,
                     new_mat_info.base_color_uv_rotation);
@@ -539,6 +546,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 assign_texture(mat_json["occlusionTexture"],
                     new_mat_info.occlusion_texture_path,
                     true,
+					new_mat_info.metallic_roughness_uv_channel,
                     new_mat_info.metallic_roughness_uv_offset,
                     new_mat_info.metallic_roughness_uv_scale,
                     new_mat_info.metallic_roughness_uv_rotation);
