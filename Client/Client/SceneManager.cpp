@@ -189,14 +189,6 @@ const std::vector<std::shared_ptr<GameObject>>& SceneManager::get_all_landscapes
 	return _MainlandscapeObjects;
 }
 
-float SceneManager::get_terrain_size() const
-{
-	if (!_terrainObject)
-		return 512.0f; // 기본값
-
-	return 512.0f;
-}
-
 void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
 {
 	if (_terrainObject) {

@@ -5,7 +5,6 @@
 #include "GameFramework.h"
 #include "Mesh.h"
 #include "MainPlayerScript.h"
-#include "OtherPlayerScript.h"
 #include "Renderer.h"
 
 class MainPlayerScript;
