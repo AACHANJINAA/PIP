@@ -31,6 +31,8 @@
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
 #include "ShadowManager.h"
+#include "MinimapManager.h"
+#include "MinimapShader.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
@@ -52,6 +54,7 @@ void Renderer::initialize(ID3D12Device* device)
     _rootSignatureGenerators.push_back(std::make_unique<CsmDepthRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<CsmDepthSkinnedRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<UIFrameRootSignatureGenerator>());
+	_rootSignatureGenerators.push_back(std::make_unique<MinimapRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -94,6 +97,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto ui_frame_shader = std::make_shared<UIFrameShader>();
     _shaderPrototypes[ui_frame_shader->pso_name()] = ui_frame_shader;
+
+    auto minimap_shader = std::make_shared<MinimapShader>();
+    _shaderPrototypes[minimap_shader->pso_name()] = minimap_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);

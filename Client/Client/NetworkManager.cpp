@@ -350,6 +350,8 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 	stream >> move_packet; // 구조체 전체를 읽습니다.
 	if (move_packet._id == _my_session_id) // 읽어온 id 사용
 	{
+		_my_pos = move_packet._position;
+
 		auto player = ObjectManager::instance()->find_by_name("MainPlayer");
 		if (player) {
 			auto script = player->get_component<MainPlayerScript>();

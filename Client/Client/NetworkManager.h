@@ -31,6 +31,7 @@ public:
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
     bool is_running() const { return _isRunning; }
+    XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
 
 private:
 	void network_worker(); // 네트워크 스레드 함수
@@ -89,4 +90,7 @@ private:
 
     // 완성된 패킷만 담는 큐 (네트워크 스레드 -> 메인 스레드)
 	concurrency::concurrent_queue<std::vector<char>> _packetQueue; // 수신된 패킷을 저장하는 큐
+
+	// 플레이어의 현재 위치 (서버에서 받은 최신 위치)
+	XMFLOAT3 _my_pos{ 0.0f, 0.0f, 0.0f };
 };
