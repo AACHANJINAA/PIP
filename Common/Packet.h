@@ -14,6 +14,7 @@ namespace common::packet
 		MOVE,
 		RUN,
 		ACTION,
+		SKILL_ONE,
 		HITTED,
 		DEAD,
 
@@ -26,6 +27,7 @@ namespace common::packet
 		namespace Common
 		{
 			constexpr int32_t Attack = 1;
+			constexpr int32_t SKILL = 2;
 		}
 
 		namespace Tainer

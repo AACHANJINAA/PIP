@@ -37,6 +37,9 @@ public:
 	// 연결된 것들 삭제
 	void delete_connecting(std::string socket_name);
 
+	void set_isFollowAnimation(bool isFollow) { _isFollowAnimation = isFollow; } // 애니메이션 따라서 움직일래 말래
+
+
 private:
 	// 객체 추가 함수
 	void create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale);
@@ -46,5 +49,7 @@ private:
 	// 연결된 객체들 (설정한 이름, 객체)
 	// 관리해주는 것은 (설정한 소켓 이름, 연결할 뼈, 객체)
 	std::vector<std::pair<std::string, ConnectingSocketInfo>> _connectedObjects;
+
+	bool _isFollowAnimation = true;
 };
 
