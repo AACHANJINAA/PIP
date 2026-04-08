@@ -31,9 +31,22 @@ bool ReplicationSystem::on_packet_arrival(int64_t id, const NetSnapshot& snapsho
 }
 void ReplicationSystem::update(float dt)
 {
-	// [Systemic Processing] 모든 엔티티의 로직을 일괄 실행
-	// 이 루프는 나중에 병렬화(Parallel For)하기 매우 좋은 지점입니다.
-	for (auto& [id, entity] : _entities) {
-		entity->apply_snapshot();
-	}
+    // Iterator invalidation 방지: ID 목록을 미리 복사
+    std::vector<int64_t> entity_ids;
+    entity_ids.reserve(_entities.size());
+
+    for (const auto& [id, entity] : _entities)
+    {
+        entity_ids.push_back(id);
+    }
+
+    // [Systemic Processing] 복사된 ID 리스트로 안전하게 순회
+    for (int64_t id : entity_ids)
+    {
+        auto it = _entities.find(id);
+        if (it != _entities.end())  // 중간에 삭제되었을 수도 있음
+        {
+            it->second->apply_snapshot();
+        }
+    }
 }

@@ -50,6 +50,7 @@ public:
 		const std::string shared_folder_path, const std::string base_path, const std::string spcular_path, const std::string diffuse_path, const std::string brdf_path);
 	void build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 	void build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
+	void build_minimap(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // ÇöÀç ¾À
