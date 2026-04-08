@@ -461,6 +461,12 @@
     <ClInclude Include="LinearAllocator.h">
       <Filter>0. Engine\0. Core\1. System</Filter>
     </ClInclude>
+    <ClInclude Include="MinimapShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MinimapManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -739,6 +745,12 @@
     <ClCompile Include="LinearAllocator.cpp">
       <Filter>0. Engine\0. Core\1. System</Filter>
     </ClCompile>
+    <ClCompile Include="MinimapShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MinimapManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -804,5 +816,6 @@
     <FxCompile Include="Shadow_Depth_Skinned.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Minimap_shader.hlsl" />
   </ItemGroup>
 </Project>

@@ -73,6 +73,12 @@ public:
 	const std::string& get_normal_array_key() const { return _normalArrayKey; }
 	const std::string& get_roughness_array_key() const { return _roughnessArrayKey; }
 
+
+	// Minimap용 Heightmap 리소스 접근 함수
+	ID3D12Resource* get_heightmap_resource() const;
+	D3D12_GPU_DESCRIPTOR_HANDLE get_heightmap_srv() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE get_heightmap_cpu_srv() const;
+
 private:
 	void create_flat_grid(int grid_width, int grid_height);
 
@@ -99,4 +105,8 @@ private:
 
 	// [추가] 생성된 모든 TerrainLoader를 관리하는 벡터
 	static std::vector<TerrainLoader*> _all_terrain_loaders;
+
+	// [미니맵용] Heightmap 텍스처 정보 (직접 보관)
+	ID3D12Resource* _heightmapResource = nullptr;
+	D3D12_GPU_DESCRIPTOR_HANDLE _heightmapSRV = {};
 };

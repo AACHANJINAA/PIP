@@ -3,9 +3,7 @@
 
 #include "PhysicsManager.h"
 #include "ResourceManager.h"
-#include "Renderer.h"
 
-using namespace DirectX;
 std::vector<TerrainLoader*> TerrainLoader::_all_terrain_loaders;
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
@@ -93,7 +91,7 @@ float TerrainLoader::get_height_anywhere(float world_x, float world_z)
 
 namespace
 {
- DirectX::XMFLOAT3 get_normal_at(const common::TerrainData & terrainData, int x, int z)
+ XMFLOAT3 get_normal_at(const common::TerrainData & terrainData, int x, int z)
 	 {
 		 const auto& info = terrainData.GetInfo();
 		 int width = static_cast<int>(info.width);
@@ -101,7 +99,7 @@ namespace
 
 		 if (x < 0 || z < 0 || x >= width || z >= length)
 		 {
-			 return DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+			 return XMFLOAT3(0.0f, 1.0f, 0.0f);
 		 }
 
 		 int x_plus_1 = std::min(x + 1, width - 1);
@@ -114,19 +112,39 @@ namespace
 		 float height_x1 = terrainData.GetHeightAt(info.min_x + x_minus_1 * (info.max_x - info.min_x) / (width - 1), info.min_z + z * (info.max_z - info.min_z) / (length - 1));
 		 float height_x2 = terrainData.GetHeightAt(info.min_x + x_plus_1 * (info.max_x - info.min_x) / (width - 1), info.min_z + z * (info.max_z - info.min_z) / (length - 1));
  
-		 DirectX::XMFLOAT3 edge1(0.0f, height_y2 - height_y1, 2.0f * (info.max_z - info.min_z) / (length - 1));
-		 DirectX::XMFLOAT3 edge2(2.0f * (info.max_x - info.min_x) / (width - 1), height_x2 - height_x1, 0.0f);
+		 XMFLOAT3 edge1(0.0f, height_y2 - height_y1, 2.0f * (info.max_z - info.min_z) / (length - 1));
+		 XMFLOAT3 edge2(2.0f * (info.max_x - info.min_x) / (width - 1), height_x2 - height_x1, 0.0f);
 		 
-		 DirectX::XMVECTOR normal = XMVector3Cross(DirectX::XMLoadFloat3(&edge1), DirectX::XMLoadFloat3(&edge2));
-		 normal = DirectX::XMVector3Normalize(normal);
+		 XMVECTOR normal = XMVector3Cross(DirectX::XMLoadFloat3(&edge1), XMLoadFloat3(&edge2));
+		 normal = XMVector3Normalize(normal);
 
-		 DirectX::XMFLOAT3 result;
-		 DirectX::XMStoreFloat3(&result, normal);
+		 XMFLOAT3 result;
+		 XMStoreFloat3(&result, normal);
 
 		 return result;
 	}
 }
 
+
+ID3D12Resource* TerrainLoader::get_heightmap_resource() const
+{
+	return _heightmapResource;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TerrainLoader::get_heightmap_srv() const
+{
+	return _heightmapSRV;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE TerrainLoader::get_heightmap_cpu_srv() const
+{
+	// ResourceManager에서 가져올 때 저장해둔 CPU 핸들이 필요합니다.
+// 만약 변수가 없다면 _heightmapCPUHandle 변수를 추가하거나
+// ResourceManager에서 텍스처를 찾아서 가져와야 합니다.
+	auto* tex = ResourceManager::instance()->get_texture(_heightmapTextureKey);
+	if (tex) return tex->cpu_handle;
+	return {};
+}
 
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 {
@@ -282,6 +300,21 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 		return;
 	}
 	
+	// ===== [미니맵용 Heightmap GPU 업로드] =====
+	const auto& minimap_info = _terrainData.GetInfo();
+	int minimap_width = static_cast<int>(minimap_info.width);
+	int minimap_height = static_cast<int>(minimap_info.height);
+
+	auto* minimap_rm = ResourceManager::instance();
+	auto* heightmap_tex = minimap_rm->load_heightmap_from_raw(_heightmapTextureKey, minimap_width, minimap_height);
+
+	if (heightmap_tex)
+	{
+		// TextureInfo에서 resource와 srv를 직접 저장
+		_heightmapResource = heightmap_tex->resource.Get();
+		_heightmapSRV = heightmap_tex->gpu_handle;
+	}
+
 	// 1. LayerInfo 구조체 채우기
 	_layers.clear();
 	_layers.reserve(weightmap_paths.size());

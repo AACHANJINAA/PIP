@@ -6,6 +6,7 @@
 #include "GameFramework.h"
 #include "Main_Scene.h"
 #include "Boss_Scene.h"
+#include "MinimapManager.h"
 #include "Title_Scene.h"
 
 #include "NetworkManager.h"
@@ -322,5 +323,64 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         _MainlandscapeObjects.push_back(landscapeObj);
 		loadedCount++;
     }
+}
+
+void SceneManager::build_minimap(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
+{
+    CLOG("=== build_minimap START ===");
+
+    // 1. 모든 Landscape 타일 가져오기
+    const auto& landscapes = get_all_landscapes();
+    if (landscapes.empty())
+    {
+        CERROR("SceneManager::build_minimap - No landscape objects found!");
+        return;
+    }
+
+    // 2. MinimapManager 초기화
+    MinimapManager::instance()->initialize(device, cmdList);
+
+    // 3. 모든 타일 정보 수집
+    std::vector<LandscapeTileInfo> tiles;
+    tiles.reserve(landscapes.size());
+
+    for (size_t i = 0; i < landscapes.size(); ++i)
+    {
+        auto landscape = landscapes[i];
+        auto terrain_render = landscape->get_component<TerrainRenderComponent>();
+        if (!terrain_render) continue;
+
+        auto terrain_loader = std::dynamic_pointer_cast<TerrainLoader>(terrain_render->mesh());
+        if (!terrain_loader) continue;
+
+        // Heightmap 리소스 가져오기
+        auto* heightmap_res = terrain_loader->get_heightmap_resource();
+        auto heightmap_srv = terrain_loader->get_heightmap_srv();
+
+        // 타일 정보 생성
+        const auto& terrain_info = terrain_loader->get_terrain_info();
+
+        float world_width = terrain_info.bounds.y - terrain_info.bounds.x;  // max_x - min_x
+        float world_height = terrain_info.bounds.w - terrain_info.bounds.z; // max_z - min_z
+
+        LandscapeTileInfo tile;
+        tile.terrain_loader = terrain_loader.get();
+        tile.heightmap_texture = heightmap_res;
+        tile.heightmap_srv = heightmap_srv;
+        tile.world_bounds = XMFLOAT2(world_width, world_height);
+        tile.world_origin = XMFLOAT2(terrain_info.bounds.x, terrain_info.bounds.z);
+        tile.min_height = terrain_info.min_height;
+        tile.max_height = terrain_info.min_height + terrain_info.height_scale;
+        tile.tile_index = static_cast<int>(i);
+
+        tiles.emplace_back(tile);
+    }
+
+    // 4. MinimapManager에 타일들 등록
+    if (!tiles.empty())
+    {
+        MinimapManager::instance()->register_landscape_tiles(tiles);
+    }
+    else return;
 }
 
