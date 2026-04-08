@@ -27,6 +27,9 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// 2. MainScene 전용 Landscape 로드
 	SceneManager::instance()->build_main_landscapes(device, commandList);
 
+    // 3. 미니맵 활성화 -> 지형 이후에 호출해야함
+    SceneManager::instance()->build_minimap(device, commandList);
+
 	// =========================필요한 메시 로드==================================
 	ResourceManager::instance()->load_mesh("Resource/Character/BruteHi/bruteHi.gltf");
 	ResourceManager::instance()->load_mesh("Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf"); // 검

@@ -210,18 +210,34 @@ void ObjectManager::clear_non_persistent_objects()
 
 std::shared_ptr<GameObject> ObjectManager::find_object(const std::string& name)
 {
-    return *std::find_if(_gameObjects.begin(), _gameObjects.end(), [name](const std::shared_ptr<GameObject>& object)
-    {
+    auto it = std::find_if(_gameObjects.begin(), _gameObjects.end(), [&name](const std::shared_ptr<GameObject>& object)
+        {
             return object->name() == name;
-    });
+        });
+
+    // 찾지 못하면 nullptr 반환 (end() 역참조 방지)
+    if (it == _gameObjects.end())
+    {
+        return nullptr;
+    }
+
+    return *it;
 }
 
 std::shared_ptr<GameObject> ObjectManager::find_object(const int& id)
 {
-	return *std::find_if(_gameObjects.begin(), _gameObjects.end(), [id](const std::shared_ptr<GameObject>& object)
-	{
+    auto it = std::find_if(_gameObjects.begin(), _gameObjects.end(), [id](const std::shared_ptr<GameObject>& object)
+        {
             return object->unique_id() == id;
-	});
+        });
+
+    // 찾지 못하면 nullptr 반환 (end() 역참조 방지)
+    if (it == _gameObjects.end())
+    {
+        return nullptr;
+    }
+
+    return *it;
 }
 
 std::shared_ptr<GameObject> ObjectManager::find_npc(int64_t id)

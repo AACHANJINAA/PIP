@@ -1112,10 +1112,10 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
 
     // 5. 상태 전이
     auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(new_tex_info.resource.Get(),
-        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
     _command_list->ResourceBarrier(1, &barrier);
 
-    new_tex_info.current_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    new_tex_info.current_state = D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
 
     // 6. SRV 생성
 
