@@ -218,7 +218,7 @@ void MainPlayerScript::awake()
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
-	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack02");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
 
@@ -494,7 +494,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 	}
 
 	// 공격 입력 (공격 중이 아닐 때만 새 공격 시작 가능)
-	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_SPACE)) {
+	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LBUTTON)) {
 		_isAttacking = true;
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::Attack;
