@@ -425,3 +425,27 @@ Content/Developers/
  - 발표 PPT : 기획발표에 사용했던 PPT에 지금까지 구현한 것 추가.
 6. 다음미팅
  -4월9일  목요일 오후 7시
+
+2026-04-08
+--------------
+1. 진행상황
+ -(??) Shader오류 수정 : 보스 갑옷의 틈새 안쪽 윗 부분이 밝게 보임
+ - ( O ) CSM을 사용했음에도 보스의 발의 그림자가 너무 뭉개짐
+ - ( O ) 성능 개선
+  * NPC 를 추가했을 때 느려지는데 원인을 찾아 보자
+   * CPU 병목은 Concurrency Analyzer로 파악
+   * GPU 병목은 shader debugger (MS PIX,  NVidia  NSight나 RenderDoc)를 사용해서 측정해야 한다.
+ - ( O ) 이동중 땅에 파묻히는 현상 제거
+ - ( O ) 보스 맵 제작
+ - ( O ) 건물 그리기
+2. 게임학회 춘계학술대회 (https://kcgs.or.kr/homepage/custom/p3) <= 여기 있는 포맷으로 논문 작성
+ - 포스터 참가
+ - 따로 발표는 없고, 포스터 룸에 포스터를 걸어놓가 앞에서서 질문에 답변을 하면 된다.
+3. ToDo
+ - 논문 합치고, 포스터 제작
+ - Shader 오류 제거 : 
+     표준모델 : https://github.com/KhronosGroup/glTF-Sample-Models/blob/main/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf
+     결과비교 대상 : https://sketchfab.com/3d-models/battle-damaged-sci-fi-helmet-pbr-b81008d513954189a063ff901f7abfe4
+ - 보스전투구현 : 보스 스킬과 그에 따른 공략의 구현. 
+4. 다음미팅
+ 4월 30일 목요일 오후 7시
