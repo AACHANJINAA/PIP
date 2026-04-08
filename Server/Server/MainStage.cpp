@@ -114,7 +114,7 @@ namespace PIP::SERVER
         }
 
         // 2. 보스 테이너 배치
-        room->spawn_npc(GAME::NPCType::Tainer, { 10, 5, 20 }, "Tainer the Gatekeeper");
+        room->spawn_npc(GAME::NPCType::Tainer, center, "Tainer the Gatekeeper");
 
         room->StartGame();
     }
