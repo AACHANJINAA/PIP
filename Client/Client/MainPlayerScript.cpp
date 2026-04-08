@@ -218,7 +218,8 @@ void MainPlayerScript::awake()
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
-	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack02");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
 
@@ -227,7 +228,8 @@ void MainPlayerScript::awake()
 	animation_component->add_animation("idle", idleMesh, "idle");
 	animation_component->add_animation("walk", idleMesh, "walk");
 	animation_component->add_animation("run", idleMesh, "run");
-	animation_component->add_animation("attack", idleMesh, "attack02");
+	animation_component->add_animation("attack", idleMesh, "attack01");
+	animation_component->add_animation("skill", idleMesh, "skill01");
 	animation_component->add_animation("die", idleMesh, "death");
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
@@ -259,17 +261,19 @@ void MainPlayerScript::awake()
 
 	// 다크나이트의 hand_l 오프셋을 참고하여 hand_r용으로 미러링한 값입니다.
 	// 좌표와 회전은 모델을 보면서 미세 조정이 필요할 수 있습니다.
-	//_currentWeaponObject = socket->add_connecting(
-	//	"MainWeapon",
-	//	"hand_r", // 반대쪽 손
-	//	"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
-	//	{ -0.06f, -0.8f, 0.16f },   // hand_l 기준 X값 반전 시도
-	//	{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
-	//	{ 2.f, 2.f, 2.f }
-	//);
+	_currentWeaponObject = socket->add_connecting(
+		"MainWeapon",
+		"hand_r", // 반대쪽 손
+		"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
+		{ 0.f,0.f,0.f },   // hand_l 기준 X값 반전 시도
+		{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
+		{ 15.f, 15.f, 15.f }
+	);
 	//
-	//// 무리 렌더링 끄기
-	//_currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
+	//// 무기 렌더링 끄기
+	_currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
+
+	_SkillObject = _currentWeaponObject;
 
 	// --- 3. 무기 오브젝트에 기능(스크립트 + 콜라이더) 추가 ---
 	if (_currentWeaponObject) {
@@ -329,9 +333,32 @@ void MainPlayerScript::handle_state(float deltaTime)
 	}
 
 	if (_isAttacking) {
-		_state = common::packet::EntityState::ACTION;
-		anim_comp->play("attack", false);
+		if(_isSkilling) 
+		{
+			_state = common::packet::EntityState::SKILL_ONE;
+			anim_comp->play("skill", false, skillAnimationspeed);
+			_nowSkillTime += deltaTime;
+			if (_nowSkillTime >= _skillBigSowrdSpawn)
+			{
+				_SkillObject->get_component<RenderComponent>()->set_enabled(true);
+			}
+			else
+			{
+				
+			}
 
+			if(_nowSkillTime >= _skillDontFollowAnimationTime)
+			{
+				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+			}
+
+		}
+		else
+		{
+			_state = common::packet::EntityState::ACTION;
+			anim_comp->play("attack", false);
+		}
+		
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
 		float progress = anim_comp->get_anim_time();
 		float duration = anim_comp->get_anim_duration();
@@ -355,6 +382,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 		// 공격 종료 체크
 		if (anim_comp->is_anim_finished()) {
 			_isAttacking = false;
+			init_skill_variables(); // 스킬 관련 변수 초기화
 			_packetSent = false; // 중요: 다음 공격을 위해 리셋
 			_actionId = 0;
 			_state = common::packet::EntityState::IDLE;
@@ -459,35 +487,6 @@ void MainPlayerScript::handle_input(float deltaTime)
 		if (_currentyaw < -360.f) _currentyaw += 360.f;
 
 		transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
-
-		//if(is_foward)
-		//{
-		//	// 이동 중이면 카메라 방향에 맞춰 회전 (기존 로직)
-		//	float yawDegrees = XMConvertToDegrees(atan2f(camFwdV.x, camFwdV.z)) - 180.f;
-		//	transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
-		//}
-		//else
-		//{
-		//	// w키만 누르고 이동하는게 아니라면 이동 방향에 맞춰 회전 (추가 로직)
-		//	// 선형 보간을 사용하여 이동 방향으로 부드럽게 회전하도록 개선
-		//	// 회전은 목표 회전과 현재 회전 사이의 차이를 계산해서 더 작은 각도로 회전하도록 합니다.
-		//	float targetYaw = XMConvertToDegrees(atan2f(move_direction.x, move_direction.z)) - 180.f;
-		//	float currentYaw = _currentyaw;
-		//	// Yaw 보간 (360도 회전 고려)
-		//	float yawDiff = targetYaw - currentYaw;
-
-		//	while (yawDiff > 180.f) yawDiff -= 360.f;
-		//	while (yawDiff < -180.f) yawDiff += 360.f;
-
-		//	float lerpFactor = std::min(1.0f, deltaTime * 10.0f); // 회전 속도 조절
-		//	_currentyaw += yawDiff * lerpFactor;
-
-		//	if (_currentyaw > 360.f) _currentyaw -= 360.f;
-		//	if (_currentyaw < -360.f) _currentyaw += 360.f;
-
-		//	transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
-		//}
-		
 	}
 	else {
 		_currentMoveDir = { 0, 0, 0 };
@@ -498,6 +497,14 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_isAttacking = true;
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::Attack;
+		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
+	}
+
+	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_RBUTTON)) {
+		_isAttacking = true;
+		_isSkilling = true;
+		_packetSent = false;
+		_actionId = common::packet::ActionID::Common::SKILL;
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
 	}
 
@@ -643,5 +650,13 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 		deathUI->set_color(XMFLOAT4(1, 1, 1, alpha_text)); // 배경은 반투명 검정
 	}
 	
+}
+
+void MainPlayerScript::init_skill_variables()
+{
+	_isSkilling = false;
+	_nowSkillTime = 0.0f;
+	_SkillObject->get_component<RenderComponent>()->set_enabled(false);
+	game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true);
 }
 

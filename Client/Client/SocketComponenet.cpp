@@ -13,35 +13,38 @@ SocketComponenet::SocketComponenet()
 
 void SocketComponenet::late_update(float deltaTime)
 {
-	auto object = game_object();
-	if (!object) return;
-
-	auto renderComp = object->get_component<RenderComponent>();
-	if (!renderComp) return;
-	auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
-	if (!mesh) return;
-	// 모든 연결된 객체들에 대해 위치 갱신
-	for (auto& pair : _connectedObjects)
+	if(_isFollowAnimation)
 	{
-		auto& socket_info = pair.second;
-		int bone_index = mesh->get_bone_index_by_name(socket_info.bone_name);
-		if (bone_index < 0) continue;
+		auto object = game_object();
+		if (!object) return;
 
-		// 소켓 오브젝트의 TransformComponent 가져오기
-		auto socket_object = socket_info.Object;
-		if (!socket_object) continue;
+		auto renderComp = object->get_component<RenderComponent>();
+		if (!renderComp) return;
+		auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
+		if (!mesh) return;
+		// 모든 연결된 객체들에 대해 위치 갱신
+		for (auto& pair : _connectedObjects)
+		{
+			auto& socket_info = pair.second;
+			int bone_index = mesh->get_bone_index_by_name(socket_info.bone_name);
+			if (bone_index < 0) continue;
 
-		// 최종 월드 행렬을 소켓 오브젝트에 적용
-		XMFLOAT4X4 object_world_matrix = object->transform()->world_matrix(); // 플레이어 월드 행렬
-		XMFLOAT4X4 socket_transform = mesh->get_socket_transform(socket_info.bone_name); // 뼈대 행렬
+			// 소켓 오브젝트의 TransformComponent 가져오기
+			auto socket_object = socket_info.Object;
+			if (!socket_object) continue;
 
-		XMFLOAT4X4 final_world_float4x4 = pair.second._localMatrix; // 검의 로컬 행렬
-		
-		// 검의 로컬 * 애니메이션에서 계산한 원하는 뼈대의 행렬 * 소켓을 들고있는 플레이어의 월드 행렬
-		final_world_float4x4 = Matrix4x4::Multiply(final_world_float4x4, socket_transform);
-		final_world_float4x4 = Matrix4x4::Multiply(final_world_float4x4, object_world_matrix);
+			// 최종 월드 행렬을 소켓 오브젝트에 적용
+			XMFLOAT4X4 object_world_matrix = object->transform()->world_matrix(); // 플레이어 월드 행렬
+			XMFLOAT4X4 socket_transform = mesh->get_socket_transform(socket_info.bone_name); // 뼈대 행렬
 
-		socket_info.Object->transform()->set_world_matrix(final_world_float4x4);
+			XMFLOAT4X4 final_world_float4x4 = pair.second._localMatrix; // 검의 로컬 행렬
+
+			// 검의 로컬 * 애니메이션에서 계산한 원하는 뼈대의 행렬 * 소켓을 들고있는 플레이어의 월드 행렬
+			final_world_float4x4 = Matrix4x4::Multiply(final_world_float4x4, socket_transform);
+			final_world_float4x4 = Matrix4x4::Multiply(final_world_float4x4, object_world_matrix);
+
+			socket_info.Object->transform()->set_world_matrix(final_world_float4x4);
+		}
 	}
 }
 

@@ -82,6 +82,21 @@ private:
 	float _sendTimer{ 0.f };
 
 	bool _isAttacking = false;
+
+
+	// 스킬을 위한 변수들
+	bool _isSkilling = false;   // [추가] 스킬 사용 중인지 여부
+	float _nowSkillTime = 0.0f;    // [추가] 스킬 사용 시작 시점부터의 경과 시간
+	
+	float skillAnimationspeed = 0.65; // 스킬 애니메이션 속도
+	float _skillBigSowrdSpawn = 0.95 * (1.f/skillAnimationspeed); // 대검 생성 시점
+	float _skillDontFollowAnimationTime = 1.095f * (1.f / skillAnimationspeed); // 대검 안따라가는 시점
+	std::shared_ptr<GameObject> _SkillObject = nullptr;
+	void init_skill_variables();
+
+
+
+
 	bool _isChargingSkill = false;   // [추가]
 	float _skillChargeTimer = 0.0f;  // [추가]
 	bool _packetSent = false;
