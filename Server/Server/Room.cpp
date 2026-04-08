@@ -1770,7 +1770,7 @@ namespace PIP::SERVER
 		}
 
 		int64_t playerId = session->_id;
-		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(5000), [this, playerId]() {
+		Server::Instance()->AddTimerJob(_logic_thread_idx, std::chrono::milliseconds(10000), [this, playerId]() {
 			this->PushJob([this, playerId]() {
 				auto it = _players.find(playerId);
 				if (it != _players.end()) this->RespawnPlayer(it->second);
