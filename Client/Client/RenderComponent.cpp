@@ -173,12 +173,8 @@ void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_
     // World Matrix (Transpose해서 저장)
     XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
 
-    // WorldInverseTranspose (일관성 있게 Transpose 한번 더)
     XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
-    XMMATRIX worldInverseTranspose = XMMatrixTranspose(worldInverse);
-
-    // Transpose를 한번 더 해서 저장 (HLSL에서 column-major 사용하므로)
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, XMMatrixTranspose(worldInverseTranspose));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
 
 
     // OtherPlayer인지 MainPlayer인지 구분하여 ID 설정
@@ -234,7 +230,7 @@ void RenderComponent::render_CascadeShadowMap(ID3D12GraphicsCommandList* command
     XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
 
     XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, XMMatrixTranspose(worldInverse));
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
 
     // 2. 루트 시그니처(b0 레지스터)에 상수 버퍼 바인딩
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
