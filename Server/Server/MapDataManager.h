@@ -28,6 +28,8 @@ namespace PIP
 		std::string tileName; // e.g., "Tile_X-1_Y-1"
 		std::string meshName; // glTF 내부의 메쉬 이름
 		JPH::ShapeRefC shape;
+		JPH::Vec3 position;
+		JPH::Quat rotation;
 	};
 	class MapDataManager : public Singleton<MapDataManager>
 	{
@@ -46,6 +48,7 @@ namespace PIP
 		void LoadStaticMeshShapes(const std::string& tileName, std::string_view gltfPath);
 		void LoadAllStaticMeshes(std::string_view baseDirPath); ;// [추가] 특정 폴더 내의 모든 Tile_... 형식의 glTF를 자동 로드
 		void LoadExportedScene(const std::string& groupName, std::string_view jsonPath);
+		void LoadServerExportData(const std::string& groupName, std::string_view jsonPath); // [추가] 모델러가 제공한 서버용 JSON 데이터 로드
 
 		std::vector<const StaticMeshTile*> GetStaticMeshGroup(const std::string& groupName) const;// 각 방에서 참조할 Shape 리스트 반환
 
@@ -77,4 +80,3 @@ namespace PIP
 		float _worldMaxZ = -std::numeric_limits<float>::max();
 	};
 }
-
