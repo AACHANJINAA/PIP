@@ -13,9 +13,14 @@
 #include "UIFrameRenderComponent.h"
 #include "UIManager.h"
 #include "UIRenderComponent.h"
+#include "SoundManager.h"
 
 void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    // 오디오 재생
+    SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
+    SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
+
     // 카메라 생성
     auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
     cameraObject->add_component<FreeCameraScript>();

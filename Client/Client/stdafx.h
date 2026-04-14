@@ -34,6 +34,10 @@
 #include <assimp/postprocess.h>     // Assimp 후처리 옵션
 #include <assimp/material.h> // AI_MATKEY_TEXTURE_DIFFUSE, AI_MATKEY_COLOR_DIFFUSE 정의 포함
 
+// FMOD 헤더 포함
+#include <fmod.hpp>
+#include <fmod_errors.h>
+
 
 #include <winsock2.h>
 #include <WS2tcpip.h>
@@ -72,6 +76,11 @@ using Microsoft::WRL::ComPtr;
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "winmm.lib")
+#ifdef _DEBUG
+#pragma comment(lib, "fmodL_vc.lib") 
+#else
+#pragma comment(lib, "fmod_vc.lib")
+#endif
 
 
 // 필요한 것들 추가

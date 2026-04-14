@@ -461,11 +461,14 @@
     <ClInclude Include="LinearAllocator.h">
       <Filter>0. Engine\0. Core\1. System</Filter>
     </ClInclude>
-    <ClInclude Include="MinimapShader.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="SoundManager.h">
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClInclude>
     <ClInclude Include="MinimapManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="MinimapShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -745,11 +748,14 @@
     <ClCompile Include="LinearAllocator.cpp">
       <Filter>0. Engine\0. Core\1. System</Filter>
     </ClCompile>
-    <ClCompile Include="MinimapShader.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClCompile>
     <ClCompile Include="MinimapManager.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="MinimapShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -816,6 +822,8 @@
     <FxCompile Include="Shadow_Depth_Skinned.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Minimap_shader.hlsl" />
+    <FxCompile Include="Minimap_shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
