@@ -60,8 +60,7 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
     float s, c;
     sincos(angle, s, c);
     float2x2 rotationMat = float2x2(c, -s, s, c);
- 
-   
+
      // viewDepth 기반 동적 필터 크기 (카메라 기준 - 안정적!)
      // viewDepth는 카메라로부터의 거리 (0 ~ FarZ)
      
@@ -149,5 +148,5 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
     }
 
     //// 환경광(Ambient) 등을 고려한 최종 최소 그림자 밝기(0.1f) 적용하여 반환
-    return lerp(0.1f, 1.0f, finalShadow);
+    return lerp(0.3f, 1.0f, finalShadow);
 }

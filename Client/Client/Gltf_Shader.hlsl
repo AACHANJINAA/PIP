@@ -162,8 +162,8 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
          // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-         // ===== 수정: DoubleSided 처리 - 기하학적 Normal 기준 =====
-    if (DoubleSided > 0 && dot(N_geom, V) < 0.0)
+   
+    if (dot(N, V) < 0.0)
     {
         N = -N;
     }
@@ -180,15 +180,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     // 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
     float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
-    
-    // 조건문으로 그림자 수신 여부 판단
-    //if (g_bReceiveShadow > 0)
-    //{
-    //    float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
-    //    float realShadow = sample_csm_shadow(In.WorldPosition, N, viewPos.z);
-        
-    //    shadowFactor = lerp(0.2f, 1.0f, realShadow);
-    //}
     
     // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
