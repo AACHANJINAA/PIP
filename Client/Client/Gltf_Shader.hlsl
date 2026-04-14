@@ -127,15 +127,34 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
     float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-    float roughness = orm.g * RoughnessFactor; // Factor 곱하기
-    float metallic = orm.b * MetallicFactor; // Factor 곱하기
-    
-    // Occlusion: 별도 텍스처가 있으면 그것을 사용, 없으면 ORM.r 사용
-    float ao;
+
+     // Occlusion: 별도 텍스처가 있으면 그것을 사용, 없으면 ORM.r 사용
+    float ao = 1.0f; // 기본값은 밝음
     if (HasOcclusionTexture > 0)
-        ao = max(g_txOcclusion.Sample(g_samLinear, In.TexCoord).r, 0.8);
+    {
+        ao = g_txOcclusion.Sample(g_samLinear, In.TexCoord).r;
+    }
+    else if (HasMetallicRoughnessTexture > 0)
+    {
+    // Occlusion 전용 텍스처는 없지만 ORM 텍스처는 있는 경우, R채널 사용
+        ao = orm.r;
+    }
+
+    float roughness;
+    float metallic;
+
+    if (HasMetallicRoughnessTexture > 0)
+    {
+		// 텍스처가 있는 경우: 텍스처 값 * Factor
+        roughness = orm.g * RoughnessFactor;
+        metallic = orm.b * MetallicFactor;
+    }
     else
-        ao = max(orm.r, 0.8);
+    {
+		 // 0.4 ~ 0.5 정도가 IBL 반사가 예쁘게 맺히는 수치입니다.
+        roughness = 0.4f;
+        metallic = MetallicFactor; // JSON에 정의된 MetallicFactor(BoneGolem은 0) 사용
+    }
     
      // 3. Normal Map
     float3 N = normalize(In.Normal);
