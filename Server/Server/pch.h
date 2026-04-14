@@ -86,6 +86,9 @@ using namespace DirectX;
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h> // AllHitCollisionCollector 정의
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 
 // Jolt 관련 편의를 위한 using
 using namespace JPH::literals; // 1.0_r 같은 리터럴 사용 시

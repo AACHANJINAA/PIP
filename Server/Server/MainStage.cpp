@@ -42,8 +42,8 @@ namespace PIP::SERVER
 
             JPH::BodyCreationSettings settings(
                 tile->shape,
-                JPH::RVec3::sZero(),
-                JPH::Quat::sIdentity(),
+                tile->position,
+                tile->rotation,
                 JPH::EMotionType::Static,
                 Layers::NON_MOVING
             );
@@ -54,7 +54,7 @@ namespace PIP::SERVER
 
         MYLOG("[MainStage] Physics Static Mesh objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
 
-        /*{
+        {
             MYLOG("[DEBUG] Starting Debug Raycast Test at X:-360, Z:-212");
 
             // 1. 레이 설정: 위(100)에서 아래(-100)로 200만큼 쏨
@@ -97,7 +97,7 @@ namespace PIP::SERVER
                 MYLOG("[DEBUG] Expected X: -360, Z: -212, but ray passed through.");
                 MYLOG("==========================================================");
             }
-        }*/
+        }
     }
 
     void MainStage::on_enter(Room* room)

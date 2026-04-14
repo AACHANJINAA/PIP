@@ -2,12 +2,7 @@
 #include "MapDataManager.h"
 #include "glTFMeshLoader.h"
 #include "JoltHelper.h"
-#include "JoltSetup.h"
-#include "PhysicsManager.h"
 
-// stb_image는 이제 필요 없을 수 있음 (Common에서 처리하거나 안 쓴다면)
-// #define STB_IMAGE_IMPLEMENTATION
-// #include "stb_image.h"
 
 namespace PIP
 {
@@ -263,6 +258,207 @@ namespace PIP
 			}
 		}
 		MYLOG("Loaded Exported Scene for [" << groupName << "] from " << jsonPath);
+	}
+
+	void MapDataManager::LoadServerExportData(const std::string& groupName, std::string_view jsonPath)
+	{
+		std::ifstream file(jsonPath.data());
+		if (!file.is_open()) {
+			MYERROR("[MapData] Failed to open Server Export Data: " << jsonPath);
+			return;
+		}
+
+		using namespace nlohmann;
+		json root;
+		try {
+			file >> root;
+		} catch (const json::parse_error& e) {
+			MYERROR("[MapData] JSON Parse Error in " << jsonPath << ": " << e.what());
+			return;
+		}
+
+		// JSON 좌표 파싱 헬퍼
+		auto ToJoltVec = [](const json& j) {
+			if (j.is_null()) return JPH::Vec3::sZero();
+			return JPH::Vec3(j.value("X", 0.0f), j.value("Y", 0.0f), j.value("Z", 0.0f));
+		};
+		auto ToJoltQuat = [](const json& j) {
+			JPH::Quat q(
+				j.value("X", 0.0f),
+				j.value("Y", 0.0f),
+				j.value("Z", 0.0f),
+				j.value("W", 1.0f)
+			);
+
+			// [핵심] 정규화하지 않으면 Jolt operator* 에서 터짐!
+			if (q.LengthSq() > 0.0f)
+				return q.Normalized();
+
+			return JPH::Quat::sIdentity();
+		};
+
+		// 1. Mesh Library 파싱
+		std::unordered_map<std::string, JPH::Ref<JPH::ShapeSettings>> meshLibrary;
+		if (root.contains("MeshLibrary")) {
+			const auto& libJson = root["MeshLibrary"];
+			for (auto it = libJson.begin(); it != libJson.end(); ++it) {
+				std::string meshName = it.key();
+				const auto& meshInfo = it.value();
+				std::string colType = meshInfo.value("CollisionType", "Simple");
+				const auto& colData = meshInfo["CollisionData"];
+
+				JPH::Ref<JPH::ShapeSettings> finalSettings;
+
+				if (colType == "Complex") {
+					JPH::TriangleList triangles;
+					const auto& verts = colData["Vertices"];
+					const auto& indices = colData["Indices"];
+					for (size_t i = 0; i < indices.size(); i += 3) {
+						int i0 = indices[i].get<int>() * 3;
+						int i1 = indices[i + 1].get<int>() * 3;
+						int i2 = indices[i + 2].get<int>() * 3;
+						triangles.push_back(JPH::Triangle(
+							JPH::Float3(verts[i0], verts[i0 + 1], verts[i0 + 2]),
+							JPH::Float3(verts[i1], verts[i1 + 1], verts[i1 + 2]),
+							JPH::Float3(verts[i2], verts[i2 + 1], verts[i2 + 2])
+						));
+					}
+					finalSettings = new JPH::MeshShapeSettings(triangles);
+				}
+				else if (colType == "Simple") {
+					struct SubPart {
+						JPH::Vec3 p; 
+						JPH::Quat r;
+						JPH::Ref<JPH::ShapeSettings> s;
+					};
+					std::vector<SubPart> parts;
+
+					// 1. ConvexHulls 처리
+					if (colData.contains("ConvexHulls") && colData["ConvexHulls"].is_array()) {
+						for (const auto& hull : colData["ConvexHulls"]) {
+							auto convex = new JPH::ConvexHullShapeSettings();
+							for (const auto& v : hull["Vertices"]) {
+								convex->mPoints.push_back(ToJoltVec(v));
+							}
+							parts.push_back({ JPH::Vec3::sZero(), JPH::Quat::sIdentity(), convex });
+						}
+					}
+
+					// 2. Boxes 처리 (모델러의 ExtentX, ExtentY, ExtentZ 대응)
+					if (colData.contains("Boxes") && colData["Boxes"].is_array()) {
+						for (const auto& box : colData["Boxes"]) {
+							// Extent는 이미 반폭이므로 그대로 사용합니다.
+							float hx = box.value("ExtentX", 0.0f);
+							float hy = box.value("ExtentY", 0.0f);
+							float hz = box.value("ExtentZ", 0.0f);
+
+							if (hx <= 0.01f || hy <= 0.01f || hz <= 0.01f) continue;
+
+							auto boxSettings = new JPH::BoxShapeSettings(JPH::Vec3(hx, hy, hz)); // new 사용
+							
+							//boxSettings->mConvexRadius = 0.0f;
+
+							parts.push_back({ ToJoltVec(box["Center"]), ToJoltQuat(box["Rotation"]), boxSettings });
+						}
+					}
+
+					// 3. Spheres 처리 (추가됨)
+					if (colData.contains("Spheres") && colData["Spheres"].is_array()) {
+						for (const auto& sphere : colData["Spheres"]) {
+							float radius = sphere.value("Radius", 0.0f);
+							if (radius <= 0.01f) continue;
+
+							auto sphereSettings = new JPH::SphereShapeSettings(radius); // new 사용
+							JPH::Vec3 center = sphere.contains("Center") ? ToJoltVec(sphere["Center"]) : JPH::Vec3::sZero();
+
+							parts.push_back({ center, JPH::Quat::sIdentity(), sphereSettings });
+						}
+					}
+
+					// 4. Capsules 처리 (추가됨)
+					if (colData.contains("Capsules") && colData["Capsules"].is_array()) {
+						for (const auto& cap : colData["Capsules"]) {
+							float radius = cap.value("Radius", 0.0f);
+							float halfHeight = cap.value("HalfHeight", 0.0f); // 언리얼 캡슐은 보통 HalfHeight 사용
+							if (radius <= 0.01f || halfHeight <= 0.01f) continue;
+
+							auto capSettings = new JPH::CapsuleShapeSettings(halfHeight, radius); // new 사용
+							JPH::Vec3 center = cap.contains("Center") ? ToJoltVec(cap["Center"]) : JPH::Vec3::sZero();
+							JPH::Quat rotation = cap.contains("Rotation") ? ToJoltQuat(cap["Rotation"]) : JPH::Quat::sIdentity();
+
+							parts.push_back({ center, rotation, capSettings });
+						}
+					}
+					// [핵심 수정] 자식이 하나라도 있을 때만 Create() 호출
+					if (parts.size() == 1 && parts[0].p == JPH::Vec3::sZero() && parts[0].r == JPH::Quat::sIdentity()) {
+						finalSettings = parts[0].s;
+					}
+					else if (!parts.empty()) 
+					{
+						auto compound = new JPH::StaticCompoundShapeSettings();
+						for (auto& p : parts)
+						{
+							compound->AddShape(p.p, p.r, p.s);
+						}
+						finalSettings = compound;
+					}
+				}
+				if (finalSettings) 
+					meshLibrary[meshName] = finalSettings;
+			}
+		}
+
+		// 2. Actors 파싱
+		JPH::Ref<JPH::StaticCompoundShapeSettings> worldCompound = new JPH::StaticCompoundShapeSettings();
+		int instanceCount = 0;
+		int find_mesh_count = 0;
+		if (root.contains("Instances")) {
+			for (const auto& actor : root["Instances"]) {
+				// 정규화 헬퍼(ToJoltQuat) 사용 필수
+				JPH::Vec3 actorPos = ToJoltVec(actor["WorldPos"]);
+				JPH::Quat actorRot = ToJoltQuat(actor["WorldRot"]);
+
+				for (const auto& part : actor["Parts"]) {
+					std::string meshName = part.value("MeshName", "");
+					if (meshName == "SM_House_village_02_Merged")
+					{
+						find_mesh_count++;
+					}
+					auto it = meshLibrary.find(meshName);
+					if (it == meshLibrary.end()) continue;
+
+					JPH::Vec3 relPos = ToJoltVec(part["RelPos"]);
+					JPH::Quat relRot = ToJoltQuat(part["RelRot"]);
+					JPH::Vec3 scale = ToJoltVec(part["Scale"]);
+
+					// 위치 및 회전 계산 (정규화된 actorRot 사용)
+					JPH::Vec3 finalPos = actorPos + actorRot * relPos;
+					JPH::Quat finalRot = (actorRot * relRot).Normalized();
+
+					JPH::Result<JPH::Ref<JPH::Shape>> result;
+					if ((scale - JPH::Vec3::sReplicate(1.0f)).LengthSq() < 1.0e-6f) {
+						result = it->second->Create();
+					}
+					else {
+						auto scaled = new JPH::ScaledShapeSettings(it->second, scale);
+						result = scaled->Create();
+					}
+
+					if (result.IsValid()) {
+						JPH::ShapeRefC finalShape = result.Get();
+						_staticMeshTiles.push_back({ groupName, meshName, finalShape, finalPos, finalRot });
+						instanceCount++;
+					}
+					else {
+						MYERROR("[MapData] Shape Create Failed for Mesh: " << meshName << " Error: " << result.GetError().c_str());
+					}
+				}
+			}
+		}
+
+		// 3. 결과 저장
+		MYLOG("[MapData] Loaded " << instanceCount << " individual instances for [" << groupName << "]");
+		MYLOG("[MapData] Found " << find_mesh_count << " instances of SM_House_village_02_Merged");
 	}
 
 	std::vector<const StaticMeshTile*> MapDataManager::GetStaticMeshGroup(const std::string& groupName) const
