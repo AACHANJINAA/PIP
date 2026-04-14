@@ -52,14 +52,13 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
 	cameraObject->add_component<FreeCameraScript>();
 	cameraObject->set_layer("Camera");
-	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 500.0f, 10.0f));
-	cameraObject->transform()->set_local_rotation(90.0f, 0.0f, 0.0f); // 약간 아래 보기
 
 	auto cameraComp = cameraObject->add_component<CameraComponent>();
 	cameraComp->set_main_camera();
 
 	Spawn_UI(device, commandList);
     Spawn_Monster_HP_UI(device, commandList);
+	TestMesh(device, commandList);
 }
 
 void Main_Scene::release_upload_buffers()
@@ -138,4 +137,33 @@ void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommand
     auto monster_hp_ui_renderer = monster_hp_frame_obj->add_component<MonsterHPUIRenderComponent>();
     monster_hp_ui_renderer->set_hp_back_texture("Resource/UI/HP_Bar_Frame.dds");
     monster_hp_ui_renderer->set_hp_bar_texture("Resource/UI/HP_Bar.dds");
+}
+
+void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    {
+        auto Test = ObjectManager::instance()->create_game_object("TestMesh");
+
+        //// RenderComponent
+        auto renderer = Test->add_component<RenderComponent>();
+
+        auto Test_Mesh = ResourceManager::instance()->load_mesh("Resource/Test_glTF/DamagedHelmet.gltf");
+        renderer->set_mesh(Test_Mesh);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "Test_Material";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "gltf");
+
+        // gltf
+        renderer->set_pso_name("gltf");
+
+        // 위치, 회전 정보
+        Test->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        Test->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
+
+
+        Test->transform()->set_local_position(XMFLOAT3(-360.0, 7.f, -210.0f));
+    }
 }

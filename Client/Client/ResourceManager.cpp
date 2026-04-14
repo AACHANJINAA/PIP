@@ -545,7 +545,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             if (mat_json.contains("occlusionTexture"))
                 assign_texture(mat_json["occlusionTexture"],
                     new_mat_info.occlusion_texture_path,
-                    true,
+                    false,
 					new_mat_info.metallic_roughness_uv_channel,
                     new_mat_info.metallic_roughness_uv_offset,
                     new_mat_info.metallic_roughness_uv_scale,
