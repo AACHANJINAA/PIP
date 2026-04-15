@@ -1759,20 +1759,41 @@ void ReadGLTFMesh::process_node(const json& gltfJson, const std::vector<char>& b
 			mat[8], mat[9], mat[10], mat[11],
 			mat[12], mat[13], mat[14], mat[15]
 		);
-		local_matrix = XMLoadFloat4x4(&mat4x4);
+		// 행렬이 통째로 있는 경우, Scale(1,1,-1)을 양옆에 곱해 Z축을 반전시킵니다.
+		DirectX::XMMATRIX raw_mat = XMLoadFloat4x4(&mat4x4);
+		DirectX::XMMATRIX z_flip = DirectX::XMMatrixScaling(1.0f, 1.0f, -1.0f);
+		local_matrix = z_flip * raw_mat * z_flip;
 	}
 	else {
 		XMMATRIX translation_matrix = XMMatrixIdentity();
 		if (node.contains("translation")) {
-			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
+			// 이동(Translation) Z축 반전
+			translation_matrix = XMMatrixTranslation(
+				node["translation"][0].get<float>(),
+				node["translation"][1].get<float>(),
+				-node["translation"][2].get<float>()
+			);
 		}
+
 		XMMATRIX rotation_matrix = XMMatrixIdentity();
 		if (node.contains("rotation")) {
-			rotation_matrix = XMMatrixRotationQuaternion(XMVectorSet(node["rotation"][0].get<float>(), node["rotation"][1].get<float>(), -node["rotation"][2].get<float>(), -node["rotation"][3].get<float>()));
+			// 회전(Rotation) X, Y축 반전 (load_nodes의 Quaternion 반전 방식과 동일)
+			rotation_matrix = XMMatrixRotationQuaternion(XMVectorSet(
+				-node["rotation"][0].get<float>(),
+				-node["rotation"][1].get<float>(),
+				node["rotation"][2].get<float>(),
+				node["rotation"][3].get<float>()
+			));
 		}
+
 		XMMATRIX scale_matrix = XMMatrixIdentity();
 		if (node.contains("scale")) {
-			scale_matrix = XMMatrixScaling(node["scale"][0].get<float>(), node["scale"][1].get<float>(), node["scale"][2].get<float>());
+			// 스케일은 그대로 유지
+			scale_matrix = XMMatrixScaling(
+				node["scale"][0].get<float>(),
+				node["scale"][1].get<float>(),
+				node["scale"][2].get<float>()
+			);
 		}
 		local_matrix = scale_matrix * rotation_matrix * translation_matrix;
 	}
@@ -1838,84 +1859,70 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 			std::string mesh_name = mesh.contains("name") ? mesh["name"].get<std::string>() : "Unnamed";
 		}
 		std::vector<XMFLOAT4> tangents = primitive_json["attributes"].contains("TANGENT") ? get_attribute_data<XMFLOAT4>(gltfJson, binaryBuffer, primitive_json["attributes"]["TANGENT"]) : std::vector<XMFLOAT4>();
-
-		primitive->_vertexCount = (UINT)positions.size();
-		primitive->_vertices.resize(primitive->_vertexCount);
-		XMMATRIX world_mat = XMLoadFloat4x4(&transform);
+		
+		
 
 
 		// 3. 정점 조립 및 좌표계 변환 (Right -> Left Handed)
-		/*primitive->_vertexCount = (UINT)positions.size();
-		primitive->_skinned_vertices.resize(primitive->_vertexCount);*/
-
-
-		//////////////////////
 		primitive->_vertexCount = (UINT)positions.size();
 		primitive->_vertices.resize(primitive->_vertexCount);
 
-		for (size_t i = 0; i < primitive->_vertexCount; ++i)
-		{
-			auto& v = primitive->_vertices[i];
-			// 위치와 노멀 좌표계 변환 (Z축 반전)
-			v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
-			v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
-			v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
+		XMMATRIX world_mat = XMLoadFloat4x4(&transform);
 
-			// 억지로 Tangent를 만들지 않고 glTF 원본 데이터를 사용합니다.
-			if (i < tangents.size())
-			{
-				// DX12(왼손 좌표계)에 맞게 Z축과 Bitangent 방향(W) 부호를 반전시켜 줍니다.
-				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, -tangents[i].w);
-			}
-			else
-			{
-				// glTF 파일 자체에 Tangent 데이터가 아예 없는 예외적인 경우에만 임시로 계산합니다.
-				XMVECTOR normal = XMLoadFloat3(&v._normal);
-				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-				if (abs(XMVectorGetY(normal)) > 0.99f) {
-					up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-				}
-
-				XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
-
-				XMFLOAT3 tangentF3;
-				XMStoreFloat3(&tangentF3, tangent);
-				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
-			}
-		}
+		// 노멀 변환을 위한 역전치 행렬 (스케일 값 때문에 노멀이 왜곡되는 것을 방지)
+		XMMATRIX inverse_transpose_mat = XMMatrixTranspose(XMMatrixInverse(nullptr, world_mat));
 
 		for (size_t i = 0; i < primitive->_vertexCount; ++i)
 		{
 			auto& v = primitive->_vertices[i];
 
-			// 위치와 노멀 좌표계 변환 (Z축 반전)
+			XMFLOAT3 n = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
+			XMFLOAT2 t = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
+
+			// 1. 기본 왼손 좌표계(LH) 변환 (대원님이 복붙하신 로직)
 			v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
 			v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
 			v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
 
-			// 억지로 Tangent를 만들지 않고 glTF 원본 데이터를 사용합니다.
-			if (i < tangents.size())
-			{
-				// DX12(왼손 좌표계)에 맞게 Z축과 Bitangent 방향(W) 부호를 반전시켜 줍니다.
+			if (i < tangents.size()) {
 				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, -tangents[i].w);
 			}
-			else
-			{
-				// glTF 파일 자체에 Tangent 데이터가 아예 없는 예외적인 경우에만 임시로 계산합니다.
+			else {
+				// 임시 탄젠트 계산
 				XMVECTOR normal = XMLoadFloat3(&v._normal);
 				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-				if (abs(XMVectorGetY(normal)) > 0.99f) {
-					up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-				}
-
+				if (abs(XMVectorGetY(normal)) > 0.99f) up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 				XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
-
 				XMFLOAT3 tangentF3;
 				XMStoreFloat3(&tangentF3, tangent);
 				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
 			}
+
+			// 2. 노드의 월드 변환 행렬을 정점에 직접 곱하기 (Baking)
+
+			// 위치(Position) 변환
+			XMVECTOR pos = XMLoadFloat3(&v._position);
+			pos = XMVector3TransformCoord(pos, world_mat);
+			XMStoreFloat3(&v._position, pos);
+
+			// 노멀(Normal) 변환
+			XMVECTOR normal = XMLoadFloat3(&v._normal);
+			normal = XMVector3TransformNormal(normal, inverse_transpose_mat);
+			normal = XMVector3Normalize(normal); // 변환 후 정규화 필수
+			XMStoreFloat3(&v._normal, normal);
+
+			// 탄젠트(Tangent) 변환
+			XMVECTOR tangent = XMLoadFloat4(&v._tangent);
+			XMVECTOR tangent_dir = XMVector3TransformNormal(tangent, world_mat);
+			tangent_dir = XMVector3Normalize(tangent_dir);
+
+			// W값(Handedness)은 그대로 유지하고 방향(XYZ)만 저장
+			XMStoreFloat4(&v._tangent, XMVectorSet(
+				XMVectorGetX(tangent_dir),
+				XMVectorGetY(tangent_dir),
+				XMVectorGetZ(tangent_dir),
+				v._tangent.w
+			));
 		}
 
 		if (primitive_json.contains("indices"))
