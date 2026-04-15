@@ -153,32 +153,7 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
         //// RenderComponent
         auto renderer = Test->add_component<RenderComponent>();
 
-        auto Test_Mesh = ResourceManager::instance()->load_mesh("Resource/Test/BoomBox/BoomBoxWithAxes.gltf");
-        renderer->set_mesh(Test_Mesh); 
-
-        // 재질 및 쉐이더 설정
-        std::string material = "Test_Material";
-
-        ResourceManager::instance()->create_material(material);
-        ResourceManager::instance()->set_shader_for_material(material, "gltf");
-
-        // gltf
-        renderer->set_pso_name("gltf");
-
-        // 위치, 회전 정보
-        Test->transform()->set_local_rotation(0.f, 0.f, 0.f);
-        Test->transform()->set_local_scale({ 50.f, 50.0f, 50.0f });
-
-
-        Test->transform()->set_local_position(XMFLOAT3(-360.0, 10.f, -210.0f));
-    }
-    {
-        auto Test = ObjectManager::instance()->create_game_object("TestMesh");
-
-        //// RenderComponent
-        auto renderer = Test->add_component<RenderComponent>();
-
-        auto Test_Mesh = ResourceManager::instance()->load_mesh("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Meshes/SM_Windmill_Merged.gltf");
+        auto Test_Mesh = ResourceManager::instance()->load_mesh("Resource/Test_glTF/DamagedHelmet.gltf");
         renderer->set_mesh(Test_Mesh);
 
         // 재질 및 쉐이더 설정
@@ -192,9 +167,9 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
         // 위치, 회전 정보
         Test->transform()->set_local_rotation(0.f, 0.f, 0.f);
-        Test->transform()->set_local_scale({ 5.f, 5.0f, 5.0f });
+        Test->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
 
 
-        Test->transform()->set_local_position(XMFLOAT3(-360.0, 10.f, -210.0f));
+        Test->transform()->set_local_position(XMFLOAT3(-360.0, 50.f, -210.0f));
     }
 }
