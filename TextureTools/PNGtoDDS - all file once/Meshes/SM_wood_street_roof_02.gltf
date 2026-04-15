@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 2898,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1007,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.63573146, -1.21014313e-16, -2.09955144 ],
+			"max": [ 1.49225736, 3.99846601, 2.09955144 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1007,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1007,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1007,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1007,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_wood_street_roof_02.bin",
+			"byteLength": 62188
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 5796,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 12084,
+			"byteOffset": 5796,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 12084,
+			"byteOffset": 17880,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 16112,
+			"byteOffset": 29964,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8056,
+			"byteOffset": 46076,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8056,
+			"byteOffset": 54132,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_wood_street_roof_02",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}
