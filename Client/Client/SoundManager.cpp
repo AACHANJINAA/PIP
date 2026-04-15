@@ -68,7 +68,6 @@ void SoundManager::update()
         if (cameraObj && cameraObj->transform())
         {
             // 1. 카메라의 위치, 앞 방향(Forward), 위 방향(Up)을 가져옴
-            // (주의: 대원 님의 TransformComponent 구조에 맞춰서 함수 이름은 살짝 수정해야 할 수 있어!)
             XMFLOAT3 pos = cameraObj->transform()->get_world_position();
             XMFLOAT3 forward = cameraObj->transform()->forward();
             XMFLOAT3 up = cameraObj->transform()->up();          
