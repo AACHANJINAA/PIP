@@ -63,7 +63,7 @@ void SoundManager::update()
         // 3D 사운드 계산, 채널 정리 등을 백그라운드에서 수행함
         
         // 오브젝트 매니저에서 카메라를 찾아옴
-        auto cameraObj = ObjectManager::instance()->find_object("FreeCamera");
+        auto cameraObj = ObjectManager::instance()->find_by_name("Camera");
 
         if (cameraObj && cameraObj->transform())
         {

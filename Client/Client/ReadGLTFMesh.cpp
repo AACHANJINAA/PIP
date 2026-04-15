@@ -1764,11 +1764,11 @@ void ReadGLTFMesh::process_node(const json& gltfJson, const std::vector<char>& b
 	else {
 		XMMATRIX translation_matrix = XMMatrixIdentity();
 		if (node.contains("translation")) {
-			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), -node["translation"][2].get<float>());
+			translation_matrix = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
 		}
 		XMMATRIX rotation_matrix = XMMatrixIdentity();
 		if (node.contains("rotation")) {
-			rotation_matrix = XMMatrixRotationQuaternion(XMVectorSet(node["rotation"][0].get<float>(), node["rotation"][1].get<float>(), node["rotation"][2].get<float>(), node["rotation"][3].get<float>()));
+			rotation_matrix = XMMatrixRotationQuaternion(XMVectorSet(node["rotation"][0].get<float>(), node["rotation"][1].get<float>(), -node["rotation"][2].get<float>(), -node["rotation"][3].get<float>()));
 		}
 		XMMATRIX scale_matrix = XMMatrixIdentity();
 		if (node.contains("scale")) {
@@ -1843,39 +1843,146 @@ void ReadGLTFMesh::process_mesh(const json& gltfJson, const std::vector<char>& b
 		primitive->_vertices.resize(primitive->_vertexCount);
 		XMMATRIX world_mat = XMLoadFloat4x4(&transform);
 
-		for (size_t i = 0; i < primitive->_vertexCount; ++i) {
-			XMVECTOR pos = XMLoadFloat3(&positions[i]);
-			pos = XMVector3Transform(pos, world_mat);
-			XMStoreFloat3(&primitive->_vertices[i]._position, pos);
 
-			primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
-			primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
-			primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+		// 3. 정점 조립 및 좌표계 변환 (Right -> Left Handed)
+		/*primitive->_vertexCount = (UINT)positions.size();
+		primitive->_skinned_vertices.resize(primitive->_vertexCount);*/
+
+
+		//////////////////////
+		primitive->_vertexCount = (UINT)positions.size();
+		primitive->_vertices.resize(primitive->_vertexCount);
+
+		for (size_t i = 0; i < primitive->_vertexCount; ++i)
+		{
+			auto& v = primitive->_vertices[i];
+			// 위치와 노멀 좌표계 변환 (Z축 반전)
+			v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
+			v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
+			v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
+
+			// 억지로 Tangent를 만들지 않고 glTF 원본 데이터를 사용합니다.
+			if (i < tangents.size())
+			{
+				// DX12(왼손 좌표계)에 맞게 Z축과 Bitangent 방향(W) 부호를 반전시켜 줍니다.
+				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, -tangents[i].w);
+			}
+			else
+			{
+				// glTF 파일 자체에 Tangent 데이터가 아예 없는 예외적인 경우에만 임시로 계산합니다.
+				XMVECTOR normal = XMLoadFloat3(&v._normal);
+				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+				if (abs(XMVectorGetY(normal)) > 0.99f) {
+					up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+				}
+
+				XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
+
+				XMFLOAT3 tangentF3;
+				XMStoreFloat3(&tangentF3, tangent);
+				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
+			}
 		}
 
-		if (primitive_json.contains("indices")) {
+		for (size_t i = 0; i < primitive->_vertexCount; ++i)
+		{
+			auto& v = primitive->_vertices[i];
+
+			// 위치와 노멀 좌표계 변환 (Z축 반전)
+			v._position = XMFLOAT3(positions[i].x, positions[i].y, -positions[i].z);
+			v._normal = XMFLOAT3(normals[i].x, normals[i].y, -normals[i].z);
+			v._texCoord = XMFLOAT2(texcoords[i].x, texcoords[i].y);
+
+			// 억지로 Tangent를 만들지 않고 glTF 원본 데이터를 사용합니다.
+			if (i < tangents.size())
+			{
+				// DX12(왼손 좌표계)에 맞게 Z축과 Bitangent 방향(W) 부호를 반전시켜 줍니다.
+				v._tangent = XMFLOAT4(tangents[i].x, tangents[i].y, -tangents[i].z, -tangents[i].w);
+			}
+			else
+			{
+				// glTF 파일 자체에 Tangent 데이터가 아예 없는 예외적인 경우에만 임시로 계산합니다.
+				XMVECTOR normal = XMLoadFloat3(&v._normal);
+				XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+				if (abs(XMVectorGetY(normal)) > 0.99f) {
+					up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+				}
+
+				XMVECTOR tangent = XMVector3Normalize(XMVector3Cross(up, normal));
+
+				XMFLOAT3 tangentF3;
+				XMStoreFloat3(&tangentF3, tangent);
+				v._tangent = XMFLOAT4(tangentF3.x, tangentF3.y, tangentF3.z, 1.0f);
+			}
+		}
+
+		if (primitive_json.contains("indices"))
+		{
 			const json& accessor = gltfJson["accessors"][primitive_json["indices"].get<size_t>()];
-			const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
-			const char* data_ptr = binaryBuffer.data() + bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+			const json& buffer_view = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
+			const char* data_ptr = binaryBuffer.data() + buffer_view.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+
 			primitive->_indexCount = accessor["count"];
 			primitive->_indices.resize(primitive->_indexCount);
 
-			if (accessor["componentType"] == 5121) { // Unsigned Byte
+			if (accessor["componentType"] == 5121) { // unsigned byte
 				const uint8_t* p_indices = reinterpret_cast<const uint8_t*>(data_ptr);
 				for (size_t i = 0; i < primitive->_indexCount; ++i) {
 					primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
 				}
 			}
-			else if (accessor["componentType"] == 5123) {
+			else if (accessor["componentType"] == 5123) { // unsigned short
 				const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(data_ptr);
 				for (size_t i = 0; i < primitive->_indexCount; ++i) {
 					primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
 				}
 			}
-			else if (accessor["componentType"] == 5125) {
+			else if (accessor["componentType"] == 5125) { // unsigned int -> 너무 헷갈리는데 이거 나중에 enum으로 바꿔야 하나?
 				memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
 			}
+			for (size_t i = 0; i < primitive->_indexCount; i += 3) {
+				std::swap(primitive->_indices[i + 1], primitive->_indices[i + 2]);
+			}
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////////
+		
+
+		//for (size_t i = 0; i < primitive->_vertexCount; ++i) {
+		//	XMVECTOR pos = XMLoadFloat3(&positions[i]);
+		//	pos = XMVector3Transform(pos, world_mat);
+		//	XMStoreFloat3(&primitive->_vertices[i]._position, pos);
+
+		//	primitive->_vertices[i]._normal = (i < normals.size()) ? normals[i] : XMFLOAT3(0.0f, 1.0f, 0.0f);
+		//	primitive->_vertices[i]._texCoord = (i < texcoords.size()) ? texcoords[i] : XMFLOAT2(0.0f, 0.0f);
+		//	primitive->_vertices[i]._tangent = (i < tangents.size()) ? tangents[i] : XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+		//}
+
+		//if (primitive_json.contains("indices")) {
+		//	const json& accessor = gltfJson["accessors"][primitive_json["indices"].get<size_t>()];
+		//	const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
+		//	const char* data_ptr = binaryBuffer.data() + bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+		//	primitive->_indexCount = accessor["count"];
+		//	primitive->_indices.resize(primitive->_indexCount);
+
+		//	if (accessor["componentType"] == 5121) { // Unsigned Byte
+		//		const uint8_t* p_indices = reinterpret_cast<const uint8_t*>(data_ptr);
+		//		for (size_t i = 0; i < primitive->_indexCount; ++i) {
+		//			primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
+		//		}
+		//	}
+		//	else if (accessor["componentType"] == 5123) {
+		//		const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(data_ptr);
+		//		for (size_t i = 0; i < primitive->_indexCount; ++i) {
+		//			primitive->_indices[i] = static_cast<UINT>(p_indices[i]);
+		//		}
+		//	}
+		//	else if (accessor["componentType"] == 5125) {
+		//		memcpy(primitive->_indices.data(), data_ptr, primitive->_indexCount * sizeof(UINT));
+		//	}
+		//}
 
 		BoundingOrientedBox::CreateFromPoints(primitive->_orientedBoundingBox, primitive->_vertices.size(), &primitive->_vertices[0]._position, sizeof(GltfVertex));
 
