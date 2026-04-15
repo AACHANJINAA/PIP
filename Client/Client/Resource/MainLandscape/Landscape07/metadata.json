@@ -5,8 +5,9 @@
 	},
 	"world_position":
 	{
-		"center_x": 50400,
-		"center_z": 50400
+		"center_x": 504,
+		"center_y": 0,
+		"center_z": 504
 	},
 	"grid_info":
 	{

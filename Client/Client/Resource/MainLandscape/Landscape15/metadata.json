@@ -5,8 +5,9 @@
 	},
 	"world_position":
 	{
-		"center_x": -100800,
-		"center_z": -50400
+		"center_x": -504,
+		"center_y": 0,
+		"center_z": -1008
 	},
 	"grid_info":
 	{
@@ -14,10 +15,10 @@
 		"height": 505,
 		"bounds":
 		{
-			"min_x": -1008,
-			"max_x": -504,
-			"min_z": -504,
-			"max_z": 0
+			"min_x": -504,
+			"max_x": 0,
+			"min_z": -1008,
+			"max_z": -504
 		}
 	},
 	"scale":
