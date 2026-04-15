@@ -436,6 +436,9 @@ void GameFramework::FrameAdvance()
 		NowScene->scene_process(deltaTime);
 	}
 
+	// 사운드 업데이트
+	SoundManager::instance()->update();
+
 	// ---------------------------------------------------------
 	// 3. [비동기 리소스 업로드] (대기 없음!)
 	// ---------------------------------------------------------

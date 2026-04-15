@@ -13,9 +13,15 @@
 #include "UIFrameRenderComponent.h"
 #include "UIManager.h"
 #include "UIRenderComponent.h"
+#include "SoundManager.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    // 효과음 테스트
+	SoundManager::instance()->load_sound("Swing", "Resource/Sound/Dust.wav", true);
+    SoundManager::instance()->play_3d("Swing", {-360,10,-212},SoundType::SFX,1.0f,true);
+
+
 	// 1. Skybox 로드 (모든 Scene 공통)
     SceneManager::instance()->build_skybox(device, commandList,
         "Resource/SkyBox/",
@@ -49,7 +55,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	//load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
 
 	// 카메라 생성
-	auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
+	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
 	cameraObject->add_component<FreeCameraScript>();
 	cameraObject->set_layer("Camera");
 
@@ -160,10 +166,10 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
         renderer->set_pso_name("gltf");
 
         // 위치, 회전 정보
-        Test->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        Test->transform()->set_local_rotation(0.f, 180.f, 0.f);
         Test->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 
 
-        Test->transform()->set_local_position(XMFLOAT3(-360.0, 7.f, -210.0f));
+        Test->transform()->set_local_position(XMFLOAT3(-360.0, 10.f, -210.0f));
     }
 }

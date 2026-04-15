@@ -25,7 +25,7 @@ public:
 
 public:
     // 음원 로드
-    void load_sound(const std::string& name, const std::string& filepath, bool is_3d);
+    void load_sound(const std::string& name, const std::string& filepath, bool is_3d = false);
 
 	// 볼륨 조절 함수 -> 그룹별 볼륨 조절과 마스터 볼륨 조절로 나누어서 제작하였음
     void set_group_volume(SoundType type, float volume);

@@ -22,7 +22,7 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
 
     // 朝五虞 持失
-    auto cameraObject = ObjectManager::instance()->create_game_object("FreeCamera");
+    auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
     cameraObject->add_component<FreeCameraScript>();
     cameraObject->set_layer("Camera");
     cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 500.0f, 10.0f));

@@ -249,7 +249,7 @@ void MainPlayerScript::awake()
 	_logicalPosition = owner->transform()->local_position();
 	_visualOffset = { 0, 0, 0 };
 
-	_camera = ObjectManager::instance()->find_by_name("FreeCamera").get();
+	_camera = ObjectManager::instance()->find_by_name("Camera").get();
 	if (_camera) {
 		XMFLOAT3 camF = _camera->transform()->forward();
 		float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z)) - 180.f;
