@@ -40,64 +40,71 @@ namespace PIP::SERVER
         {
             if (!tile->shape) continue;
 
+            JPH::Vec3 correctBodyPos = tile->position + tile->rotation * tile->shape->GetCenterOfMass();
+
             JPH::BodyCreationSettings settings(
                 tile->shape,
-                tile->position,
+                correctBodyPos,
                 tile->rotation,
                 JPH::EMotionType::Static,
                 Layers::NON_MOVING
             );
-
+            
+            /*if (tile->position.GetX() != correctBodyPos.GetX())
+            {
+                MYLOG("Actor: " << tile->meshName << " | Pivot: " << tile->position.GetX() << " | FinalBodyPos: " <<
+                    correctBodyPos.GetX());
+            }*/
             JPH::BodyID id = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
             _stageBodyIDs.push_back(id);
         }
 
         MYLOG("[MainStage] Physics Static Mesh objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
 
-        {
-            MYLOG("[DEBUG] Starting Debug Raycast Test at X:-360, Z:-212");
+    //    {
+    //        MYLOG("[DEBUG] Starting Debug Raycast Test at X:-360, Z:-212");
 
-            // 1. 레이 설정: 위(100)에서 아래(-100)로 200만큼 쏨
-            JPH::Vec3 rayOrigin(-360.0f, 100.0f, -212.0f);
-            JPH::Vec3 rayDirection(0.0f, -200.0f, 0.0f);
-            JPH::RRayCast ray(rayOrigin, rayDirection);
+    //        // 1. 레이 설정: 위(100)에서 아래(-100)로 200만큼 쏨
+    //        JPH::Vec3 rayOrigin(-360.0f, 100.0f, -212.0f);
+    //        JPH::Vec3 rayDirection(0.0f, -200.0f, 0.0f);
+    //        JPH::RRayCast ray(rayOrigin, rayDirection);
 
-            JPH::RayCastResult result;
+    //        JPH::RayCastResult result;
 
-            // 2. 레이캐스트 실행 (NON_MOVING 레이어만 검사)
-            // BroadPhaseLayers::NON_MOVING과 Layers::NON_MOVING 상수는 프로젝트 설정에 맞춰 확인 필요
+    //        // 2. 레이캐스트 실행 (NON_MOVING 레이어만 검사)
+    //        // BroadPhaseLayers::NON_MOVING과 Layers::NON_MOVING 상수는 프로젝트 설정에 맞춰 확인 필요
 
-            if (physicsSystem->GetNarrowPhaseQuery().CastRay(ray, result
-                ,JPH::SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::NON_MOVING)
-				,JPH::SpecifiedObjectLayerFilter(Layers::NON_MOVING)))
-            
-            {
-                // 3. 충돌 지점 계산
-                JPH::Vec3 hitPos = ray.GetPointOnRay(result.mFraction);
+    //        if (physicsSystem->GetNarrowPhaseQuery().CastRay(ray, result
+    //            ,JPH::SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::NON_MOVING)
+				//,JPH::SpecifiedObjectLayerFilter(Layers::NON_MOVING)))
+    //        
+    //        {
+    //            // 3. 충돌 지점 계산
+    //            JPH::Vec3 hitPos = ray.GetPointOnRay(result.mFraction);
 
-                MYLOG("==========================================================");
-                MYLOG("[DEBUG] !!! RAYCAST HIT SUCCESS !!!");
-                MYLOG("[DEBUG] Hit Position - X: " << hitPos.GetX() << " Y: " << hitPos.GetY() << " Z: " <<
-                    hitPos.GetZ());
+    //            MYLOG("==========================================================");
+    //            MYLOG("[DEBUG] !!! RAYCAST HIT SUCCESS !!!");
+    //            MYLOG("[DEBUG] Hit Position - X: " << hitPos.GetX() << " Y: " << hitPos.GetY() << " Z: " <<
+    //                hitPos.GetZ());
 
-                // 어떤 Body에 맞았는지 확인
-                JPH::BodyLockRead lock(physicsSystem->GetBodyLockInterface(), result.mBodyID);
-                if (lock.Succeeded())
-                {
-                    const JPH::Body& body = lock.GetBody();
-                    MYLOG("[DEBUG] Hit Body ID: " << result.mBodyID.GetIndex());
-                    MYLOG("[DEBUG] Hit Body Layer: " << (int)body.GetObjectLayer());
-                }
-                MYLOG("==========================================================");
-            }
-            else
-            {
-                MYLOG("==========================================================");
-                MYLOG("[DEBUG] !!! RAYCAST FAILED !!! Nothing detected at this coordinate.");
-                MYLOG("[DEBUG] Expected X: -360, Z: -212, but ray passed through.");
-                MYLOG("==========================================================");
-            }
-        }
+    //            // 어떤 Body에 맞았는지 확인
+    //            JPH::BodyLockRead lock(physicsSystem->GetBodyLockInterface(), result.mBodyID);
+    //            if (lock.Succeeded())
+    //            {
+    //                const JPH::Body& body = lock.GetBody();
+    //                MYLOG("[DEBUG] Hit Body ID: " << result.mBodyID.GetIndex());
+    //                MYLOG("[DEBUG] Hit Body Layer: " << (int)body.GetObjectLayer());
+    //            }
+    //            MYLOG("==========================================================");
+    //        }
+    //        else
+    //        {
+    //            MYLOG("==========================================================");
+    //            MYLOG("[DEBUG] !!! RAYCAST FAILED !!! Nothing detected at this coordinate.");
+    //            MYLOG("[DEBUG] Expected X: -360, Z: -212, but ray passed through.");
+    //            MYLOG("==========================================================");
+    //        }
+    //    }
     }
 
     void MainStage::on_enter(Room* room)
