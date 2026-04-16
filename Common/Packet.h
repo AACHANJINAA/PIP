@@ -105,6 +105,7 @@ namespace common::packet
 		//------------------------------------------- 디버깅용 패킷 --------------------------------------- //
 		S2C_P_DEBUG_DRAW = 601,
 		S2C_P_DEBUG_BT_INFO = 602,
+		S2C_P_DEBUG_SHAPE = 603,
 	};
 
 
@@ -137,7 +138,8 @@ namespace common::packet
 	enum class DebugShapeType : uint8_t {
 		SPHERE = 0,
 		BOX = 1,
-		CAPSULE = 2
+		CAPSULE = 2,
+		MESH = 3,
 	};
 
 	enum class NPCType : int32_t
@@ -392,6 +394,13 @@ namespace common::packet
 	struct SC_PACKET_DEBUG_BT_INFO : PacketHeader {
 		int64_t  _actor_id;
 		// 현재 실행 중인 노드 이름 -> 가변으로 들어감
+	};
+	struct SC_PACKET_DEBUG_SHAPE : PacketHeader {
+		DebugShapeType	_shape_type;
+		Vec3			_position;		
+		Quat			_rotation;
+		uint32_t		_triangle_count;
+		// std::vector<Vec3> _vertices; // 삼각형 정점 데이터 (triangle_count * 3 개의 Vec3)
 	};
 #pragma pack (pop)
 }

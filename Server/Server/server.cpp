@@ -277,7 +277,7 @@ namespace PIP::SERVER
 
 
 		_logic_workers.resize(logic_thread_count);
-		int room_size = 100;
+		int room_size = 1;
 		_rooms.reserve(room_size);
 		for (int i = 0; i < room_size; ++i)
 		{

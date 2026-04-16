@@ -1538,7 +1538,8 @@ namespace PIP::SERVER
 		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
 #ifdef _DEBUG
 		// 5. 기타 환경 정보(디버그 드로 등) 전송
-		SendMapDebugDraw(session);
+		//SendMapDebugDraw(session);
+		//SendDebugShape(session, MapDataManager::Instance()->get_find_mesh() );
 #endif
 
 	}
@@ -1633,6 +1634,30 @@ namespace PIP::SERVER
 		MYLOG("[Room] Physics OBB Map Objects created: " << mapObjects.size());
 	}
 
+	void Room::GetShapeTriangles(const JPH::Shape* inShape, std::vector<common::Vec3>& outTriangles)
+	{
+		if (!inShape) return;
+
+		// Jolt 트래버설 컨텍스트 설정
+		JPH::Shape::GetTrianglesContext ctx;
+		inShape->GetTrianglesStart(ctx, JPH::AABox::sBiggest(), JPH::Vec3::sZero(), JPH::Quat::sIdentity(),
+			JPH::Vec3::sReplicate(1.0f));
+
+		while (true) {
+			const int max_tris = 64;
+			JPH::Float3 vertices[max_tris * 3];
+			int count = inShape->GetTrianglesNext(ctx, max_tris, vertices);
+			if (count == 0) break;
+
+			for (int i = 0; i < count; ++i) {
+				outTriangles.push_back({ vertices[i * 3 + 0].x, vertices[i * 3 + 0].y, vertices[i * 3 + 0].z });
+				outTriangles.push_back({ vertices[i * 3 + 1].x, vertices[i * 3 + 1].y, vertices[i * 3 + 1].z });
+				outTriangles.push_back({ vertices[i * 3 + 2].x, vertices[i * 3 + 2].y, vertices[i * 3 + 2].z });
+			}
+		}
+		return;
+	}
+
 	//void Room::CreatePhysicsStaticMeshCollisions()
 	//{
 	//	// 방마다 개별적으로 존재하는 물리 시스템의 BodyInterface
@@ -1676,6 +1701,29 @@ namespace PIP::SERVER
 
 			session->do_send(reinterpret_cast<const char*>(&debug), sizeof(debug));
 		}
+	}
+
+	void Room::SendDebugShape(const std::shared_ptr<SESSION>& session, const StaticMeshTile& tile)
+	{
+		std::vector<common::Vec3> triangles;
+		GetShapeTriangles(tile.shape, triangles);
+		uint32_t triCount = (uint32_t)triangles.size() / 3;
+
+		// 가변 길이 패킷 조립
+		uint16_t totalSize = sizeof(packet::SC_PACKET_DEBUG_SHAPE) + (triangles.size() * sizeof(common::Vec3));
+		std::vector<char> buffer(totalSize);
+
+		packet::SC_PACKET_DEBUG_SHAPE* header = (packet::SC_PACKET_DEBUG_SHAPE*)buffer.data();
+		header->_size = totalSize;
+		header->_type = packet::PacketType::S2C_P_DEBUG_SHAPE;
+		header->_triangle_count = triCount;
+
+		// [중요] 서버가 실제로 사용하는 보정된 위치를 보냅니다.
+		header->_position = PIP::Utils::FromJolt(tile.position + tile.rotation * tile.shape->GetCenterOfMass());
+		header->_rotation = PIP::Utils::FromJolt(tile.rotation);
+		// 삼각형 데이터 복사
+		memcpy(buffer.data() + sizeof(packet::SC_PACKET_DEBUG_SHAPE), triangles.data(), triangles.size() * sizeof(common::Vec3));
+		session->do_send(buffer.data(), totalSize);
 	}
 
 	void Room::OnNPCDead(GAME::NPC* npc)
@@ -1806,10 +1854,10 @@ namespace PIP::SERVER
 
 		_physicsSystem = new JPH::PhysicsSystem();
 
-		const JPH::uint cMaxBodies = 1024;
+		const JPH::uint cMaxBodies = 20480;
 		const JPH::uint cNumBodyMutexes = 0;
-		const JPH::uint cMaxBodyPairs = 1024;
-		const JPH::uint cMaxContactConstraints = 1024;
+		const JPH::uint cMaxBodyPairs = 20480;
+		const JPH::uint cMaxContactConstraints = 20480;
 
 		_physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
 			_bpLayerInterface, _objVsBpLayerFilter, _objLayerPairFilter);
