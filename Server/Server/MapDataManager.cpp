@@ -308,15 +308,15 @@ namespace PIP
 				const auto& colData = meshInfo["CollisionData"];
 
 				JPH::Ref<JPH::ShapeSettings> finalSettings;
-
+				int convex_count = 0;
 				if (colType == "Complex") {
 					JPH::TriangleList triangles;
 					const auto& verts = colData["Vertices"];
 					const auto& indices = colData["Indices"];
 					for (size_t i = 0; i < indices.size(); i += 3) {
 						int i0 = indices[i].get<int>() * 3;
-						int i1 = indices[i + 1].get<int>() * 3;
-						int i2 = indices[i + 2].get<int>() * 3;
+						int i1 = indices[i + 2].get<int>() * 3; // i+1 대신 i+2
+						int i2 = indices[i + 1].get<int>() * 3; // i+2 대신 i+1 (순서 교체)
 						triangles.push_back(JPH::Triangle(
 							JPH::Float3(verts[i0], verts[i0 + 1], verts[i0 + 2]),
 							JPH::Float3(verts[i1], verts[i1 + 1], verts[i1 + 2]),
@@ -345,7 +345,6 @@ namespace PIP
 						JPH::Ref<JPH::ShapeSettings> s;
 					};
 					std::vector<SubPart> parts;
-
 					// 1. ConvexHulls 처리
 					if (colData.contains("ConvexHulls") && colData["ConvexHulls"].is_array()) {
 						for (const auto& hull : colData["ConvexHulls"]) {
@@ -356,12 +355,18 @@ namespace PIP
 								MYERROR("[MapData] ConvexHull has too few vertices: " << meshName);
 								continue;
 							}
-
+							convex_count++;
 							for (const auto& v : vertices) {
 								convex->mPoints.push_back(ToJoltVec(v));
 							}
+
+							convex->mMaxConvexRadius = 0.05;
+
 							auto testRes = convex->Create();
 							if (testRes.IsValid()) {
+								//JPH::ShapeRefC tempShape = testRes.Get();
+								//MYLOG("Convex meshName: " << meshName << " | COM: " << tempShape->GetCenterOfMass().ToInt() << " | points: " << convex->mPoints.size());
+								//MYLOG("Convex Count: " << convex_count);
 								parts.push_back({ JPH::Vec3::sZero(), JPH::Quat::sIdentity(), convex });
 							}
 							else {
@@ -386,10 +391,11 @@ namespace PIP
 							}
 							auto boxSettings = new JPH::BoxShapeSettings(JPH::Vec3(hx, hy, hz)); // new 사용
 							
-							boxSettings->mConvexRadius = 0.0f;
+							boxSettings->mConvexRadius = 0.05f;
 
 							auto testRes = boxSettings->Create();
 							if (testRes.IsValid()) {
+								//MYLOG("Box meshName: " << meshName << " | COM: " << testRes.Get()->GetCenterOfMass().ToInt() << " | Extent: [" << hx << "," << hy << "," << hz << "]");
 								parts.push_back({ ToJoltVec(box["Center"]), ToJoltQuat(box["Rotation"]), boxSettings });
 							}
 							else {
@@ -410,10 +416,11 @@ namespace PIP
 
 							auto testRes = sphereSettings->Create();
 							if (testRes.IsValid()) {
+								//MYLOG("Sphere meshName: " << meshName << " | COM: " << testRes.Get()->GetCenterOfMass().ToInt() << " | Radius: " << radius);
 								parts.push_back({ center, JPH::Quat::sIdentity(), sphereSettings });
 							}
 							else {
-								MYERROR("[MapData] Box sub-part invalid in " << meshName << " Error: " <<
+								MYERROR("[MapData] Sphere sub-part invalid in " << meshName << " Error: " <<
 									testRes.GetError().c_str());
 							}
 
@@ -434,10 +441,11 @@ namespace PIP
 
 							auto testRes = capSettings->Create();
 							if (testRes.IsValid()) {
+								//MYLOG("Capsule meshName: " << meshName << " | COM: " << testRes.Get()->GetCenterOfMass().ToInt() << " | Radius: " << radius << ", HalfHeight: " << halfHeight);
 								parts.push_back({ center, rotation, capSettings });
 							}
 							else {
-								MYERROR("[MapData] Box sub-part invalid in " << meshName << " Error: " <<
+								MYERROR("[MapData] Capsule sub-part invalid in " << meshName << " Error: " <<
 									testRes.GetError().c_str());
 							}
 							
@@ -452,7 +460,15 @@ namespace PIP
 						auto compound = new JPH::StaticCompoundShapeSettings();
 						for (auto& p : parts)
 						{
-							compound->AddShape(p.p, p.r, p.s);
+							// 핵심: 자식 Shape을 임시로 만들어 COM 값을 가져와야 합니다
+							JPH::Shape::ShapeResult res = p.s->Create();
+							if (res.IsValid()) {
+								JPH::Vec3 childCOM = res.Get()->GetCenterOfMass();
+
+								// p.p(현재 sZero)에 childCOM을 더해줘야
+								// 정점들이 원래 정의된 위치(언리얼 좌표)에 나타납니다.
+								compound->AddShape(p.p + p.r * childCOM, p.r, p.s);
+							}
 						}
 
 						auto testRes = compound->Create();
@@ -464,6 +480,11 @@ namespace PIP
 								testRes.GetError().c_str());
 						}
 					}
+				}
+				if (convex_count > 0)
+				{
+					MYLOG("Convex Count for " << meshName << ": " << convex_count);
+					
 				}
 				if (finalSettings) 
 					meshLibrary[meshName] = finalSettings;
@@ -481,20 +502,8 @@ namespace PIP
 				JPH::Vec3 actorPos = ToJoltVec(actor["WorldPos"]);
 				JPH::Quat actorRot = ToJoltQuat(actor["WorldRot"]);
 				std::string actorName = actor.value("ActorName", "UnnamedActor");
-				if (actorName == "BP_house_02_Optimized16")
-				{
-					int u = 1;
-				}
-				if (actorName == "BP_house_02_Optimized17")
-				{
-					int u = 1;
-				}
 				for (const auto& part : actor["Parts"]) {
 					std::string meshName = part.value("MeshName", "");
-					if (meshName == "SM_House_village_02_Merged")
-					{
-						find_mesh_count++;
-					}
 					auto it = meshLibrary.find(meshName);
 					if (it == meshLibrary.end()) continue;
 
@@ -503,8 +512,8 @@ namespace PIP
 					JPH::Vec3 scale = ToJoltVec(part["Scale"]);
 
 					// 위치 및 회전 계산 (정규화된 actorRot 사용)
-					JPH::Vec3 finalPos = ToJoltVec(part["RelPos"]);
-					JPH::Quat finalRot = ToJoltQuat(part["RelRot"]);
+					JPH::Vec3 finalPos = actorPos + actorRot * relPos;
+					JPH::Quat finalRot = (actorRot * relRot).Normalized();
 					if (finalRot.LengthSq() > 0.0f)
 					{
 						finalRot = finalRot.Normalized();
@@ -520,14 +529,18 @@ namespace PIP
 
 					if (result.IsValid()) {
 						JPH::ShapeRefC finalShape = result.Get();
-						JPH::Vec3 com = finalShape->GetCenterOfMass();
-						if (com.LengthSq() > 0.001f) {
-							// Pivot과 COM이 일치하지 않는 경우 로그 출력
-							// 이 경우 Body 생성 시 position + rotation * com 처리를 해줘야 정확합니다.
-							MYLOG("[MapData] " << actorName << "'s Shape with COM offset: " << meshName << " COM: " << com.GetX() << ", " << com.GetY()
-							<< ", " << com.GetZ());
-							com_err_count++;
+						if (meshName == "SM_Rock2_mid" && actorName == "SM_Rock2_mid147")
+						{
+							_findMeshShape = { groupName, meshName, finalShape, finalPos, finalRot }; // 디버그용으로 특정 메쉬 저장
 						}
+						//JPH::Vec3 com = finalShape->GetCenterOfMass();
+						//if (com.LengthSq() > 0.001f) {
+						//	// Pivot과 COM이 일치하지 않는 경우 로그 출력
+						//	// 이 경우 Body 생성 시 position + rotation * com 처리를 해줘야 정확합니다.
+						//	MYLOG("[MapData] " << actorName << "'s Shape with COM offset: " << meshName << " COM: " << com.GetX() << ", " << com.GetY()
+						//	<< ", " << com.GetZ());
+						//	com_err_count++;
+						//}
 						_staticMeshTiles.push_back({ groupName, meshName, finalShape, finalPos, finalRot });
 						instanceCount++;
 					}
@@ -540,8 +553,8 @@ namespace PIP
 
 		// 3. 결과 저장
 		MYLOG("[MapData] Loaded " << instanceCount << " individual instances for [" << groupName << "]");
-		MYLOG("[MapData] Found " << find_mesh_count << " instances of SM_House_village_02_Merged");
-		MYLOG("[MapData] Instances with COM offset error: " << com_err_count);
+		//MYLOG("[MapData] Found " << find_mesh_count << " instances of SM_House_village_02_Merged");
+		//MYLOG("[MapData] Instances with COM offset error: " << com_err_count);
 	}
 
 	std::vector<const StaticMeshTile*> MapDataManager::GetStaticMeshGroup(const std::string& groupName) const

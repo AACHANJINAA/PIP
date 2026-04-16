@@ -6,6 +6,57 @@
 
 namespace PIP::SERVER
 {
+    static void rayCheck(JPH::Vec3 rayOrigin , JPH::Vec3 dir,const JPH::PhysicsSystem* physicsSystem)
+    {
+#ifdef _DEBUG
+        {
+
+            // 1. 레이 설정: 위(100)에서 아래(-100)로 200만큼 쏨
+			JPH::Vec3 rayDirection = dir * 200.0f; // 충분히 긴 거리로 레이 설정 (예: 100 유닛)
+            MYLOG("[DEBUG] Starting Debug Raycast Test at  "
+				  "X: " << rayOrigin.GetX() 
+                << " Y: " << rayOrigin.GetY()
+                << " Z: " << rayOrigin.GetZ());
+            JPH::RRayCast ray(rayOrigin, rayDirection);
+
+            JPH::RayCastResult result;
+
+            // 2. 레이캐스트 실행 (NON_MOVING 레이어만 검사)
+            // BroadPhaseLayers::NON_MOVING과 Layers::NON_MOVING 상수는 프로젝트 설정에 맞춰 확인 필요
+
+            if (physicsSystem->GetNarrowPhaseQuery().CastRay(ray, result
+                , JPH::SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::NON_MOVING)
+                , JPH::SpecifiedObjectLayerFilter(Layers::NON_MOVING)))
+
+            {
+                // 3. 충돌 지점 계산
+                JPH::Vec3 hitPos = ray.GetPointOnRay(result.mFraction);
+
+                MYLOG("==========================================================");
+                MYLOG("[DEBUG] !!! RAYCAST HIT SUCCESS !!!");
+                MYLOG("[DEBUG] Hit Position - X: " << hitPos.GetX() << " Y: " << hitPos.GetY() << " Z: " <<
+                    hitPos.GetZ());
+
+                // 어떤 Body에 맞았는지 확인
+                JPH::BodyLockRead lock(physicsSystem->GetBodyLockInterface(), result.mBodyID);
+                if (lock.Succeeded())
+                {
+                    const JPH::Body& body = lock.GetBody();
+                    MYLOG("[DEBUG] Hit Body ID: " << result.mBodyID.GetIndex());
+                    MYLOG("[DEBUG] Hit Body Layer: " << (int)body.GetObjectLayer());
+                }
+                MYLOG("==========================================================");
+            }
+            else
+            {
+                MYLOG("==========================================================");
+                MYLOG("[DEBUG] !!! RAYCAST FAILED !!! Nothing detected at this coordinate.");
+                MYLOG("[DEBUG] Expected X:" << rayOrigin.GetX() << " Z: " << rayOrigin.GetZ() << " but ray passed through.");
+                MYLOG("==========================================================");
+            }
+        }
+#endif
+    }
     void MainStage::on_initialize(Room* room)
     {
         MYLOG("[MainStage] Initializing Physics Terrain...");
@@ -56,55 +107,23 @@ namespace PIP::SERVER
                     correctBodyPos.GetX());
             }*/
             JPH::BodyID id = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
+
+            // 바디 생성 실패 체크 (개수 초과 등 발생 시)
+            if (id.IsInvalid()) {
+                MYERROR("[MainStage] Physics Body creation FAILED for mesh: " << tile->meshName);
+                continue;
+            }
+            if (tile->meshName == "SM_Rock2_mid")
+            {
+                MYLOG("[DEBUG] Raycasting for mesh ID: " << id.GetIndex());
+                rayCheck({ correctBodyPos.GetX(), correctBodyPos.GetY() + 100, correctBodyPos.GetZ() }, 
+                    {0,-1,0}, physicsSystem);
+            }
             _stageBodyIDs.push_back(id);
         }
 
         MYLOG("[MainStage] Physics Static Mesh objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
 
-    //    {
-    //        MYLOG("[DEBUG] Starting Debug Raycast Test at X:-360, Z:-212");
-
-    //        // 1. 레이 설정: 위(100)에서 아래(-100)로 200만큼 쏨
-    //        JPH::Vec3 rayOrigin(-360.0f, 100.0f, -212.0f);
-    //        JPH::Vec3 rayDirection(0.0f, -200.0f, 0.0f);
-    //        JPH::RRayCast ray(rayOrigin, rayDirection);
-
-    //        JPH::RayCastResult result;
-
-    //        // 2. 레이캐스트 실행 (NON_MOVING 레이어만 검사)
-    //        // BroadPhaseLayers::NON_MOVING과 Layers::NON_MOVING 상수는 프로젝트 설정에 맞춰 확인 필요
-
-    //        if (physicsSystem->GetNarrowPhaseQuery().CastRay(ray, result
-    //            ,JPH::SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::NON_MOVING)
-				//,JPH::SpecifiedObjectLayerFilter(Layers::NON_MOVING)))
-    //        
-    //        {
-    //            // 3. 충돌 지점 계산
-    //            JPH::Vec3 hitPos = ray.GetPointOnRay(result.mFraction);
-
-    //            MYLOG("==========================================================");
-    //            MYLOG("[DEBUG] !!! RAYCAST HIT SUCCESS !!!");
-    //            MYLOG("[DEBUG] Hit Position - X: " << hitPos.GetX() << " Y: " << hitPos.GetY() << " Z: " <<
-    //                hitPos.GetZ());
-
-    //            // 어떤 Body에 맞았는지 확인
-    //            JPH::BodyLockRead lock(physicsSystem->GetBodyLockInterface(), result.mBodyID);
-    //            if (lock.Succeeded())
-    //            {
-    //                const JPH::Body& body = lock.GetBody();
-    //                MYLOG("[DEBUG] Hit Body ID: " << result.mBodyID.GetIndex());
-    //                MYLOG("[DEBUG] Hit Body Layer: " << (int)body.GetObjectLayer());
-    //            }
-    //            MYLOG("==========================================================");
-    //        }
-    //        else
-    //        {
-    //            MYLOG("==========================================================");
-    //            MYLOG("[DEBUG] !!! RAYCAST FAILED !!! Nothing detected at this coordinate.");
-    //            MYLOG("[DEBUG] Expected X: -360, Z: -212, but ray passed through.");
-    //            MYLOG("==========================================================");
-    //        }
-    //    }
     }
 
     void MainStage::on_enter(Room* room)
@@ -149,7 +168,7 @@ namespace PIP::SERVER
 
     const common::Vec3 MainStage::get_spawn_pos() const
     {
-		return { -360.0f, 6.43f, -210.0f }; // 월드 중앙 등 원하는 위치로 반환
+		return { -360.0f, 6.43f, -212.0f }; // 월드 중앙 등 원하는 위치로 반환
     }
 
 }

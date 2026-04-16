@@ -812,6 +812,21 @@ void NetworkManager::HANDLE_S2C_DEBUG_BT(common::packet::PacketStream& stream)
 	}
 }
 
+void NetworkManager::HANDLE_S2C_DEBUG_SHAPE(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_DEBUG_SHAPE packet;
+	stream >> packet;
+	std::vector<common::Vec3> vertices;
+	for (int i = 0; i < packet._triangle_count; ++i)
+	{
+		common::Vec3 vertex;
+		stream >> vertex;
+		vertices.push_back(vertex);
+	}
+	DebugDrawManager::instance()->AddDebugMeshShape(packet._shape_type, vertices, {packet._position.x, packet._position.y, packet._position.z},
+		{packet._rotation.x, packet._rotation.y, packet._rotation.z, packet._rotation.w}, 0);
+}
+
 bool NetworkManager::init_network()
 {
 	// 이동 응답 패킷 핸들러 등록
@@ -865,6 +880,9 @@ bool NetworkManager::init_network()
 
 	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_BT_INFO,
 		std::bind(&NetworkManager::HANDLE_S2C_DEBUG_BT, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_DEBUG_SHAPE,
+		std::bind(&NetworkManager::HANDLE_S2C_DEBUG_SHAPE, this, std::placeholders::_1));	
 
 	RegisterHandler(common::packet::PacketType::S2C_P_CHANGE_SCENE,
 		std::bind(&NetworkManager::HANDLE_S2C_CHANGE_SCENE, this, std::placeholders::_1));

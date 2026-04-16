@@ -9,7 +9,7 @@ void DebugDrawManager::Initialize(ID3D12Device* device)
     CreateUnitBox(device);
     CreateUnitSphere(device);
     CreateUnitCapsule(device);
-
+    CreateDynamicLineBuffer(device);
     UINT cbSize = (sizeof(XMFLOAT4X4) + 255) & ~255;
     for (int i = 0; i < SWAP_CHAIN_BUFFERS; ++i) {
         _cbWorld[i] = CreateBufferResource(device, nullptr, nullptr, cbSize * MAX_DEBUG_SHAPES,
@@ -32,6 +32,12 @@ void DebugDrawManager::AddDebugRequest(const common::packet::SC_PACKET_DEBUG_DRA
 void DebugDrawManager::AddDebugShape(common::packet::DebugShapeType type, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 rot, DirectX::XMFLOAT3 extents, float lifeTime)
 {
     _requests.push_back({ type, pos, rot, extents, lifeTime });
+}
+
+void DebugDrawManager::AddDebugMeshShape(common::packet::DebugShapeType type, const std::vector<common::Vec3>& vertices,
+	DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 rot, float lifeTime)
+{
+	_remoteShapes.push_back({ vertices, {pos.x, pos.y, pos.z}, {rot.x, rot.y, rot.z, rot.w} });
 }
 
 void DebugDrawManager::Update(float deltaTime)
@@ -104,8 +110,60 @@ void DebugDrawManager::Render(ID3D12GraphicsCommandList* cmdList, UINT frameInde
         }
         shapeIdx++;
     }
+
+    _remoteLineVertices.clear();
+
+    for (const auto& shape : _remoteShapes) {
+        XMMATRIX world = XMMatrixRotationQuaternion(XMLoadFloat4((XMFLOAT4*)&shape.rot)) *
+            XMMatrixTranslation(shape.pos.x, shape.pos.y, shape.pos.z);
+
+        for (size_t i = 0; i < shape.triangles.size(); i += 3) {
+            XMVECTOR v0 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i]), world);
+            XMVECTOR v1 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i + 1]), world);
+            XMVECTOR v2 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i + 2]), world);
+
+            // 삼각형의 세 변을 선으로 추가
+            _remoteLineVertices.push_back({ *(XMFLOAT3*)&v0 }); _remoteLineVertices.push_back({ *(XMFLOAT3*)&v1
+                });
+            _remoteLineVertices.push_back({ *(XMFLOAT3*)&v1 }); _remoteLineVertices.push_back({ *(XMFLOAT3*)&v2
+                });
+            _remoteLineVertices.push_back({ *(XMFLOAT3*)&v2 }); _remoteLineVertices.push_back({ *(XMFLOAT3*)&v0
+                });
+        }
+    }
+
+    if (!_remoteLineVertices.empty()) {
+        // 1. 데이터를 GPU 업로드 버퍼로 복사
+        void* pData = nullptr;
+        _remoteLineVB->Map(0, nullptr, &pData);
+        memcpy(pData, _remoteLineVertices.data(), sizeof(DebugVertex) * _remoteLineVertices.size());
+        _remoteLineVB->Unmap(0, nullptr);
+
+        // 2. 월드 행렬을 Identity로 설정 (이미 월드 좌표로 변환했으므로)
+        XMMATRIX identity = XMMatrixIdentity();
+        XMFLOAT4X4* pMapped = (XMFLOAT4X4*)((BYTE*)_mappedWorld[frameIndex] + (cbSize * shapeIdx));
+        XMStoreFloat4x4(pMapped, XMMatrixTranspose(identity));
+        cmdList->SetGraphicsRootConstantBufferView(0, _cbWorld[frameIndex]->GetGPUVirtualAddress() + (cbSize *
+            shapeIdx));
+
+        // 3. 그리기
+        cmdList->IASetVertexBuffers(0, 1, &_remoteLineVBView);
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+        cmdList->DrawInstanced((UINT)_remoteLineVertices.size(), 1, 0, 0);
+    }
 }
 
+void DebugDrawManager::CreateDynamicLineBuffer(ID3D12Device* device)
+{
+    // 최대 10만 개의 선 정점(약 5만 개 선)을 수용할 수 있는 공간 확보
+    UINT bufferSize = sizeof(DebugVertex) * 100000;
+    _remoteLineVB = CreateBufferResource(device, nullptr, nullptr, bufferSize,
+        D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+
+    _remoteLineVBView.BufferLocation = _remoteLineVB->GetGPUVirtualAddress();
+    _remoteLineVBView.StrideInBytes = sizeof(DebugVertex);
+    _remoteLineVBView.SizeInBytes = bufferSize;
+}
 void DebugDrawManager::CreateUnitBox(ID3D12Device* device)
 {
     DebugVertex vertices[] = {

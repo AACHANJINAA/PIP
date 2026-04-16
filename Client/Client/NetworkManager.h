@@ -70,7 +70,7 @@ private:
 	// --- 디버그용 함수들 ---
     void HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream);
     void HANDLE_S2C_DEBUG_BT(common::packet::PacketStream& stream);
-
+	void HANDLE_S2C_DEBUG_SHAPE(common::packet::PacketStream& stream);
     //TODO: void Handle_S2C_ERROR(common::packet::PacketStream& stream); // 에러 패킷 처리 함수
 
 private:
