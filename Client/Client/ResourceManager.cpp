@@ -645,7 +645,6 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     //command_list->SetGraphicsRootSignature(root_signature);
     //command_list->SetPipelineState(pso);
 
-
     // 1. 상수 버퍼 내용 업데이트
     GltfMaterialConstantBuffer constants;
     constants.BaseColorFactor = mat_info.base_color_factor;

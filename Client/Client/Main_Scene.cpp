@@ -26,9 +26,9 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// 1. Skybox 로드 (모든 Scene 공통)
     SceneManager::instance()->build_skybox(device, commandList,
         "Resource/SkyBox/",
-        "night_field/night_field_skybox.dds",
-        "night_field/night_field_diffuse.dds",
-        "night_field/night_field_specular.dds",
+        "farmland/skybox_texture.dds",
+        "farmland/IBL_diffuse.dds",
+        "farmland/IBL_specular_Test.dds",
         "IBL_BRDF_LUT.dds");
 
 	// 2. MainScene 전용 Landscape 로드
@@ -152,13 +152,13 @@ void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommand
 void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     {
-        auto Test = ObjectManager::instance()->create_game_object("TestMesh");
+        auto T1 = ObjectManager::instance()->create_game_object("TestMesh");
 
         //// RenderComponent
-        auto renderer = Test->add_component<RenderComponent>();
+        auto renderer = T1->add_component<RenderComponent>();
 
-        auto Test_Mesh = ResourceManager::instance()->load_mesh("Resource/Test_glTF/DamagedHelmet.gltf");
-        renderer->set_mesh(Test_Mesh);
+        auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Test_glTF/DamagedHelmet.gltf");
+        renderer->set_mesh(T1_Mesh);
 
         // 재질 및 쉐이더 설정
         std::string material = "Test_Material";
@@ -170,10 +170,36 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
         renderer->set_pso_name("gltf");
 
         // 위치, 회전 정보
-        Test->transform()->set_local_rotation(0.f, 0.f, 0.f);
-        Test->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+        T1->transform()->set_local_rotation(0.f, 90.f, 0.f);
+        T1->transform()->set_local_scale({ 30.f, 30.0f, 30.0f });
 
 
-        Test->transform()->set_local_position(XMFLOAT3(-360.0, 50.f, -210.0f));
+        T1->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
+    }
+
+    {
+        auto T2 = ObjectManager::instance()->create_game_object("TestMesh");
+
+        //// RenderComponent
+        auto renderer = T2->add_component<RenderComponent>();
+
+        auto T2_Mesh = ResourceManager::instance()->load_mesh("Resource/Test_glTF/DamagedHelmet.gltf");
+        renderer->set_mesh(T2_Mesh);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "Test_Material";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "gltf");
+
+        // gltf
+        renderer->set_pso_name("gltf");
+
+        // 위치, 회전 정보
+        T2->transform()->set_local_rotation(0.f, 90.f, 0.f);
+        T2->transform()->set_local_scale({ 30.f, 30.0f, 30.0f });
+
+
+        T2->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
     }
 }

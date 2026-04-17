@@ -153,13 +153,12 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
         float VoH = saturate(dot(V, H));
 
            // Roughness 클램핑
-        roughness = max(roughness, 0.08);
+        roughness = max(roughness, 0.045);
         float a = roughness * roughness;
-        float a2 = a * a;
 
            // ===== 언리얼 BRDF (안전장치 포함) =====
-        float D = D_GGX(a2, NoH);
-        float Vis = Vis_SmithJointApprox(a2, NoV, NoL);
+        float D = D_GGX(a, NoH);
+        float Vis = Vis_SmithJointApprox(a, NoV, NoL);
         float3 F = F_Schlick(SpecularColor, VoH);
 
            // Diffuse
