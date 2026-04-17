@@ -66,7 +66,7 @@ namespace PIP
 		bool IsInsideMap(float x, float z) const;
 		const std::vector<MapObject>& GetMapObjects() const { return _map_objects; }
 
-		const StaticMeshTile& get_find_mesh() const { return _findMeshShape; }
+		const std::vector<StaticMeshTile>& get_find_mesh() const { return _findMeshShape; }
 		// [추가] 월드 경계 반환 (minX, maxX, minZ, maxZ)
 		std::tuple<float, float, float, float> GetWorldBounds() const { return { _worldMinX, _worldMaxX, _worldMinZ, _worldMaxZ }; }
 	private:
@@ -79,6 +79,6 @@ namespace PIP
 		float _worldMaxX = -std::numeric_limits<float>::max();
 		float _worldMinZ = std::numeric_limits<float>::max();
 		float _worldMaxZ = -std::numeric_limits<float>::max();
-		StaticMeshTile _findMeshShape;
+		std::vector<StaticMeshTile> _findMeshShape;
 	};
 }

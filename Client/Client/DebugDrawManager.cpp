@@ -16,6 +16,13 @@ void DebugDrawManager::Initialize(ID3D12Device* device)
             D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
         _cbWorld[i]->Map(0, nullptr, reinterpret_cast<void**>(&_mappedWorld[i]));
     }
+    // [추가] 서버 전송용 동적 라인 버퍼 생성 (약 20만개 정점 확보)
+    UINT dynamicBufferSize = sizeof(DebugVertex) * 200000;
+    _remoteLineVB = CreateBufferResource(device, nullptr, nullptr, dynamicBufferSize,
+        D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+    _remoteLineVBView.BufferLocation = _remoteLineVB->GetGPUVirtualAddress();
+    _remoteLineVBView.StrideInBytes = sizeof(DebugVertex);
+    _remoteLineVBView.SizeInBytes = dynamicBufferSize;
 }
 
 void DebugDrawManager::AddDebugRequest(const common::packet::SC_PACKET_DEBUG_DRAW& packet)
@@ -34,11 +41,11 @@ void DebugDrawManager::AddDebugShape(common::packet::DebugShapeType type, Direct
     _requests.push_back({ type, pos, rot, extents, lifeTime });
 }
 
-void DebugDrawManager::AddDebugMeshShape(common::packet::DebugShapeType type, const std::vector<common::Vec3>& vertices,
-	DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 rot, float lifeTime)
+void DebugDrawManager::AddRemoteDebugShape(RemoteDebugShape&& shape)
 {
-	_remoteShapes.push_back({ vertices, {pos.x, pos.y, pos.z}, {rot.x, rot.y, rot.z, rot.w} });
+	_remoteShapes.push_back(std::move(shape));
 }
+
 
 void DebugDrawManager::Update(float deltaTime)
 {
@@ -51,7 +58,7 @@ void DebugDrawManager::Update(float deltaTime)
 
 void DebugDrawManager::Render(ID3D12GraphicsCommandList* cmdList, UINT frameIndex)
 {
-    if (_requests.empty()) return;
+    if (_requests.empty() && _remoteShapes.empty()) return;
     if (frameIndex >= 2 || !_cbWorld[frameIndex]) return;
 
     auto camera = CameraComponent::get_main();
@@ -111,45 +118,104 @@ void DebugDrawManager::Render(ID3D12GraphicsCommandList* cmdList, UINT frameInde
         shapeIdx++;
     }
 
-    _remoteLineVertices.clear();
+    if (!_remoteShapes.empty() && shapeIdx < MAX_DEBUG_SHAPES) {
+        RenderRemoteShape(cmdList, frameIndex, cbSize, shapeIdx);
+    }
+    
+}
 
-    for (const auto& shape : _remoteShapes) {
-        XMMATRIX world = XMMatrixRotationQuaternion(XMLoadFloat4((XMFLOAT4*)&shape.rot)) *
-            XMMatrixTranslation(shape.pos.x, shape.pos.y, shape.pos.z);
+void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const std::string& targetActor,
+	const std::string& targetMesh)
+{
+    std::ifstream file(jsonPath);
+    if (!file.is_open()) return;
 
-        for (size_t i = 0; i < shape.triangles.size(); i += 3) {
-            XMVECTOR v0 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i]), world);
-            XMVECTOR v1 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i + 1]), world);
-            XMVECTOR v2 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i + 2]), world);
+    nlohmann::json root;
+    file >> root;
 
-            // 삼각형의 세 변을 선으로 추가
-            _remoteLineVertices.push_back({ *(XMFLOAT3*)&v0 }); _remoteLineVertices.push_back({ *(XMFLOAT3*)&v1
-                });
-            _remoteLineVertices.push_back({ *(XMFLOAT3*)&v1 }); _remoteLineVertices.push_back({ *(XMFLOAT3*)&v2
-                });
-            _remoteLineVertices.push_back({ *(XMFLOAT3*)&v2 }); _remoteLineVertices.push_back({ *(XMFLOAT3*)&v0
-                });
+    // 1. 메쉬 라이브러리에서 targetMesh의 Convex 데이터만 추출
+    std::vector<std::vector<common::Vec3>> meshConvexParts;
+    if (root.contains("MeshLibrary") && root["MeshLibrary"].contains(targetMesh)) {
+        const auto& colData = root["MeshLibrary"][targetMesh]["CollisionData"];
+        if (colData.contains("ConvexHulls")) {
+            for (const auto& hull : colData["ConvexHulls"]) {
+                std::vector<common::Vec3> points;
+                for (const auto& v : hull["Vertices"]) {
+                    points.push_back({ v.value("X", 0.0f), v.value("Y", 0.0f), v.value("Z", 0.0f) });
+                }
+                meshConvexParts.push_back(points);
+            }
+        }
+
+        if (colData.contains("Boxes"))
+        {
+            for (const auto& box : colData["Boxes"]) {
+                // Box는 8개의 꼭짓점으로 변환 (단순 선 그리기를 위해)
+                std::vector<common::Vec3> points;
+                XMVECTOR center = ToCVec(box["Center"]);
+                float ExtentX = box["ExtentX"];
+				float ExtentY = box["ExtentY"];
+				float ExtentZ = box["ExtentZ"];
+				XMVECTOR extents = XMVectorSet(ExtentX, ExtentY, ExtentZ, 0);
+				auto rot = box["Rotation"];
+				auto rotQuat = ToCQuat(rot);
+                // 8 corners of the box
+                for (int x = -1; x <= 1; x += 2) {
+                    for (int y = -1; y <= 1; y += 2) {
+                        for (int z = -1; z <= 1; z += 2) {
+                            XMVECTOR localPos = XMVectorSet(extents.m128_f32[0] * x, extents.m128_f32[1] * y, extents.m128_f32[2] * z, 0);
+                            XMVECTOR rotatedPos = XMVector3Rotate(localPos, rotQuat);
+                            XMVECTOR finalPos = XMVectorAdd(center, rotatedPos);
+                            points.push_back({ finalPos.m128_f32[0], finalPos.m128_f32[1], finalPos.m128_f32[2] });
+                        }
+                    }
+                }
+				meshConvexParts.push_back(points);
+			}
+	        
         }
     }
 
-    if (!_remoteLineVertices.empty()) {
-        // 1. 데이터를 GPU 업로드 버퍼로 복사
-        void* pData = nullptr;
-        _remoteLineVB->Map(0, nullptr, &pData);
-        memcpy(pData, _remoteLineVertices.data(), sizeof(DebugVertex) * _remoteLineVertices.size());
-        _remoteLineVB->Unmap(0, nullptr);
+    if (meshConvexParts.empty()) return;
 
-        // 2. 월드 행렬을 Identity로 설정 (이미 월드 좌표로 변환했으므로)
-        XMMATRIX identity = XMMatrixIdentity();
-        XMFLOAT4X4* pMapped = (XMFLOAT4X4*)((BYTE*)_mappedWorld[frameIndex] + (cbSize * shapeIdx));
-        XMStoreFloat4x4(pMapped, XMMatrixTranspose(identity));
-        cmdList->SetGraphicsRootConstantBufferView(0, _cbWorld[frameIndex]->GetGPUVirtualAddress() + (cbSize *
-            shapeIdx));
+    // 2. 인스턴스에서 targetActor 찾기
+    if (root.contains("Instances")) {
+        for (const auto& inst : root["Instances"]) {
+            if (inst.value("ActorName", "") != targetActor) continue;
 
-        // 3. 그리기
-        cmdList->IASetVertexBuffers(0, 1, &_remoteLineVBView);
-        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-        cmdList->DrawInstanced((UINT)_remoteLineVertices.size(), 1, 0, 0);
+            XMVECTOR actorPos = ToCVec(inst["WorldPos"]);
+            XMVECTOR actorRot = ToCQuat(inst["WorldRot"]);
+
+            for (const auto& part : inst["Parts"]) {
+                if (part.value("MeshName", "") != targetMesh) continue;
+
+                XMVECTOR relPos = ToCVec(part["RelPos"]);
+                XMVECTOR relRot = ToCQuat(part["RelRot"]);
+
+                // 최종 월드 트랜스폼 계산 (서버와 동일한 공식)
+                XMVECTOR finalPos = XMVectorAdd(actorPos, XMVector3Rotate(relPos, actorRot));
+                XMVECTOR finalRot = XMQuaternionNormalize(XMQuaternionMultiply(actorRot, relRot));
+
+                // 렌더링용 데이터 생성 (기존 _remoteShapes 구조 재활용)
+                for (const auto& points : meshConvexParts) {
+                    RemoteDebugShape rs;
+                    XMStoreFloat3((XMFLOAT3*)&rs.pos, finalPos);
+                    XMStoreFloat4((XMFLOAT4*)&rs.rot, finalRot);
+
+                    // Convex의 정점들을 삼각형 형태로 변환 (단순 선 그리기를 위해)
+                    // 실제 Convex를 정확히 그리려면 Hull 알고리즘이 필요하지만,
+                    // 여기서는 모든 점을 원점과 잇는 방식으로 대략적인 형태만 확인합니다.
+                    if (points.size() >= 3) {
+                        for (size_t i = 1; i < points.size() - 1; ++i) {
+                            rs.triangles.push_back(points[0]);
+                            rs.triangles.push_back(points[i]);
+                            rs.triangles.push_back(points[i + 1]);
+                        }
+                    }
+                    _remoteShapes.push_back(std::move(rs));
+                }
+            }
+        }
     }
 }
 
@@ -261,4 +327,56 @@ void DebugDrawManager::CreateUnitCapsule(ID3D12Device* device)
     _capsuleVBView.BufferLocation = _capsuleVB->GetGPUVirtualAddress();
     _capsuleVBView.StrideInBytes = sizeof(DebugVertex);
     _capsuleVBView.SizeInBytes = sizeof(DebugVertex) * _capsuleVertexCount;
+}
+
+void DebugDrawManager::RenderRemoteShape(ID3D12GraphicsCommandList* cmdList, UINT frameIndex, UINT cbSize, int& shapeIdx)
+{
+    if (_remoteShapes.empty()) return;
+
+    _remoteLineVertices.clear();
+
+    for (const auto& shape : _remoteShapes) {
+        XMMATRIX world = XMMatrixRotationQuaternion(XMLoadFloat4((XMFLOAT4*)&shape.rot)) *
+            XMMatrixTranslation(shape.pos.x, shape.pos.y, shape.pos.z);
+
+        // [수정] 정점이 3개 미만으로 남았을 경우 루프 종료 (안전 장치)
+        for (size_t i = 0; i + 2 < shape.triangles.size(); i += 3)
+        {
+            XMVECTOR v0 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i]), world);
+            XMVECTOR v1 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i + 1]), world);
+            XMVECTOR v2 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i + 2]), world);
+
+            DebugVertex dv0, dv1, dv2;
+            XMStoreFloat3(&dv0.pos, v0);
+            XMStoreFloat3(&dv1.pos, v1);
+            XMStoreFloat3(&dv2.pos, v2);
+
+            _remoteLineVertices.push_back(dv0); _remoteLineVertices.push_back(dv1);
+            _remoteLineVertices.push_back(dv1); _remoteLineVertices.push_back(dv2);
+            _remoteLineVertices.push_back(dv2); _remoteLineVertices.push_back(dv0);
+
+            if (_remoteLineVertices.size() >= 199000) break; // 버퍼 오버플로우 방지
+        }
+    }
+
+    // [핵심] 모든 인스턴스의 선들을 하나의 정점 버퍼에 모아서 단 한 번의 호출로 그립니다!
+    if (!_remoteLineVertices.empty()) {
+        void* pData = nullptr;
+        if (SUCCEEDED(_remoteLineVB->Map(0, nullptr, &pData))) {
+            memcpy(pData, _remoteLineVertices.data(), sizeof(DebugVertex) * _remoteLineVertices.size());
+            _remoteLineVB->Unmap(0, nullptr);
+        }
+
+        XMMATRIX identity = XMMatrixIdentity();
+        XMFLOAT4X4* pMapped = (XMFLOAT4X4*)((BYTE*)_mappedWorld[frameIndex] + (cbSize * shapeIdx));
+        XMStoreFloat4x4(pMapped, XMMatrixTranspose(identity));
+
+        cmdList->SetGraphicsRootConstantBufferView(0, _cbWorld[frameIndex]->GetGPUVirtualAddress() + (cbSize *
+            shapeIdx));
+        cmdList->IASetVertexBuffers(0, 1, &_remoteLineVBView);
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+        cmdList->DrawInstanced((UINT)_remoteLineVertices.size(), 1, 0, 0);
+
+        shapeIdx++;
+    }
 }

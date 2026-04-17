@@ -8,6 +8,7 @@
 #include "TransformComponent.h"
 #include "ResourceManager.h"
 #include "CameraComponent.h"
+#include "DebugDrawManager.h"
 #include "MonsterHPUIRenderComponent.h"
 #include "ReadGLTFMesh.h"
 #include "UIFrameRenderComponent.h"
@@ -65,6 +66,9 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	Spawn_UI(device, commandList);
     Spawn_Monster_HP_UI(device, commandList);
 	TestMesh(device, commandList);
+
+    std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
+    DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
 }
 
 void Main_Scene::release_upload_buffers()

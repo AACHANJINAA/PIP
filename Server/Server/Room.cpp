@@ -1539,7 +1539,11 @@ namespace PIP::SERVER
 #ifdef _DEBUG
 		// 5. 기타 환경 정보(디버그 드로 등) 전송
 		//SendMapDebugDraw(session);
-		//SendDebugShape(session, MapDataManager::Instance()->get_find_mesh() );
+		auto finded_convexs = MapDataManager::Instance()->get_find_mesh();
+		for (const auto& mesh : finded_convexs)
+		{
+			SendDebugShape(session, mesh);
+		}
 #endif
 
 	}
@@ -1638,25 +1642,47 @@ namespace PIP::SERVER
 	{
 		if (!inShape) return;
 
-		// Jolt 트래버설 컨텍스트 설정
-		JPH::Shape::GetTrianglesContext ctx;
-		inShape->GetTrianglesStart(ctx, JPH::AABox::sBiggest(), JPH::Vec3::sZero(), JPH::Quat::sIdentity(),
-			JPH::Vec3::sReplicate(1.0f));
+		// 1. 모든 리프(Leaf) 쉐이프를 수집하기 위한 컬렉터
+		JPH::AllHitCollisionCollector<JPH::TransformedShapeCollector> collector;
+		JPH::SubShapeIDCreator id_creator;
 
-		while (true) {
-			const int max_tris = 64;
-			JPH::Float3 vertices[max_tris * 3];
-			int count = inShape->GetTrianglesNext(ctx, max_tris, vertices);
-			if (count == 0) break;
+		// 2. 계층 구조 순회 (ScaledShape, CompoundShape 등을 모두 분해하여 리프 노드 추출)
+		// 인자: Box, Position, Rotation, Scale, IDCreator, Collector, Filter
+		inShape->CollectTransformedShapes(
+			JPH::AABox::sBiggest(),
+			JPH::Vec3::sZero(),
+			JPH::Quat::sIdentity(),
+			JPH::Vec3::sReplicate(1.0f),
+			id_creator,
+			collector,
+			JPH::ShapeFilter()
+		);
 
-			for (int i = 0; i < count; ++i) {
-				outTriangles.push_back({ vertices[i * 3 + 0].x, vertices[i * 3 + 0].y, vertices[i * 3 + 0].z });
-				outTriangles.push_back({ vertices[i * 3 + 1].x, vertices[i * 3 + 1].y, vertices[i * 3 + 1].z });
-				outTriangles.push_back({ vertices[i * 3 + 2].x, vertices[i * 3 + 2].y, vertices[i * 3 + 2].z });
+		// 3. 수집된 각 리프(TransformedShape)에서 삼각형 추출
+		for (const JPH::TransformedShape& ts : collector.mHits)
+		{
+			// TransformedShape의 mShape는 반드시 리프 노드임이 보장됩니다.
+			JPH::Shape::GetTrianglesContext ctx;
+
+			// ts 내부의 트랜스폼 정보를 사용하여 삼각형 추출 시작
+			JPH::Vec3Arg scale = {ts.mShapeScale.x, ts.mShapeScale.y, ts.mShapeScale.z};
+			ts.mShape->GetTrianglesStart(ctx, JPH::AABox::sBiggest(), ts.mShapePositionCOM, ts.mShapeRotation, scale);
+
+			while (true) {
+				const int max_tris = 64;
+				JPH::Float3 vertices[max_tris * 3];
+				int count = ts.mShape->GetTrianglesNext(ctx, max_tris, vertices);
+				if (count == 0) break;
+
+				for (int i = 0; i < count; ++i) {
+					outTriangles.push_back({ vertices[i * 3 + 0].x, vertices[i * 3 + 0].y, vertices[i * 3 + 0].z });
+					outTriangles.push_back({ vertices[i * 3 + 1].x, vertices[i * 3 + 1].y, vertices[i * 3 + 1].z });
+					outTriangles.push_back({ vertices[i * 3 + 2].x, vertices[i * 3 + 2].y, vertices[i * 3 + 2].z });
+				}
 			}
 		}
-		return;
 	}
+
 
 	//void Room::CreatePhysicsStaticMeshCollisions()
 	//{
@@ -1705,25 +1731,47 @@ namespace PIP::SERVER
 
 	void Room::SendDebugShape(const std::shared_ptr<SESSION>& session, const StaticMeshTile& tile)
 	{
-		std::vector<common::Vec3> triangles;
-		GetShapeTriangles(tile.shape, triangles);
-		uint32_t triCount = (uint32_t)triangles.size() / 3;
+		if (!tile.shape) return;
 
-		// 가변 길이 패킷 조립
-		uint16_t totalSize = sizeof(packet::SC_PACKET_DEBUG_SHAPE) + (triangles.size() * sizeof(common::Vec3));
-		std::vector<char> buffer(totalSize);
+		std::vector<common::Vec3> allVertices;
+		GetShapeTriangles(tile.shape, allVertices);
 
-		packet::SC_PACKET_DEBUG_SHAPE* header = (packet::SC_PACKET_DEBUG_SHAPE*)buffer.data();
-		header->_size = totalSize;
-		header->_type = packet::PacketType::S2C_P_DEBUG_SHAPE;
-		header->_triangle_count = triCount;
+		if (allVertices.empty()) return;
 
-		// [중요] 서버가 실제로 사용하는 보정된 위치를 보냅니다.
-		header->_position = PIP::Utils::FromJolt(tile.position + tile.rotation * tile.shape->GetCenterOfMass());
-		header->_rotation = PIP::Utils::FromJolt(tile.rotation);
-		// 삼각형 데이터 복사
-		memcpy(buffer.data() + sizeof(packet::SC_PACKET_DEBUG_SHAPE), triangles.data(), triangles.size() * sizeof(common::Vec3));
-		session->do_send(buffer.data(), totalSize);
+		// 정점 개수가 3의 배수가 아닐 경우를 대비한 안전 장치
+		size_t totalVertices = (allVertices.size() / 3) * 3;
+
+		// 한 패킷당 최대 300개 정점 (100개 삼각형)씩 전송
+		const size_t verticesPerPacket = 300;
+
+		common::Vec3 worldPos = PIP::Utils::FromJolt(tile.position + (tile.rotation * tile.shape->GetCenterOfMass()));
+		common::Quat worldRot = PIP::Utils::FromJolt(tile.rotation);
+
+		for (size_t i = 0; i < totalVertices; i += verticesPerPacket)
+		{
+			// 남은 정점 개수 계산
+			size_t currentBatchVertices = (std::min)(verticesPerPacket, totalVertices - i);
+			uint32_t currentTriangleCount = static_cast<uint32_t>(currentBatchVertices / 3);
+
+			uint16_t packetSize = sizeof(packet::SC_PACKET_DEBUG_SHAPE) + (currentBatchVertices *
+				sizeof(common::Vec3));
+			std::vector<char> buffer(packetSize);
+
+			auto* header = reinterpret_cast<packet::SC_PACKET_DEBUG_SHAPE*>(buffer.data());
+			header->_size = packetSize;
+			header->_type = packet::PacketType::S2C_P_DEBUG_SHAPE;
+			header->_triangle_count = currentTriangleCount;
+			header->_position = worldPos;
+			header->_rotation = worldRot;
+
+			// [수정] 벡터 범위를 초과하지 않도록 안전하게 복사
+			memcpy(buffer.data() + sizeof(packet::SC_PACKET_DEBUG_SHAPE), &allVertices[i], currentBatchVertices *
+				sizeof(common::Vec3));
+
+			session->do_send(buffer.data(), packetSize);
+		}
+
+		MYLOG("[Debug] Sent " << totalVertices << " triangles in chunks for mesh: " << tile.meshName);
 	}
 
 	void Room::OnNPCDead(GAME::NPC* npc)

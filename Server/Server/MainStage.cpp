@@ -91,11 +91,11 @@ namespace PIP::SERVER
         {
             if (!tile->shape) continue;
 
-            JPH::Vec3 correctBodyPos = tile->position + tile->rotation * tile->shape->GetCenterOfMass();
+            JPH::Vec3 correctBodyPos = tile->position + (tile->rotation * tile->shape->GetCenterOfMass());
 
             JPH::BodyCreationSettings settings(
                 tile->shape,
-                correctBodyPos,
+                tile->position,
                 tile->rotation,
                 JPH::EMotionType::Static,
                 Layers::NON_MOVING
@@ -168,7 +168,7 @@ namespace PIP::SERVER
 
     const common::Vec3 MainStage::get_spawn_pos() const
     {
-		return { -360.0f, 6.43f, -212.0f }; // 월드 중앙 등 원하는 위치로 반환
+		return { -212.0f, 6.43f, -360.0f + 5.0f }; // 월드 중앙 등 원하는 위치로 반환
     }
 
 }

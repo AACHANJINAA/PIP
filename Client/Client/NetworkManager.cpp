@@ -823,8 +823,11 @@ void NetworkManager::HANDLE_S2C_DEBUG_SHAPE(common::packet::PacketStream& stream
 		stream >> vertex;
 		vertices.push_back(vertex);
 	}
-	DebugDrawManager::instance()->AddDebugMeshShape(packet._shape_type, vertices, {packet._position.x, packet._position.y, packet._position.z},
-		{packet._rotation.x, packet._rotation.y, packet._rotation.z, packet._rotation.w}, 0);
+	RemoteDebugShape debugShape;
+	debugShape.pos = packet._position;
+	debugShape.rot = packet._rotation;
+	debugShape.triangles = std::move(vertices);
+	DebugDrawManager::instance()->AddRemoteDebugShape(std::move(debugShape));
 }
 
 bool NetworkManager::init_network()
