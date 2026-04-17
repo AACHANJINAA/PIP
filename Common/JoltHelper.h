@@ -12,7 +12,7 @@ namespace PIP::Utils
 
     inline JPH::Quat ToJolt(const common::Quat& q)
     {
-        return {q.x, q.y, q.z, q.w};
+        return { q.x, q.y, q.z, q.w };
     }
 
 

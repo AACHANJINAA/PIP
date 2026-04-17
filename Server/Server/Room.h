@@ -96,6 +96,7 @@ namespace PIP::SERVER
 		void CreatePhysicsMapObjects();
 		/*void CreatePhysicsStaticMeshCollisions();*/
 		void GetShapeTriangles(const JPH::Shape* inShape, std::vector<common::Vec3>& outTriangles);
+		
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
 		void SendDebugShape(const std::shared_ptr<SESSION>& session, const StaticMeshTile& tile);

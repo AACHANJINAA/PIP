@@ -280,21 +280,29 @@ namespace PIP
 		// JSON 좌표 파싱 헬퍼
 		auto ToJoltVec = [](const json& j) {
 			if (j.is_null()) return JPH::Vec3::sZero();
-			return JPH::Vec3(j.value("X", 0.0f), j.value("Y", 0.0f), j.value("Z", 0.0f));
+			float x = j.value("X", 0.0f);
+			float y = j.value("Y", 0.0f);
+			float z = j.value("Z", 0.0f);
+
+			// Y-up 좌수 -> Y-up 우수 변환: Z축 부호만 반전
+			return JPH::Vec3(x, y, z);
+		};
+		auto ToJoltScale = [](const json& j) {
+			if (j.is_null()) return JPH::Vec3::sReplicate(1.0f);
+			// 스케일은 축만 맞추고 부호 반전(-)은 절대 하면 안 됩니다.
+			return JPH::Vec3(j.value("X", 1.0f), j.value("Y", 1.0f), j.value("Z", 1.0f));
 		};
 		auto ToJoltQuat = [](const json& j) {
-			JPH::Quat q(
-				j.value("X", 0.0f),
-				j.value("Y", 0.0f),
-				j.value("Z", 0.0f),
-				j.value("W", 1.0f)
-			);
+			float x = j.value("X", 0.0f);
+			float y = j.value("Y", 0.0f);
+			float z = j.value("Z", 0.0f);
+			float w = j.value("W", 1.0f);
 
-			// [핵심] 정규화하지 않으면 Jolt operator* 에서 터짐!
-			if (q.LengthSq() > 0.0f)
-				return q.Normalized();
+			// 좌수 -> 우수 쿼터니언 변환: Z와 W의 부호를 조절하거나
+			// 혹은 회전 축의 Z성분을 반전시킵니다.
+			JPH::Quat q(-x, -y, -z, w); // 가장 일반적인 LHS -> RHS 쿼터니언 변환 중 하나
 
-			return JPH::Quat::sIdentity();
+			return q.LengthSq() > 1.0e-8f ? q.Normalized() : JPH::Quat::sIdentity();
 		};
 
 		// 1. Mesh Library 파싱
@@ -360,7 +368,7 @@ namespace PIP
 								convex->mPoints.push_back(ToJoltVec(v));
 							}
 
-							convex->mMaxConvexRadius = 0.05;
+							convex->mMaxConvexRadius = 0.05f;
 
 							auto testRes = convex->Create();
 							if (testRes.IsValid()) {
@@ -460,14 +468,18 @@ namespace PIP
 						auto compound = new JPH::StaticCompoundShapeSettings();
 						for (auto& p : parts)
 						{
-							// 핵심: 자식 Shape을 임시로 만들어 COM 값을 가져와야 합니다
+							if (p.s == nullptr) continue;
+
 							JPH::Shape::ShapeResult res = p.s->Create();
 							if (res.IsValid()) {
+								// [중요] Jolt는 Pivot 기준이 아닌 COM 기준으로 AddShape를 해야 합니다.
+								// 모델러가 준 p.p 위치에 자식의 COM 오프셋을 더해줘야 정확합니다.
 								JPH::Vec3 childCOM = res.Get()->GetCenterOfMass();
-
-								// p.p(현재 sZero)에 childCOM을 더해줘야
-								// 정점들이 원래 정의된 위치(언리얼 좌표)에 나타납니다.
-								compound->AddShape(p.p + p.r * childCOM, p.r, p.s);
+								compound->AddShape(p.p, p.r, p.s);
+							} 
+							else
+							{
+								MYERROR("[MapData] Failed to create sub-shape for compound in " << meshName << " Error: " << res.GetError().c_str());
 							}
 						}
 
@@ -509,7 +521,7 @@ namespace PIP
 
 					JPH::Vec3 relPos = ToJoltVec(part["RelPos"]);
 					JPH::Quat relRot = ToJoltQuat(part["RelRot"]);
-					JPH::Vec3 scale = ToJoltVec(part["Scale"]);
+					JPH::Vec3 scale = ToJoltScale(part["Scale"]);
 
 					// 위치 및 회전 계산 (정규화된 actorRot 사용)
 					JPH::Vec3 finalPos = actorPos + actorRot * relPos;
@@ -529,9 +541,9 @@ namespace PIP
 
 					if (result.IsValid()) {
 						JPH::ShapeRefC finalShape = result.Get();
-						if (meshName == "SM_Rock2_mid" && actorName == "SM_Rock2_mid147")
+						if (meshName == "SM_House_village_02_Merged" && actorName == "BP_house_02_Optimized17")
 						{
-							_findMeshShape = { groupName, meshName, finalShape, finalPos, finalRot }; // 디버그용으로 특정 메쉬 저장
+							_findMeshShape.push_back({ groupName, meshName, finalShape, finalPos, finalRot }); // 디버그용으로 특정 메쉬 저장
 						}
 						//JPH::Vec3 com = finalShape->GetCenterOfMass();
 						//if (com.LengthSq() > 0.001f) {

@@ -35,22 +35,32 @@ public:
 
     // [Add] Add debug draw request from client local call
     void AddDebugShape(common::packet::DebugShapeType type, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 rot, DirectX::XMFLOAT3 extents, float lifeTime);
-	void AddDebugMeshShape(common::packet::DebugShapeType type, const std::vector<common::Vec3>& vertices, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 rot, float lifeTime);
-
+    void AddRemoteDebugShape(RemoteDebugShape&& shape);
+    void ClearRemoteShapes() { _remoteShapes.clear(); }
     // Update: Decrease lifetime of requests
     void Update(float deltaTime);
 
     // Render: Draw all active debug shapes (Called by Renderer)
     void Render(ID3D12GraphicsCommandList* cmdList, UINT frameIndex);
 
-    void CreateDynamicLineBuffer(ID3D12Device* device);
-
+    void LoadLocalDebugShape(const std::string& jsonPath, const std::string& targetActor, const std::string&
+        targetMesh);
 private:
     // Mesh creation helpers
+    void CreateDynamicLineBuffer(ID3D12Device* device);
     void CreateUnitBox(ID3D12Device* device);
     void CreateUnitSphere(ID3D12Device* device);
     void CreateUnitCapsule(ID3D12Device* device);
+    void RenderRemoteShape(ID3D12GraphicsCommandList* cmdList, UINT frameIndex, UINT cbSize, int& shapeIdx);
 
+    static DirectX::XMVECTOR ToCVec(const nlohmann::json& j) {
+        return DirectX::XMVectorSet(j.value("X", 0.0f), j.value("Y", 0.0f), j.value("Z", 0.0f), 0.0f);
+    }
+
+    static DirectX::XMVECTOR ToCQuat(const nlohmann::json& j) {
+        return DirectX::XMVectorSet(j.value("X", 0.0f), j.value("Y", 0.0f), j.value("Z", 0.0f), j.value("W",
+            1.0f));
+    }
 private:
     // Queue of active debug draw requests
     std::vector<DebugRequest> _requests;
@@ -79,7 +89,7 @@ private:
     // 서버 Shape 시각화를 위한 동적 버퍼
     ComPtr<ID3D12Resource> _remoteLineVB;
     D3D12_VERTEX_BUFFER_VIEW _remoteLineVBView{};
-    std::vector<DebugVertex> _remoteLineVertices; // 이번 프레임에 그릴 정점들
+    std::vector<DebugVertex> _remoteLineVertices;
 
     std::vector<RemoteDebugShape> _remoteShapes; // 서버에서 받은 원격 디버그 쉐이프
 };
