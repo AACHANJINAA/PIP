@@ -151,9 +151,8 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     }
     else
     {
-		 // 0.4 ~ 0.5 정도가 IBL 반사가 예쁘게 맺히는 수치입니다.
-        roughness = 0.4f;
-        metallic = MetallicFactor; // JSON에 정의된 MetallicFactor(BoneGolem은 0) 사용
+        roughness = RoughnessFactor;
+        metallic = MetallicFactor; 
     }
     
      // 3. Normal Map
