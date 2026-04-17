@@ -26,10 +26,10 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// 1. Skybox 로드 (모든 Scene 공통)
     SceneManager::instance()->build_skybox(device, commandList,
         "Resource/SkyBox/",
-        "farmland/skybox_texture.dds",
-        "farmland/IBL_diffuse.dds",
-        "farmland/IBL_specular_Test.dds",
-        "IBL_BRDF_LUT.dds");
+        "night_field/night_field_skybox.dds",
+        "night_field/night_field_diffuse.dds",
+        "night_field/night_field_specular.dds",
+        "BRDF.dds");
 
 	// 2. MainScene 전용 Landscape 로드
 	SceneManager::instance()->build_main_landscapes(device, commandList);
