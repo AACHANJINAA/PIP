@@ -28,8 +28,8 @@ struct LightsConstantBuffer
 {
     Light gLights[MAX_LIGHTS];
     XMFLOAT4 gcGlobalAmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
+    XMFLOAT4 g_IblDiffuseSH[9]; // 추가: 9개의 SH 계수 (float4 사용 권장)
     int gnLights = 0;
-    // CBV는 256바이트 정렬이 필요하므로, 남는 공간을 채우기 위한 패딩
     XMFLOAT3 padding;
 };
 
@@ -52,6 +52,9 @@ public:
     const std::vector<Light>& get_lights() const { return _lights; }
 
     void set_global_ambient(const DirectX::XMFLOAT4& ambient);
+    void set_ibl_diffuse_sh(const DirectX::XMFLOAT4* sh_coefficients) {
+        memcpy(_lightsCBData.g_IblDiffuseSH, sh_coefficients, sizeof(XMFLOAT4) * 9);
+    }
 
     XMFLOAT3 get_sun_direction() const;
 

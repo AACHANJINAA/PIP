@@ -32,6 +32,7 @@ cbuffer cbLights : register(b3)
 {
     LIGHT gLights[MAX_LIGHTS];
     float4 gcGlobalAmbientLight;
+    float4 g_IblDiffuseSH[9];
     int gnLights;
 };
 
@@ -50,7 +51,7 @@ float Pow5(float x)
 // Specular 기본값 0.5 = F0 0.04 (4% 반사)
 float DielectricSpecularToF0(float Specular)
 {
-    return 0.08 * Specular;
+    return 0.04 * Specular;
 }
 
  // 최종 F0 계산 (Metallic에 따라 lerp)
@@ -153,7 +154,7 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
         float VoH = saturate(dot(V, H));
 
            // Roughness 클램핑
-        roughness = max(roughness, 0.045);
+        roughness = max(roughness, 0.15);
         float a = roughness * roughness;
 
            // ===== 언리얼 BRDF (안전장치 포함) =====
@@ -167,9 +168,7 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
 
            // Specular
         float3 spec = D * Vis * F;
-
-           // 안전장치: 최종 결과값 제한
-        spec = min(spec, 100.0);
+       
 
            // 최종 누적
         Lo += (diffuse + spec) * radiance * NoL;

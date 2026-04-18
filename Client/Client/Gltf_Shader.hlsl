@@ -8,19 +8,38 @@ cbuffer cbMaterial : register(b2)
 {
     float4 BaseColorFactor;
     float3 EmissiveFactor;
-    float MetallicFactor;
-    float RoughnessFactor;
+    float MetallicFactor; // float3 뒤에 바로 붙어서 16바이트를 채움 (Offset 28)
+
+    float RoughnessFactor; // 다음 16바이트 레지스터 시작 (Offset 32)
     float NormalTextureScale;
     float AlphaCutoff;
-    int AlphaMode; // 0 = OPAQUE, 1 = MASK, 2 = BLEND
-    int DoubleSided; // 0 = false, 1 = true
+    int AlphaMode;
+
+    int DoubleSided; // 다음 16바이트 (Offset 48)
     int HasBaseColorTexture;
     int HasMetallicRoughnessTexture;
     int HasNormalTexture;
-    int HasEmissiveTexture;
+
+    int HasEmissiveTexture; // 다음 16바이트 (Offset 64)
     int HasOcclusionTexture;
     float SpecularFactor;
+    float _pad0; // 16바이트 정렬을 위한 패딩
 
+    // --- C++에는 있지만 HLSL에는 빠져있던 UV Transform 변수들 추가 ---
+    float2 BaseColorUVOffset;
+    float2 BaseColorUVScale;
+    float BaseColorUVRotation;
+    float _pad1;
+
+    float2 NormalUVOffset;
+    float2 NormalUVScale;
+    float NormalUVRotation;
+    float _pad2;
+
+    float2 MetallicRoughnessUVOffset;
+    float2 MetallicRoughnessUVScale;
+    float MetallicRoughnessUVRotation;
+    float _pad3;
 };
 
 Texture2D g_txDiffuse : register(t0);
@@ -154,7 +173,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
         roughness = RoughnessFactor;
         metallic = MetallicFactor; 
     }
-    
      // 3. Normal Map
     float3 N = normalize(In.Normal);
     float3 N_geom = normalize(In.Normal); // 기하학적 Normal 저장
@@ -190,7 +208,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao, SpecularFactor);
 
    // 2. 환경광 계산 (IBL.hlsl의 CalculateIBL 함수)
-    float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
+    float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao, SpecularFactor); 
 
     // View 공간에서의 깊이(Z) 값 계산 (어떤 Cascade를 쓸지 결정하기 위함)
     float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
@@ -199,9 +217,10 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 그림자 값 샘플링 (0.0: 완전 그림자 ~ 1.0: 빛 받음)
     float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
     
-    // 3. (직접광 * 그림자 팩터) + 환경광 + 자체발광 -> 아직 directional light에만 적용 (직교만)
-    float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
-
+    // 3. 최종 색상 계산: 직접광 + IBL + Emissive, 모두 그림자 영향을 받음
+    float3 indirectLight = iblColor * max(shadowFactor, 0.25f) * ao;
+    float3 finalColor = (litColor.rgb * shadowFactor) + indirectLight + finalEmissive;
+    
     // MASK 모드: alphaCutoff 이하의 픽셀을 폐기 (clip 함수 사용)
     if (AlphaMode == 1) // MASK
     {

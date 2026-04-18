@@ -33,6 +33,14 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE get_skybox_srv_cpu() const;
     D3D12_GPU_DESCRIPTOR_HANDLE get_skybox_srv_gpu() const;
 
+    // IBL diffuse 용
+    struct SH9Color
+    {
+        DirectX::XMFLOAT4 coefficients[9]; 
+    };
+
+    SH9Color _ibl_sh_data; // 멤버 변수로 하나 들고 있습니다.
+
     // IBL Maps Load 함수 및 SRV 핸들러
     void load_ibl_maps(const std::string specular_path, const std::string emissive_path, const std::string brdf_path);
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_irradiance_srv();
@@ -88,10 +96,12 @@ private:
         XMFLOAT4 BaseColorFactor;
         XMFLOAT3 EmissiveFactor;
         float MetallicFactor;
+
         float RoughnessFactor;
         float NormalTextureScale;
         float AlphaCutoff;
         int AlphaMode;          // 0 = OPAQUE, 1 = MASK, 2 = BLEND
+
         int DoubleSided;        // 0 = false, 1 = true
         int HasBaseColorTexture;
         int HasMetallicRoughnessTexture;
@@ -99,6 +109,7 @@ private:
         int HasEmissiveTexture;
         int HasOcclusionTexture;
         float SpecularFactor;
+        float pad0;                  
 
         // UV Transform 추가
         XMFLOAT2 BaseColorUVOffset;
