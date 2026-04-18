@@ -65,9 +65,9 @@ VS_OUTPUT VS_GLTF_SKINNED(VS_SKINNED_INPUT input)
     finalRot[1] = normalize(finalRot[1]);
     finalRot[2] = normalize(finalRot[2]);
 
-     // 정규화된 회전 행렬로 노멀 변환
-    Out.Normal = normalize(mul(input.Normal, finalRot));
-    Out.Tangent = normalize(mul(input.Tangent.xyz, finalRot));
+    float3x3 normalMatrix = (float3x3) finalTransform;
+    Out.Normal = normalize(mul(input.Normal, normalMatrix));
+    Out.Tangent = normalize(mul(input.Tangent.xyz, normalMatrix));
 
     Out.Bitangent = normalize(cross(Out.Normal, Out.Tangent) * input.Tangent.w);
 

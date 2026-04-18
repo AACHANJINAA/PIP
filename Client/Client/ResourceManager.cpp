@@ -463,7 +463,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 new_mat_info.base_color_factor = { pbr["baseColorFactor"][0], pbr["baseColorFactor"][1], pbr["baseColorFactor"][2], pbr["baseColorFactor"][3] };
             }
             new_mat_info.metallic_factor = pbr.value("metallicFactor", 0.0f);
-            new_mat_info.roughness_factor = pbr.value("roughnessFactor", 0.5f);
+            new_mat_info.roughness_factor = pbr.value("roughnessFactor", 0.7f);
             if (mat_json.contains("emissiveFactor")) {
                     new_mat_info.emissive_factor = { mat_json["emissiveFactor"][0], mat_json["emissiveFactor"][1], mat_json["emissiveFactor"][2] };
             }
