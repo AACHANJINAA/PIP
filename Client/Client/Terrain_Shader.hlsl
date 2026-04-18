@@ -208,7 +208,7 @@ float4 PS_Main(PS_Input input) : SV_TARGET
     float4 lit_color = Lighting(P, N, V, final_albedo, final_metallic, final_roughness, ao, SpecularFactor);
 
          // IBL
-    float3 ibl_color = CalculateIBL(N, V, final_albedo, final_metallic, final_roughness, ao, SpecularFactor);
+    float3 ibl_color = CalculateIBL(N, V, final_albedo, final_metallic, final_roughness, ao);
 
          // Shadow
     float3 view_pos = mul(float4(input.PositionW, 1.0f), gmtxView).xyz;

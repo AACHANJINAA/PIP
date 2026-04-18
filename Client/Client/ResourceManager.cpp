@@ -462,8 +462,8 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             if (pbr.contains("baseColorFactor")) {
                 new_mat_info.base_color_factor = { pbr["baseColorFactor"][0], pbr["baseColorFactor"][1], pbr["baseColorFactor"][2], pbr["baseColorFactor"][3] };
             }
-            new_mat_info.metallic_factor = pbr.value("metallicFactor", 1.0f);
-            new_mat_info.roughness_factor = pbr.value("roughnessFactor", 1.0f);
+            new_mat_info.metallic_factor = pbr.value("metallicFactor", 0.0f);
+            new_mat_info.roughness_factor = pbr.value("roughnessFactor", 0.5f);
             if (mat_json.contains("emissiveFactor")) {
                     new_mat_info.emissive_factor = { mat_json["emissiveFactor"][0], mat_json["emissiveFactor"][1], mat_json["emissiveFactor"][2] };
             }
@@ -563,7 +563,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 const auto& ext = mat_json["extensions"];
                 if (ext.contains("KHR_materials_specular")) {
                     float gltf_specular = ext["KHR_materials_specular"].value("specularFactor", 1.0f);
-                    new_mat_info.specular_factor = gltf_specular * 0.5f;
+                    new_mat_info.specular_factor = gltf_specular;
                 }
             }
             
