@@ -22,7 +22,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); // 이 부분 Title_Scene.cpp로 이동
 
 
 
@@ -35,10 +35,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-	if (DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc, 0) != IDOK)
-    {
-        return 0; // 사용자가 취소를 누르면 프로그램 종료
-    }
+	// 이 부분 Title_Scene의 InterRoom()으로 이동
+	//if (DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc, 0) != IDOK)
+    //{
+    //    return 0; // 사용자가 취소를 누르면 프로그램 종료
+    //}
 	// 네트워크 Startup
     if (!NetworkManager::instance()->init_network())
     {
@@ -57,18 +58,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         NetworkManager::instance()->cleanup_network();
         return FALSE;
     }
-	// 주소구조체 설정 및 서버 연결
-    if (!NetworkManager::instance()->connect_to_server())
-    {
-        NetworkManager::instance()->cleanup_network();
-        return FALSE;
-    }
-    // 최초 로그인 패킷 전송 (플레이어 이름 사용)
-    NetworkManager::instance()->SendLoginPacket();
-
-    int room_to_enter = 0; // 자동으로 입장할 방 ID (예시로 2번 방)
-    CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
-    NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
+	// 주소구조체 설정 및 서버 연결 -> 이 부분은 Title_Scene의 InterRoom()으로 이동
+    //if (!NetworkManager::instance()->connect_to_server())
+    //{
+    //    NetworkManager::instance()->cleanup_network();
+    //    return FALSE;
+    //}
+    //// 최초 로그인 패킷 전송 (플레이어 이름 사용)
+    //NetworkManager::instance()->SendLoginPacket();
+    //
+    //int room_to_enter = 0; // 자동으로 입장할 방 ID (예시로 2번 방)
+    //CLOG("[Auto-Enter] Automatically requesting to enter room " << room_to_enter);
+    //NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CHESSCLIENT));
 
@@ -86,10 +87,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            // [추가] 네트워크가 죽었으면 루프를 탈출하도록 보강
-            if (NetworkManager::instance()->is_running() == false) {
-                break;
-            }
+            //// [추가] 네트워크가 죽었으면 루프를 탈출하도록 보강
+			// DW수정 : 치명적 에러 시 error_display에서 PostMessage(WM_CLOSE)를 해주기 때문에 해당 부분 주석 처리
+            //if (NetworkManager::instance()->is_running() == false) {
+            //    break;
+            //}
             // 메시지 큐가 비어있을 때, 우리의 게임 로직을 실행합니다.
         	GameFramework::instance()->FrameAdvance();
         }
@@ -207,6 +209,8 @@ INT_PTR DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
+
+
 //
 //  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
