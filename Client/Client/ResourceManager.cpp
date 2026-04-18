@@ -90,7 +90,7 @@ void ResourceManager::initialize(ID3D12Device* device, ID3D12GraphicsCommandList
     D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {};
     heap_desc.NumDescriptors = 4;  // Skybox + IBL 3개
     heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE; // [변경] SHADER_VISIBLE 제거 -> CPU 전용으로 사용
     heap_desc.NodeMask = 0;
 
     HRESULT hr = _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&_static_srv_heap));
@@ -736,7 +736,14 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
      // GLTF 셰이더는 IBL 텍스처가 필요함
     if (mat_info.shader_name == "gltf" || mat_info.shader_name == "skinned")
     {
+        // DW설명 : 해당 부분의 srv_cpu 핸들이 셰이더에서 볼 수 없는 경우가 있어 수정해줌
         D3D12_CPU_DESCRIPTOR_HANDLE dummy_handle = get_skybox_srv_cpu();
+        //D3D12_CPU_DESCRIPTOR_HANDLE dummy_handle = default_black_handle;
+
+        if (dummy_handle.ptr == 0) {
+            dummy_handle = default_black_handle;
+        }
+
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_prefiltered_handle = get_cpu_handle(_ibl_prefiltered_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_brdf_lut_handle = get_cpu_handle(_ibl_brdf_lut_path);
 

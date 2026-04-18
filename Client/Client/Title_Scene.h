@@ -1,6 +1,17 @@
 #pragma once
 #include "Scene.h"
 
+enum class TITLE_SCENE_STATE
+{
+	RESOURCE_LOADING,
+    OPENING_UI_SEQUENCE,
+    OPENING_SEQUENCE,
+    CONNECTING_SERVER,
+    CONNECTED,
+    END
+};
+
+
 class Title_Scene : public Scene
 {
 public:
@@ -25,7 +36,20 @@ public:
 	bool _isConnectedToServer = false; // 서버 연결 여부를 추적하는 멤버 변수
 
 private:
-	void Opening_Sequence(float deltaTime);
+
+	TITLE_SCENE_STATE _currentOpeningState = TITLE_SCENE_STATE::RESOURCE_LOADING; // 현재 타이틀 씬의 상태를 나타내는 멤버 변수
+
+    bool _isOpeningUIEnd = false; // 맨 처음 오프닝 UI 연출 끝났는지?
+
+	void Resource_Loading_Sequence(float deltaTime); // 리소스 로딩 연출
+
+	void Opening_Sequence(float deltaTime); // 오프닝 연출
+	void Opening_UI_Sequence(float deltaTime); // 오프닝 UI 연출 -> 메인화면 선택 UI 아님
+
+
+private:
+    // 관리할 ui 객체들
+	std::shared_ptr<GameObject> _title_ui_obj = {}; // 타이틀 화면 UI
 
     //void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     //void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);

@@ -489,7 +489,7 @@ void GameFramework::FrameAdvance()
 	rtvHandle.ptr += (_swapChainBufferIndex * _rtvDescriptorIncrementSize);
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = _dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	float clearColor[4] = { 0.894f, 0.651f, 0.475f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f }; // 검은색으로 수정
 	_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,
 		nullptr);
