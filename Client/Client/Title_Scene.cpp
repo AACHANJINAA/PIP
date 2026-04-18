@@ -232,8 +232,8 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
     static int frameWait = 0;
     frameWait++;
 
-    // 창이 생성되고 최소 2프레임은 Present 되어야 검은 화면이 모니터에 나옵니다.
-    if (frameWait == 2)
+    // 창이 생성되고 최소 5프레임은 Present 되어야 검은 화면이 모니터에 나옴
+    if (frameWait == 5)
     {
         GameFramework::instance()->WaitForGpuComplete();
 
