@@ -68,7 +68,7 @@ float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
 }
 
 // Specular IBL 계산
-float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float specularFactor)
+float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness)
 {
 	// 1. 반사 벡터 계산
 	float3 R = reflect(-V, N);
@@ -78,7 +78,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 
 	// 3. Prefiltered Environment Map LOD 선택
 	float maxMipLevel = 4.0;
-	float safeRoughness = max(roughness, 0.1); // 최소 0.1
+	float safeRoughness = max(roughness, 0.05);
     float lod = safeRoughness * maxMipLevel;
 
 	// 4. Prefiltered Map 샘플링
@@ -88,7 +88,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
 
 	// 6. F0 계산
-    float3 F0 = lerp(0.04 * specularFactor, albedo, metallic);
+    float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
 
 	// 7. Single Scattering Specular 계산
     float3 specularSingle = F0 * brdf.x + brdf.y;
@@ -96,25 +96,24 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	// 8. Multiple Scattering Energy Compensation
 	// Ess = Single Scattering의 총 에너지
 	float Ess = brdf.r + brdf.g;
-	Ess = max(Ess, 0.001); // 0으로 나누기 방지
+	Ess = max(Ess, 0.1); // 0으로 나누기 방지
 
 	// Energy Compensation Factor 계산
 	// 수식: 1.0 + F0 * (1.0/Ess - 1.0)
 	// 의미: 손실된 에너지를 F0에 비례하여 복구
 	float3 energyCompensation = 1.0 + F0 * (1.0 / Ess - 1.0);
-
 	// 9. 최종 Specular = Single Scattering * Energy Compensation
-	return prefilteredColor * specularSingle * energyCompensation;
+    return prefilteredColor * specularSingle;// * energyCompensation;
 }
 
     // IBL 통합 함수
-float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao, float specularFactor)
+float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao)
 {
 	// 1. Diffuse IBL 계산
 	float3 diffuse = CalculateDiffuseIBL(N, albedo, metallic);
 
 	// 2. Specular IBL 계산
-    float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness, specularFactor);
+    float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
 	// 3. Diffuse + Specular 합산 후 AO 적용
 	return (diffuse + specular) * ao; 

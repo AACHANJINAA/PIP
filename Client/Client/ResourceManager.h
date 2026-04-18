@@ -94,6 +94,7 @@ private:
     struct GltfMaterialConstantBuffer
     {
         XMFLOAT4 BaseColorFactor;
+
         XMFLOAT3 EmissiveFactor;
         float MetallicFactor;
 
@@ -106,6 +107,7 @@ private:
         int HasBaseColorTexture;
         int HasMetallicRoughnessTexture;
         int HasNormalTexture;
+
         int HasEmissiveTexture;
         int HasOcclusionTexture;
         float SpecularFactor;
@@ -136,9 +138,9 @@ private:
     
             // --- PBR Metallic-Roughness Properties (glTF 2.0 Spec) ---
         XMFLOAT4 base_color_factor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        float metallic_factor = 1.0f;
-        float roughness_factor = 1.0f;
-        DirectX::XMFLOAT3 emissive_factor = { 0.0f, 0.0f, 0.0f };
+        float metallic_factor = 0.0f;
+        float roughness_factor = 0.5f;
+        XMFLOAT3 emissive_factor = { 0.0f, 0.0f, 0.0f };
     
             // Texture paths (keys to the _textures map)
         std::string base_color_texture_path;
@@ -152,7 +154,7 @@ private:
         float alpha_cutoff = 0.5f;
         bool double_sided = false;
         float normal_texture_scale = 1.0f;
-        float specular_factor = 0.5f;
+        float specular_factor = 0.0f;
     
             // --- Per-material Constant Buffer Resources ---
         ComPtr<ID3D12Resource> material_cbuffer_gpu = nullptr;
