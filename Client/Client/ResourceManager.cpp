@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "ResourceManager.h"
+#include "LightManager.h"
 #include "Mesh.h" // ReadObjMesh, ReadGlbMesh 등을 포함해야 함
 #include "ReadFBXMesh.h"
 #include "ReadGlbMesh.h"
@@ -69,7 +70,7 @@ void ResourceManager::create_default_textures(ID3D12Device* device, ID3D12Graphi
         _textures[name] = std::move(new_tex_info);
     };
 
-    uint8_t white_pixel[4] = { 0, 0, 0, 255 }; // White
+    uint8_t white_pixel[4] = { 255, 255, 255, 255 }; // White
     uint8_t normal_pixel[4] = { 128, 128, 255, 255 }; // Flat normal (R:128, G:128, B:255)
     uint8_t orm_pixel[4] = { 255, 255, 0, 255 }; // R(AO)=255, G(Rough)=255, B(Metal)=0, A=255 <- non-roughness + good light receive
     uint8_t black_pixel[4] = { 0, 0, 0, 255 }; // Black  
@@ -735,18 +736,18 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
      // GLTF 셰이더는 IBL 텍스처가 필요함
     if (mat_info.shader_name == "gltf" || mat_info.shader_name == "skinned")
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE ibl_irradiance_handle = get_cpu_handle(_ibl_irradiance_path);
+        //D3D12_CPU_DESCRIPTOR_HANDLE ibl_irradiance_handle = get_cpu_handle(_ibl_irradiance_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_prefiltered_handle = get_cpu_handle(_ibl_prefiltered_path);
         D3D12_CPU_DESCRIPTOR_HANDLE ibl_brdf_lut_handle = get_cpu_handle(_ibl_brdf_lut_path);
 
-        if (ibl_irradiance_handle.ptr != 0 && ibl_prefiltered_handle.ptr != 0 && ibl_brdf_lut_handle.ptr != 0)
+        if (ibl_prefiltered_handle.ptr != 0 && ibl_brdf_lut_handle.ptr != 0)
         {
             std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> ibl_handles;
-            ibl_handles.push_back(ibl_irradiance_handle);  // t8
+            //ibl_handles.push_back(ibl_irradiance_handle);  // t8
             ibl_handles.push_back(ibl_prefiltered_handle); // t9
             ibl_handles.push_back(ibl_brdf_lut_handle);    // t10
 
-            renderer->bind_texture_table(command_list, 8, ibl_handles); // params[8~10]
+            renderer->bind_texture_table(command_list, 8, ibl_handles); // params[9~10]
         }
     }
 }
@@ -806,22 +807,26 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
 {
     // 1. Irradiance Map (인덱스 1)
     _ibl_irradiance_path = diffuse_path;
-    auto irradiance_info = load_cubemap_from_dds(_ibl_irradiance_path);
-    if (irradiance_info)
-    {
-        _ibl_diffuse_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
-        _ibl_diffuse_cpu_handle.ptr += _static_heap_descriptor_size * 1;  // 인덱스 1
-        _ibl_diffuse_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
-        _ibl_diffuse_gpu_handle.ptr += _static_heap_descriptor_size * 1;
+    std::ifstream sh_file(_ibl_irradiance_path);
 
-        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srv_desc.Format = irradiance_info->resource->GetDesc().Format;
-        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-        srv_desc.TextureCube.MipLevels = irradiance_info->resource->GetDesc().MipLevels;
-        srv_desc.TextureCube.MostDetailedMip = 0;
-        srv_desc.TextureCube.ResourceMinLODClamp = 0.0f;
-        _device->CreateShaderResourceView(irradiance_info->resource.Get(), &srv_desc, _ibl_diffuse_cpu_handle);
+    if (sh_file.is_open())
+    {
+        std::string line;
+        int index = 0;
+
+        // 파일에서 9줄을 읽어옵니다. (각 줄은 R G B 숫자로 되어있음)
+        while (std::getline(sh_file, line) && index < 9)
+        {
+            std::stringstream ss(line);
+            // sh.txt를 열어보면 괄호나 쉼표 없이 숫자만 띄어쓰기로 구분되어 있습니다.
+            ss >> _ibl_sh_data.coefficients[index].x
+                >> _ibl_sh_data.coefficients[index].y
+                >> _ibl_sh_data.coefficients[index].z;
+            _ibl_sh_data.coefficients[index].w = 1.0f;
+            index++;
+        }
+        sh_file.close();
+        LightManager::instance()->set_ibl_diffuse_sh(_ibl_sh_data.coefficients);
     }
 
     // 2. Prefiltered Environment Map (인덱스 2)
@@ -830,9 +835,9 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
     if (prefiltered_info)
     {
         _ibl_specular_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
-        _ibl_specular_cpu_handle.ptr += _static_heap_descriptor_size * 2;  // 인덱스 2
+        _ibl_specular_cpu_handle.ptr += _static_heap_descriptor_size * 1;  // 인덱스 1
         _ibl_specular_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
-        _ibl_specular_gpu_handle.ptr += _static_heap_descriptor_size * 2;
+        _ibl_specular_gpu_handle.ptr += _static_heap_descriptor_size * 1;
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
         srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -850,9 +855,9 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
     if (brdf_info)
     {
         _ibl_brdf_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
-        _ibl_brdf_cpu_handle.ptr += _static_heap_descriptor_size * 3;  // 인덱스 3
+        _ibl_brdf_cpu_handle.ptr += _static_heap_descriptor_size * 2;  // 인덱스 2
         _ibl_brdf_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
-        _ibl_brdf_gpu_handle.ptr += _static_heap_descriptor_size * 3;
+        _ibl_brdf_gpu_handle.ptr += _static_heap_descriptor_size * 2;
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
         srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

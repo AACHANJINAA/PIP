@@ -157,6 +157,18 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
 
         renderer->bind_texture_table(commandList, 4, texture_handles);
     }
+
+
+    //// [추가] Terrain IBL 텍스처 바인딩 (루트 시그니처 인덱스 5)
+    //auto* rm = ResourceManager::instance();
+    //D3D12_CPU_DESCRIPTOR_HANDLE prefiltered = rm->get_ibl_prefiltered_srv_cpu();
+    //D3D12_CPU_DESCRIPTOR_HANDLE brdfLut = rm->get_ibl_brdf_lut_srv_cpu();
+
+    //if (prefiltered.ptr != 0 && brdfLut.ptr != 0)
+    //{
+    //    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> ibl_handles = { prefiltered, brdfLut };
+    //    renderer->bind_texture_table(commandList, 5, ibl_handles);
+    //}
 }
 
 BoundingOrientedBox TerrainRenderComponent::get_world_bounding_box() const

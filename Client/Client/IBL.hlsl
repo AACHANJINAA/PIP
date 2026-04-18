@@ -9,8 +9,39 @@
 // IBL 텍스처 선언
 // ============================================================
 
-// t8: Irradiance Map - Diffuse IBL용 (사전 계산된 환경 확산광)
-TextureCube g_IrradianceMap : register(t8);
+// SH 계수를 이용한 Irradiance 계산 (Ramamoorthi et al. 공식)
+float3 CalculateIrradianceSH(float3 N)
+{
+    const float C1 = 0.429043;
+    const float C2 = 0.511664;
+    const float C3 = 0.743125;
+    const float C4 = 0.886227;
+    const float C5 = 0.247708;
+
+    float3 L00 = g_IblDiffuseSH[0].rgb;
+    float3 L1_1 = g_IblDiffuseSH[1].rgb;
+    float3 L10 = g_IblDiffuseSH[2].rgb;
+    float3 L11 = g_IblDiffuseSH[3].rgb;
+    float3 L2_2 = g_IblDiffuseSH[4].rgb;
+    float3 L2_1 = g_IblDiffuseSH[5].rgb;
+    float3 L20 = g_IblDiffuseSH[6].rgb;
+    float3 L21 = g_IblDiffuseSH[7].rgb;
+    float3 L22 = g_IblDiffuseSH[8].rgb;
+
+    return (
+        C4 * L00 -
+        C1 * L22 * (N.x * N.x - N.y * N.y) +
+        C3 * L20 * N.z * N.z -
+        C5 * L20 +
+        2.0 * C1 * L2_2 * N.x * N.y +
+        2.0 * C1 * L21 * N.x * N.z +
+        2.0 * C1 * L2_1 * N.y * N.z +
+        2.0 * C2 * L11 * N.x +
+        2.0 * C2 * L1_1 * N.y +
+        2.0 * C2 * L10 * N.z
+    );
+}
+
 // t9: Prefiltered Environment Map - Specular IBL용 (Mipmap으로 Roughness 표현)
 TextureCube g_PrefilteredMap : register(t9);
 // t10: BRDF LUT - Split-Sum Approximation 용 (NdotV, Roughness -> scale, bias)
@@ -29,14 +60,15 @@ float3 CalculateDiffuseIBL(float3 N, float3 albedo, float metallic)
 	float3 kD = (1.0 - F0) * (1.0 - metallic);
 
 	// 3. Irradiance Map 샘플링
-	float3 irradiance = g_IrradianceMap.Sample(g_samLinear, N).rgb;
-
+	//float3 irradiance = g_IrradianceMap.Sample(g_samLinear, N).rgb;
+    float3 irradiance = max(CalculateIrradianceSH(N), 0.0);
+	
 	// 4. Lambertian Diffuse BRDF 계산
 	return kD * albedo * irradiance;
 }
 
 // Specular IBL 계산
-float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness)
+float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float specularFactor)
 {
 	// 1. 반사 벡터 계산
 	float3 R = reflect(-V, N);
@@ -45,9 +77,9 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	float NdotV = saturate(dot(N, V));
 
 	// 3. Prefiltered Environment Map LOD 선택
-	float maxMipLevel = 8.0;
-	float safeRoughness = max(roughness, 0.045); // 최소 4.5%
-    float lod = safeRoughness * safeRoughness * maxMipLevel;
+	float maxMipLevel = 4.0;
+	float safeRoughness = max(roughness, 0.1); // 최소 0.1
+    float lod = safeRoughness * maxMipLevel;
 
 	// 4. Prefiltered Map 샘플링
 	float3 prefilteredColor = g_PrefilteredMap.SampleLevel(g_samLinear, R, lod).rgb;
@@ -56,10 +88,10 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
 
 	// 6. F0 계산
-	float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
+    float3 F0 = lerp(0.04 * specularFactor, albedo, metallic);
 
 	// 7. Single Scattering Specular 계산
-	float3 specularSingle = F0 * brdf.x + brdf.y;
+    float3 specularSingle = F0 * brdf.x + brdf.y;
 
 	// 8. Multiple Scattering Energy Compensation
 	// Ess = Single Scattering의 총 에너지
@@ -76,13 +108,13 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 }
 
     // IBL 통합 함수
-float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao)
+float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao, float specularFactor)
 {
 	// 1. Diffuse IBL 계산
 	float3 diffuse = CalculateDiffuseIBL(N, albedo, metallic);
 
 	// 2. Specular IBL 계산
-	float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
+    float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness, specularFactor);
 
 	// 3. Diffuse + Specular 합산 후 AO 적용
 	return (diffuse + specular) * ao; 
