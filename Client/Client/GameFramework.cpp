@@ -419,6 +419,13 @@ void GameFramework::FrameAdvance()
 	_gameTimer.Tick(0.0f);
 	float deltaTime = _gameTimer.GetTimeElapsed();
 
+	// 너무 큰 델타 타임은 프레임 드랍으로 인한 일시적인 현상이므로, 최대값을 0.1초로 제한 (예: 10 FPS 이하로 떨어지는 경우)
+	// 델타타임 스파이크 방지
+	if (deltaTime > 0.1f)
+	{
+		deltaTime = 0.1f;
+	}
+
 	ProcessNetwork(); // (스레드 분리했다면 큐 비우기)
 
 	// 2. 리플리케이션 시스템 업데이트 (ReplicationSystem)
