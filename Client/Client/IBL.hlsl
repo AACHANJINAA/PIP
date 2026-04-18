@@ -103,7 +103,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	// 의미: 손실된 에너지를 F0에 비례하여 복구
 	float3 energyCompensation = 1.0 + F0 * (1.0 / Ess - 1.0);
 	// 9. 최종 Specular = Single Scattering * Energy Compensation
-    return prefilteredColor * specularSingle;// * energyCompensation;
+    return prefilteredColor * specularSingle * energyCompensation;
 }
 
     // IBL 통합 함수

@@ -185,7 +185,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     if (length(normalMapSample) > 0.1f)
     {
         float3 N_map = normalMapSample * 2.0 - 1.0;
-
+        
         float3 T = normalize(In.Tangent);
         float3 B = normalize(In.Bitangent);
 
@@ -201,12 +201,10 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
          // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-   
-    if (dot(N, V) < 0.0)
+    if (DoubleSided > 0 && dot(N, V) < 0.0)
     {
         N = -N;
     }
-    
     // 1. 직접광 계산 (Light.hlsl의 Lighting 함수)
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao, SpecularFactor);
 
