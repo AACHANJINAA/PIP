@@ -201,7 +201,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
          // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-    if (DoubleSided > 0 && dot(N, V) < 0.0)
+    if (dot(N, V) < 0.0)
     {
         N = -N;
     }
