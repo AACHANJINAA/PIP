@@ -41,7 +41,7 @@ float3 CalculateIrradianceSH(float3 N)
         2.0 * C2 * L10 * N.z
     );
 }
-
+TextureCube g_IrradianceDummy : register(t8);
 // t9: Prefiltered Environment Map - Specular IBL용 (Mipmap으로 Roughness 표현)
 TextureCube g_PrefilteredMap : register(t9);
 // t10: BRDF LUT - Split-Sum Approximation 용 (NdotV, Roughness -> scale, bias)
