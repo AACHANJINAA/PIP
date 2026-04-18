@@ -125,8 +125,8 @@ constexpr UINT SWAP_CHAIN_BUFFERS = 2;
 #define ALLARRAYSIZE				5
 
 
-constexpr uint32_t FRAME_BUFFER_WIDTH = 1680;
-constexpr uint32_t FRAME_BUFFER_HEIGHT = 1050;
+constexpr uint32_t FRAME_BUFFER_WIDTH = 1920;
+constexpr uint32_t FRAME_BUFFER_HEIGHT = 1080;
 
 
 // 라이팅 및 PONG_SHADER 관련 상수 [PONG]

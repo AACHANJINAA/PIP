@@ -227,3 +227,36 @@ void SoundManager::play_3d(const std::string& name, const XMFLOAT3& position, So
         _channels[name] = channel;
     }
 }
+
+bool SoundManager::is_playing(const std::string& name)
+{
+    // 채널 목록에 해당 이름이 없으면 재생 중이 아님
+    if (!_channels.contains(name)) return false;
+
+    FMOD::Channel* channel = _channels[name];
+    if (channel)
+    {
+        bool playing = false;
+        channel->isPlaying(&playing); // FMOD 채널 상태 확인
+        return playing;
+    }
+
+    return false;
+}
+
+float SoundManager::get_playback_position(const std::string& name)
+{
+    if (!_channels.contains(name)) return 0.0f;
+
+    FMOD::Channel* channel = _channels[name];
+    if (channel)
+    {
+        unsigned int pos = 0;
+        // FMOD에게 현재 채널의 재생 위치를 밀리초(MS) 단위로 받아옵니다.
+        channel->getPosition(&pos, FMOD_TIMEUNIT_MS);
+
+        // 밀리초를 초(Seconds) 단위의 float으로 변환하여 반환
+        return pos / 1000.0f;
+    }
+    return 0.0f;
+}

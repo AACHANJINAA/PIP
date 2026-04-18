@@ -123,6 +123,9 @@ public:
 	LinearAllocator* linear_allocator() const { return _linearAllocator.get(); }
 
 	UINT64 next_fence_value() const;
+
+	void set_fullscreen_toggle(bool enable) { _isFullscreenToggle = enable; }
+
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그
 

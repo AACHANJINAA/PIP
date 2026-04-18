@@ -85,14 +85,14 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 {
     {
 		// black_background
-        auto black_background_obj = ObjectManager::instance()->create_game_object("black_background");
-        auto black_background = black_background_obj->add_component<UIRenderComponent>();
+        _blackBackground_ui_obj = ObjectManager::instance()->create_game_object("black_background");
+        auto black_background = _blackBackground_ui_obj->add_component<UIRenderComponent>();
 
         black_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
         black_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
         black_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 원본 색상
         black_background->set_texture("Resource/UI/just_black_background.dds");
-        UIManager::instance()->add_ui(UILayer::BACKGROUND, "Black_Background_UI", black_background_obj);
+        UIManager::instance()->add_ui(UILayer::BACKGROUND, "Black_Background_UI", _blackBackground_ui_obj);
     }
 
     {
@@ -103,7 +103,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         title_ui_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
         title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
         title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // 흰색
-        title_ui_background->set_texture("Resource/UI/PIP_GAMES.dds");
+        title_ui_background->set_texture("Resource/UI/PIP_GAMES_LOGO.dds");
         UIManager::instance()->add_ui(UILayer::MIDDLE, "Title_UI", _title_ui_obj);
     }
 
@@ -208,31 +208,16 @@ INT_PTR CALLBACK Title_Scene::DialogProc(HWND hWnd, UINT message, WPARAM wParam,
     return (INT_PTR)FALSE;
 }
 
-void Title_Scene::Opening_UI_Sequence(float deltaTime)
-{
-    static float alpha = 0.0f;
-    alpha += deltaTime * 0.5f; // 10초 동안 페이드 인
-    _title_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
-    if (alpha >= 1.0f)
-    {
-        alpha = 1.0f;
-        _isOpeningUIEnd = true; // 오프닝 연출이 끝났음을 표시
-    }
-    else
-    {
-        return;
-    }
-
-	_currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE; // 오프닝 씬으로 상태 변경
-    alpha = 0.f;
-}
-
 void Title_Scene::Resource_Loading_Sequence(float deltaTime)
 {
     static int frameWait = 0;
     frameWait++;
 
     // 창이 생성되고 최소 5프레임은 Present 되어야 검은 화면이 모니터에 나옴
+    if (_isYouWantSeeTitleScene && frameWait == 1)
+    {
+        GameFramework::instance()->set_fullscreen_toggle(true);
+    }
     if (frameWait == 5)
     {
         GameFramework::instance()->WaitForGpuComplete();
@@ -254,8 +239,16 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
         GameFramework::instance()->WaitForGpuComplete();
 
         // [2] 로딩이 끝난 직후 음악 재생!
-        SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
+        if(_isYouWantSeeTitleScene)
+        {
+            SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/Monster Hunter Wilds Main Theme.mp3", false);
+        }
+        else
+        {
+			SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
+        }
         SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
+        // 사운드가 재생되기 시작하면 오프닝 UI 연출 시작 (검은 화면에서 로고 페이드 인)
 
         frameWait = 0;
         // [3] 로딩 완료 후 다음 상태(로고 페이드 인)로 전환
@@ -263,10 +256,117 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
     }
 }
 
+
+void Title_Scene::Opening_UI_Sequence(float deltaTime)
+{
+    if (!_isYouWantSeeTitleScene)
+    {
+        _isOpeningUIEnd = true;
+        _currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE;
+		return;
+    }
+
+    // 1. 노래가 실제로 재생 중인지 확인
+    if (!SoundManager::instance()->is_playing("TitleBgm"))
+    {
+        return;
+    }
+
+    // deltaTime을 더하지 않고, FMOD의 현재 재생 시간(초)을 직접 가져오기
+    // 음악이 렉으로 끊기면 UI도 같이 멈추고, 음악이 진행되면 UI도 정확히 그 시간에 맞추기
+    float ui_timer = SoundManager::instance()->get_playback_position("TitleBgm");
+
+    //static float ui_timer = 0.0f;
+    ui_timer += deltaTime;
+
+    static int uiNum = 1;
+    static float alpha = 0.0f;
+
+    if (uiNum == 1) // 첫 번째 UI 연출 (PIP Games 로고)
+    {
+        // 1. 대기: 0.0초 ~ 4.2초
+        if (ui_timer <= 4.2f)
+        {
+            alpha = 0.0f;
+        }
+        // 2. 페이드 인 (0.3초 소요): 4.2초 ~ 4.5초
+        else if (ui_timer <= 4.5f)
+        {
+            float duration = 0.3f;
+            float progress = (ui_timer - 4.2f) / duration; // 0.0 ~ 1.0 비율
+            alpha = progress;
+        }
+        // 3. 유지: 4.5초 ~ 6.5초
+        else if (ui_timer <= 6.5f)
+        {
+            alpha = 1.0f;
+        }
+        // 4. 페이드 아웃 (2.0초 소요): 6.5초 ~ 8.5초
+        else if (ui_timer <= 8.5f)
+        {
+            float duration = 2.0f;
+            float progress = (ui_timer - 6.5f) / duration; // 0.0 ~ 1.0 비율
+            alpha = 1.0f - progress; // 1.0에서 0.0으로 감소
+        }
+        // 5. 연출 종료 및 상태 전환: 8.5초 이후
+        else
+        {
+            alpha = 0.0f;
+            uiNum = 2;       // 두 번째 연출로 넘어감
+        }
+
+        // 로고 투명도 적용
+        _title_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+    }
+    else if (uiNum == 2) // 두 번째 UI 연출 (검은 배경 페이드 아웃)
+    {
+        // uiNum 1이 '8.5초'에 끝났으므로, 배경 페이드 아웃의 시작 기준점은 8.5초가 됩니다.
+        const float startFadeOutTime = 8.5f;
+        const float targetDuration = 5.0f;   // 5초 동안 아주 천천히 (8.5초 ~ 13.5초 구간)
+
+        // 진행률 계산 (현재 오디오 시간 - 8.5초) / 5.0초
+        float progress = (ui_timer - startFadeOutTime) / targetDuration;
+
+        // 탈출 조건: 진행률이 100% (1.0)에 도달하거나 넘었을 때 (즉, 13.5초가 되었을 때)
+        if (progress >= 1.0f)
+        {
+            alpha = 0.0f; // 안전하게 0으로 고정
+            uiNum = 3;
+        }
+        else
+        {
+            // 알파값 계산 (1.0에서 0.0으로)
+            alpha = 1.0f - progress;
+        }
+
+        // 배경 투명도 적용
+        _blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+    }
+    else if (uiNum == 3) // 오프닝 시퀀스 종료
+    {
+        _isOpeningUIEnd = true;
+        _currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE;
+
+        // 씬이 다시 호출될 경우를 대비해 초기화
+        ui_timer = 0.0f;
+        uiNum = 1;
+        alpha = 0.0f;
+    }
+}
+
+
+
 void Title_Scene::Opening_Sequence(float deltaTime)
 {
-	// 오프닝 연출 로직 구현 (예: 타이틀 화면 애니메이션, 페이드 인/아웃 등)
+    if(!_isYouWantSeeTitleScene)
+    {
+        _isOpeningEnd = true;
+        _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
+		return;
+	}
 
+	// 오프닝 연출 로직 구현 (예: 타이틀 화면 애니메이션, 페이드 인/아웃 등)
+    
 
 
     _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
