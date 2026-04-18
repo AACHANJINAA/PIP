@@ -176,30 +176,4 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
         T1->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
     }
-
-    {
-        auto T2 = ObjectManager::instance()->create_game_object("TestMesh");
-
-        //// RenderComponent
-        auto renderer = T2->add_component<RenderComponent>();
-
-        auto T2_Mesh = ResourceManager::instance()->load_mesh("Resource/Test_glTF/DamagedHelmet.gltf");
-        renderer->set_mesh(T2_Mesh);
-
-        // 재질 및 쉐이더 설정
-        std::string material = "Test_Material";
-
-        ResourceManager::instance()->create_material(material);
-        ResourceManager::instance()->set_shader_for_material(material, "gltf");
-
-        // gltf
-        renderer->set_pso_name("gltf");
-
-        // 위치, 회전 정보
-        T2->transform()->set_local_rotation(0.f, 90.f, 0.f);
-        T2->transform()->set_local_scale({ 30.f, 30.0f, 30.0f });
-
-
-        T2->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
-    }
 }
