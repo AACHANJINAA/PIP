@@ -174,7 +174,6 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
         roughness = RoughnessFactor;
         metallic = MetallicFactor; 
     }
-   // roughness = saturate(roughness + 0.4f);
 
      // 3. Normal Map
     float3 N = normalize(In.Normal);
@@ -235,6 +234,10 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     {
         finalColor = lerp_op(finalColor);
     }
+    
+// Metallic이 너무 높은가?  -> 싹다 검은색 문제 있다 이거
+// return float4(metallic.xxx, 1.0);
+    
     
     return float4(finalColor, diffuseSample.a);
 }
