@@ -18,11 +18,14 @@
 #include "UIRenderComponent.h"
 #include "SoundManager.h"
 #include "NetworkManager.h"
+#include "GameFramework.h"
 
 extern HINSTANCE hInst;
 
 void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    // 일단 검은 창을 띄우고 로드하도록 수정
+    
     // 오프닝 연출에 필요한 리소스 로드 및 캐릭터 생성
     //Spawn_Resource(device, commandList);
 
@@ -38,9 +41,10 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraComp->set_main_camera();
 
     // 오디오 재생 -> 리소스 로드 이후에 노래 재생
-    SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
-    SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
+    //SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
+   // SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
 
+	_currentOpeningState = TITLE_SCENE_STATE::RESOURCE_LOADING; // 리소스 로딩이 끝났으니 다음 상태로 넘어감
 }
 
 void Title_Scene::release_upload_buffers()
@@ -51,28 +55,57 @@ void Title_Scene::release_upload_buffers()
 void Title_Scene::scene_process(float deltaTime)
 {
     // 씬 업데이트 로직 (필요시)
-    if (!_isOpeningEnd)
+
+    switch (_currentOpeningState)
     {
+	case TITLE_SCENE_STATE::RESOURCE_LOADING:
+        Resource_Loading_Sequence(deltaTime);
+		break;
+    case TITLE_SCENE_STATE::OPENING_UI_SEQUENCE:
+        Opening_UI_Sequence(deltaTime);
+        break;
+    case TITLE_SCENE_STATE::OPENING_SEQUENCE:
         Opening_Sequence(deltaTime);
-    }
-	else if (!_isConnectedToServer) // 오프닝이 끝났지만 아직 서버에 연결되지 않은 경우
-    {
-        // 방 입력 받기 -> 서버 주소 및 플레이어 이름 입력
+        break;
+    case TITLE_SCENE_STATE::CONNECTING_SERVER:
         _isConnectedToServer = InterRoom();
+        break;
+
+	case TITLE_SCENE_STATE::CONNECTED:
+
+        break;
+    case TITLE_SCENE_STATE::END:
+        break;
+    default:
+        break;
     }
 }
 
 void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    // titel scene
-    auto title_ui_background_obj = ObjectManager::instance()->create_game_object("title_ui");
-    auto title_ui_background = title_ui_background_obj->add_component<UIRenderComponent>();
+    {
+		// black_background
+        auto black_background_obj = ObjectManager::instance()->create_game_object("black_background");
+        auto black_background = black_background_obj->add_component<UIRenderComponent>();
 
-    title_ui_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
-    title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
-    title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
-    title_ui_background->set_texture("Resource/UI/PIP_GAMES.dds");
-    UIManager::instance()->add_ui(UILayer::BACKGROUND, "Title_UI", title_ui_background_obj);
+        black_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
+        black_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
+        black_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 원본 색상
+        black_background->set_texture("Resource/UI/just_black_background.dds");
+        UIManager::instance()->add_ui(UILayer::BACKGROUND, "Black_Background_UI", black_background_obj);
+    }
+
+    {
+        // titel scene
+        _title_ui_obj = ObjectManager::instance()->create_game_object("title_ui");
+        auto title_ui_background = _title_ui_obj->add_component<UIRenderComponent>();
+
+        title_ui_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
+        title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
+        title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // 흰색
+        title_ui_background->set_texture("Resource/UI/PIP_GAMES.dds");
+        UIManager::instance()->add_ui(UILayer::MIDDLE, "Title_UI", _title_ui_obj);
+    }
 
     // 우측 상당 logo
     //auto logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
@@ -101,6 +134,7 @@ bool Title_Scene::InterRoom()
     if (!NetworkManager::instance()->connect_to_server())
     {
         //NetworkManager::instance()->cleanup_network();
+		::PostQuitMessage(0); // 서버 연결에 실패하면 프로그램 종료
         return false;
     }
     // 최초 로그인 패킷 전송 (플레이어 이름 사용)
@@ -109,6 +143,7 @@ bool Title_Scene::InterRoom()
 	// 방 목록 요청
     int room_to_enter = 0;
     NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
+	_currentOpeningState = TITLE_SCENE_STATE::CONNECTED; // 서버 연결 후 상태 변경 -> 완료
     return true;
 }
 
@@ -173,17 +208,66 @@ INT_PTR CALLBACK Title_Scene::DialogProc(HWND hWnd, UINT message, WPARAM wParam,
     return (INT_PTR)FALSE;
 }
 
+void Title_Scene::Opening_UI_Sequence(float deltaTime)
+{
+    static float alpha = 0.0f;
+    alpha += deltaTime * 0.5f; // 10초 동안 페이드 인
+    _title_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+    if (alpha >= 1.0f)
+    {
+        alpha = 1.0f;
+        _isOpeningUIEnd = true; // 오프닝 연출이 끝났음을 표시
+    }
+    else
+    {
+        return;
+    }
+
+	_currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE; // 오프닝 씬으로 상태 변경
+    alpha = 0.f;
+}
+
+void Title_Scene::Resource_Loading_Sequence(float deltaTime)
+{
+    static int frameWait = 0;
+    frameWait++;
+
+    // 창이 생성되고 최소 2프레임은 Present 되어야 검은 화면이 모니터에 나옵니다.
+    if (frameWait == 1)
+    {
+        GameFramework::instance()->WaitForGpuComplete();
+
+        auto device = GameFramework::instance()->device().Get();
+        auto cmdQueue = GameFramework::instance()->command_queue().Get();
+        auto cmdAlloc = GameFramework::instance()->command_allocator().Get();
+        auto cmdList = GameFramework::instance()->command_list().Get();
+
+        cmdAlloc->Reset();
+        cmdList->Reset(cmdAlloc, nullptr);
+
+        // [1] 무거운 리소스 로딩 시작 (이때 모니터는 완벽한 검은 화면 유지됨)
+        Spawn_Resource(device, cmdList);
+
+        cmdList->Close();
+        ID3D12CommandList* ppCommandLists[] = { cmdList };
+        cmdQueue->ExecuteCommandLists(1, ppCommandLists);
+        GameFramework::instance()->WaitForGpuComplete();
+
+        // [2] 로딩이 끝난 직후 음악 재생!
+        SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
+        SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
+
+        frameWait = 0;
+        // [3] 로딩 완료 후 다음 상태(로고 페이드 인)로 전환
+        _currentOpeningState = TITLE_SCENE_STATE::OPENING_UI_SEQUENCE;
+    }
+}
+
 void Title_Scene::Opening_Sequence(float deltaTime)
 {
 	// 오프닝 연출 로직 구현 (예: 타이틀 화면 애니메이션, 페이드 인/아웃 등)
 
 
-	// 간단한 타이틀 화면 페이드 인 효과 -> 수정예정
-	static float alpha = 0.0f;
-	alpha += deltaTime * 0.5f; // 2초 동안 페이드 인
-    if (alpha >= 1.0f)
-    {
-        alpha = 1.0f;
-        _isOpeningEnd = true; // 오프닝 연출이 끝났음을 표시
-	}
+
+    _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
 }

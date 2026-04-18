@@ -290,12 +290,12 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         // Skybox 전용 처리
         if (psoName == "skybox")
         {
-            auto static_heap = ResourceManager::instance()->get_static_srv_heap();
+           /* auto static_heap = ResourceManager::instance()->get_static_srv_heap();
             if (static_heap)
             {
                 ID3D12DescriptorHeap* heaps[] = { static_heap };
                 commandList->SetDescriptorHeaps(1, heaps);
-            }
+            }*/
 
             // Skybox 상수 버퍼
             if (camera && camera->get_cb_skybox())
@@ -306,11 +306,20 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             }
 
             // Skybox 텍스처 (고정 힙의 GPU 핸들 직접 사용)
-            D3D12_GPU_DESCRIPTOR_HANDLE srv_gpu_handle = ResourceManager::instance()->get_skybox_srv_gpu();
+            D3D12_CPU_DESCRIPTOR_HANDLE skybox_cpu_handle = ResourceManager::instance()->get_skybox_srv_cpu();
+            
+            // 안전장치: 스카이박스 핸들이 없으면 블랙 텍스처라도 넣어줌
+            if (skybox_cpu_handle.ptr == 0) {
+                skybox_cpu_handle = ResourceManager::instance()->get_texture("__DEFAULT_BLACK__")->cpu_handle;
+            }
+
+            bind_texture_table(commandList, 4, { skybox_cpu_handle });
+
+           /* D3D12_GPU_DESCRIPTOR_HANDLE srv_gpu_handle = ResourceManager::instance()->get_skybox_srv_gpu();
             if (srv_gpu_handle.ptr != 0)
             {
                 commandList->SetGraphicsRootDescriptorTable(4, srv_gpu_handle);
-            }
+            }*/
 
             // Skybox 렌더링
             for (const auto& gameObject : gameObjects)

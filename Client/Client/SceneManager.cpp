@@ -77,23 +77,52 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	auto game_framework = GameFramework::instance();
 	game_framework->WaitForGpuComplete();
 
+    //if (_currentScene) {
+    //    _currentScene.release();
+    //}
+
     UIManager::instance()->release();
 	ObjectManager::instance()->clear_non_persistent_objects();
 	ObjectManager::instance()->process_destructions();
 	ResourceManager::instance()->unload_unused_meshes();
 
-    // 기존 지형 오브젝트 정리
-    if (_terrainObject)
+	// 씬 전환 시 특정 씬에서 다른 씬으로 갈 때만 지형 오브젝트를 정리하는 로직
+    if(_currentScene)
     {
-        ObjectManager::instance()->remove_game_object(_terrainObject);
-        _terrainObject.reset();
-    }
+        if (scene_to_load == "BossScene")
+        {
+            // 기존 지형 오브젝트 정리
+            if (_terrainObject)
+            {
+                ObjectManager::instance()->remove_game_object(_terrainObject);
+                _terrainObject.reset();
+            }
 
-    for (auto& landscapeObj : _MainlandscapeObjects)
-    {
-        ObjectManager::instance()->remove_game_object(landscapeObj);
+            for (auto& landscapeObj : _MainlandscapeObjects)
+            {
+                ObjectManager::instance()->remove_game_object(landscapeObj);
+            }
+            _MainlandscapeObjects.clear();
+        }
+        else if (_currentScene->scene_name() == "BossScene" && scene_to_load == "MainScene")
+        {
+            // 기존 지형 오브젝트 정리
+            if (_terrainObject)
+            {
+                ObjectManager::instance()->remove_game_object(_terrainObject);
+                _terrainObject.reset();
+            }
+        }
+        else if (_currentScene->scene_name() == "BossScene" && scene_to_load == "TitleScene")
+        {
+            // 기존 지형 오브젝트 정리
+            if (_terrainObject)
+            {
+                ObjectManager::instance()->remove_game_object(_terrainObject);
+                _terrainObject.reset();
+            }
+        }
     }
-    _MainlandscapeObjects.clear();
 
     auto it = _scene_creators.find(scene_to_load);
     if (it == _scene_creators.end()) {
@@ -230,6 +259,13 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 
 void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList)
 {
+    // 타이틀 씬에서 메인 랜드스케이프 로드 할것임
+    if (!_MainlandscapeObjects.empty())
+    {
+        CLOG("Main landscapes already exist in memory. Skipping redundant loading.");
+        return;
+    }
+
     std::filesystem::path landscapeBaseDir = "Resource/MainLandscape";
 
     if (!std::filesystem::exists(landscapeBaseDir))
@@ -240,7 +276,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
 
     int loadedCount = 0;
 
-	//ResourceManager::instance()->set_current_command_list(cmdList);
+	ResourceManager::instance()->set_current_command_list(cmdList);
 
     // 모든 Landscape## 폴더 순회
     for (const auto& entry : std::filesystem::directory_iterator(landscapeBaseDir))
@@ -301,11 +337,11 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         }
         terrain->load_landscape_weightmaps(weightmapPaths);
 
-		//terrain->upload_to_gpu(device, cmdList, 0);
+		terrain->upload_to_gpu(device, cmdList, 0);
 
         // 5. ResourceManager 등록
         std::string meshKey = "Landscape" + folderName;
-        ResourceManager::instance()->register_manual_mesh(meshKey, terrain);
+        //ResourceManager::instance()->register_manual_mesh(meshKey, terrain);
 
         // 6. GameObject 생성
         auto landscapeObj = ObjectManager::instance()->create_game_object(meshKey);
