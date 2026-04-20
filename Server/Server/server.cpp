@@ -377,7 +377,7 @@ namespace PIP::SERVER
 	{
 		_sessions.insert({ session_id, session });
 	}
-	std::shared_ptr<SESSION> Server::GetSession(int64_t session_id)
+	/*std::shared_ptr<SESSION> Server::GetSession(int64_t session_id)
 	{
 		auto it = _sessions.find(session_id);
 		if (it == _sessions.end())
@@ -385,7 +385,7 @@ namespace PIP::SERVER
 			return nullptr;
 		}
 		return it->second;
-	}
+	}*/
 	void Server::RemoveSession(int64_t session_id)
 	{
 		_sessions[session_id] = nullptr; // 먼저 참조를 끊어서 다른 스레드가 접근하지 못하게 함
@@ -424,7 +424,7 @@ namespace PIP::SERVER
 	{
 		MYLOG("[Thread] I/O worker thread started. ID: " << std::this_thread::get_id());
 		SOCKET client_socket = INVALID_SOCKET;
-		EXP_OVER accept_over{IO_OP::IO_ACCEPT };
+		EXP_OVER accept_over{ IO_OP::IO_ACCEPT };
 		do_accept(client_socket, accept_over);
 
 		while (_is_running)

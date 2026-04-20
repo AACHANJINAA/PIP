@@ -166,7 +166,7 @@ namespace PIP::SERVER
 
 		// [추가] 세션 관리를 위한 함수들
 		void AddSession(int64_t session_id, std::shared_ptr<SESSION> session);
-		std::shared_ptr<SESSION> GetSession(int64_t session_id);
+		/*std::shared_ptr<SESSION> GetSession(int64_t session_id);*/
 		void RemoveSession(int64_t session_id);
 
 		// 풀에서 세션을 꺼내 shared_ptr로 래핑 (커스텀 deleter 포함)
