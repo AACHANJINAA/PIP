@@ -121,6 +121,7 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     
     // 비금속일 때의 최소 스페큘러 강도를 설정
     float minSpecularIntensity = 0.01f;
+    //float roughnessFactor = (1.0 - roughness) * 0.1;
     float specularScale = lerp(minSpecularIntensity, 0.9f, metallic);
     
     specular *= specularScale;
