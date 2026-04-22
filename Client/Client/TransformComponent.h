@@ -22,6 +22,8 @@ public:
     XMFLOAT3 right();
     XMFLOAT3 up();
     XMFLOAT3 forward();
+    const XMFLOAT3 local_rotation_euler();
+
 
     // --- Setters ---
 	void set_world_matrix(const XMFLOAT4X4& matrix);
