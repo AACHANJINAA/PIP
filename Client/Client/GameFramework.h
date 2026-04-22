@@ -12,6 +12,8 @@ private:
 	bool _isFullscreenToggle = false; // 전체화면 전환
 
 	bool _isRendering = false;
+
+	bool _isCheckCameraPos = false; // 카메라 위치 체크 여부
 	
 	HINSTANCE _hInstance = nullptr;
 	HWND _hWnd = nullptr;

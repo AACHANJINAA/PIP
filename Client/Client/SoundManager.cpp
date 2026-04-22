@@ -228,6 +228,17 @@ void SoundManager::play_3d(const std::string& name, const XMFLOAT3& position, So
     }
 }
 
+void SoundManager::stop(const std::string& name)
+{
+    if (!_channels.contains(name)) return;
+    FMOD::Channel* channel = _channels[name];
+    if (channel)
+    {
+        channel->stop();
+        _channels.erase(name); // 채널 목록에서 제거
+	}
+}
+
 bool SoundManager::is_playing(const std::string& name)
 {
     // 채널 목록에 해당 이름이 없으면 재생 중이 아님

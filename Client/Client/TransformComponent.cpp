@@ -97,6 +97,46 @@ XMFLOAT3 TransformComponent::forward()
     return result;
 }
 
+const XMFLOAT3 TransformComponent::local_rotation_euler()
+{
+    // 1. 월드 쿼터니언을 가져옵니다. (자신의 회전 + 부모의 회전이 모두 적용된 최종값)
+    XMFLOAT4 worldQuat = rotation();
+
+    // 2. 이 쿼터니언을 회전 행렬(Matrix)로 바꿉니다.
+    XMMATRIX mat = XMMatrixRotationQuaternion(XMLoadFloat4(&worldQuat));
+
+    // 3. 행렬의 성분에 접근하기 위해 4x4 형태로 저장합니다.
+    XMFLOAT4X4 m;
+    XMStoreFloat4x4(&m, mat);
+
+    XMFLOAT3 euler;
+
+    // 4. 행렬에서 직접 각도 추출 (DirectX Left-Handed 기준)
+    // Pitch (X축 회전): 전방 벡터의 Y성분(-m._32)
+    euler.x = std::asin(-m._32);
+
+    // 짐벌락(Gimbal Lock) 방어: Pitch가 90도나 -90도(위/아래를 완벽히 쳐다봄)에 가까운지 확인
+    if (std::cos(euler.x) > 0.0001f)
+    {
+        // 정상 상태: Yaw와 Roll 정상 계산
+        euler.y = std::atan2(m._31, m._33); // Yaw (Y축 회전)
+        euler.z = std::atan2(m._12, m._22); // Roll (Z축 회전)
+    }
+    else
+    {
+        // 짐벌락 상태: 카메라가 수직으로 서 있을 때는 Roll을 포기하고 Yaw만 계산
+        euler.y = std::atan2(-m._13, m._11);
+        euler.z = 0.0f;
+    }
+
+    // 5. 라디안(Radian)을 눈으로 읽기 편한 도(Degree) 단위로 변환
+    euler.x = DirectX::XMConvertToDegrees(euler.x);
+    euler.y = DirectX::XMConvertToDegrees(euler.y);
+    euler.z = DirectX::XMConvertToDegrees(euler.z);
+
+    return euler; // 세상 기준의 진짜 오일러 각도 반환!
+}
+
 // --- Setter 함수들 ---
 
 void TransformComponent::set_world_matrix(const XMFLOAT4X4& matrix)
