@@ -331,6 +331,10 @@ void GameFramework::ProcessInput()
 	{
 		_isFullscreenToggle = true;
 	}
+	if (InputManager::instance()->IsKeyDown('T'))
+	{
+		_isCheckCameraPos = !_isCheckCameraPos;
+	}
 }
 
 //void GameFramework::AnimateObjects()
@@ -554,7 +558,40 @@ void GameFramework::FrameAdvance()
 	// 후처리
 	ObjectManager::instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 7, 42);
-	::SetWindowText(_hWnd, _frameRate);
+
+
+
+	std::wstring windowTitle = _frameRate;
+
+	if(_isCheckCameraPos)
+	{
+		// 현재 씬에 있는 "Camera"라는 이름의 게임 오브젝트를 찾습니다.
+		auto cameraObj = ObjectManager::instance()->find_by_name("Camera");
+		if (cameraObj && cameraObj->transform())
+		{
+			// 위치 정보
+			DirectX::XMFLOAT3 pos = cameraObj->transform()->get_world_position();
+
+			DirectX::XMFLOAT3 rot = cameraObj->transform()->local_rotation_euler();
+
+			WCHAR camInfoText[256];
+			// Pos(위치)와 Rot(각도: Pitch, Yaw, Roll)를 한눈에 보이게 포맷팅
+			swprintf_s(camInfoText, 256,
+				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]",
+				pos.x, pos.y, pos.z,  // 위치
+				rot.x, rot.y, rot.z   // 각도 (Pitch, Yaw, Roll)
+			);
+
+			windowTitle += camInfoText;
+		}
+
+		// 최종 문자열을 윈도우 창 제목 표시줄에 출력
+		::SetWindowText(_hWnd, windowTitle.c_str());
+	}
+	else
+	{
+		::SetWindowText(_hWnd, _frameRate);
+	}
 
 	_isRendering = false;
 }

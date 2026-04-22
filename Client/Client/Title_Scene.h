@@ -32,7 +32,8 @@ public:
     bool InterRoom();
 
 private:
-    void Spawn_Resource(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+    void spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	void spawn_opening_sequence_object();
     static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
@@ -56,6 +57,7 @@ private:
     // 관리할 ui 객체들
 	std::shared_ptr<GameObject> _title_ui_obj = {}; // 타이틀 화면 UI
 	std::shared_ptr<GameObject> _blackBackground_ui_obj = {}; // 타이틀 화면 UI
+	std::shared_ptr<GameObject> _logo_ui_background_obj = {}; // slay the lord UI
 
     //void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     //void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
