@@ -24,6 +24,9 @@ public:
 
     virtual void late_update(float delta_time) override;
 
+
+	void set_sinamatic_camera_mode(bool enable) { _isSinamaticCameraMode = enable; }
+
 private:
 
 	void free_camera_update(float delta_time);
@@ -49,4 +52,6 @@ private:
     CameraComponent* _cameraComponent;
 
     bool _isFreeCameraMode = false;
+
+	bool _isSinamaticCameraMode = false; // 시네마틱 카메라 모드 여부
 };

@@ -12,7 +12,9 @@
 #include "ResourceManager.h"
 #include "CameraComponent.h"
 #include "MonsterHPUIRenderComponent.h"
+#include "AnimationComponent.h"
 #include "ReadGLTFMesh.h"
+#include "InputManager.h"
 #include "UIFrameRenderComponent.h"
 #include "UIManager.h"
 #include "UIRenderComponent.h"
@@ -35,6 +37,9 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // 카메라 생성
     auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
     cameraObject->add_component<FreeCameraScript>();
+	cameraObject->transform()->set_local_position({ 240.0f, 137.0f, 111.0f });
+	// 처음에는 45도 위쪽을 바라보도록 설정 -> 나중에 오프닝 연출에서 카메라 이동 시켜야할듯
+	cameraObject->transform()->set_local_rotation(-45.0f, 195.0f, 0.0f);
     cameraObject->set_layer("Camera");
 
     auto cameraComp = cameraObject->add_component<CameraComponent>();
@@ -72,7 +77,7 @@ void Title_Scene::scene_process(float deltaTime)
         break;
 
 	case TITLE_SCENE_STATE::CONNECTED:
-
+		SoundManager::instance()->stop("TitleBgm");
         break;
     case TITLE_SCENE_STATE::END:
         break;
@@ -107,15 +112,17 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         UIManager::instance()->add_ui(UILayer::MIDDLE, "Title_UI", _title_ui_obj);
     }
 
-    // 우측 상당 logo
-    //auto logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
-    //auto logo_ui_background = logo_ui_background_obj->add_component<UIRenderComponent>();
+    {
+        // 우측 상당 logo
+        _logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
+        auto logo_ui_background = _logo_ui_background_obj->add_component<UIRenderComponent>();
 
-    //logo_ui_background->set_screen_position(FRAME_BUFFER_WIDTH - 410.0f, 0.0f);        // Frame보다 안쪽
-    //logo_ui_background->set_size(412.5f, 250.f);// Frame보다 작게
-    //logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
-    //logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
-    //UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", logo_ui_background_obj);
+        logo_ui_background->set_screen_position(100.0f, 50.0f);        // Frame보다 안쪽
+        logo_ui_background->set_size(412.5f * 2, 250.0f * 2);// Frame보다 작게
+        logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // 흰색
+        logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
+        UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", _logo_ui_background_obj);
+    }
 }
 
 bool Title_Scene::InterRoom()
@@ -147,14 +154,14 @@ bool Title_Scene::InterRoom()
     return true;
 }
 
-void Title_Scene::Spawn_Resource(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     // 1. Skybox 로드 (모든 Scene 공통)
     SceneManager::instance()->build_skybox(device, commandList,
         "Resource/SkyBox/",
-        "farmland/farmland_skybox.dds",
-        "farmland/farmland_specular.dds",
-        "farmland/farmland_diffuse.txt",
+        "night/night_skybox.dds",
+        "night/night_specular.dds",
+        "night/night_diffuse.txt",
         "BRDF.dds");
 
     // 2. MainScene 전용 Landscape 로드
@@ -163,15 +170,57 @@ void Title_Scene::Spawn_Resource(ID3D12Device* device, ID3D12GraphicsCommandList
     // 3. 미니맵 활성화 -> 지형 이후에 호출해야함
     //SceneManager::instance()->build_minimap(device, commandList);
 
+
+
     // =========================필요한 메시 로드==================================
-    ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+    auto knight_mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf", true);
     // =========================================================================
+
+    spawn_opening_sequence_object();
 
     // 오두막
     load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
 
     // 성
     //load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
+}
+
+void Title_Scene::spawn_opening_sequence_object()
+{
+    // 앉아있는 기사 모델 소환
+    {
+        auto T1 = ObjectManager::instance()->create_game_object("KnightMesh");
+
+        //// RenderComponent
+        auto renderer = T1->add_component<RenderComponent>();
+        auto animation = T1->add_component<AnimationComponent>();
+
+		// 메시 설정 (애니메이션 포함)
+        auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf", true);
+        dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnightNoneSword/animations/Sit_idle.gltf", "idle");
+        renderer->set_mesh(T1_Mesh);
+
+		// 애니메이션 설정
+		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->play("idle", true);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "Knight_Material";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+        // gltf
+        renderer->set_pso_name("skinned");
+
+        // 위치, 회전 정보
+        T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+
+
+        // T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+        T1->transform()->set_local_position(XMFLOAT3(242.4f, 137.6f, 114.5f));
+    }
 }
 
 INT_PTR CALLBACK Title_Scene::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -231,7 +280,7 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
         cmdList->Reset(cmdAlloc, nullptr);
 
         // [1] 무거운 리소스 로딩 시작 (이때 모니터는 완벽한 검은 화면 유지됨)
-        Spawn_Resource(device, cmdList);
+        spawn_resource(device, cmdList);
 
         cmdList->Close();
         ID3D12CommandList* ppCommandLists[] = { cmdList };
@@ -318,31 +367,7 @@ void Title_Scene::Opening_UI_Sequence(float deltaTime)
         // 로고 투명도 적용
         _title_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
     }
-    else if (uiNum == 2) // 두 번째 UI 연출 (검은 배경 페이드 아웃)
-    {
-        // uiNum 1이 '8.5초'에 끝났으므로, 배경 페이드 아웃의 시작 기준점은 8.5초가 됩니다.
-        const float startFadeOutTime = 8.5f;
-        const float targetDuration = 5.0f;   // 5초 동안 아주 천천히 (8.5초 ~ 13.5초 구간)
-
-        // 진행률 계산 (현재 오디오 시간 - 8.5초) / 5.0초
-        float progress = (ui_timer - startFadeOutTime) / targetDuration;
-
-        // 탈출 조건: 진행률이 100% (1.0)에 도달하거나 넘었을 때 (즉, 13.5초가 되었을 때)
-        if (progress >= 1.0f)
-        {
-            alpha = 0.0f; // 안전하게 0으로 고정
-            uiNum = 3;
-        }
-        else
-        {
-            // 알파값 계산 (1.0에서 0.0으로)
-            alpha = 1.0f - progress;
-        }
-
-        // 배경 투명도 적용
-        _blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
-    }
-    else if (uiNum == 3) // 오프닝 시퀀스 종료
+    else if (uiNum == 2) // 오프닝 시퀀스 종료
     {
         _isOpeningUIEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE;
@@ -365,9 +390,188 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 		return;
 	}
 
-	// 오프닝 연출 로직 구현 (예: 타이틀 화면 애니메이션, 페이드 인/아웃 등)
+
+   
+
+
+	// 오프닝 연출 로직 구현
     
+    // 카메라가 하늘을 보다가 천천히 내려오면서 성 보이게 하기
+
+    if (!_isYouWantSeeTitleScene)
+    {
+        _isOpeningEnd = true;
+        _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
+        return;
+    }
+
+    float bgm_time = SoundManager::instance()->get_playback_position("TitleBgm");
+
+    auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
+    if (!cameraObject || !cameraObject->transform()) return;
+
+	cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(true); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
 
 
-    _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
+    if (InputManager::instance()->IsKeyDown(VK_F8))
+    {
+        cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false);
+    }
+
+
+    // --- 카메라 타임라인 설정 ---
+    //const float startFadeOutTime = 8.5f; // 페이드 아웃
+	const float startTime = 8.5f; // UI 연출 종료 -> 카메라 회전 시작하는 시간
+	const float move_start_time = 16.5f; // 움직임 시작하는 시간 -> UI 연출이 끝나고 3초 정도는 카메라 회전만 하다가, 16.5초부터 움직임 시작 -> 이때가 성이 보이는 시점
+    const float midTime = 23.7f; // 성 진입
+    const float endTime = 32.0f; // 주인공 옆 도착
+	const float spawnUIENDTime = 33.0f; // ui 페이트인 끝나는 시간 -> 초에 ui도 다 끝나야함
+
+    // 위치 데이터
+    XMFLOAT3 P0 = { 240.0f, 137.0f, 111.0f };
+    XMFLOAT3 P1 = { 241.6f, 139.3f, 115.0f };
+    XMFLOAT3 P2 = { 239.6f, 140.71f, 115.17f };
+
+	// 각도 데이터 (Z축은 모두 0.0f로 통일)
+    XMFLOAT3 R_Base = { -45.0f, 195.0f, 0.0f };
+
+    // 각도 데이터 (Z축은 모두 0.0f로 통일)
+   // 기존 R0(140, 18, 180) -> 정상 R0
+    XMFLOAT3 R0 = { 30.0f, 195.0f, 0.0f };
+    // 기존 R1(150, 5, 180) -> 정상 R1
+    XMFLOAT3 R1 = { 30.0f, 175.0f, 0.0f };
+    // 기존 R2(-149.7, 19.3, 180) -> 정상 R2
+    XMFLOAT3 R2 = { 34.6f, 164.3f, 0.0f };
+
+    XMFLOAT3 targetPos;
+    XMFLOAT3 targetRot;
+
+    float alpha{0.f};
+
+    float black_alpha{0.f};
+  
+
+    // 
+    //if (bgm_time >= startTime && bgm_time < move_start_time) // 두 번째 UI 연출 (검은 배경 페이드 아웃)
+    //{
+    //    // uiNum 1이 '8.5초'에 끝났으므로, 배경 페이드 아웃의 시작 기준점은 8.5초가 됩니다.
+    //   
+    //    const float targetDuration = 5.0f;   // 5초 동안 아주 천천히 (8.5초 ~ 13.5초 구간)
+
+    //    // 진행률 계산 (현재 오디오 시간 - 8.5초) / 5.0초
+    //    float progress = (bgm_time - startTime) / targetDuration;
+
+    //    // 탈출 조건: 진행률이 100% (1.0)에 도달하거나 넘었을 때 (즉, 13.5초가 되었을 때)
+    //    if (progress >= 1.0f)
+    //    {
+    //        alpha = 0.0f; // 안전하게 0으로 고정
+    //    }
+    //    else
+    //    {
+    //        // 알파값 계산 (1.0에서 0.0으로)
+    //        alpha = 1.0f - progress;
+    //    }
+
+    //    // 배경 투명도 적용
+    //    _blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+    //}
+	// [구간 0] 카메라 각도 회전 (8.5f ~ 16.5f) 및 배경 페이드 아웃 (8.5f ~ 13.5f)
+    if (bgm_time >= startTime && bgm_time < move_start_time)
+    {
+        const float targetDuration = 5.0f;   // 5초 동안 아주 천천히 (8.5초 ~ 13.5초 구간)
+
+        // 진행률 계산 (현재 오디오 시간 - 8.5초) / 5.0초
+        float progress = (bgm_time - startTime) / targetDuration;
+
+        // 탈출 조건: 진행률이 100% (1.0)에 도달하거나 넘었을 때 (즉, 13.5초가 되었을 때)
+        if (progress >= 1.0f)
+        {
+            black_alpha = 0.0f; // 안전하게 0으로 고정
+        }
+        else
+        {
+            // 알파값 계산 (1.0에서 0.0으로)
+            black_alpha = 1.0f - progress;
+        }
+
+        // 배경 투명도 적용
+        _blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, black_alpha));
+        float t = (bgm_time - startTime) / (move_start_time - startTime);
+        float smoothT = t * t * (3.0f - 2.0f * t);
+        targetPos = P0; // 위치는 고정
+        targetRot.x = R_Base.x + (R0.x - R_Base.x) * smoothT;
+        targetRot.y = R_Base.y + (R0.y - R_Base.y) * smoothT;
+        targetRot.z = 0.f; // Z축 회전 무시 (0으로 고정)
+    }
+    // [구간 1] 시작점 -> 중간 지점 (16.5s ~ 23.7s)
+    else if (bgm_time >= move_start_time && bgm_time < midTime)
+    {
+        float t = (bgm_time - move_start_time) / (midTime - move_start_time);
+        float smoothT = t * t * (3.0f - 2.0f * t);
+
+        targetPos.x = P0.x + (P1.x - P0.x) * smoothT;
+        targetPos.y = P0.y + (P1.y - P0.y) * smoothT;
+        targetPos.z = P0.z + (P1.z - P0.z) * smoothT;
+
+        targetRot.x = R0.x + (R1.x - R0.x) * smoothT;
+        targetRot.y = R0.y + (R1.y - R0.y) * smoothT;
+        targetRot.z = 0.f; // Z축 회전 무시 (0으로 고정)
+    }
+    // [구간 2] 중간 지점 -> 최종 지점 (23.7s ~ 31.0s)
+    else if (bgm_time >= midTime && bgm_time <= endTime)
+    {
+        float t = (bgm_time - midTime) / (endTime - midTime);
+        float smoothT = t * t * (3.0f - 2.0f * t);
+
+        targetPos.x = P1.x + (P2.x - P1.x) * smoothT;
+        targetPos.y = P1.y + (P2.y - P1.y) * smoothT;
+        targetPos.z = P1.z + (P2.z - P1.z) * smoothT;
+
+        auto InterpolateAngle = [](float start, float end, float ratio) {
+            float diff = end - start;
+            while (diff < -180.0f) diff += 360.0f;
+            while (diff > 180.0f)  diff -= 360.0f;
+            return start + diff * ratio;
+            };
+
+        targetRot.x = InterpolateAngle(R1.x, R2.x, smoothT);
+        targetRot.y = InterpolateAngle(R1.y, R2.y, smoothT);
+        targetRot.z = 0.f; // Z축 회전 무시 (0으로 고정)
+    }
+    // [구간 3] UI 페이드 인이 끝나는 시점까지 (31.0s ~ 33.0s) -> 카메라는 최종 지점에 고정된 상태로, UI 페이드 인이 끝나는 시점까지 유지
+    else if (bgm_time > endTime && bgm_time <= spawnUIENDTime)
+    {
+        targetPos = P2;
+        targetRot = R2;
+
+		alpha = (bgm_time - endTime) / (spawnUIENDTime - endTime); // 0.0 ~ 1.0
+    }
+    else if (bgm_time > spawnUIENDTime && bgm_time <= spawnUIENDTime + 8.0f)
+    {
+        targetPos = P2;
+        targetRot = R2;
+		alpha = 1.0f; // UI도 완전히 나타난 상태로 고정
+        _isOpeningEnd = true;
+        _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
+        //cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
+    }
+    else // 연출 시작 전 대기 (13.5초 이전)
+    {
+        targetPos = P0;
+        targetRot = R0;
+    }
+
+    if(!_isOpeningEnd)
+    {
+        cameraObject->transform()->set_local_position(targetPos);
+        cameraObject->transform()->set_local_rotation(targetRot.x, targetRot.y, targetRot.z);
+    }
+
+    _logo_ui_background_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+
+    // 다 끝나고 넘기기
+    {
+        //_isOpeningEnd = true;
+        //_currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
+    }
 }

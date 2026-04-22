@@ -29,6 +29,12 @@ void FreeCameraScript::update(float delta_time)
 
 void FreeCameraScript::late_update(float delta_time)
 {
+    if(_isSinamaticCameraMode)
+    {
+        // 시네마틱 카메라 모드에서는 입력을 무시합니다.
+        return;
+	}
+
     if (InputManager::instance()->IsKeyDown('L')) // 'L' 키 입력 감지 (한 번만)
     {
         _isFreeCameraMode = !_isFreeCameraMode; // 자유 카메라 모드 토글
@@ -65,7 +71,7 @@ void FreeCameraScript::player_camera_update(float delta_time)
     // 창이 활성화되어 있고 커서가 숨겨진 상태일 때만 입력을 처리합니다.
     if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
-        transform()->set_local_position({ 0.f, 0.f, 0.f });
+       // transform()->set_local_position({ 0.f, 0.f, 0.f });
         process_mouse_input(delta_time);
 
         // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
@@ -113,7 +119,14 @@ void FreeCameraScript::process_keyboard_input(float delta_time)
     }
     if (InputManager::instance()->IsKeyPress(VK_SUBTRACT))
     {
-        _moveSpeed -= 2.0f;
+        if(_moveSpeed > 1.f)
+        {
+            _moveSpeed -= 2.0f;
+            if(_moveSpeed < 1.f)
+            {
+                _moveSpeed = 1.f;
+            }
+        }
     }
 
     if (InputManager::instance()->IsKeyPress('W'))

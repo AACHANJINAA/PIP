@@ -35,6 +35,9 @@ public:
     void play(const std::string& name, SoundType type = SoundType::SFX, float volume = 1.0f, bool is_loop = false);
     void play_3d(const std::string& name, const XMFLOAT3& position, SoundType type = SoundType::SFX, float volume = 1.0f, bool is_loop = false);
 
+	// 사운드 정지
+	void stop(const std::string& name);
+
 	// 재생중인지 확인하는 함수 -> 사운드 이름으로 현재 재생 중인 채널이 있는지 체크
     bool is_playing(const std::string& name);
 
