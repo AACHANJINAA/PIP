@@ -95,8 +95,7 @@ private:
     {
         XMFLOAT4 BaseColorFactor;
 
-        XMFLOAT3 EmissiveFactor;
-        float MetallicFactor;
+        XMFLOAT4 EmissiveAndMetallicFactor; // RGB: Emissive, A: Metallic
 
         float RoughnessFactor;
         float NormalTextureScale;
@@ -113,11 +112,17 @@ private:
         float SpecularFactor;
         float pad0;                  
 
+        // --- [중요] C++ 구조체에도 채널 정보를 반드시 추가해야 HLSL과 위치가 맞습니다 ---
+        int BaseColorUVChannel;
+        int NormalUVChannel;
+        int MetallicRoughnessUVChannel;
+        int EmissiveUVChannel;
+
         // UV Transform 추가
         XMFLOAT2 BaseColorUVOffset;
         XMFLOAT2 BaseColorUVScale;
         float BaseColorUVRotation;
-        float pad1;
+        int pad1;
 
         XMFLOAT2 NormalUVOffset;
         XMFLOAT2 NormalUVScale;
@@ -164,6 +169,7 @@ private:
         int base_color_uv_channel = 0;
         int normal_uv_channel = 0;
         int metallic_roughness_uv_channel = 0;
+        int emissive_uv_channel;
 
         // KHR_texture_transform 지원 추가
         XMFLOAT2 base_color_uv_offset = { 0.0f, 0.0f };
@@ -177,6 +183,10 @@ private:
         XMFLOAT2 metallic_roughness_uv_offset = { 0.0f, 0.0f };
         XMFLOAT2 metallic_roughness_uv_scale = { 1.0f, 1.0f };
         float metallic_roughness_uv_rotation = 0.0f;
+
+        XMFLOAT2 emissive_uv_offset = { 0.0f, 0.0f };
+        XMFLOAT2 emissive_uv_scale = { 1.0f, 1.0f };
+        float emissive_uv_rotation = 0.0f;
     };
 
     // --- GPU 리소스 ---

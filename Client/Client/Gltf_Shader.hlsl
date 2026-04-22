@@ -8,8 +8,9 @@ cbuffer cbMaterial : register(b2)
 {
     float4 BaseColorFactor;
     
-    float3 EmissiveFactor;
-    float MetallicFactor; // float3 뒤에 바로 붙어서 16바이트를 채움 (Offset 28)
+    float4 EmissiveAndMetallicFactor; // RGB: Emissive, A: Metallic (Offset 16)
+	#define EmissiveFactor (EmissiveAndMetallicFactor.rgb)
+	#define MetallicFactor (EmissiveAndMetallicFactor.a)
 
     float RoughnessFactor; // 다음 16바이트 레지스터 시작 (Offset 32)
     float NormalTextureScale;
@@ -25,6 +26,12 @@ cbuffer cbMaterial : register(b2)
     int HasOcclusionTexture;
     float SpecularFactor;
     float _pad0; // 16바이트 정렬을 위한 패딩
+
+// --- UV Channels ---
+    int BaseColorUVChannel;
+    int NormalUVChannel;
+    int MetallicRoughnessUVChannel;
+    int EmissiveUVChannel;
 
     // --- C++에는 있지만 HLSL에는 빠져있던 UV Transform 변수들 추가 ---
     float2 BaseColorUVOffset;
@@ -236,8 +243,8 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     }
     
 // Metallic이 너무 높은가?  -> 싹다 검은색 문제 있다 이거
-// return float4(metallic.xxx, 1.0);
+   //return float4(metallic.x, 0.0, 0.0, 1.0);
     
-    
+    //return float4(iblColor, 1.0);
     return float4(finalColor, diffuseSample.a);
 }

@@ -462,7 +462,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
             if (pbr.contains("baseColorFactor")) {
                 new_mat_info.base_color_factor = { pbr["baseColorFactor"][0], pbr["baseColorFactor"][1], pbr["baseColorFactor"][2], pbr["baseColorFactor"][3] };
             }
-            new_mat_info.metallic_factor = pbr.value("metallicFactor", 0.0f);
+            new_mat_info.metallic_factor = pbr.value("metallicFactor", 1.0f);
             new_mat_info.roughness_factor = pbr.value("roughnessFactor", 0.7f);
             if (mat_json.contains("emissiveFactor")) {
                     new_mat_info.emissive_factor = { mat_json["emissiveFactor"][0], mat_json["emissiveFactor"][1], mat_json["emissiveFactor"][2] };
@@ -534,14 +534,15 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
                 new_mat_info.normal_texture_scale = mat_json["normalTexture"].value("scale", 1.0f);
             }
 
+            // 546번 라인 근처 (emissiveTexture UV 버그 수정)
             if (mat_json.contains("emissiveTexture"))
                 assign_texture(mat_json["emissiveTexture"],
                     new_mat_info.emissive_texture_path,
                     true,
-					new_mat_info.base_color_uv_channel,
-                    new_mat_info.base_color_uv_offset,
-                    new_mat_info.base_color_uv_scale,
-                    new_mat_info.base_color_uv_rotation);
+                    new_mat_info.emissive_uv_channel,
+                    new_mat_info.emissive_uv_offset,
+                    new_mat_info.emissive_uv_scale,
+                    new_mat_info.emissive_uv_rotation);
 
             if (mat_json.contains("occlusionTexture"))
                 assign_texture(mat_json["occlusionTexture"],
@@ -649,8 +650,13 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     // 1. 상수 버퍼 내용 업데이트
     GltfMaterialConstantBuffer constants;
     constants.BaseColorFactor = mat_info.base_color_factor;
-    constants.EmissiveFactor = mat_info.emissive_factor;
-    constants.MetallicFactor = mat_info.metallic_factor;
+    // Emissive(RGB) + Metallic(A)를 하나의 XMFLOAT4에 담음
+    constants.EmissiveAndMetallicFactor = XMFLOAT4(
+        mat_info.emissive_factor.x,
+        mat_info.emissive_factor.y,
+        mat_info.emissive_factor.z,
+        mat_info.metallic_factor
+    );
     constants.RoughnessFactor = mat_info.roughness_factor;
     constants.NormalTextureScale = mat_info.normal_texture_scale;
     constants.AlphaCutoff = mat_info.alpha_cutoff;
@@ -666,6 +672,11 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
     constants.HasEmissiveTexture = !mat_info.emissive_texture_path.empty();
     constants.HasOcclusionTexture = !mat_info.occlusion_texture_path.empty();
     constants.SpecularFactor = mat_info.specular_factor;
+
+    constants.BaseColorUVChannel = mat_info.base_color_uv_channel;
+    constants.NormalUVChannel = mat_info.normal_uv_channel;
+    constants.MetallicRoughnessUVChannel = mat_info.metallic_roughness_uv_channel;
+    constants.EmissiveUVChannel = mat_info.emissive_uv_channel;
 
     // UV Transform 값 복사 추가
     constants.BaseColorUVOffset = mat_info.base_color_uv_offset;

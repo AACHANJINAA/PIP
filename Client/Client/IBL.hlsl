@@ -109,13 +109,23 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
     // IBL 통합 함수
 float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float roughness, float ao)
 {
-	// 1. Diffuse IBL 계산
-	float3 diffuse = CalculateDiffuseIBL(N, albedo, metallic);
+	// 1. Diffuse IBL 계산 (주로 비금속 재질의 색감을 담당)
+    float3 diffuse = CalculateDiffuseIBL(N, albedo, metallic);
 
-	// 2. Specular IBL 계산
+    // 2. Specular IBL 계산
     float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
-	// 3. Diffuse + Specular 합산 후 AO 적용
-	return (diffuse + specular) * ao; 
+    // 3. Metallic 수치에 따라 Specular 강도를 부드럽게 조절
+    // Metallic이 0에 가까울수록(집, 나무) 스페큘러를 대폭 줄이고,
+    // Metallic이 1에 가까울수록(헬멧) 원래의 스페큘러를 유지합니다.
+    
+    // 비금속일 때의 최소 스페큘러 강도를 설정
+    float minSpecularIntensity = 0.01f;
+    float specularScale = lerp(minSpecularIntensity, 0.9f, metallic);
+    
+    specular *= specularScale;
+
+    // 4. 합산 후 AO 적용
+    return (diffuse + specular) * ao;
 }
 #endif // _IBL_HLSL_
