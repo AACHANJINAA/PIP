@@ -386,3 +386,4 @@ Content/Developers/
 
 .gemini/
 gha-creds-*.json
+*.jbin

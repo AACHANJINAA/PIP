@@ -89,6 +89,7 @@ using namespace DirectX;
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Core/StreamWrapper.h>
 
 // Jolt 관련 편의를 위한 using
 using namespace JPH::literals; // 1.0_r 같은 리터럴 사용 시

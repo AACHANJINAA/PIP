@@ -94,7 +94,10 @@ namespace PIP
 				m[8], m[9], m[10], m[11],
 				m[12], m[13], m[14], m[15]
 			);
-			localMat = XMLoadFloat4x4(&mat4x4);
+			// [수정] 클라이언트와 동일하게 Z-Flip 행렬 적용
+			DirectX::XMMATRIX raw_mat = XMLoadFloat4x4(&mat4x4);
+			DirectX::XMMATRIX z_flip = DirectX::XMMatrixScaling(1.0f, 1.0f, -1.0f);
+			localMat = z_flip * raw_mat * z_flip;
 		}
 		else
 		{
@@ -104,11 +107,18 @@ namespace PIP
 
 			XMMATRIX rot_mat = XMMatrixIdentity();
 			if (node.contains("rotation"))
-				rot_mat = XMMatrixRotationQuaternion(XMVectorSet(node["rotation"][0].get<float>(), node["rotation"][1].get<float>(), node["rotation"][2].get<float>(), node["rotation"][3].get<float>()));
+				rot_mat = XMMatrixRotationQuaternion(XMVectorSet(
+					-node["rotation"][0].get<float>(), 
+					-node["rotation"][1].get<float>(), 
+					node["rotation"][2].get<float>(), 
+					node["rotation"][3].get<float>()));
 
 			XMMATRIX trans_mat = XMMatrixIdentity();
 			if (node.contains("translation"))
-				trans_mat = XMMatrixTranslation(node["translation"][0].get<float>(), node["translation"][1].get<float>(), node["translation"][2].get<float>());
+				trans_mat = XMMatrixTranslation(
+					node["translation"][0].get<float>(), 
+					node["translation"][1].get<float>(), 
+					-node["translation"][2].get<float>());
 
 			localMat = scale_mat * rot_mat * trans_mat;
 		}
@@ -153,7 +163,8 @@ namespace PIP
 
 			for (const auto& p : positions)
 			{
-				XMVECTOR posVec = XMLoadFloat3(&p);
+				XMFLOAT3 lhPos(p.x, p.y, -p.z); // TODO: 문제있으면 -z해볼것
+				XMVECTOR posVec = XMLoadFloat3(&lhPos);
 				posVec = XMVector3Transform(posVec, worldMat);
 				
 				XMFLOAT3 finalPos;
@@ -190,15 +201,10 @@ namespace PIP
 					memcpy(meshData.indices.data(), dataPtr, count * sizeof(uint32_t));
 				}
 			}
-			if (isMirrored)
+			/*for (size_t i = 0; i < meshData.indices.size(); i += 3)
 			{
-				// 축이 뒤집힌(Mirrored) 메쉬라면 삼각형의 Winding Order를 반전시켜
-				// "안팎이 뒤집히는" 현상을 방지합니다.
-				for (size_t i = 0; i < meshData.indices.size(); i += 3)
-				{
-					std::swap(meshData.indices[i + 1], meshData.indices[i + 2]);
-				}
-			}
+				std::swap(meshData.indices[i + 1], meshData.indices[i + 2]);
+			}*/
 			outMeshes.push_back(std::move(meshData));
 		}
 	}
