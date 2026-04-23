@@ -156,33 +156,132 @@ namespace PIP
 		MYLOG("Total Landscapes & Shapes Loaded: " << _terrainTiles.size());
 	}
 
-	void MapDataManager::LoadStaticMeshShapes(const std::string& tileName, std::string_view gltfPath)
+	void MapDataManager::LoadStaticMeshShapes(const std::string& tileName, std::string_view jsonPath, bool enableBinSave)
 	{
-		auto meshes = glTFMeshLoader::LoadStaticMesh(gltfPath.data());
+		namespace fs = std::filesystem;
 
-		JPH::TriangleList allTriangles;
-		for (const auto& meshData : meshes) {
-			
-			for (size_t i = 0; i < meshData.indices.size(); i += 3) {
-				allTriangles.push_back(JPH::Triangle(
-					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i]]),
-					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 1]]),
-					PIP::Utils::ToJolt(meshData.vertices[meshData.indices[i + 2]])
-				));
-			}
+		// 1. JSON 파일 경로 및 부모 폴더(basePath) 설정
+		fs::path jsonFullPath(jsonPath);
+		fs::path basePath = jsonFullPath.parent_path();
 
+		// 2. JSON 파일 열기
+		std::ifstream file(jsonFullPath);
+		if (!file.is_open()) {
+			MYERROR("[MapData] Scene file load error: " << jsonFullPath);
+			return;
 		}
 
-		if (!allTriangles.empty()) {
-			JPH::MeshShapeSettings settings(allTriangles);
-			auto result = settings.Create();
-
-			if (result.IsValid()) {
-				// 2292개의 Body 대신, "Tile-1-1"이라는 이름의 거대한 Shape 딱 하나만 저장!
-				_staticMeshTiles.push_back({ tileName, "Merged_StaticMeshes", result.Get() });
-			}
+		nlohmann::json sceneJson;
+		try {
+			file >> sceneJson;
+			file.close();
 		}
-		MYLOG("Merged " << meshes.size() << " primitives into 1 Single Physics Shape for tile: " << tileName);
+		catch (const nlohmann::json::exception& e) {
+			MYERROR("[MapData] Scene file parse error: " << e.what());
+			return;
+		}
+
+		// 메모리 캐시: "메쉬이름_ScaleX_ScaleY_ScaleZ"를 키로 사용
+		std::unordered_map<std::string, JPH::ShapeRefC> meshLibrary;
+
+		// 3. JSON 배열 순회
+		for (const auto& objectJson : sceneJson) {
+			std::string meshFile = objectJson.value("MeshFile", "");
+			if (meshFile.empty()) continue;
+
+			// 클라이언트와 동일한 메쉬 경로 생성: (JSON 폴더) / (MeshFile 경로)
+			fs::path meshPath = basePath / meshFile;
+			std::string meshName = meshPath.stem().string();
+
+			const auto& transJson = objectJson["Transform"];
+			JPH::Vec3 scale(
+				transJson["Scale"].value("X", 1.0f),
+				transJson["Scale"].value("Y", 1.0f),
+				transJson["Scale"].value("Z", 1.0f)
+			);
+
+			char scaleStr[128];
+			sprintf_s(scaleStr, "_%.3f_%.3f_%.3f", scale.GetX(), scale.GetY(), scale.GetZ());
+			std::string libKey = meshName + scaleStr;
+			fs::path cachePath = meshPath.parent_path() / (libKey + ".jbin");
+
+			// 3. Shape 생성 또는 로드
+			if (meshLibrary.find(libKey) == meshLibrary.end()) {
+				JPH::ShapeRefC finalShape;
+
+				// [LOAD] 바이너리 캐시 확인
+				if (fs::exists(cachePath)) {
+					std::ifstream ifile(cachePath, std::ios::binary);
+					JPH::StreamInWrapper stream(ifile);
+					auto res = JPH::Shape::sRestoreFromBinaryState(stream);
+					if (res.IsValid()) {
+						finalShape = res.Get();
+						MYLOG("[MapData] 캐시 로드 성공: " << libKey);
+					}
+				}
+
+				// [BUILD & BAKE] 캐시가 없으면 glTF 로드 후 스케일 굽기
+				if (!finalShape) {
+					auto meshes = glTFMeshLoader::LoadStaticMesh(meshPath.string());
+					if (!meshes.empty()) {
+						JPH::TriangleList triangles;
+						for (const auto& m : meshes) {
+							for (size_t i = 0; i < m.indices.size(); i += 3) {
+								// ★★★ 정점에 스케일을 직접 곱해서 굽습니다 (Bake) ★★★
+								triangles.push_back(JPH::Triangle(
+									PIP::Utils::ToJolt(m.vertices[m.indices[i]]) * scale,
+									PIP::Utils::ToJolt(m.vertices[m.indices[i + 1]]) * scale,
+									PIP::Utils::ToJolt(m.vertices[m.indices[i + 2]]) * scale
+								));
+							}
+						}
+
+						JPH::MeshShapeSettings settings(triangles);
+						settings.Sanitize(); // 수치 안정성 확보를 위해 필수 호출
+
+						auto result = settings.Create();
+						if (result.IsValid()) {
+							finalShape = result.Get();
+							if (enableBinSave)
+							{
+								// [SAVE] 구워진 Shape를 바이너리로 저장
+								std::ofstream ofile(cachePath, std::ios::binary);
+								if (ofile.is_open()) {
+									JPH::StreamOutWrapper stream(ofile);
+									finalShape->SaveBinaryState(stream);
+									MYLOG("[MapData] 캐시 생성 및 저장: " << cachePath.filename().string());
+								}
+							}
+						}
+						else 
+						{
+							MYERROR("[MapData] Shape 생성 실패: " << libKey);
+						}
+					}
+				}
+
+				if (finalShape) meshLibrary[libKey] = finalShape;
+			}
+
+			if (!meshLibrary.contains(libKey)) continue;
+
+			// 4. 위치 및 회전만 적용하여 배치 (Scale은 이미 Shape에 구워짐)
+			JPH::Vec3 pos(
+				transJson["Location"].value("X", 0.0f),
+				transJson["Location"].value("Y", 0.0f),
+				transJson["Location"].value("Z", 0.0f)
+			);
+			JPH::Quat rot(
+				transJson["Rotation"].value("X", 0.0f),
+				transJson["Rotation"].value("Y", 0.0f),
+				transJson["Rotation"].value("Z", 0.0f),
+				transJson["Rotation"].value("W", 1.0f)
+			);
+
+			_staticMeshTiles.push_back({ tileName, meshName, meshLibrary[libKey], pos, rot });
+		}
+
+		MYLOG("[MapData] Scene '" << jsonFullPath.filename().string() << "' 로드 완료.");
 	}
 	void MapDataManager::LoadAllStaticMeshes(std::string_view baseDirPath)
 	{

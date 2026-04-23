@@ -45,7 +45,7 @@ namespace PIP
 		const std::vector<TerrainTile>& GetTerrainTiles() const { return _terrainTiles; }
 
 		// glTF에서 Shape들을 생성하여 보관 (서버 시작 시 한 번만 호출)
-		void LoadStaticMeshShapes(const std::string& tileName, std::string_view gltfPath);
+		void LoadStaticMeshShapes(const std::string& tileName, std::string_view jsonPath, bool enableBinSave = false);
 		void LoadAllStaticMeshes(std::string_view baseDirPath); ;// [추가] 특정 폴더 내의 모든 Tile_... 형식의 glTF를 자동 로드
 		void LoadExportedScene(const std::string& groupName, std::string_view jsonPath);
 		void LoadServerExportData(const std::string& groupName, std::string_view jsonPath); // [추가] 모델러가 제공한 서버용 JSON 데이터 로드
