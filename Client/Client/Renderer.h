@@ -2,6 +2,7 @@
 #include "CameraComponent.h"
 #include "RootSignature.h"
 #include "Shader.h"
+#include "Mesh.h"
 
 class GameObject;
 class Camera;
@@ -37,6 +38,11 @@ private:
     void build_render_list(const CameraComponent* camera);
     void draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
 
+    std::shared_ptr<Mesh> _unitCube; // 쿼리용 단위 큐브
+    void render_pso_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, CameraComponent* camera, UINT frame_index);
+    void draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
+
+
     // [변경] 개별 ComPtr 대신, 이름으로 루트 시그니처를 관리하는 map을 사용합니다.
     std::unordered_map<std::string, ComPtr<ID3D12RootSignature>> _rootSignatures;
     std::unordered_map<std::string, ComPtr<ID3D12PipelineState>> _pipelineStates;
@@ -63,4 +69,6 @@ private:
     // 프레임당 할당 가능한 최대 디스크립터 수 
     // DW설명 : 스왑체인 버퍼 수에 맞춰서 우리가 할당한 디스크립터 힙의 개수를 나누어야 함
     UINT _max_descriptors_per_frame = 0;
+
+    std::shared_ptr<Mesh> _unit_cube;
 };

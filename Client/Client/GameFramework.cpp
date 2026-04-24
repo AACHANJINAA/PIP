@@ -516,9 +516,9 @@ void GameFramework::FrameAdvance()
 		currentScene->render_post_process(_commandList.Get(), _swapChainBufferIndex);
 	}
 
-	MinimapManager::instance()->update_player_position({0, 0, 0});
+	//MinimapManager::instance()->update_player_position({0, 0, 0});
 	
-	MinimapManager::instance()->render(_commandList.Get(), _swapChainBufferIndex);
+	//MinimapManager::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
 	// 화면 맨 위에 ImGui 그리기 명령 전달
 	ImGuiManager::instance()->render(_commandList.Get());

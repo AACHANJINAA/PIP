@@ -156,6 +156,8 @@
     <ClInclude Include="NPCScript.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="OcclusionManager.h" />
+    <ClInclude Include="OcclusionQueryShader.h" />
     <ClInclude Include="OtherPlayerScript.h" />
     <ClInclude Include="PhysicsCharacterControllerComponent.h" />
     <ClInclude Include="PhysicsColliderComponent.h" />
@@ -281,6 +283,8 @@
     <ClCompile Include="NPCScript.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="OcclusionManager.cpp" />
+    <ClCompile Include="OcclusionQueryShader.cpp" />
     <ClCompile Include="OtherPlayerScript.cpp" />
     <ClCompile Include="PhysicsCharacterControllerComponent.cpp" />
     <ClCompile Include="PhysicsColliderComponent.cpp" />
@@ -394,6 +398,10 @@
     <FxCompile Include="Minimap_shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="OcclusionQuery.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shadow_Depth.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

@@ -115,12 +115,8 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     // 2. Specular IBL 계산
     float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
-    // 3. Metallic 수치에 따라 Specular 강도를 부드럽게 조절
-    // Metallic이 0에 가까울수록(집, 나무) 스페큘러를 대폭 줄이고,
-    // Metallic이 1에 가까울수록(헬멧) 원래의 스페큘러를 유지합니다.
-    
-    // metalic 수치일 때의 최소 스페큘러 강도를 설정
-    float specularScale = 1.0f; //= lerp(0.01f, 0.1f, metallic);
+    // 3. Metalic 수치일 때의 최소 스페큘러 강도를 설정
+    float specularScale = 1.0f;
     if(metallic < 0.1f) specularScale = 0.0f;
     
     specular *= specularScale;

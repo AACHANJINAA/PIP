@@ -27,6 +27,8 @@
 #include "DebugDrawManager.h"
 #include "LightManager.h"
 #include "RenderComponent.h"
+#include "OcclusionManager.h"
+#include "OcclusionQueryShader.h"
 
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
@@ -39,6 +41,8 @@ void Renderer::initialize(ID3D12Device* device)
     _device = device;
     
     _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); 
+    _unitCube = Mesh::create_unit_cube();
+    OcclusionManager::instance()->initialize(device, 10000);
 
     create_dynamic_descriptor_heap(1000000);
 
@@ -55,6 +59,7 @@ void Renderer::initialize(ID3D12Device* device)
 	_rootSignatureGenerators.push_back(std::make_unique<CsmDepthSkinnedRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<UIFrameRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<MinimapRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<OcclusionRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -100,6 +105,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto minimap_shader = std::make_shared<MinimapShader>();
     _shaderPrototypes[minimap_shader->pso_name()] = minimap_shader;
+
+    auto occlusion_shader = std::make_shared<OcclusionQueryShader>();
+    _shaderPrototypes[occlusion_shader->pso_name()] = occlusion_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -153,7 +161,8 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-    draw_render_list(commandList, camera,  frame_index);
+	draw_render_list(commandList, camera, frame_index);
+    //draw_render_occlusion_culling_list(commandList, camera,  frame_index);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
     // [수정] viewProj가 아니라 frame_index를 넘겨야 합니다!
@@ -386,6 +395,167 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     }
 }
 
+void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, CameraComponent* camera, UINT frame_index) {
+    auto it = _renderMap.find(psoName);
+    if (it == _renderMap.end() || it->second.empty()) return;
+
+    // 디스크립터 힙 설정 (SRV 테이블 사용을 위해 필수)
+    ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
+    commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+    // PSO 및 루트 시그니처 설정
+    ID3D12PipelineState* pso = get_pso(psoName);
+    auto proto_it = _shaderPrototypes.find(psoName);
+    if (pso == nullptr || proto_it == _shaderPrototypes.end()) return;
+
+    auto& proto = proto_it->second;
+    commandList->SetPipelineState(pso);
+    commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+
+    // 셰이더별 바인딩 분기 (기존과 동일)
+    if (psoName == "gltf" || psoName == "skinned") {
+        LightManager::instance()->bind(commandList, 3);
+        ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+    }
+    else if (psoName == "terrain") {
+        LightManager::instance()->bind(commandList, 3);
+        // [수정] Terrain은 ShadowManager의 bind_for_lighting(6, 7)을 사용함
+        ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
+    }
+
+    if (camera) camera->update_shader_variables(commandList, frame_index);
+
+    for (auto& obj : it->second) {
+        if (!obj) continue;
+        proto->update_per_object(commandList, this, obj.get());
+        obj->prepare_render();
+        obj->get_component<RenderComponent>()->render(commandList, frame_index);
+    }
+}
+void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index) {
+    // 1. Terrain (Occluder) 그리기
+    render_pso_group(commandList, "terrain", camera, frame_index);
+
+    // 2. Query Pass (가려짐 여부 판정용 박스 그리기)
+    auto occ_pso = get_pso("occlusion_query");
+    auto occ_sig = get_root_signature("occlusion_sig");
+    if (occ_pso && occ_sig && _unitCube) {
+        commandList->SetPipelineState(occ_pso);
+        commandList->SetGraphicsRootSignature(occ_sig);
+        camera->update_shader_variables(commandList, frame_index);
+
+        std::vector<std::string> culling_targets = { "gltf", "skinned" };
+        for (const auto& target : culling_targets) {
+            auto it = _renderMap.find(target);
+            if (it == _renderMap.end()) continue;
+
+            for (auto& obj : it->second) {
+                auto rc = obj->get_component<RenderComponent>();
+                if (!rc) continue;
+                XMMATRIX boxWorld = rc->get_occlusion_box_world_matrix();
+                commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
+
+                commandList->BeginQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
+                _unitCube->render(commandList);
+                commandList->EndQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
+            }
+        }
+    }
+
+    // 3. Resolve (결과 업데이트)
+    OcclusionManager::instance()->resolve_queries(commandList, frame_index);
+
+    // 4. 실제 렌더링 (Predicated Render)
+    ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
+
+    // gltf와 skinned를 각각 독립적인 그룹으로 처리하여 루트 시그니처 충돌 방지
+    std::vector<std::string> render_targets = { "gltf", "skinned" };
+
+    for (const auto& target : render_targets) {
+        auto it = _renderMap.find(target);
+        if (it == _renderMap.end() || it->second.empty()) continue;
+
+        // --- 여기서부터 render_pso_group의 로직과 동일하게 설정 ---
+        ID3D12PipelineState* pso = get_pso(target);
+        auto proto_it = _shaderPrototypes.find(target);
+        if (!pso || proto_it == _shaderPrototypes.end()) continue;
+
+        auto& proto = proto_it->second;
+        commandList->SetPipelineState(pso);
+        commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+
+        // 공통 바인딩
+        LightManager::instance()->bind(commandList, 3);
+        ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+        if (camera) camera->update_shader_variables(commandList, frame_index);
+
+        for (auto& obj : it->second) {
+            auto rc = obj->get_component<RenderComponent>();
+            if (!rc) continue;
+
+            if (target == "skinned") // DW설명 : 애니메이션 컴포넌트에서 뼈대 상수 버퍼 주소 받아오기
+            {
+                auto animComp = obj->get_component<AnimationComponent>();
+                if (animComp)
+                {
+                    // AnimationComponent(선형 할당기)에서 받아둔 뼈대 주소 획득
+                    D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+
+                    if (boneGpuAddr != 0)
+                    {
+                        // 12번 루트 파라미터(b4 레지스터)에 뼈대 상수 버퍼 바인딩
+                        commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
+                    }
+                }
+            }
+
+            // 본 행렬 등 객체별 데이터 바인딩 (찢어짐 방지 핵심)
+            proto->update_per_object(commandList, this, obj.get());
+            obj->prepare_render();
+
+            // [핵심] Draw Call만 조건부 실행
+            commandList->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
+            rc->render(commandList, frame_index);
+            commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
+        }
+
+        // 5. Skybox 렌더링 (오클루전 컬링 제외)
+        auto itSky = _renderMap.find("skybox");
+        if (itSky != _renderMap.end() && !itSky->second.empty()) {
+            const std::string psoName = "skybox";
+            ID3D12PipelineState* pso = get_pso(psoName);
+            auto proto_it = _shaderPrototypes.find(psoName);
+
+            if (pso && proto_it != _shaderPrototypes.end()) {
+                auto& proto = proto_it->second;
+                commandList->SetPipelineState(pso);
+                commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+
+                // Skybox 전용 상수 데이터 바인딩 (슬롯 2)
+                if (camera && camera->get_cb_skybox()) {
+                    D3D12_GPU_VIRTUAL_ADDRESS cbAddress = camera->get_cb_skybox()->GetGPUVirtualAddress();
+                    commandList->SetGraphicsRootConstantBufferView(2, cbAddress);
+                }
+
+                // Skybox 텍스처 바인딩 (슬롯 4)
+                D3D12_CPU_DESCRIPTOR_HANDLE skybox_cpu_handle = ResourceManager::instance()->get_skybox_srv_cpu();
+                if (skybox_cpu_handle.ptr == 0) {
+                    skybox_cpu_handle = ResourceManager::instance()->get_texture("__DEFAULT_BLACK__")->cpu_handle;
+                }
+                bind_texture_table(commandList, 4, { skybox_cpu_handle });
+
+                if (camera) camera->update_shader_variables(commandList, frame_index);
+
+                for (const auto& gameObject : itSky->second) {
+                    auto renderComp = gameObject->get_component<RenderComponent>();
+                    if (renderComp && renderComp->is_enabled()) {
+                        renderComp->render(commandList, frame_index);
+                    }
+                }
+            }
+        }
+    }
+}
 ID3D12RootSignature* Renderer::get_root_signature(const std::string& name) const
 {
     // _rootSignatures 맵에서 'name'을 키로 가지는 원소를 찾습니다.

@@ -71,6 +71,39 @@ void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandLis
 	/*_isUploaded = true;*/
 }
 
+std::shared_ptr<Mesh> Mesh::create_unit_cube()
+{
+	// 1. 큐브 정점 데이터 (8개) - 생성자 호출 방식으로 오류 방지
+	std::vector<Vertex> temp_vertices;
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(-0.5f, -0.5f, -0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(0.5f, -0.5f, -0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(0.5f, 0.5f, -0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(-0.5f, 0.5f, -0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(-0.5f, -0.5f, 0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(0.5f, -0.5f, 0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(0.5f, 0.5f, 0.5f)));
+	temp_vertices.emplace_back(Vertex(XMFLOAT3(-0.5f, 0.5f, 0.5f)));
+
+	// 2. 큐브 인덱스 데이터 (36개)
+	std::vector<UINT> temp_indices = {
+		0, 2, 1, 0, 3, 2, // 앞
+		1, 2, 6, 1, 6, 5, // 우
+		4, 5, 6, 4, 6, 7, // 뒤
+		0, 4, 7, 0, 7, 3, // 좌
+		3, 7, 6, 3, 6, 2, // 상
+		0, 1, 5, 0, 5, 4  // 하
+	};
+
+	auto mesh = std::make_shared<Mesh>();
+
+	// 3. 기존 Mesh 시스템의 데이터 버퍼에 적재
+	mesh->set_vertex_data_buffer(temp_vertices);
+	mesh->_indices = temp_indices;
+	mesh->_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; // 큐브는 삼각형으로!
+
+	return mesh;
+}
+
 void Mesh::	upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue)
 {
 	// 1. 기존 내부 로직(버퍼 생성 및 복사 명령 기록) 실행
