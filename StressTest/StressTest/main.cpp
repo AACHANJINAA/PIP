@@ -93,13 +93,45 @@ int main()
     // Logic Thread (Update Loop)
     std::thread logic_thread([&]() {
         auto last_time = std::chrono::steady_clock::now();
+        auto last_print_time = last_time;
+
         while (!g_stop) {
             auto now = std::chrono::steady_clock::now();
             float dt = std::chrono::duration<float>(now - last_time).count();
             last_time = now;
 
+            uint64_t total_latency = 0;
+            int ingame_bots = 0;
+            std::unordered_map<BotState, int> state_counts;
+
             for (auto& bot : bots) {
                 bot->Update(dt);
+                BotState state = bot->GetState();
+                state_counts[state]++;
+                
+                if (state == BotState::INGAME) {
+                    total_latency += bot->GetLastLatency();
+                    ingame_bots++;
+                }
+            }
+
+            // 1초마다 상태 요약 및 평균 지연 시간 출력
+            auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_print_time).count();
+            if (elapsed_ms >= 1000) {
+                std::lock_guard<std::mutex> lock(g_log_mutex);
+                std::cout << "[Bot Status] Total: " << bots.size() 
+                          << ", INGAME: " << ingame_bots 
+                          << ", WAIT: " << state_counts[BotState::ROOM_WAIT]
+                          << ", READY: " << state_counts[BotState::READY]
+                          << ", LOGIN: " << state_counts[BotState::LOGGING_IN];
+
+                if (ingame_bots > 0) {
+                    float avg_latency = static_cast<float>(total_latency) / ingame_bots;
+                    std::cout << " | Avg RTT: " << avg_latency << " ms";
+                }
+                std::cout << std::endl;
+
+                last_print_time = now;
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(33));

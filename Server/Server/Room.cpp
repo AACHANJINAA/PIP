@@ -730,6 +730,7 @@ namespace PIP::SERVER
 				res._rotation = player->GetRotation();
 				res._state = player->GetState();
 				res._action_id = player->GetActionId();
+				res._client_tick = player->GetLastClientTick();
 				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
 				player->SyncSentData();
 			}
@@ -1348,6 +1349,7 @@ namespace PIP::SERVER
 		}
 
 		// 상태 동기화 (기존 로직 유지)
+		player->SetLastClientTick(move_packet._client_tick);
 		player->SetRotation(move_packet._rotation);
 		player->SetState(move_packet._state);
 		player->SetActionId(move_packet._action_id);

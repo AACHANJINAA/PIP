@@ -222,11 +222,22 @@ inline std::vector<int> GetPerformanceCoreIndices() {
     std::vector<int> p_cores;
 
 #ifdef _WIN32
+    // 0. CPU 제조사 확인 (Intel이 아니면 필터링하지 않음)
+    int cpuInfo[4];
+    __cpuid(cpuInfo, 0);
+    char vendor[13];
+    memset(vendor, 0, sizeof(vendor));
+    *reinterpret_cast<int*>(vendor) = cpuInfo[1];
+    *reinterpret_cast<int*>(vendor + 4) = cpuInfo[3];
+    *reinterpret_cast<int*>(vendor + 8) = cpuInfo[2];
+
+    bool isIntel = (strcmp(vendor, "GenuineIntel") == 0);
+
     // Windows 10/11 방식 (Intel Hybrid, AMD, ARM64 지원)
     ULONG returnLength = 0;
     GetSystemCpuSetInformation(nullptr, 0, &returnLength, GetConsoleWindow(), 0);
 
-    if (returnLength == 0) return {}; // 실패 시 빈 벡터 반환
+    if (returnLength == 0) return {}; 
 
     std::vector<char> buffer(returnLength);
     PSYSTEM_CPU_SET_INFORMATION cpuSets = reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data());
@@ -235,27 +246,35 @@ inline std::vector<int> GetPerformanceCoreIndices() {
         return {};
     }
 
-    // 1단계: 가장 높은 EfficiencyClass(성능 등급) 값을 찾음
-    int maxEfficiencyClass = -1;
     int count = returnLength / sizeof(SYSTEM_CPU_SET_INFORMATION);
 
-    for (int i = 0; i < count; ++i) {
-        if (cpuSets[i].Type == CpuSetInformation) {
-            if ((int)cpuSets[i].CpuSet.EfficiencyClass > maxEfficiencyClass) {
-                maxEfficiencyClass = (int)cpuSets[i].CpuSet.EfficiencyClass;
+    // Intel일 경우에만 EfficiencyClass를 기준으로 P-코어를 선별
+    if (isIntel) {
+        int maxEfficiencyClass = -1;
+        for (int i = 0; i < count; ++i) {
+            if (cpuSets[i].Type == CpuSetInformation) {
+                if ((int)cpuSets[i].CpuSet.EfficiencyClass > maxEfficiencyClass) {
+                    maxEfficiencyClass = (int)cpuSets[i].CpuSet.EfficiencyClass;
+                }
+            }
+        }
+
+        for (int i = 0; i < count; ++i) {
+            if (cpuSets[i].Type == CpuSetInformation) {
+                if (cpuSets[i].CpuSet.EfficiencyClass == maxEfficiencyClass) {
+                    p_cores.push_back(cpuSets[i].CpuSet.Id);
+                }
             }
         }
     }
-
-    // 2단계: 가장 높은 등급의 코어 ID만 수집 (이것들이 P코어/Big코어)
-    for (int i = 0; i < count; ++i) {
-        if (cpuSets[i].Type == CpuSetInformation) {
-            if (cpuSets[i].CpuSet.EfficiencyClass == maxEfficiencyClass) {
+    else {
+        // AMD 등 타 제조사는 모든 논리 프로세서를 사용
+        for (int i = 0; i < count; ++i) {
+            if (cpuSets[i].Type == CpuSetInformation) {
                 p_cores.push_back(cpuSets[i].CpuSet.Id);
             }
         }
     }
-
 #else
     // Linux / Android (ARM big.LITTLE, Intel Hybrid, AMD)
     // /sys/devices/system/cpu/cpuN/cpu_capacity 값을 읽어서 판단

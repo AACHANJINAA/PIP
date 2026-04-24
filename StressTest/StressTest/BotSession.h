@@ -10,6 +10,8 @@ namespace PIP::BOT
         CONNECTING,
         LOGGING_IN,
         ENTER_ROOM,
+        ROOM_WAIT,
+        READY,
         INGAME
     };
 
@@ -40,9 +42,10 @@ namespace PIP::BOT
         bool IsRunning() const { return _state != BotState::DISCONNECTED; }
         BotState GetState() const { return _state; }
         SOCKET GetSocket() const { return _socket; }
+        uint32_t GetLastLatency() const { return _last_latency; }
 
     private:
-        common::Vec3 _anchor_pos = { 10.0f, 10.0f, 10.0f }; // ¼­¹ö ½ºÆù À§Ä¡ ±ÙÃ³¸¦ ±âº»°ªÀ¸·Î ¼³Á¤
+        common::Vec3 _anchor_pos = { 10.0f, 10.0f, 10.0f }; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½Ã³ï¿½ï¿½ ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         bool         _is_anchor_set = false;
 
 
@@ -61,8 +64,14 @@ namespace PIP::BOT
         // Movement & Logic State
         common::Vec3        _current_pos = { 0, 0, 0 };
         common::Quat        _current_rot = { 0, 0, 0, 1 };
+        common::Vec3        _move_dir = { 0, 0, 0 }; // [ì¶”ê°€] í˜„ì¬ ì´ë™ ë°©í–¥
+        common::packet::EntityState _entity_state = common::packet::EntityState::IDLE; // [ì¶”ê°€] ì—”í‹°í‹° ìƒíƒœ
+        int32_t             _action_id = 0; // [ì¶”ê°€] ì•¡ì…˜ ID
+        float               _attack_duration = 0.0f; // [ì¶”ê°€] ê³µê²© ì§€ì† ì‹œê°„ìš©
+
         float               _move_timer = 0.0f;
         float               _action_timer = 0.0f;
+        uint32_t            _last_latency = 0; // [ì¶”ê°€] ë§ˆì§€ë§‰ìœ¼ë¡œ ì¸¡ì •ëœ RTT (ms)
 
         // For Smooth Movement (Simulated)
         common::Vec3        _target_pos = { 0, 0, 0 };
