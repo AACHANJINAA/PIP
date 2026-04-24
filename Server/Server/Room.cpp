@@ -1180,9 +1180,9 @@ namespace PIP::SERVER
 		// SC_PACKET_ACTION_NOTIFY(actor_id, action_type, direction) 패킷을 정의하고 
 		// 공격자(actor_id)를 시야에 둔 유저들에게 전송하여 애니메이션을 동기화해야 함.
 
-		switch (action_packet._action_type)
+		switch (action_packet._action_id)
 		{
-		case packet::ActionType::NORMAL_ATTACK:
+		case packet::ActionID::Common::Attack:
 			{
 				//TODO: [공격 정의] 나중에 무기/스킬 테이블에서 가져오는 구조로 확장 가능
 				JPH::Ref<JPH::Shape> attackShape = new JPH::SphereShape(3.0f);// 3m 반경 공격
@@ -1246,18 +1246,13 @@ namespace PIP::SERVER
 #endif
 			}
 			break;
-		case packet::ActionType::SKILL:
+		case packet::ActionID::Common::SKILL1:
 			// 스킬 ID(action_packet._action_id)에 따른 다양한 박스/캡슐 판정 로직 추가 지점
-			break;
-		case packet::ActionType::INTERACT:
-			// 상호작용 로직 (아이템 줍기 등)
-			break;
-		case packet::ActionType::NONE:
-			MYERROR("에러!!");
+			MYLOG("Received SKILL1 action - hit detection logic not implemented yet.");
 			return;
 			break;
 		default:
-			MYERROR("Unknown action type received: " << static_cast<int>(action_packet._action_type));
+			MYERROR("Unknown action type received: " << static_cast<int>(action_packet._action_id));
 			return;
 			break;
 		}
@@ -1541,11 +1536,11 @@ namespace PIP::SERVER
 #ifdef _DEBUG
 		// 5. 기타 환경 정보(디버그 드로 등) 전송
 		//SendMapDebugDraw(session);
-		auto finded_convexs = MapDataManager::Instance()->get_find_mesh();
+		/*auto finded_convexs = MapDataManager::Instance()->get_find_mesh();
 		for (const auto& mesh : finded_convexs)
 		{
 			SendDebugShape(session, mesh);
-		}
+		}*/
 #endif
 
 	}

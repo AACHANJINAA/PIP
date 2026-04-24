@@ -335,7 +335,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 	if (_isAttacking) {
 		if(_isSkilling) 
 		{
-			_state = common::packet::EntityState::SKILL_ONE;
+			_state = common::packet::EntityState::ACTION;
+			_actionId = common::packet::ActionID::Common::SKILL1;
 			anim_comp->play("skill", false, skillAnimationspeed);
 			_nowSkillTime += deltaTime;
 			if (_nowSkillTime >= _skillBigSowrdSpawn)
@@ -373,9 +374,18 @@ void MainPlayerScript::handle_state(float deltaTime)
 			}
 		}
 
-		if (!_packetSent && progress >= (duration * 0.3f)) {
-			NetworkManager::instance()->SendActionPacket(common::packet::ActionType::NORMAL_ATTACK, 0, -1,
-				transform()->local_position(), transform()->local_rotation());
+		if (common::packet::EntityState::ACTION == _state 
+			&& !_packetSent && progress >= (duration * 0.3f)) {
+			int64_t targetId = -1;
+			if (auto targeting_comp = game_object()->get_component<TargetingComponent>()) {
+				targetId = targeting_comp->current_target_id();
+			}
+			auto tr = transform();
+			if (!tr)
+			{
+				CERROR("MainPlayerScript::handle_state - TransformComponent이 없습니다.");
+			}
+			NetworkManager::instance()->SendActionPacket(_actionId, targetId, tr->local_position(), tr->local_rotation());
 			_packetSent = true;
 		}
 
@@ -419,6 +429,8 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_currentMoveDir = { 0, 0, 0 }; // 이동 입력 초기화
 		return;
 	}
+	auto targeting = game_object()->get_component<TargetingComponent>();
+	bool is_lock_on = targeting && targeting->is_locked_on();
 
 	common::Vec3 move_direction{};
 	bool is_moving_input = false;
@@ -465,10 +477,28 @@ void MainPlayerScript::handle_input(float deltaTime)
 		}
 	}
 
+	if (is_lock_on) {
+		auto target = ObjectManager::instance()->find_npc(targeting->current_target_id());
+		if (target) {
+			// [락온 모드] 적을 정면으로 고정
+			common::Vec3 targetPos = target->transform()->position();
+			common::Vec3 playerPos = transform()->position();
+			common::Vec3 dirToEnemy = targetPos - playerPos;
 
-	// 방향 갱신
-	if (is_moving_input) {
+			float targetYaw = XMConvertToDegrees(atan2f(dirToEnemy.x, dirToEnemy.z)) - 180.f;
 
+			float yawDiff = targetYaw - _currentyaw;
+			while (yawDiff > 180.f) yawDiff -= 360.f;
+			while (yawDiff < -180.f) yawDiff += 360.f;
+
+			_currentyaw += yawDiff * std::min(1.0f, deltaTime * 15.0f); // 캐릭터 회전은 카메라보다 빠르게
+			transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
+
+			// 이동 벡터는 카메라 기준 유지 (이동 시 옆걸음/뒷걸음질이 됨)
+			_currentMoveDir = is_moving_input ? common::Normalize(move_direction) : common::Vec3{ 0, 0, 0 };
+		}
+	}
+	else if (is_moving_input) {
 		// 방향벡터 갱신
 		_currentMoveDir = common::Normalize(move_direction);
 
@@ -492,6 +522,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_currentMoveDir = { 0, 0, 0 };
 	}
 
+
 	// 공격 입력 (공격 중이 아닐 때만 새 공격 시작 가능)
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LBUTTON)) {
 		_isAttacking = true;
@@ -504,8 +535,14 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_isAttacking = true;
 		_isSkilling = true;
 		_packetSent = false;
-		_actionId = common::packet::ActionID::Common::SKILL;
+		_actionId = common::packet::ActionID::Common::SKILL1;
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
+	}
+
+	if (InputManager::instance()->IsKeyDown(VK_MBUTTON) || InputManager::instance()->IsKeyDown(VK_TAB)) {
+		if (auto targeting_comp = game_object()->get_component<TargetingComponent>()) {
+			targeting_comp->toggle_lock_on();
+		}
 	}
 
 	//// [추가] 스킬 입력 (R 키: 꿰뚫는 일격)

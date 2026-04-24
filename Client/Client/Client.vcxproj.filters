@@ -153,6 +153,9 @@
     <Filter Include="1. Game\2. Scripts\MainLogics\OtherPlayer">
       <UniqueIdentifier>{fc39712d-e571-4f5a-a54e-cf9eab2cf48a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\TargetingComponent">
+      <UniqueIdentifier>{b6fc3fc7-7b64-405c-bbee-148b045dab1b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -470,6 +473,9 @@
     <ClInclude Include="MinimapShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="TargetingComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\TargetingComponent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -756,6 +762,9 @@
     </ClCompile>
     <ClCompile Include="MinimapShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetingComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\TargetingComponent</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

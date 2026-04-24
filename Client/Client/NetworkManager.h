@@ -27,7 +27,7 @@ public:
         const common::Vec3& dir, const common::Quat& rotation, const common::packet::EntityState& state, 
         const int32_t& action_id, const uint32_t& current_tick);
     void SendAttackPacket(); // 공격 패킷 전송 함수 추가
-    void SendActionPacket(common::packet::ActionType type, int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
+    void SendActionPacket(int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
     bool is_running() const { return _isRunning; }
