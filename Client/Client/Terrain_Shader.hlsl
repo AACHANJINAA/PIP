@@ -129,7 +129,7 @@ float4 PS_Main(PS_Input input) : SV_TARGET
             // set basic layer 
             // 0 : ROCK,                 1 : Ground_2,     2 : Ground,     3 : Dead_Grass, 
             // 4 : Underwater_Ground_01, 5 : Sand_w_Rocks, 6 : Grass,      7 : Cobblestone
-            weights[3] = 1.0f;
+            weights[6] = 1.0f;
         }
 
         float original_weights[MAX_TERRAIN_LAYERS];
