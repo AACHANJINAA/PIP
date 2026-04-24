@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "OtherPlayerScript.h"
 #include "MainPlayerScript.h"
+#include "OcclusionManager.h"
 
 Material_Shader::Material_Shader()
 {
@@ -239,3 +240,26 @@ void RenderComponent::render_CascadeShadowMap(ID3D12GraphicsCommandList* command
     _mesh->render_CascadeShadowMap(commandList);
 }
 
+
+UINT RenderComponent::get_occlusion_query_index()
+{
+    // 처음 호출될 때 매니저로부터 인덱스 할당
+    if (_occlusionQueryIndex == 0xFFFFFFFF) {
+        _occlusionQueryIndex = OcclusionManager::instance()->allocate_query_index();
+    }
+    return _occlusionQueryIndex;
+}
+
+XMMATRIX RenderComponent::get_occlusion_box_world_matrix() {
+    // 1. 객체의 로컬 바운딩 박스 정보 가져오기
+    BoundingOrientedBox obb = get_world_bounding_box();
+
+    // 2. 바운딩 박스의 중심점(Center)과 크기(Extents)를 행렬로 변환
+    // 쿼리용 Unit Cube가 (-0.5~0.5) 크기라고 가정할 때:
+    XMMATRIX scale = XMMatrixScaling(obb.Extents.x * 2.0f, obb.Extents.y * 2.0f, obb.Extents.z * 2.0f);
+    XMMATRIX rotation = XMMatrixRotationQuaternion(XMLoadFloat4(&obb.Orientation));
+    XMMATRIX translation = XMMatrixTranslation(obb.Center.x, obb.Center.y, obb.Center.z);
+
+    // 3. 최종 박스 월드 행렬 = Scale * Rotation * Translation
+    return scale * rotation * translation;
+}

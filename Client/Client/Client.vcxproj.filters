@@ -470,6 +470,12 @@
     <ClInclude Include="MinimapShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="OcclusionManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="OcclusionQueryShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -757,6 +763,12 @@
     <ClCompile Include="MinimapShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="OcclusionQueryShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="OcclusionManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Chess_Client.rc">
@@ -824,6 +836,9 @@
     </FxCompile>
     <FxCompile Include="Minimap_shader.hlsl">
       <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="OcclusionQuery.hlsl">
+      <Filter>헤더 파일</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

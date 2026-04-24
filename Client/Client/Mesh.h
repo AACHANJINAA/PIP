@@ -151,6 +151,10 @@ public:
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList);
 
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
+
+	static std::shared_ptr<Mesh> create_unit_cube();
+	// Occlusion 전용 드로우 (기존 render 함수를 활용해도 무방하지만 명시적으로 분리 가능)
+	virtual void draw_occlusion_box(ID3D12GraphicsCommandList* commandList) { render(commandList); }
 protected:
 	static BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max);
 	virtual void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue);
@@ -167,7 +171,6 @@ protected:
 		_vertexDataBuffer.resize(_vertexStride * _vertexCount);
 		memcpy(_vertexDataBuffer.data(), temp_vertices.data(), _vertexStride * _vertexCount);
 	}
-
 
 protected:
 	bool _isUploaded = false;

@@ -72,6 +72,10 @@ public:
 
     void set_frustum_culling_enabled(bool enabled) { _frustumCullingEnabled = enabled; }
 
+    UINT get_occlusion_query_index();
+    XMMATRIX get_occlusion_box_world_matrix();
+    bool is_occlusion_enabled() const { return _isOcclusionEnabled; }
+
 protected:
     std::shared_ptr<Mesh> _mesh;
     //std::shared_ptr<GltfMaterial> _material;                // 셰이더 또는 머티리얼
@@ -82,5 +86,9 @@ protected:
     std::array<CbGameObjectInfo*, SWAP_CHAIN_BUFFERS> _mappedCbGameObjectInfo;
 
     bool _frustumCullingEnabled = true;
+
+	// occlusion query를 위한 인덱스
+    UINT _occlusionQueryIndex = 0xFFFFFFFF; // 초기값
+    bool _isOcclusionEnabled = true;
 };
 

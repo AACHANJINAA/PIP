@@ -769,3 +769,25 @@ ComPtr<ID3D12RootSignature> MinimapRootSignatureGenerator::create(ID3D12Device* 
 
     return root_signature;
 }
+
+const std::string& OcclusionRootSignatureGenerator::name() const
+{
+    static std::string n = "occlusion_sig"; 
+    return n; 
+}
+
+ComPtr<ID3D12RootSignature> OcclusionRootSignatureGenerator::create(ID3D12Device* device)
+{
+    CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+    slotRootParameter[0].InitAsConstants(16, 0); // b0: gWorld (Matrix 16개 float)
+    slotRootParameter[1].InitAsConstantBufferView(1); // b1: gViewProj
+
+    CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    ComPtr<ID3DBlob> serializedRootSig = nullptr;
+    ComPtr<ID3DBlob> errorBlob = nullptr;
+    D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSig, &errorBlob);
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    device->CreateRootSignature(0, serializedRootSig->GetBufferPointer(), serializedRootSig->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
+}
