@@ -91,7 +91,7 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
 
     LayerInfoCB layer_cb = {};
     layer_cb.NumLayers = terrain_loader->has_layers() ? static_cast<int>(terrain_loader->get_layers().size()) : 0;
-    layer_cb.LayerTiling = 32.0f; // 레이어별 타일링 값
+    layer_cb.LayerTiling = 128.0f; // 레이어별 타일링 값 
     memcpy(_layer_info_cbuffer_cpu_address, &layer_cb, sizeof(LayerInfoCB));
     commandList->SetGraphicsRootConstantBufferView(8, _layer_info_cbuffer->GetGPUVirtualAddress());
 

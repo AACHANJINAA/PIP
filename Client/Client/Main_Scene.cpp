@@ -170,7 +170,7 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
         renderer->set_pso_name("gltf");
 
         // 위치, 회전 정보
-        T1->transform()->set_local_rotation(0.f, 90.f, 0.f);
+        T1->transform()->set_local_rotation(0.f, 120.f, 0.f);
         T1->transform()->set_local_scale({ 30.f, 30.0f, 30.0f });
 
 
