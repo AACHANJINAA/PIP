@@ -27,7 +27,7 @@ namespace common::packet
 		namespace Common
 		{
 			constexpr int32_t Attack = 1;
-			constexpr int32_t SKILL = 2;
+			constexpr int32_t SKILL1 = 2;
 		}
 
 		namespace Tainer
@@ -108,33 +108,6 @@ namespace common::packet
 		S2C_P_DEBUG_SHAPE = 603,
 	};
 
-
-	enum class MOVE_TYPE : uint16_t
-	{
-		error = 0,
-		MOVE_UP = 1,
-		MOVE_DOWN = 2,
-		MOVE_RIGHT = 3,
-		MOVE_LEFT = 4,
-	};
-
-	enum class AttackDirection : uint8_t
-	{
-		UP,
-		DOWN,
-		LEFT,
-		RIGHT
-	};
-
-	// [신규] 행동 종류 열거형
-	enum class ActionType : uint8_t
-	{
-		NONE = 0,
-		NORMAL_ATTACK = 1, // 일반 공격
-		SKILL = 2,         // 스킬 사용
-		INTERACT = 3       // 상호작용 (예: 아이템 줍기)
-	};
-
 	enum class DebugShapeType : uint8_t {
 		SPHERE = 0,
 		BOX = 1,
@@ -194,7 +167,6 @@ namespace common::packet
 	// [신규] 클라 -> 서버: 범용 행동 패킷
 	struct CS_PACKET_ACTION : PacketHeader
 	{
-		ActionType   _action_type;   // 1: 평타, 2: 스킬...
 		int32_t      _action_id;     // 스킬 인덱스 or 아이템 ID
 		int64_t      _target_id;     // 타겟팅 스킬일 경우 대상 ID (없으면 -1)
 		common::Quat _direction;     // 바라보는 방향

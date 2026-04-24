@@ -1,16 +1,16 @@
 ﻿#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
-#include "PhysicsCharacterControllerComponent.h"    // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
-#include "AnimationComponent.h"                     // [추가]
+#include "AnimationComponent.h"
 #include "SocketComponenet.h"
+#include "TargetingComponent.h"
 #include "UIRenderComponent.h"  
 #include "WeaponScript.h"
 constexpr float SENDINTERVAL{ 0.02f };
 class MainPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponenet>;
+	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponenet, TargetingComponent>;
 
 	MainPlayerScript() = default;
 	~MainPlayerScript() override = default;

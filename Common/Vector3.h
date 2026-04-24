@@ -18,6 +18,11 @@ namespace common
 	constexpr Vec3 Vec3Forward = { 0.0f, 0.0f, 1.0f };
 	constexpr Vec3 Vec3Backward = { 0.0f, 0.0f, -1.0f };
 
+	inline float Dot(const Vec3& v1, const Vec3& v2)
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	}
+
 	inline float Length(const Vec3& v)
 	{
 		return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
