@@ -67,6 +67,10 @@ namespace PIP::GAME
 
 		void SetLastSentRot(common::Quat rot) { _lastSentRot = rot; }
 		const common::Quat& GetLastSentRot() const { return _lastSentRot; }
+
+		void SetLastClientTick(uint32_t tick) { _lastClientTick = tick; }
+		uint32_t GetLastClientTick() const { return _lastClientTick; }
+
 		bool IsDirty();
 		void SyncSentData();
 		//common::Vec3				_position;
@@ -91,5 +95,6 @@ namespace PIP::GAME
 		float _hitCooldown = 0.0f;
 		int64_t _owner_id; // 이 플레이어를 소유한 세션 ID	
 		int32_t	_hp;
+		uint32_t _lastClientTick = 0;
 	};
 }

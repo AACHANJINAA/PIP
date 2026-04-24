@@ -90,6 +90,14 @@ namespace PIP::GAME
 		}
 
 		common::Vec3 currentPos = GetPosition();
+
+		// [최적화 1] XZ 이동이 없고 이미 접지 상태라면 BVH 탐색(CastRay) 스킵
+		// _verticalVelocity가 -0.2보다 크다는 것은 이미 지면에 안착하여 리셋된 상태임을 의미
+		bool isMovingXZ = (common::LengthSq(_aiVelocity) > 0.0001f || common::LengthSq(_impactVelocity) > 0.0001f);
+		if (!isMovingXZ && _verticalVelocity > -0.2f) {
+			return;
+		}
+
 		common::Vec3 vel = _aiVelocity;
 		vel.y = 0;
 

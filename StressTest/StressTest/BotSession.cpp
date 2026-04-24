@@ -165,8 +165,19 @@ namespace PIP::BOT
             auto pkt = reinterpret_cast<const SC_PACKET_ENTER_ROOM_ACK*>(header);
             if (pkt->_success)
             {
-                _state = BotState::INGAME;
+                _state = BotState::ROOM_WAIT;
             }
+            break;
+        }
+        case PacketType::S2C_P_CHANGE_SCENE:
+        {
+            // 서버에서 씬 변경 명령이 오면 로딩 완료 후 Ready 패킷 전송 시뮬레이션
+            _state = BotState::READY;
+
+            common::packet::CS_PACKET_PLAYER_READY ready_pkt;
+            ready_pkt._size = sizeof(ready_pkt);
+            ready_pkt._type = PacketType::C2S_P_PLAYER_READY;
+            DoWrite(reinterpret_cast<const char*>(&ready_pkt), sizeof(ready_pkt));
             break;
         }
         case PacketType::S2C_P_SPAWN_PLAYER:
@@ -178,7 +189,9 @@ namespace PIP::BOT
                 _current_rot = pkt->_rotation;
                 _anchor_pos = _current_pos;
                 _is_anchor_set = true;
-                // BOT_LOG("Bot " << _id << " spawned at (" << _current_pos.x << ", " << _current_pos.z << ")");
+
+                // 자신의 스폰 패킷을 받으면 실제 인게임 상태로 전환
+                _state = BotState::INGAME;
             }
             break;
         }
@@ -188,6 +201,12 @@ namespace PIP::BOT
             if (pkt->_id == _id) {
                 // [보정] 서버에서 온 위치로 동기화 (Client-Side Prediction Correction)
                 _current_pos = pkt->_position;
+
+                // [지연 시간 측정] 서버가 에코한 티크와 현재 티크의 차이 계산
+                uint32_t current_tick = static_cast<uint32_t>(GetTickCount64());
+                if (current_tick >= pkt->_client_tick) {
+                    _last_latency = current_tick - pkt->_client_tick;
+                }
             }
             break;
         }
@@ -200,56 +219,93 @@ namespace PIP::BOT
     {
         if (_state != BotState::INGAME) return;
 
-        // 1. [클라이언트 측 선행 이동] 매 프레임 위치 업데이트
-        if (_is_anchor_set) {
-            static std::random_device rd;
-            static std::mt19937 gen(rd());
-            static std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
 
-            float speed = 4.0f; // 초당 4m 이동 시뮬레이션
-            
-            // 매 프레임 조금씩 이동 방향 결정 (간단한 랜덤 워크)
-            common::Vec3 move_delta = { dis(gen) * speed * dt, 0, dis(gen) * speed * dt };
-            _current_pos.x += move_delta.x;
-			_current_pos.y += move_delta.y;
-			_current_pos.z += move_delta.z;
+        // 1. 공격(ACTION) 상태 처리
+        if (_attack_duration > 0.0f) {
+            _attack_duration -= dt;
+            _entity_state = common::packet::EntityState::ACTION;
+            _action_id = 1; // 기본 공격 ID
+            _move_dir = { 0, 0, 0 };
+        }
+        else {
+            // 2. 이동 로직 시뮬레이션
+            if (_is_anchor_set) {
+                // 일정 확률로 방향 변경 또는 정지
+                static std::uniform_real_distribution<float> prob(0.0f, 1.0f);
+                if (prob(gen) < 0.02f) { // 약 2% 확률로 방향 전환
+                    _move_dir = { dis(gen), 0, dis(gen) };
+                    if (common::LengthSq(_move_dir) > 0.001f) {
+                        _move_dir = common::Normalize(_move_dir);
+                        
+                        // 이동 방향에 맞춰 회전 설정 (Yaw)
+                        float yaw = atan2f(_move_dir.x, _move_dir.z);
+                        // Jolt/Common Quat 구조에 맞춰 설정 (단순화를 위해 Yaw만 반영)
+                        // 실제 클라이언트: current_transform->set_local_rotation(0.0f, yawDegrees, 0.0f);
+                    }
+                    else {
+                        _move_dir = { 0, 0, 0 };
+                    }
+                }
 
-            // 앵커 기준 일정 범위 내로 제한 (스트레스 테스트 이탈 방지)
-            float range = 20.0f;
-            _current_pos.x = std::clamp(_current_pos.x, _anchor_pos.x - range, _anchor_pos.x + range);
-            _current_pos.z = std::clamp(_current_pos.z, _anchor_pos.z - range, _anchor_pos.z + range);
+                float speed = 0.0f;
+                if (common::LengthSq(_move_dir) > 0.001f) {
+                    // 50% 확률로 걷기 또는 달리기
+                    if (prob(gen) > 0.5f) {
+                        _entity_state = common::packet::EntityState::RUN;
+                        speed = common::move_speed::player_run_speed;
+                    }
+                    else {
+                        _entity_state = common::packet::EntityState::MOVE;
+                        speed = common::move_speed::player_walk_speed;
+                    }
+                }
+                else {
+                    _entity_state = common::packet::EntityState::IDLE;
+                    _action_id = 0;
+                }
+
+                _current_pos.x += _move_dir.x * speed * dt;
+                _current_pos.z += _move_dir.z * speed * dt;
+
+                // 앵커 기준 일정 범위 내로 제한
+                float range = 30.0f;
+                _current_pos.x = std::clamp(_current_pos.x, _anchor_pos.x - range, _anchor_pos.x + range);
+                _current_pos.z = std::clamp(_current_pos.z, _anchor_pos.z - range, _anchor_pos.z + range);
+            }
         }
 
         _move_timer += dt;
         _action_timer += dt;
 
-        // 2. [네트워크 전송] 약 33ms 주기로 서버에 현재 내 위치 전송
+        // 3. 약 33ms 주기로 서버에 현재 내 위치 전송
         if (_move_timer >= 0.033f) {
             _move_timer = 0.0f;
             SendMove();
         }
 
-        if (_action_timer >= 1.0f) { // 액션 주기는 조금 늦춤
+        // 4. 약 2~5초마다 공격 수행 시뮬레이션
+        if (_action_timer >= (2.0f + dis(gen) * 1.0f)) {
             _action_timer = 0.0f;
-            SendAction();
+            if (_entity_state != common::packet::EntityState::ACTION) {
+                _attack_duration = 0.8f; // 공격 애니메이션 시간 시뮬레이션
+                SendAction();
+            }
         }
     }
 
     void BotSession::SendMove()
     {
-        // current_pos가 이미 Update()에서 갱신되었으므로 그대로 전송
         common::packet::CS_PACKET_MOVE pkt;
         pkt._size = sizeof(pkt);
         pkt._type = common::packet::PacketType::C2S_P_MOVE;
         pkt._position = _current_pos;
-        
-        // 이동 방향 벡터 계산 (서버 Jolt 연산용)
-        // 여기서는 랜덤 이동이므로 정규화된 방향을 보내거나, 단순화를 위해 0이 아니면 정규화
-        pkt._move_dir = { 1.0f, 0, 0.0f }; // 단순화를 위해 전방향 전송 (필요시 Update에서 계산된 delta 사용)
-        
+        pkt._move_dir = _move_dir; // 실제 이동 방향 벡터 전송
         pkt._rotation = _current_rot;
-        pkt._state = common::packet::EntityState::MOVE;
-        pkt._action_id = 0;
+        pkt._state = _entity_state; // 시뮬레이션된 상태 전송
+        pkt._action_id = _action_id;
         pkt._client_tick = static_cast<uint32_t>(GetTickCount64());
 
         DoWrite(reinterpret_cast<const char*>(&pkt), sizeof(pkt));

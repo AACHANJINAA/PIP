@@ -275,7 +275,8 @@ namespace common::packet
 		Vec3			_position;
 		common::Quat	_rotation;
 		EntityState		_state;
-		int32_t			_action_id; // [추가]
+		int32_t			_action_id; 
+		uint32_t		_client_tick; // [추가] RTT 측정을 위한 클라이언트 타임스탬프 에코
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)

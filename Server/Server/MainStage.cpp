@@ -113,12 +113,12 @@ namespace PIP::SERVER
                 MYERROR("[MainStage] Physics Body creation FAILED for mesh: " << tile->meshName);
                 continue;
             }
-            if (tile->meshName == "SM_Rock2_mid")
+            /*if (tile->meshName == "SM_Rock2_mid")
             {
                 MYLOG("[DEBUG] Raycasting for mesh ID: " << id.GetIndex());
                 rayCheck({ correctBodyPos.GetX(), correctBodyPos.GetY() + 100, correctBodyPos.GetZ() }, 
                     {0,-1,0}, physicsSystem);
-            }
+            }*/
             _stageBodyIDs.push_back(id);
         }
 
