@@ -75,37 +75,24 @@ void FreeCameraScript::player_camera_update(float delta_time)
     if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
         auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-        bool isLockedOn = false;
 
-        if (player) {
-            if (auto targeting = player->get_component<TargetingComponent>()) {
-                if (targeting->is_locked_on()) {
-                    if (auto target = ObjectManager::instance()->find_npc(targeting->current_target_id())) {
-                        // 2. 타겟을 바라보는 Yaw, Pitch 계산
-                        common::Vec3 targetPos = target->transform()->position();
-                        targetPos.y += 1.5f; // NPC의 중심(가슴 높이)을 보게 함
-                        common::Vec3 camPos = transform()->position();
-                        common::Vec3 delta = targetPos - camPos;
+        auto targeting = player->get_component<TargetingComponent>();
+        bool locked = targeting && targeting->is_locked_on();
 
-                        float yaw = XMConvertToDegrees(atan2f(delta.x, delta.z));
-                        float distXZ = sqrtf(delta.x * delta.x + delta.z * delta.z);
-                        float pitch = XMConvertToDegrees(-atan2f(delta.y, distXZ));
+        if (locked) {
+            // [사용자 의도] 플레이어의 회전값(Yaw)을 카메라에 그대로 복사
+            // 플레이어가 적을 보고 있으면 카메라도 플레이어 등 뒤에서 적을 보게 됨
+            float playerYaw = player->transform()->local_rotation_euler().y;
 
-                        // 3. 카메라 회전 적용 (마우스 입력 무시됨)
-                        transform()->set_local_rotation(pitch, yaw, 0.0f);
-                        isLockedOn = true;
-                    }
-                }
-            }
+            // Pitch는 약간 아래를 내려다보도록 고정 (예: 15도)
+            transform()->set_local_rotation(15.0f, playerYaw + 180.f, 0.0f);
         }
-
-        // 락온이 아닐 때만 마우스로 회전
-        if (!isLockedOn) {
+        else {
+            // 일반 상태에선 기존 마우스 입력 사용
             process_mouse_input(delta_time);
         }
 
 		// transform()->set_local_position({ 0.f, 0.f, 0.f });
-        process_mouse_input(delta_time);
 
         // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
         if (nullptr != ObjectManager::instance()->find_by_name("MainPlayer").get())

@@ -40,45 +40,49 @@ bool TargetingComponent::is_valid_target(int64_t id)
 
 void TargetingComponent::find_best_target()
 {
+    // 1. 메인 카메라 컴포넌트 가져오기
+    auto mainCamera = CameraComponent::get_main();
+    if (!mainCamera) return;
+
+    auto camTransform = mainCamera->game_object()->transform();
+    common::Vec3 camPos = camTransform->position();
+    common::Vec3 camForward = camTransform->forward();
+    auto frustum = mainCamera->frustum(); // CameraComponent에 정의된 프러스텀
+
     auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
     auto enemies = ObjectManager::instance()->find_by_layer(enemy_layer);
 
     int64_t bestId = -1;
-    float bestScore = -1.0f; // 1.0에 가까울수록 정면
-
-    auto transform = game_object()->transform();
-
-    common::Vec3 playerPos = transform->local_position();
-    common::Vec3 playerForward = transform->forward();
+    float bestScore = -1.0f;
 
     for (auto& enemy : enemies)
     {
         auto npc_script = enemy->get_component<NPCScript>();
         if (!npc_script || npc_script->hp() <= 0) continue;
 
-        common::Vec3 enemyPos = enemy->transform()->local_position();
-        common::Vec3 toEnemy = enemyPos - playerPos;
-        float dist = common::Length(toEnemy);
+        common::Vec3 enemyPos = enemy->transform()->position();
 
+        // --- 프러스텀 체크 (화면 안에 있는가?) ---
+        // BoundingFrustum::Contains는 점/박스가 시야 안에 있는지 확인합니다.
+        if (frustum.Contains(XMLoadFloat3(&enemyPos)) == DirectX::DISJOINT) continue;
+
+        // --- 거리 체크 ---
+        float dist = common::Length(enemyPos - camPos);
         if (dist > _maxDistance) continue;
 
-        toEnemy = common::Normalize(toEnemy);
-        float dot = common::Dot(playerForward, toEnemy);
+        // --- 화면 중앙 점수 계산 ---
+        common::Vec3 toEnemy = common::Normalize(enemyPos - camPos);
+        float dot = common::Dot(camForward, toEnemy);
 
-        // 시야각 체크 (dot은 cos값)
-        if (dot > cosf(XMConvertToRadians(_targetingFov * 0.5f)))
+        // 내적값이 클수록(1.0에 가까울수록) 화면 중앙에 있는 것임
+        if (dot > bestScore)
         {
-            // 정면에 더 가까운 적을 우선순위로 함
-            if (dot > bestScore)
-            {
-                bestScore = dot;
-                bestId = npc_script->id();
-            }
+            bestScore = dot;
+            bestId = npc_script->id();
         }
     }
 
     _currentTargetId = bestId;
-    
 }
 
 void TargetingComponent::toggle_lock_on()
