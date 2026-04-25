@@ -29,6 +29,5 @@ VS_OUTPUT VS_Main(VS_INPUT input)
 
 float4 PS_Main(VS_OUTPUT input) : SV_TARGET
 {
-     // [수정] 원하는 색상 반환 (예: 연두색)
     return float4(0.0f, 1.0f, 0.0f, 1.0f);
 }
