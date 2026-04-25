@@ -36,13 +36,12 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 
     // 카메라 생성
     auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
+    auto cameraComp = cameraObject->add_component<CameraComponent>(45.f);
     cameraObject->add_component<FreeCameraScript>();
 	cameraObject->transform()->set_local_position({ 239.44f, 138.1f, 112.19f });
 	// 처음에는 45도 위쪽을 바라보도록 설정 -> 나중에 오프닝 연출에서 카메라 이동 시켜야할듯
 	cameraObject->transform()->set_local_rotation(-45.0f, 195.0f, 0.0f);
     cameraObject->set_layer("Camera");
-
-    auto cameraComp = cameraObject->add_component<CameraComponent>(45.f);
     cameraComp->set_main_camera();
 
     // 오디오 재생 -> 리소스 로드 이후에 노래 재생
