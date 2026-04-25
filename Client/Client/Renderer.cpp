@@ -33,7 +33,6 @@
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
 #include "ShadowManager.h"
-#include "MinimapManager.h"
 #include "MinimapShader.h"
 
 void Renderer::initialize(ID3D12Device* device)
@@ -42,7 +41,7 @@ void Renderer::initialize(ID3D12Device* device)
     
     _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); 
     _unitCube = Mesh::create_unit_cube();
-    OcclusionManager::instance()->initialize(device, 10000);
+    OcclusionManager::instance()->initialize(device, 10'0000);
 
     create_dynamic_descriptor_heap(1000000);
 
@@ -161,8 +160,8 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-	draw_render_list(commandList, camera, frame_index);
-    //draw_render_occlusion_culling_list(commandList, camera,  frame_index);
+	// draw_render_list(commandList, camera, frame_index);
+    draw_render_occlusion_culling_list(commandList, camera,  frame_index);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
     // [수정] viewProj가 아니라 frame_index를 넘겨야 합니다!
@@ -324,12 +323,6 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
             bind_texture_table(commandList, 4, { skybox_cpu_handle });
 
-           /* D3D12_GPU_DESCRIPTOR_HANDLE srv_gpu_handle = ResourceManager::instance()->get_skybox_srv_gpu();
-            if (srv_gpu_handle.ptr != 0)
-            {
-                commandList->SetGraphicsRootDescriptorTable(4, srv_gpu_handle);
-            }*/
-
             // Skybox 렌더링
             for (const auto& gameObject : gameObjects)
             {
@@ -341,27 +334,6 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
             }
             continue; // 다음 PSO로
         }
-
-        //if (psoName == "ui")
-        //{
-        //    const auto& render_vec = UIManager::instance()->ui_render_vector();
-        //    for (const auto& vec : render_vec)
-        //    {
-        //        for (const auto& gameObject : vec)
-        //        {
-        //            auto renderComp = gameObject->get_component<RenderComponent>();
-        //            if (!renderComp) continue;
-        //
-        //            auto mesh = renderComp->mesh();
-        //            if (!mesh) continue;
-        //
-        //            shader_prototype->update_per_object(commandList, this, gameObject.get());
-        //            gameObject->prepare_render();
-        //            renderComp->render(commandList, frame_index);
-        //        }
-        //    }
-        //    continue;
-        //}
 
         // 일반 객체 렌더링
         for (const auto& gameObject : gameObjects)
@@ -419,7 +391,7 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
     }
     else if (psoName == "terrain") {
         LightManager::instance()->bind(commandList, 3);
-        // [수정] Terrain은 ShadowManager의 bind_for_lighting(6, 7)을 사용함
+        // Terrain은 ShadowManager의 bind_for_lighting(6, 7)을 사용함
         ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
     }
 
@@ -433,7 +405,12 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
     }
 }
 void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index) {
-    // 1. Terrain (Occluder) 그리기
+    // 0. 디스크립터 힙 설정 (SRV 테이블 사용을 위해 필수)
+	// render_pso_group이 지형이 없어 조기 리턴될 경우를 대비해 함수 시작 시점에 미리 설정합니다.
+    ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
+    commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+	
+	// 1. Terrain (Occluder) 그리기
     render_pso_group(commandList, "terrain", camera, frame_index);
 
     // 2. Query Pass (가려짐 여부 판정용 박스 그리기)
@@ -484,6 +461,9 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
 
+        // PSO 그룹별로 디스크립터 힙을 재설정하여 바인딩 안정성 확보 (draw_render_list 패턴과 동일)
+        commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
         // 공통 바인딩
         LightManager::instance()->bind(commandList, 3);
         ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
@@ -530,6 +510,8 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 auto& proto = proto_it->second;
                 commandList->SetPipelineState(pso);
                 commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+
+                commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
                 // Skybox 전용 상수 데이터 바인딩 (슬롯 2)
                 if (camera && camera->get_cb_skybox()) {
