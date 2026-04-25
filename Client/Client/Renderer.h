@@ -16,6 +16,7 @@ private:
 
 public:
     void initialize(ID3D12Device* device);
+    void post_initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
 
     ID3D12RootSignature* get_root_signature(const std::string& name) const;

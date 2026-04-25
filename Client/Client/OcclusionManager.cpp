@@ -50,13 +50,11 @@ void OcclusionManager::resolve_queries(ID3D12GraphicsCommandList* cmdList, UINT 
     ID3D12Resource* buffer = get_result_buffer_for_resolve(frame_index);
     if (!_queryHeap || !buffer) return;
 
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer,
-        D3D12_RESOURCE_STATE_PREDICATION, D3D12_RESOURCE_STATE_COPY_DEST);
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer, D3D12_RESOURCE_STATE_PREDICATION, D3D12_RESOURCE_STATE_COPY_DEST);
     cmdList->ResourceBarrier(1, &barrier);
 
     cmdList->ResolveQueryData(_queryHeap.Get(), D3D12_QUERY_TYPE_OCCLUSION, 0, _nextAvailableIndex, buffer, 0);
 
-    barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer,
-        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PREDICATION);
+    barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PREDICATION);
     cmdList->ResourceBarrier(1, &barrier);
 }

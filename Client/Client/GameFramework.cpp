@@ -76,6 +76,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	DescriptorManager::instance()->initialize(_device.Get());
 	ResourceManager::instance()->initialize(_device.Get(), _commandList.Get());
 	Renderer::instance()->initialize(_device.Get());
+	Renderer::instance()->post_initialize(_device.Get(), _commandList.Get()); // occlusion debug
 	SceneManager::instance()->initialize(_device.Get(), _commandList.Get());
 	LightManager::instance()->initialize(_device.Get());
 	ShadowManager::instance()->initialize(_device.Get());
