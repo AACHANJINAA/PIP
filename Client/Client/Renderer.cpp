@@ -397,53 +397,70 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
 
     if (camera) camera->update_shader_variables(commandList, frame_index);
 
+    f3 camPos = camera->game_object()->transform()->get_world_position();
+
     for (auto& obj : it->second) {
         if (!obj) continue;
+
+        if (psoName == "terrain") {
+            f3 tilePos = obj->transform()->get_world_position();
+
+            if (Vector3::Length(Vector3::Subtract(camPos, tilePos)) > 505.f) {
+                continue; // 멀리 있는 지형은 렌더링 생략
+            }
+        }
+
         proto->update_per_object(commandList, this, obj.get());
         obj->prepare_render();
         obj->get_component<RenderComponent>()->render(commandList, frame_index);
     }
 }
 void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index) {
-    // 0. 디스크립터 힙 설정 (SRV 테이블 사용을 위해 필수)
-	// render_pso_group이 지형이 없어 조기 리턴될 경우를 대비해 함수 시작 시점에 미리 설정합니다.
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-	
-    if (camera) {
-        camera->set_viewports_and_scissor_rects(commandList);
-        camera->update_shader_variables(commandList, frame_index);
-    }
-
-
-    // 1. Terrain (Occluder) 그리기
-    render_pso_group(commandList, "terrain", camera, frame_index);
 
     f3 camPos = camera->game_object()->transform()->get_world_position();
+    ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
 
-    // 2. Query Pass - 가려짐 여부 판정용 박스 그리기
+    // --- STEP 1: 지형(Terrain)을 먼저 그리기 (Occluder) ---
+    // 지형은 성을 가려야 하는 "벽"이므로, 쿼리 전에 무조건 먼저 그려서 깊이 버퍼를 채웁니다.
+    {
+        auto it = _renderMap.find("terrain");
+        if (it != _renderMap.end()) {
+            render_pso_group(commandList, "terrain", camera, frame_index);
+        }
+    }
+
+    // --- STEP 2: 성(Castle) 및 기타 객체 쿼리 ---
     auto occ_pso = get_pso("occlusion_query");
     auto occ_sig = get_root_signature("occlusion_sig");
     if (occ_pso && occ_sig && _unitCube) {
         commandList->SetPipelineState(occ_pso);
         commandList->SetGraphicsRootSignature(occ_sig);
 
+        // 이제 지형이 이미 그려졌으므로, 지형 뒤의 성들은 쿼리에서 탈락합니다.
         std::string query_targets[] = { "gltf", "skinned" };
         for (const std::string& target : query_targets) {
             auto it = _renderMap.find(target);
             if (it == _renderMap.end()) continue;
 
             for (auto& obj : it->second) {
-                auto rc = obj->get_component<RenderComponent>();
-                if (!rc) continue;
-
-                // [최적화] 거리가 가까운 물체는 쿼리 생략
                 f3 objPos = obj->transform()->get_world_position();
                 float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
 
-                rc->set_skip_occlusion(dist < 30.0f);
+                // [최적화] 505m보다 멀면 성이고 뭐고 다 삭제
+                if (dist > 505.0f) {
+                    obj->get_component<RenderComponent>()->set_skip_occlusion(true);
+                    continue;
+                }
 
-                if (!rc->skip_occlusion()) {
+                auto rc = obj->get_component<RenderComponent>();
+
+                // 30m 이내는 쿼리 없이 그냥 보임 처리
+                bool skip = (dist < 30.0f);
+                rc->set_skip_occlusion(skip);
+
+                if (!skip) {
                     XMMATRIX boxWorld = XMMatrixTranspose(rc->get_occlusion_box_world_matrix());
                     commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
 
@@ -457,9 +474,9 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 
     OcclusionManager::instance()->resolve_queries(commandList, frame_index);
 
-    // 3. 실제 렌더링
-    ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
-    std::string render_targets[] = { "gltf", "skinned" };
+
+    // 3. Main Render Pass: 쿼리 결과에 따라 조건부 렌더링
+    std::string render_targets[] = { "terrain", "gltf", "skinned" };
 
     for (const std::string& target : render_targets) {
         auto it = _renderMap.find(target);
@@ -472,12 +489,22 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
         LightManager::instance()->bind(commandList, 3);
-        ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+        if (target == "terrain") ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
+        else ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+
         if (camera) camera->update_shader_variables(commandList, frame_index);
 
         for (auto& obj : it->second) {
             auto rc = obj->get_component<RenderComponent>();
             if (!rc) continue;
+
+            f3 objPos = obj->transform()->get_world_position();
+            float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+            // [지형 필터링] 주변 8개 타일만 렌더링
+            if (target == "terrain") {
+                if (dist > 800.0f || dist <= 250.0f) continue;
+            }
 
             if (target == "skinned") {
                 auto animComp = obj->get_component<AnimationComponent>();
@@ -486,6 +513,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                     if (boneGpuAddr != 0) commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
                 }
             }
+
             proto->update_per_object(commandList, this, obj.get());
             obj->prepare_render();
 
@@ -493,7 +521,6 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 rc->render(commandList, frame_index);
             }
             else {
-                // 쿼리 결과(0이 아니면 보임)에 따라 조건부 렌더링
                 commandList->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
                 rc->render(commandList, frame_index);
                 commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
@@ -501,7 +528,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-    // 5. Skybox 렌더링 (오클루전 컬링 제외)
+    // 4. Skybox 렌더링 (오클루전 컬링 제외)
     auto itSky = _renderMap.find("skybox");
     if (itSky != _renderMap.end() && !itSky->second.empty()) {
 		const std::string psoName = "skybox";
