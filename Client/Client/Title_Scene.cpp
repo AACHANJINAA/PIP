@@ -159,9 +159,9 @@ void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList
     // 1. Skybox 로드 (모든 Scene 공통)
     SceneManager::instance()->build_skybox(device, commandList,
         "Resource/SkyBox/",
-        "farmland/farmland_skybox.dds",
-        "farmland/farmland_specular.dds",
-        "farmland/farmland_diffuse.txt",
+        "night/night_skybox.dds",
+        "night/night_specular.dds",
+        "night/night_diffuse.txt",
         "BRDF.dds");
 
     // 2. MainScene 전용 Landscape 로드
@@ -182,7 +182,7 @@ void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList
     //load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
 
     // 성
-   // load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
+   load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
 }
 
 void Title_Scene::spawn_opening_sequence_object()
