@@ -444,6 +444,11 @@ namespace PIP::SERVER
 					}
 					else if (auto n = dynamic_cast<GAME::NPC*>(target)) {
 						npc_hits.emplace_back(n->GetNpcId(), (int32_t)config.damage, n->GetHP());
+
+						// [수정] NPC 사망 처리 로직 추가
+						if (n->GetHP() <= 0 && n->IsActive()) {
+							OnNPCDead(n);
+						}
 					}
 				}
 			}
@@ -464,25 +469,29 @@ namespace PIP::SERVER
 			Broadcast(stream.constable_data(), stream.Size());
 		}
 
-		// 4. [패킷 전송] NPC가 맞았음을 알림 (NPC끼리 맞았을 때)
-		if (!npc_hits.empty()) {
+		// 4. [패킷 전송] NPC가 맞았음을 알림
+		for (const auto& hit : npc_hits) {
 			packet::PacketStream stream;
-			packet::SC_PACKET_NPC_ATTACK header;
-			header._type = packet::PacketType::S2C_P_NPC_ATTACK;
-			header._attacker_id = attacker->GetId();
-			header._hit_count = (uint8_t)npc_hits.size();
-			stream << header;
-			for (auto& h : npc_hits) stream << h;
+			packet::SC_PACKET_NPC_ATTACK hit_packet;
+			hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
+			hit_packet._attacker_id = attacker->GetId();
+			hit_packet._hit_count = 1; // 단일 전송 모드
 
-			auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
-			h_ptr->_size = (uint16_t)stream.Size();
-			Broadcast(stream.constable_data(), stream.Size());
+			stream << hit_packet;
+			stream << hit;
+
+			auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h->_size = static_cast<uint16_t>(stream.Size());
+
+			// [핵심] 이 NPC를 시야에 둔 플레이어들에게만 브로드캐스트 (체력바 업데이트 보장)
+			BroadcastToNPCViewers(hit._target_id, stream.constable_data(), stream.Size());
 		}
 
 
-	// 4. (디버깅) 서버 판정 범위를 시각화 패킷으로 전송
+	// 5. (디버깅) 서버 판정 범위를 시각화 패킷으로 전송
 #ifdef _DEBUG
 	// --- [디버그] 서버의 공격 판정 영역을 클라이언트에 가시화 ---
+	{
 		packet::SC_PACKET_DEBUG_DRAW debug;
 		debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
 		debug._size = sizeof(debug);
@@ -492,41 +501,37 @@ namespace PIP::SERVER
 
 		// Jolt Shape의 실제 타입을 확인하여 디버그 데이터 추출
 		const JPH::Shape* shape = config.shape.GetPtr();
-		switch (shape->GetSubType())
+		if (shape)
 		{
-		case JPH::EShapeSubType::Sphere:
-		{
-			auto sphere = static_cast<const JPH::SphereShape*>(shape);
-			debug._shape_type = packet::DebugShapeType::SPHERE;
-			// x에 반지름 저장
-			debug._extents = { sphere->GetRadius(), 0, 0 };
+			switch (shape->GetSubType())
+			{
+			case JPH::EShapeSubType::Sphere:
+			{
+				auto sphere = static_cast<const JPH::SphereShape*>(shape);
+				debug._shape_type = packet::DebugShapeType::SPHERE;
+				debug._extents = { sphere->GetRadius(), 0, 0 };
+			}
+			break;
+			case JPH::EShapeSubType::Box:
+			{
+				auto box = static_cast<const JPH::BoxShape*>(shape);
+				JPH::Vec3 halfExtents = box->GetHalfExtent();
+				debug._shape_type = packet::DebugShapeType::BOX;
+				debug._extents = { halfExtents.GetX(), halfExtents.GetY(), halfExtents.GetZ() };
+			}
+			break;
+			case JPH::EShapeSubType::Capsule:
+			{
+				auto capsule = static_cast<const JPH::CapsuleShape*>(shape);
+				debug._shape_type = packet::DebugShapeType::CAPSULE;
+				debug._extents = { capsule->GetRadius(), capsule->GetHalfHeightOfCylinder(), 0 };
+			}
+			break;
+			}
+			// 방 안의 모든 플레이어에게 전송
+			Broadcast(reinterpret_cast<const char*>(&debug), sizeof(debug));
 		}
-		break;
-		case JPH::EShapeSubType::Box:
-		{
-			auto box = static_cast<const JPH::BoxShape*>(shape);
-			JPH::Vec3 halfExtents = box->GetHalfExtent();
-			debug._shape_type = packet::DebugShapeType::BOX;
-			// x, y, z에 반폭값 저장
-			debug._extents = { halfExtents.GetX(), halfExtents.GetY(), halfExtents.GetZ() };
-		}
-		break;
-		case JPH::EShapeSubType::Capsule:
-		{
-			auto capsule = static_cast<const JPH::CapsuleShape*>(shape);
-			debug._shape_type = packet::DebugShapeType::CAPSULE;
-			// x에 반지름, y에 실린더 절반 높이 저장
-			debug._extents = { capsule->GetRadius(), capsule->GetHalfHeightOfCylinder(), 0 };
-		}
-		break;
-		default:
-			// 지원하지 않는 도형은 로그만 남기고 전송 안 함
-			// MYLOG("DebugDraw: Unsupported shape type.");
-			return;
-		}
-
-		// 방 안의 모든 플레이어에게 전송 (서버 판정이 맞는지 개발 중에 확인용)
-		Broadcast(reinterpret_cast<const char*>(&debug), sizeof(debug));
+	}
 #endif
 	}
 
@@ -1184,115 +1189,89 @@ namespace PIP::SERVER
 		{
 		case packet::ActionID::Common::Attack:
 			{
-				//TODO: [공격 정의] 나중에 무기/스킬 테이블에서 가져오는 구조로 확장 가능
-				JPH::Ref<JPH::Shape> attackShape = new JPH::SphereShape(3.0f);// 3m 반경 공격
-				JPH::RMat44 attackTransform = JPH::RMat44::sRotationTranslation(
-					Utils::ToJolt(action_packet._direction), Utils::ToJolt(action_packet._position));
+				// 기본 공격 통합 구현
+				GAME::NPCAttackConfig config;
+				config.damage = (float)session->_player->_damage;
+				config.posOffset = { 0.0f, 0.0f, -1.0f }; // 플레이어 약간 앞(1m) 중심
+				config.knockbackValue = 5.0f;           // 기본 공격의 가벼운 넉백
 
-				// TODO: [GridMap 최적화] 공격 지점 주변 5m 이내 대상들만 1차 선별
-				std::vector<GAME::GameObject*> nearbyObjects;
-				_gridMap.GetNearbyObjects(action_packet._position, nearbyObjects);
-
-
-				for (auto* obj : nearbyObjects) {
-					// 자기 자신은 제외
-					if (obj->GetId() == session->_id) continue;
-					// [수정] Actor 인터페이스로 통합 판정 (NPC/Player 공통)
-					if (auto targetActor = dynamic_cast<GAME::Actor*>(obj)) {
-						if (session->_player->GetFaction() == targetActor->GetFaction()) continue;
-						if (targetActor->ValidateHit(_physicsSystem, attackShape.GetPtr(), attackTransform,
-						                             action_packet._client_time_stamp,
-						                             session->_player.get(), session->_player->_damage))
-						{
-							// NPC 피격 기록
-							if (auto npc = dynamic_cast<GAME::NPC*>(targetActor))
-							{
-								// ValidateHit 내부에서 HP가 깎였다면
-								if (npc->GetHP() <= 0 && npc->IsActive()) {
-									OnNPCDead(npc); // 사망 처리 호출
-								}
-								npc_hits.emplace_back(npc->GetNpcId(), session->_player->_damage, npc->GetHP());
-							}
-							// Player 피격 기록
-							else if (auto player = dynamic_cast<GAME::Player*>(targetActor))
-							{
-								if (player->GetHP() <= 0) {
-									auto it = _players.find(player->GetId());
-									if (it != _players.end()) {
-										OnPlayerDead(it->second); // 플레이어 사망 처리 호출
-									}
-								}
-								player_hits.emplace_back(player->GetId(), session->_player->_damage, player->GetHP());
-							}
-
-						}
-					}
-					// (확장) Player vs Player 판정도 동일한 로직으로 여기에 추가 가능
+				// 3m 반경 구체 히트박스 생성
+				JPH::SphereShapeSettings shapeSettings(2.0f);
+				JPH::Shape::ShapeResult result = shapeSettings.Create();
+				if (result.IsValid()) {
+					config.shape = result.Get();
 				}
 
-#ifdef _DEBUG_PHYSICS_VISUALIZATION
-				// --- 4. [디버그] 서버 판정 가시화 패킷 ---
-				packet::SC_PACKET_DEBUG_DRAW debug;
-				debug._type = packet::PacketType::S2C_P_DEBUG_DRAW;
-				debug._size = sizeof(debug);
-				debug._position = action_packet._position;
-				debug._rotation = action_packet._direction;
-				debug._duration = 0.5f;
-				// 공격 타입에 맞춘 디버그 도형 설정 (여기서는 구체)
-				debug._shape_type = packet::DebugShapeType::SPHERE;
-				debug._extents = { 3.0f, 0, 0 };
-
-				Broadcast(reinterpret_cast<const char*>(&debug), sizeof(debug));
-#endif
+				// 공용 로직으로 판정 및 브로드캐스트 위임
+				ExecuteActorAction(session->_player.get(), config);
 			}
 			break;
 		case packet::ActionID::Common::SKILL1:
-			// 스킬 ID(action_packet._action_id)에 따른 다양한 박스/캡슐 판정 로직 추가 지점
-			MYLOG("Received SKILL1 action - hit detection logic not implemented yet.");
-			return;
-			break;
+			{
+				// 대검 찍기 스킬 (SKILL1) 구현
+				// 요구사항: 플레이어 앞 30cm, 3m 크기의 박스, 높은 데미지 판정
+
+				GAME::NPCAttackConfig config;
+				config.damage = session->_player->_damage * 3.0f; // 기본 데미지의 3배 (강력한 일격)
+				config.posOffset = { 0.0f, 1.0f, -1.8f };          // 플레이어 앞 0.3m + 박스 반경 1.5m
+				config.knockbackValue = 30.0f;                    // 대검의 중량감을 살린 넉백
+
+				// Jolt Box Shape 생성 (3m x 3m x 3m)
+				// Jolt의 BoxShape는 half-extents를 사용하므로 1.5f를 입력합니다.
+				JPH::BoxShapeSettings shapeSettings(JPH::Vec3(1.5f, 1.5f, 5.5f));
+				JPH::Shape::ShapeResult result = shapeSettings.Create();
+				if (result.IsValid()) {
+					config.shape = result.Get();
+				}
+
+				// 서버 권위 판정: ExecuteActorAction을 통해 통합 처리 (팀킬 방지, 넉백, 패킷 브로드캐스트 포함)
+				ExecuteActorAction(session->_player.get(), config);
+
+				MYLOG("Executed SKILL1 (Greatsword Slam) for player session: " << session->_id);
+			}
+			break;		
 		default:
 			MYERROR("Unknown action type received: " << static_cast<int>(action_packet._action_id));
 			return;
 			break;
 		}
 
-		// --- 3. [AOI 브로드캐스트] 피격 결과 전송 ---
-		// 모든 유저에게 쏘는 것이 아니라, "맞은 놈을 보고 있는 유저"에게만 전송합니다.
+		//// --- 3. [AOI 브로드캐스트] 피격 결과 전송 ---
+		//// 모든 유저에게 쏘는 것이 아니라, "맞은 놈을 보고 있는 유저"에게만 전송합니다.
 
-		// NPC 피격 알림
-		for (const auto& hit : npc_hits) {
-			packet::PacketStream stream;
-			packet::SC_PACKET_NPC_ATTACK hit_packet;
-			hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
-			hit_packet._attacker_id = session->_id;
-			hit_packet._hit_count = 1; // 단일 전송 모드
+		//// NPC 피격 알림
+		//for (const auto& hit : npc_hits) {
+		//	packet::PacketStream stream;
+		//	packet::SC_PACKET_NPC_ATTACK hit_packet;
+		//	hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
+		//	hit_packet._attacker_id = session->_id;
+		//	hit_packet._hit_count = 1; // 단일 전송 모드
 
-			stream << hit_packet;
-			stream << hit;
+		//	stream << hit_packet;
+		//	stream << hit;
 
-			auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
-			h->_size = static_cast<uint16_t>(stream.Size());
+		//	auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+		//	h->_size = static_cast<uint16_t>(stream.Size());
 
-			// [핵심] 이 NPC를 시야에 둔 플레이어들에게만 브로드캐스트
-			BroadcastToNPCViewers(hit._target_id, stream.constable_data(), stream.Size());
-		}
+		//	// [핵심] 이 NPC를 시야에 둔 플레이어들에게만 브로드캐스트
+		//	BroadcastToNPCViewers(hit._target_id, stream.constable_data(), stream.Size());
+		//}
 
 
-		// 2. 하단에 플레이어 피격 알림 브로드캐스트 추가
-		if (!player_hits.empty()) {
-			packet::PacketStream stream;
-			packet::SC_PACKET_PLAYER_ATTACK header;
-			header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
-			header._attacker_id = session->_id;
-			header._hit_count = (uint8_t)player_hits.size();
-			stream << header;
-			for (auto& h : player_hits) stream << h;
+		//// 2. 하단에 플레이어 피격 알림 브로드캐스트 추가
+		//if (!player_hits.empty()) {
+		//	packet::PacketStream stream;
+		//	packet::SC_PACKET_PLAYER_ATTACK header;
+		//	header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
+		//	header._attacker_id = session->_id;
+		//	header._hit_count = (uint8_t)player_hits.size();
+		//	stream << header;
+		//	for (auto& h : player_hits) stream << h;
 
-			auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
-			h_ptr->_size = (uint16_t)stream.Size();
-			Broadcast(stream.constable_data(), stream.Size());
-		}
+		//	auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+		//	h_ptr->_size = (uint16_t)stream.Size();
+		//	Broadcast(stream.constable_data(), stream.Size());
+		//}
 
 		
 
