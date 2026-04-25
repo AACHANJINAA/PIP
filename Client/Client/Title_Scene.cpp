@@ -37,7 +37,7 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     // 카메라 생성
     auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
     cameraObject->add_component<FreeCameraScript>();
-	cameraObject->transform()->set_local_position({ 240.0f, 137.0f, 111.0f });
+	cameraObject->transform()->set_local_position({ 239.44f, 138.1f, 112.19f });
 	// 처음에는 45도 위쪽을 바라보도록 설정 -> 나중에 오프닝 연출에서 카메라 이동 시켜야할듯
 	cameraObject->transform()->set_local_rotation(-45.0f, 195.0f, 0.0f);
     cameraObject->set_layer("Camera");
@@ -214,12 +214,12 @@ void Title_Scene::spawn_opening_sequence_object()
         renderer->set_pso_name("skinned");
 
         // 위치, 회전 정보
-        T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        T1->transform()->set_local_rotation(0.f, 20.f, 0.f);
         T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
 
 
         // T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
-        T1->transform()->set_local_position(XMFLOAT3(242.4f, 137.6f, 114.5f));
+        T1->transform()->set_local_position(XMFLOAT3(242.4f, 137.7f, 114.5f));
     }
 }
 
@@ -428,9 +428,9 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 	const float spawnUIENDTime = 33.0f; // ui 페이트인 끝나는 시간 -> 초에 ui도 다 끝나야함
 
     // 위치 데이터
-    XMFLOAT3 P0 = { 240.0f, 137.0f, 111.0f };
-    XMFLOAT3 P1 = { 241.6f, 139.3f, 115.0f };
-    XMFLOAT3 P2 = { 239.6f, 140.71f, 115.17f };
+    XMFLOAT3 P0 = { 239.44f, 138.1f, 112.19f };
+    XMFLOAT3 P1 = { 241.69f, 139.67f, 115.28f };
+    XMFLOAT3 P2 = { 239.94f, 141.16f, 116.98f };
 
 	// 각도 데이터 (Z축은 모두 0.0f로 통일)
     XMFLOAT3 R_Base = { -45.0f, 195.0f, 0.0f };
@@ -439,9 +439,9 @@ void Title_Scene::Opening_Sequence(float deltaTime)
    // 기존 R0(140, 18, 180) -> 정상 R0
     XMFLOAT3 R0 = { 30.0f, 195.0f, 0.0f };
     // 기존 R1(150, 5, 180) -> 정상 R1
-    XMFLOAT3 R1 = { 30.0f, 175.0f, 0.0f };
+    XMFLOAT3 R1 = { 32.5f, 175.4f, 0.0f };
     // 기존 R2(-149.7, 19.3, 180) -> 정상 R2
-    XMFLOAT3 R2 = { 34.6f, 164.3f, 0.0f };
+    XMFLOAT3 R2 = { 29.2f, 172.2f, 0.0f };
 
     XMFLOAT3 targetPos;
     XMFLOAT3 targetRot;
@@ -450,31 +450,6 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
     float black_alpha{0.f};
   
-
-    // 
-    //if (bgm_time >= startTime && bgm_time < move_start_time) // 두 번째 UI 연출 (검은 배경 페이드 아웃)
-    //{
-    //    // uiNum 1이 '8.5초'에 끝났으므로, 배경 페이드 아웃의 시작 기준점은 8.5초가 됩니다.
-    //   
-    //    const float targetDuration = 5.0f;   // 5초 동안 아주 천천히 (8.5초 ~ 13.5초 구간)
-
-    //    // 진행률 계산 (현재 오디오 시간 - 8.5초) / 5.0초
-    //    float progress = (bgm_time - startTime) / targetDuration;
-
-    //    // 탈출 조건: 진행률이 100% (1.0)에 도달하거나 넘었을 때 (즉, 13.5초가 되었을 때)
-    //    if (progress >= 1.0f)
-    //    {
-    //        alpha = 0.0f; // 안전하게 0으로 고정
-    //    }
-    //    else
-    //    {
-    //        // 알파값 계산 (1.0에서 0.0으로)
-    //        alpha = 1.0f - progress;
-    //    }
-
-    //    // 배경 투명도 적용
-    //    _blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
-    //}
 	// [구간 0] 카메라 각도 회전 (8.5f ~ 16.5f) 및 배경 페이드 아웃 (8.5f ~ 13.5f)
     if (bgm_time >= startTime && bgm_time < move_start_time)
     {
@@ -553,7 +528,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 		alpha = 1.0f; // UI도 완전히 나타난 상태로 고정
         _isOpeningEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
-        //cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
+        cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
     }
     else // 연출 시작 전 대기 (13.5초 이전)
     {

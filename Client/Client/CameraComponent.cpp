@@ -6,7 +6,7 @@
 CameraComponent* CameraComponent::_mainCamera = nullptr;
 
 CameraComponent::CameraComponent() :
-	_fov(90.0f),
+	_fov(45.0f),
 	_aspect(static_cast<float>(FRAME_BUFFER_WIDTH) / static_cast<float>(FRAME_BUFFER_HEIGHT)),
 	_near(0.1f), _far(5000.0f)
 {
