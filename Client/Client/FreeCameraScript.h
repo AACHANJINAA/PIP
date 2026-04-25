@@ -31,6 +31,7 @@ private:
 
 	void free_camera_update(float delta_time);
 	void player_camera_update(float delta_time);
+	void player_camera_conflict_update(float delta_time); // 플레이어 카메라 모드일 때 충돌처리 및 최종 카메라 위치 계산하는 함수
 
     // 역할 이전 (from FreeCamera):
     // 마우스 입력을 처리하여 카메라를 회전시킵니다.
@@ -46,7 +47,7 @@ private:
 
 	// 3인칭 에서의 offset 거리
 	float _thirdPersonOffsetDistance_top = 0.0f;
-    float _thirdPersonOffsetDistance_back = -2.5f;
+    float _thirdPersonOffsetDistance_back = -4.0f;
 
     // 자주 접근하게 될 CameraComponent에 대한 캐시된 포인터
     CameraComponent* _cameraComponent;

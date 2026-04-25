@@ -195,6 +195,9 @@ public: // DW설명 : 소켓기능 관련 함수들
 public: // DW설명 : 인스턴싱 관련 함수들
 	void nodes_inout_set(_Inout_ std::vector<NodeInfo>& nodes); // 모든 gltf 노드의 정보를 설정해주는 함수
 
+	// DW설명 : 레이와 메쉬의 교차 여부를 계산하는 함수 rayStart는 레이의 시작점, rayDir는 레이의 방향 벡터 worldMatrix는 메쉬의 월드 변환 행렬 outHitDist는 레이와 메쉬가 교차할 때의 거리를 반환하는 출력 매개변수
+	bool intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayDir, const XMMATRIX& worldMatrix, float& outHitDist) const;
+
 
 private:
 

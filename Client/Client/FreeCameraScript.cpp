@@ -10,6 +10,8 @@
 #include "ObjectManager.h"
 #include "LightManager.h"
 #include "TargetingComponent.h"
+#include "ReadGLTFMesh.h"
+#include "TerrainLoader.h"
 
 FreeCameraScript::FreeCameraScript()
     : _moveSpeed(10.0f), _rotationSpeed(15.0f), _cameraComponent(nullptr)
@@ -96,20 +98,130 @@ void FreeCameraScript::player_camera_update(float delta_time)
         }
 
 		// transform()->set_local_position({ 0.f, 0.f, 0.f });
+        player_camera_conflict_update(delta_time);
+    }
+}
 
-        // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
-        if (nullptr != ObjectManager::instance()->find_by_name("MainPlayer").get())
+void FreeCameraScript::player_camera_conflict_update(float delta_time)
+{
+    auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+    // 플레이어가 생성된 후라면? -> DW설명 : 플레이어가 바로 생성되는 것이 아니기 때문에 이렇게 해주어야 함
+    if (player && player->transform())
+    {
+        // 1. 레이캐스트 시작점 (플레이어의 머리)
+        XMFLOAT3 playerPos = player->transform()->position();
+        XMFLOAT3 rayStart = XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 5.5f, playerPos.z };
+
+        // 2. 카메라가 원래 있어야 할 이상적인 위치 계산
+        XMFLOAT3 camForward = transform()->forward();
+        XMFLOAT3 camUp = transform()->up();
+
+        XMVECTOR vRayStart = XMLoadFloat3(&rayStart);
+        XMVECTOR vCamForward = XMLoadFloat3(&camForward);
+        XMVECTOR vCamUp = XMLoadFloat3(&camUp);
+
+        XMVECTOR vIdealPos = vRayStart + (vCamForward * _thirdPersonOffsetDistance_back) + (vCamUp * _thirdPersonOffsetDistance_top);
+
+        // 3. 레이 방향 및 최대 길이 계산
+        XMVECTOR vRayDir = XMVector3Normalize(vIdealPos - vRayStart);
+        float maxDistance = XMVectorGetX(XMVector3Length(vIdealPos - vRayStart));
+
+        float minHitDistance = maxDistance; // 가장 가까운 충돌 거리를 저장
+        bool bHit = false;
+
+        // 4. ObjectManager를 순회하며 Mesh의 OBB와 레이캐스트 충돌 검사
+        const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
+        for (const auto& obj : allGameObjects)
         {
-            auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-            // 카메라 위치를 플레이어 위치로 동기화합니다.
-            if (player && player->transform())
+            if (!obj || !obj->is_enable() || obj->is_destroyed() ||
+                obj->is_in_layer("Player") || obj->is_in_layer("OtherPlayer") || obj->is_in_layer("Enemy") || obj->name() == "Camera" || obj->name() == "TestMesh")
             {
-                XMFLOAT3 playerPos = player->transform()->position();
-                transform()->set_local_position(XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 8.0f, playerPos.z });
-                transform()->move_forward(_thirdPersonOffsetDistance_back);
-                transform()->move_up(_thirdPersonOffsetDistance_top);
+                continue;
+            }
+
+            // 지형(Landscape, Floor)은 OBB 검사에서 제외
+            if (obj->name().find("Landscape") != std::string::npos ||
+                obj->name().find("Floor") != std::string::npos)
+            {
+                continue;
+            }
+
+            auto renderComp = obj->get_component<RenderComponent>();
+            if (renderComp && renderComp->mesh())
+            {
+                float hitDist = 0.0f;
+                XMMATRIX worldMatrix = XMLoadFloat4x4(&obj->transform()->world_matrix());
+
+                auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
+                if (gltfMesh)
+                {
+                    // 프리미티브 단위 정밀 검사
+                    if (gltfMesh->intersects_ray(vRayStart, vRayDir, worldMatrix, hitDist))
+                    {
+                        if (hitDist < minHitDistance)
+                        {
+                            minHitDistance = (hitDist <= 0.0f) ? 0.01f : hitDist;
+                            bHit = true;
+                        }
+                    }
+                }
+                else
+                {
+                    // 일반 단일 박스 검사
+                    BoundingOrientedBox worldOBB;
+                    renderComp->mesh()->bounding_box().Transform(worldOBB, worldMatrix);
+                    if (worldOBB.Intersects(vRayStart, vRayDir, hitDist))
+                    {
+                        if (hitDist >= 0.0f && hitDist < minHitDistance)
+                        {
+                            minHitDistance = (hitDist == 0.0f) ? 0.01f : hitDist;
+                            bHit = true;
+                        }
+                    }
+                }
             }
         }
+
+        // 5. 지형(Terrain) 높이 정밀 충돌 검사 (Ray Marching)
+        float stepSize = 0.01f;
+        float currentDist = 0.0f;
+        float terrainSkinWidth = 0.01f; // 바닥 여백
+
+        XMFLOAT3 startPos;
+        XMStoreFloat3(&startPos, vRayStart);
+        XMFLOAT3 dir;
+        XMStoreFloat3(&dir, vRayDir);
+
+        while (currentDist <= minHitDistance)
+        {
+            float checkX = startPos.x + dir.x * currentDist;
+            float checkY = startPos.y + dir.y * currentDist;
+            float checkZ = startPos.z + dir.z * currentDist;
+
+            float groundHeight = TerrainLoader::get_height_anywhere(checkX, checkZ);
+
+            if (checkY < groundHeight + terrainSkinWidth)
+            {
+                minHitDistance = std::max(0.0f, currentDist - 0.01f);
+                bHit = true;
+                break;
+            }
+
+            currentDist += stepSize;
+        }
+
+        // 6. 최종 위치 결정 및 즉시 적용 (보간 완전 제거)
+        float skinWidth = 0.01f; // 일반 오브젝트 벽 여백
+        if (bHit)
+        {
+            minHitDistance = std::max(0.0f, minHitDistance - skinWidth);
+        }
+
+        XMVECTOR vFinalPos = vRayStart + (vRayDir * minHitDistance);
+
+        XMFLOAT3 finalPos;
+        XMStoreFloat3(&finalPos, vFinalPos);
+        transform()->set_local_position(finalPos);
     }
 }
 

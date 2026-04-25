@@ -928,7 +928,7 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 			int values_per_keyframe = (channel._interpolation == AnimationInterpolation::CubicSpline) ? 3 : 1;
 			int stride = sampler.type_component_count;
 
-			// [수정] Weights 채널을 위한 Stride 재계산
+			// Weights 채널을 위한 Stride 재계산
 			// Weights는 SCALAR 타입이지만, 모프 타겟 개수(N)만큼 값이 연속됨
 			if (channel._path == "weights" && keyframe_count > 0)
 			{
@@ -958,12 +958,12 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 
 						if (channel._path == "translation")
 						{
-							//result = DirectX::XMFLOAT4(x, y, -z, 0.0f); // Z 반전
+							// result = DirectX::XMFLOAT4(x, y, -z, 0.0f); // Z 반전
 							result = DirectX::XMFLOAT4(x, y, -z, 0.0f); // Z 반전
 						}
 						else if (channel._path == "rotation")
 						{
-							//result = DirectX::XMFLOAT4(-x, -y, z, w); // 회전축 반전
+							// result = DirectX::XMFLOAT4(-x, -y, z, w); // 회전축 반전
 							result = DirectX::XMFLOAT4(-x, -y, z, w); // 회전축 반전
 						}
 						else if (channel._path == "scale")
@@ -971,7 +971,7 @@ void ReadGLTFMesh::load_animations(const json& gltf_json, const std::vector<char
 							result = DirectX::XMFLOAT4(x, y, z, 0.0f);
 						}
 					}
-					// [수정] Weights 처리 (최대 4개 모프 타겟 지원)
+					// Weights 처리 (최대 4개 모프 타겟 지원)
 					else if (channel._path == "weights")
 					{
 						float w0 = (stride > 0) ? sampler.values[offset_index + 0] : 0.0f;
@@ -2002,7 +2002,6 @@ void ReadGLTFMesh::bounding_box_merge()
 {
 	if (!_primitives.empty())
 	{
-		// [명명법] 함수 내부 변수를 snake_case로 적용
 		std::vector<XMFLOAT3> all_points;
 		all_points.reserve(_primitives.size() * 8);
 
@@ -2024,4 +2023,45 @@ void ReadGLTFMesh::bounding_box_merge()
 		// 수집된 전체 점들을 바탕으로 단 한 번만 최종 OBB를 계산합니다.
 		BoundingOrientedBox::CreateFromPoints(_orientedBoundingBox, all_points.size(), all_points.data(), sizeof(XMFLOAT3));
 	}
+}
+
+bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayDir, const XMMATRIX& worldMatrix, float& outHitDist) const
+{
+	bool hitAnything = false;
+	float closestDist = FLT_MAX;
+
+	// 전체 합본 박스를 먼저 검사해서, 아예 근처도 안 갔으면 빠르게 패스
+	BoundingOrientedBox worldOverallOBB;
+	_orientedBoundingBox.Transform(worldOverallOBB, worldMatrix);
+
+	float overallDist = 0.0f;
+	if (!worldOverallOBB.Intersects(rayStart, rayDir, overallDist))
+	{
+		return false; // 전체 박스에 안 맞았으면 하위 프리미티브는 볼 필요도 없음
+	}
+
+	// 전체 박스에 맞았다면, 디테일한 개별 프리미티브 OBB들을 순회하며 진짜 맞았는지 검사
+	for (const auto& primitive : _primitives)
+	{
+		BoundingOrientedBox worldPrimOBB;
+		primitive->_orientedBoundingBox.Transform(worldPrimOBB, worldMatrix);
+
+		float hitDist = 0.0f;
+		if (worldPrimOBB.Intersects(rayStart, rayDir, hitDist))
+		{
+			if (hitDist >= 0.0f && hitDist < closestDist)
+			{
+				closestDist = hitDist;
+				hitAnything = true;
+			}
+		}
+	}
+
+	if (hitAnything)
+	{
+		outHitDist = closestDist;
+		return true;
+	}
+
+	return false;
 }

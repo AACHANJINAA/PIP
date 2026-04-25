@@ -54,10 +54,7 @@ public:
     void camera_rotate(float pitch, float yaw, float roll); // 카메라의 회전량을 적용하는 함수
     void set_camera_rotate(float pitch, float yaw, float roll); // 카메라 회전을 설정
 	bool _cameraRotationMode; // true면 free_camera_rotate, false면 일반 rotate
-    void set_camera_rotation_mode(bool enable) {
-        bool previous_mode = _cameraRotationMode;
-        _cameraRotationMode = enable;
-	}
+    void set_camera_rotation_mode(bool enable) { _cameraRotationMode = enable; }
     
     static common::Quat apply_offset_rotation(const common::Quat& base_quat, 
         float pitch_offset_deg, 
