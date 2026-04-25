@@ -28,10 +28,18 @@ ComPtr<ID3D12PipelineState> OcclusionQueryShader::create_pso(ID3D12Device* devic
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
-	// 핵심 1: 색상 쓰기 끄기
-	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = 0;
+	// [수정] 기본 Rasterizer 대신 Wireframe으로 설정 (박스 내부를 보기 위함)
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
-	// 핵심 2: 깊이 테스트는 하되, 깊이 버퍼를 덮어쓰지는 않음
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+
+	// [수정] 0으로 되어있던 마스크를 ALL로 변경 (색상 출력 활성화)
+	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	// [수정] 깊이 테스트 설정
+	// 기존물체에 가려져도 박스를 보고 싶다면 DepthFunc를 ALWAYS로 변경하세요.
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;

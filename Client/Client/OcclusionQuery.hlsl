@@ -4,7 +4,9 @@
 };
 cbuffer cbCamera : register(b1)
 {
-    float4x4 gViewProj;
+    float4x4 gView;
+    float4x4 gProj;
+    float4 gvCameraPosition;
 };
 
 struct VS_INPUT
@@ -20,11 +22,13 @@ VS_OUTPUT VS_Main(VS_INPUT input)
 {
     VS_OUTPUT output;
     float4 worldPos = mul(float4(input.position, 1.0f), gWorld);
-    output.position = mul(worldPos, gViewProj);
+    float4 viewPos = mul(worldPos, gView);
+    output.position = mul(viewPos, gProj);
     return output;
 }
 
- // Pixel Shader는 색상을 기록하지 않으므로 비워둡니다.
-void PS_Main()
+float4 PS_Main(VS_OUTPUT input) : SV_TARGET
 {
+     // [수정] 원하는 색상 반환 (예: 연두색)
+    return float4(0.0f, 1.0f, 0.0f, 1.0f);
 }
