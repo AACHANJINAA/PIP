@@ -99,6 +99,8 @@ std::shared_ptr<Mesh> Mesh::create_unit_cube()
 	// 3. 기존 Mesh 시스템의 데이터 버퍼에 적재
 	mesh->set_vertex_data_buffer(temp_vertices);
 	mesh->_indices = temp_indices;
+	mesh->_vertexStride = sizeof(Vertex);
+	mesh->_vertexCount = static_cast<UINT>(temp_vertices.size());
 	mesh->_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; // 큐브는 삼각형으로!
 
 	return mesh;
