@@ -75,9 +75,12 @@ void FreeCameraScript::player_camera_update(float delta_time)
     if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
         auto player = ObjectManager::instance()->find_by_name("MainPlayer");
-
-        auto targeting = player->get_component<TargetingComponent>();
-        bool locked = targeting && targeting->is_locked_on();
+		bool locked = false;
+        if (player)
+        {
+            auto targeting = player->get_component<TargetingComponent>();
+            locked = targeting && targeting->is_locked_on();
+        }
 
         if (locked) {
             // [사용자 의도] 플레이어의 회전값(Yaw)을 카메라에 그대로 복사
