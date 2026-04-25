@@ -85,7 +85,7 @@ void FreeCameraScript::player_camera_update(float delta_time)
             float playerYaw = player->transform()->local_rotation_euler().y;
 
             // Pitch는 약간 아래를 내려다보도록 고정 (예: 15도)
-            transform()->set_local_rotation(15.0f, playerYaw + 180.f, 0.0f);
+            transform()->set_camera_rotate(15.0f, playerYaw + 180.f, 0.0f);
         }
         else {
             // 일반 상태에선 기존 마우스 입력 사용

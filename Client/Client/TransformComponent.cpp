@@ -292,9 +292,6 @@ void TransformComponent::rotate(float pitch, float yaw, float roll)
 // ---------------------------- Helper Functions ----------------------------
 void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
 {
-    static float total_yaw_rad = 0.f; 
-    static float total_pitch_rad = 0.f; 
-
     total_yaw_rad += XMConvertToRadians(yaw);
     total_pitch_rad += XMConvertToRadians(pitch);
 
@@ -319,6 +316,54 @@ void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
         {
             total_pitch_rad = XMConvertToRadians(-60.f);
 		}
+    }
+
+    // Yaw는 항상 월드 Y축(0,1,0)을 기준으로 합니다.
+    XMVECTOR yaw_quat = XMQuaternionRotationAxis(
+        XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+        total_yaw_rad
+    );
+
+    // Pitch는 로컬 X축(1,0,0)을 기준으로 합니다.
+    XMVECTOR pitch_quat = XMQuaternionRotationAxis(
+        XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
+        total_pitch_rad
+    );
+
+    // 최종 회전을 계산하여 _localRotation에 '덮어씁니다'. (곱하는 게 아님!)
+    XMVECTOR final_quat = XMQuaternionMultiply(pitch_quat, yaw_quat);
+    XMStoreFloat4(&_localRotation, XMQuaternionNormalize(final_quat));
+
+    // 행렬이 더럽혀졌음을 표시합니다.
+    set_hierarchy_dirty();
+}
+
+void TransformComponent::set_camera_rotate(float pitch, float yaw, float roll)
+{
+    total_yaw_rad = XMConvertToRadians(yaw);
+    total_pitch_rad = XMConvertToRadians(pitch);
+
+    if (_cameraRotationMode)
+    {
+        if (XMConvertToDegrees(total_pitch_rad) > 89.f)
+        {
+            total_pitch_rad = XMConvertToRadians(89.f);
+        }
+        else if (XMConvertToDegrees(total_pitch_rad) < -89.f)
+        {
+            total_pitch_rad = XMConvertToRadians(-89.f);
+        }
+    }
+    else // 만약 자유 시점 카메라가 아니라면? -> 제약걸기
+    {
+        if (XMConvertToDegrees(total_pitch_rad) > 60.f) // 카메라 고개 내리는 각도
+        {
+            total_pitch_rad = XMConvertToRadians(60.f);
+        }
+        else if (XMConvertToDegrees(total_pitch_rad) < -60.f) // 윗방향 보는 각도
+        {
+            total_pitch_rad = XMConvertToRadians(-60.f);
+        }
     }
 
     // Yaw는 항상 월드 Y축(0,1,0)을 기준으로 합니다.

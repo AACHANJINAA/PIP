@@ -51,7 +51,8 @@ public:
 
 	// --------------- Helper Functions ---------------
 	// DW설명 : 카메라 전용 회전 함수
-    void camera_rotate(float pitch, float yaw, float roll);
+    void camera_rotate(float pitch, float yaw, float roll); // 카메라의 회전량을 적용하는 함수
+    void set_camera_rotate(float pitch, float yaw, float roll); // 카메라 회전을 설정
 	bool _cameraRotationMode; // true면 free_camera_rotate, false면 일반 rotate
     void set_camera_rotation_mode(bool enable) {
         bool previous_mode = _cameraRotationMode;
@@ -94,4 +95,11 @@ protected:
     // Hierarchy Data
     std::weak_ptr<TransformComponent> _parent;
     std::vector<std::shared_ptr<TransformComponent>> _children;
+
+
+    // 카메라 관련 변수
+   float total_yaw_rad = 0.f;
+   float total_pitch_rad = 0.f;
+
+
 };
