@@ -220,14 +220,24 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                 cmd->SetGraphicsRootSignature(rootSig);
                 cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress); // b1에 현재 Cascade 행렬 바인딩
 
+                f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
+                ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
+
                 auto it = renderMap.find("gltf");
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
                         if (!obj || obj->is_destroyed()) continue;
+
+                        f3 objPos = obj->transform()->get_world_position();
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+                        // [최적화] 그림자는 300m만 넘어도 거의 안 보입니다.
+                        if (dist > 300.0f) continue;
+
                         auto rc = obj->get_component<RenderComponent>();
                         if (!rc) continue;
 
-                        // [핵심] 오클루전 커링 적용
+                        // 오클루전 쿼리 결과 적용 (이전 프레임 데이터)
                         if (rc->skip_occlusion()) {
                             rc->render_CascadeShadowMap(cmd, frame_index);
                         }

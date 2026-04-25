@@ -397,51 +397,98 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
 
     if (camera) camera->update_shader_variables(commandList, frame_index);
 
+    f3 camPos = camera->game_object()->transform()->get_world_position();
+
     for (auto& obj : it->second) {
         if (!obj) continue;
+
+        if (psoName == "terrain") {
+            f3 tilePos = obj->transform()->get_world_position();
+
+            if (Vector3::Length(Vector3::Subtract(camPos, tilePos)) > 505.f) {
+                continue; // 멀리 있는 지형은 렌더링 생략
+            }
+        }
+
         proto->update_per_object(commandList, this, obj.get());
         obj->prepare_render();
         obj->get_component<RenderComponent>()->render(commandList, frame_index);
     }
 }
 void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index) {
-    // 0. 디스크립터 힙 설정 (SRV 테이블 사용을 위해 필수)
-	// render_pso_group이 지형이 없어 조기 리턴될 경우를 대비해 함수 시작 시점에 미리 설정합니다.
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-	
+
     if (camera) {
         camera->set_viewports_and_scissor_rects(commandList);
         camera->update_shader_variables(commandList, frame_index);
     }
 
-
-    // 1. Terrain (Occluder) 그리기
-    render_pso_group(commandList, "terrain", camera, frame_index);
-
     f3 camPos = camera->game_object()->transform()->get_world_position();
 
-    // 2. Query Pass - 가려짐 여부 판정용 박스 그리기
+    // 1. Occluder Pass: 현재 발밑의 지형 타일 그리기
+    // 카메라에서 가장 가까운 타일(약 250.0f 이내)은 무조건 그리며, Occluder 역할을 수행합니다.
+    {
+        auto it = _renderMap.find("terrain");
+        if (it != _renderMap.end()) {
+            auto pso = get_pso("terrain");
+            auto proto = _shaderPrototypes["terrain"];
+            commandList->SetPipelineState(pso);
+            commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+
+            LightManager::instance()->bind(commandList, 3);
+            ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
+
+            for (auto& obj : it->second) {
+                f3 objPos = obj->transform()->get_world_position();
+                float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+                // 타일 크기가 505이므로, 거리가 250 이하면 현재 내가 서 있는 타일입니다.
+                if (dist <= 250.0f) {
+                    proto->update_per_object(commandList, this, obj.get());
+                    obj->prepare_render();
+                    obj->get_component<RenderComponent>()->render(commandList, frame_index);
+                }
+            }
+        }
+    }
+
+    // 2. Query Pass: 주변 지형(8개) 및 일반 객체 쿼리
     auto occ_pso = get_pso("occlusion_query");
     auto occ_sig = get_root_signature("occlusion_sig");
     if (occ_pso && occ_sig && _unitCube) {
         commandList->SetPipelineState(occ_pso);
         commandList->SetGraphicsRootSignature(occ_sig);
 
-        std::string query_targets[] = { "gltf", "skinned" };
+        std::string query_targets[] = { "terrain", "gltf", "skinned" };
         for (const std::string& target : query_targets) {
             auto it = _renderMap.find(target);
+
             if (it == _renderMap.end()) continue;
 
             for (auto& obj : it->second) {
+                f3 objPos = obj->transform()->get_world_position();
+                float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+                // [1차 필터링]
+                // 지형은 주변 8개 타일을 위해 800m까지 허용, 나머지는 505m에서 컷
+                float maxDist = (target == "terrain") ? 800.0f : 505.0f;
+                if (dist > maxDist) continue;
+
                 auto rc = obj->get_component<RenderComponent>();
                 if (!rc) continue;
 
-                // skinned일 때만 거리 기반 생략 적용, gltf는 항상 쿼리
                 bool skip = false;
-                if (target == "skinned") {
-                    f3 objPos = obj->transform()->get_world_position();
-                    float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+                if (target == "terrain") {
+                    // [지형 전용] 250m 이내는 이미 Occluder로 그렸으므로 쿼리 스킵(항상 보임)
+                    if (dist <= 250.0f) {
+                        rc->set_skip_occlusion(true);
+                        skip = true;
+                    }
+                }
+                else {
+                    // [일반 모델] 30.0f 이내는 쿼리 없이 그냥 그림
                     if (dist < 30.0f) skip = true;
                 }
 
@@ -461,9 +508,9 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 
     OcclusionManager::instance()->resolve_queries(commandList, frame_index);
 
-    // 3. 실제 렌더링
+    // 3. Main Render Pass: 쿼리 결과에 따라 조건부 렌더링
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
-    std::string render_targets[] = { "gltf", "skinned" };
+    std::string render_targets[] = { "terrain", "gltf", "skinned" };
 
     for (const std::string& target : render_targets) {
         auto it = _renderMap.find(target);
@@ -476,12 +523,22 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
         LightManager::instance()->bind(commandList, 3);
-        ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+        if (target == "terrain") ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
+        else ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+
         if (camera) camera->update_shader_variables(commandList, frame_index);
 
         for (auto& obj : it->second) {
             auto rc = obj->get_component<RenderComponent>();
             if (!rc) continue;
+
+            f3 objPos = obj->transform()->get_world_position();
+            float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+            // [지형 필터링] 주변 8개 타일만 렌더링
+            if (target == "terrain") {
+                if (dist > 800.0f || dist <= 250.0f) continue;
+            }
 
             if (target == "skinned") {
                 auto animComp = obj->get_component<AnimationComponent>();
@@ -490,6 +547,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                     if (boneGpuAddr != 0) commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
                 }
             }
+
             proto->update_per_object(commandList, this, obj.get());
             obj->prepare_render();
 
@@ -497,7 +555,6 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 rc->render(commandList, frame_index);
             }
             else {
-                // 쿼리 결과(0이 아니면 보임)에 따라 조건부 렌더링
                 commandList->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
                 rc->render(commandList, frame_index);
                 commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
