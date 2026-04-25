@@ -419,79 +419,45 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-    if (camera) {
-        camera->set_viewports_and_scissor_rects(commandList);
-        camera->update_shader_variables(commandList, frame_index);
-    }
-
     f3 camPos = camera->game_object()->transform()->get_world_position();
+    ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
 
-    // 1. Occluder Pass: 현재 발밑의 지형 타일 그리기
-    // 카메라에서 가장 가까운 타일(약 250.0f 이내)은 무조건 그리며, Occluder 역할을 수행합니다.
+    // --- STEP 1: 지형(Terrain)을 먼저 그리기 (Occluder) ---
+    // 지형은 성을 가려야 하는 "벽"이므로, 쿼리 전에 무조건 먼저 그려서 깊이 버퍼를 채웁니다.
     {
         auto it = _renderMap.find("terrain");
         if (it != _renderMap.end()) {
-            auto pso = get_pso("terrain");
-            auto proto = _shaderPrototypes["terrain"];
-            commandList->SetPipelineState(pso);
-            commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
-
-            LightManager::instance()->bind(commandList, 3);
-            ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
-
-            for (auto& obj : it->second) {
-                f3 objPos = obj->transform()->get_world_position();
-                float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
-
-                // 타일 크기가 505이므로, 거리가 250 이하면 현재 내가 서 있는 타일입니다.
-                if (dist <= 250.0f) {
-                    proto->update_per_object(commandList, this, obj.get());
-                    obj->prepare_render();
-                    obj->get_component<RenderComponent>()->render(commandList, frame_index);
-                }
-            }
+            render_pso_group(commandList, "terrain", camera, frame_index);
         }
     }
 
-    // 2. Query Pass: 주변 지형(8개) 및 일반 객체 쿼리
+    // --- STEP 2: 성(Castle) 및 기타 객체 쿼리 ---
     auto occ_pso = get_pso("occlusion_query");
     auto occ_sig = get_root_signature("occlusion_sig");
     if (occ_pso && occ_sig && _unitCube) {
         commandList->SetPipelineState(occ_pso);
         commandList->SetGraphicsRootSignature(occ_sig);
 
-        std::string query_targets[] = { "terrain", "gltf", "skinned" };
+        // 이제 지형이 이미 그려졌으므로, 지형 뒤의 성들은 쿼리에서 탈락합니다.
+        std::string query_targets[] = { "gltf", "skinned" };
         for (const std::string& target : query_targets) {
             auto it = _renderMap.find(target);
-
             if (it == _renderMap.end()) continue;
 
             for (auto& obj : it->second) {
                 f3 objPos = obj->transform()->get_world_position();
                 float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
 
-                // [1차 필터링]
-                // 지형은 주변 8개 타일을 위해 800m까지 허용, 나머지는 505m에서 컷
-                float maxDist = (target == "terrain") ? 800.0f : 505.0f;
-                if (dist > maxDist) continue;
+                // [최적화] 505m보다 멀면 성이고 뭐고 다 삭제
+                if (dist > 505.0f) {
+                    obj->get_component<RenderComponent>()->set_skip_occlusion(true);
+                    continue;
+                }
 
                 auto rc = obj->get_component<RenderComponent>();
-                if (!rc) continue;
 
-                bool skip = false;
-
-                if (target == "terrain") {
-                    // [지형 전용] 250m 이내는 이미 Occluder로 그렸으므로 쿼리 스킵(항상 보임)
-                    if (dist <= 250.0f) {
-                        rc->set_skip_occlusion(true);
-                        skip = true;
-                    }
-                }
-                else {
-                    // [일반 모델] 30.0f 이내는 쿼리 없이 그냥 그림
-                    if (dist < 30.0f) skip = true;
-                }
-
+                // 30m 이내는 쿼리 없이 그냥 보임 처리
+                bool skip = (dist < 30.0f);
                 rc->set_skip_occlusion(skip);
 
                 if (!skip) {
@@ -508,8 +474,8 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 
     OcclusionManager::instance()->resolve_queries(commandList, frame_index);
 
+
     // 3. Main Render Pass: 쿼리 결과에 따라 조건부 렌더링
-    ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
     std::string render_targets[] = { "terrain", "gltf", "skinned" };
 
     for (const std::string& target : render_targets) {
