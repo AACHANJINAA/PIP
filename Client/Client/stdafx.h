@@ -1,7 +1,7 @@
 ﻿#pragma once
-#if defined(_DEBUG)
-#define _DEBUG_PHYSICS_VISUALIZATION
-#endif
+
+#define _DEBUG_PHYSICS_VISUALIZATION // 주석 처리로 on off
+
 #define NOMINMAX
 
 // C++ 표준 라이브러리 헤더
