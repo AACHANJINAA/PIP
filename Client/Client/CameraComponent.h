@@ -16,7 +16,7 @@ struct CB_CAMERA_INFO
 class CameraComponent : public Component
 {
 public:
-    CameraComponent();
+    CameraComponent(float fov = 90.f);
     virtual ~CameraComponent();
 
     // 역할 이전 (from CCamera::UpdateShaderVariables):
