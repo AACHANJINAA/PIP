@@ -152,25 +152,42 @@ ID3D12Resource* CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D1
 // ==================================================
 // 디버그 로그 매크로
 // ==================================================
-#if defined(_DEBUG)
+#define _ONDEBUGCONSOLE // 주석 처리를 통해서 디버깅 끄고 킬것
+#ifdef _ONDEBUGCONSOLE
 
 	#include <sstream>
+	#include <iostream>
+
+	enum class LogLevel { Info, Log, Error };
 
 	// 스트림 기반 로그 함수 (std::string)
-	inline void DebugLogStream(const std::ostringstream& oss)
+	inline void DebugLogStream(const std::ostringstream& oss, LogLevel level = LogLevel::Log)
 	{
 		std::string msg = oss.str() + "\n";
 		OutputDebugStringA(msg.c_str());
+
+		// 콘솔 출력 (색상 적용)
+		switch (level)
+		{
+		case LogLevel::Info:
+			std::cout << "\033[36m" << msg << "\033[0m"; // Cyan
+			break;
+		case LogLevel::Log:
+			std::cout << "\033[37m" << msg << "\033[0m"; // White
+			break;
+		case LogLevel::Error:
+			std::cerr << "\033[31m" << msg << "\033[0m"; // Red
+			break;
+		}
 	}
 
 	// 매크로로 간단하게 사용
-	// TODO: 흠.... 콘솔도 같이 띄워서 디버그 로그, 정보, 에러 텍스트 색깔 다르게 출력하는 기능 추가하고 싶다.
 	#define CINFO(expr) \
-			{std::ostringstream oss; oss << "[" << __FILE__ << ":" << __LINE__ << "] " << expr; DebugLogStream(oss);}
+			{std::ostringstream oss; oss << "[INFO] [" << __FILE__ << ":" << __LINE__ << "] " << expr; DebugLogStream(oss, LogLevel::Info);}
 	#define CLOG(expr) \
-	        {std::ostringstream oss; oss << "[" << __FILE__ << ":" << __LINE__ << "] " << expr; DebugLogStream(oss);}
+	        {std::ostringstream oss; oss << "[LOG]  [" << __FILE__ << ":" << __LINE__ << "] " << expr; DebugLogStream(oss, LogLevel::Log);}
 	#define CERROR(expr) \
-	        {std::ostringstream oss; oss << "[" << __FILE__ << ":" << __LINE__ << "] " << expr; DebugLogStream(oss); DebugBreak();}
+	        {std::ostringstream oss; oss << "[ERR]  [" << __FILE__ << ":" << __LINE__ << "] " << expr; DebugLogStream(oss, LogLevel::Error); DebugBreak();}
 #else
 	#define CLOG(expr)
 	#define CERROR(expr)
