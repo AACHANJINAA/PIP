@@ -53,14 +53,15 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
 
     // 성
-	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
+	//load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
+    auto cameraComp = cameraObject->add_component<CameraComponent>(45.f);
+
 	cameraObject->add_component<FreeCameraScript>();
 	cameraObject->set_layer("Camera");
 
-	auto cameraComp = cameraObject->add_component<CameraComponent>();
 	cameraComp->set_main_camera();
 
 	Spawn_UI(device, commandList);
