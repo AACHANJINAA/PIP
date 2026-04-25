@@ -6,6 +6,7 @@
 #include "RenderComponent.h"
 #include "Renderer.h"
 #include "LightManager.h"
+#include "OcclusionManager.h"
 
 void ShadowManager::initialize(ID3D12Device* device)
 {
@@ -193,6 +194,9 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 
     auto renderer = Renderer::instance();
     const auto& renderMap = renderer->get_render_map();
+    // [추가] 오클루전 쿼리 결과 버퍼 가져오기
+    ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
+
     UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
     // 3번의 Draw Call 루프 (각 Cascade마다 한 번씩)
@@ -220,8 +224,18 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
                         if (!obj || obj->is_destroyed()) continue;
-                        auto renderComp = obj->get_component<RenderComponent>();
-                        if (renderComp) renderComp->render_CascadeShadowMap(cmd, frame_index);
+                        auto rc = obj->get_component<RenderComponent>();
+                        if (!rc) continue;
+
+                        // [핵심] 오클루전 커링 적용
+                        if (rc->skip_occlusion()) {
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                        }
+                        else {
+                            cmd->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                            cmd->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
+                        }
                     }
                 }
             }
@@ -241,26 +255,23 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
                         if (!obj || obj->is_destroyed()) continue;
-                        auto renderComp = obj->get_component<RenderComponent>();
+                        auto rc = obj->get_component<RenderComponent>();
                         auto animComp = obj->get_component<AnimationComponent>();
-                        // DW수정 : 선형 할당기 구조에 맞춰 바인딩 -> 선형 할당기로부터 받아오기
-                        if (renderComp && animComp) 
-                        {
-                            // 선형 할당기에서 할당받은 이번 프레임의 뼈대 주소를 가져오기
-                            D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+                        if (!rc || !animComp) continue;
 
-                            if (boneGpuAddr != 0) 
-                            {
-                                // csm_depth_skinned 루트 시그니처에 맞게 2번 파라미터에 뼈대 주소 바인딩
-                                cmd->SetGraphicsRootConstantBufferView(2, boneGpuAddr);
-                            }
-                            renderComp->render_CascadeShadowMap(cmd, frame_index);
+                        // 본 행렬 바인딩
+                        D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+                        if (boneGpuAddr != 0) cmd->SetGraphicsRootConstantBufferView(2, boneGpuAddr);
+
+                        // [핵심] 오클루전 커링 적용
+                        if (rc->skip_occlusion()) {
+                            rc->render_CascadeShadowMap(cmd, frame_index);
                         }
-
-                       /* if (renderComp && animComp && animComp->get_bone_palette_buffer()) {
-                            cmd->SetGraphicsRootConstantBufferView(2, animComp->get_bone_palette_buffer()->GetGPUVirtualAddress());
-                            renderComp->render_CascadeShadowMap(cmd, frame_index);
-                        }*/
+                        else {
+                            cmd->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                            cmd->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
+                        }
                     }
                 }
             }

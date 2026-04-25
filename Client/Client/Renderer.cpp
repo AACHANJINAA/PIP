@@ -437,13 +437,17 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 auto rc = obj->get_component<RenderComponent>();
                 if (!rc) continue;
 
-                // [최적화] 거리가 가까운 물체는 쿼리 생략
-                f3 objPos = obj->transform()->get_world_position();
-                float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                // skinned일 때만 거리 기반 생략 적용, gltf는 항상 쿼리
+                bool skip = false;
+                if (target == "skinned") {
+                    f3 objPos = obj->transform()->get_world_position();
+                    float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                    if (dist < 30.0f) skip = true;
+                }
 
-                rc->set_skip_occlusion(dist < 30.0f);
+                rc->set_skip_occlusion(skip);
 
-                if (!rc->skip_occlusion()) {
+                if (!skip) {
                     XMMATRIX boxWorld = XMMatrixTranspose(rc->get_occlusion_box_world_matrix());
                     commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
 
@@ -501,7 +505,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-    // 5. Skybox 렌더링 (오클루전 컬링 제외)
+    // 4. Skybox 렌더링 (오클루전 컬링 제외)
     auto itSky = _renderMap.find("skybox");
     if (itSky != _renderMap.end() && !itSky->second.empty()) {
 		const std::string psoName = "skybox";
