@@ -413,6 +413,19 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     f3 camPos = camera->game_object()->transform()->get_world_position();
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
 
+    // 0. 각 PSO 그룹 내의 객체들을 카메라 거리순으로 정렬 (Front-to-Back)
+    for (auto& pair : _renderMap) {
+        const std::string& psoName = pair.first;
+        // UI나 Skybox는 정렬 방식이 다르거나 필요 없으므로 불투명 객체만 수행
+        if (psoName == "gltf" || psoName == "skinned" || psoName == "terrain") {
+            std::sort(pair.second.begin(), pair.second.end(), [&camPos](const std::shared_ptr<GameObject>& a, const std::shared_ptr<GameObject>& b) {
+                float distA = Vector3::Length(Vector3::Subtract(camPos, a->transform()->get_world_position()));
+                float distB = Vector3::Length(Vector3::Subtract(camPos, b->transform()->get_world_position()));
+                return distA < distB; // 가까운 것부터
+                });
+        }
+    }
+
     // --- STEP 1: 지형(Terrain)을 먼저 그리기 (Occluder) ---
     // 지형은 성을 가려야 하는 "벽"이므로, 쿼리 전에 무조건 먼저 그려서 깊이 버퍼를 채웁니다.
     {
