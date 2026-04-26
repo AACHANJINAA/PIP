@@ -455,7 +455,7 @@ namespace PIP::packet
 			room->PushJob([session, action_packet, room]() {
 				if (session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
 				// Room 클래스에 새로 만들 함수 호출
-				room->HandleAction(session, action_packet);
+				room->Execute_C2S_ACTION(session, action_packet);
 			});
 		}
 	}

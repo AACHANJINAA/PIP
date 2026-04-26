@@ -29,9 +29,9 @@ namespace PIP::GAME
         TainerPhase _currentPhase = TainerPhase::PHASE_1;
 
         // 공격 설정 (기획서 기반)
-        NPCAttackConfig _slamAtk;    // 내려찍기
-        NPCAttackConfig _chargeAtk;  // 돌진
-        NPCAttackConfig _clawAtk;    // 클로 난타 (Phase 2)
-        NPCAttackConfig _grabAtk;    // 잡기 (Phase 2)
+        AttackConfig _slamAtk;    // 내려찍기
+        AttackConfig _chargeAtk;  // 돌진
+        AttackConfig _clawAtk;    // 클로 난타 (Phase 2)
+        AttackConfig _grabAtk;    // 잡기 (Phase 2)
     };
 }

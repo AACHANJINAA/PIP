@@ -73,9 +73,9 @@ namespace PIP::GAME
         float _timer = 0.0f;
         float _attackDurationTimer = 0.0f;
         bool  _hasAttacked = false; // 중복 판정 방지 플래그
-        NPCAttackConfig _config;
+        AttackConfig _config;
     public:
-        Action_AttackEnemy(const NPCAttackConfig& config) : _config(config) {}
+        Action_AttackEnemy(const AttackConfig& config) : _config(config) {}
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 
@@ -172,9 +172,9 @@ namespace PIP::GAME
     class Action_ChargeToPosition : public Action 
 	{
         float _speed;
-        NPCAttackConfig _config;
+        AttackConfig _config;
     public:
-        Action_ChargeToPosition(float speed, const NPCAttackConfig& config) : _speed(speed), _config(config) { set_name("Action_ChargeToPosition"); }
+        Action_ChargeToPosition(float speed, const AttackConfig& config) : _speed(speed), _config(config) { set_name("Action_ChargeToPosition"); }
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 
@@ -200,14 +200,14 @@ namespace PIP::GAME
         // 돌진의 세부 단계 정의
         enum class Phase { READY, ROAR, TURN, DASHING };
 
-        Action_ChargeAttack(float speed, const NPCAttackConfig& config)
+        Action_ChargeAttack(float speed, const AttackConfig& config)
             : _speed(speed), _config(config)
         {}
 
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     private:
         float _speed;
-        NPCAttackConfig _config;
+        AttackConfig _config;
 
         Phase _currentPhase = Phase::READY; // 현재 단계
         float _internalTimer = 0.0f;        // 단계별 대기 시간용
