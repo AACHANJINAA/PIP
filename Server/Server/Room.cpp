@@ -1192,7 +1192,7 @@ namespace PIP::SERVER
 				// 기본 공격 통합 구현
 				GAME::NPCAttackConfig config;
 				config.damage = (float)session->_player->_damage;
-				config.posOffset = { 0.0f, 0.0f, -1.0f }; // 플레이어 약간 앞(1m) 중심
+				config.posOffset = { 0.0f, 0.0f, 1.0f }; // 플레이어 약간 앞(1m) 중심
 				config.knockbackValue = 5.0f;           // 기본 공격의 가벼운 넉백
 
 				// 3m 반경 구체 히트박스 생성
@@ -1213,7 +1213,7 @@ namespace PIP::SERVER
 
 				GAME::NPCAttackConfig config;
 				config.damage = session->_player->_damage * 3.0f; // 기본 데미지의 3배 (강력한 일격)
-				config.posOffset = { 0.0f, 1.0f, -1.8f };          // 플레이어 앞 0.3m + 박스 반경 1.5m
+				config.posOffset = { 0.0f, 1.0f, 3.8f };          // 플레이어 앞 0.3m + 박스 반경 1.5m
 				config.knockbackValue = 30.0f;                    // 대검의 중량감을 살린 넉백
 
 				// Jolt Box Shape 생성 (3m x 3m x 3m)

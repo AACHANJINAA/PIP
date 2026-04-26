@@ -252,8 +252,8 @@ void MainPlayerScript::awake()
 	_camera = ObjectManager::instance()->find_by_name("Camera").get();
 	if (_camera) {
 		XMFLOAT3 camF = _camera->transform()->forward();
-		float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z)) - 180.f;
-		transform()->set_local_rotation(0.0f, yawDegrees, 0.0f);
+		float yawDegrees = XMConvertToDegrees(atan2f(camF.x, camF.z));
+		transform()->set_local_rotation(0.0f, yawDegrees + 180.0f, 0.0f);
 	}
 
 	// --- 공격 범위 콜라이더 오브젝트 생성 ---
@@ -385,7 +385,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 			{
 				CERROR("MainPlayerScript::handle_state - TransformComponent이 없습니다.");
 			}
-			NetworkManager::instance()->SendActionPacket(_actionId, targetId, tr->local_position(), tr->local_rotation());
+			
+			NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
 			_packetSent = true;
 		}
 
@@ -485,14 +486,17 @@ void MainPlayerScript::handle_input(float deltaTime)
 			common::Vec3 playerPos = transform()->position();
 			common::Vec3 dirToEnemy = targetPos - playerPos;
 
-			float targetYaw = XMConvertToDegrees(atan2f(dirToEnemy.x, dirToEnemy.z)) - 180.f;
+			float targetYaw = XMConvertToDegrees(atan2f(dirToEnemy.x, dirToEnemy.z)); //- 180.f;
+
+			XMVECTOR qLogical = XMQuaternionRotationRollPitchYaw(0, XMConvertToRadians(_currentyaw), 0);
+			XMStoreFloat4(&_logicalRotation, qLogical);
 
 			float yawDiff = targetYaw - _currentyaw;
 			while (yawDiff > 180.f) yawDiff -= 360.f;
 			while (yawDiff < -180.f) yawDiff += 360.f;
 
 			_currentyaw += yawDiff * std::min(1.0f, deltaTime * 15.0f); // 캐릭터 회전은 카메라보다 빠르게
-			transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
+			transform()->set_local_rotation(0.0f, _currentyaw + 180.0f, 0.0f);
 
 			// 이동 벡터는 카메라 기준 유지 (이동 시 옆걸음/뒷걸음질이 됨)
 			_currentMoveDir = is_moving_input ? common::Normalize(move_direction) : common::Vec3{ 0, 0, 0 };
@@ -502,7 +506,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		// 방향벡터 갱신
 		_currentMoveDir = common::Normalize(move_direction);
 
-		float targetYaw = XMConvertToDegrees(atan2f(move_direction.x, move_direction.z)) - 180.f;
+		float targetYaw = XMConvertToDegrees(atan2f(move_direction.x, move_direction.z)); // -180.f;
 		float currentYaw = _currentyaw;
 		// Yaw 보간 (360도 회전 고려)
 		float yawDiff = targetYaw - currentYaw;
@@ -516,7 +520,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 		if (_currentyaw > 360.f) _currentyaw -= 360.f;
 		if (_currentyaw < -360.f) _currentyaw += 360.f;
 
-		transform()->set_local_rotation(0.0f, _currentyaw, 0.0f);
+		XMVECTOR qLogical = XMQuaternionRotationRollPitchYaw(0, XMConvertToRadians(_currentyaw), 0);
+		XMStoreFloat4(&_logicalRotation, qLogical);
+
+		transform()->set_local_rotation(0.0f, _currentyaw + 180.0f, 0.0f);
 	}
 	else {
 		_currentMoveDir = { 0, 0, 0 };
@@ -628,16 +635,15 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 }
 void MainPlayerScript::send_network_sync(float deltaTime)
 {
+
 	_sendTimer += deltaTime;
 	if (_sendTimer >= SENDINTERVAL) {
 		_sendTimer = 0.f;
 
-		// [수정] transform()->local_position() 대신 _logicalPosition을 전송!
-		// _visualOffset이 포함된 좌표를 보내면 서버 보정과 충돌하여 지터링이 발생합니다.
 		NetworkManager::instance()->SendMovePacket(
 			_logicalPosition,
 			_currentMoveDir,
-			transform()->local_rotation(),
+			_logicalRotation,
 			_state,
 			_actionId, static_cast<uint32_t>(GetTickCount64())
 		);

@@ -74,6 +74,7 @@ private:
 	// [추가] 넉백 물리 제어 변수
 	common::Vec3 _visualOffset = { 0, 0, 0 }; // 보정 오차 저장 변수
 	common::Vec3 _logicalPosition = { 0, 0, 0 }; // 서버와 동기화되는 실제 예측 좌표
+	common::Quat _logicalRotation = { 0, 0, 0, 1 }; // 서버와 동기화되는 실제 예측 회전 (쿼터니언)
 	float _verticalVelocity = 0.0f;              // 수직 속도 (낙하용)
 	bool _isGrounded = true;                     // 접지 상태 (임시)
 
