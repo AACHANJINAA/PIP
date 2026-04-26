@@ -1729,8 +1729,8 @@ namespace PIP::SERVER
 			size_t currentBatchVertices = (std::min)(verticesPerPacket, totalVertices - i);
 			uint32_t currentTriangleCount = static_cast<uint32_t>(currentBatchVertices / 3);
 
-			uint16_t packetSize = sizeof(packet::SC_PACKET_DEBUG_SHAPE) + (currentBatchVertices *
-				sizeof(common::Vec3));
+			uint16_t packetSize = static_cast<uint16_t>(sizeof(packet::SC_PACKET_DEBUG_SHAPE) + (currentBatchVertices *
+				sizeof(common::Vec3)));
 			std::vector<char> buffer(packetSize);
 
 			auto* header = reinterpret_cast<packet::SC_PACKET_DEBUG_SHAPE*>(buffer.data());
