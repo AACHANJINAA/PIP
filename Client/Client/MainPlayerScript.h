@@ -93,6 +93,7 @@ private:
 	float _skillBigSowrdSpawn = 0.95f * (1.f/skillAnimationspeed); // 대검 생성 시점
 	float _skillDontFollowAnimationTime = 1.095f * (1.f / skillAnimationspeed); // 대검 안따라가는 시점
 	std::shared_ptr<GameObject> _SkillObject = nullptr;
+	std::shared_ptr<GameObject> _particleEffectObject = nullptr;
 	void init_skill_variables();
 
 

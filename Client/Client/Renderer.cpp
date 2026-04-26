@@ -29,6 +29,10 @@
 #include "RenderComponent.h"
 #include "OcclusionManager.h"
 #include "OcclusionQueryShader.h"
+#include "ParticleShader.h"
+#include "ParticleSystemComponent.h"
+#include "ParticleRenderComponent.h"
+
 
 #include "TerrainLoader.h"
 #include "ResourceManager.h"
@@ -59,6 +63,8 @@ void Renderer::initialize(ID3D12Device* device)
 	_rootSignatureGenerators.push_back(std::make_unique<UIFrameRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<MinimapRootSignatureGenerator>());
     _rootSignatureGenerators.push_back(std::make_unique<OcclusionRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<ComputeParticleRootSignatureGenerator>());
+    _rootSignatureGenerators.push_back(std::make_unique<ParticleRootSignatureGenerator>());
     // 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
     // [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -107,6 +113,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto occlusion_shader = std::make_shared<OcclusionQueryShader>();
     _shaderPrototypes[occlusion_shader->pso_name()] = occlusion_shader;
+
+    auto particle_shader = std::make_shared<ParticleShader>();
+    _shaderPrototypes[particle_shader->pso_name()] = particle_shader;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -160,8 +169,8 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-	//draw_render_list(commandList, camera, frame_index);
-    draw_render_occlusion_culling_list(commandList, camera,  frame_index);
+	draw_render_list(commandList, camera, frame_index);
+    //draw_render_occlusion_culling_list(commandList, camera,  frame_index);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
     // [수정] viewProj가 아니라 frame_index를 넘겨야 합니다!
@@ -187,7 +196,8 @@ void Renderer::build_render_list(const CameraComponent* camera)
             if (renderComp->pso_name() == "ui" ||
                 renderComp->pso_name() == "Monster_HP_UI" ||
                 renderComp->pso_name() == "ui_frame" ||
-                renderComp->pso_name() == "skybox")
+                renderComp->pso_name() == "skybox" || 
+                renderComp->pso_name() == "particle_draw")
             {
                 if (renderComp->pso_name() == "ui")
                 {
@@ -245,6 +255,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
         "gltf",         // 일반 메시
         "skinned",      // 애니메이션 메시
         "skybox",       // Skybox
+		"particle_draw",// 파티클
         "Monster_HP_UI",// 몬스터 HP UI
         "ui_frame",      // UI Frame
         "ui"            // UI
@@ -333,6 +344,39 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
                 }
             }
             continue; // 다음 PSO로
+        }
+
+        if (psoName == "particle_draw")
+        {
+            for (const auto& gameObject : gameObjects)
+            {
+                auto particleRenderComp = gameObject->get_component<ParticleRenderComponent>();
+                auto psComp = gameObject->get_component<ParticleSystemComponent>();
+
+                if (particleRenderComp && psComp && particleRenderComp->is_enabled())
+                {
+                    // 1. 그리기 전에 연산을 발사! (여기서 파티클 위치가 계산됩니다)
+                    psComp->dispatch_compute(commandList);
+
+                    // 2. 파이프라인 상태 복구 (컴퓨트 셰이더에서 다시 그래픽스 셰이더로 복구)
+                    commandList->SetPipelineState(pso);
+                    commandList->SetGraphicsRootSignature(root_signature);
+
+                    if (camera)
+                    {
+                        camera->update_shader_variables(commandList, frame_index);
+                        camera->set_viewports_and_scissor_rects(commandList);
+                    }
+
+                    // 3. 상수 및 텍스처 업데이트
+                    shader_prototype->update_per_object(commandList, this, gameObject.get());
+                    gameObject->prepare_render();
+
+                    // 4. 파티클 인스턴싱 그리기
+                    particleRenderComp->render(commandList, frame_index);
+                }
+            }
+            continue;
         }
 
         // 일반 객체 렌더링

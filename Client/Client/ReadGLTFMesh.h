@@ -199,6 +199,10 @@ public: // DW설명 : 인스턴싱 관련 함수들
 	bool intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayDir, const XMMATRIX& worldMatrix, float& outHitDist) const;
 
 
+public: // DW설명 : 파티클 기반 스킬 구현을 위한 내용들
+	// 지정된 개수(particleCount)만큼 메쉬 표면에서 균일하게 랜덤한 점들을 추출
+	std::vector<DirectX::XMFLOAT3> extract_particle_targets(UINT particleCount) const;
+
 private:
 
 	void read_static_mesh(const std::string& filePath);

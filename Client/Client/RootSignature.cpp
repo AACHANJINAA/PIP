@@ -791,3 +791,92 @@ ComPtr<ID3D12RootSignature> OcclusionRootSignatureGenerator::create(ID3D12Device
     device->CreateRootSignature(0, serializedRootSig->GetBufferPointer(), serializedRootSig->GetBufferSize(), IID_PPV_ARGS(&rootSig));
     return rootSig;
 }
+
+const std::string& ComputeParticleRootSignatureGenerator::name() const
+{
+    static const std::string sigName = "compute_particle";
+    return sigName;
+}
+
+ComPtr<ID3D12RootSignature> ComputeParticleRootSignatureGenerator::create(ID3D12Device* device)
+{
+    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
+    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+
+    // 컴퓨트 셰이더 전용 플래그
+    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+    CD3DX12_ROOT_PARAMETER params[3];
+
+    // [0] b0: 상수 버퍼 20개 (행렬 16개 + 위치 3개 + 진행도 1개)
+    params[0].InitAsConstants(20, 0);
+
+    // [1] t0: 타겟 버퍼 (SRV)
+    params[1].InitAsShaderResourceView(0);
+
+    // [2] u0: 현재 버퍼 (UAV)
+    params[2].InitAsUnorderedAccessView(0);
+
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
+    d3dRootSignatureDesc.NumStaticSamplers = 0;
+    d3dRootSignatureDesc.pStaticSamplers = nullptr;
+
+    ComPtr<ID3D12RootSignature> pRootSignature = nullptr;
+    ComPtr<ID3DBlob> pSignatureBlob, pErrorBlob;
+    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignatureBlob, &pErrorBlob);
+    device->CreateRootSignature(0, pSignatureBlob->GetBufferPointer(), pSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&pRootSignature));
+
+    return pRootSignature;
+}
+
+const std::string& ParticleRootSignatureGenerator::name() const
+{
+    static const std::string sigName = "particle_draw";
+    return sigName;
+}
+
+ComPtr<ID3D12RootSignature> ParticleRootSignatureGenerator::create(ID3D12Device* device)
+{
+    D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
+    ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+    // 버텍스 버퍼를 안 쓰고 SV_VertexID를 쓸 것이므로 레이아웃 플래그를 허용합니다.
+    d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    CD3DX12_DESCRIPTOR_RANGE texRange[1];
+    texRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); // t1: 파티클 텍스처 (t0는 버퍼가 씁니다)
+
+    CD3DX12_ROOT_PARAMETER params[5];
+    params[0].InitAsConstantBufferView(0); // [0] b0: 기본 ObjectInfo (엔진 호환용)
+    params[1].InitAsConstantBufferView(1); // [1] b1: Camera (빌보딩에 필수!)
+
+    // [2] b2: 파티클 정보 (색상 4개 + 크기 1개 = 총 5개의 float)
+    params[2].InitAsConstants(5, 2, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+    // [3] t0: 컴퓨트 셰이더가 연산해둔 파티클 위치 버퍼 (가상 주소로 직접 바인딩)
+    params[3].InitAsShaderResourceView(0);
+
+    // [4] t1: 파티클 텍스처 (디스크립터 테이블)
+    params[4].InitAsDescriptorTable(1, &texRange[0], D3D12_SHADER_VISIBILITY_PIXEL);
+
+    // 샘플러 설정 (텍스처 필터링용)
+    D3D12_STATIC_SAMPLER_DESC sampler = {};
+    sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    sampler.ShaderRegister = 0; // s0
+    sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    d3dRootSignatureDesc.NumParameters = _countof(params);
+    d3dRootSignatureDesc.pParameters = params;
+    d3dRootSignatureDesc.NumStaticSamplers = 1;
+    d3dRootSignatureDesc.pStaticSamplers = &sampler;
+
+    ComPtr<ID3D12RootSignature> pRootSignature = nullptr;
+    ComPtr<ID3DBlob> pSignatureBlob, pErrorBlob;
+    D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignatureBlob, &pErrorBlob);
+    device->CreateRootSignature(0, pSignatureBlob->GetBufferPointer(), pSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&pRootSignature));
+
+    return pRootSignature;
+}
