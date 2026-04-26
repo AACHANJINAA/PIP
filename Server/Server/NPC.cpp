@@ -81,7 +81,7 @@ namespace PIP::GAME
 
 		// 1. 공격 종류별 설정 (Shape, Offset, Damage, Cooldown)
 		// 일반 공격: 앞 2m 반경의 구체 형태
-		NPCAttackConfig normalAtk;
+		AttackConfig normalAtk;
 		normalAtk.shape = new JPH::SphereShape(1.5f);
 		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // 전방 1.5m 지점
 		normalAtk.damage = 10;
@@ -90,7 +90,7 @@ namespace PIP::GAME
 		normalAtk.actionId = 1; // 일반 공격 행동 ID (예시)
 
 		// 강력한 공격: 전방 4m 길이의 박스 형태 (범위 공격)
-		NPCAttackConfig heavyAtk;
+		AttackConfig heavyAtk;
 		heavyAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.0f)); // 가로 3m, 세로 2m, 깊이 4m
 		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
 		heavyAtk.damage = 20;

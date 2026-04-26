@@ -3,7 +3,7 @@
 namespace PIP::GAME
 {
     // NPC 및 보스 공격 설정을 위한 구조체
-    struct NPCAttackConfig {
+    struct AttackConfig {
         JPH::Ref<JPH::Shape>            shape;                        // 공격 판정 모양 (Sphere, Box, Capsule 등)
         common::Vec3                    posOffset;                    // NPC 중심으로부터의 오프셋
 		common::packet::EntityState     entityState;                  // 공격 애니메이션 상태값 (예: ATTACK1, SKILL1 등)

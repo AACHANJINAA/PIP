@@ -387,7 +387,7 @@ namespace PIP::SERVER
 		MYLOG("[Room] All NPCs cleared for scene transition.");
 	}
 
-	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::NPCAttackConfig& config)
+	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config)
 	{
 		if (!attacker) return;
 
@@ -1173,7 +1173,7 @@ namespace PIP::SERVER
 			Broadcast(stream.constable_data(), stream.Size());
 		}
 	}*/
-	void Room::HandleAction(const std::shared_ptr<SESSION>& session,
+	void Room::Execute_C2S_ACTION(const std::shared_ptr<SESSION>& session,
 	                        const common::packet::CS_PACKET_ACTION& action_packet)
 	{
 		if (!session || !session->_player) return;
@@ -1190,7 +1190,7 @@ namespace PIP::SERVER
 		case packet::ActionID::Common::Attack:
 			{
 				// 기본 공격 통합 구현
-				GAME::NPCAttackConfig config;
+				GAME::AttackConfig config;
 				config.damage = (float)session->_player->_damage;
 				config.posOffset = { 0.0f, 0.0f, 1.0f }; // 플레이어 약간 앞(1m) 중심
 				config.knockbackValue = 5.0f;           // 기본 공격의 가벼운 넉백
@@ -1211,7 +1211,7 @@ namespace PIP::SERVER
 				// 대검 찍기 스킬 (SKILL1) 구현
 				// 요구사항: 플레이어 앞 30cm, 3m 크기의 박스, 높은 데미지 판정
 
-				GAME::NPCAttackConfig config;
+				GAME::AttackConfig config;
 				config.damage = session->_player->_damage * 3.0f; // 기본 데미지의 3배 (강력한 일격)
 				config.posOffset = { 0.0f, 1.0f, 3.8f };          // 플레이어 앞 0.3m + 박스 반경 1.5m
 				config.knockbackValue = 30.0f;                    // 대검의 중량감을 살린 넉백
