@@ -88,7 +88,8 @@ void UIFrameRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT
     _mapped_ui_frame_element->uv_offset = _uv_offset;
     _mapped_ui_frame_element->uv_scale = _uv_scale;
     _mapped_ui_frame_element->use_texture = (_texture_info != nullptr) ? 1 : 0;
-	_mapped_ui_frame_element->other_player_id = _other_player_id;
+	_mapped_ui_frame_element->other_player_id = static_cast<int>(_other_player_id); 
+	//TODO: 가능하면 _mapped_ui_frame_element->other_player_id도 long long 으로 바꿔야함
 
 
     // 상수 버퍼 바인딩 (자신의 버퍼 주소를 전달)

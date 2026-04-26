@@ -816,7 +816,7 @@ void NetworkManager::HANDLE_S2C_DEBUG_SHAPE(common::packet::PacketStream& stream
 	common::packet::SC_PACKET_DEBUG_SHAPE packet;
 	stream >> packet;
 	std::vector<common::Vec3> vertices;
-	for (int i = 0; i < packet._triangle_count; ++i)
+	for (uint32_t i = 0; i < packet._triangle_count; ++i)
 	{
 		common::Vec3 vertex;
 		stream >> vertex;

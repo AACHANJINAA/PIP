@@ -22,7 +22,7 @@ public:
 
     virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
 
-    void set_other_player_id(int id) { _other_player_id = id; }
+    void set_other_player_id(int64_t id) { _other_player_id = id; }
 
 protected:
     virtual void initialize_constant_buffers() override;
@@ -32,5 +32,5 @@ private:
     ComPtr<ID3D12Resource> _cb_ui_frame_element;
     cbUIFrameElement* _mapped_ui_frame_element = nullptr;
 
-    int _other_player_id = 0;
+    int64_t _other_player_id = 0;
 };
