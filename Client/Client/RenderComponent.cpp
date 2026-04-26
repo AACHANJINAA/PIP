@@ -134,24 +134,14 @@ BoundingOrientedBox RenderComponent::get_world_bounding_box() const
 bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 {
     if (!_mesh) return false;
+    if (!_frustumCullingEnabled) return true;
 
-    if (!_frustumCullingEnabled)
-    {
-        return true;
-    }
-
-    // [추가] 바운딩 박스 유효성 검사
     BoundingOrientedBox obb = get_world_bounding_box();
 
-    // 바운딩 박스가 유효한지 확인 (크기가 0이거나 NaN이 아닌지)
-    if (obb.Extents.x <= 0.0f || obb.Extents.y <= 0.0f || obb.Extents.z <= 0.0f)
+    // [박스 유효성 검사] 박스가 0이거나 깨졌으면 그리지 않음 (false)
+    if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
     {
-        return true; // 바운딩 박스가 유효하지 않으면 일단 그린다
-    }
-
-    if (std::isnan(obb.Center.x) || std::isnan(obb.Center.y) || std::isnan(obb.Center.z))
-    {
-        return true;
+        return false;
     }
 
     return frustum.Intersects(obb);

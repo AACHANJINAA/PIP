@@ -174,40 +174,48 @@ void Renderer::build_render_list(const CameraComponent* camera)
     _renderMap.clear();
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
     const BoundingFrustum& frustum = camera->frustum();
+    f3 camPos = camera->game_object()->transform()->get_world_position();
 
     for (const auto& gameObject : allGameObjects)
     {
         if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
-
         if (renderComp && renderComp->is_enabled())
         {
-            // UI와 Skybox는 bounding box 체크 없이 렌더링
-            if (renderComp->pso_name() == "ui" ||
-                renderComp->pso_name() == "Monster_HP_UI" ||
-                renderComp->pso_name() == "ui_frame" ||
-                renderComp->pso_name() == "skybox")
+            if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed()) continue;
+
+            auto renderComp = gameObject->get_component<RenderComponent>();
+            if (!renderComp || !renderComp->is_enabled()) continue;
+
+            const std::string& psoName = renderComp->pso_name();
+
+            // 1. UI 및 Skybox (컬링 제외)
+            if (psoName == "ui" || psoName == "Monster_HP_UI" || psoName == "ui_frame" || psoName == "skybox")
             {
-                if (renderComp->pso_name() == "ui")
-                {
-                    // ui는 넘기기
-                    continue;
-                }
-                _renderMap[renderComp->pso_name()].push_back(gameObject);
+                if (psoName != "ui") _renderMap[psoName].push_back(gameObject);
                 continue;
             }
 
-            // 일반 객체는 frustum culling
-            BoundingOrientedBox obb = renderComp->get_world_bounding_box();
-            if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
+            // 2. 일반 객체 거리 컬링 (500m 이상은 아예 제외)
+            f3 objPos = gameObject->transform()->get_world_position();
+            float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+            // 3. PSO별 거리 필터링 (여기가 핵심!)
+            if (psoName == "terrain")
             {
-                continue;
+                // 지형은 멀리까지 보여야 하므로 큰 값을 줍니다.
+                if (dist > 1200.0f) continue;
+            }
+            else
+            {
+                // 일반 프롭, 몬스터 등은 성능을 위해 짧게 잡습니다.
+                if (dist > 200.0f) continue;
             }
 
+            // 3. Frustum Culling
             if (renderComp->is_visible(frustum))
             {
-                _renderMap[renderComp->pso_name()].push_back(gameObject);
+                _renderMap[psoName].push_back(gameObject);
             }
         }
     }
@@ -218,20 +226,11 @@ void Renderer::build_render_list(const CameraComponent* camera)
     {
         for (const auto& gameObject : vec)
         {
-			if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed())
-			{
-				continue;
-			}
-            auto renderComp = gameObject->get_component<RenderComponent>();
-            if (renderComp)
-            {
-                _renderMap[renderComp->pso_name()].push_back(gameObject);
-            }
+            if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed()) continue;
+            auto rc = gameObject->get_component<RenderComponent>();
+            if (rc) _renderMap[rc->pso_name()].push_back(gameObject);
         }
     }
-
-    /*CLOG("Culling: " << visibleObjects << "/" << totalObjects << " visible, "
-        << invalidBoundingBoxCount << " invalid BB");*/
 }
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index)
@@ -402,14 +401,6 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
     for (auto& obj : it->second) {
         if (!obj) continue;
 
-        if (psoName == "terrain") {
-            f3 tilePos = obj->transform()->get_world_position();
-
-            if (Vector3::Length(Vector3::Subtract(camPos, tilePos)) > 505.f) {
-                continue; // 멀리 있는 지형은 렌더링 생략
-            }
-        }
-
         proto->update_per_object(commandList, this, obj.get());
         obj->prepare_render();
         obj->get_component<RenderComponent>()->render(commandList, frame_index);
@@ -445,29 +436,14 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
             if (it == _renderMap.end()) continue;
 
             for (auto& obj : it->second) {
-                f3 objPos = obj->transform()->get_world_position();
-                float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
-
-                // [최적화] 505m보다 멀면 성이고 뭐고 다 삭제
-                if (dist > 505.0f) {
-                    obj->get_component<RenderComponent>()->set_skip_occlusion(true);
-                    continue;
-                }
-
                 auto rc = obj->get_component<RenderComponent>();
 
-                // 30m 이내는 쿼리 없이 그냥 보임 처리
-                bool skip = (dist < 30.0f);
-                rc->set_skip_occlusion(skip);
+                XMMATRIX boxWorld = XMMatrixTranspose(rc->get_occlusion_box_world_matrix());
+                commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
 
-                if (!skip) {
-                    XMMATRIX boxWorld = XMMatrixTranspose(rc->get_occlusion_box_world_matrix());
-                    commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
-
-                    commandList->BeginQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
-                    _unitCube->render(commandList);
-                    commandList->EndQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
-                }
+                commandList->BeginQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
+                _unitCube->render(commandList);
+                commandList->EndQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
             }
         }
     }
@@ -528,41 +504,62 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-    // 4. Skybox 렌더링 (오클루전 컬링 제외)
+    // Step 4: Skybox 렌더링 (항상 마지막, Occlusion Culling 제외)
     auto itSky = _renderMap.find("skybox");
     if (itSky != _renderMap.end() && !itSky->second.empty()) {
-		const std::string psoName = "skybox";
-		ID3D12PipelineState* pso = get_pso(psoName);
-		auto proto_it = _shaderPrototypes.find(psoName);
+        const std::string psoName = "skybox";
+        ID3D12PipelineState* pso = get_pso(psoName);
+        auto proto_it = _shaderPrototypes.find(psoName);
 
-		if (pso && proto_it != _shaderPrototypes.end()) {
-		    auto& proto = proto_it->second;
-		    commandList->SetPipelineState(pso);
-		    commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
-		    commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+        if (pso && proto_it != _shaderPrototypes.end()) {
+            auto& proto = proto_it->second;
+            commandList->SetPipelineState(pso);
+            commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+            commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-		    // Skybox 전용 상수 데이터 바인딩 (슬롯 2)
-		    if (camera && camera->get_cb_skybox()) {
-		        D3D12_GPU_VIRTUAL_ADDRESS cbAddress = camera->get_cb_skybox()->GetGPUVirtualAddress();
-		        commandList->SetGraphicsRootConstantBufferView(2, cbAddress);
-		    }
+            // Skybox 전용 상수 데이터 바인딩 (슬롯 2)
+            if (camera && camera->get_cb_skybox()) {
+                D3D12_GPU_VIRTUAL_ADDRESS cbAddress = camera->get_cb_skybox()->GetGPUVirtualAddress();
+                commandList->SetGraphicsRootConstantBufferView(2, cbAddress);
+            }
 
-		    // Skybox 텍스처 바인딩 (슬롯 4)
-		    D3D12_CPU_DESCRIPTOR_HANDLE skybox_cpu_handle = ResourceManager::instance()->get_skybox_srv_cpu();
-		    if (skybox_cpu_handle.ptr == 0) {
-		        skybox_cpu_handle = ResourceManager::instance()->get_texture("__DEFAULT_BLACK__")->cpu_handle;
-		    }
-		    bind_texture_table(commandList, 4, { skybox_cpu_handle });
+            // Skybox 텍스처 바인딩 (슬롯 4)
+            D3D12_CPU_DESCRIPTOR_HANDLE skybox_cpu_handle = ResourceManager::instance()->get_skybox_srv_cpu();
+            if (skybox_cpu_handle.ptr == 0) {
+                skybox_cpu_handle = ResourceManager::instance()->get_texture("__DEFAULT_BLACK__")->cpu_handle;
+            }
+            bind_texture_table(commandList, 4, { skybox_cpu_handle });
 
-		    if (camera) camera->update_shader_variables(commandList, frame_index);
+            if (camera) camera->update_shader_variables(commandList, frame_index);
 
-		    for (const auto& gameObject : itSky->second) {
-		        auto renderComp = gameObject->get_component<RenderComponent>();
-		        if (renderComp && renderComp->is_enabled()) {
-		            renderComp->render(commandList, frame_index);
-		        }
-		    }
-		}
+            for (const auto& gameObject : itSky->second) {
+                auto renderComp = gameObject->get_component<RenderComponent>();
+                if (renderComp && renderComp->is_enabled()) {
+                    renderComp->render(commandList, frame_index);
+                }
+            }
+        }
+    }
+
+    // --- STEP 1: UI를 가장 먼저 렌더링 (Early-Z 활용을 위해) ---
+    std::string ui_targets[] = { "Monster_HP_UI", "ui_frame", "ui" };
+    for (const std::string& target : ui_targets) {
+        auto it = _renderMap.find(target);
+        if (it == _renderMap.end() || it->second.empty()) continue;
+
+        auto pso = get_pso(target);
+        auto proto_it = _shaderPrototypes.find(target);
+        if (!pso || proto_it == _shaderPrototypes.end()) continue;
+
+        commandList->SetPipelineState(pso);
+        commandList->SetGraphicsRootSignature(get_root_signature(proto_it->second->required_root_signature()));
+        if (camera) camera->update_shader_variables(commandList, frame_index);
+
+        for (auto& obj : it->second) {
+            proto_it->second->update_per_object(commandList, this, obj.get());
+            obj->prepare_render();
+            obj->get_component<RenderComponent>()->render(commandList, frame_index);
+        }
     }
 }
 
