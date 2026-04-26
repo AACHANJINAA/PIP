@@ -22,6 +22,9 @@
 #include "MonsterHPComponent.h"
 #include "PhysicsCharacterControllerComponent.h"
 #include "SocketComponenet.h"
+#include "ParticleSystemComponent.h"
+#include "ParticleRenderComponent.h"
+#include "GameFramework.h"
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -284,6 +287,35 @@ void MainPlayerScript::awake()
 		_currentWeapon = _currentWeaponObject->add_component<LongswordScript>();
 		_currentWeapon->set_attack_active(true);
 	}
+
+	auto skillRender = _SkillObject->get_component<RenderComponent>();
+	auto gltfMesh = dynamic_pointer_cast<ReadGLTFMesh>(skillRender->mesh());
+
+	if (gltfMesh)
+	{
+		// 5만 개의 빽빽한 점 데이터를 추출합니다.
+		auto targets = gltfMesh->extract_particle_targets(50000);
+
+		// 2. 파티클 시스템 전용 오브젝트 생성 (ObjectManager 팩토리 사용)
+		_particleEffectObject = ObjectManager::instance()->create_game_object("CarianParticleEffect");
+
+		// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
+		auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
+		psComp->init_particles(targets);
+
+		// 4. 렌더 컴포넌트 추가
+		auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
+		prComp->set_pso_name("particle_draw");
+
+		prComp->set_particle_system(psComp);
+
+		// 5. 위치 동기화 (대검 오브젝트의 자식으로 설정)
+		_particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
+		_particleEffectObject->transform()->set_parent(_SkillObject->transform());
+
+		// 초기에는 꺼둠
+		_particleEffectObject->set_enabled(false);
+	}
 }
 
 void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
@@ -321,19 +353,17 @@ void MainPlayerScript::handle_state(float deltaTime)
 {
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
 	if (!anim_comp) return;
-	// DW추가 : 사망 상태 로직 추가
+
+	// 사망 상태 로직 추가
 	if (0 >= hp())
 	{
 		_state = common::packet::EntityState::DEAD;
-		// set_state에도 애니메이션 루프 설정 추가
 		anim_comp->play("die", false);
-		// 사망 상태의 ui 업데이트
-		//die_ui_update(deltaTime);
 		return;
 	}
 
 	if (_isAttacking) {
-		if(_isSkilling) 
+		if (_isSkilling)
 		{
 			_state = common::packet::EntityState::ACTION;
 			_actionId = common::packet::ActionID::Common::SKILL1;
@@ -345,12 +375,34 @@ void MainPlayerScript::handle_state(float deltaTime)
 			}
 			else
 			{
-				
+
 			}
 
-			if(_nowSkillTime >= _skillDontFollowAnimationTime)
+			if (_nowSkillTime >= _skillDontFollowAnimationTime)
 			{
 				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+			}
+
+			float progress = std::clamp(_nowSkillTime / _skillBigSowrdSpawn, 0.0f, 1.0f);
+
+			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+			if (psComp)
+			{
+				// 파티클 오브젝트를 활성화
+				_particleEffectObject->set_enabled(true);
+				_particleEffectObject->get_component<ParticleRenderComponent>()->set_enabled(true);
+
+				// [수정됨] 연산을 쏘지 않고, 데이터만 저장해둡니다!
+				psComp->set_compute_data(
+					_SkillObject->transform()->world_matrix(),
+					transform()->local_position(),
+					progress
+				);
+			}
+
+			if (progress >= 1.0f)
+			{
+				_SkillObject->get_component<RenderComponent>()->set_enabled(true);
 			}
 
 		}
@@ -359,12 +411,11 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_state = common::packet::EntityState::ACTION;
 			anim_comp->play("attack", false);
 		}
-		
+
 		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
 		float progress = anim_comp->get_anim_time();
 		float duration = anim_comp->get_anim_duration();
 
-		// [추가] 특정 프레임(30% ~ 60%) 동안 히트박스 활성화
 		if (_currentWeapon) {
 			if (progress >= (duration * 0.3f) && progress <= (duration * 0.6f)) {
 				_currentWeapon->set_attack_active(true);
@@ -374,7 +425,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 			}
 		}
 
-		if (common::packet::EntityState::ACTION == _state 
+		if (common::packet::EntityState::ACTION == _state
 			&& !_packetSent && progress >= (duration * 0.3f)) {
 			int64_t targetId = -1;
 			if (auto targeting_comp = game_object()->get_component<TargetingComponent>()) {
@@ -385,7 +436,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 			{
 				CERROR("MainPlayerScript::handle_state - TransformComponent이 없습니다.");
 			}
-			
+
 			NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
 			_packetSent = true;
 		}
@@ -394,22 +445,21 @@ void MainPlayerScript::handle_state(float deltaTime)
 		if (anim_comp->is_anim_finished()) {
 			_isAttacking = false;
 			init_skill_variables(); // 스킬 관련 변수 초기화
-			_packetSent = false; // 중요: 다음 공격을 위해 리셋
+			_packetSent = false;
 			_actionId = 0;
 			_state = common::packet::EntityState::IDLE;
 
 			if (_currentWeapon) _currentWeapon->set_attack_active(false);
+			_particleEffectObject->get_component<ParticleRenderComponent>()->set_enabled(false);
 
-			// 즉시 서버에 IDLE 상태임을 알려야 함
- 			anim_comp->play("idle");
+			anim_comp->play("idle");
 			send_network_sync(0.0f);
 		}
 	}
 	else {
-		// 공격 중이 아닐 때만 WALK/IDLE 전환
-		if (_speed >= common::move_speed::player_run_speed && common::Length(_currentMoveDir) > 0.01f) { // 달리기 속도 15라서 10 이상으로 체크해줌
+		if (_speed >= common::move_speed::player_run_speed && common::Length(_currentMoveDir) > 0.01f) {
 			_state = common::packet::EntityState::RUN;
-			anim_comp->play("run",true,(_speed / common::anim_speed::player_run_animation)); // 애니메이션 속도를 현재 속도의 비율로 조절해야 함 -> 달리기 속도 15이지만 애니메이션 발과 맞는 속도는 10이다.
+			anim_comp->play("run", true, (_speed / common::anim_speed::player_run_animation));
 		}
 		else if (common::Length(_currentMoveDir) > 0.01f) {
 			_state = common::packet::EntityState::MOVE;
@@ -421,6 +471,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 		}
 	}
 }
+
 void MainPlayerScript::handle_input(float deltaTime)
 {
 	// DW추가 : 사망 상태 로직 추가

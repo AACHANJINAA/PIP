@@ -579,6 +579,89 @@ void ReadGLTFMesh::render_instance_skinned(ID3D12GraphicsCommandList* commandLis
 	//}
 }
 
+std::vector<DirectX::XMFLOAT3> ReadGLTFMesh::extract_particle_targets(UINT particleCount) const
+{
+	std::vector<DirectX::XMFLOAT3> targets;
+	targets.reserve(particleCount);
+
+	struct Triangle {
+		DirectX::XMFLOAT3 v0, v1, v2;
+		float area;
+	};
+	std::vector<Triangle> triangles;
+	std::vector<float> cumulativeAreas;
+	float totalArea = 0.0f;
+
+	// 1. 모든 프리미티브를 순회하며 삼각형 단위로 쪼개고, 각 삼각형의 넓이를 계산
+	for (const auto& primitive : _primitives)
+	{
+		// 무기는 보통 vertices에 데이터가 있음
+		if (primitive->_vertices.empty() || primitive->_indices.empty()) continue;
+
+		const auto& vertices = primitive->_vertices;
+		const auto& indices = primitive->_indices;
+
+		// 인덱스를 3개씩 묶어 하나의 삼각형으로 처리
+		for (size_t i = 0; i < indices.size(); i += 3)
+		{
+			UINT i0 = indices[i];
+			UINT i1 = indices[i + 1];
+			UINT i2 = indices[i + 2];
+
+			DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&vertices[i0]._position);
+			DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&vertices[i1]._position);
+			DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&vertices[i2]._position);
+
+			// 외적(Cross Product)을 이용해 삼각형의 넓이를 구함 (Area = 0.5 * |(A-B) x (A-C)|)
+			DirectX::XMVECTOR cross = DirectX::XMVector3Cross(DirectX::XMVectorSubtract(p1, p0), DirectX::XMVectorSubtract(p2, p0));
+			float area = 0.5f * DirectX::XMVectorGetX(DirectX::XMVector3Length(cross));
+
+			if (area > 0.0f) {
+				triangles.push_back({ vertices[i0]._position, vertices[i1]._position, vertices[i2]._position, area });
+				totalArea += area;
+				cumulativeAreas.push_back(totalArea);
+			}
+		}
+	}
+
+	if (triangles.empty()) return targets;
+
+	// 2. 넓이에 비례하여 무작위로 삼각형을 선택하고, 그 내부에 점을 찍기
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> areaDist(0.0f, totalArea);
+	std::uniform_real_distribution<float> baryDist(0.0f, 1.0f);
+
+	for (UINT i = 0; i < particleCount; ++i)
+	{
+		// 누적 넓이를 이용해 가중치 랜덤 선택 (넓은 삼각형일수록 뽑힐 확률이 높음 굳!)
+		float randomArea = areaDist(gen);
+		auto it = std::lower_bound(cumulativeAreas.begin(), cumulativeAreas.end(), randomArea);
+		size_t triIndex = std::min(static_cast<size_t>(std::distance(cumulativeAreas.begin(), it)), triangles.size() - 1);
+
+		const Triangle& tri = triangles[triIndex];
+
+		// 3. 무게중심 좌표계(Barycentric)를 이용해 삼각형 내부의 랜덤한 점을 구하기
+		float r1 = baryDist(gen);
+		float r2 = baryDist(gen);
+
+		// 점들이 꼭짓점에 뭉치지 않고 균일하게 퍼지도록 제곱근(sqrt)을 적용하기
+		float sqrtR1 = std::sqrt(r1);
+		float u = 1.0f - sqrtR1;
+		float v = sqrtR1 * (1.0f - r2);
+		float w = sqrtR1 * r2;
+
+		DirectX::XMFLOAT3 point;
+		point.x = u * tri.v0.x + v * tri.v1.x + w * tri.v2.x;
+		point.y = u * tri.v0.y + v * tri.v1.y + w * tri.v2.y;
+		point.z = u * tri.v0.z + v * tri.v1.z + w * tri.v2.z;
+
+		targets.push_back(point);
+	}
+
+	return targets;
+}
+
 void ReadGLTFMesh::read_static_mesh(const std::string& filePath)
 {
 	// DW설명 : 파일 경로를 이름으로 설정
