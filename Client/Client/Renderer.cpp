@@ -169,8 +169,8 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-	draw_render_list(commandList, camera, frame_index);
-    //draw_render_occlusion_culling_list(commandList, camera,  frame_index);
+	// draw_render_list(commandList, camera, frame_index);
+    draw_render_occlusion_culling_list(commandList, camera,  frame_index);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
     // [수정] viewProj가 아니라 frame_index를 넘겨야 합니다!
@@ -458,7 +458,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     for (auto& pair : _renderMap) {
         const std::string& psoName = pair.first;
         // UI나 Skybox는 정렬 방식이 다르거나 필요 없으므로 불투명 객체만 수행
-        if (psoName == "gltf" || psoName == "skinned" || psoName == "terrain") {
+        if (psoName == "gltf" || psoName == "skinned" || psoName == "terrain" || psoName == "particle_draw") {
             std::sort(pair.second.begin(), pair.second.end(), [&camPos](const std::shared_ptr<GameObject>& a, const std::shared_ptr<GameObject>& b) {
                 float distA = Vector3::Length(Vector3::Subtract(camPos, a->transform()->get_world_position()));
                 float distB = Vector3::Length(Vector3::Subtract(camPos, b->transform()->get_world_position()));
@@ -558,6 +558,8 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
+	
+
     // Step 4: Skybox 렌더링 (항상 마지막, Occlusion Culling 제외)
     auto itSky = _renderMap.find("skybox");
     if (itSky != _renderMap.end() && !itSky->second.empty()) {
@@ -591,6 +593,42 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 if (renderComp && renderComp->is_enabled()) {
                     renderComp->render(commandList, frame_index);
                 }
+            }
+        }
+    }
+
+    // Step 3-5: 파티클 렌더링 (항상 Occlusion Culling 이후, Skybox 이전)
+    auto itParticle = _renderMap.find("particle_draw");
+    if (itParticle != _renderMap.end() && !itParticle->second.empty()) {
+        const std::string target = "particle_draw";
+        auto pso = get_pso(target);
+        auto proto = _shaderPrototypes[target];
+        auto root_sig = get_root_signature(proto->required_root_signature());
+
+        for (auto& obj : itParticle->second) {
+            auto particleRenderComp = obj->get_component<ParticleRenderComponent>();
+            auto psComp = obj->get_component<ParticleSystemComponent>();
+
+            if (particleRenderComp && psComp && particleRenderComp->is_enabled()) {
+
+                // 1. 연산 패스 (Compute) : 위치 계산
+                psComp->dispatch_compute(commandList);
+
+                // 2. 파이프라인 상태 복구 (Compute -> Graphics)
+                commandList->SetPipelineState(pso);
+                commandList->SetGraphicsRootSignature(root_sig);
+                commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+                // 연산 중에 날아간 카메라 상수 버퍼(b1) 다시 세팅
+                if (camera) {
+                    camera->update_shader_variables(commandList, frame_index);
+                    camera->set_viewports_and_scissor_rects(commandList);
+                }
+
+                // 3. 그리기 준비 및 호출
+                proto->update_per_object(commandList, this, obj.get());
+                obj->prepare_render();
+                particleRenderComp->render(commandList, frame_index);
             }
         }
     }
