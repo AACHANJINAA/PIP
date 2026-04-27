@@ -196,7 +196,10 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     const auto& renderMap = renderer->get_render_map();
     // [추가] 오클루전 쿼리 결과 버퍼 가져오기
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
+    f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
 
+    // [전략] 카메라와 매우 가까운 거리는 쿼리 없이 무조건 그림자 생성
+    const float nearShadowThreshold = 30.0f;
     UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
     // 3번의 Draw Call 루프 (각 Cascade마다 한 번씩)
@@ -238,7 +241,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                         if (!rc) continue;
 
                         // 오클루전 쿼리 결과 적용 (이전 프레임 데이터)
-                        if (rc->skip_occlusion()) {
+                        if (dist < nearShadowThreshold || rc->skip_occlusion()) {
                             rc->render_CascadeShadowMap(cmd, frame_index);
                         }
                         else {
@@ -268,6 +271,9 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                         auto rc = obj->get_component<RenderComponent>();
                         auto animComp = obj->get_component<AnimationComponent>();
                         if (!rc || !animComp) continue;
+
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
+                        if (dist > 300.0f) continue;
 
                         // 본 행렬 바인딩
                         D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();

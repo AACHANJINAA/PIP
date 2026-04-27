@@ -450,6 +450,9 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
 void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index) {
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+    
+    // 거리 기준 설정 (이 거리 안쪽은 가리개로 사용)
+    const float nearThreshold = 50.0f;
 
     f3 camPos = camera->game_object()->transform()->get_world_position();
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
@@ -458,7 +461,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     for (auto& pair : _renderMap) {
         const std::string& psoName = pair.first;
         // UI나 Skybox는 정렬 방식이 다르거나 필요 없으므로 불투명 객체만 수행
-        if (psoName == "gltf" || psoName == "skinned" || psoName == "terrain" || psoName == "particle_draw") {
+        if (psoName == "gltf" || psoName == "skinned" || psoName == "terrain") {
             std::sort(pair.second.begin(), pair.second.end(), [&camPos](const std::shared_ptr<GameObject>& a, const std::shared_ptr<GameObject>& b) {
                 float distA = Vector3::Length(Vector3::Subtract(camPos, a->transform()->get_world_position()));
                 float distB = Vector3::Length(Vector3::Subtract(camPos, b->transform()->get_world_position()));
@@ -476,21 +479,57 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-    // --- STEP 2: 성(Castle) 및 기타 객체 쿼리 ---
+    // --- STEP 2: 가까운 객체들 먼저 그리기 (깊이 버퍼 채우기) ---
+ // 이 객체들은 쿼리 없이 그려져서 뒤에 있는 물체들을 가리는 벽 역할을 합니다.
+    std::string opaque_targets[] = { "gltf", "skinned" };
+    for (const std::string& target : opaque_targets) {
+        auto it = _renderMap.find(target);
+        if (it == _renderMap.end()) continue;
+
+        // 해당 PSO 설정
+        auto pso = get_pso(target);
+        auto proto = _shaderPrototypes[target];
+        commandList->SetPipelineState(pso);
+        commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+
+        if (camera) camera->update_shader_variables(commandList, frame_index);
+
+        for (auto& obj : it->second) {
+            float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
+
+            // 가까운 물체이거나 occlusion을 스킵해야 하는 경우만 먼저 그림
+            if (dist < nearThreshold || obj->get_component<RenderComponent>()->skip_occlusion()) {
+                if (target == "skinned") {
+                    auto animComp = obj->get_component<AnimationComponent>();
+                    if (animComp) {
+                        D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+                        if (boneGpuAddr != 0) commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
+                    }
+                }
+                proto->update_per_object(commandList, this, obj.get());
+                obj->prepare_render();
+                obj->get_component<RenderComponent>()->render(commandList, frame_index);
+            }
+        }
+    }
+
+    // --- STEP 3: 먼 객체들에 대해서만 쿼리 발행 ---
     auto occ_pso = get_pso("occlusion_query");
     auto occ_sig = get_root_signature("occlusion_sig");
     if (occ_pso && occ_sig && _unitCube) {
         commandList->SetPipelineState(occ_pso);
         commandList->SetGraphicsRootSignature(occ_sig);
 
-        // 이제 지형이 이미 그려졌으므로, 지형 뒤의 성들은 쿼리에서 탈락합니다.
-        std::string query_targets[] = { "gltf", "skinned" };
-        for (const std::string& target : query_targets) {
+        for (const std::string& target : opaque_targets) {
             auto it = _renderMap.find(target);
             if (it == _renderMap.end()) continue;
 
             for (auto& obj : it->second) {
+                float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
                 auto rc = obj->get_component<RenderComponent>();
+
+                // 이미 위에서 그린 물체는 쿼리할 필요 없음
+                if (dist < nearThreshold || rc->skip_occlusion()) continue;
 
                 XMMATRIX boxWorld = XMMatrixTranspose(rc->get_occlusion_box_world_matrix());
                 commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
@@ -504,37 +543,22 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 
     OcclusionManager::instance()->resolve_queries(commandList, frame_index);
 
-
-    // 3. Main Render Pass: 쿼리 결과에 따라 조건부 렌더링
-    std::string render_targets[] = { "terrain", "gltf", "skinned" };
-
-    for (const std::string& target : render_targets) {
+    // --- STEP 4: 먼 객체들 조건부 렌더링 (Predication) ---
+    for (const std::string& target : opaque_targets) {
         auto it = _renderMap.find(target);
-        if (it == _renderMap.end() || it->second.empty()) continue;
+        if (it == _renderMap.end()) continue;
 
         auto pso = get_pso(target);
         auto proto = _shaderPrototypes[target];
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
-        commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-        LightManager::instance()->bind(commandList, 3);
-        if (target == "terrain") ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
-        else ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
-
-        if (camera) camera->update_shader_variables(commandList, frame_index);
 
         for (auto& obj : it->second) {
+            float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
             auto rc = obj->get_component<RenderComponent>();
-            if (!rc) continue;
 
-            f3 objPos = obj->transform()->get_world_position();
-            float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
-
-            // [지형 필터링] 주변 8개 타일만 렌더링
-            if (target == "terrain") {
-                if (dist > 800.0f || dist <= 250.0f) continue;
-            }
+            // 이미 STEP 2에서 그린 물체는 스킵
+            if (dist < nearThreshold || rc->skip_occlusion()) continue;
 
             if (target == "skinned") {
                 auto animComp = obj->get_component<AnimationComponent>();
@@ -547,14 +571,10 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
             proto->update_per_object(commandList, this, obj.get());
             obj->prepare_render();
 
-            if (rc->skip_occlusion()) {
-                rc->render(commandList, frame_index);
-            }
-            else {
-                commandList->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
-                rc->render(commandList, frame_index);
-                commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
-            }
+            // 이전 프레임의 쿼리 결과에 따라 그릴지 결정
+            commandList->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
+            rc->render(commandList, frame_index);
+            commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
         }
     }
 
