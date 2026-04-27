@@ -780,6 +780,45 @@ void NetworkManager::Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& 
 	CLOG("All players are ready. Game starts now!");
 }
 
+void NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream) 
+{
+	common::packet::SC_PACKET_INVENTORY_INFO pkt;
+	stream >> pkt;
+
+	// 1. 기존 클라이언트 인벤토리 데이터 클리어
+	// ClientInventoryManager::Instance()->Clear();
+
+	// 2. 재료 로드
+	for (int i = 0; i < pkt._material_count; ++i) {
+		uint32_t id;
+		uint32_t count;
+		stream >> id >> count;
+		// ClientInventoryManager::Instance()->UpdateMaterial(id, count);
+		std::cout << "[Client] Material Loaded: ID " << id << ", Count " << count << std::endl;
+	}
+
+	// 3. 장비 로드
+	for (int i = 0; i < pkt._equip_count; ++i) {
+		common::packet::EquipItem equip;
+		stream >> equip;
+		// ClientInventoryManager::Instance()->AddEquipment(equip);
+		std::cout << "[Client] Equip Loaded: UID " << equip.item_uid << ", Level +" << equip.enhance_level << std::endl;
+	}
+}
+
+void NetworkManager::Handle_S2C_P_ITEM_UPDATE(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_ITEM_UPDATE pkt;
+	stream >> pkt;
+
+	// 비주얼이 없으므로 로그로 확인
+	std::cout << "[Client] Item Updated: ID " << pkt._item_id
+		<< ", Type " << static_cast<int>(pkt._update_type)
+		<< ", New Amount " << pkt._amount << std::endl;
+
+	// UI가 완성되면 여기서 InventoryUI::Refresh() 등을 호출
+}
+
 void NetworkManager::HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_DEBUG_DRAW packet;
@@ -892,6 +931,11 @@ bool NetworkManager::init_network()
 		std::bind(&NetworkManager::Handle_S2C_ALL_PLAYERS_READY, this, std::placeholders::_1));
 	RegisterHandler(common::packet::PacketType::S2C_P_PLAYER_RESURRECT,
 		std::bind(&NetworkManager::HANDLE_S2C_PLAYER_RESURRECT, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_ITEM_UPDATE,
+		std::bind(&NetworkManager::Handle_S2C_P_ITEM_UPDATE, this, std::placeholders::_1));
+	RegisterHandler(common::packet::PacketType::S2C_P_INVENTORY_ALL_INFO,
+		std::bind(&NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO, this, std::placeholders::_1));
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != 0) {

@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "DBManager.h"
+#include "InventoryComponent.h"
 #include "MapDataManager.h"
 #include "Player.h"
 #include "server.h"
@@ -44,10 +45,10 @@ namespace PIP::packet
 
 	void Handle_C2S_LOGIN(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
 	{
-		packet::CS_PACKET_LOGIN login_packet;
 		std::string player_name;
 		try
 		{
+			packet::CS_PACKET_LOGIN login_packet;
 			stream >> login_packet;
 			stream >> player_name;
 		}
@@ -345,22 +346,56 @@ namespace PIP::packet
 		}
 
 		// --- [DB 작업 생성] ---
+		// =========================================================
+		// [3] DB 데이터 비동기 로드 및 룸 입장 (첫 입장 시)
+		// =========================================================
 		SERVER::DBTask task;
-		task.type = SERVER::DBTaskType::LOGIN_LOAD; // 실제 게임 데이터 로드
+		task.type = SERVER::DBTaskType::LOGIN_LOAD;
 		task.session_id = session->_id;
+
+		// 이 세션이 할당될 룸의 로직 스레드 인덱스를 저장 (콜백 반환용)
 		session->_logic_thread_idx = target_room->GetLogicThreadIndex();
-		// [핵심] 이 세션이 들어갈 "방의 로직 스레드 인덱스"를 목적지로 설정합니다.
 		task.logic_thread_idx = target_room->GetLogicThreadIndex();
 
-		task.callback = [session, target_room, enter_packet]() {
-			// [CASE 2] 첫 입장이거나 이전 방이 없는 경우: 즉시 입장 요청
-			target_room->PushJob([target_room, session, enter_packet]()
-				{
-					target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
+		// [핵심] DB 스레드가 데이터를 채워 넣을 빈 상자(포인터)를 생성
+		auto loaded_data = std::make_shared<std::any>();
+		task.data = loaded_data;
+
+		// [콜백] DB 스레드가 작업을 마치고 로직 스레드로 던져줄 함수
+		task.callback = [session, target_room, enter_packet, loaded_data]() {
+
+			// 1. DB 스레드가 상자에 채워둔 스냅샷 데이터를 꺼냄
+			if (loaded_data->has_value()) {
+				try {
+					auto snapshot = std::any_cast<SERVER::InventorySnapshot>(*loaded_data);
+
+					// 2. 플레이어 인벤토리에 데이터 세팅 (이 시점은 로직 스레드이므로 안전함)
+					if (auto inven = session->_player->GetComponent<GAME::InventoryComponent>()) {
+
+						for (const auto& [id, count] : snapshot.materials) {
+							inven->add_material(id, count);
+						}
+
+						for (const auto& [uid, equip] : snapshot.equipments) {
+							inven->add_equipment(equip);
+						}
+
+						// DB에서 갓 꺼내온 최신 상태이므로 dirty 플래그 초기화
+						inven->mark_saved();
+					}
+				}
+				catch (const std::bad_any_cast& e) {
+					MYERROR("[DB] 로드 데이터 캐스팅 실패");
+				}
+			}
+
+			// 3. 인벤토리 세팅이 완료되었으므로 최종적으로 방 입장 실행
+			target_room->PushJob([target_room, session, enter_packet]() {
+				target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
 				});
 		};
-
 		SERVER::DBManager::Instance()->push_task(std::move(task));
+
 		//// [CASE 2] 첫 입장이거나 이전 방이 없는 경우: 즉시 입장 요청
 		//target_room->PushJob([target_room, session, enter_packet]()
 		//	{
