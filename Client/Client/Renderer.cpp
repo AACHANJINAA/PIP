@@ -617,7 +617,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-    // Step 3-5: 파티클 렌더링 (항상 Occlusion Culling 이후, Skybox 이전)
+    // Step 5: 파티클 렌더링 (항상 Occlusion Culling 이후, Skybox 이후)
     auto itParticle = _renderMap.find("particle_draw");
     if (itParticle != _renderMap.end() && !itParticle->second.empty()) {
         const std::string target = "particle_draw";

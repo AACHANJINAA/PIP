@@ -301,7 +301,16 @@ void MainPlayerScript::awake()
 
 		// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
 		auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
-		psComp->init_particles(targets);
+		static const DirectX::XMFLOAT3 PlayerColors[4] =
+		{
+			DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
+			DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
+			DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
+			DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
+		};
+
+		DirectX::XMFLOAT4 color = { PlayerColors[_playerId % 4].x, PlayerColors[_playerId % 4].y, PlayerColors[_playerId % 4].z, 0.5f };
+		psComp->init_particles(targets, color);
 
 		// 4. 렌더 컴포넌트 추가
 		auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
@@ -371,7 +380,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_nowSkillTime += deltaTime;
 			if (_nowSkillTime >= _skillBigSowrdSpawn)
 			{
-				_SkillObject->get_component<RenderComponent>()->set_enabled(true);
+				//_SkillObject->get_component<RenderComponent>()->set_enabled(true);
 			}
 			else
 			{
@@ -390,9 +399,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 			{
 				// 파티클 오브젝트를 활성화
 				_particleEffectObject->set_enabled(true);
-				_particleEffectObject->get_component<ParticleRenderComponent>()->set_enabled(true);
 
-				// [수정됨] 연산을 쏘지 않고, 데이터만 저장해둡니다!
+				// 연산을 쏘지 않고, 데이터만 저장만 하기
 				psComp->set_compute_data(
 					_SkillObject->transform()->world_matrix(),
 					transform()->local_position(),
@@ -402,7 +410,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 			if (progress >= 1.0f)
 			{
-				_SkillObject->get_component<RenderComponent>()->set_enabled(true);
+				//_SkillObject->get_component<RenderComponent>()->set_enabled(true);
 			}
 
 		}
@@ -450,7 +458,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_state = common::packet::EntityState::IDLE;
 
 			if (_currentWeapon) _currentWeapon->set_attack_active(false);
-			_particleEffectObject->get_component<ParticleRenderComponent>()->set_enabled(false);
+			_particleEffectObject->set_enabled(false);
 
 			anim_comp->play("idle");
 			send_network_sync(0.0f);
