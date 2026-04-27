@@ -161,6 +161,12 @@
     <ClCompile Include="MainStage.cpp">
       <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClCompile>
+    <ClCompile Include="DBManager.cpp">
+      <Filter>소스 파일\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="InventoryComponent.cpp">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketHandlers.h">
@@ -276,6 +282,15 @@
     </ClInclude>
     <ClInclude Include="MainStage.h">
       <Filter>소스 파일\Game\Stage\Stages</Filter>
+    </ClInclude>
+    <ClInclude Include="DBManager.h">
+      <Filter>소스 파일\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="InventoryComponent.h">
+      <Filter>소스 파일\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemHeader.h">
+      <Filter>소스 파일\Game\CombatDef</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

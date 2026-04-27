@@ -170,10 +170,12 @@
     <ClCompile Include="BT_Nodes.cpp" />
     <ClCompile Include="CharacterControllerComponent.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="DBManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="glTFMeshLoader.cpp" />
     <ClCompile Include="GridMap.cpp" />
     <ClCompile Include="HitboxComponent.cpp" />
+    <ClCompile Include="InventoryComponent.cpp" />
     <ClCompile Include="LuaManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainStage.cpp" />
@@ -214,10 +216,13 @@
     <ClInclude Include="CharacterControllerComponent.h" />
     <ClInclude Include="CombatDef.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="DBManager.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="glTFMeshLoader.h" />
     <ClInclude Include="GridMap.h" />
     <ClInclude Include="HitboxComponent.h" />
+    <ClInclude Include="InventoryComponent.h" />
+    <ClInclude Include="ItemHeader.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
     <ClInclude Include="MainStage.h" />

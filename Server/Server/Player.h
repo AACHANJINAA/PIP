@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "CharacterControllerComponent.h"
+#include "ItemHeader.h"
 
 namespace PIP::GAME
 {
@@ -73,6 +74,10 @@ namespace PIP::GAME
 
 		bool IsDirty();
 		void SyncSentData();
+
+		void addItem(GAME::ItemId item_id, uint32_t count);
+		void removeItem(GAME::ItemId item_id, uint32_t count);
+
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		

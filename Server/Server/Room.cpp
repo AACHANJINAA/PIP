@@ -11,6 +11,8 @@
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "PlayerControllerComponent.h"
 #include "CombatDef.h"
+#include "DBManager.h"
+#include "InventoryComponent.h"
 #include "StageManager.h"
 
 namespace PIP::SERVER
@@ -910,6 +912,36 @@ namespace PIP::SERVER
 			_currentStage->update(this, deltaTime);
 		}
 
+		// --- [추가] DB 자동 저장 타이머 ---
+		//static float saveTimer = 0.0f;
+		//saveTimer += deltaTime;
+
+		//if (saveTimer >= 10.0f) { // 10초마다 자동 저장 체크
+		//	for (auto& [id, session] : _players) {
+		//		auto player = session->_player;
+		//		auto inven = player->GetComponent<GAME::InventoryComponent>();
+
+		//		// 수정된 사항이 있다면 DB로 작업을 던짐
+		//		if (inven && inven->is_dirty()) {
+
+		//			DBTask task;
+		//			task.type = DBTaskType::SAVE_INVENTORY_ALL;
+		//			task.account_id = player->GetId();
+
+		//			// 현재 인벤토리 상태 복사
+		//			auto items_to_save = inven->get_items();
+		//			task.data = new std::unordered_map<GAME::ItemId, uint32_t>(items_to_save);
+
+		//			// 완료 후 플래그 해제 콜백
+		//			task.callback = [inven]() {
+		//				inven->mark_saved(); // 저장이 성공했으므로 dirty 해제
+		//			};
+
+		//			DBManager::Instance()->push_task(std::move(task));
+		//		}
+		//	}
+		//	saveTimer = 0.0f;
+		//}
 	}
 
 	

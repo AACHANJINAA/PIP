@@ -17,9 +17,10 @@ int main()
 
 	int total_cores = p_cores.empty() ? static_cast<int>(std::thread::hardware_concurrency()) : static_cast<int>(p_cores.size());
 	int io_worker_thread_count = 2;
-	int logic_worker_thread_count = std::max(1, total_cores - io_worker_thread_count);
+	int logic_worker_thread_count = std::max(1, total_cores - io_worker_thread_count - 1);
 
-	MYLOG("[System] Detected P-Cores (Logical): " << total_cores << ", Logic Threads: " << logic_worker_thread_count);
+	MYLOG("[System] Detected P-Cores (Logical): " << total_cores << ", Logic Threads: " << logic_worker_thread_count 
+			<< ", DB Threads: " << 1 << std::endl);
 
 	SERVER::Server::Instance()->initialize();
 	// 서버 스탈트!
