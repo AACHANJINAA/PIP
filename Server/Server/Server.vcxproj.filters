@@ -289,9 +289,6 @@
     <ClInclude Include="InventoryComponent.h">
       <Filter>소스 파일\Game\Components</Filter>
     </ClInclude>
-    <ClInclude Include="ItemHeader.h">
-      <Filter>소스 파일\Game\CombatDef</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Monster.lua">

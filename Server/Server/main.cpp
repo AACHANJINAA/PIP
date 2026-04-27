@@ -13,6 +13,7 @@ int main()
 	#pragma comment(lib, "winmm.lib")
 	timeBeginPeriod(1);
 
+	std::wcout.imbue(std::locale("korean"));
 	std::vector<int> p_cores = GetPerformanceCoreIndices();
 
 	int total_cores = p_cores.empty() ? static_cast<int>(std::thread::hardware_concurrency()) : static_cast<int>(p_cores.size());

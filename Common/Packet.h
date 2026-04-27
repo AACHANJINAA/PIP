@@ -106,6 +106,11 @@ namespace common::packet
 		S2C_P_DEBUG_DRAW = 601,
 		S2C_P_DEBUG_BT_INFO = 602,
 		S2C_P_DEBUG_SHAPE = 603,
+
+		//------------------------------------------- 인벤토리 관련 패킷 --------------------------------------- //
+		S2C_P_INVENTORY_ALL_INFO = 701, // 인벤토리 전체 정보 패킷 (방 입장 시 또는 인벤토리 변경 시 전체 정보 전송)
+		S2C_P_ITEM_UPDATE = 702, // 아이템 업데이트 패킷 (아이템 추가/제거/수량 변경 등)
+		S2C_P_EQUIP_ITEM_UPDATE = 703, // 장착 아이템 업데이트 패킷 (장착/해제/강화 등)
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -122,7 +127,24 @@ namespace common::packet
 		Tainer = 2,
 		// 향후 추가될 NPC 유형들...
 	};
+	enum class InventoryUpdateType : uint8_t {
+		Add = 1,    // 아이템 획득/증가
+		Remove = 2, // 아이템 감소
+		Delete = 3  // 아이템 완전 삭제 (수량 0)
+	};
 
+	enum class ItemId : uint32_t {
+		ITEM_WOOD1 = 1,
+		ITEM_ORE1 = 2,
+		ITEM_STICK = 3,
+		// ... 추가 아이템 ID
+	};
+	struct EquipItem {
+		int64_t item_uid;     // DB에서 발급된 고유 ID (Primary Key)
+		ItemId  item_id;      // 원본 아이템 ID (예: 롱소드)
+		int     enhance_level;// 강화 수치
+		bool    is_equipped;  // 장착 여부
+	};
 #pragma pack (push, 1)
 	struct PacketHeader
 	{
@@ -374,6 +396,26 @@ namespace common::packet
 		Quat			_rotation;
 		uint32_t		_triangle_count;
 		// std::vector<Vec3> _vertices; // 삼각형 정점 데이터 (triangle_count * 3 개의 Vec3)
+	};
+	//------------------------------------------- DB/아이템 관련 패킷 ------------------------------------------ //
+	// [S2C] 전체 인벤토리 정보 (로그인/방 입장 시)
+	struct SC_PACKET_INVENTORY_INFO : public PacketHeader {
+		uint16_t _material_count; // 재료 아이템 종류 수
+		uint16_t _equip_count;    // 장비 아이템 수
+	};
+
+	// [S2C] 아이템 개별 업데이트 (게임 플레이 중)
+	struct SC_PACKET_ITEM_UPDATE : public PacketHeader {
+		InventoryUpdateType _update_type;
+		uint32_t _item_id;   // 재료 아이템 ID
+		uint32_t _amount;    // 변동된 수량 (또는 최종 수량)
+	};
+
+	// [S2C] 장비 아이템 업데이트 (장착 상태 변화 등)
+	struct SC_PACKET_EQUIP_UPDATE : public PacketHeader {
+		int64_t				_player_id;
+		InventoryUpdateType _update_type;
+		EquipItem			_equip_data;
 	};
 #pragma pack (pop)
 }
