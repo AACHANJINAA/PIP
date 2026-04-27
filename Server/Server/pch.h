@@ -35,6 +35,12 @@
 #pragma comment (lib, "WS2_32.lib")
 #pragma comment (lib, "MSWSock.LIB")
 
+#include <windows.h> // 반드시 sql.h 보다 위에 있어야 합니다.
+#include <sql.h>
+#include <sqlext.h>
+
+// ODBC 라이브러리 연결
+#pragma comment(lib, "odbc32.lib")
 
 
 //LUA 헤더

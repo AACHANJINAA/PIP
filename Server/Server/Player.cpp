@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "HitboxComponent.h"
+#include "InventoryComponent.h"
 #include "MapDataManager.h"
 #include "server.h"
 #include "PlayerControllerComponent.h"
@@ -24,7 +25,7 @@ namespace PIP::GAME
 		SetFaction(Faction::FACTION_PLAYER);
 		AddComponent<GAME::TransformComponent>();
 		AddComponent<GAME::PlayerControllerComponent>(Layers::MOVING);
-
+		AddComponent<GAME::InventoryComponent>();
 		
 		auto hitbox = AddComponent<HitboxComponent>();
 		float height = 1.8f;
@@ -69,6 +70,24 @@ namespace PIP::GAME
 		_lastSentPos = GetPosition();
 		_lastSentState = GetState();
 		_lastSentRot = GetRotation();
+	}
+
+	void Player::addItem(GAME::ItemId item_id, uint32_t count)
+	{
+		auto inventory = GetComponent<InventoryComponent>();
+		if (inventory)
+		{
+			inventory->add_item(item_id, count);
+		}
+	}
+
+	void Player::removeItem(GAME::ItemId item_id, uint32_t count)
+	{
+		auto inventory = GetComponent<InventoryComponent>();
+		if (inventory)
+		{
+			inventory->remove_item(item_id, count);
+		}
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,

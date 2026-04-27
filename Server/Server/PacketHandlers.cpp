@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include "DBManager.h"
 #include "MapDataManager.h"
 #include "Player.h"
 #include "server.h"
@@ -343,11 +344,28 @@ namespace PIP::packet
 			}
 		}
 
-		// [CASE 2] 첫 입장이거나 이전 방이 없는 경우: 즉시 입장 요청
-		target_room->PushJob([target_room, session, enter_packet]()
-			{
-				target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
-			});
+		// --- [DB 작업 생성] ---
+		SERVER::DBTask task;
+		task.type = SERVER::DBTaskType::LOGIN_LOAD; // 실제 게임 데이터 로드
+		task.session_id = session->_id;
+		session->_logic_thread_idx = target_room->GetLogicThreadIndex();
+		// [핵심] 이 세션이 들어갈 "방의 로직 스레드 인덱스"를 목적지로 설정합니다.
+		task.logic_thread_idx = target_room->GetLogicThreadIndex();
+
+		task.callback = [session, target_room, enter_packet]() {
+			// [CASE 2] 첫 입장이거나 이전 방이 없는 경우: 즉시 입장 요청
+			target_room->PushJob([target_room, session, enter_packet]()
+				{
+					target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
+				});
+		};
+
+		SERVER::DBManager::Instance()->push_task(std::move(task));
+		//// [CASE 2] 첫 입장이거나 이전 방이 없는 경우: 즉시 입장 요청
+		//target_room->PushJob([target_room, session, enter_packet]()
+		//	{
+		//		target_room->Execute_C2S_ROOM_ENTER(session, enter_packet);
+		//	});
 	}
 
 	void Handle_C2S_ROOM_LIST(const std::shared_ptr<SERVER::SESSION>& session, PacketStream& stream)
@@ -398,9 +416,9 @@ namespace PIP::packet
 		{
 			stream >> recv_chat_packet;
 		}
-		catch (const std::runtime_error& e)
+		catch (...)
 		{
-			MYERROR("[CHAT] **ERROR**: Failed to read chat packet from stream. " << e.what());
+			MYERROR("[CHAT] **ERROR**: Failed to read chat packet from stream.");
 		}
 
 		std::string message;
@@ -408,9 +426,9 @@ namespace PIP::packet
 		{
 			stream >> message;
 		}
-		catch (const std::runtime_error& e)
+		catch (...)
 		{
-			MYERROR("[CHAT] **ERROR**: Failed to read chat message from stream. " << e.what());
+			MYERROR("[CHAT] **ERROR**: Failed to read chat message from stream. ");
 		}
 
 		// 2. 세션이 방에 있는지 확인

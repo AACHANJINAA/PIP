@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "server.h"
 
+#include "DBManager.h"
 #include "LuaManager.h"
 #include "Player.h"
 #include "MapDataManager.h"
@@ -214,6 +215,11 @@ namespace PIP::SERVER
 		SERVER::StageManager::Instance()->initialize();
 		MYLOG("StageManager Initialized." << std::endl);
 
+		// --- [추가] DB 매니저 초기화 ---
+		DBManager::Instance()->initialize(L"Driver={SQL Server};Server=...;Database=...");
+		MYLOG("DBManager Initialized (Thread Started)." << std::endl);
+
+
 		MYLOG("[SERVER] Loading Map...");
 		auto mdm = MapDataManager::Instance();
 		//mdm->LoadMapData("../../Common/MapData/ExportedServerData.json");
@@ -299,8 +305,8 @@ namespace PIP::SERVER
 		}
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_thread_count << ", Room count: " << _rooms.size());
 
-		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
-		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads.");
+		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads and" << 1 << "DB thread.");
+		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads." << 1 << "DB thread.");
 	}
 	void Server::Stop()
 	{
@@ -308,6 +314,10 @@ namespace PIP::SERVER
 		{
 			return; // 이미 Stop이 호출된 경우 중복 실행 방지
 		}
+
+		// 1. DB 매니저 종료 (먼저 종료하여 남은 저장을 처리하게 함)
+		DBManager::Instance()->finalize();
+		MYLOG("DBManager Finalized (Thread Joined).");
 
 		// 1. 모든 로직 스레드의 큐에 종료 신호(더미 패킷)를 보냄
 		for (auto& worker : _logic_workers)
