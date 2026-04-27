@@ -316,8 +316,7 @@ namespace PIP::BOT
         common::packet::CS_PACKET_ACTION pkt;
         pkt._size = sizeof(pkt);
         pkt._type = common::packet::PacketType::C2S_P_ACTION;
-        pkt._action_type = common::packet::ActionType::NORMAL_ATTACK;
-        pkt._action_id = 1;
+        pkt._action_id = common::packet::ActionID::Common::Attack;
         pkt._target_id = -1;
         pkt._direction = _current_rot;
         pkt._position = _current_pos;

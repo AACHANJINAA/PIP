@@ -75,8 +75,8 @@ namespace PIP::GAME
 		bool IsDirty();
 		void SyncSentData();
 
-		void addItem(GAME::ItemId item_id, uint32_t count);
-		void removeItem(GAME::ItemId item_id, uint32_t count);
+		void addMaterial(GAME::ItemId item_id, uint32_t count);
+		void removeMaterial(GAME::ItemId item_id, uint32_t count);
 
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
