@@ -67,9 +67,11 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 float4 PS_Particle(VS_OUT In) : SV_TARGET
 {
     // 잠시 텍스처 샘플링을 주석 처리합니다!
-    // float4 texColor = g_txParticle.Sample(g_samLinear, In.UV);
-    // return texColor * In.Color;
+    //float4 texColor = g_txParticle.Sample(g_samLinear, In.UV);
+    //return texColor * In.Color;
+    
+    return In.Color;
     
     // [디버그용 강제 출력] 무조건 눈부신 민트색(Cyan)으로 빛나게 합니다.
-    return float4(0.0f, 1.0f, 1.0f, 0.5f);
+    //return float4(0.0f, 1.0f, 1.0f, 0.5f);
 }

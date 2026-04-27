@@ -810,7 +810,6 @@ ComPtr<ID3D12RootSignature> ComputeParticleRootSignatureGenerator::create(ID3D12
 
     // [0] b0: 상수 버퍼 20개 (행렬 16개 + 위치 3개 + 진행도 1개)
     params[0].InitAsConstants(20, 0);
-
     // [1] t0: 타겟 버퍼 (SRV)
     params[1].InitAsShaderResourceView(0);
 

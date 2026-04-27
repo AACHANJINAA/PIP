@@ -3,6 +3,7 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "GameObject.h"
+#include "ParticleSystemComponent.h"
 
 const std::string& ParticleShader::pso_name() const {
     static const std::string name = "particle_draw";
@@ -40,11 +41,11 @@ D3D12_BLEND_DESC ParticleShader::create_blend_state() {
 D3D12_DEPTH_STENCIL_DESC ParticleShader::create_depth_stencil_state() {
     D3D12_DEPTH_STENCIL_DESC desc = {};
     desc.DepthEnable = TRUE;
-    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // 겹쳐도 렌더링되도록 깊이 쓰기 끄기
+    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // 파티클 끼리는 ㅈ겹쳐도 렌더링되도록 깊이 쓰기 끄기
     desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-
-    desc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    // 깊이검사 끄는 디버깅 용
+    // desc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
     return desc;
 }
@@ -66,7 +67,21 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
         float Size;
     } pInfo;
 
+    static const DirectX::XMFLOAT3 PlayerColors[4] =
+    {
+        DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
+        DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
+        DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
+        DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
+    };
+
     pInfo.Color = { 0.1f, 0.5f, 1.0f, 0.5f }; // 카리아 대검 파티클 색상
+
+    auto particleComponent = object->get_component<ParticleSystemComponent>();
+    if (particleComponent) {
+        pInfo.Color = particleComponent->get_particle_color();
+    }
+
     pInfo.Size = 0.03f; // 파티클 입자 하나의 크기 (수정하며 테스트)
 
     command_list->SetGraphicsRoot32BitConstants(2, 5, &pInfo, 0);
@@ -74,13 +89,13 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
     // 반짝이는 빛 텍스처 (미리 로드해둔 파티클 텍스처 이름)
     auto particle_tex = ResourceManager::instance()->get_texture("Resource/UI/particle/particle.dds");
 
-    // 만약 파일 경로를 틀렸거나 로드를 깜빡했다면 터지지 않게 기본 흰색 텍스처로 대체
+    // 만약 경로가 틀렸거나 로딩이 안 됐을 때 튕기지 않게 기본 흰색 텍스처로 대체
     if (!particle_tex) {
         particle_tex = ResourceManager::instance()->get_texture("__DEFAULT_WHITE__");
     }
 
     if (particle_tex) {
-        // t1 레지스터(루트 파라미터 인덱스 4번)에 텍스처 바인딩
-        Renderer::instance()->bind_texture_table(command_list, 4, { particle_tex->cpu_handle });
+        // 루트 파라미터 인덱스 4번(t1)에 디스크립터 테이블(텍스처)을 바인딩합니다.
+        renderer->bind_texture_table(command_list, 4, { particle_tex->cpu_handle });
     }
 }
