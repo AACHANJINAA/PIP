@@ -72,7 +72,7 @@ namespace PIP::GAME
 		_lastSentRot = GetRotation();
 	}
 
-	void Player::addMaterial(GAME::ItemId item_id, uint32_t count)
+	void Player::addMaterial(common::packet::ItemId item_id, uint32_t count)
 	{
 		auto inventory = GetComponent<InventoryComponent>();
 		if (inventory)
@@ -81,7 +81,7 @@ namespace PIP::GAME
 		}
 	}
 
-	void Player::removeMaterial(GAME::ItemId item_id, uint32_t count)
+	void Player::removeMaterial(common::packet::ItemId item_id, uint32_t count)
 	{
 		auto inventory = GetComponent<InventoryComponent>();
 		if (inventory)

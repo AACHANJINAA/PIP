@@ -66,6 +66,9 @@ private:
     void HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& stream);
     void Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream);
 
+	// Client side: 인벤토리 관련 패킷 처리 함수들
+    void Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream);
+    void Handle_S2C_P_ITEM_UPDATE(common::packet::PacketStream& stream);
 
 	// --- 디버그용 함수들 ---
     void HANDLE_S2C_DEBUG_DRAW(common::packet::PacketStream& stream);

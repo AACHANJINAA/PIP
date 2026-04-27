@@ -221,10 +221,11 @@ namespace PIP::SERVER
 					// Server: SSMS 접속 시 사용한 서버 이름 (보통 localhost 또는 PC이름\SQLEXPRESS)
 					// Database: 만든 DB 이름
 					// Trusted_Connection: Windows 인증 사용 여부
-		std::wstring connStr =  L"Driver={ODBC Driver 17 for SQL Server};"
+		/*std::wstring connStr =  L"Driver={ODBC Driver 17 for SQL Server};"
 								L"Server=.\\SQLEXPRESS;;"
 								L"Database=PIPGameServerDB;"
-								L"Trusted_Connection=yes;";
+								L"Trusted_Connection=yes;";*/
+		std::wstring connStr = L"DUMMY";
 		DBManager::Instance()->initialize(connStr);
 		MYLOG("DBManager Initialized (Thread Started)." << std::endl);
 

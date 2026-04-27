@@ -222,7 +222,6 @@
     <ClInclude Include="GridMap.h" />
     <ClInclude Include="HitboxComponent.h" />
     <ClInclude Include="InventoryComponent.h" />
-    <ClInclude Include="ItemHeader.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
     <ClInclude Include="MainStage.h" />
