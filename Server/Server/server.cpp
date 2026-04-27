@@ -216,7 +216,16 @@ namespace PIP::SERVER
 		MYLOG("StageManager Initialized." << std::endl);
 
 		// --- [추가] DB 매니저 초기화 ---
-		DBManager::Instance()->initialize(L"Driver={SQL Server};Server=...;Database=...");
+					// 연결 문자열 구성
+					// Driver: 설치된 ODBC 드라이버 버전 (17 혹은 18)
+					// Server: SSMS 접속 시 사용한 서버 이름 (보통 localhost 또는 PC이름\SQLEXPRESS)
+					// Database: 만든 DB 이름
+					// Trusted_Connection: Windows 인증 사용 여부
+		std::wstring connStr =  L"Driver={ODBC Driver 17 for SQL Server};"
+								L"Server=.\\SQLEXPRESS;;"
+								L"Database=PIPGameServerDB;"
+								L"Trusted_Connection=yes;";
+		DBManager::Instance()->initialize(connStr);
 		MYLOG("DBManager Initialized (Thread Started)." << std::endl);
 
 
@@ -305,8 +314,8 @@ namespace PIP::SERVER
 		}
 		MYLOG("[SERVER] Logic threads: " << _logic_workers.size() << ", IO threads: " << io_thread_count << ", Room count: " << _rooms.size());
 
-		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads and" << 1 << "DB thread.");
-		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads." << 1 << "DB thread.");
+		MYLOG("Created " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads and " << 1 << " DB thread.");
+		MYLOG("Server started with " << io_thread_count << " I/O threads and " << _logic_workers.size() << " logic threads and " << 1 << " DB thread.");
 	}
 	void Server::Stop()
 	{
