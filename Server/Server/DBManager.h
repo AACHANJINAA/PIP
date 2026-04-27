@@ -21,8 +21,8 @@ namespace PIP::SERVER
     // [추가] 인벤토리 스냅샷 전용 구조체
     // 로직 스레드에서 복사본을 만들어 DB 스레드로 전달할 때 사용합니다.
     struct InventorySnapshot {
-        std::unordered_map<GAME::ItemId, uint32_t> materials;
-        std::unordered_map<int64_t, GAME::EquipItem> equipments;
+        std::unordered_map<common::packet::ItemId, uint32_t> materials;
+        std::unordered_map<int64_t, common::packet::EquipItem> equipments;
     };
 
     struct DBTask {
@@ -65,7 +65,7 @@ namespace PIP::SERVER
         std::thread _workerThread;
         concurrency::concurrent_queue<DBTask> _taskQueue;
         std::atomic<bool> _is_running = false;
-
+        bool _is_dummy_mode = false;
         // ODBC Handles
         SQLHENV _henv = SQL_NULL_HENV;
         SQLHDBC _hdbc = SQL_NULL_HDBC;

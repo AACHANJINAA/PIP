@@ -38,6 +38,7 @@ namespace PIP::SERVER
 		void RemoveNPC(int64_t npcId);
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int64_t npc_id);
+		GAME::NPC* spawn_npc(GAME::NPCType type, const common::Vec3& pos, const std::string& name = "");
 
 
 		void ChangeScene(const std::string& nextSceneName);
@@ -75,6 +76,13 @@ namespace PIP::SERVER
 		void Execute_C2S_PLAYER_READY(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_PLAYER_READY& ready_packet);
 		void SetupPlayerSpawn(const std::shared_ptr<SESSION>& session);
 
+		//---------- 아이템 관련 ---------------
+		void SendFullInventory(const std::shared_ptr<SESSION>& session);
+		void SendItemUpdate(const std::shared_ptr<SESSION>& session, common::packet::ItemId id, uint32_t amount, common::packet::InventoryUpdateType type);
+		void SendEquipUpdateBroadcast(int64_t player_id, const common::packet::EquipItem& equip); // 장착 시 주변에 알림
+
+
+		//---------- getter ----------------
 		size_t GetPlayerCount() const { return _players.size(); }
 		int GetRoomId() const { return _room_id; }
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
@@ -86,7 +94,6 @@ namespace PIP::SERVER
 
 		std::map<int64_t, common::Vec3> GetPlayersPos() const;
 
-		GAME::NPC* spawn_npc(GAME::NPCType type, const common::Vec3& pos, const std::string& name = "");
 		JPH::PhysicsSystem* GetPhysicsSystem() const { return _physicsSystem; }
 	private:
 		void SpawnBoss();

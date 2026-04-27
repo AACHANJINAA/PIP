@@ -371,5 +371,3 @@ inline bool PinThreadToPerformanceCores() {
 	return (rc == 0);
 #endif
 }
-
-#include "ItemHeader.h"

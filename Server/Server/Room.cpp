@@ -1573,6 +1573,71 @@ namespace PIP::SERVER
 
 	}
 
+	void Room::SendFullInventory(const std::shared_ptr<SESSION>& session)
+	{
+		if (!session || !session->_player) return;
+
+		auto inven = session->_player->GetComponent<GAME::InventoryComponent>();
+		if (!inven) return;
+
+		packet::PacketStream stream;
+		packet::SC_PACKET_INVENTORY_INFO pkt;
+		pkt._type = packet::PacketType::S2C_P_INVENTORY_ALL_INFO;
+
+		auto mats = inven->get_materials_snapshot();
+		auto equips = inven->get_equipments_snapshot();
+
+		pkt._material_count = static_cast<uint16_t>(mats.size());
+		pkt._equip_count = static_cast<uint16_t>(equips.size());
+		stream << pkt;
+
+		// 재료 직렬화
+		for (const auto& [id, count] : mats) {
+			stream << static_cast<uint32_t>(id) << count;
+		}
+		// 장비 직렬화
+		for (const auto& [uid, equip] : equips) {
+			stream << equip;
+		}
+
+		auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+		h->_size = static_cast<uint16_t>(stream.Size());
+
+		session->do_send(stream.constable_data(), stream.Size());
+	}
+
+	void Room::SendItemUpdate(const std::shared_ptr<SESSION>& session, packet::ItemId id, uint32_t amount,
+		common::packet::InventoryUpdateType type)
+	{
+		if (!session) return;
+
+		packet::SC_PACKET_ITEM_UPDATE pkt;
+		pkt._type = packet::PacketType::S2C_P_ITEM_UPDATE;
+		pkt._size = sizeof(pkt);
+		pkt._update_type = type;
+		pkt._item_id = static_cast<uint32_t>(id);
+		pkt._amount = amount;
+
+		session->do_send(reinterpret_cast<const char*>(&pkt), sizeof(pkt));
+	}
+
+	void Room::SendEquipUpdateBroadcast(int64_t player_id, const packet::EquipItem& equip)
+	{
+		// 1. 패킷 생성 및 데이터 채우기
+		packet::SC_PACKET_EQUIP_UPDATE pkt;
+		pkt._type = packet::PacketType::S2C_P_EQUIP_ITEM_UPDATE;
+		pkt._size = sizeof(pkt);
+		pkt._player_id = player_id;
+		pkt._equip_data = equip;
+
+		// 2. 브로드캐스트 실행
+		// 기본적으로 방 안의 모든 사람에게 알리거나, 
+		// 나중에 성능 최적화가 필요하면 시야 범위(GridMap) 내 유저들에게만 보낼 수 있습니다.
+		Broadcast(reinterpret_cast<const char*>(&pkt), sizeof(pkt));
+
+		MYLOG("[Room] Broadcast EquipUpdate: Player " << player_id << " equipped ItemID " << static_cast<uint32_t>(equip.item_id));
+	}
+
 	GAME::Player* Room::GetPlayer(int64_t player_id)
 	{
 		if (_players.contains(player_id))
