@@ -232,7 +232,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                         if (!obj || obj->is_destroyed()) continue;
 
                         f3 objPos = obj->transform()->get_world_position();
-                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+						float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
 
                         // [최적화] 그림자는 300m만 넘어도 거의 안 보입니다.
                         if (dist > 300.0f) continue;
@@ -280,7 +280,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                         if (boneGpuAddr != 0) cmd->SetGraphicsRootConstantBufferView(2, boneGpuAddr);
 
                         // [핵심] 오클루전 커링 적용
-                        if (rc->skip_occlusion()) {
+                        if (dist < nearShadowThreshold || rc->skip_occlusion()) {
                             rc->render_CascadeShadowMap(cmd, frame_index);
                         }
                         else {

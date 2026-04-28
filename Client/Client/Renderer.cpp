@@ -45,7 +45,7 @@ void Renderer::initialize(ID3D12Device* device)
     
     _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); 
     _unitCube = Mesh::create_unit_cube();
-    OcclusionManager::instance()->initialize(device, 10'0000);
+    OcclusionManager::instance()->initialize(device, 5000);
 
     create_dynamic_descriptor_heap(1000000);
 
@@ -424,12 +424,7 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
     commandList->SetPipelineState(pso);
     commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
 
-    // 셰이더별 바인딩 분기 (기존과 동일)
-    if (psoName == "gltf" || psoName == "skinned") {
-        LightManager::instance()->bind(commandList, 3);
-        ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
-    }
-    else if (psoName == "terrain") {
+    if (psoName == "terrain") {
         LightManager::instance()->bind(commandList, 3);
         // Terrain은 ShadowManager의 bind_for_lighting(6, 7)을 사용함
         ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
@@ -452,7 +447,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
     
     // 거리 기준 설정 (이 거리 안쪽은 가리개로 사용)
-    const float nearThreshold = 50.0f;
+    const float nearThreshold = 200.0f;
 
     f3 camPos = camera->game_object()->transform()->get_world_position();
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
@@ -461,7 +456,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     for (auto& pair : _renderMap) {
         const std::string& psoName = pair.first;
         // UI나 Skybox는 정렬 방식이 다르거나 필요 없으므로 불투명 객체만 수행
-        if (psoName == "gltf" || psoName == "skinned" || psoName == "terrain") {
+        if (psoName == "gltf" || psoName == "skinned") {
             std::sort(pair.second.begin(), pair.second.end(), [&camPos](const std::shared_ptr<GameObject>& a, const std::shared_ptr<GameObject>& b) {
                 float distA = Vector3::Length(Vector3::Subtract(camPos, a->transform()->get_world_position()));
                 float distB = Vector3::Length(Vector3::Subtract(camPos, b->transform()->get_world_position()));
@@ -482,36 +477,36 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
     // --- STEP 2: 가까운 객체들 먼저 그리기 (깊이 버퍼 채우기) ---
  // 이 객체들은 쿼리 없이 그려져서 뒤에 있는 물체들을 가리는 벽 역할을 합니다.
     std::string opaque_targets[] = { "gltf", "skinned" };
-    for (const std::string& target : opaque_targets) {
-        auto it = _renderMap.find(target);
-        if (it == _renderMap.end()) continue;
+    //for (const std::string& target : opaque_targets) {
+    //    auto it = _renderMap.find(target);
+    //    if (it == _renderMap.end()) continue;
 
-        // 해당 PSO 설정
-        auto pso = get_pso(target);
-        auto proto = _shaderPrototypes[target];
-        commandList->SetPipelineState(pso);
-        commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
+    //    // 해당 PSO 설정
+    //    auto pso = get_pso(target);
+    //    auto proto = _shaderPrototypes[target];
+    //    commandList->SetPipelineState(pso);
+    //    commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
 
-        if (camera) camera->update_shader_variables(commandList, frame_index);
+    //    if (camera) camera->update_shader_variables(commandList, frame_index);
 
-        for (auto& obj : it->second) {
-            float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
+    //    for (auto& obj : it->second) {
+    //        float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
 
-            // 가까운 물체이거나 occlusion을 스킵해야 하는 경우만 먼저 그림
-            if (dist < nearThreshold || obj->get_component<RenderComponent>()->skip_occlusion()) {
-                if (target == "skinned") {
-                    auto animComp = obj->get_component<AnimationComponent>();
-                    if (animComp) {
-                        D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
-                        if (boneGpuAddr != 0) commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
-                    }
-                }
-                proto->update_per_object(commandList, this, obj.get());
-                obj->prepare_render();
-                obj->get_component<RenderComponent>()->render(commandList, frame_index);
-            }
-        }
-    }
+    //        // 가까운 물체이거나 occlusion을 스킵해야 하는 경우만 먼저 그림
+    //        if (dist < nearThreshold || obj->get_component<RenderComponent>()->skip_occlusion()) {
+    //            if (target == "skinned") {
+    //                auto animComp = obj->get_component<AnimationComponent>();
+    //                if (animComp) {
+    //                    D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
+    //                    if (boneGpuAddr != 0) commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
+    //                }
+    //            }
+    //            proto->update_per_object(commandList, this, obj.get());
+    //            obj->prepare_render();
+    //            obj->get_component<RenderComponent>()->render(commandList, frame_index);
+    //        }
+    //    }
+    //}
 
     // --- STEP 3: 먼 객체들에 대해서만 쿼리 발행 ---
     auto occ_pso = get_pso("occlusion_query");
@@ -520,6 +515,8 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         commandList->SetPipelineState(occ_pso);
         commandList->SetGraphicsRootSignature(occ_sig);
 
+        if (camera) camera->update_shader_variables(commandList, frame_index);
+
         for (const std::string& target : opaque_targets) {
             auto it = _renderMap.find(target);
             if (it == _renderMap.end()) continue;
@@ -527,7 +524,6 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
             for (auto& obj : it->second) {
                 float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
                 auto rc = obj->get_component<RenderComponent>();
-
                 // 이미 위에서 그린 물체는 쿼리할 필요 없음
                 if (dist < nearThreshold || rc->skip_occlusion()) continue;
 
@@ -553,12 +549,20 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(get_root_signature(proto->required_root_signature()));
 
+        if (camera) camera->update_shader_variables(commandList, frame_index);
+
+        // [필수] 조명 및 그림자 바인딩 (원래 쓰던 슬롯 번호에 맞춰서 추가)
+        if (target == "gltf" || target == "skinned") {
+            LightManager::instance()->bind(commandList, 3);
+            ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+        }
+
         for (auto& obj : it->second) {
-            float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
+            //float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
             auto rc = obj->get_component<RenderComponent>();
 
             // 이미 STEP 2에서 그린 물체는 스킵
-            if (dist < nearThreshold || rc->skip_occlusion()) continue;
+            if (/*dist < nearThreshold ||*/ rc->skip_occlusion()) continue;
 
             if (target == "skinned") {
                 auto animComp = obj->get_component<AnimationComponent>();
@@ -578,7 +582,19 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-	
+	// 쿼리 사용 후 _renderMap 순회하면서 release_query_index를 불러줌 -> OcclusionManager에 알려줘서 해당 인덱스 재활용 가능하게 함
+	for (const auto& pair : _renderMap) {
+        for (const auto& obj : pair.second) {
+            if (!obj) continue;
+            auto rc = obj->get_component<RenderComponent>();
+            if (rc) {
+                int queryIndex = rc->get_occlusion_query_index();
+                if (queryIndex >= 0) {
+                    OcclusionManager::instance()->release_query_index(queryIndex);
+                }
+            }
+        }
+    }
 
     // Step 4: Skybox 렌더링 (항상 마지막, Occlusion Culling 제외)
     auto itSky = _renderMap.find("skybox");
@@ -653,7 +669,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
-    // --- STEP 1: UI를 가장 먼저 렌더링 (Early-Z 활용을 위해) ---
+    // --- STEP 6: UI를 가장 먼저 렌더링 (Early-Z 활용을 위해) ---
     std::string ui_targets[] = { "Monster_HP_UI", "ui_frame", "ui" };
     for (const std::string& target : ui_targets) {
         auto it = _renderMap.find(target);

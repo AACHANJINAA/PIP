@@ -10,6 +10,7 @@ TerrainRenderComponent::TerrainRenderComponent()
 {
     set_pso_name("terrain");
     set_frustum_culling_enabled(true);
+    set_skip_occlusion(true);
 }
 
 TerrainRenderComponent::~TerrainRenderComponent()
