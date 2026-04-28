@@ -250,7 +250,8 @@ XMMATRIX RenderComponent::get_occlusion_box_world_matrix() {
 
     // 2. 바운딩 박스의 중심점(Center)과 크기(Extents)를 행렬로 변환
     // 쿼리용 Unit Cube가 (-0.5~0.5) 크기라고 가정할 때:
-    XMMATRIX scale = XMMatrixScaling(obb.Extents.x * 1.05f, obb.Extents.y * 1.05f, obb.Extents.z * 1.05f);
+    float box_scale = 2.0f;
+    XMMATRIX scale = XMMatrixScaling(obb.Extents.x * box_scale, obb.Extents.y * box_scale, obb.Extents.z * box_scale);
     XMMATRIX rotation = XMMatrixRotationQuaternion(XMLoadFloat4(&obb.Orientation));
     XMMATRIX translation = XMMatrixTranslation(obb.Center.x, obb.Center.y, obb.Center.z);
 
