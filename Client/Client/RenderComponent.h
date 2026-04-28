@@ -76,6 +76,7 @@ public:
     XMMATRIX get_occlusion_box_world_matrix();
     void set_skip_occlusion(bool skip) { _skipOcclusion = skip; }
     bool skip_occlusion() const { return _skipOcclusion; }
+	UINT get_occlusion_query_index() const { return _occlusionQueryIndex; }
 
 protected:
     std::shared_ptr<Mesh> _mesh;
@@ -90,6 +91,6 @@ protected:
 
 	// occlusion query를 위한 인덱스
     UINT _occlusionQueryIndex = 0xFFFFFFFF; // 초기값
-    bool _skipOcclusion = true;
+    bool _skipOcclusion = false;
 };
 

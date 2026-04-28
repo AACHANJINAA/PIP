@@ -34,7 +34,7 @@ ComPtr<ID3D12PipelineState> OcclusionQueryShader::create_pso(ID3D12Device* devic
 	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	// [수정] 0으로 되어있던 마스크를 ALL로 변경 (색상 출력 활성화)
-	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = 0;// D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;

@@ -14,14 +14,19 @@ void OcclusionManager::initialize(ID3D12Device* device, UINT max_objects) {
     auto bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(UINT64) * max_objects);
 
     for (int i = 0; i < SWAP_CHAIN_BUFFERS; ++i) {
-        device->CreateCommittedResource(
+        HRESULT hr = device->CreateCommittedResource(
             &heapProps,
             D3D12_HEAP_FLAG_NONE,
             &bufferDesc,
-            D3D12_RESOURCE_STATE_PREDICATION,
+            D3D12_RESOURCE_STATE_COMMON, // COMMON으로 변경
             nullptr,
             IID_PPV_ARGS(&_resultBuffers[i])
         );
+
+        if (FAILED(hr)) {
+            CERROR("Failed to create Occlusion Result Buffer!");
+            return;
+        }
     }
 }
 
@@ -35,6 +40,7 @@ UINT OcclusionManager::allocate_query_index() {
         CERROR("Occlusion Query Heap is Full!");
         return 0;
     }
+
     return _nextAvailableIndex++;
 }
 
