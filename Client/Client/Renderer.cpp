@@ -498,6 +498,10 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
         }
     }
 
+    if (camera) {
+        camera->set_viewports_and_scissor_rects(commandList);
+    }
+
     // --- STEP 1: 지형(Terrain)을 먼저 그리기 (Occluder) ---
     // 지형은 성을 가려야 하는 "벽"이므로, 쿼리 전에 무조건 먼저 그려서 깊이 버퍼를 채웁니다.
     {
@@ -572,11 +576,11 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 
     OcclusionManager::instance()->resolve_queries(commandList, frame_index);
 
-    static int frameCount = 0;
-    if (frameCount++ % 60 == 0) { // 60프레임마다 한 번씩 출력 (너무 자주 찍히면 무거우므로)
-        auto occ = OcclusionManager::instance();
-        CLOG("[Occlusion Info] Active: " << occ->get_active_index_count());
-    }
+    //static int frameCount = 0;
+    //if (frameCount++ % 60 == 0) { // 60프레임마다 한 번씩 출력 (너무 자주 찍히면 무거우므로)
+    //    auto occ = OcclusionManager::instance();
+    //    CLOG("[Occlusion Info] Active: " << occ->get_active_index_count());
+    //}
 
     // --- STEP 4: 먼 객체들 조건부 렌더링 (Predication) ---
     for (const std::string& target : opaque_targets) {
@@ -620,20 +624,6 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
             commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
         }
     }
-
-	// 쿼리 사용 후 _renderMap 순회하면서 release_query_index를 불러줌 -> OcclusionManager에 알려줘서 해당 인덱스 재활용 가능하게 함
-	/*for (const auto& pair : _renderMap) {
-        for (const auto& obj : pair.second) {
-            if (!obj) continue;
-            auto rc = obj->get_component<RenderComponent>();
-            if (rc) {
-                int queryIndex = rc->get_occlusion_query_index();
-                if (queryIndex >= 0) {
-                    OcclusionManager::instance()->release_query_index(queryIndex);
-                }
-            }
-        }
-    }*/
 
     // Step 4: Skybox 렌더링 (항상 마지막, Occlusion Culling 제외)
     auto itSky = _renderMap.find("skybox");
