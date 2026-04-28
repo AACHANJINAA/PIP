@@ -77,6 +77,8 @@ public:
     void set_skip_occlusion(bool skip) { _skipOcclusion = skip; }
     bool skip_occlusion() const { return _skipOcclusion; }
 	UINT get_occlusion_query_index() const { return _occlusionQueryIndex; }
+	UINT set_occlusion_query_index(UINT index) { return _occlusionQueryIndex = index; }
+	bool has_allocated_index() const { return _occlusionQueryIndex != 0xFFFFFFFF; }
 
 protected:
     std::shared_ptr<Mesh> _mesh;
