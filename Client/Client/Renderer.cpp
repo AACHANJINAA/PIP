@@ -239,7 +239,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
         float distSq = toObj.x * toObj.x + toObj.y * toObj.y + toObj.z * toObj.z; // 직접 제곱 계산 (가장 빠름)
 
         // --- 1. 일반 렌더링 리스트 빌드 (View Frustum Culling) ---
-        float renderLimit = (psoName == "terrain") ? 700.0f : 200.0f;
+        float renderLimit = (psoName == "terrain") ? 700.0f : 250.0f;
         if (distSq < (renderLimit * renderLimit))
         {
             if (renderComp->is_visible(frustum))
@@ -253,13 +253,22 @@ void Renderer::build_render_list(const CameraComponent* camera)
         if (psoName == "terrain" || psoName == "gltf" || psoName == "skinned")
         {
             float dist = sqrtf(distSq);
-            // 정규화 (나눗셈 1번)
             f3 dirToObj = { toObj.x / dist, toObj.y / dist, toObj.z / dist };
             float dot = Vector3::DotProduct(camForward, dirToObj);
 
-            // 전방 200m, 후방 50m 기준 적용
-            float shadowLimit = (dot > 0.0f) ? 170.0f : 80.0f;
-            if (dist < shadowLimit)
+            // 1. dot 값을 0~1 범위로 정규화 (보간을 위해)
+            // dot이 1.0(정면)이면 t = 1.0
+            // dot이 -1.0(후방)이면 t = 0.0
+            float t = (dot + 1.0f) * 0.5f;
+
+            // 2. 최소 거리(100)와 최대 거리(250) 사이를 부드럽게 보간
+            float shadowLimit = 100.0f + (t * (250.0f - 100.0f));
+
+            // 3. 평면 거리(XZ) 계산
+            float distXZ = sqrtf(toObj.x * toObj.x + toObj.z * toObj.z);
+
+            // 4. 보간된 한계값으로 판정
+            if (distXZ < shadowLimit)
             {
                 _shadowRenderMap[psoName].push_back(gameObject);
             }

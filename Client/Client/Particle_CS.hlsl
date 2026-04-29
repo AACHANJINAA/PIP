@@ -26,27 +26,57 @@ float3 hash31(float p)
 [numthreads(256, 1, 1)]
 void CS_Main(uint3 DTid : SV_DispatchThreadID)
 {
-    uint idx = DTid.x; // 파티클 고유 ID
+    //uint idx = DTid.x; // 파티클 고유 ID
 
+    //if (idx >= 50000)
+    //    return;
+    
+    //// 1. 목표 월드 위치 계산 (로컬 좌표 * 무기 월드 행렬)
+    //float3 localTarget = TargetBuffer[idx];
+    //float3 targetWorldPos = mul(float4(localTarget, 1.0f), g_matWorld).xyz;
+
+    //// 2. 고유 ID를 이용해 캐릭터 주변 반경 8m 내의 무작위 스폰 위치 생성
+    //float3 randomOffset = hash31((float) idx) * 8.0f;
+    //float3 spawnPos = g_PlayerPos + randomOffset;
+    //spawnPos.y += 3.0f; // 약간 위쪽 허공에서 생성되도록 보정
+
+    //// 3. 진행도(0~1)에 따라 부드럽게 모여들도록 보간(Lerp)
+    //// smoothstep을 쓰면 처음엔 천천히 움직이다가 확 빨려들어가고 마지막에 부드럽게 멈춥니다.
+    //float t = smoothstep(0.0f, 1.0f, g_SkillProgress);
+    
+    //// 최종 위치 계산
+    //float3 currentPos = lerp(spawnPos, targetWorldPos, t);
+
+    //// 4. 결과 버퍼에 쓰기 (이 버퍼를 나중에 렌더링할 때 씁니다)
+    //CurrentBuffer[idx] = currentPos;
+
+    uint idx = DTid.x;
     if (idx >= 50000)
         return;
-    
-    // 1. 목표 월드 위치 계산 (로컬 좌표 * 무기 월드 행렬)
+
     float3 localTarget = TargetBuffer[idx];
     float3 targetWorldPos = mul(float4(localTarget, 1.0f), g_matWorld).xyz;
-
-    // 2. 고유 ID를 이용해 캐릭터 주변 반경 8m 내의 무작위 스폰 위치 생성
+    
+    // 1. 초기 위치에 약간의 소용돌이 벡터 추가
     float3 randomOffset = hash31((float) idx) * 8.0f;
     float3 spawnPos = g_PlayerPos + randomOffset;
-    spawnPos.y += 3.0f; // 약간 위쪽 허공에서 생성되도록 보정
+    spawnPos.y += 3.0f;
 
-    // 3. 진행도(0~1)에 따라 부드럽게 모여들도록 보간(Lerp)
-    // smoothstep을 쓰면 처음엔 천천히 움직이다가 확 빨려들어가고 마지막에 부드럽게 멈춥니다.
-    float t = smoothstep(0.0f, 1.0f, g_SkillProgress);
+    // 2. 진행도에 따른 나선 효과 (Spiral)
+    // 검의 중심축(위 방향)을 기준으로 회전시킵니다.
+    float angle = g_SkillProgress * 15.0f + (idx * 0.1f); // 진행될수록 더 많이 회전
+    float radius = (1.0f - g_SkillProgress) * 5.0f; // 검에 가까워질수록 회전 반경 감소
     
-    // 최종 위치 계산
-    float3 currentPos = lerp(spawnPos, targetWorldPos, t);
+    float3 spiral;
+    spiral.x = cos(angle) * radius;
+    spiral.z = sin(angle) * radius;
+    spiral.y = (idx % 10) * 0.2f * (1.0f - g_SkillProgress); // 높이에도 약간의 변동
 
-    // 4. 결과 버퍼에 쓰기 (이 버퍼를 나중에 렌더링할 때 씁니다)
+    float individualProgress = clamp(g_SkillProgress * 1.2f - (idx % 100) * 0.002f, 0.0f, 1.0f);
+    float t = smoothstep(0.0f, 1.0f, individualProgress);
+    
+    // 직선 보간 대신 나선 오프셋을 더함
+    float3 currentPos = lerp(spawnPos, targetWorldPos, t) + spiral;
+    
     CurrentBuffer[idx] = currentPos;
 }
