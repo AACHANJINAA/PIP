@@ -168,6 +168,7 @@
     <ClCompile Include="AIComponent.cpp" />
     <ClCompile Include="BehaviorTree.cpp" />
     <ClCompile Include="BT_Nodes.cpp" />
+    <ClCompile Include="CastleStage.cpp" />
     <ClCompile Include="CharacterControllerComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DBManager.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="AIComponent.h" />
     <ClInclude Include="BehaviorTree.h" />
     <ClInclude Include="BT_Nodes.h" />
+    <ClInclude Include="CastleStage.h" />
     <ClInclude Include="CharacterControllerComponent.h" />
     <ClInclude Include="CombatDef.h" />
     <ClInclude Include="Component.h" />

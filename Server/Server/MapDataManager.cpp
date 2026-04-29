@@ -227,7 +227,7 @@ namespace PIP
 						JPH::TriangleList triangles;
 						for (const auto& m : meshes) {
 							for (size_t i = 0; i < m.indices.size(); i += 3) {
-								// ★★★ 정점에 스케일을 직접 곱해서 굽습니다 (Bake) ★★★
+								// 정점에 스케일을 직접 곱해서 굽습니다 (Bake)
 								triangles.push_back(JPH::Triangle(
 									PIP::Utils::ToJolt(m.vertices[m.indices[i]]) * scale,
 									PIP::Utils::ToJolt(m.vertices[m.indices[i + 1]]) * scale,

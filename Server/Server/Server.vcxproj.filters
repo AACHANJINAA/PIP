@@ -167,6 +167,9 @@
     <ClCompile Include="InventoryComponent.cpp">
       <Filter>소스 파일\Game\Components</Filter>
     </ClCompile>
+    <ClCompile Include="CastleStage.cpp">
+      <Filter>소스 파일\Game\Stage\Stages</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketHandlers.h">
@@ -288,6 +291,9 @@
     </ClInclude>
     <ClInclude Include="InventoryComponent.h">
       <Filter>소스 파일\Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CastleStage.h">
+      <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

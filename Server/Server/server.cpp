@@ -237,10 +237,19 @@ namespace PIP::SERVER
 		//mdm->LoadStaticMeshShapes("Tile-1-1", "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.gltf");
 		/*mdm->LoadExportedScene("MainStage", 
 			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json");*/
-		mdm->LoadStaticMeshShapes("Tile-1-1",
-		                          "../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", true);
+		mdm->LoadStaticMeshShapes(
+			"Tile-1-1",
+			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", 
+			true);
+
+		mdm->LoadStaticMeshShapes(
+			"Tile-10",
+			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json",
+			true);
+
 		mdm->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
 		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-1-1" });
+		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" });
 		MYLOG("[SERVER] Successful Loaded the Map");
 	}
 	void Server::Start(int io_thread_count, int logic_thread_count)

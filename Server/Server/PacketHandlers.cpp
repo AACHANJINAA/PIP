@@ -385,7 +385,7 @@ namespace PIP::packet
 					}
 				}
 				catch (const std::bad_any_cast& e) {
-					MYERROR("[DB] 로드 데이터 캐스팅 실패");
+					MYERROR("[DB] 로드 데이터 캐스팅 실패: " << e.what());
 				}
 			}
 
