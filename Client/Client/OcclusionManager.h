@@ -23,6 +23,8 @@ public:
     UINT allocate_query_index();
     void release_query_index(UINT index);
     void resolve_queries(ID3D12GraphicsCommandList* cmdList, UINT frame_index);
+    void set_max_query_index_this_frame(UINT index) { _maxQueryIndexThisFrame = std::max(_maxQueryIndexThisFrame, index); }
+    void reset_max_query_index() { _maxQueryIndexThisFrame = 0; }
 
 private:
     ComPtr<ID3D12QueryHeap> _queryHeap;
@@ -30,4 +32,5 @@ private:
     std::vector<UINT> _freeIndices;
     UINT _nextAvailableIndex = 0;
     UINT _maxObjects = 0;
+    UINT _maxQueryIndexThisFrame = 0;
 };

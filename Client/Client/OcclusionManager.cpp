@@ -18,7 +18,7 @@ void OcclusionManager::initialize(ID3D12Device* device, UINT max_objects) {
             &heapProps,
             D3D12_HEAP_FLAG_NONE,
             &bufferDesc,
-            D3D12_RESOURCE_STATE_COMMON, // COMMON으로 변경
+			D3D12_RESOURCE_STATE_PREDICATION,
             nullptr,
             IID_PPV_ARGS(&_resultBuffers[i])
         );
@@ -51,7 +51,7 @@ void OcclusionManager::release_query_index(UINT index) {
 }
 
 void OcclusionManager::resolve_queries(ID3D12GraphicsCommandList* cmdList, UINT frame_index) {
-    if (_nextAvailableIndex == 0) return;
+    if (_maxQueryIndexThisFrame == 0) return;
 
     ID3D12Resource* buffer = get_result_buffer_for_resolve(frame_index);
     if (!_queryHeap || !buffer) return;
@@ -63,4 +63,6 @@ void OcclusionManager::resolve_queries(ID3D12GraphicsCommandList* cmdList, UINT 
 
     barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PREDICATION);
     cmdList->ResourceBarrier(1, &barrier);
+
+    reset_max_query_index();
 }

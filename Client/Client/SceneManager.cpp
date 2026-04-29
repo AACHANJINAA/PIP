@@ -148,6 +148,9 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	ID3D12CommandList* ppd3dCommandLists[] = { command_list };
 	game_framework->command_queue()->ExecuteCommandLists(1, ppd3dCommandLists);
 	game_framework->WaitForGpuComplete();
+
+   // command_list->Reset(command_allocator, nullptr);
+
     //TODO: 씬 전환 후 서버에게 패킷 전송 후 방입장 요청
 	_currentScene->on_scene_loaded();
 	if (_currentScene->scene_name() == _networkWantSceneName)
