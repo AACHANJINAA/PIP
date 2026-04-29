@@ -18,7 +18,7 @@ void OcclusionManager::initialize(ID3D12Device* device, UINT max_objects) {
             &heapProps,
             D3D12_HEAP_FLAG_NONE,
             &bufferDesc,
-			D3D12_RESOURCE_STATE_PREDICATION,
+            D3D12_RESOURCE_STATE_COMMON,
             nullptr,
             IID_PPV_ARGS(&_resultBuffers[i])
         );

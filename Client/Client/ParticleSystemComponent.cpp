@@ -65,9 +65,9 @@ void ParticleSystemComponent::init_particles(const std::vector<DirectX::XMFLOAT3
     bufferDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &bufferDesc,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&_currentBuffer));
+        D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&_currentBuffer));
 
-    ResourceManager::instance()->load_texture("Resource/UI/particle/particle.dds", true);
+    // ResourceManager::instance()->load_texture("Resource/UI/particle/particle.dds", true);
 	_particleColor = _set_color;
 }
 

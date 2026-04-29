@@ -86,16 +86,19 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
 
     command_list->SetGraphicsRoot32BitConstants(2, 5, &pInfo, 0);
 
+
+    // 텍스쳐 버림 그냥 바인딩도 하지마 셰이더에서 호출 하지도 마
+    
     // 반짝이는 빛 텍스처 (미리 로드해둔 파티클 텍스처 이름)
-    auto particle_tex = ResourceManager::instance()->get_texture("Resource/UI/particle/particle.dds");
+    //auto particle_tex = ResourceManager::instance()->get_texture("Resource/UI/particle/particle.dds");
 
     // 만약 경로가 틀렸거나 로딩이 안 됐을 때 튕기지 않게 기본 흰색 텍스처로 대체
-    if (!particle_tex) {
-        particle_tex = ResourceManager::instance()->get_texture("__DEFAULT_WHITE__");
-    }
+   // if (!particle_tex) {
+   //     particle_tex = ResourceManager::instance()->get_texture("__DEFAULT_WHITE__");
+    //}
 
-    if (particle_tex) {
+   // if (particle_tex) {
         // 루트 파라미터 인덱스 4번(t1)에 디스크립터 테이블(텍스처)을 바인딩합니다.
-        renderer->bind_texture_table(command_list, 4, { particle_tex->cpu_handle });
-    }
+  //      renderer->bind_texture_table(command_list, 4, { particle_tex->cpu_handle });
+   // }
 }
