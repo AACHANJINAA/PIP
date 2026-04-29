@@ -229,17 +229,8 @@ void Renderer::build_render_list(const CameraComponent* camera)
             }
 
             // 2. 일반 객체 거리 컬링 (500m 이상은 아예 제외)
-			auto rc = gameObject->get_component<RenderComponent>();
             f3 objPos = gameObject->transform()->get_world_position();
             float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
-
-     //       if (dist > 400.0f) { // 400m 이상 멀어지면
-     //           if (rc && rc->get_occlusion_query_index() != 0xFFFFFFFF) {
-     //               OcclusionManager::instance()->release_query_index(rc->get_occlusion_query_index());
-					//CLOG("Occlusion query index released ");
-     //           }
-     //           continue; // 렌더링 리스트에서도 제외
-     //       }
 
             // 3. PSO별 거리 필터링 (여기가 핵심!)
             if (psoName == "terrain")
