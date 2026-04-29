@@ -1,23 +1,24 @@
-#include "pch.h"
-#include "MainStage.h"
+ï»¿#include "pch.h"
+#include "CastleStage.h"
 #include "Room.h"
 #include "JoltSetup.h"
 #include "MapDataManager.h"
 
 namespace PIP::SERVER
 {
-    void MainStage::on_initialize(Room* room)
+
+    void CastleStage::on_initialize(Room* room)
     {
-        MYLOG("[MainStage] Initializing Physics Terrain...");
+        MYLOG("[CastleStage] Initializing Physics Terrain...");
 
         auto* physicsSystem = room->GetPhysicsSystem();
         auto& bodyInterface = physicsSystem->GetBodyInterface();
 
-        
-        //TODO: ¿ì¸®°¡ Á¤ÀÇÇÑ "MainStage" ±×·ì¿¡ ¼ÓÇÑ Å¸ÀÏ Æ÷ÀÎÅÍµé¸¸ °¡Á®¿È
-        //auto myTiles = MapDataManager::Instance()->GetTerrainGroup("MainStage");
 
-        // 1. ÁöÇü(Terrain Tiles) ·Îµå
+        //TODO: ìš°ë¦¬ê°€ ì •ì˜í•œ "CastleStage" ê·¸ë£¹ì— ì†í•œ íƒ€ì¼ í¬ì¸í„°ë“¤ë§Œ ê°€ì ¸ì˜´
+        //auto myTiles = MapDataManager::Instance()->GetTerrainGroup("CastleStage");
+
+        // 1. ì§€í˜•(Terrain Tiles) ë¡œë“œ
         const auto& terrainTiles = MapDataManager::Instance()->GetTerrainTiles();
         for (const auto& tile : terrainTiles)
         {
@@ -29,13 +30,13 @@ namespace PIP::SERVER
             _stageBodyIDs.push_back(terrainBody->GetID());
             bodyInterface.AddBody(terrainBody->GetID(), JPH::EActivation::DontActivate);
         }
-		int terrain_num = static_cast<int>(_stageBodyIDs.size());
-        MYLOG("[MainStage] Physics terrain loaded. Count: " << terrain_num);
+        int terrain_num = static_cast<int>(_stageBodyIDs.size());
+        MYLOG("[CastleStage] Physics terrain loaded. Count: " << terrain_num);
 
 
-        // 2. Á¤Àû ¸Ş½¬(Static Mesh Collisions) ±×·ì ·Îµå
-		// µ¿ÀÏÇÑ groupNameÀ» »ç¿ëÇÏ¿© ÇØ´ç Å¸ÀÏ¿¡ ¼ÓÇÑ ¸ğµç ¿ÀºêÁ§Æ® ¸Ş½¬¸¦ °¡Á®¿É´Ï´Ù.
-        auto meshGroup = MapDataManager::Instance()->GetStaticMeshGroup("MainStage");
+        // 2. ì •ì  ë©”ì‰¬(Static Mesh Collisions) ê·¸ë£¹ ë¡œë“œ
+        // ë™ì¼í•œ groupNameì„ ì‚¬ìš©í•˜ì—¬ í•´ë‹¹ íƒ€ì¼ì— ì†í•œ ëª¨ë“  ì˜¤ë¸Œì íŠ¸ ë©”ì‰¬ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+        auto meshGroup = MapDataManager::Instance()->GetStaticMeshGroup("CastleStage");
         for (const auto* tile : meshGroup)
         {
             if (!tile->shape) continue;
@@ -49,7 +50,7 @@ namespace PIP::SERVER
                 JPH::EMotionType::Static,
                 Layers::NON_MOVING
             );
-            
+
             /*if (tile->position.GetX() != correctBodyPos.GetX())
             {
                 MYLOG("Actor: " << tile->meshName << " | Pivot: " << tile->position.GetX() << " | FinalBodyPos: " <<
@@ -57,29 +58,29 @@ namespace PIP::SERVER
             }*/
             JPH::BodyID id = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
 
-            // ¹Ùµğ »ı¼º ½ÇÆĞ Ã¼Å© (°³¼ö ÃÊ°ú µî ¹ß»ı ½Ã)
+            // ë°”ë”” ìƒì„± ì‹¤íŒ¨ ì²´í¬ (ê°œìˆ˜ ì´ˆê³¼ ë“± ë°œìƒ ì‹œ)
             if (id.IsInvalid()) {
-                MYERROR("[MainStage] Physics Body creation FAILED for mesh: " << tile->meshName);
+                MYERROR("[CastleStage] Physics Body creation FAILED for mesh: " << tile->meshName);
                 continue;
             }
             /*if (tile->meshName == "SM_Rock2_mid")
             {
                 MYLOG("[DEBUG] Raycasting for mesh ID: " << id.GetIndex());
-                rayCheck({ correctBodyPos.GetX(), correctBodyPos.GetY() + 100, correctBodyPos.GetZ() }, 
+                rayCheck({ correctBodyPos.GetX(), correctBodyPos.GetY() + 100, correctBodyPos.GetZ() },
                     {0,-1,0}, physicsSystem);
             }*/
             _stageBodyIDs.push_back(id);
         }
 
-        MYLOG("[MainStage] Physics Static Mesh objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
+        MYLOG("[CastleStage] Physics Static Mesh objects loaded. Count: " << _stageBodyIDs.size() - terrain_num);
 
     }
 
-    void MainStage::on_enter(Room* room)
+    void CastleStage::on_enter(Room* room)
     {
-        MYLOG("[MainStage] Spawning NPCs and Boss...");
+        MYLOG("[CastleStage] Spawning NPCs and Boss...");
 
-        // 1. Àâ¸÷ 500¸¶¸® ¹«ÀÛÀ§ ¹èÄ¡ (MainStageÀÇ ±ÔÄ¢)
+        // 1. ì¡ëª¹ 500ë§ˆë¦¬ ë¬´ì‘ìœ„ ë°°ì¹˜ (CastleStageì˜ ê·œì¹™)
         common::Vec3 center = get_spawn_pos();
         for (int i = 0; i < 500; ++i) {
             float rx = std::uniform_real_distribution<float>(-100, 100)(gen);
@@ -88,22 +89,22 @@ namespace PIP::SERVER
             room->spawn_npc(GAME::NPCType::Basic, { center.x + rx, center.y, center.z + rz });
         }
 
-        // 2. º¸½º Å×ÀÌ³Ê ¹èÄ¡
+        // 2. ë³´ìŠ¤ í…Œì´ë„ˆ ë°°ì¹˜
         room->spawn_npc(GAME::NPCType::Tainer, center, "Tainer the Gatekeeper");
 
         room->StartGame();
     }
 
-    void MainStage::update(Room* room, float dt)
+    void CastleStage::update(Room* room, float dt)
     {
-        // º¸½º ÆäÀÌÁî Ã¼Å©³ª ½ºÅ×ÀÌÁö Àü¿ë ±â¹Í ¾÷µ¥ÀÌÆ®
+        // ë³´ìŠ¤ í˜ì´ì¦ˆ ì²´í¬ë‚˜ ìŠ¤í…Œì´ì§€ ì „ìš© ê¸°ë¯¹ ì—…ë°ì´íŠ¸
     }
 
-    void MainStage::on_exit(Room* room)
+    void CastleStage::on_exit(Room* room)
     {
-        MYLOG("[MainStage] Exiting Stage. Cleaning up...");
+        MYLOG("[CastleStage] Exiting Stage. Cleaning up...");
 
-        // 1. ÀÌ ½ºÅ×ÀÌÁö¿¡¼­ ¸¸µç ¹°¸® ¹Ùµğ ¸ğµÎ Á¦°Å
+        // 1. ì´ ìŠ¤í…Œì´ì§€ì—ì„œ ë§Œë“  ë¬¼ë¦¬ ë°”ë”” ëª¨ë‘ ì œê±°
         auto& bodyInterface = room->GetPhysicsSystem()->GetBodyInterface();
         if (!_stageBodyIDs.empty()) {
             bodyInterface.RemoveBodies(_stageBodyIDs.data(), static_cast<int>(_stageBodyIDs.size()));
@@ -111,13 +112,13 @@ namespace PIP::SERVER
             _stageBodyIDs.clear();
         }
 
-        // 2. ½ºÅ×ÀÌÁö NPCµé Á¦°Å
+        // 2. ìŠ¤í…Œì´ì§€ NPCë“¤ ì œê±°
         room->ClearAllNPCs();
     }
 
-    const common::Vec3 MainStage::get_spawn_pos() const
+    const common::Vec3 CastleStage::get_spawn_pos() const
     {
-		return { -212.0f, 6.43f, -360.0f + 5.0f }; // ¿ùµå Áß¾Ó µî ¿øÇÏ´Â À§Ä¡·Î ¹İÈ¯
+        return { 10.0f, 10.0f, 10.0f + 5.0f }; // ì›”ë“œ ì¤‘ì•™ ë“± ì›í•˜ëŠ” ìœ„ì¹˜ë¡œ ë°˜í™˜
     }
 
 }

@@ -32,7 +32,7 @@ namespace PIP::SERVER
 
 
 		// 1. 기본 스테이지(MainStage) 생성 및 물리 로드
-		_currentStage = StageManager::Instance()->create_stage("MainStage");
+		_currentStage = StageManager::Instance()->create_stage("CastleStage");
 		if (_currentStage) {
 			_currentStage->on_initialize(this); // 지형 물리 바디 등록
 		}
@@ -1397,7 +1397,7 @@ namespace PIP::SERVER
 
 		// 3. [핵심] 클라이언트에게 현재 방의 씬으로 전환하라고 명령 (로딩 시작 유도)
 		if (_currentStage) {
-			std::string sceneName = _currentStage->get_stage_name();
+			std::string sceneName = "MainStage"; //_currentStage->get_stage_name();
 
 			packet::PacketStream stream;
 			packet::SC_PACKET_CHANGE_SCENE change_packet;
