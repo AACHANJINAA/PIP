@@ -116,9 +116,9 @@ void ShadowManager::build_cascade_matrices()
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
     float radii[3] = {
-		shadow_max_distance * 0.1f,  // 근거리: 지형의 10%
-        shadow_max_distance * 0.3f,  // 중거리: 지형의 30%
-        shadow_max_distance * 1.0f   // 원거리: 지형 전체
+		shadow_max_distance * 0.1f,  // 근거리
+        shadow_max_distance * 0.3f,  // 중거리
+        shadow_max_distance * 1.0f   // 원거리
     };
 
     for (int c = 0; c < 3; c++)
@@ -198,22 +198,29 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
     f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
 
-    // [전략] 카메라와 매우 가까운 거리는 쿼리 없이 무조건 그림자 생성
-    const float nearShadowThreshold = 30.0f;
+    // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
+    float radii[3] = {
+        shadow_max_distance * 0.1f,  // Cascade 0: 30m
+        shadow_max_distance * 0.3f,  // Cascade 1: 90m
+        shadow_max_distance * 1.0f   // Cascade 2: 300m
+    };
+
+    // 카메라와 매우 가까운 거리는 쿼리 없이 무조건 그림자 생성
+    const float nearShadowThreshold = 30.0f; // 오클루전 테스트 스킵 기준
     UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-    // 3번의 Draw Call 루프 (각 Cascade마다 한 번씩)
+    // 3단계 캐스케이드 렌더링 루프 시작
     for (int i = 0; i < 3; ++i)
     {
-        // A. 현재 Cascade용 DSV 바인딩 및 Clear
+        // A. 현재 캐스케이드에 해당하는 DSV 바인딩 및 Clear
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
         cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
         cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-        // B. 현재 Cascade 전용 상수 버퍼 주소 계산 (256바이트 오프셋)
+        // B. 현재 캐스케이드 전용 Constant Buffer 주소 계산 (b1 레지스터용)
         D3D12_GPU_VIRTUAL_ADDRESS currentCbAddress = _cbCascades->GetGPUVirtualAddress() + (i * sizeof(CbCascadeSingle));
 
-        // C. 일반 객체 렌더링 (gltf)
+        // C. 일반 메시 렌더링 (gltf)
         {
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
@@ -221,26 +228,23 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             if (pso && rootSig) {
                 cmd->SetPipelineState(pso);
                 cmd->SetGraphicsRootSignature(rootSig);
-                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress); // b1에 현재 Cascade 행렬 바인딩
-
-                f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
-                ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
+                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress);
 
                 auto it = renderMap.find("gltf");
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
                         if (!obj || obj->is_destroyed()) continue;
 
+                        // [최적화 1]: 캐스케이드별 거리 컬링
+                        // 현재 그리는 캐스케이드의 범위를 벗어나면 Draw Call을 아예 날리지 않음
                         f3 objPos = obj->transform()->get_world_position();
-						float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
-
-                        // [최적화] 그림자는 300m만 넘어도 거의 안 보입니다.
-                        if (dist > 300.0f) continue;
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                        if (dist > radii[i]) continue;
 
                         auto rc = obj->get_component<RenderComponent>();
                         if (!rc) continue;
 
-                        // 오클루전 쿼리 결과 적용 (이전 프레임 데이터)
+                        // [최적화 2]: 오클루전 쿼리 결과에 따른 조건부 렌더링 (Predication)
                         if (dist < nearShadowThreshold || rc->skip_occlusion()) {
                             rc->render_CascadeShadowMap(cmd, frame_index);
                         }
@@ -254,7 +258,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             }
         }
 
-        // D. 애니메이션 객체 렌더링 (skinned)
+        // D. 스킨드 애니메이션 메시 렌더링 (skinned)
         {
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
@@ -262,24 +266,27 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             if (pso && rootSig) {
                 cmd->SetPipelineState(pso);
                 cmd->SetGraphicsRootSignature(rootSig);
-                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress); // b1에 현재 Cascade 행렬 바인딩
+                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress);
 
                 auto it = renderMap.find("skinned");
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
                         if (!obj || obj->is_destroyed()) continue;
+
+                        // [최적화 1]: 거리 컬링
+                        f3 objPos = obj->transform()->get_world_position();
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                        if (dist > radii[i]) continue;
+
                         auto rc = obj->get_component<RenderComponent>();
                         auto animComp = obj->get_component<AnimationComponent>();
                         if (!rc || !animComp) continue;
 
-                        float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
-                        if (dist > 300.0f) continue;
-
-                        // 본 행렬 바인딩
+                        // 본 행렬 데이터 바인딩
                         D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
                         if (boneGpuAddr != 0) cmd->SetGraphicsRootConstantBufferView(2, boneGpuAddr);
 
-                        // [핵심] 오클루전 커링 적용
+                        // [최적화 2]: 오클루전 쿼리 기반 렌더링
                         if (dist < nearShadowThreshold || rc->skip_occlusion()) {
                             rc->render_CascadeShadowMap(cmd, frame_index);
                         }
@@ -293,6 +300,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             }
         }
     }
+
 
     // 3. Resource Barrier: DEPTH_WRITE -> PSR (모든 슬라이스)
     CD3DX12_RESOURCE_BARRIER barriersR[3];

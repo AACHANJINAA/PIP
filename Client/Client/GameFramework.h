@@ -67,6 +67,8 @@ private:
 
 	UINT64 _currentFenceValue = 0; // 펜스 값을 전체적으로 관리할 카운터 변수
 
+	UINT64 _totalFrameCount = 0;
+
 	// [추가] 리플리케이션 시스템 소유 (unique_ptr로 생명주기 관리)
 	std::unique_ptr<ReplicationSystem> _replicationSystem;
 
@@ -127,6 +129,8 @@ public:
 	UINT64 next_fence_value() const;
 
 	void set_fullscreen_toggle(bool enable) { _isFullscreenToggle = enable; }
+
+	UINT64 get_total_frame_count() const { return _totalFrameCount; }
 
 public:
 	bool m_bIsWindowActive = true; // 창 활성화 상태를 저장할 플래그

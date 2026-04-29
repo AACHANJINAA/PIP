@@ -399,6 +399,8 @@ void GameFramework::FrameAdvance()
 	if (_isRendering) return;
 	_isRendering = true;
 
+	_totalFrameCount++;
+
 	// 프레임 시작 전, 화면 전환 요청이 있었다면 여기서 안전하게 처리!
 	if (_isFullscreenToggle)
 	{
