@@ -131,7 +131,7 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     return Out;
 }
 
-float3 lerp_op(float3 final_color, float lerp_strangh)
+float3 lerp_op(float3 final_color)
 {
 	const float3 playercolors[4] = {
         float3(0.863f, 0.078f, 0.235f), // crimson red
@@ -142,7 +142,7 @@ float3 lerp_op(float3 final_color, float lerp_strangh)
 
     int colorIndex = g_otherplayerid % 4;
 
-    float lerp_figure = 0.2 * lerp_strangh;
+    float lerp_figure = 0.2;
     return lerp(final_color, playercolors[colorIndex], lerp_figure);
 }
 
@@ -238,9 +238,15 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     finalColor = pow(finalColor, 1.0f / 2.2f);
     
     // 음수인지 판별 1: 양수, 0: 음수
-    float lerp_strength = clamp((float) g_otherplayerid + 1.0f, 0.0f, 1.0f);
+    //float lerp_strength = clamp((float) g_otherplayerid + 1.0f, 0.0f, 1.0f);
     
-    finalColor = lerp_op(finalColor, lerp_strength);
+    
+    //finalColor = lerp_op(finalColor, lerp_strength);
+    
+    if (g_otherplayerid > -1)
+    {
+        finalColor = lerp_op(finalColor);
+    }
     
     return float4(finalColor, diffuseSample.a);
 }
