@@ -30,6 +30,7 @@ public:
     ID3D12Device* get_device() const { return _device; }
 
     const std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>>& get_render_map() const { return _renderMap; }
+    const auto& get_shadow_render_map() const { return _shadowRenderMap; }
 
 
 private:
@@ -50,6 +51,7 @@ private:
 
     // Key: PSO 이름 (string), Value: 해당 PSO를 사용하는 GameObject 목록
     std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>> _renderMap;
+    std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>> _shadowRenderMap;
     // [추가] PSO 생성을 위해 등록된 모든 셰이더의 프로토타입을 저장합니다.
     std::unordered_map<std::string, std::shared_ptr<Shader>> _shaderPrototypes;
 
