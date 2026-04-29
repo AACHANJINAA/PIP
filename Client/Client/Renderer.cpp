@@ -193,7 +193,7 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-	 draw_render_list(commandList, camera, frame_index);
+	draw_render_list(commandList, camera, frame_index);
     //draw_render_occlusion_culling_list(commandList, camera,  frame_index);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
@@ -204,54 +204,69 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 
 void Renderer::build_render_list(const CameraComponent* camera)
 {
+    // 1. 기존 맵 비우기
     _renderMap.clear();
+    _shadowRenderMap.clear();
+
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
     const BoundingFrustum& frustum = camera->frustum();
+
+    // 카메라 정보 미리 획득
     f3 camPos = camera->game_object()->transform()->get_world_position();
+    f3 camForward = camera->game_object()->transform()->forward();
 
     for (const auto& gameObject : allGameObjects)
     {
+        // 유효성 체크
         if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed()) continue;
 
         auto renderComp = gameObject->get_component<RenderComponent>();
-        if (renderComp && renderComp->is_enabled())
+        if (!renderComp || !renderComp->is_enabled()) continue;
+
+        const std::string& psoName = renderComp->pso_name();
+
+        // UI, Skybox 등 특수 객체 처리
+        if (psoName == "ui" || psoName == "Monster_HP_UI" || psoName == "ui_frame" ||
+            psoName == "skybox" || psoName == "particle_draw")
         {
-			auto psoName = renderComp->pso_name();
-            // UI와 Skybox는 bounding box 체크 없이 렌더링
-            if (psoName == "ui" ||
-                psoName == "Monster_HP_UI" ||
-                psoName == "ui_frame" ||
-                psoName == "skybox" || 
-                psoName == "particle_draw")
-            {
-                if (psoName != "ui") _renderMap[psoName].push_back(gameObject);
-                continue;
-            }
+            if (psoName != "ui") _renderMap[psoName].push_back(gameObject);
+            continue;
+        }
 
-            // 2. 일반 객체 거리 컬링 (500m 이상은 아예 제외)
-            f3 objPos = gameObject->transform()->get_world_position();
-            float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+        // --- 위치 연산 (한 번만 수행) ---
+        f3 objPos = gameObject->transform()->get_world_position();
+        f3 toObj = Vector3::Subtract(objPos, camPos);
+        float distSq = toObj.x * toObj.x + toObj.y * toObj.y + toObj.z * toObj.z; // 직접 제곱 계산 (가장 빠름)
 
-            // 3. PSO별 거리 필터링 (여기가 핵심!)
-            if (psoName == "terrain")
-            {
-                // 지형은 멀리까지 보여야 하므로 큰 값을 줍니다.
-                if (dist > 700.0f) continue;
-            }
-            else
-            {
-                // 일반 프롭, 몬스터 등은 성능을 위해 짧게 잡습니다.
-                if (dist > 200.0f) continue;
-            }
-
-            // 3. Frustum Culling
+        // --- 1. 일반 렌더링 리스트 빌드 (View Frustum Culling) ---
+        float renderLimit = (psoName == "terrain") ? 700.0f : 200.0f;
+        if (distSq < (renderLimit * renderLimit))
+        {
             if (renderComp->is_visible(frustum))
             {
                 _renderMap[psoName].push_back(gameObject);
             }
         }
+
+        // --- 2. 그림자 렌더링 리스트 빌드 (전후방 차등 거리 컬링) ---
+        // 그림자 생성에 부적합한 객체 제외
+        if (psoName == "terrain" || psoName == "gltf" || psoName == "skinned")
+        {
+            float dist = sqrtf(distSq);
+            // 정규화 (나눗셈 1번)
+            f3 dirToObj = { toObj.x / dist, toObj.y / dist, toObj.z / dist };
+            float dot = Vector3::DotProduct(camForward, dirToObj);
+
+            // 전방 200m, 후방 50m 기준 적용
+            float shadowLimit = (dot > 0.0f) ? 170.0f : 80.0f;
+            if (dist < shadowLimit)
+            {
+                _shadowRenderMap[psoName].push_back(gameObject);
+            }
+        }
     }
 
+    // UI 추가 로직 (기존 유지)
     UIManager::instance()->set_render_vector();
     const auto& render_vec = UIManager::instance()->ui_render_vector();
     for (const auto& vec : render_vec)

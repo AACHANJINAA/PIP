@@ -193,7 +193,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     cmd->RSSetScissorRects(1, &scissor);
 
     auto renderer = Renderer::instance();
-    const auto& renderMap = renderer->get_render_map();
+    const auto& renderMap = renderer->get_shadow_render_map();
     // [추가] 오클루전 쿼리 결과 버퍼 가져오기
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
     f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
