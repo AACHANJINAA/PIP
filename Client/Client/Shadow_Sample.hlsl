@@ -77,21 +77,42 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
  
     float shadow = 0.0f;
      
-     // 16개 샘플로 부드러운 그림자
-     [unroll]
-    for (int i = 0; i < 16; ++i)
+     // Cascade별 샘플링 횟수 차등 적용 (분기 최적화 위해 if-else 사용)
+    if (cascade == 0)
     {
-        float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
-        float2 offset = rotatedOffset * texelSize * filterRadius;
-         
-        shadow += g_shadowMap.SampleCmpLevelZero(
-             g_shadowSampler,
-             float3(uv + offset, (float) cascade),
-             sp.z - g_shadowBias
-         );
+     [unroll]
+        for (int i = 0; i < 16; ++i)
+        {
+            float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
+            float2 offset = rotatedOffset * texelSize * filterRadius;
+            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+        }
+        return shadow / 16.0f;
     }
-     
-    return shadow / 16.0f;
+    else if (cascade == 1)
+    {
+     [unroll]
+        for (int i = 0; i < 8; ++i)
+        {
+         // 8개 샘플만 사용하되, PoissonDisk에서 간격을 띄워 분산 효과 유지
+            float2 rotatedOffset = mul(PoissonDisk[i * 2], rotationMat);
+            float2 offset = rotatedOffset * texelSize * filterRadius;
+            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+        }
+        return shadow / 8.0f;
+    }
+    else // cascade 2
+    {
+     [unroll]
+        for (int i = 0; i < 4; ++i)
+        {
+         // 4개 샘플만 사용 (원거리는 품질보다 속도)
+            float2 rotatedOffset = mul(PoissonDisk[i * 4], rotationMat);
+            float2 offset = rotatedOffset * texelSize * filterRadius;
+            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+        }
+        return shadow / 4.0f;
+    }
 }
 
 // 메인 CSM 샘플링 함수 (블렌딩 적용)

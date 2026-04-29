@@ -193,8 +193,8 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
     build_render_list(camera);
 
     // 2. 추려낸 목록을 바탕으로 실제 그리기를 수행한다.
-	// draw_render_list(commandList, camera, frame_index);
-    draw_render_occlusion_culling_list(commandList, camera,  frame_index);
+	 draw_render_list(commandList, camera, frame_index);
+    //draw_render_occlusion_culling_list(commandList, camera,  frame_index);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
     // [수정] viewProj가 아니라 frame_index를 넘겨야 합니다!
