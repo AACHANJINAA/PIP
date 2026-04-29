@@ -240,10 +240,6 @@ UINT RenderComponent::get_occlusion_query_index()
     // 처음 호출될 때 매니저로부터 인덱스 할당
     if (_occlusionQueryIndex == 0xFFFFFFFF) {
         _occlusionQueryIndex = OcclusionManager::instance()->allocate_query_index();
-        // 어떤 객체의 컴포넌트인지 이름을 같이 출력해보세요.
-        if (game_object()) {
-            CLOG("Allocated Index: " << _occlusionQueryIndex << " for Object: " << game_object());
-        }
     }
     return _occlusionQueryIndex;
 }
@@ -254,7 +250,8 @@ XMMATRIX RenderComponent::get_occlusion_box_world_matrix() {
 
     // 2. 바운딩 박스의 중심점(Center)과 크기(Extents)를 행렬로 변환
     // 쿼리용 Unit Cube가 (-0.5~0.5) 크기라고 가정할 때:
-    XMMATRIX scale = XMMatrixScaling(obb.Extents.x * 2.1f, obb.Extents.y * 2.1f, obb.Extents.z * 2.1f);
+    float box_scale = 2.0f;
+    XMMATRIX scale = XMMatrixScaling(obb.Extents.x * box_scale, obb.Extents.y * box_scale, obb.Extents.z * box_scale);
     XMMATRIX rotation = XMMatrixRotationQuaternion(XMLoadFloat4(&obb.Orientation));
     XMMATRIX translation = XMMatrixTranslation(obb.Center.x, obb.Center.y, obb.Center.z);
 
