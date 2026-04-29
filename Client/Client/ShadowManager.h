@@ -36,7 +36,7 @@ private:
 
     void build_cascade_matrices();
 
-    int _shadowmapSize = 9192;
+    int _shadowmapSize = 4096;
 
     float shadow_max_distance = 300.0f;
 
