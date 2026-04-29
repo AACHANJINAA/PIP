@@ -29,8 +29,8 @@ D3D12_RASTERIZER_DESC ShadowDepthSkinnedShader::create_rasterizer_state()
     desc.CullMode = D3D12_CULL_MODE_FRONT;
 
     // [추가] 하드웨어 Depth Bias 설정 (Acne 제거에 효과적)
-    desc.DepthBias = 0;              // 고정 바이어스
+    desc.DepthBias = 0;
     desc.DepthBiasClamp = 0.0f;
-    desc.SlopeScaledDepthBias = 0.0f;   // 경사면에 따른 가변 바이어스
+    desc.SlopeScaledDepthBias = 1.5f;   // 1.0f ~ 2.0f 사이 권장
     return desc;
 }

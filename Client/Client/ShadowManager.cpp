@@ -301,7 +301,6 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         }
     }
 
-
     // 3. Resource Barrier: DEPTH_WRITE -> PSR (모든 슬라이스)
     CD3DX12_RESOURCE_BARRIER barriersR[3];
     for (int i = 0; i < 3; ++i) {
