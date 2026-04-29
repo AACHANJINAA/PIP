@@ -74,6 +74,7 @@ public:
 
     UINT get_occlusion_query_index();
     XMMATRIX get_occlusion_box_world_matrix();
+    void update_world_matrix_cb(UINT frame_index);
     void set_skip_occlusion(bool skip) { _skipOcclusion = skip; }
     bool skip_occlusion() const { return _skipOcclusion; }
 	UINT get_occlusion_query_index() const { return _occlusionQueryIndex; }
@@ -94,5 +95,7 @@ protected:
 	// occlusion query를 위한 인덱스
     UINT _occlusionQueryIndex = 0xFFFFFFFF; // 초기값
     bool _skipOcclusion = false;
+
+    UINT64 _lastUpdatedFrame = 0xFFFFFFFFFFFFFFFF;
 };
 

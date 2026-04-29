@@ -162,44 +162,13 @@ const std::string& RenderComponent::pso_name() const
 
 void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-    const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
-    XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
+    // 여기서 체크: 이미 Shadow Pass에서 계산했다면 아무것도 안 하고 통과함
+    update_world_matrix_cb(frame_index);
 
-    // World Matrix (Transpose해서 저장)
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
-
-    XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
-
-
-    // OtherPlayer인지 MainPlayer인지 구분하여 ID 설정
-    if (auto op_script = game_object()->get_component<OtherPlayerScript>())
-    {
-        // OtherPlayer: 서버에서 받은 실제 ID를 양수로 전달
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
-    }
-    else if (auto mp_script = game_object()->get_component<MainPlayerScript>())
-    {
-        // MainPlayer: 음수로 표시 (셰이더에서 원본 색상 유지용)
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
-    }
-    else {
-        // 플레이어가 아닌 오브젝트
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
-    }
-
-    // 그림자 수신 토글 - 0 : mesh 표면에 그림자 x , 1 : mesh 표면에 그림자 x <- 이 부분은 그림자 농도 조절로 해결해도될듯?
-    if (_psoName == "skinned") {
-        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
-    }
-    else {
-        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
-    }
-
+    // 계산된(혹은 이미 있던) 상수 버퍼 주소만 GPU에 전달
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
 
     pre_render(commandList, Renderer::instance());
-
     _mesh->render(commandList);
 }
 
@@ -207,30 +176,10 @@ void RenderComponent::render_CascadeShadowMap(ID3D12GraphicsCommandList* command
 {
     if (!_mesh) return;
 
-    // [강화된 안전 체크]
-    if (!_cbGameObjectInfo[0] || !_cbGameObjectInfo[1] ||
-        !_mappedCbGameObjectInfo[0] || !_mappedCbGameObjectInfo[1])
-    {
-        return;  // 아직 완전히 초기화되지 않음
-    }
+    // 여기서 체크: 3개의 캐스케이드 중 첫 번째 호출 때만 계산하고 나머지는 통과
+    update_world_matrix_cb(frame_index);
 
-    // frame_index 범위 체크
-    if (frame_index >= 2) return;
-
-    // 1. 오브젝트의 월드 행렬 가져오기 및 Transpose 연산
-    const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
-
-    XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
-
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
-
-    XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
-
-    // 2. 루트 시그니처(b0 레지스터)에 상수 버퍼 바인딩
     commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
-
-    // 3. 메쉬 그리기 (인스턴스 3개)
     _mesh->render_CascadeShadowMap(commandList);
 }
 
@@ -257,4 +206,47 @@ XMMATRIX RenderComponent::get_occlusion_box_world_matrix() {
 
     // 3. 최종 박스 월드 행렬 = Scale * Rotation * Translation
     return scale * rotation * translation;
+}
+
+void RenderComponent::update_world_matrix_cb(UINT frame_index)
+{
+    // 1. 현재 엔진의 전역 프레임 번호를 가져옵니다.
+	UINT64 currentTotalFrame = GameFramework::instance()->get_total_frame_count();
+
+    // 2. 이번 실제 프레임에 이미 계산을 마쳤다면 즉시 리턴 (중복 계산 방지 핵심)
+    if (_lastUpdatedFrame == currentTotalFrame)
+        return;
+
+    // 3. 행렬 계산 시작 (이제 이 부분은 프레임당 딱 한 번만 실행됩니다.)
+    const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
+    XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
+
+    // World Matrix (Transpose해서 GPU 전송용으로 저장)
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
+
+    // 역행렬 계산 (Shadow Pass와 Main Pass에서 중복으로 하던 비싼 연산)
+    XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
+    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
+
+    // 4. 기타 상태값 설정 (기존 render() 함수에 있던 로직들)
+    if (auto op_script = game_object()->get_component<OtherPlayerScript>()) {
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
+    }
+    else if (auto mp_script = game_object()->get_component<MainPlayerScript>()) {
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
+    }
+    else {
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
+    }
+
+    // 그림자 수신 여부 설정
+    if (_psoName == "skinned") {
+        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
+    }
+    else {
+        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
+    }
+
+    // 5. 업데이트 완료 표시
+    _lastUpdatedFrame = currentTotalFrame;
 }

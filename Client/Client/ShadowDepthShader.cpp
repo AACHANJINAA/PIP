@@ -28,9 +28,10 @@ D3D12_RASTERIZER_DESC ShadowDepthShader::create_rasterizer_state()
 {
     D3D12_RASTERIZER_DESC desc = Shader::create_rasterizer_state();
     desc.CullMode = D3D12_CULL_MODE_FRONT;
+    // 하드웨어 Depth Bias 적용
     desc.DepthBias = 0;
     desc.DepthBiasClamp = 0.0f;
-    desc.SlopeScaledDepthBias = 0.0f;
+    desc.SlopeScaledDepthBias = 1.5f;   // 1.0f ~ 2.0f 사이 권장
     return desc;
 }
 
