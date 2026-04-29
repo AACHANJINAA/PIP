@@ -13,11 +13,13 @@ namespace common::packet
 		IDLE = 0,
 		MOVE,
 		RUN,
+		JUMP,		// 점프 시작 요청
+		HOVER,		// 공중 체류 (낙하 중)
+		LANDING,	// 착지
 		ACTION,
 		SKILL_ONE,
 		HITTED,
 		DEAD,
-
 
 		COUNT,
 	};
@@ -28,6 +30,7 @@ namespace common::packet
 		{
 			constexpr int32_t Attack = 1;
 			constexpr int32_t SKILL1 = 2;
+			constexpr int32_t JUMP   = 3; // [추가] 점프 액션 ID
 		}
 
 		namespace Tainer
