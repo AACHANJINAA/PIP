@@ -45,7 +45,7 @@ void Renderer::initialize(ID3D12Device* device)
     
     _descriptor_size = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); 
     _unitCube = Mesh::create_unit_cube();
-    OcclusionManager::instance()->initialize(device, 5000);
+    OcclusionManager::instance()->initialize(device, 20'000);
 
     create_dynamic_descriptor_heap(1000000);
 
@@ -165,6 +165,30 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
         return;
     }
 
+    // [최적화] 매 프레임 전체 객체 중 일부(400개)만 인덱스 회수 검사
+    static size_t cleanupCursor = 0;
+    const auto& allObjects = ObjectManager::instance()->get_all_game_objects();
+    if (!allObjects.empty()) {
+        size_t checkCount = std::min<size_t>(400, allObjects.size());
+        f3 camPos = camera->game_object()->transform()->get_world_position();
+
+        for (size_t i = 0; i < checkCount; ++i) {
+            auto& obj = allObjects[cleanupCursor % allObjects.size()];
+            cleanupCursor++;
+
+            if (!obj || obj->is_destroyed()) continue;
+
+            auto rc = obj->get_component<RenderComponent>();
+            if (rc && rc->has_allocated_index()) { // 이미 할당된 인덱스가 있는 경우만
+                float dist = Vector3::Length(Vector3::Subtract(camPos, obj->transform()->get_world_position()));
+                if (dist > 300.0f) { // 300m 이상 멀어지면 회수
+                    OcclusionManager::instance()->release_query_index(rc->get_occlusion_query_index());
+                    rc->set_occlusion_query_index(0xFFFFFFFF);
+                }
+            }
+        }
+    }
+
     // 1. 이번 프레임에 그릴 객체들을 추려낸다.
     build_render_list(camera);
 
@@ -205,13 +229,23 @@ void Renderer::build_render_list(const CameraComponent* camera)
             }
 
             // 2. 일반 객체 거리 컬링 (500m 이상은 아예 제외)
+			auto rc = gameObject->get_component<RenderComponent>();
             f3 objPos = gameObject->transform()->get_world_position();
             float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+
+     //       if (dist > 400.0f) { // 400m 이상 멀어지면
+     //           if (rc && rc->get_occlusion_query_index() != 0xFFFFFFFF) {
+     //               OcclusionManager::instance()->release_query_index(rc->get_occlusion_query_index());
+					//CLOG("Occlusion query index released ");
+     //           }
+     //           continue; // 렌더링 리스트에서도 제외
+     //       }
+
             // 3. PSO별 거리 필터링 (여기가 핵심!)
             if (psoName == "terrain")
             {
                 // 지형은 멀리까지 보여야 하므로 큰 값을 줍니다.
-                if (dist > 1200.0f) continue;
+                if (dist > 700.0f) continue;
             }
             else
             {
@@ -436,7 +470,6 @@ void Renderer::render_pso_group(ID3D12GraphicsCommandList* commandList, const st
 
     for (auto& obj : it->second) {
         if (!obj) continue;
-
         proto->update_per_object(commandList, this, obj.get());
         obj->prepare_render();
         obj->get_component<RenderComponent>()->render(commandList, frame_index);
@@ -463,6 +496,10 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 return distA < distB; // 가까운 것부터
                 });
         }
+    }
+
+    if (camera) {
+        camera->set_viewports_and_scissor_rects(commandList);
     }
 
     // --- STEP 1: 지형(Terrain)을 먼저 그리기 (Occluder) ---
@@ -531,13 +568,19 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
                 commandList->SetGraphicsRoot32BitConstants(0, 16, &boxWorld, 0);
 
                 commandList->BeginQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
-                _unitCube->render(commandList);
+				_unitCube->render(commandList);
                 commandList->EndQuery(OcclusionManager::instance()->get_query_heap(), D3D12_QUERY_TYPE_OCCLUSION, rc->get_occlusion_query_index());
             }
         }
     }
 
     OcclusionManager::instance()->resolve_queries(commandList, frame_index);
+
+    //static int frameCount = 0;
+    //if (frameCount++ % 60 == 0) { // 60프레임마다 한 번씩 출력 (너무 자주 찍히면 무거우므로)
+    //    auto occ = OcclusionManager::instance();
+    //    CLOG("[Occlusion Info] Active: " << occ->get_active_index_count());
+    //}
 
     // --- STEP 4: 먼 객체들 조건부 렌더링 (Predication) ---
     for (const std::string& target : opaque_targets) {
@@ -579,20 +622,6 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
             commandList->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
             rc->render(commandList, frame_index);
             commandList->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
-        }
-    }
-
-	// 쿼리 사용 후 _renderMap 순회하면서 release_query_index를 불러줌 -> OcclusionManager에 알려줘서 해당 인덱스 재활용 가능하게 함
-	for (const auto& pair : _renderMap) {
-        for (const auto& obj : pair.second) {
-            if (!obj) continue;
-            auto rc = obj->get_component<RenderComponent>();
-            if (rc) {
-                int queryIndex = rc->get_occlusion_query_index();
-                if (queryIndex >= 0) {
-                    OcclusionManager::instance()->release_query_index(queryIndex);
-                }
-            }
         }
     }
 

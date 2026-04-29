@@ -18,6 +18,7 @@ public:
     }
 
     ID3D12QueryHeap* get_query_heap() const { return _queryHeap.Get(); }
+	UINT get_active_index_count() const { return _nextAvailableIndex - static_cast<UINT>(_freeIndices.size()); }
 
     UINT allocate_query_index();
     void release_query_index(UINT index);
