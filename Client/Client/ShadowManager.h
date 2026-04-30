@@ -10,15 +10,14 @@ struct CbCascadeSingle
 
 struct CbCascades
 {
-    CbCascadeSingle cascades[3]; // ÃÑ 3°³ÀÇ Cascade Çà·Ä
+    CbCascadeSingle cascades[2]; // ÃÑ 3°³ÀÇ Cascade Çà·Ä
 };
 struct CbShadow
 {
-    XMFLOAT4X4 lightVP[3];
-    float splitNear; 
-    float splitMid;  
+    XMFLOAT4X4 lightVP[2];
+    float splitDist; 
     float bias;      
-    float pad;
+    float pad[2];
 };
 
 class ShadowManager : public Singleton<ShadowManager>

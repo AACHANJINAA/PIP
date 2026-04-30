@@ -2,11 +2,10 @@
 // register(b5): 그림자 관련 상수 버퍼
 cbuffer cbShadow : register(b5)
 {
-    matrix g_shadowLightVP[3]; // 각 cascade 의 LightViewProjection
-    float g_shadowSplitNear; // view-space Z: cascade 0→1 경계
-    float g_shadowSplitMid; // view-space Z: cascade 1→2 경계
-    float g_shadowBias; // z-fighting 방지
-    float g_shadowPad; // 16byte 패딩
+    matrix g_shadowLightVP[2];
+    float g_shadowSplitDist;
+    float g_shadowBias;
+    float g_shadowPad[2];
 };
 
 Texture2DArray g_shadowMap : register(t11);
@@ -68,7 +67,7 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
     float baseFilterRadii[3] = { 0.8f, 1.5f, 3.0f };
      
      // viewDepth를 0~1로 정규화 (Cascade 2의 끝 범위 기준)
-    float maxViewDepth = g_shadowSplitMid + 100.0f; // Cascade 2 커버 범위
+    float maxViewDepth = g_shadowSplitDist + 200.0f;
     float normalizedDepth = saturate(viewDepth / maxViewDepth);
      
      // 카메라에 가까우면 선명(0.5배), 멀면 부드럽게(2.5배)
@@ -81,7 +80,7 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
     if (cascade == 0)
     {
      [unroll]
-        for (int i = 0; i < 16; ++i)
+        for (int i = 0; i < 16; ++i) // 근거리는 16샘플 유지 (고품질)
         {
             float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
             float2 offset = rotatedOffset * texelSize * filterRadius;
@@ -89,24 +88,11 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
         }
         return shadow / 16.0f;
     }
-    else if (cascade == 1)
+    else // cascade 1 (원거리)
     {
      [unroll]
-        for (int i = 0; i < 8; ++i)
+        for (int i = 0; i < 4; ++i) // 원거리는 4샘플로 타협
         {
-         // 8개 샘플만 사용하되, PoissonDisk에서 간격을 띄워 분산 효과 유지
-            float2 rotatedOffset = mul(PoissonDisk[i * 2], rotationMat);
-            float2 offset = rotatedOffset * texelSize * filterRadius;
-            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
-        }
-        return shadow / 8.0f;
-    }
-    else // cascade 2
-    {
-     [unroll]
-        for (int i = 0; i < 4; ++i)
-        {
-         // 4개 샘플만 사용 (원거리는 품질보다 속도)
             float2 rotatedOffset = mul(PoissonDisk[i * 4], rotationMat);
             float2 offset = rotatedOffset * texelSize * filterRadius;
             shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
@@ -118,56 +104,34 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
 // 메인 CSM 샘플링 함수 (블렌딩 적용)
 float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
 {
-    float maxShadowDistance = 300.0f; // TODO : 최대거리 수정할거면 얘도 CB로 받아오자. 
-    float fadeRange = 30.0f; // 끝에서부터 서서히 사라질 구간 길이 (270m ~ 300m)
-
-    // 1. 조기 종료 (Early-Out) 최적화
-    // 픽셀의 거리가 그림자 최대 거리를 완전히 벗어났다면, 
-    // 무거운 PCF 연산을 아예 돌리지 않고 즉시 '그림자 없음(1.0)' 반환
+    float maxShadowDistance = 300.0f;
     if (viewDepth >= maxShadowDistance)
-    {
         return 1.0f;
-    }
 
-    float blendThreshold = 20.0f;
-
-    float shadow0 = 1.0f;
-    float shadow1 = 1.0f;
+    float blendThreshold = 15.0f; // 블렌딩 구간 (취향에 따라 조절)
     float finalShadow = 1.0f;
 
-    // Cascade 0 -> 1 경계 확인
-    if (viewDepth < g_shadowSplitNear + blendThreshold)
+ // Cascade 0 -> 1 단일 경계 판정
+    if (viewDepth < g_shadowSplitDist - blendThreshold)
     {
-        shadow0 = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth);
-
-        if (viewDepth > g_shadowSplitNear - blendThreshold)
-        {
-            shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
-            float t = (viewDepth - (g_shadowSplitNear - blendThreshold)) / (blendThreshold);
-            finalShadow = lerp(shadow0, shadow1, saturate(t));
-        }
-        else
-        {
-            finalShadow = shadow0;
-        }
+     // 확실히 Cascade 0 영역
+        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth);
     }
-    // Cascade 1 -> 2 경계 확인
+    else if (viewDepth < g_shadowSplitDist + blendThreshold)
+    {
+     // Cascade 0과 1 사이 블렌딩 영역
+        float shadow0 = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth);
+        float shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
+
+     // 0~1 사이의 보간 값 계산
+        float t = (viewDepth - (g_shadowSplitDist - blendThreshold)) / (blendThreshold * 2.0f);
+        finalShadow = lerp(shadow0, shadow1, saturate(t));
+    }
     else
     {
-        shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
-
-        if (viewDepth > g_shadowSplitMid - blendThreshold)
-        {
-            float shadow2 = get_pcf_shadow_pcss(worldPos, normal, 2, viewDepth);
-            float t = (viewDepth - (g_shadowSplitMid - blendThreshold)) / (blendThreshold * 2.0f);
-            finalShadow = lerp(shadow1, shadow2, saturate(t));
-        }
-        else
-        {
-            finalShadow = shadow1;
-        }
+     // 확실히 Cascade 1 영역
+        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
     }
 
-    //// 환경광(Ambient) 등을 고려한 최종 최소 그림자 밝기(0.1f) 적용하여 반환
     return lerp(0.3f, 1.0f, finalShadow);
 }
