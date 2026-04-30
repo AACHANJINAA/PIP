@@ -230,30 +230,25 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                 auto it = renderMap.find("gltf");
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
-                        const auto& shadowGroups = renderer->get_gltf_shadow_instance_groups();
+                        if (!obj || obj->is_destroyed()) continue;
 
-                        for (auto& pair : shadowGroups) {
-                            auto mesh = pair.first;
-                            auto& instances = pair.second;
-                            UINT count = (UINT)instances.size();
-                            if (count == 0) continue;
+                        // [최적화 1]: 캐스케이드별 거리 컬링
+                        // 현재 그리는 캐스케이드의 범위를 벗어나면 Draw Call을 아예 날리지 않음
+                        f3 objPos = obj->transform()->get_world_position();
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                        if (dist > radii[i]) continue;
 
-                            // 1. 모든 인스턴스의 행렬 모으기 (Renderer::draw_render_list와 동일 로직)
-                            std::vector<XMMATRIX> matrices;
-                            matrices.reserve(count);
-                            for (auto& obj : instances) {
-                                matrices.push_back(XMMatrixTranspose(XMLoadFloat4x4(&obj->transform()->world_matrix())));
-                            }
+                        auto rc = obj->get_component<RenderComponent>();
+                        if (!rc) continue;
 
-                            // 2. LinearAllocator 업로드
-                            auto alloc = GameFramework::instance()->linear_allocator()->allocate(sizeof(XMMATRIX) * count);
-                            memcpy(alloc.cpuPtr, matrices.data(), sizeof(XMMATRIX) * count);
-
-                            // 3. 인스턴스 버퍼 바인딩 (CsmDepth 루트 시그니처의 2번 파라미터 == t12)
-                            cmd->SetGraphicsRootShaderResourceView(2, alloc.gpuAddr);
-
-                            // 4. 드로우!
-                            mesh->render_instance(cmd, count);
+                        // [최적화 2]: 오클루전 쿼리 결과에 따른 조건부 렌더링 (Predication)
+                        if (dist < nearShadowThreshold || rc->skip_occlusion()) {
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                        }
+                        else {
+                            cmd->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                            cmd->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
                         }
                     }
                 }
