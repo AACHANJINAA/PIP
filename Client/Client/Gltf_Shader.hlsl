@@ -97,12 +97,15 @@ static MATERIAL gMaterial =
 #include "IBL.hlsl"
 #include "Shadow_Sample.hlsl"
 
+StructuredBuffer<matrix> g_instanceWorldMatrices : register(t12);
+
 struct VS_INPUT
 {
     float3 Position : POSITION;
     float3 Normal : NORMAL;
     float2 TexCoord0 : TEXCOORD; // 텍스쳐 좌표 (추가된 부분)
     float4 Tangent : TANGENT;
+    uint instanceID : SV_InstanceID;
 };
 
 struct VS_OUTPUT
@@ -118,7 +121,10 @@ struct VS_OUTPUT
 VS_OUTPUT VS_GLTF(VS_INPUT input)
 {
     VS_OUTPUT Out;
-    Out.WorldPosition = mul(float4(input.Position, 1.0f), g_matWorld).xyz;
+
+    matrix worldMat = g_instanceWorldMatrices[input.instanceID];
+
+    Out.WorldPosition = mul(float4(input.Position, 1.0f), worldMat).xyz;
     Out.Position = mul(float4(Out.WorldPosition, 1.0f), g_matView);
     Out.Position = mul(Out.Position, g_matProjection);
     Out.TexCoord = input.TexCoord0;

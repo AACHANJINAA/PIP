@@ -25,6 +25,7 @@
 #include "Camera.h"
 #include "CameraComponent.h"
 #include "DebugDrawManager.h"
+#include "GameFramework.h"
 #include "LightManager.h"
 #include "RenderComponent.h"
 #include "OcclusionManager.h"
@@ -206,6 +207,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
 {
     // 1. 기존 맵 비우기
     _renderMap.clear();
+    _gltfInstanceGroups.clear();
     _shadowRenderMap.clear();
 
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
@@ -244,7 +246,12 @@ void Renderer::build_render_list(const CameraComponent* camera)
         {
             if (renderComp->is_visible(frustum))
             {
-                _renderMap[psoName].push_back(gameObject);
+                if (psoName == "gltf") {
+                    _gltfInstanceGroups[renderComp->mesh()].push_back(gameObject);
+                }
+                else {
+                    _renderMap[psoName].push_back(gameObject);
+                }
             }
         }
 
@@ -291,163 +298,173 @@ void Renderer::build_render_list(const CameraComponent* camera)
 
 void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index)
 {
+    _totalRenderCount = 0;
+    _totalDrawCalls = 0;
+
+    // 동적 디스크립터 힙 설정
     ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
     commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-    // 렌더링 순서 명시: 일반 객체 → Skybox → UI
+    // 렌더링 순서 정의
     std::vector<std::string> render_order = {
         "terrain",      // 지형
-        "gltf",         // 일반 메시
+        "gltf",         // 일반 메시 (GPU Instancing 적용)
         "skinned",      // 애니메이션 메시
         "skybox",       // Skybox
-		"particle_draw",// 파티클
+        "particle_draw",// 파티클
         "Monster_HP_UI",// 몬스터 HP UI
-        "ui_frame",      // UI Frame
+        "ui_frame",     // UI Frame
         "ui"            // UI
     };
 
-    // CJ 주절주절 : ui가 먼저 렌더링 되는게 맞지 않을까란 생각. 왜냐하면 ui가 3d mesh들 위에 그려짐으로 발생하는 RT의 픽셀 낭비 발생
-    // CJ 비난 : 어차피 alpha 테스트가 되어 있기 때문에 굳이임 -> 처음에 렌더링해버리면 우리 예전처럼 ui가 가려지는 현상 발생함
-
     for (const auto& psoName : render_order)
     {
+        // ==========================================================
+        // 1. gltf PSO 특수 처리 (GPU Instancing)
+        // ==========================================================
+        if (psoName == "gltf")
+        {
+            if (_gltfInstanceGroups.empty()) continue;
+
+            ID3D12PipelineState* pso = get_pso("gltf");
+            ID3D12RootSignature* rootSig = get_root_signature("gltf");
+            auto proto_it = _shaderPrototypes.find("gltf");
+
+            if (!pso || !rootSig || proto_it == _shaderPrototypes.end()) continue;
+
+            // PSO 및 루트 시그니처 바인딩
+            commandList->SetPipelineState(pso);
+            commandList->SetGraphicsRootSignature(rootSig);
+
+            // 공통 변수 바인딩 (카메라, 조명, 그림자)
+            if (camera) {
+                camera->update_shader_variables(commandList, frame_index);
+                camera->set_viewports_and_scissor_rects(commandList);
+            }
+            LightManager::instance()->bind(commandList, 3);
+            ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+
+            // 동일 메시 그룹별로 렌더링
+            for (auto& pair : _gltfInstanceGroups)
+            {
+                auto mesh = pair.first;
+                auto& instances = pair.second;
+                if (instances.empty()) continue;
+
+                UINT instanceCount = static_cast<UINT>(instances.size());
+
+                // 1) 모든 인스턴스의 월드 행렬 수집
+                std::vector<XMMATRIX> worldMatrices;
+                worldMatrices.reserve(instanceCount);
+                for (auto& obj : instances) {
+                    worldMatrices.push_back(XMMatrixTranspose(XMLoadFloat4x4(&obj->transform()->world_matrix())));
+                }
+
+                // 2) LinearAllocator를 통해 GPU 업로드
+                auto alloc = GameFramework::instance()->linear_allocator()->allocate(sizeof(XMMATRIX) * instanceCount);
+                memcpy(alloc.cpuPtr, worldMatrices.data(), sizeof(XMMATRIX) * instanceCount);
+
+                // 3) 인스턴스 행렬 버퍼 바인딩 (Root RS의 12번 파라미터 == t12)
+                commandList->SetGraphicsRootShaderResourceView(12, alloc.gpuAddr);
+
+                // 4) 재질 정보 업데이트 (그룹 내 첫 번째 객체 기준)
+                auto firstObj = instances[0];
+                proto_it->second->update_per_object(commandList, this, firstObj.get());
+                firstObj->prepare_render();
+
+				// 실제 드로우 콜 & 인스턴싱 객체 카운트
+                _totalRenderCount += instanceCount; // 실제 객체 수 (예: 나무 100개)
+                _totalDrawCalls += 1;               // 드로우 콜은 단 1번!
+
+                // 5) 인스턴싱 드로우 호출
+                mesh->render_instance(commandList, instanceCount);
+            }
+            continue; // gltf 처리 완료, 다음 PSO로
+        }
+
+        // ==========================================================
+        // 2. 나머지 PSO 처리 (기존 로직 유지)
+        // ==========================================================
         auto it = _renderMap.find(psoName);
         if (it == _renderMap.end() || it->second.empty()) continue;
 
         const auto& gameObjects = it->second;
-        // 어차피 _renderMap에서 게임오브젝트의 상태를 보고 컬링해서 들어옴
 
-        // PSO와 루트 시그니처 설정
         ID3D12PipelineState* pso = get_pso(psoName);
-        if (!pso) continue;
-
         auto proto_it = _shaderPrototypes.find(psoName);
-        if (proto_it == _shaderPrototypes.end()) continue;
+        if (!pso || proto_it == _shaderPrototypes.end()) continue;
 
         const auto& shader_prototype = proto_it->second;
-        const std::string& root_sig_name = shader_prototype->required_root_signature();
-        ID3D12RootSignature* root_signature = get_root_signature(root_sig_name);
+        ID3D12RootSignature* root_signature = get_root_signature(shader_prototype->required_root_signature());
         if (!root_signature) continue;
 
         commandList->SetPipelineState(pso);
         commandList->SetGraphicsRootSignature(root_signature);
 
-        if (psoName == "gltf" || psoName == "skinned")
-        {
+        // 조명 및 그림자 바인딩
+        if (psoName == "skinned" || psoName == "terrain") {
             LightManager::instance()->bind(commandList, 3);
-            ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+            if (psoName == "terrain")
+                ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, this);
+            else
+                ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
         }
 
-        if (psoName != "skybox")
-        {
-            ID3D12DescriptorHeap* heaps[] = {
-                    _dynamic_descriptor_heap.Get() };
-                    commandList->SetDescriptorHeaps(_countof(heaps),
-                    heaps);
-        }
-        if (camera)
-        {
+        if (camera) {
             camera->update_shader_variables(commandList, frame_index);
             camera->set_viewports_and_scissor_rects(commandList);
         }
 
-        // Skybox 전용 처리
-        if (psoName == "skybox")
-        {
-           /* auto static_heap = ResourceManager::instance()->get_static_srv_heap();
-            if (static_heap)
-            {
-                ID3D12DescriptorHeap* heaps[] = { static_heap };
-                commandList->SetDescriptorHeaps(1, heaps);
-            }*/
-
-            // Skybox 상수 버퍼
+        // Skybox 특수 처리
+        if (psoName == "skybox") {
             if (camera && camera->get_cb_skybox())
-            {
-                D3D12_GPU_VIRTUAL_ADDRESS cbAddress =
-                    camera->get_cb_skybox()->GetGPUVirtualAddress();
-                commandList->SetGraphicsRootConstantBufferView(2, cbAddress);
-            }
+                commandList->SetGraphicsRootConstantBufferView(2, camera->get_cb_skybox()->GetGPUVirtualAddress());
 
-            // Skybox 텍스처 (고정 힙의 GPU 핸들 직접 사용)
             D3D12_CPU_DESCRIPTOR_HANDLE skybox_cpu_handle = ResourceManager::instance()->get_skybox_srv_cpu();
-            
-            // 안전장치: 스카이박스 핸들이 없으면 블랙 텍스처라도 넣어줌
-            if (skybox_cpu_handle.ptr == 0) {
-                skybox_cpu_handle = ResourceManager::instance()->get_texture("__DEFAULT_BLACK__")->cpu_handle;
-            }
-
+            if (skybox_cpu_handle.ptr == 0) skybox_cpu_handle = ResourceManager::instance()->get_texture("__DEFAULT_BLACK__")->cpu_handle;
             bind_texture_table(commandList, 4, { skybox_cpu_handle });
 
-            // Skybox 렌더링
-            for (const auto& gameObject : gameObjects)
-            {
+            for (const auto& gameObject : gameObjects) {
                 auto renderComp = gameObject->get_component<RenderComponent>();
-                if (renderComp && renderComp->is_enabled())
-                {
-                    renderComp->render(commandList, frame_index);
-                }
+                if (renderComp && renderComp->is_enabled()) renderComp->render(commandList, frame_index);
             }
-            continue; // 다음 PSO로
+            continue;
         }
 
-        if (psoName == "particle_draw")
-        {
-            for (const auto& gameObject : gameObjects)
-            {
+        // 파티클 특수 처리
+        if (psoName == "particle_draw") {
+            for (const auto& gameObject : gameObjects) {
                 auto particleRenderComp = gameObject->get_component<ParticleRenderComponent>();
                 auto psComp = gameObject->get_component<ParticleSystemComponent>();
-
-                if (particleRenderComp && psComp && particleRenderComp->is_enabled())
-                {
-                    // 1. 그리기 전에 연산을 발사! (여기서 파티클 위치가 계산됩니다)
+                if (particleRenderComp && psComp && particleRenderComp->is_enabled()) {
                     psComp->dispatch_compute(commandList);
-
-                    // 2. 파이프라인 상태 복구 (컴퓨트 셰이더에서 다시 그래픽스 셰이더로 복구)
                     commandList->SetPipelineState(pso);
                     commandList->SetGraphicsRootSignature(root_signature);
-
-                    if (camera)
-                    {
-                        camera->update_shader_variables(commandList, frame_index);
-                        camera->set_viewports_and_scissor_rects(commandList);
-                    }
-
-                    // 3. 상수 및 텍스처 업데이트
+                    if (camera) camera->update_shader_variables(commandList, frame_index);
                     shader_prototype->update_per_object(commandList, this, gameObject.get());
                     gameObject->prepare_render();
-
-                    // 4. 파티클 인스턴싱 그리기
                     particleRenderComp->render(commandList, frame_index);
                 }
             }
             continue;
         }
 
-        // 일반 객체 렌더링
-        for (const auto& gameObject : gameObjects)
-        {
+        // 일반 객체 (Skinned 등)
+        for (const auto& gameObject : gameObjects) {
             auto renderComp = gameObject->get_component<RenderComponent>();
             if (!renderComp) continue;
 
-            auto mesh = renderComp->mesh();
-            if (!mesh) continue;
-
-            if (psoName == "skinned") // DW설명 : 애니메이션 컴포넌트에서 뼈대 상수 버퍼 주소 받아오기
-            {
+            if (psoName == "skinned") {
                 auto animComp = gameObject->get_component<AnimationComponent>();
-                if (animComp)
-                {
-                    // AnimationComponent(선형 할당기)에서 받아둔 뼈대 주소 획득
+                if (animComp) {
                     D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
-
-                    if (boneGpuAddr != 0)
-                    {
-                        // 12번 루트 파라미터(b4 레지스터)에 뼈대 상수 버퍼 바인딩
-                        commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
-                    }
+                    if (boneGpuAddr != 0) commandList->SetGraphicsRootConstantBufferView(12, boneGpuAddr);
                 }
             }
+
+            // 실제 객체 드로우 카운트 증가
+            _totalRenderCount += 1;
+            _totalDrawCalls += 1;
 
             shader_prototype->update_per_object(commandList, this, gameObject.get());
             gameObject->prepare_render();

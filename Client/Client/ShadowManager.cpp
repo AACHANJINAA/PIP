@@ -116,7 +116,7 @@ void ShadowManager::build_cascade_matrices()
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
     float radii[2] = {
-		shadow_max_distance * 0.2f,  // 근거리
+		shadow_max_distance * 0.4f,  // 근거리
         shadow_max_distance * 1.0f,  // 중거리
     };
 
@@ -198,7 +198,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 
     // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
     float radii[2] = {
-        shadow_max_distance * 0.2f,
+        shadow_max_distance * 0.4f,
         shadow_max_distance * 1.0f
     };
 
