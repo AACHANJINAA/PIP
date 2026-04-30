@@ -157,6 +157,7 @@ public:
 	//virtual void render(ID3D12GraphicsCommandList* commandList) override;
 	void render(ID3D12GraphicsCommandList* commandList) override;
 	void render_instance(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) override; // 인스턴싱으로 렌더링
+	void render_instance_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) override;
 	void release_upload_buffers() override;
 
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList) override;
