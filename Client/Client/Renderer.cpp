@@ -208,7 +208,6 @@ void Renderer::build_render_list(const CameraComponent* camera)
     // 1. 기존 맵 비우기
     _renderMap.clear();
     _gltfInstanceGroups.clear();
-    _gltfShadowInstanceGroups.clear();
     _shadowRenderMap.clear();
 
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
@@ -278,12 +277,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
             // 4. 보간된 한계값으로 판정
             if (distXZ < shadowLimit)
             {
-                if (psoName == "gltf") {
-                    _gltfShadowInstanceGroups[renderComp->mesh()].push_back(gameObject);
-                }
-                else {
-                    _shadowRenderMap[psoName].push_back(gameObject);
-                }
+                _shadowRenderMap[psoName].push_back(gameObject);
             }
         }
     }

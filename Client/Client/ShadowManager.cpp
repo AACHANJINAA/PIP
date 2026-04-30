@@ -16,7 +16,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     texDesc.Alignment = 0;
     texDesc.Width = _shadowmapSize;
     texDesc.Height = _shadowmapSize;
-    texDesc.DepthOrArraySize = 2; // 2 Cascade
+    texDesc.DepthOrArraySize = 3; // 2 Cascade
     texDesc.MipLevels = 1;
     texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     texDesc.SampleDesc.Count = 1;
@@ -40,7 +40,7 @@ void ShadowManager::initialize(ID3D12Device* device)
 
     // 2. DSV Heap 생성 (CPU Only, 1 Descriptor)
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 2;
+    dsvHeapDesc.NumDescriptors = 3;
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&_dsvHeap));
@@ -50,7 +50,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle
     (_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
         dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -65,7 +65,7 @@ void ShadowManager::initialize(ID3D12Device* device)
    
     // 3. SRV Heap 생성 
     D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-    srvHeapDesc.NumDescriptors = 2;
+    srvHeapDesc.NumDescriptors = 3;
     srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvHeap));
@@ -77,7 +77,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     srvDesc.Texture2DArray.MostDetailedMip = 0;
     srvDesc.Texture2DArray.MipLevels = 1;
     srvDesc.Texture2DArray.FirstArraySlice = 0;
-    srvDesc.Texture2DArray.ArraySize = 2;
+    srvDesc.Texture2DArray.ArraySize = 3;
     device->CreateShaderResourceView(_shadowMapArray.Get(), &srvDesc, _srvHeap->GetCPUDescriptorHandleForHeapStart());
 
     // 4. 상수 버퍼 생성
@@ -89,7 +89,7 @@ void ShadowManager::initialize(ID3D12Device* device)
 
     UINT cbShadowSize = (sizeof(CbShadow) + 255) & ~255;
     cbDesc = CD3DX12_RESOURCE_DESC::Buffer(cbShadowSize);
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE,
             &cbDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS
@@ -115,12 +115,13 @@ void ShadowManager::build_cascade_matrices()
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
-    float radii[2] = {
-		shadow_max_distance * 0.4f,  // 근거리
-        shadow_max_distance * 1.0f,  // 중거리
+    float radii[3] = {
+         shadow_max_distance * 0.1f,
+         shadow_max_distance * 0.3f,
+         shadow_max_distance * 1.0f
     };
 
-    for (int c = 0; c < 2; c++)
+    for (int c = 0; c < 3; c++)
     {
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
 
@@ -160,7 +161,8 @@ void ShadowManager::build_cascade_matrices()
         XMStoreFloat4x4(&_shadowData.lightVP[c], XMMatrixTranspose(vp));
     }
 
-    _shadowData.splitDist = radii[0];
+    _shadowData.splitNear = radii[0];
+    _shadowData.splitMid = radii[1];
     _shadowData.bias = 0.00f;
 }
 
@@ -174,15 +176,15 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     memcpy(_mappedCbShadow[frame_index], &_shadowData, sizeof(CbShadow));
 
     // 2. Resource Barrier: PSR -> DEPTH_WRITE (모든 슬라이스)
-    CD3DX12_RESOURCE_BARRIER barriersW[2];
-    for (int i = 0; i < 2; ++i) {
+    CD3DX12_RESOURCE_BARRIER barriersW[3];
+    for (int i = 0; i < 3; ++i) {
         barriersW[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             _shadowMapArray.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             i);
     }
-    cmd->ResourceBarrier(2, barriersW);
+    cmd->ResourceBarrier(3, barriersW);
 
     // 공통 뷰포트/시저 설정
     D3D12_VIEWPORT viewport = { 0.0f, 0.0f, (float)_shadowmapSize, (float)_shadowmapSize, 0.0f, 1.0f };
@@ -197,9 +199,10 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
 
     // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
-    float radii[2] = {
-        shadow_max_distance * 0.4f,
-        shadow_max_distance * 1.0f
+    float radii[3] = {
+          shadow_max_distance * 0.1f,  // Cascade 0: 30m
+          shadow_max_distance * 0.3f,  // Cascade 1: 90m
+          shadow_max_distance * 1.0f   // Cascade 2: 300m
     };
 
     // 카메라와 매우 가까운 거리는 쿼리 없이 무조건 그림자 생성
@@ -207,7 +210,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
     // 3단계 캐스케이드 렌더링 루프 시작
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         // A. 현재 캐스케이드에 해당하는 DSV 바인딩 및 Clear
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
@@ -230,30 +233,25 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                 auto it = renderMap.find("gltf");
                 if (it != renderMap.end()) {
                     for (const auto& obj : it->second) {
-                        const auto& shadowGroups = renderer->get_gltf_shadow_instance_groups();
+                        if (!obj || obj->is_destroyed()) continue;
 
-                        for (auto& pair : shadowGroups) {
-                            auto mesh = pair.first;
-                            auto& instances = pair.second;
-                            UINT count = (UINT)instances.size();
-                            if (count == 0) continue;
+                        // [최적화 1]: 캐스케이드별 거리 컬링
+                        // 현재 그리는 캐스케이드의 범위를 벗어나면 Draw Call을 아예 날리지 않음
+                        f3 objPos = obj->transform()->get_world_position();
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                        if (dist > radii[i]) continue;
 
-                            // 1. 모든 인스턴스의 행렬 모으기 (Renderer::draw_render_list와 동일 로직)
-                            std::vector<XMMATRIX> matrices;
-                            matrices.reserve(count);
-                            for (auto& obj : instances) {
-                                matrices.push_back(XMMatrixTranspose(XMLoadFloat4x4(&obj->transform()->world_matrix())));
-                            }
+                        auto rc = obj->get_component<RenderComponent>();
+                        if (!rc) continue;
 
-                            // 2. LinearAllocator 업로드
-                            auto alloc = GameFramework::instance()->linear_allocator()->allocate(sizeof(XMMATRIX) * count);
-                            memcpy(alloc.cpuPtr, matrices.data(), sizeof(XMMATRIX) * count);
-
-                            // 3. 인스턴스 버퍼 바인딩 (CsmDepth 루트 시그니처의 2번 파라미터 == t12)
-                            cmd->SetGraphicsRootShaderResourceView(2, alloc.gpuAddr);
-
-                            // 4. 드로우!
-                            mesh->render_instance(cmd, count);
+                        // [최적화 2]: 오클루전 쿼리 결과에 따른 조건부 렌더링 (Predication)
+                        if (dist < nearShadowThreshold || rc->skip_occlusion()) {
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                        }
+                        else {
+                            cmd->SetPredication(prevBuffer, rc->get_occlusion_query_index() * sizeof(UINT64), D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
+                            rc->render_CascadeShadowMap(cmd, frame_index);
+                            cmd->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
                         }
                     }
                 }
@@ -304,15 +302,15 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     }
 
     // 3. Resource Barrier: DEPTH_WRITE -> PSR (모든 슬라이스)
-    CD3DX12_RESOURCE_BARRIER barriersR[2];
-    for (int i = 0; i < 2; ++i) {
+    CD3DX12_RESOURCE_BARRIER barriersR[3];
+    for (int i = 0; i < 3; ++i) {
         barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             _shadowMapArray.Get(),
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             i);
     }
-    cmd->ResourceBarrier(2, barriersR);
+    cmd->ResourceBarrier(3, barriersR);
 }
 
 void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shadowCbParamIdx, UINT shadowSrvParamIdx, Renderer* renderer)
