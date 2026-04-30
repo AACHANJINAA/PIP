@@ -10,14 +10,15 @@ struct CbCascadeSingle
 
 struct CbCascades
 {
-    CbCascadeSingle cascades[2]; // ÃÑ 3°³ÀÇ Cascade Çà·Ä
+    CbCascadeSingle cascades[3]; // ÃÑ 3°³ÀÇ Cascade Çà·Ä
 };
 struct CbShadow
 {
-    XMFLOAT4X4 lightVP[2];
-    float splitDist; 
+    XMFLOAT4X4 lightVP[3];
+    float splitNear;
+    float splitMid;
     float bias;      
-    float pad[2];
+    float pad;
 };
 
 class ShadowManager : public Singleton<ShadowManager>
@@ -46,8 +47,8 @@ private:
     ComPtr<ID3D12Resource>       _cbCascades;
     CbCascades* _mappedCbCascades = nullptr;
 
-    ComPtr<ID3D12Resource>       _cbShadow[2];    // double buffering
-    CbShadow* _mappedCbShadow[2] = {};
+    ComPtr<ID3D12Resource>       _cbShadow[3];    // double buffering
+    CbShadow* _mappedCbShadow[3] = {};
 
     ComPtr<ID3D12PipelineState>  _shadowPso;
     ComPtr<ID3D12RootSignature>  _shadowRootSig;
