@@ -11,10 +11,13 @@ cbuffer cbCascades : register(b1)
     matrix g_lightVP;
 };
 
+StructuredBuffer<matrix> g_instanceWorldMatrices : register(t12);
+
 // VS
 struct VS_INPUT_SHADOW
 {
     float3 Position : POSITION;
+    uint instanceID : SV_InstanceID;
 };
 
 struct VS_OUTPUT_SHADOW
@@ -25,7 +28,8 @@ struct VS_OUTPUT_SHADOW
 VS_OUTPUT_SHADOW VS_ShadowDepth(VS_INPUT_SHADOW input)
 {
     VS_OUTPUT_SHADOW output;
-    float4 worldPos = mul(float4(input.Position, 1.0f), g_matWorld);
+    matrix worldMat = g_instanceWorldMatrices[input.instanceID];
+    float4 worldPos = mul(float4(input.Position, 1.0f), worldMat);
     output.Position = mul(worldPos, g_lightVP);
     return output;
 }

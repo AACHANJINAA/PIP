@@ -202,6 +202,34 @@ void ReadGLTFMesh::render_instance(ID3D12GraphicsCommandList* commandList, size_
 	}
 }
 
+void ReadGLTFMesh::render_instance_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, size_t want_instance_count)
+{
+	if (!_isUploaded || want_instance_count == 0) return;
+
+	if (_is_animated) return; // 애니메이션 메쉬는 instancing 미지원 (각 인스턴스마다 다른 bone 필요)
+
+	commandList->IASetPrimitiveTopology(_primitiveTopology);
+
+	// 모든 프리미티브를 instancing으로 렌더링
+	for (const auto& primitive : _primitives)
+	{
+		if (primitive->_vertexCount == 0 || primitive->_indexCount == 0) continue;
+
+		// VBV, IBV 바인딩
+		commandList->IASetVertexBuffers(0, 1, &primitive->_vertexBufferView);
+		commandList->IASetIndexBuffer(&primitive->_indexBufferView);
+
+		// DrawIndexedInstanced: 모든 인스턴스를 한 드로우 콜로 렌더링
+		commandList->DrawIndexedInstanced(
+			primitive->_indexCount,    // IndexCountPerInstance
+			(UINT)want_instance_count, // InstanceCount
+			0,                         // StartIndexLocation
+			0,                         // BaseVertexLocation
+			0                          // StartInstanceLocation
+		);
+	}
+}
+
 void ReadGLTFMesh::release_upload_buffers()
 {
 	for (auto& primitive : _primitives)

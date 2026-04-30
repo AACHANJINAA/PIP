@@ -589,10 +589,10 @@ const std::string& CsmDepthRootSignatureGenerator::name() const
 ComPtr<ID3D12RootSignature> CsmDepthRootSignatureGenerator::create(ID3D12Device*
     device)
 {
-    CD3DX12_ROOT_PARAMETER params[2];
+    CD3DX12_ROOT_PARAMETER params[3];
     params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_VERTEX);// b0
-
     params[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);   // b1 cascades(GS에서 사용)
+    params[2].InitAsShaderResourceView(12, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
     D3D12_ROOT_SIGNATURE_DESC desc = {};
     desc.NumParameters = _countof(params);
