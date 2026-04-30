@@ -512,6 +512,15 @@ void GameFramework::FrameAdvance()
 	// 실제 그리기 (업로드 안 된 메쉬는 Mesh::render 내부에서 skip됨)
 	Renderer::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
+	if (_totalFrameCount % 60 == 0)
+	{
+		UINT totalObjects = Renderer::instance()->get_total_render_count();
+		UINT drawCalls = Renderer::instance()->get_total_draw_calls();
+
+		CLOG("[Render Stats] Objects: " << totalObjects
+			<< " | DrawCalls: " << drawCalls);
+	}
+
 	// 씬의 후처리
 	Scene* currentScene = SceneManager::instance()->current_scene();
 	if (currentScene)

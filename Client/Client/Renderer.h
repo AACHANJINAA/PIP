@@ -74,4 +74,14 @@ private:
     UINT _max_descriptors_per_frame = 0;
 
     std::shared_ptr<Mesh> _unit_cube;
+
+    std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfInstanceGroups;
+
+public:
+    UINT get_total_render_count() const { return _totalRenderCount; }
+    UINT get_total_draw_calls() const { return _totalDrawCalls; }
+
+private:
+    UINT _totalRenderCount = 0;
+    UINT _totalDrawCalls = 0;
 };

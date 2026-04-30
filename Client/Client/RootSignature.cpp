@@ -85,7 +85,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
 
     ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t11: shadow map
 
-	CD3DX12_ROOT_PARAMETER params[12]; // CBV 4개 + PBR 텍스처 테이블 4개 + IBL 텍스처 테이블 1개 + Occlusion 텍스처 테이블 1개 + shadow 월드 행렬 CBV + Shadow 텍스처 테이블 1개 
+	CD3DX12_ROOT_PARAMETER params[13]; // CBV 4개 + PBR 텍스처 테이블 4개 + IBL 텍스처 테이블 1개 + Occlusion 텍스처 테이블 1개 + shadow 월드 행렬 CBV + Shadow 텍스처 테이블 1개 + instance data SRV
 
     // 0번 월드 행렬용 CBV
 	params[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0
@@ -110,6 +110,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
 	params[10].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL); // b5: shadow world matrix
 	// t11 : shadow descriptor table -> srv
 	params[11].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL); // t11: shadow map
+	params[12].InitAsShaderResourceView(12, 0, D3D12_SHADER_VISIBILITY_VERTEX); // t12 : instance data (vertex shader용 SRV)
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
@@ -140,7 +141,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     samplers[1].ShaderRegister = 1; // s1
     samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-    d3dRootSignatureDesc.NumParameters = 12;
+    d3dRootSignatureDesc.NumParameters = 13;
     d3dRootSignatureDesc.NumStaticSamplers = 2;
     d3dRootSignatureDesc.pStaticSamplers = samplers;
 
