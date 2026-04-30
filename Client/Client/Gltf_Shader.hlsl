@@ -129,8 +129,10 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     Out.Position = mul(Out.Position, g_matProjection);
     Out.TexCoord = input.TexCoord0;
 
-    Out.Normal = normalize(mul(input.Normal, (float3x3) g_matWorldInverseTranspose));
-    Out.Tangent = normalize(mul(input.Tangent.xyz, (float3x3) g_matWorldInverseTranspose));
+    float3x3 worldMat3x3 = (float3x3) worldMat;
+
+    Out.Normal = normalize(mul(input.Normal, worldMat3x3));
+    Out.Tangent = normalize(mul(input.Tangent.xyz, worldMat3x3));
     Out.Tangent = normalize(Out.Tangent - dot(Out.Tangent, Out.Normal) * Out.Normal);
     Out.Bitangent = cross(Out.Normal, Out.Tangent) * input.Tangent.w;
 
