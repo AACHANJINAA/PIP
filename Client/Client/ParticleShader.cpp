@@ -41,7 +41,7 @@ D3D12_BLEND_DESC ParticleShader::create_blend_state() {
 D3D12_DEPTH_STENCIL_DESC ParticleShader::create_depth_stencil_state() {
     D3D12_DEPTH_STENCIL_DESC desc = {};
     desc.DepthEnable = TRUE;
-    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // 파티클 끼리는 ㅈ겹쳐도 렌더링되도록 깊이 쓰기 끄기
+    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // 파티클 끼리는 겹쳐도 렌더링되도록 깊이 쓰기 끄기
     desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
     // 깊이검사 끄는 디버깅 용
