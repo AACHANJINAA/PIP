@@ -16,7 +16,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     texDesc.Alignment = 0;
     texDesc.Width = _shadowmapSize;
     texDesc.Height = _shadowmapSize;
-    texDesc.DepthOrArraySize = 3; // 3 Cascade
+    texDesc.DepthOrArraySize = 2; // 2 Cascade
     texDesc.MipLevels = 1;
     texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     texDesc.SampleDesc.Count = 1;
@@ -40,7 +40,7 @@ void ShadowManager::initialize(ID3D12Device* device)
 
     // 2. DSV Heap 생성 (CPU Only, 1 Descriptor)
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 3;
+    dsvHeapDesc.NumDescriptors = 2;
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&_dsvHeap));
@@ -50,12 +50,12 @@ void ShadowManager::initialize(ID3D12Device* device)
     CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle
     (_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
         dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
         dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-        dsvDesc.Texture2DArray.FirstArraySlice = i; // 슬라이스 0, 1, 2 각 지정
+        dsvDesc.Texture2DArray.FirstArraySlice = i; // 슬라이스 0, 1
     	dsvDesc.Texture2DArray.ArraySize = 1;       // 한 번에 하나씩만 그림
         dsvDesc.Texture2DArray.MipSlice = 0;
 
@@ -65,7 +65,7 @@ void ShadowManager::initialize(ID3D12Device* device)
    
     // 3. SRV Heap 생성 
     D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-    srvHeapDesc.NumDescriptors = 3;
+    srvHeapDesc.NumDescriptors = 2;
     srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvHeap));
@@ -77,7 +77,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     srvDesc.Texture2DArray.MostDetailedMip = 0;
     srvDesc.Texture2DArray.MipLevels = 1;
     srvDesc.Texture2DArray.FirstArraySlice = 0;
-    srvDesc.Texture2DArray.ArraySize = 3;
+    srvDesc.Texture2DArray.ArraySize = 2;
     device->CreateShaderResourceView(_shadowMapArray.Get(), &srvDesc, _srvHeap->GetCPUDescriptorHandleForHeapStart());
 
     // 4. 상수 버퍼 생성
@@ -115,13 +115,12 @@ void ShadowManager::build_cascade_matrices()
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
-    float radii[3] = {
-		shadow_max_distance * 0.1f,  // 근거리
-        shadow_max_distance * 0.3f,  // 중거리
-        shadow_max_distance * 1.0f   // 원거리
+    float radii[2] = {
+		shadow_max_distance * 0.2f,  // 근거리
+        shadow_max_distance * 1.0f,  // 중거리
     };
 
-    for (int c = 0; c < 3; c++)
+    for (int c = 0; c < 2; c++)
     {
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
 
@@ -161,8 +160,7 @@ void ShadowManager::build_cascade_matrices()
         XMStoreFloat4x4(&_shadowData.lightVP[c], XMMatrixTranspose(vp));
     }
 
-    _shadowData.splitNear = radii[0];
-    _shadowData.splitMid = radii[1];
+    _shadowData.splitDist = radii[0];
     _shadowData.bias = 0.00f;
 }
 
@@ -176,15 +174,15 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     memcpy(_mappedCbShadow[frame_index], &_shadowData, sizeof(CbShadow));
 
     // 2. Resource Barrier: PSR -> DEPTH_WRITE (모든 슬라이스)
-    CD3DX12_RESOURCE_BARRIER barriersW[3];
-    for (int i = 0; i < 3; ++i) {
+    CD3DX12_RESOURCE_BARRIER barriersW[2];
+    for (int i = 0; i < 2; ++i) {
         barriersW[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             _shadowMapArray.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             i);
     }
-    cmd->ResourceBarrier(3, barriersW);
+    cmd->ResourceBarrier(2, barriersW);
 
     // 공통 뷰포트/시저 설정
     D3D12_VIEWPORT viewport = { 0.0f, 0.0f, (float)_shadowmapSize, (float)_shadowmapSize, 0.0f, 1.0f };
@@ -199,10 +197,9 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
 
     // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
-    float radii[3] = {
-        shadow_max_distance * 0.1f,  // Cascade 0: 30m
-        shadow_max_distance * 0.3f,  // Cascade 1: 90m
-        shadow_max_distance * 1.0f   // Cascade 2: 300m
+    float radii[2] = {
+        shadow_max_distance * 0.2f,
+        shadow_max_distance * 1.0f
     };
 
     // 카메라와 매우 가까운 거리는 쿼리 없이 무조건 그림자 생성
@@ -210,7 +207,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
     // 3단계 캐스케이드 렌더링 루프 시작
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         // A. 현재 캐스케이드에 해당하는 DSV 바인딩 및 Clear
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
@@ -302,15 +299,15 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     }
 
     // 3. Resource Barrier: DEPTH_WRITE -> PSR (모든 슬라이스)
-    CD3DX12_RESOURCE_BARRIER barriersR[3];
-    for (int i = 0; i < 3; ++i) {
+    CD3DX12_RESOURCE_BARRIER barriersR[2];
+    for (int i = 0; i < 2; ++i) {
         barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             _shadowMapArray.Get(),
             D3D12_RESOURCE_STATE_DEPTH_WRITE,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             i);
     }
-    cmd->ResourceBarrier(3, barriersR);
+    cmd->ResourceBarrier(2, barriersR);
 }
 
 void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shadowCbParamIdx, UINT shadowSrvParamIdx, Renderer* renderer)

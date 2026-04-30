@@ -32,7 +32,7 @@ namespace PIP::SERVER
 
 
 		// 1. 기본 스테이지(MainStage) 생성 및 물리 로드
-		_currentStage = StageManager::Instance()->create_stage("CastleStage");
+		_currentStage = StageManager::Instance()->create_stage("MainStage");
 		if (_currentStage) {
 			_currentStage->on_initialize(this); // 지형 물리 바디 등록
 		}
