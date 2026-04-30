@@ -148,6 +148,7 @@ public:
 	virtual void render_instance(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) {};
 
 	// CSM 렌더링을 위한 별도의 렌더링 함수
+	virtual void render_instance_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) {}
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList);
 
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }

@@ -208,6 +208,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
     // 1. 기존 맵 비우기
     _renderMap.clear();
     _gltfInstanceGroups.clear();
+    _gltfShadowInstanceGroups.clear();
     _shadowRenderMap.clear();
 
     const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
@@ -269,7 +270,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
             float t = (dot + 1.0f) * 0.5f;
 
             // 2. 최소 거리(100)와 최대 거리(250) 사이를 부드럽게 보간
-            float shadowLimit = 100.0f + (t * (250.0f - 100.0f));
+            float shadowLimit = 100.0f + (t * (400.0f - 100.0f));
 
             // 3. 평면 거리(XZ) 계산
             float distXZ = sqrtf(toObj.x * toObj.x + toObj.z * toObj.z);
@@ -277,7 +278,12 @@ void Renderer::build_render_list(const CameraComponent* camera)
             // 4. 보간된 한계값으로 판정
             if (distXZ < shadowLimit)
             {
-                _shadowRenderMap[psoName].push_back(gameObject);
+                if (psoName == "gltf") {
+                    _gltfShadowInstanceGroups[renderComp->mesh()].push_back(gameObject);
+                }
+                else {
+                    _shadowRenderMap[psoName].push_back(gameObject);
+                }
             }
         }
     }
