@@ -31,7 +31,6 @@ public:
 
     const std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>>& get_render_map() const { return _renderMap; }
     const auto& get_shadow_render_map() const { return _shadowRenderMap; }
-    const auto& get_gltf_shadow_instance_groups() const { return _gltfShadowInstanceGroups; }
 
 
 private:
@@ -77,7 +76,6 @@ private:
     std::shared_ptr<Mesh> _unit_cube;
 
     std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfInstanceGroups;
-    std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfShadowInstanceGroups;
 
 public:
     UINT get_total_render_count() const { return _totalRenderCount; }
