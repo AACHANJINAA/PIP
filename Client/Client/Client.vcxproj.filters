@@ -156,6 +156,9 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\TargetingComponent">
       <UniqueIdentifier>{b6fc3fc7-7b64-405c-bbee-148b045dab1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent">
+      <UniqueIdentifier>{d601eca4-60f3-4a85-b575-3ef6c7e4c32e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -476,11 +479,20 @@
     <ClInclude Include="TargetingComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\TargetingComponent</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSystemComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
     <ClInclude Include="OcclusionManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClInclude>
     <ClInclude Include="OcclusionQueryShader.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleRenderComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -772,11 +784,20 @@
     <ClCompile Include="TargetingComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\TargetingComponent</Filter>
     </ClCompile>
-    <ClCompile Include="OcclusionQueryShader.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="ParticleSystemComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
     <ClCompile Include="OcclusionManager.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="OcclusionQueryShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleRenderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -846,8 +867,14 @@
     <FxCompile Include="Minimap_shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Particle_CS.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Particle_Draw.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="OcclusionQuery.hlsl">
-      <Filter>헤더 파일</Filter>
+      <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
