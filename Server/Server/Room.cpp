@@ -437,6 +437,13 @@ namespace PIP::SERVER
 
 						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->GetHP(), p->GetPosition(), knockForce);
 
+						// [추가] 잡기 판정 처리
+						if (config.isGrab) {
+							p->SetGrabbedById(attacker->GetId());
+							p->SetState(common::packet::EntityState::GRABBED);
+							MYLOG("[Grab] Player " << p->GetId() << " grabbed by " << attacker->GetId());
+						}
+
 						if (p->GetHP() <= 0) {
 							auto it = _players.find(p->GetId());
 							if (it != _players.end()) {

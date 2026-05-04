@@ -334,6 +334,7 @@ void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& mo
 
 	// 2. 논리 위치는 서버 좌표로 즉시 동기화 (순간이동)
 	_logicalPosition = movePacket._position;
+	_state = movePacket._state; // [추가] 서버 상태 동기화
 
 	// 3. [핵심] 화면이 튀지 않게 오프셋 재계산
 	// (이전 시각적 위치 - 새로운 논리 위치)를 오프셋으로 설정하여 화면상 위치를 유지함

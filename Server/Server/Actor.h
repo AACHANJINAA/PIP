@@ -73,6 +73,11 @@ namespace PIP::GAME
 
         virtual common::packet::EntityState GetState() const { return common::packet::EntityState::COUNT; }
 		virtual void SetState(const common::packet::EntityState& state) {}
+
+        // [추가] 잡기 시스템 관련
+        void SetGrabbedById(int64_t id) { _grabbedById = id; }
+        int64_t GetGrabbedById() const { return _grabbedById; }
+
     protected:
         std::deque<common::ObjectSnapshot> _history;
         Faction _factionId;
@@ -81,5 +86,6 @@ namespace PIP::GAME
         bool    _isActive = true;      // 활성화 상태 (false면 업데이트/렌더링 제외)
         std::chrono::milliseconds _respawnDelay {10000};  // 리스폰 대기 시간
 		std::chrono::milliseconds _deathAnimationDuration{ 1000 }; // 사망 애니메이션 시간 (필요시 조정)
+        int64_t _grabbedById = -1;     // 나를 잡고 있는 객체의 ID (-1이면 없음)
     };
 }

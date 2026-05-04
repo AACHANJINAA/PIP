@@ -215,4 +215,28 @@ namespace PIP::GAME
 		float _cooldownTimer = 0.0f;        // 재사용 대기시간 타이머
         common::Vec3 _dashDir = { 0, 0, 0 }; // [추가] 고정된 돌진 방향 저장용
     };
+
+    // [신규] 돌진 후 잡고 다니는 패턴
+    class Action_GrabCharge : public Action
+    {
+    public:
+        enum class Phase { READY, ROAR, TURN, DASHING, CARRYING, SLAM };
+
+        Action_GrabCharge(float speed, const AttackConfig& config)
+            : _speed(speed), _config(config)
+        {}
+
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+
+    private:
+        float _speed;
+        AttackConfig _config;
+
+        Phase _currentPhase = Phase::READY;
+        float _internalTimer = 0.0f;
+        bool  _isTargetLocked = false;
+        float _cooldownTimer = 0.0f;
+        common::Vec3 _dashDir = { 0, 0, 0 };
+        int64_t _grabbedPlayerId = -1;
+    };
 }

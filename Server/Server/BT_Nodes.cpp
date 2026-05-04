@@ -836,4 +836,182 @@ namespace PIP::GAME
 
 		return NodeStatus::FAILURE;
 	}
+
+	NodeStatus Action_GrabCharge::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		if (_cooldownTimer > 0.0f) _cooldownTimer -= dt;
+
+		auto owner = dynamic_cast<NPC*>(_blackboard->get<GameObject*>("owner"));
+		if (!owner) return NodeStatus::FAILURE;
+		auto room = SERVER::Server::Instance()->GetRoom(_blackboard->get<int>("room_id"));
+		if (!room) return NodeStatus::FAILURE;
+
+		if (_currentPhase == Phase::READY && _cooldownTimer > 0.0f) {
+			return NodeStatus::FAILURE;
+		}
+
+		// --- Phase 0: 준비 (포효 시작) ---
+		if (_currentPhase == Phase::READY) {
+			_currentPhase = Phase::ROAR;
+			_internalTimer = 1.2f;
+			_cooldownTimer = _config.cooldown;
+			owner->SetState(_config.entityState);
+			owner->SetActionId(common::packet::ActionID::Tainer::Roar);
+
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 });
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 1: 포효 중 ---
+		if (_currentPhase == Phase::ROAR) {
+			_internalTimer -= dt;
+			owner->SetState(_config.entityState);
+			owner->SetActionId(ActionID::Tainer::Roar);
+
+			if (_internalTimer <= 0.0f) {
+				_currentPhase = Phase::TURN;
+				_internalTimer = 0.4f;
+			}
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 2: 조준 ---
+		if (_currentPhase == Phase::TURN) {
+			_internalTimer -= dt;
+			int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+			auto target = room->GetActor(targetId);
+
+			if (target) {
+				common::Vec3 dir = common::Normalize(target->GetPosition() - owner->GetPosition());
+				dir.y = 0;
+				owner->GetComponent<TransformComponent>()->SmoothRotateTo(dir, dt * 10.0f);
+
+				if (!_isTargetLocked && _internalTimer < 0.1f) {
+					common::Vec3 dashTarget = owner->GetPosition() + (dir * 15.0f); // 잡기는 좀 더 멀리 돌진
+					_blackboard->set("charge_target_pos", dashTarget);
+					_isTargetLocked = true;
+				}
+			}
+
+			if (_internalTimer <= 0.0f) {
+				_currentPhase = Phase::DASHING;
+				_dashDir = { 0, 0, 0 };
+			}
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 3: 돌진 및 잡기 시도 ---
+		if (_currentPhase == Phase::DASHING) {
+			if (!_blackboard->has("charge_target_pos")) return NodeStatus::FAILURE;
+
+			common::Vec3 targetPos = _blackboard->get<common::Vec3>("charge_target_pos");
+			common::Vec3 currentPos = owner->GetPosition();
+			common::Vec3 toTarget = targetPos - currentPos;
+
+			if (common::LengthSq(_dashDir) < 0.001f) {
+				_dashDir = common::Normalize(toTarget);
+			}
+
+			float dot = toTarget.x * _dashDir.x + toTarget.y * _dashDir.y + toTarget.z * _dashDir.z;
+			float distSq = common::LengthSq(toTarget);
+
+			// 도착 판정
+			if (distSq < 0.2f * 0.2f || dot < 0) {
+				_currentPhase = Phase::READY;
+				_isTargetLocked = false;
+				_dashDir = { 0, 0, 0 };
+				return NodeStatus::SUCCESS;
+			}
+
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity(_dashDir * _speed);
+			owner->SetState(_config.entityState);
+			owner->SetActionId(ActionID::Tainer::Charge);
+
+			// 타격 판정 (잡기 포함)
+			int64_t npcId = owner->GetId();
+			room->PushJob([room, npcId, config = _config]() {
+				auto* attacker = room->GetActor(npcId);
+				if (attacker) room->ExecuteActorAction(attacker, config);
+			});
+
+			// 잡힌 플레이어가 있는지 체크
+			auto players = room->GetPlayersPos();
+			for (auto [pid, pos] : players) {
+				auto p = room->GetPlayer(pid);
+				if (p && p->GetGrabbedById() == owner->GetId()) {
+					_grabbedPlayerId = pid;
+					_currentPhase = Phase::CARRYING;
+					_internalTimer = 3.0f; // 3초간 들고 다님
+					if (nc) nc->SetVelocity({ 0, 0, 0 });
+					return NodeStatus::RUNNING;
+				}
+			}
+
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 4: 플레이어 들고 이동 ---
+		if (_currentPhase == Phase::CARRYING) {
+			_internalTimer -= dt;
+			owner->SetState(_config.entityState);
+			owner->SetActionId(ActionID::Tainer::GrabCarry);
+
+			// 보스는 천천히 전진하거나 회전할 수 있음
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			common::Vec3 forward = owner->GetComponent<TransformComponent>()->GetForward();
+			if (nc) nc->SetVelocity(forward * 3.0f); // 천천히 이동
+
+			// 잡힌 플레이어 위치 고정
+			auto grabbedPlayer = room->GetPlayer(_grabbedPlayerId);
+			if (grabbedPlayer) {
+				// 보스의 앞쪽 2m 지점에 플레이어를 고정
+				common::Vec3 carryPos = owner->GetPosition() + (forward * 2.0f);
+				carryPos.y += 1.0f; // 약간 높게 들기
+				grabbedPlayer->SetPosition(carryPos);
+				grabbedPlayer->SetState(common::packet::EntityState::GRABBED);
+			}
+			else {
+				// 플레이어가 나갔거나 죽었으면 종료
+				_currentPhase = Phase::READY;
+				return NodeStatus::SUCCESS;
+			}
+
+			if (_internalTimer <= 0.0f) {
+				_currentPhase = Phase::SLAM;
+				_internalTimer = 1.0f; // 슬램 애니메이션 시간
+			}
+			return NodeStatus::RUNNING;
+		}
+
+		// --- Phase 5: 슬램 (바닥에 찍기) ---
+		if (_currentPhase == Phase::SLAM) {
+			_internalTimer -= dt;
+			owner->SetState(_config.entityState);
+			owner->SetActionId(ActionID::Tainer::GrabSlam);
+
+			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 });
+
+			if (_internalTimer <= 0.0f) {
+				// 최종 데미지 및 해제
+				auto grabbedPlayer = room->GetPlayer(_grabbedPlayerId);
+				if (grabbedPlayer) {
+					grabbedPlayer->SetHP(grabbedPlayer->GetHP() - 50); // 큰 데미지
+					grabbedPlayer->SetGrabbedById(-1);
+					grabbedPlayer->SetState(common::packet::EntityState::IDLE);
+					MYLOG("[Grab] Player " << _grabbedPlayerId << " released by Slam");
+				}
+
+				_currentPhase = Phase::READY;
+				_grabbedPlayerId = -1;
+				_isTargetLocked = false;
+				return NodeStatus::SUCCESS;
+			}
+			return NodeStatus::RUNNING;
+		}
+
+		return NodeStatus::FAILURE;
+	}
 }

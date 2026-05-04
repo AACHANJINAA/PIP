@@ -2,29 +2,29 @@
 
 namespace PIP::GAME
 {
-    // NPC ¹× º¸½º °ø°İ ¼³Á¤À» À§ÇÑ ±¸Á¶Ã¼
-    struct AttackConfig {
-        JPH::Ref<JPH::Shape>            shape;                        // °ø°İ ÆÇÁ¤ ¸ğ¾ç (Sphere, Box, Capsule µî)
-        common::Vec3                    posOffset;                    // NPC Áß½ÉÀ¸·ÎºÎÅÍÀÇ ¿ÀÇÁ¼Â
-		common::packet::EntityState     entityState;                  // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç »óÅÂ°ª (¿¹: ATTACK1, SKILL1 µî)
-		int32_t                         actionId{ 0 };				  // °ø°İ Çàµ¿ ID (0ÀÌ¸é ¾øÀ½, º¸½º ½ºÅ³ ¹øÈ£ µî)
-        float                           damage;                       // °ø°İ·Â
-        float                           cooldown;                     // Àç»ç¿ë ´ë±â½Ã°£
-		float                           animationDuration   { 1.0f }; // ¾Ö´Ï¸ŞÀÌ¼Ç Áö¼Ó ½Ã°£ (ÃÊ ´ÜÀ§, ±âº» 1ÃÊ)
-		float                           attackTiming        { 1.0f }; // °ø°İ ÆÇÁ¤ ¹ß»ı ½ÃÁ¡ (ÃÊ ´ÜÀ§, ¾Ö´Ï¸ŞÀÌ¼Ç ½ÃÀÛºÎÅÍÀÇ ½Ã°£)
+	// NPC ë° ë³´ìŠ¤ ê³µê²© ì„¤ì •ì„ ìœ„í•œ êµ¬ì¡°ì²´
+	struct AttackConfig {
+		JPH::Ref<JPH::Shape>            shape;                        // ê³µê²© í˜•íƒœ (Sphere, Box, Capsule ë“±)
+		common::Vec3                    posOffset;                    // NPC ì¤‘ì‹¬ìœ¼ë¡œë¶€í„°ì˜ ì˜¤í”„ì…‹
+		common::packet::EntityState     entityState;                  // ê³µê²© ìƒíƒœ (ì˜ˆ: ACTION)
+		int32_t                         actionId{ 0 };                // ê³µê²© ì•¡ì…˜ ID (0ì´ë©´ ì—†ìŒ, ë³´ìŠ¤ ìŠ¤í‚¬ ë²ˆí˜¸ ë“±)
+		float                           damage;                       // ê³µê²©ë ¥
+		float                           cooldown;                     // ì¬ì‚¬ìš© ëŒ€ê¸°ì‹œê°„
+		float                           animationDuration   { 1.0f }; // ì• ë‹ˆë©”ì´ì…˜ ì§€ì† ì‹œê°„ (ì´ˆ, ê¸°ë³¸ 1ì´ˆ)
+		float                           attackTiming        { 1.0f }; // ê³µê²© íŒì • ë°œìƒ íƒ€ì´ë° (ì´ˆ, ì• ë‹ˆë©”ì´ì…˜ ì‹œì‘ë¶€í„°ì˜ ì‹œê°„)
 
-        // --- Ãß°¡µÈ ÇÊµå ---
-        bool                            isContinuous{ false }; // true¸é µ¿ÀÛ ³»³» ÆÇÁ¤ (µ¹Áø µî)
-        float                           hitInterval{ 0.1f };  // Áö¼Ó °ø°İ ½Ã ÆÇÁ¤ ÁÖ±â
-        float                           knockbackValue{ 0.0f };
-    };
+		// --- ì¶”ê°€ ì˜µì…˜ ---
+		bool                            isContinuous{ false }; // trueë©´ ì§€ì†í˜• ê³µê²© (ëŒì§„ ë“±)
+		float                           hitInterval{ 0.1f };  // ì§€ì† ê³µê²© ì‹œ íŒì • ì£¼ê¸°
+		float                           knockbackValue{ 0.0f };
+		bool                            isGrab{ false };      // [ì¶”ê°€] ì¡ê¸° íŒì • ì—¬ë¶€
+	};
 
-    // Å×ÀÌ³Ê(º¸½º) ÆäÀÌÁî Á¤ÀÇ
-    enum class TainerPhase : uint8_t
-    {
-        PHASE_1, // °ÅÀÎÀÇ ¾Ğ¹Ú (³»·ÁÂï±â, µ¹Áø)
-        PHASE_2  // ³¯Ä«·Î¿î »À (Å¬·Î ³­Å¸, Àâ±â)
-    };
+	// Tainer (ë³´ìŠ¤) í˜ì´ì¦ˆ ìƒíƒœ
+	enum class TainerPhase {
+		PHASE_1, // ê¸°ë³¸ (ë‚´ë ¤ì°ê¸°, ëŒì§„)
+		PHASE_2  // ê³µê²©ì„± ê°•í™” (í´ë¡œ ì—°íƒ€, ì¡ê¸°)
+	};
 
-    
+
 }

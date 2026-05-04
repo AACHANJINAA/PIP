@@ -20,6 +20,7 @@ namespace common::packet
 		SKILL_ONE,
 		HITTED,
 		DEAD,
+		GRABBED,    // [추가] 잡힌 상태
 
 		COUNT,
 	};
@@ -40,6 +41,9 @@ namespace common::packet
 			constexpr int32_t Slam		= 13;
 			constexpr int32_t Claw		= 14;
 			constexpr int32_t Grab		= 15;
+			constexpr int32_t GrabCharge = 16; // [추가] 잡기 돌진
+			constexpr int32_t GrabCarry  = 17; // [추가] 잡고 이동
+			constexpr int32_t GrabSlam   = 18; // [추가] 잡고 메치기
 		}
 	}
 
