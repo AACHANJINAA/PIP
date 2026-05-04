@@ -33,5 +33,6 @@ namespace PIP::GAME
         AttackConfig _chargeAtk;  // 돌진
         AttackConfig _clawAtk;    // 클로 난타 (Phase 2)
         AttackConfig _grabAtk;    // 잡기 (Phase 2)
+        AttackConfig _grabChargeAtk; // [추가] 잡기 돌진 (Phase 2)
     };
 }

@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "PlayerControllerComponent.h"
 
+#include "Actor.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
 
@@ -8,6 +9,24 @@ namespace PIP::GAME
 {
     void PlayerControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) {
         if (!_character) return;
+
+        // [추가] 잡힌 상태일 때는 물리 엔진에 의한 자체 이동 및 조작을 완전히 차단
+        if (auto actor = dynamic_cast<Actor*>(GetOwner())) {
+            if (actor->GetState() == common::packet::EntityState::GRABBED) {
+                _character->SetLinearVelocity(JPH::Vec3::sZero());
+                _currentMoveVelocity = { 0, 0, 0 };
+                _targetMoveVelocity = { 0, 0, 0 };
+                _impactVelocity = { 0, 0, 0 };
+
+                // [중요] CharacterVirtual의 위치는 Transform의 위치와 동기화되어야 함 (보스가 이동시키므로)
+                auto tc = GetOwner()->GetComponent<TransformComponent>();
+                if (tc) {
+                    common::Vec3 pos = tc->GetPosition();
+                    _character->SetPosition(Utils::ToJolt(pos + common::Vec3(0, _halfHeight, 0)));
+                }
+                return;
+            }
+        }
 
         float impactSpeed = common::Length(_impactVelocity);
         if (impactSpeed > 0.1f) {
