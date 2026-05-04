@@ -387,3 +387,4 @@ Content/Developers/
 .gemini/
 gha-creds-*.json
 *.jbin
+/Server/Server/physics_dump.bin
