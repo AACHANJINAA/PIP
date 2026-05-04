@@ -388,3 +388,4 @@ Content/Developers/
 gha-creds-*.json
 *.jbin
 /Server/Server/physics_dump.bin
+/Jolt/JoltViewer/physics_dump.bin

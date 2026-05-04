@@ -95,7 +95,10 @@ using namespace DirectX;
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Renderer/DebugRendererRecorder.h>
+#include <Jolt/Renderer/DebugRendererSimple.h>
 #include <Jolt/Core/StreamWrapper.h>
+
 
 #include "JoltSetup.h"
 // Jolt 관련 편의를 위한 using

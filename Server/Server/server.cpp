@@ -247,9 +247,12 @@ namespace PIP::SERVER
 			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json",
 			true);
 
+		mdm->LoadServerExportData("VillageCollisions", "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.json");
+
 		mdm->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
 		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-1-1" });
 		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" });
+		mdm->AddTerrainGroup("VillageStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "VillageCollisions" });
 		MYLOG("[SERVER] Successful Loaded the Map");
 	}
 	void Server::Start(int io_thread_count, int logic_thread_count)

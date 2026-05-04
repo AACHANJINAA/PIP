@@ -116,6 +116,9 @@ namespace PIP::SERVER
 		void SendNpcMovePacket(GAME::NPC* npc);
 		common::Vec3 find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape);
 
+
+		void StartPhysicsRecording();
+		void StopPhysicsRecording();
 	private:
 		int								_room_id;
 		int								_logic_thread_idx;
@@ -146,5 +149,15 @@ namespace PIP::SERVER
 		ObjectLayerPairFilterImpl			_objLayerPairFilter;
 
 		std::vector<JPH::BodyID>			_terrainBodyIDs;
+
+		// 1. 파일 스트림은 일반 멤버 변수로 둡니다.
+		std::ofstream _dumpFile;
+
+		// 2. Jolt 래퍼와 레코더는 스마트 포인터로 선언하여 초기화를 지연시킵니다.
+		std::unique_ptr<JPH::StreamOutWrapper> _streamOut;
+
+		// 녹화 제어용 변수
+		bool _isRecording = false;
+		int _recordFrameCount = 0;
 	};
 }

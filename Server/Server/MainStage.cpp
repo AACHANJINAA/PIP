@@ -35,7 +35,7 @@ namespace PIP::SERVER
 
         // 2. 정적 메쉬(Static Mesh Collisions) 그룹 로드
 		// 동일한 groupName을 사용하여 해당 타일에 속한 모든 오브젝트 메쉬를 가져옵니다.
-        auto meshGroup = MapDataManager::Instance()->GetStaticMeshGroup("MainStage");
+        auto meshGroup = MapDataManager::Instance()->GetStaticMeshGroup("VillageStage");
         for (const auto* tile : meshGroup)
         {
             if (!tile->shape) continue;

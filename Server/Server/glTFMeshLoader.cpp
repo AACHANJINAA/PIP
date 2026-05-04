@@ -201,10 +201,12 @@ namespace PIP
 					memcpy(meshData.indices.data(), dataPtr, count * sizeof(uint32_t));
 				}
 			}
-			/*for (size_t i = 0; i < meshData.indices.size(); i += 3)
+			
+			for (uint32_t i = 0; i < meshData.indices.size(); i += 3)
 			{
 				std::swap(meshData.indices[i + 1], meshData.indices[i + 2]);
-			}*/
+			}
+
 			outMeshes.push_back(std::move(meshData));
 		}
 	}

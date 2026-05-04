@@ -1,6 +1,6 @@
 ﻿#pragma once
 namespace PIP
-{
+{   
 	class PhysicsManager : public Singleton<PhysicsManager> {
 		friend class Singleton<PhysicsManager>;
         PhysicsManager() = default;

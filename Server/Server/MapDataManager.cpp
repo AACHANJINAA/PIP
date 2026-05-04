@@ -397,9 +397,7 @@ namespace PIP
 			float z = j.value("Z", 0.0f);
 			float w = j.value("W", 1.0f);
 
-			// 좌수 -> 우수 쿼터니언 변환: Z와 W의 부호를 조절하거나
-			// 혹은 회전 축의 Z성분을 반전시킵니다.
-			JPH::Quat q(-x, -y, -z, w); // 가장 일반적인 LHS -> RHS 쿼터니언 변환 중 하나
+			JPH::Quat q(x, y, z, w); 
 
 			return q.LengthSq() > 1.0e-8f ? q.Normalized() : JPH::Quat::sIdentity();
 		};
@@ -573,7 +571,6 @@ namespace PIP
 							if (res.IsValid()) {
 								// [중요] Jolt는 Pivot 기준이 아닌 COM 기준으로 AddShape를 해야 합니다.
 								// 모델러가 준 p.p 위치에 자식의 COM 오프셋을 더해줘야 정확합니다.
-								JPH::Vec3 childCOM = res.Get()->GetCenterOfMass();
 								compound->AddShape(p.p, p.r, p.s);
 							} 
 							else
