@@ -609,6 +609,38 @@ namespace PIP::SERVER
 		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 
+		// [핵심 2] 매 프레임 그릴 때마다 임시로 레코더를 생성해서 넘깁니다.
+		if (_isRecording && _streamOut)
+		{
+			JPH::BodyManager::DrawSettings drawSettings;
+			drawSettings.mDrawBoundingBox = false;
+			drawSettings.mDrawShape = true;
+			drawSettings.mDrawShapeColor = JPH::BodyManager::EShapeColor::ShapeTypeColor;
+			drawSettings.mDrawCenterOfMassTransform = true;
+
+
+
+			// 임시 레코더 객체를 스택에 생성합니다. (sInstance를 요구하지 않음)
+			JPH::DebugRendererRecorder recorder(*_streamOut);
+
+			// _physicsSystem에 방금 만든 로컬 recorder의 주소를 넘깁니다.
+			_physicsSystem->DrawBodies(drawSettings, &recorder);
+
+			//// (예시) 맵 중심점(0,0,0)을 기준으로 사방 50m 반경(100x100x100 박스)만 녹화
+			//JPH::AABox cullingBox(JPH::Vec3(-50, -50, -50), JPH::Vec3(50, 50, 50));
+
+			//// 세 번째 인자로 필터링할 박스를 던져주면 그 밖의 맵은 무시합니다.
+			//_physicsSystem->DrawBodies(drawSettings, &recorder, &cullingBox);
+
+			// 프레임 끝
+			recorder.EndFrame();
+
+			if (++_recordFrameCount >= 2)
+			{
+				StopPhysicsRecording();
+				MYLOG("[Physics] 딱 1프레임 녹화 완료. 파일을 확인하세요!");
+			}
+		}
 
 		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
 		//static float debugTimer = 0.0f; // static으로 선언하여 값 유지
@@ -2002,7 +2034,45 @@ namespace PIP::SERVER
 
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
+		StartPhysicsRecording();
+
+
 		//CreatePhysicsTerrain();
 		//CreatePhysicsMapObjects();
+	}
+	void Room::StartPhysicsRecording()
+	{
+		if (_isRecording) return; // 이미 녹화 중이면 무시
+
+		// 1. 파일 열기
+		_dumpFile.open("physics_dump.bin", std::ios::binary);
+		if (!_dumpFile.is_open()) {
+			MYERROR("Failed to open physics_dump.bin");
+			return;
+		}
+
+		// 2. unique_ptr을 이용해 동적 생성 (소멸은 알아서 해줌)
+		_streamOut = std::make_unique<JPH::StreamOutWrapper>(_dumpFile);
+
+
+		_isRecording = true;
+		_recordFrameCount = 0;
+		MYLOG("[Physics] Debug Recording Started.");
+	}
+
+	void Room::StopPhysicsRecording()
+	{
+		if (!_isRecording) return;
+
+		// 객체들을 메모리에서 해제합니다 (역순 해제가 안전함)
+		_streamOut.reset();
+
+		// 파일 닫기
+		if (_dumpFile.is_open()) {
+			_dumpFile.close();
+		}
+
+		_isRecording = false;
+		MYLOG("[Physics] Debug Recording Stopped.");
 	}
 }
