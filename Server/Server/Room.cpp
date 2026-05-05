@@ -162,8 +162,7 @@ namespace PIP::SERVER
 		}
 		if (new_player->_player) {
 			if (auto cc = new_player->_player->GetComponent<GAME::CharacterControllerComponent>()) {
-				// NPC와 동일하게 1.8m 높이, 0.5m 반지름으로 초기화
-				cc->Initialize(_physicsSystem, 1.8f, 0.5f);
+				cc->Initialize(_physicsSystem, 1.0f, 0.5f);
 			}
 		}
 		new_player->_logic_thread_idx = _logic_thread_idx;
@@ -617,8 +616,10 @@ namespace PIP::SERVER
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 
 		// [핵심 2] 매 프레임 그릴 때마다 임시로 레코더를 생성해서 넘깁니다.
+#if defined(_DEBUG)
 		if (_isRecording && _streamOut)
 		{
+
 			JPH::BodyManager::DrawSettings drawSettings;
 			drawSettings.mDrawBoundingBox = false;
 			drawSettings.mDrawShape = true;
@@ -647,8 +648,10 @@ namespace PIP::SERVER
 				StopPhysicsRecording();
 				MYLOG("[Physics] 딱 1프레임 녹화 완료. 파일을 확인하세요!");
 			}
-		}
 
+
+		}
+#endif
 		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
 		//static float debugTimer = 0.0f; // static으로 선언하여 값 유지
 		//debugTimer += deltaTime;

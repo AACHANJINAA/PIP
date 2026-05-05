@@ -64,6 +64,7 @@ using namespace DirectX;
 // JSON 헤더
 #include "json.hpp"
 
+
 // Jolt Physics 헤더
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -95,9 +96,13 @@ using namespace DirectX;
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Core/StreamWrapper.h>
+
+#ifdef DEBUG
+#define JPH_DEBUG_RENDERER
 #include <Jolt/Renderer/DebugRendererRecorder.h>
 #include <Jolt/Renderer/DebugRendererSimple.h>
-#include <Jolt/Core/StreamWrapper.h>
+#endif
 
 
 #include "JoltSetup.h"
