@@ -193,8 +193,15 @@ namespace PIP::SERVER
 				session->_viewedNpcs.clear(); // [추가] 다음 방 입장을 위해 시야 목록 초기화
 			}
 			_actors.erase(player_id); // [추가] 통합 맵에서 제거
+			_readyPlayers.erase(player_id); // [추가] 준비 목록에서 제거
 			_players.erase(it);
 		}
+
+		// [추가] 누군가 나가서 남은 인원만으로 시작 조건을 만족하는지 체크
+		if (_room_state == RoomState::WAITING && !_players.empty()) {
+			CheckAndStartGame();
+		}
+
 		if (_players.empty()) {
 			MYLOG("Last player left. Resetting all NPC AI states...");
 			for (auto& [id, npc] : _npcs) {
@@ -352,6 +359,7 @@ namespace PIP::SERVER
 			_currentStage->on_exit(this);
 		}
 
+		WaitGame(); // [추가] 상태를 WAITING으로 변경하여 READY 체크가 정상 작동하게 함
 		_readyPlayers.clear();
 		_requestedSceneName = nextSceneName;
 
@@ -1528,29 +1536,8 @@ namespace PIP::SERVER
 
 		MYLOG("[Room " << _room_id << "] Session " << session->_id << " is READY for scene: " << _requestedSceneName);
 
-		// 방에 있는 모든 플레이어가 로딩을 마쳤는가?
-		if (_readyPlayers.size() == _players.size()) {
-			MYLOG("[Room " << _room_id << "] All players READY! Starting Stage: " << _requestedSceneName);
-
-			// 1. 스테이지 진입 (NPC 및 보스 스폰)
-			if (_currentStage) {
-				_currentStage->on_enter(this);
-			}
-
-			// 2. [핵심] 대기 중인 모든 플레이어를 루프 돌며 스폰 처리!!
-			for (auto& [id, player_session] : _players) {
-				SetupPlayerSpawn(player_session);
-			}
-			
-			if (_players.size() >= 1) {
-				MYLOG("First player or more player entered Room " << _room_id << ". Waking up NPCs...");
-				for (auto& [id, npc] : _npcs) {
-					auto scatteredTime = std::chrono::steady_clock::now();
-					npc->SetLastUpdateTime(scatteredTime);
-				}
-			}
-			//_readyPlayers.clear();
-		}
+		// 방에 있는 모든 플레이어가 로딩을 마쳤는지 확인하고 시작 로직 실행
+		CheckAndStartGame();
 	}
 
 	void  Room::SetupPlayerSpawn(const std::shared_ptr<SESSION>& session) {
@@ -2084,5 +2071,86 @@ namespace PIP::SERVER
 
 		_isRecording = false;
 		MYLOG("[Physics] Debug Recording Stopped.");
+	}
+
+	void Room::CheckAndStartGame()
+	{
+		// 모든 플레이어가 로딩을 마쳤는가? (혹은 로딩 중 누군가 나가서 남은 인원이 모두 준비되었는가?)
+		if (_readyPlayers.size() == _players.size() && !_players.empty()) {
+			MYLOG("[Room " << _room_id << "] All players READY! Starting Stage: " << _requestedSceneName);
+
+			// 1. 스테이지 진입 (NPC 및 보스 스폰)
+			if (_currentStage) {
+				_currentStage->on_enter(this);
+			}
+
+			// 2. 모든 플레이어 위치 초기화
+			for (auto& [id, player_session] : _players) {
+				common::Vec3 spawn_pos = _currentStage->get_spawn_pos();
+				float tx = spawn_pos.x;
+				float tz = spawn_pos.z;
+
+				JPH::RRayCast ray;
+				ray.mOrigin = JPH::Vec3(tx, 500.0f, tz);
+				ray.mDirection = JPH::Vec3(0, -1000.0f, 0);
+
+				JPH::RayCastResult ray_result;
+				float finalY = 0.0f;
+
+				if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_result)) {
+					float hitY = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_result.mFraction;
+					finalY = hitY + 2.0f;
+				}
+				else {
+					finalY = MapDataManager::Instance()->GetGroundHeight(tx, tz) + 2.0f;
+				}
+
+				common::Vec3 spawnPos{ tx, finalY, tz };
+				player_session->_player->SetPosition(spawnPos);
+				player_session->_player->SetHP(100);
+			}
+
+			// 3. 현재 소환된 NPC 정보 집계 (동적 계산)
+			uint16_t boss_count = 0;
+			uint16_t npc_count = 0;
+			int64_t min_boss_id = 0;
+			int64_t min_npc_id = 0;
+
+			for (auto& [id, npc] : _npcs) {
+				if (npc->is_boss()) {
+					if (boss_count == 0 || id < min_boss_id) min_boss_id = id;
+					boss_count++;
+				}
+				else {
+					if (npc_count == 0 || id < min_npc_id) min_npc_id = id;
+					npc_count++;
+				}
+			}
+
+			// 4. 스폰 패킷 전송 (중복 방지: 모든 유저에게 모든 유저의 정보를 한 번씩만 발송)
+			for (auto& [target_id, target_session] : _players) {
+				for (auto& [source_id, source_session] : _players) {
+					packet::PacketStream spawn_packet = packet::MakeSpawnPlayerPacket(source_session);
+					target_session->do_send(spawn_packet.constable_data(), spawn_packet.Size());
+				}
+
+				// 동적으로 계산된 NPC/보스 카운트 정보 전송
+				packet::SC_PACKET_SCENE_AWAKE npc_count_packet;
+				npc_count_packet._type = packet::PacketType::S2C_P_NPC_COUNT;
+				npc_count_packet._size = sizeof(npc_count_packet);
+				npc_count_packet._boss_count = boss_count;
+				npc_count_packet._boss_start_id = min_boss_id;
+				npc_count_packet._npc_count = npc_count;
+				npc_count_packet._npc_start_id = min_npc_id;
+				target_session->do_send(reinterpret_cast<char*>(&npc_count_packet), sizeof(npc_count_packet));
+			}
+
+			// 5. NPC AI 활성화 및 방 상태 전환
+			for (auto& [id, npc] : _npcs) {
+				npc->SetLastUpdateTime(std::chrono::steady_clock::now());
+			}
+
+			StartGame(); // 이제 방 상태를 PLAYING으로 변경하여 게임 루프가 본격적으로 돌아가게 함
+		}
 	}
 }

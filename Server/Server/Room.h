@@ -75,6 +75,7 @@ namespace PIP::SERVER
 		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 		void Execute_C2S_PLAYER_READY(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_PLAYER_READY& ready_packet);
 		void SetupPlayerSpawn(const std::shared_ptr<SESSION>& session);
+		void CheckAndStartGame();
 
 		//---------- 아이템 관련 ---------------
 		void SendFullInventory(const std::shared_ptr<SESSION>& session);
