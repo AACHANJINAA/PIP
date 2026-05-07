@@ -9,15 +9,16 @@
 #include "ReadGLTFMesh.h"
 #include "AnimationComponent.h"
 #include "SocketComponenet.h"
+#include "GameFramework.h"
 
 void Tool_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     SceneManager::instance()->build_skybox(device, commandList,
-        "Resource\\SkyBox\\",
-        "night_field\\night_field_skybox.dds",
-        "night_field\\night_field_diffuse.dds",
-        "night_field\\night_field_specular.dds",
-        "IBL_BRDF_LUT.dds");
+        "Resource/SkyBox/",
+        "farmland/farmland_skybox.dds",
+        "farmland/farmland_specular.dds",
+        "farmland/farmland_diffuse.txt",
+        "BRDF.dds");
 
     spawn_camera();
 }
@@ -55,7 +56,7 @@ void Tool_Scene::spawn_want_mesh()
 
     ImGui::Text("1. Character Setup");
     ImGui::Separator();
-
+   
     // 파일 로드 버튼
     if (ImGui::Button("Load Character (glTF)"))
     {
@@ -73,7 +74,15 @@ void Tool_Scene::spawn_want_mesh()
 
             // 2. 새 게임 오브젝트 생성
             _targetCharacter = ObjectManager::instance()->create_game_object("Editor_Character");
+            GameFramework::instance()->WaitForGpuComplete();
 
+            auto device = GameFramework::instance()->device().Get();
+            auto cmdQueue = GameFramework::instance()->command_queue().Get();
+            auto cmdAlloc = GameFramework::instance()->command_allocator().Get();
+            auto cmdList = GameFramework::instance()->command_list().Get();
+
+            cmdAlloc->Reset();
+            cmdList->Reset(cmdAlloc, nullptr);
             // 메시 로드
             auto mesh = ResourceManager::instance()->load_mesh(filePath, true);
 
@@ -110,60 +119,10 @@ void Tool_Scene::spawn_want_mesh()
                 _boneNames = gltfMesh->get_bone_names();
                 _selectedBoneIndex = 0;
             }
-
-
-            ////////////////////////////////// 테스트용 하이브루트 생성 (나중에 삭제)
-            //{
-            //    auto hi_brute = ObjectManager::instance()->create_game_object("SK_MagicConstruct");
-
-            //    // 메쉬 설정
-            //    auto hi_brute_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf", true);
-            //    // 메쉬에 맞는 애니메이션 추가
-            //    ReadGLTFMesh* gltf_mesh = static_cast<ReadGLTFMesh*>(hi_brute_Mesh.get());
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Dodge.gltf");
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack03.gltf", "attack");
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack02.gltf");
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack01.gltf");
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf");
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Stun.gltf");
-            //    gltf_mesh->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Roar.gltf");
-
-            //    // 렌더 컴포넌트 추가
-            //    renderer = hi_brute->add_component<RenderComponent>();
-            //    renderer->set_mesh(hi_brute_Mesh);
-
-            //    // 애니메이션 컴포넌트 추가
-            //    hi_brute->add_glTF_conponent_pack(); // 이 함수가 애니메이션과 소켓 컴포넌트 추가함
-
-            //    animation_renderer = hi_brute->get_component<AnimationComponent>();
-            //    animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::IDLE, "hi_brute_mesh", hi_brute_Mesh);
-            //    animation_renderer->add_state_mapping(common::packet::OBJECT_STATE::ATTACK, "attack", hi_brute_Mesh);
-            //    animation_renderer->set_state(common::packet::OBJECT_STATE::ATTACK);
-            //    // 재질 및 쉐이더 설정
-            //    material = "skinned_animation_SK_MagicConstruct";
-
-            //    ResourceManager::instance()->create_material(material);
-            //    ResourceManager::instance()->set_shader_for_material(material, "skinned");
-
-            //    // 원하는 무기 붙이기
-            //    auto socket_compnenet = hi_brute->get_component<SocketComponenet>();
-            //    socket_compnenet->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
-
-            //    // 스키닝 애니메이션 pso 설정              
-            //    renderer->set_pso_name("skinned");
-
-            //    // 위치, 회전 정보
-            //    hi_brute->transform()->set_local_rotation(0.f, 0.f, 0.f);
-            //    hi_brute->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
-
-
-            //    hi_brute->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
-            //}
-
-
-
-            //// 카메라 앞쪽으로 위치 조정 (필요에 따라 수정)
-            //_targetCharacter->transform()->set_local_position(XMFLOAT3(0.0f, 0.0f, 0.0f));
+            cmdList->Close();
+            ID3D12CommandList* ppCommandLists[] = { cmdList };
+            cmdQueue->ExecuteCommandLists(1, ppCommandLists);
+            GameFramework::instance()->WaitForGpuComplete();
         }
     }
 
@@ -235,6 +194,15 @@ void Tool_Scene::spawn_want_socket_mesh()
             // 메모리 해제
 			_weaponMesh.reset();
         }
+        GameFramework::instance()->WaitForGpuComplete();
+
+        auto device = GameFramework::instance()->device().Get();
+        auto cmdQueue = GameFramework::instance()->command_queue().Get();
+        auto cmdAlloc = GameFramework::instance()->command_allocator().Get();
+        auto cmdList = GameFramework::instance()->command_list().Get();
+
+        cmdAlloc->Reset();
+        cmdList->Reset(cmdAlloc, nullptr);
 
         if (!weaponPath.empty())
         {
@@ -252,6 +220,11 @@ void Tool_Scene::spawn_want_socket_mesh()
                 socketComp->add_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _loadedWeaponPath, _socketPos, _socketRot, _socketScale);
             }
         }
+
+        cmdList->Close();
+        ID3D12CommandList* ppCommandLists[] = { cmdList };
+        cmdQueue->ExecuteCommandLists(1, ppCommandLists);
+        GameFramework::instance()->WaitForGpuComplete();
     }
     ImGui::Text("Weapon: %s", _loadedWeaponPath.c_str());
     ImGui::Spacing(); ImGui::Spacing();
@@ -296,7 +269,6 @@ void Tool_Scene::draw_and_pick_bones()
     // 1. 카메라와 화면 정보 가져오기
     XMMATRIX viewMat = XMLoadFloat4x4(&mainCam->view_matrix());
     XMMATRIX projMat = XMLoadFloat4x4(&mainCam->projection_matrix());
-    XMMATRIX viewProj = viewMat * projMat;
     XMMATRIX worldMat = XMLoadFloat4x4(&_targetCharacter->transform()->world_matrix());
 
     RECT rect;
@@ -305,35 +277,108 @@ void Tool_Scene::draw_and_pick_bones()
     float height = static_cast<float>(rect.bottom - rect.top);
 
     POINT mousePos = InputManager::instance()->GetMousePos();
-    bool isMouseClicked = InputManager::instance()->IsKeyDown(VK_LBUTTON); // 좌클릭 확인
+    bool isMouseClicked = InputManager::instance()->IsKeyDown(VK_LBUTTON);
 
-    float closestDistance = 20.0f; // 클릭 인정 반경 (픽셀 단위)
+    float closestDistance = 20.0f;
     int bestBoneIndex = -1;
 
-    // ImGui의 백그라운드 도화지를 가져와서 3D 공간 위에 2D 점을 그림
     ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
-    // 2. 모든 뼈대를 순회하며 화면 좌표로 변환
+    // =========================================================================
+    // [추가됨] 언리얼 스타일 팔면체(Octahedron) 뼈대 그리기
+    // =========================================================================
     for (int i = 0; i < _boneNames.size(); ++i)
     {
-        // 뼈대의 로컬 행렬 가져오기
+        std::string childName = _boneNames[i];
+        std::string parentName = gltfMesh->get_parent_bone_name(childName);
+
+        // 부모가 없으면(루트) 그릴 선이 없으므로 패스
+        if (parentName.empty()) continue;
+
+        // 부모와 자식의 월드 위치 계산
+        XMFLOAT4X4 pLocal = gltfMesh->get_socket_transform(parentName);
+        XMFLOAT4X4 cLocal = gltfMesh->get_socket_transform(childName);
+
+        XMMATRIX pMat = XMLoadFloat4x4(&pLocal) * worldMat;
+        XMMATRIX cMat = XMLoadFloat4x4(&cLocal) * worldMat;
+
+        XMVECTOR pPos = pMat.r[3];
+        XMVECTOR cPos = cMat.r[3];
+
+        // 뼈대 방향과 길이 계산
+        XMVECTOR dirVec = XMVectorSubtract(cPos, pPos);
+        XMVECTOR lengthVec = XMVector3Length(dirVec);
+        float length = XMVectorGetX(lengthVec);
+
+        if (length < 0.001f) continue; // 너무 짧은 뼈는 무시
+
+        // 방향 벡터 정규화 및 기저 벡터(Right, Up) 생성
+        XMVECTOR forward = XMVectorDivide(dirVec, lengthVec);
+        XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        if (abs(XMVectorGetY(forward)) > 0.99f) up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f); // 수직 예외 처리
+        XMVECTOR right = XMVector3Normalize(XMVector3Cross(up, forward));
+        up = XMVector3Cross(forward, right);
+
+        // 뼈대 두께 및 팔면체의 가장 넓은 부분 위치 설정
+        float thickness = std::max(0.01f, length * 0.15f); // 길이의 15%를 두께로
+        float baseOffset = length * 0.2f;                  // 부모로부터 20% 지점이 가장 넓음
+
+        // 팔면체의 6개 정점 3D 로컬 좌표 계산
+        XMVECTOR V[6];
+        V[0] = pPos;                                                           // 부모 위치 (시작점)
+        V[1] = cPos;                                                           // 자식 위치 (끝점)
+        V[2] = pPos + forward * baseOffset + right * thickness;                // 우측
+        V[3] = pPos + forward * baseOffset - right * thickness;                // 좌측
+        V[4] = pPos + forward * baseOffset + up * thickness;                   // 상단
+        V[5] = pPos + forward * baseOffset - up * thickness;                   // 하단
+
+        // 3D 정점을 2D 화면 좌표로 투영 (Project)
+        ImVec2 screenPts[6];
+        bool outOfScreen = false;
+        for (int v = 0; v < 6; ++v)
+        {
+            XMVECTOR s = XMVector3Project(V[v], 0, 0, width, height, 0.0f, 1.0f, projMat, viewMat, XMMatrixIdentity());
+            if (XMVectorGetZ(s) < 0.0f || XMVectorGetZ(s) > 1.0f) outOfScreen = true; // 카메라 뒤에 있으면 그리지 않음
+            screenPts[v] = ImVec2(XMVectorGetX(s), XMVectorGetY(s));
+        }
+
+        if (outOfScreen) continue;
+
+        // 팔면체를 구성하는 8개의 삼각형 인덱스 배열
+        int faces[8][3] = {
+            {0, 2, 4}, {0, 4, 3}, {0, 3, 5}, {0, 5, 2}, // 부모 쪽 피라미드
+            {1, 4, 2}, {1, 3, 4}, {1, 5, 3}, {1, 2, 5}  // 자식 쪽 피라미드
+        };
+
+        // 색상 설정 (선택된 뼈의 부모/자식이면 붉은색, 아니면 회백색)
+        bool isRelatedToSelected = (i == _selectedBoneIndex || gltfMesh->get_bone_index_by_name(parentName) == _selectedBoneIndex);
+        ImU32 fillColor = isRelatedToSelected ? IM_COL32(200, 50, 50, 180) : IM_COL32(180, 180, 180, 100);
+        ImU32 edgeColor = isRelatedToSelected ? IM_COL32(255, 100, 100, 255) : IM_COL32(50, 50, 50, 200);
+
+        // ImGui DrawList로 2D 삼각형 그리기
+        for (int f = 0; f < 8; ++f)
+        {
+            drawList->AddTriangleFilled(screenPts[faces[f][0]], screenPts[faces[f][1]], screenPts[faces[f][2]], fillColor);
+            drawList->AddTriangle(screenPts[faces[f][0]], screenPts[faces[f][1]], screenPts[faces[f][2]], edgeColor, 1.0f);
+        }
+    }
+    // =========================================================================
+
+    // 기존의 노란색/빨간색 관절 점 그리기 및 피킹 로직 (기존 코드 그대로 유지)
+    for (int i = 0; i < _boneNames.size(); ++i)
+    {
         XMFLOAT4X4 boneLocal = gltfMesh->get_socket_transform(_boneNames[i]);
         XMMATRIX boneMat = XMLoadFloat4x4(&boneLocal);
-
-        // 뼈대의 최종 월드 위치 계산 (Bone Local * Character World)
         XMMATRIX finalBoneMat = boneMat * worldMat;
-        XMVECTOR boneWorldPos = finalBoneMat.r[3]; // 행렬의 4번째 행이 Position
+        XMVECTOR boneWorldPos = finalBoneMat.r[3];
 
-        // 월드 좌표를 2D 화면 좌표로 투영 (Projection)
         XMVECTOR screenPosVec = XMVector3Project(boneWorldPos, 0, 0, width, height, 0.0f, 1.0f, projMat, viewMat, worldMat);
 
-        // Z값이 1.0보다 크거나 0보다 작으면 카메라 뒤에 있는 것이므로 무시
         if (XMVectorGetZ(screenPosVec) < 0.0f || XMVectorGetZ(screenPosVec) > 1.0f) continue;
 
         float screenX = XMVectorGetX(screenPosVec);
         float screenY = XMVectorGetY(screenPosVec);
 
-        // 3. 마우스 피킹 (가장 가까운 뼈대 찾기)
         float distToMouse = sqrtf(powf(screenX - mousePos.x, 2) + powf(screenY - mousePos.y, 2));
         if (distToMouse < closestDistance)
         {
@@ -341,14 +386,11 @@ void Tool_Scene::draw_and_pick_bones()
             bestBoneIndex = i;
         }
 
-        // 4. 화면에 뼈대 그리기 (선택된 뼈대는 빨간색 크게, 나머지는 노란색 작게)
         ImU32 color = (i == _selectedBoneIndex) ? IM_COL32(255, 0, 0, 255) : IM_COL32(255, 255, 0, 200);
         float radius = (i == _selectedBoneIndex) ? 6.0f : 3.0f;
         drawList->AddCircleFilled(ImVec2(screenX, screenY), radius, color);
     }
 
-    // 5. 클릭 처리가 발생했고, 새로운 뼈대가 선택되었다면?
-    // (단, ImGui UI 창을 클릭한 게 아닐 때만 3D 클릭으로 인정)
     if (isMouseClicked && bestBoneIndex != -1 && bestBoneIndex != _selectedBoneIndex && !ImGui::GetIO().WantCaptureMouse)
     {
         _selectedBoneIndex = bestBoneIndex;

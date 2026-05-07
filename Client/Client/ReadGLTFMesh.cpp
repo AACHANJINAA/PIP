@@ -1646,6 +1646,23 @@ std::vector<std::string> ReadGLTFMesh::get_animation_names() const
 	return names;
 }
 
+std::string ReadGLTFMesh::get_parent_bone_name(const std::string& child_name) const
+{
+	for (size_t i = 0; i < _skeleton.size(); ++i)
+	{
+		if (_skeleton[i]._name == child_name)
+		{
+			int p_idx = _skeleton[i]._parent_index;
+			if (p_idx >= 0 && p_idx < _skeleton.size())
+			{
+				return _skeleton[p_idx]._name;
+			}
+			break;
+		}
+	}
+	return ""; // 루트이거나 부모가 없음
+}
+
 int ReadGLTFMesh::get_bone_index_by_name(const std::string& name) const
 {
 	for (size_t i = 0; i < _skeleton.size(); ++i)
