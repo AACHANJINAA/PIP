@@ -164,11 +164,10 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
 
            // Diffuse
         float3 kD = (1.0 - F) * (1.0 - metallic);
-        float3 diffuse = kD * albedo / PI;
+        float3 diffuse = kD * albedo;// / PI;
 
            // Specular
         float3 spec = D * Vis * F;
-       
 
            // 최종 누적
         Lo += (diffuse + spec) * radiance * NoL;
