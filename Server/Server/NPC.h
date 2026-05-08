@@ -64,29 +64,35 @@ namespace PIP::GAME
 
 		void SetPosition(common::Vec3 newPosition)
 		{
-			if (auto tc = GetComponent<TransformComponent>())
-			{
-				tc->SetPosition(newPosition);
-			}
-
-			if (auto cc = GetComponent<CharacterControllerComponent>())
-			{
-				cc->SetPosition(newPosition);
-			}
+			if (_transform) _transform->SetPosition(newPosition);
+			if (_npcController) _npcController->SetPosition(newPosition);
 		}
 
 		void SetVelocity(const common::Vec3& v)
 		{
-			if (auto cc = GetComponent<NPCControllerComponent>())
-			{
-				cc->SetVelocity(v);
-			}
+			if (_npcController) _npcController->SetVelocity(v);
 		}
 
 		void SetRotation(const common::Quat& r)
 		{
-			if (auto tc = GetComponent<TransformComponent>())
-				tc->SetRotation(r);
+			if (_transform) _transform->SetRotation(r);
+		}
+
+		// [최적화] 캐싱된 포인터를 사용하여 GetComponent 및 맵 조회를 회피
+		common::Vec3 GetPosition() const override {
+			if (_npcController) return _npcController->GetPosition();
+			if (_transform) return _transform->GetPosition();
+			return { 0,0,0 };
+		}
+
+		common::Vec3 GetVelocity() const override {
+			if (_npcController) return _npcController->GetVelocity();
+			return { 0,0,0 };
+		}
+
+		common::Quat GetRotation() const override {
+			if (_transform) return _transform->GetRotation();
+			return { 0,0,0,1 };
 		}
 
 		bool IsDirty() const;
@@ -133,6 +139,8 @@ namespace PIP::GAME
 		// [최적화] 매 프레임 GetComponent(8%)를 피하기 위한 캐싱
 		NPCControllerComponent* _npcController = nullptr;
 		TransformComponent* _transform = nullptr;
+		class AIComponent* _aiComponent = nullptr;
+		class HitboxComponent* _hitboxComponent = nullptr;
 	};
 
 }

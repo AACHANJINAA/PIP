@@ -77,6 +77,7 @@ namespace PIP::GAME
 		auto bb = ai->GetBlackboard();
 		// Blackboard 기본 데이터 세팅
 		bb->set("owner", static_cast<GameObject*>(this));
+		bb->set("owner_npc", static_cast<NPC*>(this));
 		bb->set("room_id", GetRoomId());
 		bb->set("max_hp", _maxHp);
 

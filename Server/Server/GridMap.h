@@ -1,7 +1,14 @@
-#pragma once
+ï»¿#pragma once
+#include <vector>
+#include <unordered_set>
+#include <unordered_map>
+#include "Vector3.h"
+
 namespace PIP::GAME
 {
 	class GameObject;
+	class NPC;
+	class Player;
 
 	class GridMap
 	{
@@ -9,37 +16,51 @@ namespace PIP::GAME
 		GridMap() = default;
 		~GridMap() = default;
 
-		// ÃÊ±âÈ­: ¸Ê ÀüÃ¼ Å©±â¿Í ¼¿ ÇÏ³ª Å©±â ¼³Á¤
-		// ¿¹: 2000x2000 ¸Ê, ¼¿ Å©±â 50 -> 40x40 °İÀÚ »ı¼º
 		void Initialize(float minX, float maxX, float minZ, float maxZ, int cellSize);
 
 		void Add(GameObject* obj);
 		void Remove(GameObject* obj);
 
-		// °´Ã¼°¡ ÀÌµ¿ÇßÀ» ¶§ ¼¿ °»½Å
-		// return: ¼¿ÀÌ º¯°æµÇ¾úÀ¸¸é true (AOI ÆĞÅ¶ Àü¼Û Æ®¸®°Å¿ë)
+		// ìœ„ì¹˜ ì—…ë°ì´íŠ¸ ì‹œ ì…€ì´ ë°”ë€Œì—ˆëŠ”ì§€ ì²´í¬
+		// return: ì…€ì´ ë°”ë€Œì—ˆìœ¼ë©´ true (AOI ê°±ì‹  ë“±ì´ í•„ìš”í•œ ê²½ìš°)
 		bool UpdatePosition(GameObject* obj, common::Vec3 newPos);
 
-		// ÁÖº¯ °´Ã¼ Ã£±â (ÇÃ·¹ÀÌ¾î ½Ã¾ß Ã³¸®¿ë)
-		// typeFilter: Æ¯Á¤ Å¸ÀÔ(NPC, Player µî)¸¸ °ñ¶ó³¾ ¶§ »ç¿ë (0ÀÌ¸é ÀüÃ¼)
+		// ì£¼ë³€ ê°ì²´ ì°¾ê¸° (3x3 ì…€ íƒìƒ‰)
 		void GetNearbyObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter = 0) const;
 
 		void GetSameCellObjects(common::Vec3 center, std::vector<GameObject*>& outList, int typeFilter = 0) const;
+
+		// --- [ìµœì í™”ìš©] ì…€ ë‹¨ìœ„ ì ‘ê·¼ ì¸í„°í˜ì´ìŠ¤ ---
+		int GetCellIndex(common::Vec3 pos) const { return GetIndex(pos); }
+		void GetNearbyCellIndices(int cellIndex, std::vector<int>& outIndices) const;
+		
+		// íƒ€ì…ë³„ ì§ì ‘ ì ‘ê·¼ (dynamic_cast ì œê±° ëª©ì )
+		const std::unordered_set<GameObject*>& GetObjectsInCell(int cellIndex) const { return _cells[cellIndex].objects; }
+		const std::vector<NPC*>& GetNpcsInCell(int cellIndex) const { return _cells[cellIndex].npcs; }
+		const std::vector<Player*>& GetPlayersInCell(int cellIndex) const { return _cells[cellIndex].players; }
+
+		int GetCellCount() const { return static_cast<int>(_cells.size()); }
+
 	private:
-		// ÁÂÇ¥ -> ÀÎµ¦½º º¯È¯
 		int GetIndex(common::Vec3 pos) const;
 		int GetIndex(int x, int y) const;
 
 	private:
+		struct Cell {
+			std::unordered_set<GameObject*> objects;
+			std::vector<NPC*> npcs;
+			std::vector<Player*> players;
+		};
+
 		float _minX = 0, _minZ = 0;
 		float _maxX = 0, _maxZ = 0;
 		int _cellSize = 1;
 		int _cols = 0, _rows = 0;
 
-		// °¢ ¼¿¸¶´Ù °´Ã¼ Æ÷ÀÎÅÍµéÀ» ÀúÀå
-		std::vector<std::unordered_set<GameObject*>> _cells;
+		// ê° ì…€ì— í¬í•¨ëœ ê°ì²´ë“¤ (íƒ€ì…ë³„ ë¶„ë¦¬ ê´€ë¦¬)
+		std::vector<Cell> _cells;
 
-		// [Ãß°¡] °´Ã¼°¡ ÇöÀç ¾î´À ¼¿ ÀÎµ¦½º¿¡ ÀÖ´ÂÁö ÃßÀûÇÏ´Â ¸Ê
+		// ê° ê°ì²´ê°€ ì–´ë–¤ ì…€ì— ìˆëŠ”ì§€ ì €ì¥ (Remove/Update ì‹œ í™œìš©)
 		std::unordered_map<GameObject*, int> _objectCellIndex;
 	};
 }

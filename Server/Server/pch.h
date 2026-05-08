@@ -98,10 +98,10 @@ using namespace DirectX;
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Core/StreamWrapper.h>
 
-#ifdef DEBUG
-#define JPH_DEBUG_RENDERER
+#ifdef _DEBUG
 #include <Jolt/Renderer/DebugRendererRecorder.h>
 #include <Jolt/Renderer/DebugRendererSimple.h>
+//#define DEBUG_VIEWER
 #endif
 
 
