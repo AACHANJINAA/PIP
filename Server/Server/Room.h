@@ -121,6 +121,16 @@ namespace PIP::SERVER
 		void StartPhysicsRecording();
 		void StopPhysicsRecording();
 	private:
+		// [최적화] 셀 단위로 미리 직렬화된 이동 패킷 데이터 (BroadcastNpcBatch에서 사용)
+		std::unordered_map<int, std::vector<char>> _cellMoveBuffers;
+
+		// [최적화] 루프 내 재할당 방지를 위한 인스턴스별 버퍼 (스레드 안전)
+		std::vector<int> _activeCellIndices;
+		std::vector<int64_t> _processedNpcIds;
+		std::vector<int> _playerNearbyCells;
+		std::vector<int64_t> _currentViewedIds;
+		std::vector<GAME::NPC*> _dirtyNPCs;
+
 		int								_room_id;
 		int								_logic_thread_idx;
 		uint8_t							_max_players;

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "NPC.h"
 
 #include <algorithm>
@@ -21,239 +21,213 @@ namespace PIP::GAME
 	{
 		SetId(npc_id);
 		SetFaction(Faction::FACTION_MONSTER);
-		// 1. ±âº» ÀÌ¸§ ¼³Á¤ (GameObject ¸â¹ö)
+		// 1. ê¸°ë³¸ ì´ë¦„ ì„¤ì • (GameObject ë°©ì‹)
 		SetName("Monster_" + std::to_string(npc_id));
 
-		// 2. TransformComponent Ãß°¡ ¹× ÃÊ±âÈ­
+		// 2. TransformComponent ì¶”ê°€ ë° ì´ˆê¸°í™”
 		auto transform = AddComponent<TransformComponent>();
 		transform->SetPosition(position);
 
-		// 3. PhysicsComponent Ãß°¡
-		// (½ÇÁ¦ Jolt ¹Ùµğ »ı¼ºÀÎ CreateBody´Â Room¿¡¼­ ¹°¸® ½Ã½ºÅÛÀ» ÀÎÀÚ·Î ÁÖ¾î È£ÃâÇØ¾ß ÇÕ´Ï´Ù)
+		// 3. PhysicsComponent ì¶”ê°€
+		// (ì‹¤ì œ Jolt ë°”ë”” ìƒì„±ì€ CreateBodyë¥¼ Roomì—ì„œ ë¬¼ë¦¬ ì‹œìŠ¤í…œì„ ì¸ìë¡œ ë„£ì–´ í˜¸ì¶œí•´ì•¼ í•©ë‹ˆë‹¤)
 		AddComponent<NPCControllerComponent>(Layers::NPC);
 
-		// [Ãß°¡] È÷Æ®¹Ú½º ÄÄÆ÷³ÍÆ® Ãß°¡ ¹× ±âº» È÷Æ®¹Ú½º ¼³Á¤
-		auto hitbox = AddComponent<HitboxComponent>();
+		// [ì¶”ê°€] íˆíŠ¸ë°•ìŠ¤ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€ ë° ê¸°ë³¸ íˆíŠ¸ë°•ìŠ¤ ì„¤ì •
+		_hitboxComponent = AddComponent<HitboxComponent>();
 
-		// NPCÀÇ Å°°¡ 1.8m¶ó¸é, ±×¿¡ ¸Â´Â Ä¸½¶ È÷Æ®¹Ú½º¸¦ »ı¼ºÇØ¼­ ºÙÀÓ
+		// NPCì˜ í‚¤ê°€ 1.8më¼ë©´, ê·¸ì— ë§ëŠ” ìº¡ìŠ íˆíŠ¸ë°•ìŠ¤ë¥¼ ìƒì„±í•´ì„œ ë“±ë¡
 		float height = 1.8f;
 		float radius = 0.5f;
 		float halfCylinderHeight = 0.5f * height - radius;
 		JPH::Ref<JPH::Shape> bodyShape = new JPH::CapsuleShape(halfCylinderHeight, radius);
 
-		// "Body"¶ó´Â ÀÌ¸§À¸·Î Ä³¸¯ÅÍ Áß½É(¹ß¹Ù´Ú À§ 0.9m)¿¡ È÷Æ®¹Ú½º ºÎÂø
-		hitbox->AddHitbox("Body", bodyShape, { 0.0f, 0.9f, 0.0f });
+		// "Body"ë¼ëŠ” ì´ë¦„ìœ¼ë¡œ ìºë¦­í„° ì¤‘ì‹¬(ë°œë°”ë‹¥ ìœ„ 0.9m)ì— íˆíŠ¸ë°•ìŠ¤ ë“±ë¡
+		_hitboxComponent->AddHitbox("Body", bodyShape, { 0.0f, 0.9f, 0.0f });
 
 
-		// 4. AIComponent Ãß°¡ ¹× ±âÁ¸ Lua ½ºÅ©¸³Æ® ¼³Á¤
+		// 4. AIComponent ì¶”ê°€ ë° ì „ìš© Lua ìŠ¤í¬ë¦½íŠ¸ ì—°ê²°
 		/*auto ai = AddComponent<AIComponent>();
 		ai->SetLuaScript("Monster.lua");*/
 		AddComponent<AIComponent>();
-		NPC::SetupBT();
-
+		
+		// ìµœì í™”ë¥¼ ìœ„í•´ ì»´í¬ë„ŒíŠ¸ í¬ì¸í„° ìºì‹±
 		_npcController = GetComponent<NPCControllerComponent>();
 		_transform = GetComponent<TransformComponent>();
+		_aiComponent = GetComponent<AIComponent>();
+
+		NPC::SetupBT();
 
 		_lastUpdateTime = std::chrono::steady_clock::now();
 	}
 
 	NPC::~NPC()
 	{
-		// GameObject°¡ ÆÄ±«µÉ ¶§ ¸ğµç ÄÄÆ÷³ÍÆ®(unique_ptr)°¡ ÀÚµ¿À¸·Î ¾ÈÀüÇÏ°Ô »èÁ¦µË´Ï´Ù.
-		// ±âÁ¸ÀÇ lua_close() µîÀº AIComponentÀÇ ¼Ò¸êÀÚ°¡ ´ã´çÇÕ´Ï´Ù.
+		// GameObjectê°€ íŒŒê´´ë  ë•Œ ëª¨ë“  ì»´í¬ë„ŒíŠ¸(unique_ptr)ê°€ ìë™ì ìœ¼ë¡œ í•´ì œë©ë‹ˆë‹¤.
 	}
 
 	void NPC::SetupBT()
 	{
-		auto ai = GetComponent<AIComponent>();
-		if (!ai) return;
+		if (!_aiComponent) return;
 
-		ai->Initialize();
+		_aiComponent->Initialize();
 
-		// [ÇÙ½É] ai°¡ ÀÌ¹Ì °ü¸® ÁßÀÎ ºí·¢º¸µå¸¦ °¡Á®¿É´Ï´Ù.
-		auto bb = ai->GetBlackboard();
+		// [ë‹¤ì‹œ] aiì— ì´ë¯¸ ì„¤ì •ëœ ë¸”ë™ë³´ë“œë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+		auto bb = _aiComponent->GetBlackboard();
 
-		// ÀÌ¹Ì AIComponent::Initialize()¿¡¼­ owner°¡ ¼¼ÆÃµÇ¾úÀ» °ÍÀÌÁö¸¸ È®½ÇÈ÷ ÇÏ±â À§ÇØ Àç¼¼ÆÃ °¡´É
+		// ì´ë¯¸ AIComponent::Initialize()ì—ì„œ ownerê°€ ì„¤ì •ë˜ì—ˆê² ì§€ë§Œ ëª…í™•íˆ í•˜ê¸° ìœ„í•´ ì¬ì„¤ì •
 		bb->set("owner", static_cast<GameObject*>(this));
+		bb->set("owner_npc", this); // [ìµœì í™”] dynamic_cast ì œê±°ìš© NPC* ì§ì ‘ ì €ì¥
 		bb->set("stuck_timer", 0.0f);
 		bb->set("last_pos", GetPosition());
 		bb->set("room_id", _room_id);
 
-		// 1. °ø°İ Á¾·ùº° ¼³Á¤ (Shape, Offset, Damage, Cooldown)
-		// ÀÏ¹İ °ø°İ: ¾Õ 2m ¹İ°æÀÇ ±¸Ã¼ ÇüÅÂ
+		// 1. ê³µê²© ì„¤ì • ì •ì˜ (Shape, Offset, Damage, Cooldown)
+		// ì¼ë°˜ ê³µê²©: ì• 2m ë°˜ê²½ì˜ êµ¬ì²´ í˜•íƒœ
 		AttackConfig normalAtk;
 		normalAtk.shape = new JPH::SphereShape(1.5f);
-		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // Àü¹æ 1.5m ÁöÁ¡
+		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // ì „ë°© 1.5m ì§€ì 
 		normalAtk.damage = 10;
 		normalAtk.cooldown = 1.2f;
-		normalAtk.entityState = common::packet::EntityState::ACTION; // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç »óÅÂ°ª
-		normalAtk.actionId = 1; // ÀÏ¹İ °ø°İ Çàµ¿ ID (¿¹½Ã)
+		normalAtk.entityState = common::packet::EntityState::ACTION; // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ìƒíƒœë¡œ
+		normalAtk.actionId = 1; // ì¼ë°˜ ê³µê²© í–‰ë™ ID (ì„ì‹œ)
 
-		// °­·ÂÇÑ °ø°İ: Àü¹æ 4m ±æÀÌÀÇ ¹Ú½º ÇüÅÂ (¹üÀ§ °ø°İ)
+		// ê°•ë ¥í•œ ê³µê²©: ì „ë°© 4m ë²”ìœ„ì˜ ë°•ìŠ¤ í˜•íƒœ (ê°•í•œ ì¼ê²©)
 		AttackConfig heavyAtk;
-		heavyAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.0f)); // °¡·Î 3m, ¼¼·Î 2m, ±íÀÌ 4m
+		heavyAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.0f)); // ê°€ë¡œ 3m, ë†’ì´ 2m, ê¹Šì´ 4m
 		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
 		heavyAtk.damage = 20;
 		heavyAtk.cooldown = 4.0f;
-		heavyAtk.entityState = common::packet::EntityState::ACTION; // °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç »óÅÂ°ª
-		heavyAtk.actionId = 1; // ÀÏ¹İ °ø°İ Çàµ¿ ID (¿¹½Ã)
+		heavyAtk.entityState = common::packet::EntityState::ACTION; // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ìƒíƒœë¡œ
+		heavyAtk.actionId = 1; // ì¼ë°˜ ê³µê²© í–‰ë™ ID (ì„ì‹œ)
 
 		BTBuilder builder;
-		// Æ®¸® ¼³°è:
-		// 1. ¸ñÇ¥°¡ ÀÖÀ¸¸é ÀÌµ¿ÇÑ´Ù. (ÀÌµ¿ Áß ³¢ÀÌ¸é ½ÇÆĞÇÏ°í ´ÙÀ½À¸·Î ³Ñ¾î°¨)
-		// 2. ¸ñÇ¥°¡ ¾ø°Å³ª ÀÌµ¿¿¡ ½ÇÆĞÇÏ¸é »õ ¸ñÇ¥¸¦ Ã£´Â´Ù.
-		// Æ®¸® ±¸¼º
 		auto root = builder
 			.sequence()
 			.leaf<Condition_IsAlive>()
 			.leaf<Condition_IsHitted>(DecoratorType::Inverter)
-			.selector() // ÀüÃ¼ µ¿ÀÛ ¿ì¼±¼øÀ§ °áÁ¤
-			// --- [¿ì¼±¼øÀ§ 1] ÀüÅõ ·ÎÁ÷ ---
+			.selector() // ì „ì²´ ë¡œì§ ìš°ì„ ìˆœìœ„ ê²°ì •
+				// --- [ìš°ì„ ìˆœìœ„ 1] ì „íˆ¬ ë¡œì§ ---
 				.sequence()
-					.leaf<Condition_HasEnemy>() // Å¸°Ù(°ø°İÀÚ)ÀÌ ÀÖ´Â°¡?
+					.leaf<Condition_HasEnemy>() // íƒ€ê²Ÿ(ì êµ°)ì´ ìˆëŠ”ê°€?
 					.selector()
-					// 1-1. °­·ÂÇÑ °ø°İ ½Ãµµ (»ç°Å¸® 4.5m)
+					// 1-1. ê°•ë ¥í•œ ê³µê²© ì‹œë„ (ì‚¬ê±°ë¦¬ 4.5m)
 						.sequence()
 							.leaf<Condition_IsEnemyInRange>(4.5f)
-							.leaf<Action_AttackEnemy>(heavyAtk) // À§¿¡¼­ Á¤ÀÇÇÑ Config Àü´Ş
+							.leaf<Action_AttackEnemy>(heavyAtk)
 						.end()
-					// 1-2. ÀÏ¹İ °ø°İ ½Ãµµ (»ç°Å¸® 2.5m)
+					// 1-2. ì¼ë°˜ ê³µê²© ì‹œë„ (ì‚¬ê±°ë¦¬ 2.5m)
 					.sequence()
 						.leaf<Condition_IsEnemyInRange>(2.5f)
 						.leaf<Action_AttackEnemy>(normalAtk)
 					.end()
-					// 1-3. °ø°İ »ç°Å¸® ¹ÛÀÌ¸é Ãß°İ
-					.leaf<Action_ChaseEnemy>(6.0f, 1.5f) // Ãß°İ ¼Óµµ 6.0
+					// 1-3. íƒ€ê²Ÿ ì‚¬ê±°ë¦¬ ë°–ì´ë©´ ì¶”ê²©
+					.leaf<Action_ChaseEnemy>(6.0f, 1.5f) // ì¶”ê²© ì†ë„ 6.0
 				.end()
 			.end()
-			// --- [¿ì¼±¼øÀ§ 2] ¹èÈ¸/Á¤Âû ·ÎÁ÷ (ÀüÅõ ÁßÀÌ ¾Æ´Ò ¶§) ---
+			// --- [ìš°ì„ ìˆœìœ„ 2] ë°°íšŒ/ì´ë™ ë¡œì§ (ì „íˆ¬ ì¤‘ì´ ì•„ë‹ ë•Œ) ---
 			.sequence()
-				.leaf<Condition_HasTarget>() // ÀÌµ¿ ¸ñÀûÁö°¡ ÀÖ´Â°¡?
-				.leaf<Action_MoveToTarget>(3.0f) // Á¤Âû ¼Óµµ 3.0
+				.leaf<Condition_HasTarget>() // ì´ë™ ëª©ì ì§€ê°€ ìˆëŠ”ê°€?
+				.leaf<Action_MoveToTarget>(3.0f) // ë°°íšŒ ì†ë„ 3.0
 			.end()
-			// --- [¿ì¼±¼øÀ§ 3] ÇÒ ÀÏ ¾øÀ¸¸é »õ·Î¿î ¸ñÀûÁö Ã£±â ---
+			// --- [ìš°ì„ ìˆœìœ„ 3] ë§µ ë‚´ ìƒˆë¡œìš´ ë¬´ì‘ìœ„ ëª©ì ì§€ ì°¾ê¸° ---
 			.leaf<Action_FindRandomTarget>(30.0f)
 			.end()
 		.end()
 		.build();
 
-		// ºí·¢º¸µå ÁÖÀÔ ¹× µî·Ï
+		// ë¸”ë™ë³´ë“œ ì—°ê²° ë° ë£¨íŠ¸ ì„¤ì •
 		root->set_blackboard(bb);
-		ai->SetBehaviorTree(root);
+		_aiComponent->SetBehaviorTree(root);
 	}
 
 	bool NPC::IsDirty() const
 	{
-		// 1. »óÅÂ(¾Ö´Ï¸ŞÀÌ¼Ç) º¯È­ Ã¼Å© (ÃÖ¿ì¼±)
-		// IDLE <-> WALK µî »óÅÂ°¡ ¹Ù²î¸é Áï½Ã ÆĞÅ¶À» º¸³»¾ß ÇÕ´Ï´Ù.
+		// 1. ìƒíƒœ(ì• ë‹ˆë©”ì´ì…˜) ë³€í™” ì²´í¬ (ìµœìš°ì„ )
 		if (_state != _lastSentState) return true;
-
-		// [ÇÙ½É] ¾×¼Ç ID º¯È­ °¨Áö (ÀÌ°Ô ¹Ù²î¸é Áï½Ã ÆĞÅ¶ Àü¼Û)
 		if (_actionId != _lastSentActionId) return true;
 
-		// 2. À§Ä¡ º¯È­ Ã¼Å©
+		// 2. ìœ„ì¹˜ ë³€í™” ì²´í¬ (ìºì‹±ëœ í¬ì¸í„° ì‚¬ìš©)
 		common::Vec3 currentPos = GetPosition();
-		float distSq = (currentPos.x - _lastSentPos.x) * (currentPos.x - _lastSentPos.x) +
-			(currentPos.y - _lastSentPos.y) * (currentPos.y - _lastSentPos.y) +
-			(currentPos.z - _lastSentPos.z) * (currentPos.z - _lastSentPos.z);
+		float dx = currentPos.x - _lastSentPos.x;
+		float dy = currentPos.y - _lastSentPos.y;
+		float dz = currentPos.z - _lastSentPos.z;
+		float distSq = dx * dx + dy * dy + dz * dz;
 
-		// »óÅÂ¿¡ µû¸¥ ÀÓ°è°ª(Threshold) Â÷µî Àû¿ë
-		// ¿òÁ÷ÀÌ´Â ÁßÀÏ ¶§´Â 5cm, °¡¸¸È÷ ÀÖÀ» ¶§´Â 10cm ÀÌ»ó º¯ÇØ¾ßDirty·Î °£ÁÖ
+		// ìƒíƒœì— ë”°ë¥¸ ì„ê³„ê°’(Threshold) ì ìš©
 		float thresholdSq = (_state == common::packet::EntityState::IDLE) ? 0.01f : 0.0025f;
 
-		if (distSq > thresholdSq)
-		{
-			return true;
-		}
+		if (distSq > thresholdSq) return true;
 
-		// 3. È¸Àü º¯È­ Ã¼Å©
-		common::Vec4 currentRot = GetRotation();
-		// ÄõÅÍ´Ï¾ğ Â÷ÀÌ °è»ê (´Ü¼ø °Å¸® ºñ±³º¸´Ù ¾ÈÁ¤ÀûÀÌÁö¸¸, ¿©±â¼± °¡º­¿î ¿¬»êÀ» À§ÇØ °Å¸®·Î À¯Áö)
-		float rotDiff = (currentRot.x - _lastSentRot.x) * (currentRot.x - _lastSentRot.x) +
-			(currentRot.y - _lastSentRot.y) * (currentRot.y - _lastSentRot.y) +
-			(currentRot.z - _lastSentRot.z) * (currentRot.z - _lastSentRot.z) +
-			(currentRot.w - _lastSentRot.w) * (currentRot.w - _lastSentRot.w);
+		// 3. íšŒì „ ë³€í™” ì²´í¬
+		common::Quat currentRot = GetRotation();
+		float rx = currentRot.x - _lastSentRot.x;
+		float ry = currentRot.y - _lastSentRot.y;
+		float rz = currentRot.z - _lastSentRot.z;
+		float rw = currentRot.w - _lastSentRot.w;
+		float rotDiffSq = rx * rx + ry * ry + rz * rz + rw * rw;
 
-		// È¸ÀüÀº ¾à 5~10µµ ÀÌ»ó º¯ÇßÀ» ¶§¸¸ Àü¼Û (³Ê¹« ¹Î°¨ÇÏ¸é ÁöÅÍ¸µ ¹ß»ı)
-		if (rotDiff > 0.05f)
-		{
-			return true;
-		}
-
-		// 4. ÇÏÆ®ºñÆ® (Heartbeat)
-		// ¾Æ¹« º¯È­°¡ ¾ø´õ¶óµµ 1ÃÊ¿¡ ÇÑ ¹øÀº À§Ä¡¸¦ °­Á¦ µ¿±âÈ­ÇÏ¿© ´©Àû ¿ÀÂ÷ ¹æÁö
-		auto now = std::chrono::steady_clock::now();
-		if (std::chrono::duration<float>(now - _lastSentTime).count() > 1.0f) {
-			return true;
-		}
+		if (rotDiffSq > 0.0001f) return true;
 
 		return false;
 	}
 
-	bool NPC::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
-	                      const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
+	bool NPC::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
 	{
 		if (_hitCooldown > 0) return false;
-		// 1. ºÎ¸ğ(Actor)ÀÇ È÷½ºÅä¸®¿¡¼­ °ú°Å µ¥ÀÌÅÍ °¡Á®¿À±â
+		// 1. ë¶€ëª¨(Actor)ì˜ íˆìŠ¤í† ë¦¬ì—ì„œ í•´ë‹¹ ì‹œì ì˜ íŠ¸ëœìŠ¤í¼ ê°€ì ¸ì˜¤ê¸°
 		auto snapshot = GetSnapshotAt(timestamp);
 
-		// 2. È÷Æ®¹Ú½º ÄÄÆ÷³ÍÆ® °ËÁõ
-		auto hitboxComp = GetComponent<HitboxComponent>();
-		if (!hitboxComp) return false;
+		// 2. íˆíŠ¸ë°•ìŠ¤ ì»´í¬ë„ŒíŠ¸ í˜¸ì¶œ
+		if (_hitboxComponent) {
+			std::string hitPart;
+			if (_hitboxComponent->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart)) {
+				// í”¼ê²© ì„±ê³µ!
+				_hp -= damage;
+				_hp = std::max(_hp, 0);
 
-		std::string hitPart;
-		if (hitboxComp->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart)) {
+				_hitCooldown = 0.5f; // 0.5ì´ˆ í”¼ê²© ì¿¨ë‹¤ìš´
+				SetState(common::packet::EntityState::HITTED);
 
-			// 3. µ¥¹ÌÁö ¹× ³Ë¹é (Kinematic ¹æ½Ä)
-			
-			SetState(common::packet::EntityState::HITTED);
-			_hitCooldown = 1.0f;
+				using namespace common::VectorHelper;
+				common::Vec3 knockbackDir = common::Normalize(GetPosition() - dynamic_cast<Actor*>(attacker)->GetPosition());
+				knockbackDir.y = 0.0f;
 
-			int32_t current_hp = GetHP();
-			// ÇöÀç HPº¸´Ù µ¥¹ÌÁö°¡ Å©¸é 0, ¾Æ´Ï¸é Â÷ÀÌ¸¸Å­ Â÷°¨
-			int32_t new_hp = (current_hp > damage) ? (current_hp - damage) : 0;
-			SetHP(new_hp);
+				if (auto cc = GetComponent<CharacterControllerComponent>()) {
+					cc->AddImpact(knockbackDir * 15.0f);
+				}
+				// 3. AI íƒ€ê²Ÿ ì„¤ì • (ë‚˜ë¥¼ ë•Œë¦° ë†ˆì„ íƒ€ê²Ÿìœ¼ë¡œ)
+				if (auto ai = GetComponent<AIComponent>()) {
+					auto bb = ai->GetBlackboard();
+					if (attacker) {
+						bb->set("target_enemy", attacker->GetId());
+					}
+				}
 
-			using namespace common::VectorHelper;
-			common::Vec3 knockbackDir = common::Normalize(GetPosition() - dynamic_cast<Actor*>(attacker)->GetPosition());
-			knockbackDir.y = 0.0f;
-
-			if (auto cc = GetComponent<CharacterControllerComponent>()) {
-				cc->AddImpact(knockbackDir * 15.0f);
+				return true;
 			}
-
-			// [¹İ°İ ·ÎÁ÷] °ø°İÀÚ¸¦ Å¸°ÙÀ¸·Î ¼³Á¤
-			auto ai = GetComponent<AIComponent>();
-			if (ai) {
-				ai->GetBlackboard()->set("target_enemy", attacker->GetId());
-				//MYLOG("[HIT] " << GetName() << " part: " << hitPart << " set: target_enemy");
-			}
-
-			//MYLOG("[HIT] " << GetName() << " part: " << hitPart << " HP: " << GetHP());
-			return true;
 		}
 		return false;
 	}
 
 	void NPC::Update(float deltaTime, JPH::TempAllocator* allocator)
 	{
-		// 1. ÇÇ°İ ÄğÅ¸ÀÓ °¨¼â ·ÎÁ÷
+		// 1. í”¼ê²© ì¿¨ë‹¤ìš´ ì²˜ë¦¬
 		if (_hitCooldown > 0.0f) {
 			_hitCooldown -= deltaTime;
-			_hitCooldown = std::max(_hitCooldown, 0.0f);
+			if (_hitCooldown < 0.0f) _hitCooldown = 0.0f;
 		}
 
-		// 2. ÇÇ°İ »óÅÂ(HITTED) ÀÚµ¿ º¹±¸ ·ÎÁ÷
-		if (GetState() == common::packet::EntityState::HITTED) {
-			// º°µµÀÇ Å¸ÀÌ¸Ó¸¦ ¾²°Å³ª _hitCooldownÀ» È°¿ë
-			if (_hitCooldown <= 0) {
-				// °æÁ÷ ½Ã°£ÀÌ ³¡³ª¸é IDLE·Î º¯°æ
-				SetState(common::packet::EntityState::IDLE);
-				// ÇÊ¿äÇÏ´Ù¸é ¿©±â¼­ AI¸¦ ´Ù½Ã ±ú¿ì´Â ·ÎÁ÷ Ãß°¡
-			}
+		// 2. í”¼ê²© ìƒíƒœ í•´ì œ
+		if (_state == common::packet::EntityState::HITTED && _hitCooldown <= 0) {
+			SetState(common::packet::EntityState::IDLE);
 		}
-		Actor::Update(deltaTime, allocator);
+
+		// 3. [ìµœì í™”] ì»´í¬ë„ŒíŠ¸ ë£¨í”„ íšŒí”¼ (Actor::Update ëŒ€ì‹  ì§ì ‘ ì—…ë°ì´íŠ¸)
+		if (_aiComponent) {
+			_aiComponent->Update(deltaTime, allocator);
+		}
+		
+		// NPC ì „ìš© ë¡œì§ ì—…ë°ì´íŠ¸
 	}
 
 }
-
