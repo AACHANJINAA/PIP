@@ -856,14 +856,8 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
     auto prefiltered_info = load_cubemap_from_dds(_ibl_prefiltered_path);
     if (prefiltered_info)
     {
-        _ibl_specular_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
-        _ibl_specular_cpu_handle.ptr += _static_heap_descriptor_size * 1;  // 인덱스 1
-      /*  _ibl_specular_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
-        _ibl_specular_gpu_handle.ptr += _static_heap_descriptor_size * 1;*/
-
-        // DW수정 : gpu주소는 NONE로 설정되어 gpu 주소를 받는 함수를 호출하면 에러가 발생
-        //_ibl_specular_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
-        _ibl_specular_gpu_handle.ptr = 0;
+        _ibl_specular_cpu_handle = prefiltered_info->cpu_handle;
+        _ibl_specular_gpu_handle = prefiltered_info->gpu_handle;
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
         srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -880,14 +874,8 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
     auto brdf_info = load_texture(_ibl_brdf_lut_path, false);
     if (brdf_info)
     {
-        _ibl_brdf_cpu_handle = _static_srv_heap->GetCPUDescriptorHandleForHeapStart();
-        _ibl_brdf_cpu_handle.ptr += _static_heap_descriptor_size * 2;  // 인덱스 2
-        /*_ibl_brdf_gpu_handle = _static_srv_heap->GetGPUDescriptorHandleForHeapStart();
-        _ibl_brdf_gpu_handle.ptr += _static_heap_descriptor_size * 2;*/
-
-        // DW수정 : gpu주소는 NONE로 설정되어 gpu 주소를 받는 함수를 호출하면 에러가 발생
-        //_ibl_brdf_gpu_handle = ;
-        _ibl_brdf_gpu_handle.ptr = 0;
+        _ibl_brdf_cpu_handle = brdf_info->cpu_handle;
+        _ibl_brdf_gpu_handle = brdf_info->gpu_handle;
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
         srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
