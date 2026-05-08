@@ -85,7 +85,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	float3 prefilteredColor = g_PrefilteredMap.SampleLevel(g_samLinear, R, lod).rgb;
 
 	// 5. BRDF LUT 샘플링
-	float2 brdf = g_BrdfLut.Sample(g_samLinear, float2(NdotV, roughness)).rg;
+    float2 brdf = g_BrdfLut.SampleLevel(g_samLinear, float2(NdotV, roughness), 0).rg;
 
 	// 6. F0 계산
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
@@ -118,7 +118,7 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     // 3. Metalic 수치일 때의 최소 스페큘러 강도를 설정
     float specularScale = 1.0f;
     if (metallic < 0.1f)
-        specularScale = 0.05f;
+        specularScale = 0.01f;
     specular *= specularScale;
 
     // 4. 합산 후 AO 적용
