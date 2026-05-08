@@ -77,7 +77,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	float NdotV = saturate(dot(N, V));
 
 	// 3. Prefiltered Environment Map LOD 선택
-	float maxMipLevel = 4.0;
+	float maxMipLevel = 8.0;
 	float safeRoughness = max(roughness, 0.05);
     float lod = safeRoughness * maxMipLevel;
 
@@ -103,7 +103,7 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	// 의미: 손실된 에너지를 F0에 비례하여 복구
 	float3 energyCompensation = 1.0 + F0 * (1.0 / Ess - 1.0);
 	// 9. 최종 Specular = Single Scattering * Energy Compensation
-    return prefilteredColor * specularSingle * energyCompensation;
+    return prefilteredColor * specularSingle;// * energyCompensation;
 }
 
     // IBL 통합 함수
@@ -117,8 +117,8 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
 
     // 3. Metalic 수치일 때의 최소 스페큘러 강도를 설정
     float specularScale = 1.0f;
-    if(metallic < 0.1f) specularScale = 0.0f;
-    
+    if (metallic < 0.1f)
+        specularScale = 0.05f;
     specular *= specularScale;
 
     // 4. 합산 후 AO 적용
