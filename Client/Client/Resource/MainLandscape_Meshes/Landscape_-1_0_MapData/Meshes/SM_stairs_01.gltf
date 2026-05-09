@@ -8,39 +8,39 @@
 	"accessors": [
 		{
 			"bufferView": 0,
-			"count": 252,
+			"count": 1614,
 			"type": "SCALAR",
-			"componentType": 5121
+			"componentType": 5123
 		},
 		{
 			"bufferView": 1,
-			"count": 140,
+			"count": 778,
 			"type": "VEC3",
 			"componentType": 5126,
-			"min": [ -7.00000095, -4.90303091e-06, -10.0000019 ],
-			"max": [ 5.33334457e-07, 4.00333405, 2.45133558e-16 ]
+			"min": [ -0.444145232, 0.00999999978, -0.0662825778 ],
+			"max": [ 0.444145262, 4.02783203, 0.067216821 ]
 		},
 		{
 			"bufferView": 2,
-			"count": 140,
+			"count": 778,
 			"type": "VEC3",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 3,
-			"count": 140,
+			"count": 778,
 			"type": "VEC4",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 4,
-			"count": 140,
+			"count": 778,
 			"type": "VEC2",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 5,
-			"count": 140,
+			"count": 778,
 			"type": "VEC2",
 			"componentType": 5126
 		}
@@ -48,63 +48,63 @@
 	"buffers": [
 		{
 			"uri": "SM_stairs_01.bin",
-			"byteLength": 8092
+			"byteLength": 46796
 		}
 	],
 	"bufferViews": [
 		{
 			"buffer": 0,
-			"byteLength": 252,
+			"byteLength": 3228,
 			"target": 34963
 		},
 		{
 			"buffer": 0,
-			"byteLength": 1680,
-			"byteOffset": 252,
+			"byteLength": 9336,
+			"byteOffset": 3228,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 1680,
-			"byteOffset": 1932,
+			"byteLength": 9336,
+			"byteOffset": 12564,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 2240,
-			"byteOffset": 3612,
+			"byteLength": 12448,
+			"byteOffset": 21900,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 1120,
-			"byteOffset": 5852,
+			"byteLength": 6224,
+			"byteOffset": 34348,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 1120,
-			"byteOffset": 6972,
+			"byteLength": 6224,
+			"byteOffset": 40572,
 			"target": 34962
 		}
 	],
 	"images": [
 		{
-			"uri": "MI_Brick_02_BaseColor.png"
+			"uri": "MI_Wood_Trim_BaseColor.png"
 		},
 		{
-			"uri": "MI_Brick_02_MetallicRoughness.png"
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
 		},
 		{
-			"uri": "MI_Brick_02_Normal.png"
+			"uri": "MI_Wood_Trim_Occlusion.png"
 		},
 		{
-			"uri": "MI_Brick_02_Occlusion.png"
+			"uri": "T_Wood_Trim_N.png"
 		}
 	],
 	"materials": [
 		{
-			"name": "MI_Brick_02",
+			"name": "MI_Wood_Trim",
 			"pbrMetallicRoughness":
 			{
 				"baseColorTexture":
@@ -163,24 +163,24 @@
 	],
 	"textures": [
 		{
-			"name": "MI_Brick_02_BaseColor",
+			"name": "MI_Wood_Trim_BaseColor",
 			"sampler": 0,
 			"source": 0
 		},
 		{
-			"name": "MI_Brick_02_MetallicRoughness",
+			"name": "MI_Wood_Trim_MetallicRoughness",
 			"sampler": 0,
 			"source": 1
 		},
 		{
-			"name": "MI_Brick_02_Normal",
-			"sampler": 0,
-			"source": 2
-		},
-		{
-			"name": "MI_Brick_02_Occlusion",
+			"name": "T_Wood_Trim_N",
 			"sampler": 0,
 			"source": 3
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 2
 		}
 	]
 }
