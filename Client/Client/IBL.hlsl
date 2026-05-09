@@ -118,7 +118,7 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     // 3. Metalic 수치일 때의 최소 스페큘러 강도를 설정
     float specularScale = 1.0f;
     if (metallic < 0.1f)
-        specularScale = 0.01f;
+        specularScale = 0.0f;
     specular *= specularScale;
 
     // 4. 합산 후 AO 적용
