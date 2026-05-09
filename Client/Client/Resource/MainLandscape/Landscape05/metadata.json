@@ -1,13 +1,13 @@
 {
 	"metadata":
 	{
-		"terrain_id": "LandscapeStreamingProxy_CHUCPNHMPQZLTR3SIYFJJFE7T_1_1_0_0"
+		"terrain_id": "LandscapeStreamingProxy_CHUCPNHMPQZLTR3SIYFJJFE7T_1_-1_0_0"
 	},
 	"world_position":
 	{
 		"center_x": 0,
 		"center_y": 0,
-		"center_z": 504
+		"center_z": -504
 	},
 	"grid_info":
 	{
@@ -17,8 +17,8 @@
 		{
 			"min_x": 0,
 			"max_x": 504,
-			"min_z": 504,
-			"max_z": 1008
+			"min_z": -504,
+			"max_z": 0
 		}
 	},
 	"scale":
