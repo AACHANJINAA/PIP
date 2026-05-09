@@ -55,15 +55,15 @@ void LightManager::initialize(ID3D12Device* device)
     ThrowIfFailed(_lightsConstantBuffer->Map(0, &read_range, reinterpret_cast<void**>(&_pCbvDataBegin)));
 
 
-    set_global_ambient({ 0.0f, 0.0f, 0.0f, 1.0f });
+    set_global_ambient({ 0.1f, 0.1f, 0.1f, 1.0f });
 
     // 2. 주 방향 조명 (태양) 생성
     Light sun;
     sun.m_bEnable = TRUE;
     sun.m_nType = DIRECTIONAL_LIGHT;
-    sun.m_cDiffuse = { 0.5f, 0.5f, 0.5f, 1.0f };
-    sun.m_cSpecular = { 0.5f, 0.5f, 0.5f, 1.0f };
-    sun.m_vDirection = { 0.05f, -0.8f, 0.5f };
+    sun.m_cDiffuse = { 0.8f, 0.8f, 0.8f, 1.0f };
+    sun.m_cSpecular = { 0.1f, 0.5f, 0.5f, 1.0f };
+    sun.m_vDirection = { 0.05f, -0.8f, 0.35f };
     add_light(std::move(sun));
 
     update();

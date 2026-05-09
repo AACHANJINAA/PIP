@@ -233,7 +233,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
     
     // 3. 최종 색상 계산: 직접광 + IBL + Emissive, 모두 그림자 영향을 받음
-    float3 finalColor = (litColor.rgb * shadowFactor) + (iblColor * max(shadowFactor, 0.3f)) + finalEmissive;
+    float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
     
     // MASK 모드: alphaCutoff 이하의 픽셀을 폐기 (clip 함수 사용)
     if (AlphaMode == 1) // MASK
