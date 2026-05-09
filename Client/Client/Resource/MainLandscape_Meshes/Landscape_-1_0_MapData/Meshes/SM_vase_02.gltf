@@ -8,100 +8,103 @@
 	"accessors": [
 		{
 			"bufferView": 0,
-			"count": 3045,
+			"count": 2484,
 			"type": "SCALAR",
 			"componentType": 5123
 		},
 		{
 			"bufferView": 1,
-			"count": 760,
+			"count": 625,
 			"type": "VEC3",
 			"componentType": 5126,
-			"min": [ -0.357089937, 0, -0.354105055 ],
-			"max": [ 0.357091367, 0.881829143, 0.35547477 ]
+			"min": [ -0.302104741, -1.13874898e-16, -0.295904428 ],
+			"max": [ 0.302656829, 1.12701368, 0.302673042 ]
 		},
 		{
 			"bufferView": 2,
-			"count": 760,
+			"count": 625,
 			"type": "VEC3",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 3,
-			"count": 760,
+			"count": 625,
 			"type": "VEC4",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 4,
-			"count": 760,
+			"count": 625,
 			"type": "VEC2",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 5,
-			"count": 760,
+			"count": 625,
 			"type": "VEC2",
 			"componentType": 5126
 		}
 	],
 	"buffers": [
 		{
-			"uri": "SM_Vase_02.bin",
-			"byteLength": 48652
+			"uri": "SM_vase_02.bin",
+			"byteLength": 39968
 		}
 	],
 	"bufferViews": [
 		{
 			"buffer": 0,
-			"byteLength": 6090,
+			"byteLength": 4968,
 			"target": 34963
 		},
 		{
 			"buffer": 0,
-			"byteLength": 9120,
-			"byteOffset": 6092,
+			"byteLength": 7500,
+			"byteOffset": 4968,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 9120,
-			"byteOffset": 15212,
+			"byteLength": 7500,
+			"byteOffset": 12468,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 12160,
-			"byteOffset": 24332,
+			"byteLength": 10000,
+			"byteOffset": 19968,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 6080,
-			"byteOffset": 36492,
+			"byteLength": 5000,
+			"byteOffset": 29968,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 6080,
-			"byteOffset": 42572,
+			"byteLength": 5000,
+			"byteOffset": 34968,
 			"target": 34962
 		}
 	],
 	"images": [
 		{
-			"uri": "T_vases_bench_C.png"
+			"uri": "MI_Vase_MetallicRoughness.png"
 		},
 		{
-			"uri": "T_vases_bench_M.png"
+			"uri": "T_vase_C.png"
 		},
 		{
-			"uri": "T_vases_bench_N.png"
+			"uri": "T_vase_N.png"
+		},
+		{
+			"uri": "T_vase_M.png"
 		}
 	],
 	"materials": [
 		{
-			"name": "MI_vases_bench_01",
+			"name": "MI_Vase",
 			"pbrMetallicRoughness":
 			{
 				"baseColorTexture":
@@ -119,13 +122,13 @@
 			},
 			"occlusionTexture":
 			{
-				"index": 1
+				"index": 3
 			}
 		}
 	],
 	"meshes": [
 		{
-			"name": "SM_Vase_02",
+			"name": "SM_vase_02",
 			"primitives": [
 				{
 					"attributes":
@@ -160,19 +163,24 @@
 	],
 	"textures": [
 		{
-			"name": "T_vases_bench_C",
-			"sampler": 0,
-			"source": 0
-		},
-		{
-			"name": "T_vases_bench_M",
+			"name": "T_vase_C",
 			"sampler": 0,
 			"source": 1
 		},
 		{
-			"name": "T_vases_bench_N",
+			"name": "MI_Vase_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_vase_N",
 			"sampler": 0,
 			"source": 2
+		},
+		{
+			"name": "T_vase_M",
+			"sampler": 0,
+			"source": 3
 		}
 	]
 }

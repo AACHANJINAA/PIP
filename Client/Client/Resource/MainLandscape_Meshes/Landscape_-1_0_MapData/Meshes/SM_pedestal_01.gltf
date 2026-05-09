@@ -8,39 +8,39 @@
 	"accessors": [
 		{
 			"bufferView": 0,
-			"count": 720,
+			"count": 1500,
 			"type": "SCALAR",
-			"componentType": 5121
+			"componentType": 5123
 		},
 		{
 			"bufferView": 1,
-			"count": 204,
+			"count": 642,
 			"type": "VEC3",
 			"componentType": 5126,
-			"min": [ -0.740171254, 5.96046323e-09, -0.740171194 ],
-			"max": [ 0.740171254, 1.16591406, 0.740171194 ]
+			"min": [ -0.377261758, 5.21396544e-07, -0.377262026 ],
+			"max": [ 0.377261758, 1.14545023, 0.377262026 ]
 		},
 		{
 			"bufferView": 2,
-			"count": 204,
+			"count": 642,
 			"type": "VEC3",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 3,
-			"count": 204,
+			"count": 642,
 			"type": "VEC4",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 4,
-			"count": 204,
+			"count": 642,
 			"type": "VEC2",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 5,
-			"count": 204,
+			"count": 642,
 			"type": "VEC2",
 			"componentType": 5126
 		}
@@ -48,63 +48,63 @@
 	"buffers": [
 		{
 			"uri": "SM_pedestal_01.bin",
-			"byteLength": 12144
+			"byteLength": 38952
 		}
 	],
 	"bufferViews": [
 		{
 			"buffer": 0,
-			"byteLength": 720,
+			"byteLength": 3000,
 			"target": 34963
 		},
 		{
 			"buffer": 0,
-			"byteLength": 2448,
-			"byteOffset": 720,
+			"byteLength": 7704,
+			"byteOffset": 3000,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 2448,
-			"byteOffset": 3168,
+			"byteLength": 7704,
+			"byteOffset": 10704,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 3264,
-			"byteOffset": 5616,
+			"byteLength": 10272,
+			"byteOffset": 18408,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 1632,
-			"byteOffset": 8880,
+			"byteLength": 5136,
+			"byteOffset": 28680,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 1632,
-			"byteOffset": 10512,
+			"byteLength": 5136,
+			"byteOffset": 33816,
 			"target": 34962
 		}
 	],
 	"images": [
 		{
-			"uri": "MI_Pedestal_MetallicRoughness.png"
+			"uri": "MI_Brick_02_BaseColor.png"
 		},
 		{
-			"uri": "T_Pedestal_C.png"
+			"uri": "MI_Brick_02_MetallicRoughness.png"
 		},
 		{
-			"uri": "T_Pedestal_N.png"
+			"uri": "MI_Brick_02_Normal.png"
 		},
 		{
-			"uri": "T_Pedestal_M.png"
+			"uri": "MI_Brick_02_Occlusion.png"
 		}
 	],
 	"materials": [
 		{
-			"name": "MI_Pedestal",
+			"name": "MI_Brick_02",
 			"pbrMetallicRoughness":
 			{
 				"baseColorTexture":
@@ -163,22 +163,22 @@
 	],
 	"textures": [
 		{
-			"name": "T_Pedestal_C",
-			"sampler": 0,
-			"source": 1
-		},
-		{
-			"name": "MI_Pedestal_MetallicRoughness",
+			"name": "MI_Brick_02_BaseColor",
 			"sampler": 0,
 			"source": 0
 		},
 		{
-			"name": "T_Pedestal_N",
+			"name": "MI_Brick_02_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Brick_02_Normal",
 			"sampler": 0,
 			"source": 2
 		},
 		{
-			"name": "T_Pedestal_M",
+			"name": "MI_Brick_02_Occlusion",
 			"sampler": 0,
 			"source": 3
 		}

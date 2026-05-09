@@ -8,39 +8,39 @@
 	"accessors": [
 		{
 			"bufferView": 0,
-			"count": 2106,
+			"count": 1050,
 			"type": "SCALAR",
 			"componentType": 5123
 		},
 		{
 			"bufferView": 1,
-			"count": 679,
+			"count": 339,
 			"type": "VEC3",
 			"componentType": 5126,
-			"min": [ -0.9985044, -0.0026277923, -0.282639295 ],
-			"max": [ 0.994716763, 0.704691887, 0.173335031 ]
+			"min": [ -0.994716763, -0.0026277923, -0.173335031 ],
+			"max": [ 0.994716763, 0.355462462, 0.173335031 ]
 		},
 		{
 			"bufferView": 2,
-			"count": 679,
+			"count": 339,
 			"type": "VEC3",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 3,
-			"count": 679,
+			"count": 339,
 			"type": "VEC4",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 4,
-			"count": 679,
+			"count": 339,
 			"type": "VEC2",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 5,
-			"count": 679,
+			"count": 339,
 			"type": "VEC2",
 			"componentType": 5126
 		}
@@ -48,43 +48,43 @@
 	"buffers": [
 		{
 			"uri": "SM_bench_01.bin",
-			"byteLength": 42236
+			"byteLength": 21084
 		}
 	],
 	"bufferViews": [
 		{
 			"buffer": 0,
-			"byteLength": 4212,
+			"byteLength": 2100,
 			"target": 34963
 		},
 		{
 			"buffer": 0,
-			"byteLength": 8148,
-			"byteOffset": 4212,
+			"byteLength": 4068,
+			"byteOffset": 2100,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 8148,
-			"byteOffset": 12360,
+			"byteLength": 4068,
+			"byteOffset": 6168,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 10864,
-			"byteOffset": 20508,
+			"byteLength": 5424,
+			"byteOffset": 10236,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 5432,
-			"byteOffset": 31372,
+			"byteLength": 2712,
+			"byteOffset": 15660,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 5432,
-			"byteOffset": 36804,
+			"byteLength": 2712,
+			"byteOffset": 18372,
 			"target": 34962
 		}
 	],
