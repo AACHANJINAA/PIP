@@ -1,0 +1,305 @@
+[
+	{
+		"Name": "SM_SkySphere_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_SkySphere.gltf",
+		"Materials": [
+			"M_Sky_Panning_Clouds2"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 400,
+				"Y": 400,
+				"Z": 400
+			}
+		}
+	},
+	{
+		"Name": "SM_Big_Tower_03_floor_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Big_Tower_03_floor_01.gltf",
+		"Materials": [
+			"MI_Floor_Brick_01",
+			"M_Floor_04",
+			"MI_Brick_02"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": -1.3400000333786011,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1.75,
+				"Y": 1.75,
+				"Z": 1.75
+			}
+		}
+	},
+	{
+		"Name": "SM_Big_Tower_03_body_03_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Big_Tower_03_body_03.gltf",
+		"Materials": [
+			"MI_Styl_Wall_Brick_02",
+			"MI_Brick_02",
+			"WorldGridMaterial"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 2.25,
+				"Y": 2.25,
+				"Z": 2.25
+			}
+		}
+	},
+	{
+		"Name": "SM_statue_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_statue_01.gltf",
+		"Materials": [
+			"MI_Knight_02",
+			"MI_Knight_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -12,
+				"Y": 0,
+				"Z": -10
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 2.5,
+				"Z": 2.5
+			}
+		}
+	},
+	{
+		"Name": "SM_statue_2_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_statue_01.gltf",
+		"Materials": [
+			"MI_Knight_02",
+			"MI_Knight_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -12,
+				"Y": 0,
+				"Z": 10
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 2.5,
+				"Y": 2.5,
+				"Z": 2.5
+			}
+		}
+	},
+	{
+		"Name": "SM_throne_chair_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_throne_chair_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Textile"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": -18.200000762939453,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 7,
+				"Y": 7,
+				"Z": 7
+			}
+		}
+	},
+	{
+		"Name": "SM_round_tower_floor_3_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_round_tower_floor_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim",
+			"MI_Floor_Brick_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 16.120002746582031,
+				"Y": -11.850000381469727,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.7730100154876709,
+				"Z": 0,
+				"W": 0.63439297676086426
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_floor_11_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_floor_08.gltf",
+		"Materials": [
+			"MI_Floor_Brick_01",
+			"MI_Brick_02",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 21.079999923706055,
+				"Y": 0.43000000715255737,
+				"Z": -4.9800000190734863
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 5,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_round_tower_floor_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_round_tower_floor_01.gltf",
+		"Materials": [
+			"MI_Floor_04",
+			"MI_Brick_02"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 16.079999923706055,
+				"Y": 0.56999999284744263,
+				"Z": -0.0099999997764825821
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 0.87749999761581421,
+				"Y": 0.87749999761581421,
+				"Z": 0.87749999761581421
+			}
+		}
+	},
+	{
+		"Name": "SM_floor_12_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_floor_08.gltf",
+		"Materials": [
+			"MI_Floor_Brick_01",
+			"MI_Brick_02",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 21.079999923706055,
+				"Y": -5.5500001907348633,
+				"Z": -4.9800000190734863
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 5,
+				"Z": 1
+			}
+		}
+	}
+]
