@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Scene.h"
 
-#include "BoardCubeScript.h"
 #include "ObjectManager.h"
 
 #include "ResourceManager.h"
@@ -9,6 +8,7 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
+#include "InstancedRenderComponent.h"
 
 #include "json.hpp"
 #include <fstream>
@@ -83,8 +83,6 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
         ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
         // gltf
         renderComp->set_pso_name("gltf");
-       
-
 
         // 3. 트랜스폼 파싱 (기존과 동일)
         if (objectJson.contains("Transform")) {
@@ -109,7 +107,120 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 transformJson["Scale"].value("Z", 1.0f)
                 });
         }
+    }
+}
 
-        
+void Scene::load_foliage_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        CERROR("Failed to open foliage file: " << filename);
+        return;
+    }
+
+    nlohmann::json rootJson;
+    try
+    {
+        file >> rootJson;
+        file.close();
+    }
+    catch (const json::exception& e)
+    {
+        CERROR("Foliage file load error: " << e.what());
+        return;
+    }
+
+    std::filesystem::path basePath = std::filesystem::path(filename).parent_path();
+
+    // 1. MeshLibrary 파싱 및 메쉬 미리 로드
+    std::unordered_map<std::string, std::shared_ptr<Mesh>> loadedMeshes;
+
+    if (rootJson.contains("MeshLibrary"))
+    {
+        for (auto& [meshName, meshInfo] : rootJson["MeshLibrary"].items())
+        {
+            std::string meshFile = meshInfo.value("MeshFile", "");
+            if (meshFile.empty()) continue;
+
+            std::string mesh_path = (basePath / meshFile).string();
+            std::shared_ptr<Mesh> mesh = ResourceManager::instance()->load_mesh(mesh_path);
+
+            if (mesh) {
+                loadedMeshes[meshName] = mesh;
+                CLOG("Loaded Foliage Mesh: " << meshName);
+            }
+            else {
+                CERROR("Failed to load foliage mesh : " << mesh_path);
+            }
+        }
+    }
+
+    // 2. FoliageGroups 파싱 및 인스턴싱 객체 생성
+    if (rootJson.contains("FoliageGroups"))
+    {
+        for (const auto& groupJson : rootJson["FoliageGroups"])
+        {
+            std::string meshName = groupJson.value("MeshName", "");
+            if (loadedMeshes.find(meshName) == loadedMeshes.end()) continue;
+
+            std::shared_ptr<Mesh> instancedMesh = loadedMeshes[meshName];
+
+            // 폴리지 그룹당 GameObject는 딱 1개만 생성합니다.
+            std::shared_ptr<GameObject> groupObject = ObjectManager::instance()->create_game_object(meshName + "_InstancedGroup");
+
+            // 주의: 기존 RenderComponent 대신 인스턴싱을 지원하는 컴포넌트가 필요합니다.
+            // (예: InstancedRenderComponent)
+            auto renderComp = groupObject->add_component<InstancedRenderComponent>();
+            renderComp->set_frustum_culling_enabled(false);
+            renderComp->set_mesh(instancedMesh);
+
+            std::string material_name = meshName + "_mat";
+            ResourceManager::instance()->create_material(material_name);
+            ResourceManager::instance()->set_shader_for_material(material_name, "gltf_instanced"); // 인스턴싱 전용 셰이더!
+            renderComp->set_pso_name("gltf_instanced");
+
+            // 3. 트랜스폼 배열 파싱 (Instance Buffer에 들어갈 데이터)
+            std::vector<XMMATRIX> instanceTransforms; // D3D12 버퍼로 넘길 행렬 배열
+
+            if (groupJson.contains("Transforms"))
+            {
+                for (const auto& transformJson : groupJson["Transforms"])
+                {
+                    // 언리얼에서 넘겨준 Pos, Rot, Scale 파싱 (키 이름이 줄어들었음에 주의)
+                    XMFLOAT3 pos = {
+                        transformJson["Pos"].value("X", 0.0f),
+                        transformJson["Pos"].value("Y", 0.0f),
+                        transformJson["Pos"].value("Z", 0.0f)
+                    };
+
+                    XMFLOAT4 rot = {
+                        transformJson["Rot"].value("X", 0.0f),
+                        transformJson["Rot"].value("Y", 0.0f),
+                        transformJson["Rot"].value("Z", 0.0f),
+                        transformJson["Rot"].value("W", 1.0f)
+                    };
+
+                    XMFLOAT3 scale = {
+                        transformJson["Scale"].value("X", 1.0f),
+                        transformJson["Scale"].value("Y", 1.0f),
+                        transformJson["Scale"].value("Z", 1.0f)
+                    };
+
+                    // SRT 행렬 조립
+                    XMVECTOR vPos = XMLoadFloat3(&pos);
+                    XMVECTOR vRot = XMLoadFloat4(&rot);
+                    XMVECTOR vScale = XMLoadFloat3(&scale);
+
+                    XMMATRIX worldMatrix = XMMatrixAffineTransformation(vScale, XMVectorZero(), vRot, vPos);
+                    instanceTransforms.push_back(worldMatrix);
+                }
+            }
+
+            // 파싱한 행렬 배열을 인스턴싱 컴포넌트에 넘겨줍니다.
+            // 내부적으로 D3D12 StructuredBuffer 또는 InstanceBuffer를 생성하게 끔 구현하셔야 합니다.
+            renderComp->set_instance_data(instanceTransforms);
+
+            CLOG("Created Foliage Group: " << meshName << " with " << instanceTransforms.size() << " instances.");
+        }
     }
 }

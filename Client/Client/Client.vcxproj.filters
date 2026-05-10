@@ -494,6 +494,12 @@
     <ClInclude Include="ParticleRenderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
+    <ClInclude Include="InstancedRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceglTFShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -798,6 +804,9 @@
     </ClCompile>
     <ClCompile Include="ParticleRenderComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="InstancedRenderComponent.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
