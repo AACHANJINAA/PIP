@@ -428,6 +428,9 @@ namespace PIP::SERVER
 			if (obj->GetId() == attacker->GetId()) continue; // 자가 공격 방지
 
 			if (auto target = dynamic_cast<GAME::Actor*>(obj)) {
+				// [추가] 죽은 대상은 공격하지 않음 (그랩 무한 루프 방지)
+				if (target->GetHP() <= 0) continue;
+
 				// [추가] 같은 진영끼리는 공격 스킵 (팀킬 방지) 
 				if (attacker->GetFaction() == target->GetFaction()) continue;
 
@@ -444,8 +447,8 @@ namespace PIP::SERVER
 
 						player_hits.emplace_back(p->GetId(), (int32_t)config.damage, p->GetHP(), p->GetPosition(), knockForce);
 
-						// [추가] 잡기 판정 처리
-						if (config.isGrab) {
+						// [추가] 잡기 판정 처리 (타겟이 살아있고 아직 안 잡혔을 때만)
+						if (config.isGrab && p->GetHP() > 0 && p->GetGrabbedById() != attacker->GetId()) {
 							p->SetGrabbedById(attacker->GetId());
 							p->SetState(common::packet::EntityState::GRABBED);
 							MYLOG("[Grab] Player " << p->GetId() << " grabbed by " << attacker->GetId());
@@ -608,6 +611,13 @@ namespace PIP::SERVER
 			if (!session || !session->_player) continue;
 
 			auto player = session->_player;
+			
+			// [추가] 잡힌 상태일 때는 물리 엔진 업데이트를 건너뜀 (보스 손 위치에 강제 고정 중이므로)
+			if (player->GetState() == common::packet::EntityState::GRABBED) {
+				_gridMap.UpdatePosition(player.get(), player->GetPosition());
+				continue;
+			}
+
 			auto cc = player->GetComponent<GAME::CharacterControllerComponent>();
 			if (!cc) continue;
 
@@ -778,14 +788,7 @@ namespace PIP::SERVER
 			auto player = session->_player.get();
 			if (player->IsDirty()) {
 				packet::SC_PACKET_MOVE res;
-				res._type = common::packet::PacketType::S2C_P_MOVE;
-				res._size = sizeof(res);
-				res._id = player->GetId();
-				res._position = player->GetPosition();
-				res._rotation = player->GetRotation();
-				res._state = player->GetState();
-				res._action_id = player->GetActionId();
-				res._client_tick = player->GetLastClientTick();
+				res = player->CreateMovePacket();
 				Broadcast(reinterpret_cast<const char*>(&res), sizeof(res));
 				player->SyncSentData();
 			}
@@ -997,6 +1000,9 @@ namespace PIP::SERVER
 		move_packet_data._state = npc->GetState();
 		move_packet_data._action_id = npc->GetActionId();
 		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+		// [추가] 잡기 정보 동기화
+		// NPC가 잡혔을 가능성은 낮지만 일관성을 위해 추가
+		// (혹은 NPC가 플레이어를 잡고 있는 상태에서 플레이어의 시점에서는 NPC의 위치가 중요하므로)
 
 		packet::PacketStream finalStream;
 		finalStream << move_packet_data;
@@ -1069,6 +1075,9 @@ namespace PIP::SERVER
 			data._time_stamp = static_cast<uint32_t>(GetTickCount64());
 			data._state = npc->GetState();
 			data._action_id = npc->GetActionId();
+			data._grabbed_by_id = npc->GetGrabbedById(); // [추가]
+			data._grab_slot = npc->GetGrabSlot();         // [추가]
+			data._hp = npc->GetHP();                     // [추가]
 
 			const char* pData = reinterpret_cast<const char*>(&data);
 			buffer.insert(buffer.end(), pData, pData + sizeof(packet::NPCMoveData));
@@ -1974,7 +1983,7 @@ namespace PIP::SERVER
 
 		player->SetHP(player->_max_hp);
 		player->SetPosition(spawnPos);
-		player->SetState(common::packet::EntityState::IDLE);
+		player->ResetState(); // [핵심 수정] 전투 상태 및 잡기 정보 강제 초기화
 
 		if (auto cc = player->GetComponent<GAME::CharacterControllerComponent>()) {
 			cc->SetPosition(spawnPos);

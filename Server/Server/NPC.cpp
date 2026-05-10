@@ -145,6 +145,8 @@ namespace PIP::GAME
 		// 1. 상태(애니메이션) 변화 체크 (최우선)
 		if (_state != _lastSentState) return true;
 		if (_actionId != _lastSentActionId) return true;
+		if (GetGrabbedById() != _lastSentGrabbedById) return true;
+		if (GetGrabSlot() != _lastSentGrabSlot) return true;
 
 		// 2. 위치 변화 체크 (캐싱된 포인터 사용)
 		common::Vec3 currentPos = GetPosition();

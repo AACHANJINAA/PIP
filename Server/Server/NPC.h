@@ -106,6 +106,8 @@ namespace PIP::GAME
 			_lastSentRot = GetRotation();
 			_lastSentState = _state;
 			_lastSentActionId = _actionId;
+			_lastSentGrabbedById = GetGrabbedById();
+			_lastSentGrabSlot = GetGrabSlot();
 			_lastSentTime = std::chrono::steady_clock::now(); // 시간 갱신
 		}
 		// [모듈화] 공격 검증 및 피격 처리 통합 함수
@@ -134,6 +136,8 @@ namespace PIP::GAME
 
 		int32_t _actionId = 0; // 현재 진행 중인 행동의 ID (0이면 없음)
 		int32_t _lastSentActionId = 0; // 마지막으로 클라이언트에 전송한 행동 ID
+		int64_t _lastSentGrabbedById = -1; // [추가]
+		int8_t _lastSentGrabSlot = -1; // [추가]
 		common::Vec3 _spawnPosition; // 리스폰 위치 저장 (죽었을 때 원래 위치로 돌아가기 위해)
 
 		// [최적화] 매 프레임 GetComponent(8%)를 피하기 위한 캐싱

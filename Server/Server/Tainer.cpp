@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Tainer.h"
 
 #include "AIComponent.h"
@@ -14,28 +14,26 @@ namespace PIP::GAME
 		SetFaction(Faction::FACTION_MONSTER);
 
 		// --- 공격 설정 초기화 ---
-		// Phase 1: Slam
+		// Phase 1: Slam (내려찍기)
 		_slamAtk.shape = new JPH::SphereShape(3.0f);
 		_slamAtk.posOffset = { 0.0f, 0.0f, 3.5f };
 		_slamAtk.damage = 20;
 		_slamAtk.cooldown = 1.0f;
 		_slamAtk.entityState = common::packet::EntityState::ACTION;
-		_slamAtk.actionId = common::packet::ActionID::Tainer::Slam;
-		_slamAtk.animationDuration = 1.0f; // 내려찍기 애니메이션은 1초 지속
-		_slamAtk.attackTiming = 0.5f; // 애니메이션 시작 후 0.5초에 판정 발생
-		_slamAtk.hitInterval = 0.0f; // 단발 공격이므로 판정 주기는 의미 없음
-		_slamAtk.isContinuous = false; // 내려찍기는 단발 공격
+		_slamAtk.actionId = common::packet::ActionID::Tainer::Slam; // 13
+		_slamAtk.animationDuration = 1.0f; 
+		_slamAtk.attackTiming = 0.5f; 
 
-		// Phase 1: Charge
+		// Phase 1: Charge (일반 돌진)
 		_chargeAtk.shape = new JPH::SphereShape(3.0f);
 		_chargeAtk.posOffset = { 0.0f, 2.0f, 0.0f };
 		_chargeAtk.damage = 25;
 		_chargeAtk.cooldown = 3.0f;
 		_chargeAtk.entityState = common::packet::EntityState::ACTION;
-		_chargeAtk.actionId = common::packet::ActionID::Tainer::Charge;
-		_chargeAtk.animationDuration = 2.0f; // 돌진 애니메이션은 2초 지속
-		_chargeAtk.hitInterval = 0.2f; // 돌진 중 0.2초마다 판정 발생
-		_chargeAtk.isContinuous = true; // 돌진은 지속 공격
+		_chargeAtk.actionId = common::packet::ActionID::Tainer::Charge; // 12
+		_chargeAtk.animationDuration = 2.0f;
+		_chargeAtk.isContinuous = true;
+		_chargeAtk.hitInterval = 0.2f;
 
 		// Phase 2: Claw (난타)
 		_clawAtk.shape = new JPH::SphereShape(2.0f);
@@ -43,27 +41,17 @@ namespace PIP::GAME
 		_clawAtk.damage = 15;
 		_clawAtk.cooldown = 1.5f;
 		_clawAtk.entityState = common::packet::EntityState::ACTION;
-		_clawAtk.actionId = common::packet::ActionID::Tainer::Claw;
-		_clawAtk.animationDuration = 0.5f; // 클로 난타는 빠르게 여러 번 공격
+		_clawAtk.actionId = common::packet::ActionID::Tainer::Claw; // 14
+		_clawAtk.animationDuration = 0.5f;
 
-		// Phase 2: Grab
-		_grabAtk.shape = new JPH::BoxShape(JPH::Vec3(1.0f, 1.0f, 2.5f));
-		_grabAtk.posOffset = { 0.0f, 1.0f, 1.2f };
-		_grabAtk.damage = 50;
-		_grabAtk.cooldown = 10.0f;
-		_grabAtk.entityState = common::packet::EntityState::ACTION;
-		_grabAtk.actionId = common::packet::ActionID::Tainer::Grab;
-		_grabAtk.animationDuration = 1.f; 
-
-		// Phase 2: Grab Charge (신규 패턴)
+		// Phase 2: Grab (그랩 설정 통합)
 		_grabChargeAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.5f));
 		_grabChargeAtk.posOffset = { 0.0f, 1.0f, 1.2f };
-		_grabChargeAtk.damage = 10; // 돌진 자체 데미지는 낮음
+		_grabChargeAtk.damage = 10;
 		_grabChargeAtk.cooldown = 15.0f;
 		_grabChargeAtk.entityState = common::packet::EntityState::ACTION;
-		_grabChargeAtk.actionId = common::packet::ActionID::Tainer::GrabCharge;
-		_grabChargeAtk.animationDuration = 3.0f;
-		_grabChargeAtk.isGrab = true; // [중요] 잡기 판정 활성화
+		_grabChargeAtk.actionId = common::packet::ActionID::Tainer::GrabCharge; // 16
+		_grabChargeAtk.isGrab = true;
 
 		Tainer::SetupBT();
 	}
@@ -75,123 +63,72 @@ namespace PIP::GAME
 		ai->Initialize();
 
 		auto bb = ai->GetBlackboard();
-		// Blackboard 기본 데이터 세팅
 		bb->set("owner", static_cast<GameObject*>(this));
 		bb->set("owner_npc", static_cast<NPC*>(this));
 		bb->set("room_id", GetRoomId());
-		bb->set("max_hp", _maxHp);
+		bb->set("max_hp", static_cast<int>(_maxHp));
+		bb->set("spawn_pos", GetPosition());
 
 		BTBuilder builder;
 		auto root = builder
 			.sequence()
-				.leaf_name<Condition_IsAlive>("Check_Dead")
-				.leaf_name<Condition_IsHitted>("Check_Hitted", DecoratorType::Inverter)
-				.leaf_name<Action_TargetingNearestPlayer>("Targeting")
+				.leaf<Condition_IsAlive>()
 				.selector()
-					// --- [우선순위 1] 페이즈 2 패턴 (HP 50% 이하) ---
+					// --- [전투 시퀀스] 플레이어가 방에 있을 때 ---
 					.sequence()
-						.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_2)
+						.leaf<Action_TargetingNearestPlayer>()
+						.leaf<Condition_HasEnemy>()
 						.selector()
-							.sequence() // 페이즈 2 진입 시 딱 한 번만 포효
-								.leaf_name<Condition_CheckFlagFalse>("Condition_CheckFlagFalse","is_p2_roar_done")
-								.leaf_name<Action_Roar>("Action_Roar")
-								.leaf_name<Action_SetFlagTrue>("Action_SetFlagTrue","is_p2_roar_done")
+							// [Phase 2] HP 50% 이하 패턴
+							.sequence()
+								.leaf<Condition_IsHPBelow>(0.5f)
+								.selector()
+									.sequence() // 페이즈 2 진입 포효 (최초 1회)
+										.leaf<Condition_CheckFlagFalse>("is_p2_roar_done")
+										.leaf<Action_Roar>(1.5f)
+										.leaf<Action_SetFlagTrue>("is_p2_roar_done")
+									.end()
+									.selector()
+										// 1. 통합 그랩 (근거리 즉시 / 중거리 돌진)
+										.sequence()
+											.leaf<Condition_IsEnemyInDistanceRange>(0.0f, 15.0f)
+											.leaf<Action_GrabCharge>(18.0f, _grabChargeAtk)
+										.end()
+										// 2. 클로 난타
+										.sequence()
+											.leaf<Condition_IsEnemyInRange>(4.5f)
+											.leaf<Action_AttackEnemy>(_clawAtk)
+										.end()
+										// 3. 페이즈 2 추격 (더 빠름)
+										.leaf<Action_ChaseEnemy>(7.0f, 3.0f)
+									.end()
+								.end()
 							.end()
+							// [Phase 1] 기본 패턴
 							.selector()
-								// 1-1. 신규 패턴: 잡기 돌진 (중거리)
+								// 1. 일반 돌진 (중거리)
 								.sequence()
-									.leaf_name<Condition_IsEnemyInDistanceRange>("GrabCharge_Range", 5.0f, 15.0f)
-									.leaf_name<Action_GrabCharge>("Action_GrabCharge", 18.0f, _grabChargeAtk)
+									.leaf<Condition_IsEnemyInDistanceRange>(7.0f, 15.0f)
+									.leaf<Action_ChargeAttack>(16.0f, _chargeAtk)
 								.end()
-								// 1-2. 잡기 공격 (가장 강력함, 사거리 짧음)
+								// 2. 내려찍기 (근거리)
 								.sequence()
-									.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange",2.5f)
-									.leaf_name<Action_AttackEnemy>("Grab Attack",_grabAtk)
+									.leaf<Condition_IsEnemyInRange>(6.0f)
+									.leaf<Action_AttackEnemy>(_slamAtk)
 								.end()
-								// 1-3. 클로 난타 (빠른 공격, 사거리 중간)
-								.sequence()
-									.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.5f)
-									.leaf_name<Action_RotateToEnemy>("Action_RotateToEnemy")
-									.leaf_name<Action_AttackEnemy>("Claw Attack",_clawAtk)
-								.end()
-								// 1-4. 타겟 추격
-								.leaf_name<Action_ChaseEnemy>("2Phase Chasing", 7.0f, 4.0f)
+								// 3. 페이즈 1 추격
+								.leaf<Action_ChaseEnemy>(4.0f, 5.0f)
 							.end()
 						.end()
 					.end()
-					// --- [우선순위 2] 페이즈 1 패턴 (기본) ---
+					// --- [비전투 시퀀스] 플레이어가 없을 때 ---
 					.sequence()
-						.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_1)
-						.selector()
-							// 2-1. 돌진
-							.sequence()
-								.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 8.0f, 15.0f)
-								.leaf_name<Action_ChargeAttack>("Action_Charge", 16.0f, _chargeAtk)
-							.end()
-							// 2-2. 내려찍기
-							.sequence()
-								.leaf_name<Condition_IsEnemyInRange>("In_Slam_Range", 6.5f)
-								.leaf_name<Action_AttackEnemy>("Slam_Attack", _slamAtk)
-							.end()
-							// 2-3. 타겟 추격
-							.leaf_name<Action_ChaseEnemy>("1Phase Chasing", 4.0f, 6.5f)
-						.end()
+						.leaf<Action_FindRandomTarget>(15.0f)
+						.leaf<Action_MoveToTarget>(3.0f)
 					.end()
 				.end()
 			.end()
 		.build();
-		//	.selector()
-		//		// --- [우선순위 1] 페이즈 2 패턴 (HP 50% 이하) ---
-		//		.sequence()
-		//			.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_2) // 페이즈 체크
-		//			.selector()
-		//				.sequence() // 페이즈 2 진입 시 딱 한 번만 포효
-		//					.leaf_name<Condition_CheckFlagFalse>("Condition_CheckFlagFalse","is_p2_roar_done")
-		//					.leaf_name<Action_Roar>("Action_Roar")
-		//					.leaf_name<Action_SetFlagTrue>("Action_SetFlagTrue","is_p2_roar_done")
-		//				.end()
-		//				.selector()
-		//					// 1-1. 잡기 공격 (가장 강력함, 사거리 짧음)
-		//					.sequence()
-		//						.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange",2.0f)
-		//						.leaf_name<Action_AttackEnemy>("Grab Attack",_grabAtk)
-		//					.end()
-		//					// 1-2. 클로 난타 (빠른 공격, 사거리 중간)
-		//					.sequence()
-		//						.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
-		//						.leaf_name<Action_RotateToEnemy>("Action_RotateToEnemy") // 공격 전 타겟 방향 회전
-		//						.leaf_name<Action_AttackEnemy>("Claw Attack",_clawAtk)
-		//					.end()
-		//					// 1-3. 타겟 추격 (페이즈 2는 더 빠름)
-		//					.leaf_name<Action_ChaseEnemy>("2Phase Chasing", 7.0f)
-		//				.end()
-		//			.end()
-		//		.end()
-		//		// --- [우선순위 2] 페이즈 1 패턴 (기본) ---
-		//		.sequence()
-		//			.leaf_name<Condition_IsPhase>("Condition_IsPhase", TainerPhase::PHASE_1)
-		//			.selector()
-		//				// 2-1. 돌진 (특정 거리 2m~12m 사이일 때만 사용)
-		//				.sequence()
-		//					.leaf_name<Condition_CheckFlagFalse>("Charge_CD", "is_charge_cd")
-		//					.leaf_name<Condition_IsEnemyInDistanceRange>("Charge_Range", 2.0f, 12.0f)
-		//					// 이 노드 하나가 포효(1회) -> 회전 -> 10m 돌진을 순차적으로 수행합니다.
-		//					.leaf_name<Action_ChargeAttack>("Action_Charge", 18.0f, _chargeAtk)
-		//					.leaf_name<Action_SetFlagTrue>("Set_Charge_CD", "is_charge_cd")
-		//				.end()
-		//				// 2-2. 내려찍기 (가까이 있으면 사용)
-		//				.sequence()
-		//					.leaf_name<Condition_IsEnemyInRange>("Condition_IsEnemyInRange", 4.0f)
-		//					.leaf_name<Action_AttackEnemy>("Slam Attack", _slamAtk)
-		//				.end()
-		//				// 2-3. 타겟 추격 (페이즈 1 속도)
-		//				.leaf_name<Action_ChaseEnemy>("1Phase Chasing", 4.0f)
-		//			.end()
-		//		.end()
-		//		// --- [우선순위 3] 공통: 타겟이 없을 경우 ---
-		//		.leaf_name<Action_TargetingNearestPlayer>("Action_TargetingNearestPlayer")
-		//	.end()
-		//.build();
 
 		root->set_blackboard(bb);
 		ai->SetBehaviorTree(root);

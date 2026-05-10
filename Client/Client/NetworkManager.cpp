@@ -377,6 +377,9 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 			other_player_script->on_sync_position(move_packet._position);
 			other_player_script->on_sync_rotation(move_packet._rotation);
 			other_player_script->on_sync_state(move_packet._state);
+			other_player_script->on_sync_grab(move_packet._grabbed_by_id, move_packet._grab_slot); // [추가]
+			other_player_script->on_sync_velocity(move_packet._velocity); // [추가]
+			other_player_script->on_sync_hp(move_packet._hp);             // [추가]
 		}
 	}
 }
@@ -484,7 +487,8 @@ void NetworkManager::HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& s
 			{
 				player_logic->set_hp(resurrect_packet._hp);
 				player_logic->set_position(resurrect_packet._position);
-				player_logic->transform()->set_local_rotation({0,0,0,1});
+				player_logic->transform()->set_local_rotation({ 0,0,0,1 });
+				player_logic->reset_state(); // [추가] 리스폰 시 상태 초기화
 			}
 		}
 	}
@@ -501,7 +505,8 @@ void NetworkManager::HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& s
 			auto other_player_script = (*it)->get_component<OtherPlayerScript>();
 			other_player_script->set_hp(resurrect_packet._hp);
 			other_player_script->on_sync_position(resurrect_packet._position);
-			other_player_script->on_sync_rotation({0,0,0,1});
+			other_player_script->on_sync_rotation({ 0,0,0,1 });
+			other_player_script->reset_state(); // [추가] 리스폰 시 상태 초기화
 		}
 	}
 }
@@ -716,6 +721,9 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& str
 		snapshot.state = data._state;
 		snapshot.action_id = data._action_id;
 		snapshot.timestamp = data._time_stamp;
+		snapshot.grabbed_by_id = data._grabbed_by_id; // [추가]
+		snapshot.grab_slot = data._grab_slot;         // [추가]
+		snapshot.hp = data._hp;                       // [추가]
 
 		//[디버그 로그] 특정 NPC(예: 보스) 업데이트 확인
 		if (data._npc_id % 1000 == 999) {

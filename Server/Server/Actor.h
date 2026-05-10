@@ -78,6 +78,9 @@ namespace PIP::GAME
         void SetGrabbedById(int64_t id) { _grabbedById = id; }
         int64_t GetGrabbedById() const { return _grabbedById; }
 
+        void SetGrabSlot(int8_t slot) { _grabSlot = slot; }
+        int8_t GetGrabSlot() const { return _grabSlot; }
+
     protected:
         std::deque<common::ObjectSnapshot> _history;
         Faction _factionId;
@@ -87,5 +90,6 @@ namespace PIP::GAME
         std::chrono::milliseconds _respawnDelay {10000};  // 리스폰 대기 시간
 		std::chrono::milliseconds _deathAnimationDuration{ 1000 }; // 사망 애니메이션 시간 (필요시 조정)
         int64_t _grabbedById = -1;     // 나를 잡고 있는 객체의 ID (-1이면 없음)
+        int8_t  _grabSlot = -1;        // [추가] 잡힌 슬롯 (0: 왼손, 1: 오른손)
     };
 }

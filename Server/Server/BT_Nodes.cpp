@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "BT_Nodes.h"
 
+#include "PlayerControllerComponent.h"
 #include "Server.h"
 #include "Tainer.h"
 
@@ -337,7 +338,7 @@ namespace PIP::GAME
 
 	bool Condition_IsHPBelow::check() {
 		auto ownerObj = _blackboard->get<GameObject*>("owner");
-		auto maxHP = _blackboard->get<float>("max_hp");
+		auto maxHP = _blackboard->get<int>("max_hp");
 		auto npc = dynamic_cast<NPC*>(ownerObj);
 		if (!npc) return false;
 
@@ -732,6 +733,7 @@ namespace PIP::GAME
 			_currentPhase = Phase::ROAR;
 			_internalTimer = 1.2f;
 			_cooldownTimer = _config.cooldown;
+			_grabbedPlayerIds.clear(); // 초기화
 			owner->SetState(_config.entityState);
 			owner->SetActionId(common::packet::ActionID::Tainer::Roar);
 
@@ -760,9 +762,20 @@ namespace PIP::GAME
 			auto target = room->GetActor(targetId);
 
 			if (target) {
-				common::Vec3 dir = common::Normalize(target->GetPosition() - owner->GetPosition());
+				common::Vec3 targetPos = target->GetPosition();
+				common::Vec3 ownerPos = owner->GetPosition();
+				common::Vec3 dir = common::Normalize(targetPos - ownerPos);
 				dir.y = 0;
 				owner->GetComponent<TransformComponent>()->SmoothRotateTo(dir, dt * 10.0f);
+
+				// [추가] 근거리 즉시 잡기: 이미 사거리 내에 있다면 돌진 대기시간 단축 및 즉시 전환
+				float distSq = common::DistanceSq(targetPos, ownerPos);
+				if (distSq < 2.5f * 2.5f) {
+					_currentPhase = Phase::DASHING;
+					_internalTimer = 2.0f; // 돌진(잡기 시도) 타이머 시작
+					_dashDir = dir;
+					return NodeStatus::RUNNING;
+				}
 
 				if (!_isTargetLocked && _internalTimer < 0.1f) {
 					common::Vec3 dashTarget = owner->GetPosition() + (dir * 15.0f); // 잡기는 좀 더 멀리 돌진
@@ -774,12 +787,15 @@ namespace PIP::GAME
 			if (_internalTimer <= 0.0f) {
 				_currentPhase = Phase::DASHING;
 				_dashDir = { 0, 0, 0 };
+				_internalTimer = 2.0f; // [추가] 돌진 최대 지속 시간 (2초)
 			}
 			return NodeStatus::RUNNING;
 		}
 
 		// --- Phase 3: 돌진 및 잡기 시도 ---
 		if (_currentPhase == Phase::DASHING) {
+			_internalTimer -= dt; // [추가] 타임아웃 타이머 감소
+
 			if (!_blackboard->has("charge_target_pos")) return NodeStatus::FAILURE;
 
 			common::Vec3 targetPos = _blackboard->get<common::Vec3>("charge_target_pos");
@@ -793,18 +809,25 @@ namespace PIP::GAME
 			float dot = toTarget.x * _dashDir.x + toTarget.y * _dashDir.y + toTarget.z * _dashDir.z;
 			float distSq = common::LengthSq(toTarget);
 
-			// 도착 판정
-			if (distSq < 0.2f * 0.2f || dot < 0) {
+			// [수정] 도착 판정 혹은 2초 타임아웃 시 실패 처리
+			if (distSq < 0.2f * 0.2f || dot < 0 || _internalTimer <= 0.0f) {
+				auto nc = owner->GetComponent<NPCControllerComponent>();
+				if (nc) nc->SetVelocity({ 0, 0, 0 });
+
 				_currentPhase = Phase::READY;
 				_isTargetLocked = false;
 				_dashDir = { 0, 0, 0 };
-				return NodeStatus::SUCCESS;
+				
+				if (_internalTimer <= 0.0f) {
+					MYLOG("[Grab] Dash timed out (2s) - Grab failed.");
+				}
+				return NodeStatus::FAILURE; // 잡기 실패
 			}
 
 			auto nc = owner->GetComponent<NPCControllerComponent>();
 			if (nc) nc->SetVelocity(_dashDir * _speed);
 			owner->SetState(_config.entityState);
-			owner->SetActionId(ActionID::Tainer::Charge);
+			owner->SetActionId(_config.actionId); // [수정] Charge -> GrabCharge (설정값 사용)
 
 			// 타격 판정 (잡기 포함)
 			int64_t npcId = owner->GetId();
@@ -817,52 +840,93 @@ namespace PIP::GAME
 			auto players = room->GetPlayersPos();
 			for (auto [pid, pos] : players) {
 				auto p = room->GetPlayer(pid);
-				if (p && p->GetGrabbedById() == owner->GetId()) {
-					_grabbedPlayerId = pid;
-					_currentPhase = Phase::CARRYING;
-					_internalTimer = 3.0f; // 3초간 들고 다님
-					if (nc) nc->SetVelocity({ 0, 0, 0 });
-					return NodeStatus::RUNNING;
+				if (p && p->GetGrabbedById() == owner->GetId() && p->GetHP() > 0) {
+					// 아직 리스트에 없는 플레이어라면 추가 시도
+					if (std::find(_grabbedPlayerIds.begin(), _grabbedPlayerIds.end(), pid) == _grabbedPlayerIds.end()) {
+						if (_grabbedPlayerIds.size() < 2) {
+							int8_t slot = (int8_t)_grabbedPlayerIds.size();
+							p->SetGrabSlot(slot);
+							p->SetState(common::packet::EntityState::GRABBED);
+							_grabbedPlayerIds.push_back(pid);
+							
+							_currentPhase = Phase::CARRYING;
+							_internalTimer = 3.0f; // 3초간 난타
+							_damageTimer = 0.0f;   // 즉시 첫 데미지 주게 초기화
+							MYLOG("[Grab] Player " << pid << " grabbed into slot " << (int)slot);
+						}
+						else {
+							// 최대 2명을 넘어가면 그랩 해제 (그냥 맞기만 함)
+							p->SetGrabbedById(-1);
+							p->SetGrabSlot(-1);
+						}
+					}
 				}
 			}
 
 			return NodeStatus::RUNNING;
 		}
 
-		// --- Phase 4: 플레이어 들고 이동 ---
+		// --- Phase 4: 플레이어 들고 난타 (3초) ---
 		if (_currentPhase == Phase::CARRYING) {
 			_internalTimer -= dt;
+			_damageTimer -= dt; // [추가] DoT 타이머 감소
 			owner->SetState(_config.entityState);
 			owner->SetActionId(ActionID::Tainer::GrabCarry);
 
-			// 보스는 천천히 전진하거나 회전할 수 있음
 			auto nc = owner->GetComponent<NPCControllerComponent>();
+			if (nc) nc->SetVelocity({ 0, 0, 0 }); // 난타 중에는 정지
+
+			bool shouldApplyDamage = false;
+			if (_damageTimer <= 0.0f) {
+				shouldApplyDamage = true;
+				_damageTimer = 1.0f; // 1초 간격으로 데미지 적용
+			}
+
+			common::Vec3 ownerPos = owner->GetPosition();
 			common::Vec3 forward = owner->GetComponent<TransformComponent>()->GetForward();
-			if (nc) nc->SetVelocity(forward * 3.0f); // 천천히 이동
+			common::Vec3 right = owner->GetComponent<TransformComponent>()->GetRight();
 
-			// 잡힌 플레이어 위치 고정
-			auto grabbedPlayer = room->GetPlayer(_grabbedPlayerId);
-			if (grabbedPlayer) {
-				// 보스의 앞쪽 2m 지점에 플레이어를 고정
-				common::Vec3 carryPos = owner->GetPosition() + (forward * 2.0f);
-				carryPos.y += 1.0f; // 약간 높게 들기
-				grabbedPlayer->SetPosition(carryPos);
-				grabbedPlayer->SetState(common::packet::EntityState::GRABBED);
-			}
-			else {
-				// 플레이어가 나갔거나 죽었으면 종료
-				_currentPhase = Phase::READY;
-				return NodeStatus::SUCCESS;
+			for (auto it = _grabbedPlayerIds.begin(); it != _grabbedPlayerIds.end(); ) {
+				auto p = room->GetPlayer(*it);
+				if (p && p->GetHP() > 0 && p->GetGrabbedById() == owner->GetId()) {
+					// 1. 데미지 적용 (1초당 20)
+					if (shouldApplyDamage) {
+						p->SetHP(p->GetHP() - 10);
+						if (p->GetHP() <= 0) {
+							room->OnPlayerDead(room->GetSession(p->GetId()));
+							it = _grabbedPlayerIds.erase(it);
+							continue;
+						}
+					}
+
+					// 2. 위치 고정 (클라이언트에서 본 부착을 하겠지만, 서버에서도 물리 계산 방지 및 위치 동기화를 위해 업데이트)
+					// slot 0: 왼손 근처, slot 1: 오른손 근처 (임시 좌표)
+					float sideOffset = (p->GetGrabSlot() == 0) ? -1.0f : 1.0f;
+					common::Vec3 grabPos = ownerPos + (forward * 1.5f) + (right * sideOffset);
+					grabPos.y += 1.5f;
+					p->SetPosition(grabPos);
+					p->SetState(common::packet::EntityState::GRABBED);
+					
+					++it;
+				}
+				else {
+					// 플레이어가 죽었거나 나갔으면 리스트에서 제거
+					if (p) {
+						p->SetGrabbedById(-1);
+						p->SetGrabSlot(-1);
+					}
+					it = _grabbedPlayerIds.erase(it);
+				}
 			}
 
-			if (_internalTimer <= 0.0f) {
+			if (_internalTimer <= 0.0f || _grabbedPlayerIds.empty()) {
 				_currentPhase = Phase::SLAM;
-				_internalTimer = 1.0f; // 슬램 애니메이션 시간
+				_internalTimer = 1.0f; // 슬램/릴리즈 애니메이션 시간
 			}
 			return NodeStatus::RUNNING;
 		}
 
-		// --- Phase 5: 슬램 (바닥에 찍기) ---
+		// --- Phase 5: 슬램 (팅겨내기) ---
 		if (_currentPhase == Phase::SLAM) {
 			_internalTimer -= dt;
 			owner->SetState(_config.entityState);
@@ -872,18 +936,49 @@ namespace PIP::GAME
 			if (nc) nc->SetVelocity({ 0, 0, 0 });
 
 			if (_internalTimer <= 0.0f) {
-				// 최종 데미지 및 해제
-				auto grabbedPlayer = room->GetPlayer(_grabbedPlayerId);
-				if (grabbedPlayer) {
-					grabbedPlayer->SetHP(grabbedPlayer->GetHP() - 50); // 큰 데미지
-					grabbedPlayer->SetGrabbedById(-1);
-					grabbedPlayer->SetState(common::packet::EntityState::IDLE);
-					MYLOG("[Grab] Player " << _grabbedPlayerId << " released by Slam");
+				common::Vec3 forward = owner->GetComponent<TransformComponent>()->GetForward();
+				common::Vec3 ownerPos = owner->GetPosition();
+
+				for (int64_t pid : _grabbedPlayerIds) {
+					auto p = room->GetPlayer(pid);
+					if (p) {
+						// 1. 버스트 데미지 적용 (슬램 타격) 하고 싶으면 키기
+						// p->SetHP(p->GetHP() - 40);
+
+						// 2. 상태 해제
+						p->SetGrabbedById(-1);
+						p->SetGrabSlot(-1);
+						
+						// HP가 남아있으면 IDLE, 아니면 DEAD
+						if (p->GetHP() > 0) {
+							p->SetState(common::packet::EntityState::IDLE);
+						}
+						else {
+							p->SetState(common::packet::EntityState::DEAD);
+							room->OnPlayerDead(room->GetSession(p->GetId()));
+						}
+
+						// [보정] 보스 몸통 정면 1.5m 위치로 강제 이동 후 튕겨내기
+						common::Vec3 releasePos = ownerPos + (forward * 1.5f);
+						releasePos.y += 0.5f; // 지면보다 약간 위
+						p->SetPosition(releasePos);
+
+						// 2. 팅겨내기 (물리적 속도 부여)
+						auto pcc = p->GetComponent<PlayerControllerComponent>();
+						if (pcc) {
+							common::Vec3 launchDir = forward;
+							launchDir.y = 0.3f; // 약간 위로 향하는 궤적
+							pcc->AddImpact(common::Normalize(launchDir) * 18.0f); // [수정] SetMoveVelocity -> AddImpact
+						}
+						
+						MYLOG("[Grab] Player " << pid << " released and bounced from boss body");
+					}
 				}
 
 				_currentPhase = Phase::READY;
-				_grabbedPlayerId = -1;
+				_grabbedPlayerIds.clear();
 				_isTargetLocked = false;
+				_dashDir = { 0, 0, 0 };
 				return NodeStatus::SUCCESS;
 			}
 			return NodeStatus::RUNNING;

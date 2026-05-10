@@ -43,6 +43,8 @@ protected:
 	common::packet::NPCType		_npcType = common::packet::NPCType::Basic;
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;
 	int32_t _actionId = -1;
+	int64_t _grabbedById = -1; // [추가]
+	int8_t  _grabSlot = -1;    // [추가]
 	// --- 동기화 변수 ---
 	XMFLOAT3 _serverPos = { 0, 0, 0 };      // 서버 기준 위치
 	XMFLOAT3 _serverVel = { 0, 0, 0 };      // 서버 기준 속도

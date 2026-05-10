@@ -334,7 +334,11 @@ void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& mo
 
 	// 2. 논리 위치는 서버 좌표로 즉시 동기화 (순간이동)
 	_logicalPosition = movePacket._position;
+	_currentVelocity = movePacket._velocity; // [추가] 서버의 물리 속도 동기화
 	_state = movePacket._state; // [추가] 서버 상태 동기화
+	_grabbedById = movePacket._grabbed_by_id; // [추가]
+	_grabSlot = movePacket._grab_slot;         // [추가]
+	set_hp(movePacket._hp);                   // [추가] 실시간 HP 동기화
 
 	// 3. [핵심] 화면이 튀지 않게 오프셋 재계산
 	// (이전 시각적 위치 - 새로운 논리 위치)를 오프셋으로 설정하여 화면상 위치를 유지함
@@ -369,6 +373,12 @@ void MainPlayerScript::handle_state(float deltaTime)
 	{
 		_state = common::packet::EntityState::DEAD;
 		anim_comp->play("die", false);
+		return;
+	}
+
+	// [추가] 잡힌 상태 애니메이션 처리
+	if (_state == common::packet::EntityState::GRABBED) {
+		anim_comp->play("die", false); // 잡힌 동안 고통받는 모습 (죽는 모션 재활용 혹은 피격 모션)
 		return;
 	}
 
@@ -484,9 +494,9 @@ void MainPlayerScript::handle_state(float deltaTime)
 void MainPlayerScript::handle_input(float deltaTime)
 {
 	// DW추가 : 사망 상태 로직 추가
-	if (0 >= hp())
+	if (0 >= hp() || _state == common::packet::EntityState::GRABBED)
 	{
-		// 사망 상태에서는 입력 무시
+		// 사망 또는 잡힌 상태에서는 입력 무시
 		_currentMoveDir = { 0, 0, 0 }; // 이동 입력 초기화
 		return;
 	}
@@ -633,16 +643,48 @@ void MainPlayerScript::handle_input(float deltaTime)
 }
 void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 {
+	// 0. 잡기 상태일 때 본 부착 처리 (물리 무시)
+	if (_grabbedById != -1) {
+		auto bossObj = ObjectManager::instance()->find_npc(_grabbedById);
+		if (bossObj) {
+			auto bossAnim = bossObj->get_component<AnimationComponent>();
+			auto bossRender = bossObj->get_component<RenderComponent>();
+			if (bossAnim && bossRender) {
+				auto bossMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(bossRender->mesh());
+				if (bossMesh) {
+					// [수정] 모델의 실제 본 이름: hand_L, hand_R
+					std::string boneName = (_grabSlot == 0) ? "hand_L" : "hand_R";
 
-	//float impactSpeed = common::Length(_impactVelocity);
-	//if (impactSpeed > 0.1f) {
-	//	// 서버와 동일하게 초당 40.0f씩 감쇄
-	//	float reduction = 40.0f * deltaTime;
-	//	_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - reduction);
-	//}
-	//else {
-	//	_impactVelocity = { 0, 0, 0 };
-	//}
+					// 1. 보스의 해당 본 월드 행렬 가져오기
+					XMFLOAT4X4 boneSocketTransform = bossMesh->get_socket_transform(boneName);
+					XMFLOAT4X4 bossWorldMatrix = bossObj->transform()->world_matrix();
+
+					// 2. 최종 월드 행렬 계산
+					XMMATRIX matBone = XMLoadFloat4x4(&boneSocketTransform);
+					XMMATRIX matBoss = XMLoadFloat4x4(&bossWorldMatrix);
+					XMMATRIX matFinal = matBone * matBoss;
+
+					// [핵심] 보스의 스케일(5배) 성분 제거 및 위치/회전만 추출
+					XMVECTOR scale, rot, pos;
+					XMMatrixDecompose(&scale, &rot, &pos, matFinal);
+
+					// 플레이어 원래 스케일(1.0) 기반으로 행렬 재조합
+					XMMATRIX matPlayer = XMMatrixRotationQuaternion(rot) * XMMatrixTranslationFromVector(pos);
+
+					// 3. 플레이어 트랜스폼에 적용
+					XMFLOAT4X4 finalWorld;
+					XMStoreFloat4x4(&finalWorld, matPlayer);
+					transform()->set_world_matrix(finalWorld);
+					
+					// 논리 위치도 동기화 (팅겨나갈 때 시작점이 됨)
+					_logicalPosition = transform()->local_position();
+					_visualOffset = { 0, 0, 0 };
+					return; // 물리 업데이트 건너뜀
+				}
+			}
+		}
+	}
+
 	// 1. TerrainLoader 정적 함수를 통해 현재 위치의 지형 높이 가져오기
 	// 지형 타일이 여러 개여도 알아서 내 발밑의 높이를 찾아줍니다.
 	float groundHeight = TerrainLoader::get_height_anywhere(_logicalPosition.x, _logicalPosition.z);
@@ -763,3 +805,29 @@ void MainPlayerScript::init_skill_variables()
 	game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true);
 }
 
+void MainPlayerScript::reset_state()
+{
+	_state = common::packet::EntityState::IDLE;
+	_actionId = 0;
+	_grabbedById = -1;
+	_grabSlot = -1;
+	_isAttacking = false;
+	_isSkilling = false;
+	_packetSent = false;
+	_nowSkillTime = 0.0f;
+	_currentVelocity = { 0, 0, 0 };
+	_verticalVelocity = 0.0f;
+	_visualOffset = { 0, 0, 0 };
+	
+	// 물리 속성 초기화
+	auto cc = game_object()->get_component<PhysicsCharacterControllerComponent>();
+	if (cc) {
+		cc->set_velocity({ 0, 0, 0 });
+	}
+
+	// 애니메이션 강제 초기화
+	auto anim = game_object()->get_component<AnimationComponent>();
+	if (anim) {
+		anim->play("idle", true);
+	}
+}

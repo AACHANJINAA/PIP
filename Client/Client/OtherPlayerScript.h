@@ -14,25 +14,30 @@ public:
 
     void awake() override;
 
-    // ¼­¹ö·ÎºÎÅÍ À§Ä¡ µ¿±âÈ­ ÆĞÅ¶À» ¹Ş¾ÒÀ» ¶§ È£ÃâµÉ ÇÔ¼ö (¿¹½Ã)
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½Å¶ï¿½ï¿½ ï¿½Ş¾ï¿½ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ (ï¿½ï¿½ï¿½ï¿½)
     void on_sync_position(const XMFLOAT3& newPosition);
 	void on_sync_rotation(const XMFLOAT4& newRotation);
     void on_sync_state(common::packet::EntityState state);
     void on_sync_action_id(int32_t action_id);
+    void on_sync_grab(int64_t grabbed_by_id, int8_t grab_slot); // [ì¶”ê°€]
+    void on_sync_velocity(const common::Vec3& velocity) { _velocity = velocity; } // [ì¶”ê°€]
+    void on_sync_hp(int hp) { _hp = hp; } // [ì¶”ê°€]
+    void reset_state(); // [ì¶”ê°€] ë¦¬ìŠ¤í° ì‹œ ìƒíƒœ ì´ˆê¸°í™”
 
-	void set_hp(int hp) { _hp = hp; }
-    int hp() const { return _hp; }
-	void set_id(int64_t id) { _playerId = id; }
-	int64_t id() const { return _playerId; }
-private:
+    void set_hp(int hp) { _hp = hp; }    int hp() const { return _hp; }
+    void set_id(int64_t id) { _playerId = id; }
+    int64_t id() const { return _playerId; }
+    private:
     int _hp;
-	int64_t _playerId;
-	common::packet::EntityState _state;
+    int64_t _playerId;
+    common::packet::EntityState _state;
     int32_t _action_id = 0;
-    // --- [ÃßÃø Ç×¹ı ¹× º¸°£¿ë º¯¼ö] ---
-    common::Vec3    _logicalPosition;   // ¼­¹ö°¡ ¾Ë·ÁÁØ ÃÖ½Å ³í¸®Àû À§Ä¡
-    common::Vec3    _visualOffset;      // ½Ã°¢Àû º¸°£À» À§ÇÑ ¿ÀÇÁ¼Â (ÀÌÀü À§Ä¡¿ÍÀÇ Â÷ÀÌ)
-    common::Vec3    _velocity;          // ÃßÃø Ç×¹ıÀ» À§ÇÑ ¼Óµµ (¿É¼Ç)
+    int64_t _grabbedById = -1; // [ì¶”ê°€]
+    int8_t  _grabSlot = -1;    // [ì¶”ê°€]
+    // --- [ ×¹   ] ---
+    common::Vec3    _logicalPosition;   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë·ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+    common::Vec3    _visualOffset;      // ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+    common::Vec3    _velocity;          // ï¿½ï¿½ï¿½ï¿½ ï¿½×¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Óµï¿½ (ï¿½É¼ï¿½)
 
-    float           _lerpFactor = 15.0f; // º¸°£ ¼Óµµ (¼öÄ¡°¡ Å¬¼ö·Ï ¼­¹ö À§Ä¡¿¡ »¡¸® µµ´Ş)
+    float           _lerpFactor = 15.0f; // ï¿½ï¿½ï¿½ï¿½ ï¿½Óµï¿½ (ï¿½ï¿½Ä¡ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 };

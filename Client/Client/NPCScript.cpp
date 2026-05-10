@@ -42,7 +42,20 @@ void NPCScript::handle_animation_branching()
 	// 2. 액션(공격/스킬) 상태 분기
 	if (_state == EntityState::ACTION) 
 	{
-		anim->play("Attack", false);
+		// [고도화] 보스 액션 ID에 따른 세부 애니메이션 분기
+		if (_npcType == NPCType::Tainer) {
+			using namespace common::packet;
+			switch (_actionId) {
+			case ActionID::Tainer::GrabCharge: anim->play("walk", true, 2.0f); break; // 돌진 (빠른 이동)
+			case ActionID::Tainer::GrabCarry:  anim->play("attack", true, 1.5f); break; // 난타 (연타 모션)
+			case ActionID::Tainer::GrabSlam:   anim->play("attack", false, 0.8f); break; // 슬램 (강한 공격)
+			case ActionID::Tainer::Roar:       anim->play("Idle", false); break;
+			default: anim->play("Attack", false); break;
+			}
+		}
+		else {
+			anim->play("Attack", false);
+		}
 		return;
 	}
 
@@ -128,6 +141,10 @@ void NPCScript::on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_m
 	_accumulatedTime = 0.0f; // 패킷 수신 후 시간 리셋
 	_state = npc_move_packet._state;
 	_actionId = npc_move_packet._action_id;
+	_hp = npc_move_packet._hp; // [추가] HP 동기화
+	_grabbedById = -1; // 단일 이동 패킷엔 아직 그랩 정보가 없음 (일관성을 위해 리셋)
+	_grabSlot = -1;
+
 	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
 	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&npc_move_packet._rotation);
 	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
@@ -190,6 +207,42 @@ void NPCScript::set_hp(int hp)
 
 void NPCScript::update(float deltaTime)
 {
+	// 0. 잡기 상태일 때 본 부착 처리 (NPC)
+	if (_grabbedById != -1) {
+		auto ownerObj = ObjectManager::instance()->find_npc(_grabbedById);
+		if (ownerObj) {
+			auto bossAnim = ownerObj->get_component<AnimationComponent>();
+			auto bossRender = ownerObj->get_component<RenderComponent>();
+			if (bossAnim && bossRender) {
+				auto bossMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(bossRender->mesh());
+				if (bossMesh) {
+					// [수정] 대소문자 구분: hand_L, hand_R
+					std::string boneName = (_grabSlot == 0) ? "hand_L" : "hand_R";
+					XMFLOAT4X4 boneSocketTransform = bossMesh->get_socket_transform(boneName);
+					XMFLOAT4X4 bossWorldMatrix = ownerObj->transform()->world_matrix();
+
+					XMMATRIX matBone = XMLoadFloat4x4(&boneSocketTransform);
+					XMMATRIX matBoss = XMLoadFloat4x4(&bossWorldMatrix);
+					XMMATRIX matFinal = matBone * matBoss;
+
+					// [핵심] 보스의 스케일 제거 및 위치/회전만 추출
+					XMVECTOR scale, rot, pos;
+					XMMatrixDecompose(&scale, &rot, &pos, matFinal);
+
+					// NPC 스케일 1.0 유지 (혹은 자신의 원래 스케일 기반 재조합)
+					XMMATRIX matNpc = XMMatrixRotationQuaternion(rot) * XMMatrixTranslationFromVector(pos);
+
+					XMFLOAT4X4 finalWorld;
+					XMStoreFloat4x4(&finalWorld, matNpc);
+					transform()->set_world_matrix(finalWorld);
+
+					_serverPos = transform()->local_position();
+					return;
+				}
+			}
+		}
+	}
+
 	// 개별 NPC의 업데이트는 매우 짧으므로,
 	// 특정 임계치를 넘는 경우만 확인하거나 누적해서 보는 것이 좋습니다.
 	// 여기서는 0.1ms(100us)를 넘는 경우만 체크합니다.
@@ -314,6 +367,9 @@ void NPCScript::apply_snapshot()
 
 	_state = _pendingSnapshot.state;
 	_actionId = _pendingSnapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
+	_grabbedById = _pendingSnapshot.grabbed_by_id; // [추가]
+	_grabSlot = _pendingSnapshot.grab_slot;         // [추가]
+	set_hp(_pendingSnapshot.hp);                   // [추가] HP 동기화
 
 	// 데이터 적용 (매우 가벼운 대입)
 	_serverPos = _pendingSnapshot.pos;

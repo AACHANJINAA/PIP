@@ -216,7 +216,7 @@ namespace PIP::GAME
         common::Vec3 _dashDir = { 0, 0, 0 }; // [추가] 고정된 돌진 방향 저장용
     };
 
-    // [신규] 돌진 후 잡고 다니는 패턴
+    // [신규] 돌진 후 잡고 다니는 패턴 
     class Action_GrabCharge : public Action
     {
     public:
@@ -237,6 +237,7 @@ namespace PIP::GAME
         bool  _isTargetLocked = false;
         float _cooldownTimer = 0.0f;
         common::Vec3 _dashDir = { 0, 0, 0 };
-        int64_t _grabbedPlayerId = -1;
+        std::vector<int64_t> _grabbedPlayerIds; // [수정] 최대 2명
+        float _damageTimer = 0.0f; // [추가] DoT 타이머
     };
 }
