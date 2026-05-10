@@ -1,0 +1,440 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 14724,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 3585,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.3105725, -0.00187083078, -1.6494633 ],
+			"max": [ 1.41494167, 2.22639084, 1.35272789 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 3585,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 3585,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 7,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 8,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 3585,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 12,
+			"count": 27657,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 13,
+			"count": 13445,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.76565301, -0.165943071, -2.13233161 ],
+			"max": [ 1.88102961, 2.68211961, 1.83918333 ]
+		},
+		{
+			"bufferView": 14,
+			"count": 13445,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 15,
+			"count": 13445,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 16,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 17,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 18,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 19,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 20,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 21,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 22,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 23,
+			"count": 13445,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Bush_01.bin",
+			"byteLength": 1855884
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 29448,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 43020,
+			"byteOffset": 29448,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 43020,
+			"byteOffset": 72468,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 57360,
+			"byteOffset": 115488,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 172848,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 201528,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 230208,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 258888,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 287568,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 316248,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 344928,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28680,
+			"byteOffset": 373608,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 55314,
+			"byteOffset": 402288,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 161340,
+			"byteOffset": 457604,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 161340,
+			"byteOffset": 618944,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 215120,
+			"byteOffset": 780284,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 995404,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1102964,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1210524,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1318084,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1425644,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1533204,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1640764,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 107560,
+			"byteOffset": 1748324,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "M_Bark_2_Inst_BaseColor.png"
+		},
+		{
+			"uri": "M_Bark_2_Inst_Normal.png"
+		},
+		{
+			"uri": "MI_Foliage_BaseColor.png"
+		},
+		{
+			"uri": "T_Leaf_low_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "M_Bark_2_Inst",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.800000012
+			},
+			"normalTexture":
+			{
+				"index": 1
+			}
+		},
+		{
+			"name": "MI_Foliage",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 2
+				},
+				"metallicFactor": 0
+			},
+			"normalTexture":
+			{
+				"index": 3
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994,
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Bush_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5,
+						"TEXCOORD_2": 6,
+						"TEXCOORD_3": 7,
+						"TEXCOORD_4": 8,
+						"TEXCOORD_5": 9,
+						"TEXCOORD_6": 10,
+						"TEXCOORD_7": 11
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 13,
+						"NORMAL": 14,
+						"TANGENT": 15,
+						"TEXCOORD_0": 16,
+						"TEXCOORD_1": 17,
+						"TEXCOORD_2": 18,
+						"TEXCOORD_3": 19,
+						"TEXCOORD_4": 20,
+						"TEXCOORD_5": 21,
+						"TEXCOORD_6": 22,
+						"TEXCOORD_7": 23
+					},
+					"indices": 12,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "M_Bark_2_Inst_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "M_Bark_2_Inst_Normal",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Foliage_BaseColor",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Leaf_low_N",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

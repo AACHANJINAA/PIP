@@ -26,6 +26,8 @@
 #include "CameraComponent.h"
 #include "DebugDrawManager.h"
 #include "GameFramework.h"
+#include "InstancedRenderComponent.h"
+#include "InstanceglTFShader.h"
 #include "LightManager.h"
 #include "RenderComponent.h"
 #include "OcclusionManager.h"
@@ -117,6 +119,9 @@ void Renderer::initialize(ID3D12Device* device)
 
     auto particle_shader = std::make_shared<ParticleShader>();
     _shaderPrototypes[particle_shader->pso_name()] = particle_shader;
+
+    auto instanced_gltf = std::make_shared<InstancedglTFShader>();
+    _shaderPrototypes[instanced_gltf->pso_name()] = instanced_gltf;
 
     create_root_signatures(device);
     create_pipeline_state_objects(device);
@@ -243,9 +248,13 @@ void Renderer::build_render_list(const CameraComponent* camera)
 
         // --- 1. 일반 렌더링 리스트 빌드 (View Frustum Culling) ---
         float renderLimit = (psoName == "terrain") ? 700.0f : 400.0f;
+        if (psoName == "gltf_instanced") renderLimit = 3000.0f;
         if (distSq < (renderLimit * renderLimit))
         {
-            if (renderComp->is_visible(frustum))
+            bool isVisible = renderComp->is_visible(frustum);
+            if (psoName == "gltf_instanced") isVisible = true;
+
+            if (isVisible)
             {
                 if (psoName == "gltf") {
                     _gltfInstanceGroups[renderComp->mesh()].push_back(gameObject);
@@ -315,6 +324,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
     std::vector<std::string> render_order = {
         "terrain",      // 지형
         "gltf",         // 일반 메시 (GPU Instancing 적용)
+		"gltf_instanced", // 인스턴싱이 적용된 glTF 메시
         "skinned",      // 애니메이션 메시
         "skybox",       // Skybox
         "particle_draw",// 파티클
@@ -450,6 +460,28 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
                     shader_prototype->update_per_object(commandList, this, gameObject.get());
                     gameObject->prepare_render();
                     particleRenderComp->render(commandList, frame_index);
+                }
+            }
+            continue;
+        }
+
+        if (psoName == "gltf_instanced") {
+            // 1. PSO 및 루트 시그니처 바인딩 (기존 Gltf와 동일하게 적용)
+            ID3D12PipelineState* pso = get_pso(psoName);
+            ID3D12RootSignature* rootSig = get_root_signature("gltf");
+            commandList->SetPipelineState(pso);
+            commandList->SetGraphicsRootSignature(rootSig);
+
+            // 2. 공통 데이터 바인딩 (카메라, 조명 등)
+            camera->update_shader_variables(commandList, frame_index);
+            LightManager::instance()->bind(commandList, 3);
+            ShadowManager::instance()->bind_for_lighting(commandList, 10, 11, this);
+
+            // 3. 해당 PSO를 사용하는 오브젝트들(InstancedGroup)을 그리게 함
+            for (const auto& gameObject : gameObjects) {
+                auto renderComp = gameObject->get_component<InstancedRenderComponent>();
+                if (renderComp && renderComp->is_enabled()) {
+                    renderComp->render(commandList, frame_index);
                 }
             }
             continue;

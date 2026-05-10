@@ -133,6 +133,8 @@
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="INetSync.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="InstancedRenderComponent.h" />
+    <ClInclude Include="InstanceglTFShader.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LayerManager.h" />
     <ClInclude Include="LightManager.h" />
@@ -263,6 +265,7 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="INetSync.cpp" />
+    <ClCompile Include="InstancedRenderComponent.cpp" />
     <ClCompile Include="LayerManager.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="LinearAllocator.cpp" />
