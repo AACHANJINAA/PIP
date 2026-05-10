@@ -8,39 +8,39 @@
 	"accessors": [
 		{
 			"bufferView": 0,
-			"count": 36,
+			"count": 6,
 			"type": "SCALAR",
 			"componentType": 5121
 		},
 		{
 			"bufferView": 1,
-			"count": 24,
+			"count": 4,
 			"type": "VEC3",
 			"componentType": 5126,
-			"min": [ 6.3345226e-07, -1, -10.0000029 ],
-			"max": [ 5.0031867, 8.58306848e-08, -5.51648782e-07 ]
+			"min": [ 1.56620342e-06, -6.94999586e-16, -5.38696042e-07 ],
+			"max": [ 3.00000119, -5.12923025e-16, 2.99999952 ]
 		},
 		{
 			"bufferView": 2,
-			"count": 24,
+			"count": 4,
 			"type": "VEC3",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 3,
-			"count": 24,
+			"count": 4,
 			"type": "VEC4",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 4,
-			"count": 24,
+			"count": 4,
 			"type": "VEC2",
 			"componentType": 5126
 		},
 		{
 			"bufferView": 5,
-			"count": 24,
+			"count": 4,
 			"type": "VEC2",
 			"componentType": 5126
 		}
@@ -48,63 +48,63 @@
 	"buffers": [
 		{
 			"uri": "SM_floor_02.bin",
-			"byteLength": 1380
+			"byteLength": 232
 		}
 	],
 	"bufferViews": [
 		{
 			"buffer": 0,
-			"byteLength": 36,
+			"byteLength": 6,
 			"target": 34963
 		},
 		{
 			"buffer": 0,
-			"byteLength": 288,
-			"byteOffset": 36,
+			"byteLength": 48,
+			"byteOffset": 8,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 288,
-			"byteOffset": 324,
+			"byteLength": 48,
+			"byteOffset": 56,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 384,
-			"byteOffset": 612,
+			"byteLength": 64,
+			"byteOffset": 104,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 192,
-			"byteOffset": 996,
+			"byteLength": 32,
+			"byteOffset": 168,
 			"target": 34962
 		},
 		{
 			"buffer": 0,
-			"byteLength": 192,
-			"byteOffset": 1188,
+			"byteLength": 32,
+			"byteOffset": 200,
 			"target": 34962
 		}
 	],
 	"images": [
 		{
-			"uri": "MI_Floor_Brick_01_BaseColor.png"
+			"uri": "MI_floor_01_MetallicRoughness.png"
 		},
 		{
-			"uri": "MI_Floor_Brick_01_MetallicRoughness.png"
+			"uri": "MI_floor_01_Occlusion.png"
 		},
 		{
-			"uri": "MI_Floor_Brick_01_Normal.png"
+			"uri": "T_floor01_C.png"
 		},
 		{
-			"uri": "MI_Floor_Brick_01_Occlusion.png"
+			"uri": "T_floor01_N.png"
 		}
 	],
 	"materials": [
 		{
-			"name": "MI_Floor_Brick_01",
+			"name": "MI_floor_01",
 			"pbrMetallicRoughness":
 			{
 				"baseColorTexture":
@@ -123,7 +123,8 @@
 			"occlusionTexture":
 			{
 				"index": 3
-			}
+			},
+			"doubleSided": true
 		}
 	],
 	"meshes": [
@@ -163,24 +164,24 @@
 	],
 	"textures": [
 		{
-			"name": "MI_Floor_Brick_01_BaseColor",
-			"sampler": 0,
-			"source": 0
-		},
-		{
-			"name": "MI_Floor_Brick_01_MetallicRoughness",
-			"sampler": 0,
-			"source": 1
-		},
-		{
-			"name": "MI_Floor_Brick_01_Normal",
+			"name": "T_floor01_C",
 			"sampler": 0,
 			"source": 2
 		},
 		{
-			"name": "MI_Floor_Brick_01_Occlusion",
+			"name": "MI_floor_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_floor01_N",
 			"sampler": 0,
 			"source": 3
+		},
+		{
+			"name": "MI_floor_01_Occlusion",
+			"sampler": 0,
+			"source": 1
 		}
 	]
 }
