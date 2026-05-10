@@ -1405,11 +1405,27 @@ namespace PIP::SERVER
 			pcc->SetPosition(currentServerPos);
 		}
 
-		// 상태 동기화 (기존 로직 유지)
+		// 위치는 데드 레코닝 보정을 위해 저장해두고,
+		// 패킷 에코 시 RTT 계산을 위해 client_tick 저장
 		player->SetLastClientTick(move_packet._client_tick);
 		player->SetRotation(move_packet._rotation);
-		player->SetState(move_packet._state);
-		player->SetActionId(move_packet._action_id);
+
+		// [핵심 보정] 서버 권위 상태 보호 (네트워크 지연으로 인한 덮어쓰기 방지)
+		auto currentState = player->GetState();
+		if (currentState != common::packet::EntityState::GRABBED &&
+			currentState != common::packet::EntityState::DEAD &&
+			currentState != common::packet::EntityState::HITTED)
+		{
+			// 클라이언트가 임의로 특수 상태를 보내는 것도 방지
+			if (move_packet._state != common::packet::EntityState::GRABBED &&
+				move_packet._state != common::packet::EntityState::DEAD &&
+				move_packet._state != common::packet::EntityState::HITTED)
+			{
+				player->SetState(move_packet._state);
+				player->SetActionId(move_packet._action_id);
+			}
+		}
+
 		player->SetLastClientTargetPos(move_packet._position);
 
 	}
