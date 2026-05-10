@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Player.h"
 
 #include <algorithm>
@@ -45,14 +45,26 @@ namespace PIP::GAME
 		_level = 0;
 		_exp = 0;
 		_damage = 50;
-		_state = common::packet::EntityState::IDLE;
-		_hitCooldown = 0.0f;
 		_history.clear();
-		_actionId = 0;
+		
+		ResetState(); // [추가] 공통 초기화 로직 호출
 
 		SetPosition({ 0.0f, 10.0f, 0.0f });
+	}
+
+	void Player::ResetState()
+	{
+		_state = common::packet::EntityState::IDLE;
+		_actionId = 0;
+		_hitCooldown = 0.0f;
+
+		// 잡기 상태 초기화
+		SetGrabbedById(-1);
+		SetGrabSlot(-1);
+
+		// 물리 속성 초기화
 		if (auto pc = GetComponent<PlayerControllerComponent>()) {
-			pc->SetMoveVelocity({ 0,0,0 });
+			pc->SetMoveVelocity({ 0, 0, 0 });
 			pc->AddImpact({ 0, 0, 0 });
 		}
 	}
@@ -62,7 +74,9 @@ namespace PIP::GAME
 		bool isMoved = common::DistanceSq(GetPosition(), _lastSentPos) > 0.0001f;
 		bool isStateChanged = (GetState() != _lastSentState);
 		bool isRotated = !common::IsEqual(GetRotation(), _lastSentRot);
-		return isMoved || isStateChanged || isRotated;
+		bool isGrabChanged = (GetGrabbedById() != _lastSentGrabbedById) || (GetGrabSlot() != _lastSentGrabSlot);
+		bool isHpChanged = (_hp != _lastSentHp); // [추가] DoT 시각화를 위해 HP 변화 감지
+		return isMoved || isStateChanged || isRotated || isGrabChanged || isHpChanged;
 	}
 
 	void Player::SyncSentData()
@@ -70,6 +84,9 @@ namespace PIP::GAME
 		_lastSentPos = GetPosition();
 		_lastSentState = GetState();
 		_lastSentRot = GetRotation();
+		_lastSentGrabbedById = GetGrabbedById();
+		_lastSentGrabSlot = GetGrabSlot();
+		_lastSentHp = _hp; // [추가]
 	}
 
 	void Player::addMaterial(common::packet::ItemId item_id, uint32_t count)
@@ -88,6 +105,24 @@ namespace PIP::GAME
 		{
 			inventory->remove_material(item_id, count);
 		}
+	}
+
+	common::packet::SC_PACKET_MOVE Player::CreateMovePacket() const
+	{
+		common::packet::SC_PACKET_MOVE res;
+		res._type = common::packet::PacketType::S2C_P_MOVE;
+		res._size = sizeof(res);
+		res._id = GetId();
+		res._position = GetPosition();
+		res._velocity = GetVelocity(); // [추가]
+		res._rotation = GetRotation();
+		res._state = _state;
+		res._action_id = _actionId;
+		res._client_tick = _lastClientTick;
+		res._grabbed_by_id = _grabbedById; // [추가]
+		res._grab_slot = _grabSlot;         // [추가]
+		res._hp = _hp;                     // [추가] 실시간 HP 동기화
+		return res;
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,

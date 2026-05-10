@@ -274,10 +274,14 @@ namespace common::packet
 	{
 		int64_t			_id; // long long
 		Vec3			_position;
+		Vec3			_velocity; // [추가] 물리 예측을 위한 속도
 		common::Quat	_rotation;
 		EntityState		_state;
 		int32_t			_action_id; 
 		uint32_t		_client_tick; // [추가] RTT 측정을 위한 클라이언트 타임스탬프 에코
+		int64_t			_grabbed_by_id; // [추가] 나를 잡고 있는 객체의 ID (-1이면 없음)
+		int8_t			_grab_slot;     // [추가] 잡힌 슬롯 (0: 왼손, 1: 오른손 등)
+		int32_t			_hp;            // [추가] 실시간 체력 동기화
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)
@@ -327,6 +331,9 @@ namespace common::packet
 		uint32_t		_time_stamp;
 		EntityState		_state;      // 논리 상태
 		int32_t			_action_id;  // [추가] 0이면 없음, 보스 스킬 번호 등
+		int64_t			_grabbed_by_id; // [추가]
+		int8_t			_grab_slot;     // [추가]
+		int32_t			_hp;            // [추가]
 	};
 
 	struct SC_PACKET_NPC_MOVE_BATCH : PacketHeader {
@@ -354,6 +361,7 @@ namespace common::packet
 		uint32_t	_time_stamp;
 		EntityState	_state;
 		int32_t		_action_id; // [추가] 0이면 없음, 보스 스킬 번호 등
+		int32_t		_hp;        // [추가]
 		// 뒤에 가변 크기 name
 	};
 	// NPC 단일 피격 정보를 담는 구조체

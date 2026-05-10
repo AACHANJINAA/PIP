@@ -16,6 +16,7 @@ namespace PIP::GAME
 		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 		void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
 		void init(int64_t id);
+		void ResetState(); // [추가] 전투 및 상태 초기화
 
 		int64_t GetId() const override { return _owner_id; } 
 
@@ -77,6 +78,7 @@ namespace PIP::GAME
 		void addMaterial(common::packet::ItemId item_id, uint32_t count);
 		void removeMaterial(common::packet::ItemId item_id, uint32_t count);
 
+		common::packet::SC_PACKET_MOVE CreateMovePacket() const;
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		
@@ -94,6 +96,9 @@ namespace PIP::GAME
 		common::packet::EntityState _lastSentState = common::packet::EntityState::IDLE; // 서버에서 클라이언트에게 마지막으로 보낸 상태
 		int32_t _lastSentActionId = 0; // 서버에서 클라이언트에게 마지막으로 보낸 액션 ID
 		common::Quat _lastSentRot = { 0,0,0,1 }; // 서버에서 클라이언트에게 마지막으로 보낸 회전
+		int64_t _lastSentGrabbedById = -1; // [추가]
+		int8_t _lastSentGrabSlot = -1; // [추가]
+		int32_t _lastSentHp = 0; // [추가]
 
 	private:
 		float _hitCooldown = 0.0f;

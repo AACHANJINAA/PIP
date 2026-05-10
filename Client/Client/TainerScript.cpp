@@ -109,6 +109,9 @@ void TainerScript::handle_animation_branching()
 	    break;
 	case EntityState::ACTION:
 		{
+			// [방어 코드] Action 상태인데 actionId가 0이면 가장 최근의 공격 모션을 유지하거나 기본 공격 시도
+			if (_actionId == 0) return; 
+
 	        switch (_actionId)
 	        {
 	        case ActionID::Tainer::Charge:
@@ -126,9 +129,22 @@ void TainerScript::handle_animation_branching()
 	        case ActionID::Tainer::Grab:
 				anim_comp->play("claw_left", false);
 				break;
+			case ActionID::Tainer::GrabCharge:
+				anim_comp->play("swim", true, 2.0f); // 돌진 연출
+				break;
+			case ActionID::Tainer::GrabCarry:
+				anim_comp->play("claw_right", true, 1.5f); // 난타 연출
+				break;
+			case ActionID::Tainer::GrabSlam:
+				anim_comp->play("slam", false, 0.8f); // 슬램 피니시
+				break;
             default:
-				anim_comp->play("idle");
-				CLOG("[TainerScript] Unknown ActionID: " << _actionId);
+				// 알 수 없는 액션일 때만 로그를 찍고, 애니메이션을 강제로 바꾸지 않음
+				static int lastUnknownId = -1;
+				if (lastUnknownId != _actionId) {
+					CLOG("[TainerScript] Unknown ActionID: " << _actionId);
+					lastUnknownId = _actionId;
+				}
                 break;
 	        }
 		}

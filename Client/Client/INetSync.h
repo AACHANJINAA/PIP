@@ -8,6 +8,9 @@ struct NetSnapshot {
     common::packet::EntityState state {common::packet::EntityState::IDLE};
     uint32_t timestamp {};
     int32_t action_id{};
+    int64_t grabbed_by_id = -1; // [추가]
+    int8_t  grab_slot = -1;       // [추가]
+    int32_t hp = 0;              // [추가]
 };
 
 // [Interface] 종속성 역전(DIP)을 위한 추상화 레이어

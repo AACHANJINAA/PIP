@@ -77,6 +77,9 @@ namespace PIP::SERVER
 		void SetupPlayerSpawn(const std::shared_ptr<SESSION>& session);
 		void CheckAndStartGame();
 
+		void OnNPCDead(GAME::NPC* npc);
+		void OnPlayerDead(const std::shared_ptr<SESSION>& session);
+
 		//---------- 아이템 관련 ---------------
 		void SendFullInventory(const std::shared_ptr<SESSION>& session);
 		void SendItemUpdate(const std::shared_ptr<SESSION>& session, common::packet::ItemId id, uint32_t amount, common::packet::InventoryUpdateType type);
@@ -92,6 +95,11 @@ namespace PIP::SERVER
 
 		GAME::Player* GetPlayer(int64_t player_id);
 		GAME::Actor* GetActor(int64_t actor_id);
+		std::shared_ptr<SESSION> GetSession(int64_t player_id) {
+			auto it = _players.find(player_id);
+			if (it != _players.end()) return it->second;
+			return nullptr;
+		}
 
 		std::map<int64_t, common::Vec3> GetPlayersPos() const;
 
@@ -108,10 +116,8 @@ namespace PIP::SERVER
 
 		void SendMapDebugDraw(const std::shared_ptr<SESSION>& session);
 		void SendDebugShape(const std::shared_ptr<SESSION>& session, const StaticMeshTile& tile);
-		void OnNPCDead(GAME::NPC* npc);
 		void RespawnNPC(GAME::NPC* npc);
 
-		void OnPlayerDead(const std::shared_ptr<SESSION>& session);
 		void RespawnPlayer(const std::shared_ptr<SESSION>& session);
 		
 		void SendNpcMovePacket(GAME::NPC* npc);

@@ -4,6 +4,7 @@
 #include "AnimationComponent.h"
 #include "BehaviorTree.h"
 #include "gameobject.h"
+#include "ObjectManager.h"
 #include "ReadGLTFMesh.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
@@ -45,11 +46,74 @@ void OtherPlayerScript::on_sync_action_id(int32_t action_id)
 	_action_id = action_id;
 }
 
+void OtherPlayerScript::on_sync_grab(int64_t grabbed_by_id, int8_t grab_slot)
+{
+	_grabbedById = grabbed_by_id;
+	_grabSlot = grab_slot;
+}
+
+void OtherPlayerScript::reset_state()
+{
+	_state = common::packet::EntityState::IDLE;
+	_action_id = 0;
+	_grabbedById = -1;
+	_grabSlot = -1;
+	_velocity = { 0, 0, 0 };
+	_visualOffset = { 0, 0, 0 };
+
+	// 애니메이션 강제 초기화
+	auto anim = game_object()->get_component<AnimationComponent>();
+	if (anim) {
+		anim->play("idle", true);
+	}
+}
 
 void OtherPlayerScript::update(float deltaTime)
 {
-    // [추측 항법 - 선택 사항]
-	// 만약 서버에서 속도(Velocity) 패킷도 보낸다면, 여기에 _logicalPosition += _velocity * deltaTime; 추가 가능
+    // 0. 잡기 상태일 때 본 부착 처리 (다른 플레이어)
+    if (_grabbedById != -1) {
+        auto bossObj = ObjectManager::instance()->find_npc(_grabbedById);
+        if (bossObj) {
+            auto bossAnim = bossObj->get_component<AnimationComponent>();
+            auto bossRender = bossObj->get_component<RenderComponent>();
+            if (bossAnim && bossRender) {
+                auto bossMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(bossRender->mesh());
+                if (bossMesh) {
+                    // [수정] 대소문자 구분: hand_L, hand_R
+                    std::string boneName = (_grabSlot == 0) ? "hand_L" : "hand_R";
+                    XMFLOAT4X4 boneSocketTransform = bossMesh->get_socket_transform(boneName);
+                    XMFLOAT4X4 bossWorldMatrix = bossObj->transform()->world_matrix();
+
+                    XMMATRIX matBone = XMLoadFloat4x4(&boneSocketTransform);
+                    XMMATRIX matBoss = XMLoadFloat4x4(&bossWorldMatrix);
+                    XMMATRIX matFinal = matBone * matBoss;
+
+                    // [핵심] 보스의 스케일 제거 및 위치/회전만 추출
+                    XMVECTOR scale, rot, pos;
+                    XMMatrixDecompose(&scale, &rot, &pos, matFinal);
+
+                    // 플레이어 스케일 1.0 유지
+                    XMMATRIX matPlayer = XMMatrixRotationQuaternion(rot) * XMMatrixTranslationFromVector(pos);
+
+                    XMFLOAT4X4 finalWorld;
+                    XMStoreFloat4x4(&finalWorld, matPlayer);
+                    transform()->set_world_matrix(finalWorld);
+
+                    _logicalPosition = transform()->local_position();
+                    _visualOffset = { 0, 0, 0 };
+                    return;
+                }
+            }
+        }
+    }
+
+    // [추가] 잡기 해제 시 상태 보정
+    if (_grabbedById == -1 && _state == common::packet::EntityState::GRABBED) {
+        _state = common::packet::EntityState::IDLE;
+    }
+
+    // [추측 항법] 서버의 속도값을 활용해 매 프레임 위치 예측
+	_logicalPosition += _velocity * deltaTime;
 
 	// 1. 시각적 오프셋을 매 프레임 조금씩 줄여나감 (0으로 수렴)
 	// deltaTime * 15.0f 정도면 약 0.1초 내외로 보정이 완료되어 매우 부드럽게 보입니다.
@@ -86,6 +150,9 @@ void OtherPlayerScript::update(float deltaTime)
 	case common::packet::EntityState::IDLE:
 		anim_comp->play("idle");
 		break;
+    case common::packet::EntityState::GRABBED: // [추가]
+        anim_comp->play("die", false); // 잡힌 동안 고통받는 모습
+        break;
     case common::packet::EntityState::DEAD:
         // 피격 애니메이션 재생 (예시)
         anim_comp->play("die", false);

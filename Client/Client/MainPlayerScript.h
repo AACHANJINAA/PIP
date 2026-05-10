@@ -46,6 +46,7 @@ public:
 
 	/*void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }*/
 	void sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket);
+	void reset_state(); // [추가] 리스폰 시 상태 초기화
 private:
 	// --- update 기능 분리용 private 함수 ---
 	void update_hp_bar(float deltaTime);
@@ -111,5 +112,7 @@ private:
 
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;
 	int32_t _actionId = 0;
+	int64_t _grabbedById = -1; // [추가]
+	int8_t  _grabSlot = -1;    // [추가]
 	float _timer = 0.0f;
 };

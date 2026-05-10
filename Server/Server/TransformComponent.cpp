@@ -37,5 +37,20 @@ namespace PIP::GAME
 		DirectX::XMStoreFloat3(&result, rotatedForward);
 		return result;
 	}
+
+	common::Vec3 TransformComponent::GetRight() const
+	{
+		// 1. 현재 회전값(Quaternion) 로드
+		DirectX::XMVECTOR q = DirectX::XMLoadFloat4((const DirectX::XMFLOAT4*)&_rotation);
+		// 2. 기본 오른쪽 벡터(1, 0, 0) 로드
+		DirectX::XMVECTOR right = DirectX::XMLoadFloat3(&common::Vec3Right);
+		// 3. 쿼터니언을 이용해 벡터 회전
+		DirectX::XMVECTOR rotatedRight = DirectX::XMVector3Rotate(right, q);
+		// 4. 결과 반환
+		common::Vec3 result;
+		DirectX::XMStoreFloat3(&result, rotatedRight);
+		return result;
+		
+	}
 }
 
