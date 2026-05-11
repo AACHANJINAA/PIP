@@ -372,6 +372,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 	if (0 >= hp())
 	{
 		_state = common::packet::EntityState::DEAD;
+		if (_currentWeapon) _currentWeapon->set_attack_active(false);
+		_particleEffectObject->set_enabled(false);
 		anim_comp->play("die", false);
 		return;
 	}
