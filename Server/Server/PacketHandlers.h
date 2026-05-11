@@ -16,4 +16,5 @@ namespace PIP::packet
 	void Handle_C2S_CHAT_IN_ROOM(const std::shared_ptr<SERVER::SESSION>& session, packet::PacketStream& stream);
 	void Handle_C2S_ACTION(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream);
 	void Handle_C2S_PLAYER_READY(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream);
+	void Handle_C2S_DEBUG_COMMAND(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream);
 }

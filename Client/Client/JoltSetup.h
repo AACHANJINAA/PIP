@@ -1,4 +1,3 @@
-// Client/Client/JoltSetup.h
 #pragma once
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -7,10 +6,11 @@ namespace PIP
 {
     namespace Layers
     {
-        static constexpr JPH::ObjectLayer NON_MOVING = 0; // ÁöÇü (Å¬¶ó¿¡¼± ·¹ÀÌÄ³½ºÆ®¿ë µîÀ¸·Î »ç¿ë °¡´É)
-        static constexpr JPH::ObjectLayer MOVING = 1;     // ÇÃ·¹ÀÌ¾î, NPC (ÇÇ°İÃ¼)
-        static constexpr JPH::ObjectLayer SENSOR = 2;     // ¹«±â (°ø°İÃ¼)
-        static constexpr JPH::ObjectLayer NUM_LAYERS = 3;
+        static constexpr JPH::ObjectLayer NON_MOVING = 0; // ì •ì  (í´ë¼ì´ì–¸íŠ¸ì—ì„œ ë ˆì´ìºìŠ¤íŠ¸ë‚˜ ì¶©ëŒ ì‹œ í™œìš© ê°€ëŠ¥)
+        static constexpr JPH::ObjectLayer MOVING = 1;     // í”Œë ˆì´ì–´, NPC (ë™ì ê°ì²´)
+        static constexpr JPH::ObjectLayer SENSOR = 2;     // íŠ¸ë¦¬ê±° (ì„¼ì„œê°ì²´)
+        static constexpr JPH::ObjectLayer ELEVATOR = 3;   // ì—˜ë¦¬ë² ì´í„° (ì„œë²„ ë™ê¸°í™”ìš©)
+        static constexpr JPH::ObjectLayer NUM_LAYERS = 4;
     }
 
     namespace BroadPhaseLayers
@@ -27,12 +27,12 @@ namespace PIP
             _objectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
             _objectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
             _objectToBroadPhase[Layers::SENSOR] = BroadPhaseLayers::MOVING;
+            _objectToBroadPhase[Layers::ELEVATOR] = BroadPhaseLayers::MOVING;
         }
 
         virtual JPH::uint GetNumBroadPhaseLayers() const override { return BroadPhaseLayers::NUM_LAYERS; }
         virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override {
-            return
-                _objectToBroadPhase[inLayer];
+            return _objectToBroadPhase[inLayer];
         }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
@@ -53,6 +53,7 @@ namespace PIP
             {
             case Layers::MOVING: return true;
             case Layers::SENSOR: return inLayer2 == BroadPhaseLayers::MOVING;
+            case Layers::ELEVATOR: return inLayer2 == BroadPhaseLayers::MOVING;
             default: return false;
             }
         }
@@ -63,16 +64,17 @@ namespace PIP
     public:
         virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
         {
-            
-        	// ÇÃ·¹ÀÌ¾î(MOVING)¿Í ÁöÇü(NON_MOVING) Ãæµ¹ Çã¿ë
-            if (inObject1 == Layers::MOVING && inObject2 == Layers::NON_MOVING) return true;
-            if (inObject2 == Layers::MOVING && inObject1 == Layers::NON_MOVING) return true;
+            // í”Œë ˆì´ì–´(MOVING)ì™€ ì§€í˜•(NON_MOVING) ì¶©ëŒ í—ˆìš©
+            if ((inObject1 == Layers::MOVING && inObject2 == Layers::NON_MOVING) ||
+                (inObject2 == Layers::MOVING && inObject1 == Layers::NON_MOVING)) return true;
 
-            // NPC(SENSOR)¿Í ÇÃ·¹ÀÌ¾î(MOVING) °£ÀÇ Ãæµ¹(¼¾¼­) Çã¿ë
-            // [ÃÖÀûÈ­] Å¬¶óÀÌ¾ğÆ® ¹°¸® ¿£ÁøÀº ¿ÀÁ÷ '¹«±â(SENSOR)'¿Í '´ë»ó(MOVING)' »çÀÌÀÇ Ãæµ¹¸¸ Ã¼Å©ÇÕ´Ï´Ù.
-            // Ä³¸¯ÅÍ³¢¸® ºÎµúÈ÷°Å³ª, Ä³¸¯ÅÍ°¡ º®¿¡ ¸·È÷´Â µîÀÇ ¹°¸® ½Ã¹Ä·¹ÀÌ¼ÇÀº ¼­¹ö°¡ ¼öÇàÇÏ¹Ç·Î ¿©±â¼­´Â ¸ğµÎ ¹«½ÃÇÕ´Ï´Ù.
-            if (inObject1 == Layers::SENSOR && inObject2 == Layers::MOVING) return true;
-            if (inObject1 == Layers::MOVING && inObject2 == Layers::SENSOR) return true;
+            // ì—˜ë¦¬ë² ì´í„°(ELEVATOR)ì™€ í”Œë ˆì´ì–´(MOVING) ì¶©ëŒ í—ˆìš©
+            if ((inObject1 == Layers::ELEVATOR && inObject2 == Layers::MOVING) ||
+                (inObject2 == Layers::ELEVATOR && inObject1 == Layers::MOVING)) return true;
+
+            // NPC(SENSOR)ì™€ í”Œë ˆì´ì–´(MOVING) ì¶©ëŒ í—ˆìš©
+            if ((inObject1 == Layers::SENSOR && inObject2 == Layers::MOVING) ||
+                (inObject2 == Layers::SENSOR && inObject1 == Layers::MOVING)) return true;
 
             return false;
         }

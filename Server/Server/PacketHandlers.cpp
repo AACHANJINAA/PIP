@@ -526,4 +526,19 @@ namespace PIP::packet
 				});
 		}
 	}
+
+	void Handle_C2S_DEBUG_COMMAND(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
+	{
+		packet::CS_PACKET_DEBUG_COMMAND debug_packet;
+		stream >> debug_packet;
+
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+		if (room) {
+			room->PushJob([room, debug_packet]() {
+				if (debug_packet._command == packet::DebugCommandType::PHYSICS_SNAPSHOT) {
+					room->StartPhysicsRecording();
+				}
+			});
+		}
+	}
 }

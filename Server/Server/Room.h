@@ -6,11 +6,13 @@
 #include "Server.h"
 #include "NPC.h"
 #include "Stage.h"
+#include "Elevator.h"
 
 namespace PIP::GAME
 {
 	class GameObject;
 	class Player;
+	class Elevator;
 }
 namespace PIP::SERVER
 {
@@ -39,6 +41,9 @@ namespace PIP::SERVER
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int64_t npc_id);
 		GAME::NPC* spawn_npc(GAME::NPCType type, const common::Vec3& pos, const std::string& name = "");
+		
+		// [추가] 엘리베이터 생성
+		GAME::Elevator* spawn_elevator(const common::Vec3& start, const common::Vec3& end, float speed, float waitTime, const std::string& name = "Elevator");
 
 
 		void ChangeScene(const std::string& nextSceneName);
@@ -155,6 +160,7 @@ namespace PIP::SERVER
 		std::unordered_map<int64_t, GAME::Actor*>				_actors;
 		std::unordered_map<int64_t, std::shared_ptr<SESSION>>	_players;
 		std::unordered_map<int64_t, std::unique_ptr<GAME::NPC>> _npcs;
+		std::vector<std::unique_ptr<GAME::Elevator>>			_elevators; // [추가] 엘리베이터 관리
 		std::vector<GAME::NPC*>									_activeNpcList;
 		int64_t _next_npc_id = 1000000;
 

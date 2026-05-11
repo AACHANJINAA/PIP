@@ -14,6 +14,7 @@
 #include "DBManager.h"
 #include "InventoryComponent.h"
 #include "StageManager.h"
+#include "Elevator.h"
 
 namespace PIP::SERVER
 {
@@ -25,13 +26,35 @@ namespace PIP::SERVER
 		MYLOG("Room " << _room_id << " created. Assigned to Logic Thread " << _logic_thread_idx << " Max Players: " << static_cast<int>(_max_players));
 	}
 
+	GAME::Elevator* Room::spawn_elevator(const common::Vec3& start, const common::Vec3& end, float speed, float waitTime, const std::string& name)
+	{
+		int64_t id = _next_npc_id++;
+		auto elevator = std::make_unique<GAME::Elevator>(id, start, end, speed, waitTime);
+		elevator->SetName(name);
+
+		// [수정] glTF min/max 기준 정밀한 박스 규격 적용 (약 4.67m x 0.36m x 4.67m)
+		// Half-extents: (2.336f, 0.179f, 2.338f)
+		JPH::BoxShapeSettings boxSettings(JPH::Vec3(2.336f, 0.179f, 2.338f));
+		auto result = boxSettings.Create();
+		if (result.IsValid()) {
+			elevator->InitializePhysics(_physicsSystem, result.Get());
+		}
+
+		GAME::Elevator* ptr = elevator.get();
+		_elevators.push_back(std::move(elevator));
+		_actors[id] = ptr;
+
+		MYLOG("[Room] Elevator spawned: " << name << " ID: " << id << " Pos: (" << start.x << ", " << start.y << ", " << start.z << ")");
+		return ptr;
+	}
+
 	void Room::Initialize()
 	{
 		PhysicsInitialize();
 		_gridMap.Initialize(-1000, 1000, -1000, 1000, 40);
 
 
-		// 1. 기본 스테이지(MainStage) 생성 및 물리 로드
+		// [수정] MainStage에서 시작하여 10초 후 BossScene으로 이동하도록 설정
 		_currentStage = StageManager::Instance()->create_stage("MainStage");
 		if (_currentStage) {
 			_currentStage->on_initialize(this); // 지형 물리 바디 등록
@@ -354,6 +377,11 @@ namespace PIP::SERVER
 
 	void Room::ChangeScene(const std::string& nextSceneName)
 	{
+		if (!StageManager::Instance()->is_existing_stage(nextSceneName)) {
+			MYERROR("[Room] Attempted to change to non-existing scene: " << nextSceneName);
+			return;
+		}
+
 		// 1. 기존 스테이지 정리 (NPC 및 물리 바디 제거)
 		if (_currentStage) {
 			_currentStage->on_exit(this);
@@ -866,6 +894,32 @@ namespace PIP::SERVER
 
 		// --- [Step 2] 로직 업데이트 루프 (O(Active NPCs)) ---
 		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+
+		// [추가] 엘리베이터 업데이트 및 동기화
+		for (auto& elevator : _elevators) {
+			elevator->Update(deltaTime, tempAllocator);
+
+			// 엘리베이터 이동 패킷 전송 (NPC 패킷 재사용)
+			packet::SC_PACKET_NPC_MOVE move_pkt;
+			move_pkt._type = packet::PacketType::S2C_P_NPC_MOVE;
+			move_pkt._npc_id = elevator->GetId();
+			move_pkt._position = elevator->GetPosition();
+			move_pkt._velocity = elevator->GetVelocity();
+			move_pkt._rotation = elevator->GetRotation();
+			move_pkt._state = elevator->GetState();
+			move_pkt._action_id = 0;
+			move_pkt._time_stamp = currentTick;
+
+			packet::PacketStream stream;
+			stream << move_pkt;
+			stream << elevator->GetName();
+
+			auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+			h->_size = (uint16_t)stream.Size();
+
+			Broadcast(stream.constable_data(), stream.Size());
+		}
+
 		for (GAME::NPC* npc : _activeNpcList) {
 			// [최적화] 거리 기반 AI 스태거링
 			bool skipAI = false;
@@ -1447,7 +1501,7 @@ namespace PIP::SERVER
 
 		// 3. [핵심] 클라이언트에게 현재 방의 씬으로 전환하라고 명령 (로딩 시작 유도)
 		if (_currentStage) {
-			std::string sceneName = "MainStage"; //_currentStage->get_stage_name();
+			std::string sceneName = _currentStage->get_stage_name();
 
 			packet::PacketStream stream;
 			packet::SC_PACKET_CHANGE_SCENE change_packet;
@@ -1576,6 +1630,27 @@ namespace PIP::SERVER
 		// 3. 나의 스폰 패킷 생성 및 전송
 		packet::PacketStream self_spawn = packet::MakeSpawnPlayerPacket(session);
 		session->do_send(self_spawn.constable_data(), self_spawn.Size()); // 나에게 전송
+
+		// [추가] 현재 방에 있는 엘리베이터 정보 전송
+		for (auto& elevator : _elevators) {
+			packet::SC_PACKET_NPC_SPAWN elevator_spawn;
+			elevator_spawn._type = common::packet::PacketType::S2C_P_NPC_SPAWN;
+			elevator_spawn._npc_id = elevator->GetId();
+			elevator_spawn._npc_type = common::packet::NPCType::Elevator;
+			elevator_spawn._position = elevator->GetPosition();
+			elevator_spawn._hp = elevator->GetHP();
+			elevator_spawn._state = elevator->GetState();
+			elevator_spawn._action_id = 0;
+
+			packet::PacketStream elevatorStream;
+			elevatorStream << elevator_spawn;
+			elevatorStream << elevator->GetName();
+
+			auto* h = reinterpret_cast<packet::PacketHeader*>(elevatorStream.mutable_data());
+			h->_size = (uint16_t)elevatorStream.Size();
+
+			session->do_send(elevatorStream.constable_data(), elevatorStream.Size());
+		}
 
 		// DW추가 : npc 카운트 패킷 전송 (방 입장 시 NPC 수 알려주기)
 		packet::SC_PACKET_SCENE_AWAKE npc_count_packet;
@@ -2117,25 +2192,56 @@ namespace PIP::SERVER
 			// 3. 현재 소환된 NPC 정보 집계 (동적 계산)
 			uint16_t boss_count = 0;
 			uint16_t npc_count = 0;
-			int64_t min_boss_id = 0;
-			int64_t min_npc_id = 0;
+			int64_t min_boss_id = -1;
+			int64_t min_npc_id = -1;
 
 			for (auto& [id, npc] : _npcs) {
 				if (npc->is_boss()) {
-					if (boss_count == 0 || id < min_boss_id) min_boss_id = id;
+					if (min_boss_id == -1 || id < min_boss_id) min_boss_id = id;
 					boss_count++;
 				}
 				else {
-					if (npc_count == 0 || id < min_npc_id) min_npc_id = id;
+					if (min_npc_id == -1 || id < min_npc_id) min_npc_id = id;
 					npc_count++;
 				}
 			}
 
-			// 4. 스폰 패킷 전송 (중복 방지: 모든 유저에게 모든 유저의 정보를 한 번씩만 발송)
+			// [추가] 엘리베이터도 NPC 카운트에 포함하여 클라이언트가 풀을 생성하게 함
+			if (!_elevators.empty()) {
+				for (auto& elevator : _elevators) {
+					int64_t eid = elevator->GetId();
+					if (min_npc_id == -1 || eid < min_npc_id) min_npc_id = eid;
+					npc_count++;
+				}
+			}
+
+			// 4. 스폰 패킷 전송
 			for (auto& [target_id, target_session] : _players) {
+				// 플레이어 스폰 정보 전송
 				for (auto& [source_id, source_session] : _players) {
 					packet::PacketStream spawn_packet = packet::MakeSpawnPlayerPacket(source_session);
 					target_session->do_send(spawn_packet.constable_data(), spawn_packet.Size());
+				}
+
+				// [추가] 현재 방의 모든 엘리베이터 스폰 정보를 준비된 플레이어에게 전송
+				for (auto& elevator : _elevators) {
+					packet::SC_PACKET_NPC_SPAWN elevator_spawn;
+					elevator_spawn._type = common::packet::PacketType::S2C_P_NPC_SPAWN;
+					elevator_spawn._npc_id = elevator->GetId();
+					elevator_spawn._npc_type = common::packet::NPCType::Elevator;
+					elevator_spawn._position = elevator->GetPosition();
+					elevator_spawn._hp = elevator->GetHP();
+					elevator_spawn._state = elevator->GetState();
+					elevator_spawn._action_id = 0;
+
+					packet::PacketStream elevatorStream;
+					elevatorStream << elevator_spawn;
+					elevatorStream << elevator->GetName();
+
+					auto* h = reinterpret_cast<packet::PacketHeader*>(elevatorStream.mutable_data());
+					h->_size = (uint16_t)elevatorStream.Size();
+
+					target_session->do_send(elevatorStream.constable_data(), elevatorStream.Size());
 				}
 
 				// 동적으로 계산된 NPC/보스 카운트 정보 전송

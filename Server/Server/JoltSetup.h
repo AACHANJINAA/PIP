@@ -2,24 +2,18 @@
 
 namespace PIP
 {
-    // ·¹ÀÌ¾î Á¤ÀÇ
     namespace Layers
     {
         // ObjectLayer = uint16
-        static constexpr JPH::ObjectLayer NON_MOVING = 0; // ÁöÇü, °Ç¹°
-        static constexpr JPH::ObjectLayer MOVING = 1; // ÇÃ·¹ÀÌ¾î, ¸ó½ºÅÍ
-		static constexpr JPH::ObjectLayer NPC = 2; // Ãæµ¹Àº ¾ÈÇÏÁö¸¸ ´êÀ¸¸é ÀÌº¥Æ® ¹ß»ı
+        static constexpr JPH::ObjectLayer NON_MOVING = 0; // ì •ì  ì§€í˜•, ê±´ë¬¼
+        static constexpr JPH::ObjectLayer MOVING = 1;     // í”Œë ˆì´ì–´, ëª¬ìŠ¤í„°
+        static constexpr JPH::ObjectLayer NPC = 2;        // NPC/AIìš© ë ˆì´ì–´
+        static constexpr JPH::ObjectLayer ELEVATOR = 3;   // [ì¶”ê°€] ì—˜ë¦¬ë² ì´í„° (ì§€í˜• í†µê³¼, ìºë¦­í„°ë§Œ ë°€ì–´ëƒ„)
 
-        //TODO: ³ªÁß¿¡ Ãß°¡ÇÒ °¡´É¼ºÀÌ ÀÖ´Â ·¹ÀÌ¾îµé
-        //static constexpr ObjectLayer TRIGGER = 2; // ´êÀ¸¸é ÀÌº¥Æ®¸¸ ¹ß»ı, ¸öÀÌ Åë°úµÊ)
-        //static constexpr ObjectLayer PLAYER = 3;
-        //static constexpr ObjectLayer MONSTER = 4;
-
-		// ObjectLayer °³¼ö
-        static constexpr JPH::ObjectLayer NUM_LAYERS = 3;
+        static constexpr JPH::ObjectLayer NUM_LAYERS = 4;
     }
 
-    // BroadPhase ·¹ÀÌ¾î Á¤ÀÇ (¼º´É ÃÖÀûÈ­¿ë)
+    // BroadPhase ë ˆì´ì–´ ì •ì˜ (ì„±ëŠ¥ ìµœì í™”ìš©)
     namespace BroadPhaseLayers
     {
         // BroadPhaseLayer = uint8
@@ -27,38 +21,39 @@ namespace PIP
         static constexpr JPH::BroadPhaseLayer MOVING{ 1 };
 
 
-        // BroadPhaseLayer °³¼ö
+        // BroadPhaseLayer ê°œìˆ˜
         static constexpr JPH::uint            NUM_LAYERS{ 2 };
     }
 
-    // Jolt¿¡°Ô "¼¼»ó¿¡´Â ¾î¶² Á¾·ùÀÇ BroadPhase ·¹ÀÌ¾îµéÀÌ ÀÖ¾î?"¶ó°í ¾Ë·ÁÁÖ´Â ÀÎÅÍÆäÀÌ½º(¼³°èµµ)ÀÔ´Ï´Ù.
-    // BP´Â ÀÏÁ¾ÀÇ Àü¿ª ÇÊÅÍ?·¹ÀÌ¾î? °°Àº ´À³¦ ÇöÀç´Â ¿òÁ÷ÀÌ´Â °Í°ú ¿òÁ÷ÀÌÁö ¾Ê´Â °Í¸¸ ±¸ºĞ
-    // °¢°¢ Æ®¸®·Î¼­ ¿ÀºêÁ§Æ®µéÀ» °ü¸® Quadtree·Î °ü¸®ÇÔ
+    // Joltì—ê²Œ "ì„¸ìƒì—ëŠ” ì–´ë–¤ ì¢…ë¥˜ì˜ BroadPhase ë ˆì´ì–´ë“¤ì´ ìˆì–´?"ë¼ê³  ì•Œë ¤ì£¼ëŠ” ì¸í„°í˜ì´ìŠ¤(ì„¤ê³„ë„)ì…ë‹ˆë‹¤.
+    // BPëŠ” ì¼ì¢…ì˜ ì „ì—­ í•„í„°?ë ˆì´ì–´? ê°™ì€ ëŠë‚Œ í˜„ì¬ëŠ” ì›€ì§ì´ëŠ” ê²ƒê³¼ ì›€ì§ì´ì§€ ì•ŠëŠ” ê²ƒë§Œ êµ¬ë¶„
+    // ê°ê° íŠ¸ë¦¬ë¡œì„œ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ê´€ë¦¬ Quadtreeë¡œ ê´€ë¦¬í•¨
     class BPLayerInterfaceImpl : public JPH::BroadPhaseLayerInterface
     {
     public:
         BPLayerInterfaceImpl()
         {
-			// ObjectLayer¿Í BroadPhaseLayer ¸ÅÇÎ ¼³Á¤
+			// ObjectLayerì™€ BroadPhaseLayer ë§¤í•‘ ì„¤ì •
             _objectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
             _objectToBroadPhase[Layers::MOVING]     = BroadPhaseLayers::MOVING;
-			_objectToBroadPhase[Layers::NPC]        = BroadPhaseLayers::MOVING;
+            _objectToBroadPhase[Layers::NPC]        = BroadPhaseLayers::MOVING;
+            _objectToBroadPhase[Layers::ELEVATOR]   = BroadPhaseLayers::MOVING;
         }
 
         virtual JPH::uint GetNumBroadPhaseLayers() const override
         {
-			// BroadPhaseLayer °³¼ö ¹İÈ¯
+			// BroadPhaseLayer ê°œìˆ˜ ë°˜í™˜
             return BroadPhaseLayers::NUM_LAYERS;
         }
 
-        // ³»°¡ ¾î¶² BP ·¹ÀÌ¾î¿¡ ¼ÓÇÏ´ÂÁö ¹İÈ¯
+        // ë‚´ê°€ ì–´ë–¤ BP ë ˆì´ì–´ì— ì†í•˜ëŠ”ì§€ ë°˜í™˜
         virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
         {
             return _objectToBroadPhase[inLayer];
         }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-		// µğ¹ö±ë¿ë: BroadPhaseLayer ÀÌ¸§ ¹İÈ¯
+		// ë””ë²„ê¹…ìš©: BroadPhaseLayer ì´ë¦„ ë°˜í™˜
         virtual const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
         {
             switch (static_cast<JPH::BroadPhaseLayer::Type>(inLayer)) {
@@ -73,25 +68,21 @@ namespace PIP
 #endif
 
     private:
-        JPH::BroadPhaseLayer _objectToBroadPhase[Layers::NUM_LAYERS]; // ObjectLayer -> BroadPhaseLayer ¸ÅÇÎ ¹è¿­
+        JPH::BroadPhaseLayer _objectToBroadPhase[Layers::NUM_LAYERS];
     };
 
-	// ObjectLayer¿Í BroadPhaseLayer °£ÀÇ Ãæµ¹ ¿©ºÎ¸¦ °áÁ¤ÇÏ´Â ÇÊÅÍ Å¬·¡½º ±¸Çö
     class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
     {
     public:
-        virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
+        virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override     
         {
-            switch (inLayer1) // ¹°Ã¼ÀÇ Á¾·ù
+            switch (inLayer1)
             {
             case Layers::NON_MOVING:
-                // 1. NON_MOVING ¹°Ã¼´Â ÁöÇü°ú Ãæµ¹ÇÏ¸é ¾ÈµÇ´Ï±ñ
-				// MOVING ·¹ÀÌ¾îÀÏ¶§¸¸ true ¹İÈ¯ (ÁöÇüvsÁöÇü = false)
                 return inLayer2 == BroadPhaseLayers::MOVING;
             case Layers::MOVING:
-				// 2. MOVING ¹°Ã¼´Â ¸ğµç ·¹ÀÌ¾î¿Í Ãæµ¹
-                return true;
-			case Layers::NPC:
+            case Layers::NPC:
+            case Layers::ELEVATOR:
                 return true;
             default:
                 return false;
@@ -99,14 +90,10 @@ namespace PIP
         }
     };
 
-	// ObjectLayer °£ÀÇ Ãæµ¹ ¿©ºÎ¸¦ °áÁ¤ÇÏ´Â ÇÊÅÍ Å¬·¡½º ±¸Çö
     class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
     {
-        // 1´Ü°è(BroadPhase Filter) : ¹°Ã¼°¡ ¼ÓÇÑ Å« ¹Ù±¸´Ï(Layer)³¢¸® ºñ±³. (¸Å¿ì ºü¸§)
-        // 2´Ü°è(ObjectLayer Pair Filter) : ½ÇÁ¦·Î °¡±îÀÌ ºÙÀº µÎ °³º° °´Ã¼³¢¸® ºñ±³. (Á¤¹ĞÇÔ)
     public:
-        // ½ÇÁ¦·Î µÎ ¹°Ã¼°¡ ¹°¸®ÀûÀ¸·Î ÆÃ°Ü³ª°¡¾ß ÇÏ´Â°¡?
-        virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
+        virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override       
         {
             switch (inObject1)
             {
@@ -115,47 +102,39 @@ namespace PIP
             case Layers::MOVING:
                 return true;
             case Layers::NPC:
-                // [ÇÙ½É] NPC´Â NPC³¢¸® Ãæµ¹ÇÏÁö ¾ÊÀ½ (inObject2°¡ NPC¸é false)
-                return inObject2 == Layers::NON_MOVING || inObject2 == Layers::MOVING;
+                // [ìˆ˜ì •] NPCë„ ì—˜ë¦¬ë² ì´í„°ì™€ ì¶©ëŒí•´ì•¼ ë³´ìŠ¤ê°€ ì—˜ë¦¬ë² ì´í„°ì— íƒˆ ìˆ˜ ìˆìŒ
+                return inObject2 == Layers::NON_MOVING || inObject2 == Layers::MOVING || inObject2 == Layers::ELEVATOR;
+            case Layers::ELEVATOR:
+                // ì—˜ë¦¬ë² ì´í„°ëŠ” MOVING(í”Œë ˆì´ì–´) ë° NPCì™€ë§Œ ì¶©ëŒí•˜ê³  NON_MOVING(ì§€í˜•)ê³¼ëŠ” ì¶©ëŒí•˜ì§€ ì•ŠìŒ
+                return inObject2 == Layers::MOVING || inObject2 == Layers::NPC;
             default:
                 return false;
             }
         }
     };
 
-    // 4. ¸®½º³Ê (ÀÏ´Ü ºñ¿öµÒ)
-    // ÀáÀÚ±â ±ú¾î³ª±â ¾Ë¶÷
     class MyBodyActivationListener : public JPH::BodyActivationListener
     {
     public:
-        // ¹°Ã¼°¡ ¸ØÃç ÀÖ´Ù°¡ ´©°¡ °Çµå·Á¼­ ¿òÁ÷ÀÌ±â ½ÃÀÛÇÒ¶§ È£Ãâ
-        virtual void OnBodyActivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override {}
-		// ¹°Ã¼°¡ ¿òÁ÷ÀÌ´Ù°¡ ¿ÏÀüÈ÷ ¸ØÃç¼­ Àáµé¶§ È£Ãâ
-        virtual void OnBodyDeactivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override {}
+        virtual void OnBodyActivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override {}       
+        virtual void OnBodyDeactivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override {}     
     };
 
-    // Ãæµ¹ ¾Ë¸² °ÔÀÓ ¾Ë¸² **°ÔÀÓ ·ÎÁ÷ÀÇ ÇÙ½É**
-    // ½ÇÁ¦ Ãæµ¹ÀÌ ÀÏ¾î³µÀ»¶§ È£ÃâµÊ 
     class MyContactListener : public JPH::ContactListener
     {
     public:
-        // ÁøÂ¥ Ãæµ¹À» ÇØµµ µÇ´ÂÁö °ËÁõ
-        // ¿¹½Ã·Î ¾Æ±º°°Àº °æ¿ì´Â ¹«½ÃµÉ°Í
-        virtual JPH::ValidateResult OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset, 
+        virtual JPH::ValidateResult OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset,
                                                       const JPH::CollideShapeResult& inCollisionResult) override
         {
             return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
         }
 
-        // µÎ ¹°Ã¼°¡ Ã³À½ ´ê¾ÒÀ» ¶§ È£ÃâµË´Ï´Ù.
         virtual void OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold,
                                     JPH::ContactSettings& ioSettings) override {}
 
-        // °è¼Ó ´ê¾ÆÀÖÀ» ¶§ (ºñºñ°í ÀÖÀ» ¶§) È£ÃâµË´Ï´Ù.
         virtual void OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold,
                                         JPH::ContactSettings& ioSettings) override {}
 
-        // ¶³¾îÁ³À» ¶§ È£ÃâµË´Ï´Ù.
         virtual void OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair) override {}
     };
 }

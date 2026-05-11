@@ -506,6 +506,9 @@ void MainPlayerScript::handle_input(float deltaTime)
 	common::Vec3 move_direction{};
 	bool is_moving_input = false;
 
+	// [방어 코드] 카메라가 로딩되지 않았거나 nullptr인 경우 입력 처리를 스킵하여 크래시 방지
+	if (!_camera || !_camera->transform()) return;
+
 	XMFLOAT3 camForward = _camera->transform()->forward();
 	XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });
 	XMFLOAT3 camRightV = Vector3::Normalize(Vector3::CrossProduct({ 0, 1.f, 0 }, camFwdV));

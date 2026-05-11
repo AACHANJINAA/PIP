@@ -132,6 +132,7 @@ namespace common::packet
 		error = 0,
 		Basic = 1,
 		Tainer = 2,
+		Elevator = 3, // [추가] 엘리베이터 객체
 		// 향후 추가될 NPC 유형들...
 	};
 	enum class InventoryUpdateType : uint8_t {
@@ -219,6 +220,14 @@ namespace common::packet
 	{
 		// 플레이어가 준비 완료 상태임을 알리는 패킷 (추가 데이터 필요 없음)
 		// 확인용으로 뒤에 바뀐 씬 이름 붙을수 있음
+	};
+
+	enum class DebugCommandType : uint8_t {
+		PHYSICS_SNAPSHOT = 1, // 1프레임 물리 스냅샷 찍기
+	};
+
+	struct CS_PACKET_DEBUG_COMMAND : PacketHeader {
+		DebugCommandType _command;
 	};
 
 	// ------------------------------------------ server to client ------------------------------------------ // 
@@ -450,3 +459,4 @@ namespace common::move_speed // 실제 이동속도 이므로 더 빨라저야 �
 }
 
 // TEST COMMENT: This is for testing purposes.
+is for testing purposes.

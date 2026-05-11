@@ -775,6 +775,10 @@ void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& strea
 	{
 		client_scene_name = "MainScene";
 	}
+	else if ("BossStage" == nextSceneName)
+	{
+		client_scene_name = "BossScene";
+	}
 	SceneManager::instance()->set_network_scene_name(client_scene_name);
 	SceneManager::instance()->change_scene(client_scene_name);
 

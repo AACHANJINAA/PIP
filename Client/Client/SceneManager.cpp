@@ -12,12 +12,14 @@
 #include "NetworkManager.h"
 #include "ObjectManager.h"
 #include "ResourceManager.h"
+#include "ReplicationSystem.h"
 
 #include "SkyboxMesh.h"
 #include "SkyboxRenderComponent.h"
 #include "TerrainLoader.h"
 #include "TerrainRenderComponent.h"
 #include "UIManager.h"
+
 
 SceneManager::SceneManager()
 {
@@ -76,6 +78,11 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 
 	auto game_framework = GameFramework::instance();
 	game_framework->WaitForGpuComplete();
+
+	// [추가] 씬 전환 시 복제 시스템의 이전 엔티티 목록을 모두 비움
+	if (auto rs = game_framework->get_replication_system()) {
+		rs->clear();
+	}
 
     //if (_currentScene) {
     //    _currentScene.release();

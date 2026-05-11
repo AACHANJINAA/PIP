@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "MainStage.h"
 #include "Room.h"
 #include "JoltSetup.h"
@@ -14,10 +14,10 @@ namespace PIP::SERVER
         auto& bodyInterface = physicsSystem->GetBodyInterface();
 
         
-        //TODO: ¿ì¸®°¡ Á¤ÀÇÇÑ "MainStage" ±×·ì¿¡ ¼ÓÇÑ Å¸ÀÏ Æ÷ÀÎÅÍµé¸¸ °¡Á®¿È
+        //TODO: ìš°ë¦¬ê°€ ì •ì˜í•œ "MainStage" ê·¸ë£¹ì— ì†í•œ íƒ€ì¼ í¬ì¸í„°ë“¤ë§Œ ê°€ì ¸ì˜´
         //auto myTiles = MapDataManager::Instance()->GetTerrainGroup("MainStage");
 
-        // 1. ÁöÇü(Terrain Tiles) ·Îµå
+        // 1. ì§€í˜•(Terrain Tiles) ë¡œë“œ
         const auto& terrainTiles = MapDataManager::Instance()->GetTerrainTiles();
         for (const auto& tile : terrainTiles)
         {
@@ -33,8 +33,8 @@ namespace PIP::SERVER
         MYLOG("[MainStage] Physics terrain loaded. Count: " << terrain_num);
 
 
-        // 2. Á¤Àû ¸Ş½¬(Static Mesh Collisions) ±×·ì ·Îµå
-		// µ¿ÀÏÇÑ groupNameÀ» »ç¿ëÇÏ¿© ÇØ´ç Å¸ÀÏ¿¡ ¼ÓÇÑ ¸ğµç ¿ÀºêÁ§Æ® ¸Ş½¬¸¦ °¡Á®¿É´Ï´Ù.
+        // 2. ì •ì  ë©”ì‰¬(Static Mesh Collisions) ê·¸ë£¹ ë¡œë“œ
+		// ë™ì¼í•œ groupNameì„ ì‚¬ìš©í•˜ì—¬ í•´ë‹¹ íƒ€ì¼ì— ì†í•œ ëª¨ë“  ì˜¤ë¸Œì íŠ¸ ë©”ì‰¬ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
         auto meshGroup = MapDataManager::Instance()->GetStaticMeshGroup("VillageStage");
         for (const auto* tile : meshGroup)
         {
@@ -57,7 +57,7 @@ namespace PIP::SERVER
             }*/
             JPH::BodyID id = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
 
-            // ¹Ùµğ »ı¼º ½ÇÆĞ Ã¼Å© (°³¼ö ÃÊ°ú µî ¹ß»ı ½Ã)
+            // ë°”ë”” ìƒì„± ì„±ê³µ ì—¬ë¶€ ì²´í¬ (ë©”ëª¨ë¦¬ ë¶€ì¡± ë“± ë°œìƒ ì‹œ)
             if (id.IsInvalid()) {
                 MYERROR("[MainStage] Physics Body creation FAILED for mesh: " << tile->meshName);
                 continue;
@@ -79,7 +79,7 @@ namespace PIP::SERVER
     {
         MYLOG("[MainStage] Spawning NPCs and Boss...");
 
-        // 1. Àâ¸÷ 500¸¶¸® ¹«ÀÛÀ§ ¹èÄ¡ (MainStageÀÇ ±ÔÄ¢)
+        // 1. ì¡ëª¹ 500ë§ˆë¦¬ ë¬´ì‘ìœ„ ë°°ì¹˜ (MainStageì˜ ê·œì¹™)
         common::Vec3 center = get_spawn_pos();
         for (int i = 0; i < 500; ++i) {
             float rx = std::uniform_real_distribution<float>(-100, 100)(gen);
@@ -88,7 +88,7 @@ namespace PIP::SERVER
             room->spawn_npc(GAME::NPCType::Basic, { center.x + rx, center.y, center.z + rz });
         }
 
-        // 2. º¸½º Å×ÀÌ³Ê ¹èÄ¡
+        // 2. ë³´ìŠ¤ í…Œì´ë„ˆ ë°°ì¹˜
         room->spawn_npc(GAME::NPCType::Tainer, center, "Tainer the Gatekeeper");
 
         room->StartGame();
@@ -96,14 +96,22 @@ namespace PIP::SERVER
 
     void MainStage::update(Room* room, float dt)
     {
-        // º¸½º ÆäÀÌÁî Ã¼Å©³ª ½ºÅ×ÀÌÁö Àü¿ë ±â¹Í ¾÷µ¥ÀÌÆ®
+        // 10ì´ˆ í›„ ìë™ìœ¼ë¡œ BossSceneìœ¼ë¡œ ì´ë™
+        if (!_isTransitioning) {
+            _bossSceneTimer += dt;
+            if (_bossSceneTimer >= 30.0f) {
+                _isTransitioning = true;
+                MYLOG("[MainStage] 30 seconds passed. Transitioning to BossStage...");
+                room->ChangeScene("BossStage");
+            }
+        }
     }
 
     void MainStage::on_exit(Room* room)
     {
         MYLOG("[MainStage] Exiting Stage. Cleaning up...");
 
-        // 1. ÀÌ ½ºÅ×ÀÌÁö¿¡¼­ ¸¸µç ¹°¸® ¹Ùµğ ¸ğµÎ Á¦°Å
+        // 1. ì´ ìŠ¤í…Œì´ì§€ì—ì„œ ìƒì„±í•œ ë¬¼ë¦¬ ë°”ë”” ëª¨ë‘ ì œê±°
         auto& bodyInterface = room->GetPhysicsSystem()->GetBodyInterface();
         if (!_stageBodyIDs.empty()) {
             bodyInterface.RemoveBodies(_stageBodyIDs.data(), static_cast<int>(_stageBodyIDs.size()));
@@ -111,13 +119,13 @@ namespace PIP::SERVER
             _stageBodyIDs.clear();
         }
 
-        // 2. ½ºÅ×ÀÌÁö NPCµé Á¦°Å
+        // 2. ìŠ¤í…Œì´ì§€ NPCë“¤ ì œê±°
         room->ClearAllNPCs();
     }
 
     const common::Vec3 MainStage::get_spawn_pos() const
     {
-		return { -212.0f, 6.43f, -360.0f + 5.0f }; // ¿ùµå Áß¾Ó µî ¿øÇÏ´Â À§Ä¡·Î ¹İÈ¯
+		return { -212.0f, 6.43f, -360.0f + 5.0f }; // ì›”ë“œ ì¤‘ì•™ ë“± ì›í•˜ëŠ” ìœ„ì¹˜ë¡œ ë°˜í™˜
     }
 
 }
