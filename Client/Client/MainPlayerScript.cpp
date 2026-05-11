@@ -380,6 +380,8 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 	// [추가] 잡힌 상태 애니메이션 처리
 	if (_state == common::packet::EntityState::GRABBED) {
+		if (_currentWeapon) _currentWeapon->set_attack_active(false);
+		_particleEffectObject->set_enabled(false);
 		anim_comp->play("die", false); // 잡힌 동안 고통받는 모습 (죽는 모션 재활용 혹은 피격 모션)
 		return;
 	}
