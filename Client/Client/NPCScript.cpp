@@ -95,6 +95,18 @@ void NPCScript::init_visual()
 	auto animation_component = NPC->get_component<AnimationComponent>();
 	auto render_comp = NPC->get_component<RenderComponent>();
 
+	if (_npcType == common::packet::NPCType::Elevator) {
+		// 엘리베이터 모델 설정 (실제 경로 적용)
+		auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Elevator/Elevator.gltf");
+		render_comp->set_mesh(baseMesh);
+
+		std::string material_name = "elevator_material_" + std::to_string(id());
+		ResourceManager::instance()->create_material(material_name);
+		ResourceManager::instance()->set_shader_for_material(material_name, "default");
+		render_comp->set_pso_name("default");
+		return;
+	}
+
 	// 기본 Brute 모델 설정
 	auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Character/DragonBrute/SK_DragonBrute.gltf", true);
 
@@ -359,7 +371,8 @@ void NPCScript::on_receive_snapshot(const NetSnapshot& snapshot)
 }
 void NPCScript::apply_snapshot()
 {
-	if (!game_object()->is_enable() || game_object()->is_destroyed())
+	auto owner = game_object();
+	if (!owner || !owner->is_enable() || owner->is_destroyed())
 	{
 		return;
 	}
@@ -371,18 +384,22 @@ void NPCScript::apply_snapshot()
 	_grabSlot = _pendingSnapshot.grab_slot;         // [추가]
 	set_hp(_pendingSnapshot.hp);                   // [추가] HP 동기화
 
-	// 데이터 적용 (매우 가벼운 대입)
 	_serverPos = _pendingSnapshot.pos;
 	_serverVel = _pendingSnapshot.vel;
 	_accumulatedTime = 0.0f;
 
-	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
-	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_pendingSnapshot.rot);
-	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
-	XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
+	if (_npcType == common::packet::NPCType::Elevator) {
+		_serverRot = _pendingSnapshot.rot;
+	}
+	else {
+		// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
+		XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_pendingSnapshot.rot);
+		XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
+		XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
 
-	// 보정된 회전값을 _serverRot에 저장
-	XMStoreFloat4(&_serverRot, qFinal);
+		// 보정된 회전값을 _serverRot에 저장
+		XMStoreFloat4(&_serverRot, qFinal);
+	}
 
 	// [핵심] 첫 번째 데이터를 받으면 이 플래그를 반드시 꺼줘야 합니다!
 	// 이게 true로 남아있으면 update() 함수가 맨 위에서 return 됩니다.

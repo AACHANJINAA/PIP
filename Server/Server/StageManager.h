@@ -24,6 +24,11 @@ namespace PIP::SERVER
             return _creators[name]();
         }
 
+        bool is_existing_stage(std::string_view name) const
+        {
+            return _creators.contains(name.data());
+		}
+
     private:
         std::unordered_map<std::string, std::function<std::unique_ptr<Stage>()>> _creators;
     };

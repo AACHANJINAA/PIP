@@ -29,6 +29,10 @@ bool ReplicationSystem::on_packet_arrival(int64_t id, const NetSnapshot& snapsho
 	}
 	return false;
 }
+void ReplicationSystem::clear()
+{
+	_entities.clear();
+}
 void ReplicationSystem::update(float dt)
 {
     // Iterator invalidation 방지: ID 목록을 미리 복사
@@ -46,7 +50,10 @@ void ReplicationSystem::update(float dt)
         auto it = _entities.find(id);
         if (it != _entities.end())  // 중간에 삭제되었을 수도 있음
         {
-            it->second->apply_snapshot();
+            auto entity = it->second;
+            if (entity) {
+                entity->apply_snapshot();
+            }
         }
     }
 }

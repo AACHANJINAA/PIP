@@ -359,7 +359,7 @@ namespace PIP
 		MYLOG("Loaded Exported Scene for [" << groupName << "] from " << jsonPath);
 	}
 
-	void MapDataManager::LoadServerExportData(const std::string& groupName, std::string_view jsonPath)
+	void MapDataManager::LoadServerExportData(const std::string& groupName, std::string_view jsonPath, bool enableBinSave)
 	{
 		std::ifstream file(jsonPath.data());
 		if (!file.is_open()) {

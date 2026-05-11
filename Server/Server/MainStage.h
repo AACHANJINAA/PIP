@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Stage.h"
 
 namespace PIP::SERVER
@@ -9,23 +9,27 @@ namespace PIP::SERVER
         MainStage() = default;
         virtual ~MainStage() override = default;
 
-        // [ÇÙ½É 1] ¹°¸® ÁöÇü ¹× Ãæµ¹Ã¼ »ı¼º
+        // [í•µì‹¬ 1] ë¬¼ë¦¬ ì§€í˜• ë° ì¶©ëŒì²´ ì„¤ì •
         virtual void on_initialize(Room* room) override;
 
-        // [ÇÙ½É 2] ÇÃ·¹ÀÌ¾î ·Îµù ¿Ï·á ÈÄ NPC ¹× º¸½º ¹èÄ¡
+        // [í•µì‹¬ 2] í”Œë ˆì´ì–´ ë¡œë”© ì™„ë£Œ í›„ NPC ë° ë³´ìŠ¤ ë°°ì¹˜
         virtual void on_enter(Room* room) override;
 
-        // [ÇÙ½É 3] ½ºÅ×ÀÌÁö Æ¯È­ ·ÎÁ÷ (ÇÊ¿ä ½Ã)
+        // [í•µì‹¬ 3] ìŠ¤í…Œì´ì§€ íŠ¹í™” ì—…ë°ì´íŠ¸ (10ì´ˆ í›„ ì”¬ ì „í™˜ìš© íƒ€ì´ë¨¸ ì¶”ê°€)
         virtual void update(Room* room, float dt) override;
 
-        // [ÇÙ½É 4] ´ÙÀ½ ½ºÅ×ÀÌÁö·Î ³Ñ¾î°¥ ¶§ Á¤¸®
+        // [í•µì‹¬ 4] ìŠ¤í…Œì´ì§€ë¥¼ ë– ë‚  ë•Œ ì •ë¦¬
         virtual void on_exit(Room* room) override;
 
         virtual std::string get_stage_name() const override { return "MainStage"; }
 
         const common::Vec3 get_spawn_pos() const override;
     private:
-        // ÀÌ ½ºÅ×ÀÌÁö¿¡¼­ »ı¼ºÇÑ ¹°¸® ¹Ùµğ ID º¸°ü (Á¤¸®¿ë)
+        // ì´ ìŠ¤í…Œì´ì§€ì—ì„œ ìƒì„±í•œ ë¬¼ë¦¬ ë°”ë”” ID ë³´ê´€ (ì •ë¦¬ìš©)
         std::vector<JPH::BodyID> _stageBodyIDs;
+
+        // [ì¶”ê°€] ë³´ìŠ¤ ì”¬ ì „í™˜ìš© íƒ€ì´ë¨¸
+        float _bossSceneTimer = 0.0f;
+        bool _isTransitioning = false;
     };
 }

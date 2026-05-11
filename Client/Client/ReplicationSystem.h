@@ -16,6 +16,9 @@ public:
     // GameFramework의 루프에서 일괄 처리
     void update(float dt);
 
+    // [추가] 모든 엔티티 등록 해제 (씬 전환 시 활용)
+    void clear();
+
 private:
     std::unordered_map<int64_t, INetSync*> _entities;
 };
