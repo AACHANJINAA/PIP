@@ -690,7 +690,7 @@ void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
 
 	// 받은 이름으로 게임 오브젝트를 찾아서 위치를 업데이트합니다.
 	// ObjectManager에 이름으로 오브젝트를 찾는 기능(find_object)이 있다고 가정합니다.
-	auto npc_object = ObjectManager::instance()->find_npc(move_packet._npc_id);
+	auto npc_object = ObjectManager::instance()->find_by_name(npc_name);
 	if (npc_object)
 	{
 		auto script = npc_object->get_component<NPCScript>();
