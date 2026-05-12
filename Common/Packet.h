@@ -459,4 +459,4 @@ namespace common::move_speed // 실제 이동속도 이므로 더 빨라저야 �
 }
 
 // TEST COMMENT: This is for testing purposes.
-is for testing purposes.
+// is for testing purposes.
