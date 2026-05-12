@@ -125,7 +125,8 @@ void OtherPlayerScript::update(float deltaTime)
 	// 논리 위치와 시각적 오프셋을 더해 실제 Transform에 적용
     if (transform())
     {
-        transform()->set_local_position(_logicalPosition + _visualOffset);
+        common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{0, -0.1, 0};
+        transform()->set_local_position(visualPosition);
     }
 
 
