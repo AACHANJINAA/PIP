@@ -28,12 +28,13 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	//ResourceManager::instance()->load_mesh("Resource/Character/Brute_Walk/Brute_Walk.gltf", true, "walk");
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolem.gltf", true);
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolemRd.gltf", true);
-	ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true, "idle");
-	auto idle_brute_mesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
-	dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf", "attack");
+	ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+    ResourceManager::instance()->load_mesh("Resource/Elevator/Elevator.gltf", false);
 	// =========================================================================
 
 	load_scene_from_file("Resource/1-BossScene/Boss_Landscape_ExportedClientData.json", device, commandList);
+
+    // TestMesh(device, commandList);
 
 	// 카메라 생성 (이름을 "Camera"로 통일)
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
@@ -117,3 +118,32 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 }
 
+
+void Boss_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+    {
+        auto T1 = ObjectManager::instance()->create_game_object("TestMesh");
+
+        //// RenderComponent
+        auto renderer = T1->add_component<RenderComponent>();
+
+        auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Elevator/Elevator.gltf");
+        renderer->set_mesh(T1_Mesh);
+
+        // 재질 및 쉐이더 설정
+        std::string material = "Test_Material";
+
+        ResourceManager::instance()->create_material(material);
+        ResourceManager::instance()->set_shader_for_material(material, "gltf");
+
+        // gltf
+        renderer->set_pso_name("gltf");
+
+        // 위치, 회전 정보
+        T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
+        T1->transform()->set_local_scale({ 3.f, 3.0f, 3.0f });
+
+
+        T1->transform()->set_local_position(XMFLOAT3(0.f, 10.f, 0.f));
+    }
+}

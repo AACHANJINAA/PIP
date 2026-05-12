@@ -14,6 +14,8 @@ public:
     virtual void scene_process(float deltaTime) override;
     void Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
+    void TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+
     //void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     //void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 };
