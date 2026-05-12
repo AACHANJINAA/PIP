@@ -14,7 +14,7 @@ public:
 
     void awake() override;
 
-    // �����κ��� ��ġ ����ȭ ��Ŷ�� �޾��� �� ȣ��� �Լ� (����)
+    // 서버로부터 위치 동기화 패킷을 받았을 때 호출될 함수 (예시)
     void on_sync_position(const XMFLOAT3& newPosition);
 	void on_sync_rotation(const XMFLOAT4& newRotation);
     void on_sync_state(common::packet::EntityState state);
@@ -34,10 +34,10 @@ public:
     int32_t _action_id = 0;
     int64_t _grabbedById = -1; // [추가]
     int8_t  _grabSlot = -1;    // [추가]
-    // --- [ ׹   ] ---
-    common::Vec3    _logicalPosition;   // ������ �˷��� �ֽ� ������ ��ġ
-    common::Vec3    _visualOffset;      // �ð��� ������ ���� ������ (���� ��ġ���� ����)
-    common::Vec3    _velocity;          // ���� �׹��� ���� �ӵ� (�ɼ�)
+    // --- [추측 항법 및 보간용 변수] ---
+    common::Vec3    _logicalPosition;   // 서버가 알려준 최신 논리적 위치
+    common::Vec3    _visualOffset;      // 시각적 보간을 위한 오프셋 (이전 위치와의 차이)
+    common::Vec3    _velocity;          // 추측 항법을 위한 속도 (옵션)
 
-    float           _lerpFactor = 15.0f; // ���� �ӵ� (��ġ�� Ŭ���� ���� ��ġ�� ���� ����)
+    float           _lerpFactor = 15.0f; // 보간 속도 (수치가 클수록 서버 위치에 빨리 도달)
 };
