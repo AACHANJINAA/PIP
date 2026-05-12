@@ -114,9 +114,28 @@ namespace PIP::GAME
 		res._size = sizeof(res);
 		res._id = GetId();
 		res._position = GetPosition();
-		res._velocity = GetVelocity(); // [추가]
 		res._rotation = GetRotation();
 		res._state = _state;
+
+		// [핵심 보정] 클라이언트의 예측 이동(Dead Reckoning) 오류 방지
+		common::Vec3 sendVelocity = GetVelocity();
+
+		if (_state == common::packet::EntityState::IDLE)
+		{
+			// 가만히 있을 때는 속도를 완벽한 0으로 강제 고정
+			sendVelocity = { 0.0f, 0.0f, 0.0f };
+		}
+		else if (_state == common::packet::EntityState::MOVE || _state == common::packet::EntityState::RUN)
+		{
+			// 땅에서 이동 중일 때는 서버의 미세한 하강 속도(StickToFloor)를 제거하고 수평 속도만 전송
+			// (주의: 점프/추락 상태가 따로 있다면 그 상태에서는 Y 속도를 그대로 보내야 함)
+			if (sendVelocity.y < 0.0f) {
+				sendVelocity.y = 0.0f;
+			}
+		}
+
+		res._velocity = sendVelocity; // 정제된 속도 전송
+
 		res._action_id = _actionId;
 		res._client_tick = _lastClientTick;
 		res._grabbed_by_id = _grabbedById; // [추가]
