@@ -170,6 +170,12 @@
     <ClCompile Include="CastleStage.cpp">
       <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClCompile>
+    <ClCompile Include="BossStage.cpp">
+      <Filter>소스 파일\Game\Stage\Stages</Filter>
+    </ClCompile>
+    <ClCompile Include="Elevator.cpp">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketHandlers.h">
@@ -295,13 +301,16 @@
     <ClInclude Include="CastleStage.h">
       <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClInclude>
+    <ClInclude Include="BossStage.h">
+      <Filter>소스 파일\Game\Stage\Stages</Filter>
+    </ClInclude>
+    <ClInclude Include="Elevator.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Monster.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
-    </None>
-    <None Include="..\..\Common\MapData\ExportedServerData.json">
-      <Filter>소스 파일\Common</Filter>
     </None>
   </ItemGroup>
 </Project>
