@@ -175,14 +175,11 @@ namespace PIP::SERVER
 
 		std::vector<JPH::BodyID>			_terrainBodyIDs;
 
-		// 1. 파일 스트림은 일반 멤버 변수로 둡니다.
 		std::ofstream _dumpFile;
-
-		// 2. Jolt 래퍼와 레코더는 스마트 포인터로 선언하여 초기화를 지연시킵니다.
 		std::unique_ptr<JPH::StreamOutWrapper> _streamOut;
+		std::unique_ptr<JPH::DebugRendererRecorder> _recorder;
 
-		// 녹화 제어용 변수
-		bool _isRecording = false;
-		int _recordFrameCount = 0;
+		bool _isSessionOpen = false;     // 파일이 열려있는지 여부
+		bool _captureNextFrame = false;  // 이번 프레임을 기록할지 여부 (F8 트리거)
 	};
 }
