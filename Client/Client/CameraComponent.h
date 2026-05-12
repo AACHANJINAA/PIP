@@ -35,6 +35,9 @@ public:
     // GameObject의 Transform을 기준으로 뷰 행렬을 다시 계산합니다.
     void recalculate_view_matrix();
 
+    // 해상도가 변경될 때 뷰포트, 시저 렉트, 투영 행렬을 다시 설정하는 함수
+    void update_resolution(UINT width, UINT height);
+
     // --- Getters ---
     const XMFLOAT4X4& view_matrix() const { return _viewMatrix; }
     const XMFLOAT4X4& projection_matrix() const { return _projectionMatrix; }

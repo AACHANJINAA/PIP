@@ -11,6 +11,9 @@ private:
 
 	bool _isFullscreenToggle = false; // 전체화면 전환
 
+	bool _isBorderless = false;   // 테두리 없는 창 모드인지 여부
+	RECT _windowRect = {};        // 원래 창 모드일 때의 창 크기와 위치 저장용
+
 	bool _isRendering = false;
 
 	bool _isCheckCameraPos = false; // 카메라 위치 체크 여부
