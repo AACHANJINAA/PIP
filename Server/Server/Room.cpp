@@ -670,7 +670,7 @@ namespace PIP::SERVER
 
 		// [핵심 2] 매 프레임 그릴 때마다 임시로 레코더를 생성해서 넘깁니다.
 #ifdef DEBUG_VIEWER
-		if (_isRecording && _streamOut)
+		if (_isSessionOpen && _captureNextFrame && _recorder)
 		{
 
 			JPH::BodyManager::DrawSettings drawSettings;
@@ -683,26 +683,48 @@ namespace PIP::SERVER
 
 
 
-			// 임시 레코더 객체를 스택에 생성합니다. (sInstance를 요구하지 않음)
-			JPH::DebugRendererRecorder recorder(*_streamOut);
-
-			// _physicsSystem에 방금 만든 로컬 recorder의 주소를 넘깁니다.
-			_physicsSystem->DrawBodies(drawSettings, &recorder);
-
-			//// (예시) 맵 중심점(0,0,0)을 기준으로 사방 50m 반경(100x100x100 박스)만 녹화
-			//JPH::AABox cullingBox(JPH::Vec3(-50, -50, -50), JPH::Vec3(50, 50, 50));
-
-			//// 세 번째 인자로 필터링할 박스를 던져주면 그 밖의 맵은 무시합니다.
-			//_physicsSystem->DrawBodies(drawSettings, &recorder, &cullingBox);
-
-			// 프레임 끝
-			recorder.EndFrame();
-
-			if (++_recordFrameCount >= 1)
+			// [핵심 수정 1] 중괄호를 추가해서 recorder의 생명주기를 강제로 제한합니다.
 			{
-				StopPhysicsRecording();
-				MYLOG("[Physics] 딱 1프레임 녹화 완료. 파일을 확인하세요!");
-			}
+				JPH::DebugRendererRecorder recorder(*_streamOut);
+				// 1. 기존의 월드 바디들(지형, 엘리베이터 등) 그리기
+				_physicsSystem->DrawBodies(drawSettings, &recorder);
+
+				// ----------------------------------------------------
+				// 2. [추가] CharacterVirtual 수동 그리기
+				// ----------------------------------------------------
+
+				// [A] 플레이어 그리기 (초록색)
+				for (auto& [pid, session] : _players) {
+					if (!session || !session->_player) continue;
+
+					auto pcc = session->_player->GetComponent<GAME::PlayerControllerComponent>();
+					// 참고: _character 변수가 private라면 GetCharacter() 같은 Getter를 쓰셔야 합니다.
+					if (pcc && pcc->GetCharacter()) {
+						auto cv = pcc->GetCharacter();
+						// 캐릭터의 현재 회전과 위치로 Jolt 트랜스폼 매트릭스 생성
+						JPH::RMat44 transform = JPH::RMat44::sRotationTranslation(cv->GetRotation(), cv->GetPosition());
+
+						// Shape 객체의 Draw 함수에 recorder를 직접 넘겨서 그립니다.
+						cv->GetShape()->Draw(&recorder, transform, JPH::Vec3::sReplicate(1.0f), JPH::Color::sGreen, false, true);
+					}
+				}
+
+				// [B] NPC 그리기 (빨간색)
+				for (auto* npc : _activeNpcList) {
+					if (!npc || !npc->IsActive()) continue;
+
+					auto nc = npc->GetComponent<GAME::CharacterControllerComponent>();
+					if (nc && nc->GetCharacter()) {
+						auto cv = nc->GetCharacter();
+						JPH::RMat44 transform = JPH::RMat44::sRotationTranslation(cv->GetRotation(), cv->GetPosition());
+
+						cv->GetShape()->Draw(&recorder, transform, JPH::Vec3::sReplicate(1.0f), JPH::Color::sRed, false, true);
+					}
+				}
+				recorder.EndFrame();
+			} // <-- 이 괄호를 빠져나가면서 recorder가 정상적으로 소멸되고, 파일 쓰기가 깔끔하게 마무리됩니다.
+
+			_captureNextFrame = false;
 		}
 #endif
 		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
@@ -2125,8 +2147,6 @@ namespace PIP::SERVER
 
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
-		
-
 
 		//CreatePhysicsTerrain();
 		//CreatePhysicsMapObjects();
@@ -2134,40 +2154,33 @@ namespace PIP::SERVER
 	void Room::StartPhysicsRecording()
 	{
 #ifdef DEBUG_VIEWER
-		if (_isRecording) return; // 이미 녹화 중이면 무시
-
-		// 1. 파일 열기
-		_dumpFile.open("physics_dump.bin", std::ios::binary);
-		if (!_dumpFile.is_open()) {
-			MYERROR("Failed to open physics_dump.bin");
-			return;
+		// 1. 세션이 안 열려있으면 (최초 1회) 파일을 생성하고 레코더를 초기화
+		if (!_isSessionOpen) {
+			_dumpFile.open("physics_dump.bin", std::ios::binary);
+			if (_dumpFile.is_open()) {
+				_streamOut = std::make_unique<JPH::StreamOutWrapper>(_dumpFile);
+				_recorder = std::make_unique<JPH::DebugRendererRecorder>(*_streamOut);
+				_isSessionOpen = true;
+				MYLOG("[Physics] Recording Session Opened.");
+			}
 		}
 
-		// 2. unique_ptr을 이용해 동적 생성 (소멸은 알아서 해줌)
-		_streamOut = std::make_unique<JPH::StreamOutWrapper>(_dumpFile);
-
-
-		_isRecording = true;
-		_recordFrameCount = 0;
-		MYLOG("[Physics] Debug Recording Started.");
+		// 2. 다음 물리 업데이트 때 딱 1프레임만 기록하라고 플래그를 켬
+		_captureNextFrame = true;
+		MYLOG("[Physics] Snapshot queued for next frame.");
 #endif
 	}
 
 	void Room::StopPhysicsRecording()
 	{
 #ifdef DEBUG_VIEWER
-		if (!_isRecording) return;
-
-		// 객체들을 메모리에서 해제합니다 (역순 해제가 안전함)
-		_streamOut.reset();
-
-		// 파일 닫기
-		if (_dumpFile.is_open()) {
-			_dumpFile.close();
+		if (_isSessionOpen) {
+			_recorder.reset();
+			_streamOut.reset();
+			if (_dumpFile.is_open()) _dumpFile.close();
+			_isSessionOpen = false;
+			MYLOG("[Physics] Recording Session Closed.");
 		}
-
-		_isRecording = false;
-		MYLOG("[Physics] Debug Recording Stopped.");
 #endif
 	}
 
