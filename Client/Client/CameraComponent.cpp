@@ -146,3 +146,18 @@ void CameraComponent::recalculate_view_matrix()
 	XMMATRIX viewInverse = XMMatrixInverse(nullptr, view);
 	_frustum.Transform(_frustum, viewInverse);
 }
+
+void CameraComponent::update_resolution(UINT width, UINT height)
+{
+	if (width == 0 || height == 0) return;
+
+	// 1. 뷰포트와 시저 렉트를 새 해상도에 맞게 갱신
+	_viewport.Width = static_cast<float>(width);
+	_viewport.Height = static_cast<float>(height);
+	_scissorRect.right = static_cast<LONG>(width);
+	_scissorRect.bottom = static_cast<LONG>(height);
+
+	// 2. 종횡비(Aspect Ratio)를 다시 계산하여 투영 행렬(Projection Matrix) 갱신
+	float newAspect = static_cast<float>(width) / static_cast<float>(height);
+	set_lens(_fov, newAspect, _near, _far);
+}

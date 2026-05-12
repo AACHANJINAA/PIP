@@ -617,42 +617,88 @@ void GameFramework::ChangeSwapChainState()
 	// 1. GPU가 모든 작업을 마칠 때까지 완벽히 대기
 	WaitForGpuComplete();
 
-	BOOL bFullScreenState = FALSE;
-	_swapChain->GetFullscreenState(&bFullScreenState, NULL);
+	// DXGI의 독점 전체화면 함수는 사용하지 않음 -> 오래걸리고 깜빡임 심함
+	// BOOL bFullScreenState = FALSE;
+	// _swapChain->GetFullscreenState(&bFullScreenState, NULL);
+	// _swapChain->SetFullscreenState(!bFullScreenState, NULL);
 
-	// 2. 전체화면 상태 전환
-	_swapChain->SetFullscreenState(!bFullScreenState, NULL);
-
-	// 3. 렌더 타겟 리소스 및 깊이 버퍼 해제 (ResizeBuffers 호출 전 필수)
+	// 2. 렌더 타겟 리소스 및 깊이 버퍼 해제 (ResizeBuffers 호출 전 필수)
 	for (int i = 0; i < SWAP_CHAIN_BUFFERS; i++)
 	{
 		_renderTargetBuffers[i].Reset();
 	}
 	_depthStencilBuffer.Reset();
 
+	// 3. 테두리 없는 창 모드 <-> 일반 창 모드 전환 로직
+	UINT newWidth = 0;
+	UINT newHeight = 0;
+
+	// 3. 테두리 없는 창 모드 <-> 일반 창 모드 전환 로직
+	if (!_isBorderless)
+	{
+		GetWindowRect(_hWnd, &_windowRect);
+		SetWindowLong(_hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+
+		HMONITOR hMonitor = MonitorFromWindow(_hWnd, MONITOR_DEFAULTTOPRIMARY);
+		MONITORINFO mi = { sizeof(mi) };
+		GetMonitorInfo(hMonitor, &mi);
+
+		// 전체화면일 때는 모니터 해상도를 직접 구함
+		newWidth = mi.rcMonitor.right - mi.rcMonitor.left;
+		newHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+		SetWindowPos(_hWnd, HWND_TOP,
+			mi.rcMonitor.left, mi.rcMonitor.top,
+			newWidth, newHeight, // 여기서도 구한 크기를 사용
+			SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+		_isBorderless = true;
+	}
+	else
+	{
+		SetWindowLong(_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+
+		SetWindowPos(_hWnd, NULL,
+			_windowRect.left, _windowRect.top,
+			_windowRect.right - _windowRect.left,
+			_windowRect.bottom - _windowRect.top,
+			SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+		// 창 모드로 복구된 후의 렌더링 가능한 클라이언트 영역 크기를 구함
+		RECT clientRect;
+		GetClientRect(_hWnd, &clientRect);
+		newWidth = clientRect.right - clientRect.left;
+		newHeight = clientRect.bottom - clientRect.top;
+
+		_isBorderless = false;
+	}
+
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 	_swapChain->GetDesc(&dxgiSwapChainDesc);
 
-	// 4. 스왑 체인 버퍼 리사이즈
-	// 너비와 높이에 0을 주면 DXGI가 현재 창 크기/전체화면 크기에 맞춰 자동으로 가장 알맞게 설정합니다.
+	// 4. 스왑 체인 버퍼 리사이즈 (0, 0 대신 명시적으로 크기 지정!)
 	HRESULT hr = _swapChain->ResizeBuffers(
 		SWAP_CHAIN_BUFFERS,
-		0, 0, // 자동 크기 조정 (안정성 핵심)
+		newWidth, newHeight,
 		dxgiSwapChainDesc.BufferDesc.Format,
 		dxgiSwapChainDesc.Flags
 	);
 	_ASSERTE(SUCCEEDED(hr));
 
-	// 5. 리사이즈 후, DXGI가 결정한 실제 버퍼 크기를 가져옵니다. (DSV 재생성을 위해 필요)
-	_swapChain->GetDesc(&dxgiSwapChainDesc);
-	_wndClientWidth = dxgiSwapChainDesc.BufferDesc.Width;
-	_wndClientHeight = dxgiSwapChainDesc.BufferDesc.Height;
+	// 5. 프레임워크가 관리하는 해상도 변수도 새 크기로 확실하게 덮어씌우기
+	_wndClientWidth = newWidth;
+	_wndClientHeight = newHeight;
 
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
-	// 6. 새로운 크기에 맞춰 뷰(View)들을 재발급
+	// 6. 새로운 크기에 맞춰 뷰(View) 재발급
 	CreateRenderTargetViews();
 	CreateDepthStencilView();
+
+	if (CameraComponent* mainCamera = CameraComponent::get_main())
+	{
+		mainCamera->update_resolution(newWidth, newHeight);
+	}
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
