@@ -67,9 +67,18 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
     // [근본 해결 가드] 현재 이미 그 씬에 있다면 무시한다!
     if (_currentScene && _currentScene->scene_name() == _requestedSceneName) {
         CLOG("Already in scene " << _requestedSceneName << ". Ignoring redundant request.");
+        
+        // [수정] 이미 해당 씬이라도 서버가 요청했다면 READY 패킷을 보내어 흐름을 완성한다.
+        if (_requestedSceneName == _networkWantSceneName) {
+            common::packet::CS_PACKET_PLAYER_READY ready_packet;
+            ready_packet._type = common::packet::PacketType::C2S_P_PLAYER_READY;
+            ready_packet._size = sizeof(ready_packet);
+            NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&ready_packet), sizeof(ready_packet));
+            _networkWantSceneName = ""; // 요청 처리 완료
+            CLOG("Sent redundant READY for scene: " << _requestedSceneName);
+        }
+
         _requestedSceneName = "";
-        // (선택 사항) 이미 로딩된 상태라면 여기서 바로 서버에 READY를 다시 보내줄 수도 있지만,
-        // 서버가 중복 명령을 내리지 않게 하는 것이 더 깔끔합니다.
         return;
     }
 

@@ -1605,7 +1605,7 @@ namespace PIP::SERVER
 		CheckAndStartGame();
 	}
 
-	void  Room::SetupPlayerSpawn(const std::shared_ptr<SESSION>& session) {
+	void Room::SetupPlayerSpawn(const std::shared_ptr<SESSION>& session) {
 		common::Vec3 spawn_pos = _currentStage->get_spawn_pos();
 		float tx = spawn_pos.x;
 		float tz = spawn_pos.z;
@@ -1663,11 +1663,19 @@ namespace PIP::SERVER
 			session->do_send(elevatorStream.constable_data(), elevatorStream.Size());
 		}
 
+		int64_t bossCount = 0;
+		for (auto& [npc_id, npc] : _npcs) {
+			if (npc->is_boss())
+			{
+				bossCount++;
+			}
+		}
+
 		// DW추가 : npc 카운트 패킷 전송 (방 입장 시 NPC 수 알려주기)
 		packet::SC_PACKET_SCENE_AWAKE npc_count_packet;
 		npc_count_packet._type = packet::PacketType::S2C_P_NPC_COUNT;
 		npc_count_packet._size = sizeof(npc_count_packet);
-		npc_count_packet._boss_count = 1; // 보스 마리 수
+		npc_count_packet._boss_count = bossCount; // 보스 마리 수
 		npc_count_packet._boss_start_id = _next_npc_id + (_room_id * 1000) + 999; // 보스 ID
 		npc_count_packet._npc_count = static_cast<uint16_t>(_npcs.size()) - npc_count_packet._boss_count;
 		npc_count_packet._npc_start_id = _next_npc_id + (_room_id * 1000); // 일반 NPC ID 시작 인덱스 번호
