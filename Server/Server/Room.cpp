@@ -584,6 +584,8 @@ namespace PIP::SERVER
 
 	void Room::StartGame()
 	{
+		if (_room_state == RoomState::PLAYING) return; // [추가] 이미 시작된 경우 중복 처리 방지
+
 		_room_state = RoomState::PLAYING;
 		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
 	}
@@ -662,7 +664,7 @@ namespace PIP::SERVER
 		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
 
 		// [핵심 2] 매 프레임 그릴 때마다 임시로 레코더를 생성해서 넘깁니다.
-#if defined(DEBUG_VIEWER)
+#ifdef DEBUG_VIEWER
 		if (_isRecording && _streamOut)
 		{
 
@@ -671,6 +673,7 @@ namespace PIP::SERVER
 			drawSettings.mDrawShape = true;
 			drawSettings.mDrawShapeColor = JPH::BodyManager::EShapeColor::ShapeTypeColor;
 			drawSettings.mDrawCenterOfMassTransform = true;
+			drawSettings.mDrawVelocity = true;
 
 
 
@@ -689,13 +692,11 @@ namespace PIP::SERVER
 			// 프레임 끝
 			recorder.EndFrame();
 
-			if (++_recordFrameCount >= 2)
+			if (++_recordFrameCount >= 1)
 			{
 				StopPhysicsRecording();
 				MYLOG("[Physics] 딱 1프레임 녹화 완료. 파일을 확인하세요!");
 			}
-
-
 		}
 #endif
 		// --- [추가] 1초 주기로 플레이어 위치 로깅 ---
@@ -1075,6 +1076,9 @@ namespace PIP::SERVER
 		for (auto& pair : _players)
 		{
 			if (pair.first == except_id) continue;
+			// [수정] 준비된 플레이어(로딩 완료)에게만 브로드캐스트 전송
+			if (!_readyPlayers.contains(pair.first)) continue;
+
 			pair.second->do_send(data, size);
 		}
 	}
@@ -2106,7 +2110,7 @@ namespace PIP::SERVER
 
 		_physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
-		StartPhysicsRecording();
+		
 
 
 		//CreatePhysicsTerrain();

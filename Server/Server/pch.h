@@ -101,7 +101,7 @@ using namespace DirectX;
 #ifdef _DEBUG
 #include <Jolt/Renderer/DebugRendererRecorder.h>
 #include <Jolt/Renderer/DebugRendererSimple.h>
-//#define DEBUG_VIEWER
+#define DEBUG_VIEWER
 #endif
 
 

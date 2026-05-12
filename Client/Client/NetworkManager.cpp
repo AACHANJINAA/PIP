@@ -236,6 +236,16 @@ void NetworkManager::SendEnterRoomPacket(int room_id_to_enter)
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
+void NetworkManager::SendDebugCommandPacket(common::packet::DebugCommandType command)
+{
+	common::packet::CS_PACKET_DEBUG_COMMAND packet;
+	packet._type = common::packet::PacketType::C2S_P_DEBUG_COMMAND;
+	packet._size = sizeof(packet);
+	packet._command = command;
+
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
 void NetworkManager::RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler)
 {
 	// 내부적으로 핸들러 등록하기 위해서 사용

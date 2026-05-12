@@ -30,6 +30,7 @@ public:
     void SendActionPacket(int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
+    void SendDebugCommandPacket(common::packet::DebugCommandType command);
     bool is_running() const { return _isRunning; }
     XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
 

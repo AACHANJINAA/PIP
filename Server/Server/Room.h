@@ -109,6 +109,10 @@ namespace PIP::SERVER
 		std::map<int64_t, common::Vec3> GetPlayersPos() const;
 
 		JPH::PhysicsSystem* GetPhysicsSystem() const { return _physicsSystem; }
+
+		void StartPhysicsRecording();
+		void StopPhysicsRecording();
+
 	private:
 		void SpawnBoss();
 		void SpawnInitialNPCs();
@@ -129,8 +133,6 @@ namespace PIP::SERVER
 		common::Vec3 find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape);
 
 
-		void StartPhysicsRecording();
-		void StopPhysicsRecording();
 	private:
 		// [최적화] 셀 단위로 미리 직렬화된 이동 패킷 데이터 (BroadcastNpcBatch에서 사용)
 		std::unordered_map<int, std::vector<char>> _cellMoveBuffers;
