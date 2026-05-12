@@ -56,6 +56,11 @@ namespace PIP::GAME
             horizontalInput = _currentMoveVelocity + _impactVelocity;
         }
 
+        JPH::Vec3 groundVelocity = JPH::Vec3::sZero();
+        if (_character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround) {
+            groundVelocity = _character->GetGroundVelocity();
+        }
+
         // 1. 중력 및 속도 계산
         JPH::Vec3 gravity = _physicsSystem->GetGravity();
         JPH::Vec3 currentVel = _character->GetLinearVelocity();
@@ -64,11 +69,17 @@ namespace PIP::GAME
 
         // 땅에 있을 때 중력 캡핑 (파고듦 방지 핵심)
         if (_character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround) {
-            newYVel = std::max(newYVel, 0.0f);
+            // [핵심 수정] 0.0f로 강제 고정하면 엘리베이터가 내려갈 때 붕 뜹니다.
+            // 지면의 Y 속도 이하로 떨어지지 않게 제한해야 플랫폼과 함께 자연스럽게 내려갑니다.
+            // (살짝 더 아래로 눌러주는 -0.1f 오프셋을 주면 StickToFloor와 시너지가 좋습니다)
+            newYVel = std::max(newYVel, groundVelocity.GetY() - 0.1f);
         }
 
         // 최종 속도 설정
-        _character->SetLinearVelocity(JPH::Vec3(horizontalInput.x, newYVel, horizontalInput.z));
+        _character->SetLinearVelocity(JPH::Vec3(
+            horizontalInput.x + groundVelocity.GetX(),
+            newYVel,
+            horizontalInput.z + groundVelocity.GetZ()));
 
         // 2. ExtendedUpdate 설정 (여기서 StepUp 높이를 조절합니다)
         JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;

@@ -48,7 +48,9 @@ namespace PIP
 		void LoadStaticMeshShapes(const std::string& tileName, std::string_view jsonPath, bool enableBinSave = false);
 		void LoadAllStaticMeshes(std::string_view baseDirPath); ;// [추가] 특정 폴더 내의 모든 Tile_... 형식의 glTF를 자동 로드
 		void LoadExportedScene(const std::string& groupName, std::string_view jsonPath);
-		void LoadServerExportData(const std::string& groupName, std::string_view jsonPath, bool enableBinSave = false); // [수정] 바이너리 캐싱 옵션 추가
+
+		// [추가] 서버 전용: 클라이언트에서 Export한 JSON을 로드하여 StaticMeshTile 리스트로 변환 (맵 데이터와 별개로 관리)
+		void LoadServerExportData(const std::string& groupName, std::string_view jsonPath, bool enableBinSave = false); 
 
 		std::vector<const StaticMeshTile*> GetStaticMeshGroup(const std::string& groupName) const;// 각 방에서 참조할 Shape 리스트 반환
 
