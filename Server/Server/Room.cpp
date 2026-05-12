@@ -205,7 +205,7 @@ namespace PIP::SERVER
 		leave_packet._type = packet::PacketType::S2C_P_LEAVE;
 		leave_packet._size = sizeof(leave_packet);
 		leave_packet._id = player_id;
-		this->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof(leave_packet), player_id);
+		this->Broadcast(reinterpret_cast<const char*>(&leave_packet), sizeof(leave_packet), player_id, true);
 		
 
 		auto it = _players.find(player_id);
@@ -407,7 +407,10 @@ namespace PIP::SERVER
 		auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
 		h_ptr->_size = (uint16_t)stream.Size(); // 전체 패킷 크기로 업데이트
 
-		Broadcast(stream.constable_data(), stream.Size());
+		// [수정] _readyPlayers가 비워졌으므로 Broadcast 대신 전체 플레이어에게 직접 전송
+		for (auto& [id, session] : _players) {
+			session->do_send(stream.constable_data(), stream.Size());
+		}
 	}
 
 	void Room::ClearAllNPCs()
@@ -613,6 +616,11 @@ namespace PIP::SERVER
 	void Room::UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
 		if (!_physicsSystem || _players.empty()) return;
+		// --- 4. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
+		// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
+		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
+		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
+
 		// [최적화] _npcs(5만 마리) 대신 _activeNpcList(시야 내 NPC)만 순회
 		std::vector<GAME::NPC*> bosss;
 		for (auto* npc : _activeNpcList) {
@@ -658,10 +666,7 @@ namespace PIP::SERVER
 			_gridMap.UpdatePosition(player.get(), player->GetPosition());
 		}
 
-		// --- 4. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
-		// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
-		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
-		_physicsSystem->Update(deltaTime, 1, tempAllocator, _jobSystem);
+		
 
 		// [핵심 2] 매 프레임 그릴 때마다 임시로 레코더를 생성해서 넘깁니다.
 #ifdef DEBUG_VIEWER
@@ -674,6 +679,7 @@ namespace PIP::SERVER
 			drawSettings.mDrawShapeColor = JPH::BodyManager::EShapeColor::ShapeTypeColor;
 			drawSettings.mDrawCenterOfMassTransform = true;
 			drawSettings.mDrawVelocity = true;
+			drawSettings.mDrawShapeWireframe = true;
 
 
 
@@ -1071,13 +1077,14 @@ namespace PIP::SERVER
 
 	
 
-	void Room::Broadcast(const char* data, size_t size, int64_t except_id)
+	void Room::Broadcast(const char* data, size_t size, int64_t except_id, bool force)
 	{
 		for (auto& pair : _players)
 		{
 			if (pair.first == except_id) continue;
-			// [수정] 준비된 플레이어(로딩 완료)에게만 브로드캐스트 전송
-			if (!_readyPlayers.contains(pair.first)) continue;
+
+			// [수정] force가 true면 준비 여부와 상관없이 전송 (시스템 패킷 등)
+			if (!force && !_readyPlayers.contains(pair.first)) continue;
 
 			pair.second->do_send(data, size);
 		}
@@ -1741,7 +1748,7 @@ namespace PIP::SERVER
 		// 2. 브로드캐스트 실행
 		// 기본적으로 방 안의 모든 사람에게 알리거나, 
 		// 나중에 성능 최적화가 필요하면 시야 범위(GridMap) 내 유저들에게만 보낼 수 있습니다.
-		Broadcast(reinterpret_cast<const char*>(&pkt), sizeof(pkt));
+		Broadcast(reinterpret_cast<const char*>(&pkt), sizeof(pkt), -1, true);
 
 		MYLOG("[Room] Broadcast EquipUpdate: Player " << player_id << " equipped ItemID " << static_cast<uint32_t>(equip.item_id));
 	}
@@ -2092,7 +2099,7 @@ namespace PIP::SERVER
 		res_pkt._position = spawnPos;
 		res_pkt._hp = player->GetHP();
 
-		Broadcast(reinterpret_cast<char*>(&res_pkt), sizeof(res_pkt));
+		Broadcast(reinterpret_cast<char*>(&res_pkt), sizeof(res_pkt), -1, true);
 	}
 
 	void Room::PhysicsInitialize() {

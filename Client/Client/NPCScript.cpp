@@ -23,6 +23,9 @@ void NPCScript::handle_animation_branching()
 
 	using namespace common::packet;
 
+	// 엘리베이터는 애니메이션이 없으므로 분기 처리 생략
+	if (_npcType == NPCType::Elevator) return;
+
 	// 1. 사망/피격 최우선 처리
 	/*if (_state == EntityState::DEAD) {
 		anim->play("Die", false);

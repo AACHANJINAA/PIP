@@ -62,7 +62,7 @@ namespace PIP::SERVER
 
 
 
-		void Broadcast(const char* data, size_t size, int64_t except_id = -1);
+		void Broadcast(const char* data, size_t size, int64_t except_id = -1, bool force = false);
 		// 특정 NPC를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToNPCViewers(int64_t npc_id, const char* data, size_t size);
 		// 특정 플레이어를 보고 있는 플레이어들에게 데이터 전송
