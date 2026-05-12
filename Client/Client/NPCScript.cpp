@@ -102,7 +102,7 @@ void NPCScript::init_visual()
 		// 엘리베이터 모델 설정 (실제 경로 적용)
 		auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Elevator/Elevator.gltf");
 		render_comp->set_mesh(baseMesh);
-		animation_component->play("static");
+		
 
 		std::string material_name = "elevator_material_" + std::to_string(id());
 		ResourceManager::instance()->create_material(material_name);
