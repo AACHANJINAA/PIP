@@ -16,6 +16,11 @@ void AnimationComponent::late_update(float deltaTime)
 		return;
 	}
 
+	if (_animResources.empty())
+	{
+		return;
+	}
+
 	// 현재 애니메이션 시간 갱신
 	_nowAnimationTime += deltaTime * _animationSpeed;
 	float timeBeforeUpdate = _nowAnimationTime;
@@ -27,7 +32,7 @@ void AnimationComponent::late_update(float deltaTime)
 		CERROR("<Animation Name mapping Mesh not found>  currentName: " << _currentName);
 		return;
 	}
-
+	
 	auto glTF_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(it->second.mesh);
 	if (!glTF_mesh) 
 	{
@@ -97,15 +102,23 @@ void AnimationComponent::add_animation(const std::string& want_name, const std::
 
 void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
 {
+	// 애니메이션 무시할 객체라면? 그냥 나가기
+	if (_animResources.empty())
+	{
+		return;
+	}
+
 	// 이미 재생 중인 애니메이션이면 설정값만 업데이트하고 리턴
-	if (_currentName == name) {
+	if (_currentName == name) 
+	{
 		_isLoop = isLoop;
 		_animationSpeed = speed;
 		return;
 	}
 
 	auto it = _animResources.find(name);
-	if (it == _animResources.end()) {
+	if (it == _animResources.end()) 
+	{
 		CERROR("Animation Alias not found: " << name);
 		return;
 	}
@@ -118,7 +131,8 @@ void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
 	_isFinished = false;
 
 	// 메쉬가 다르면 교체
-	if (it->second.mesh != _bufferedMesh) {
+	if (it->second.mesh != _bufferedMesh) 
+	{
 		change_mesh(it->second.mesh);
 	}
 }
