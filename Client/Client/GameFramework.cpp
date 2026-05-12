@@ -447,7 +447,11 @@ void GameFramework::FrameAdvance()
 	Scene* NowScene = SceneManager::instance()->current_scene();
 	if (NowScene)
 	{
-		NowScene->scene_process(deltaTime);
+		CameraComponent* camera = CameraComponent::get_main();
+		if (camera)
+		{
+			NowScene->scene_process(deltaTime);
+		}
 	}
 
 	// 사운드 업데이트
@@ -652,6 +656,13 @@ void GameFramework::ChangeSwapChainState()
 }
 void GameFramework::update_game_logic(float deltaTime)
 {
+	CameraComponent* camera = CameraComponent::get_main();
+	if (!camera)
+	{
+		// 로직이 돌기 위해서는 카메라가 하나 이상 필요함
+		CERROR("로직이 돌기 위해서는 카메라가 하나 이상 필요함")
+			return;
+	}
 
 	// Awake와 Start가 먼저 호출되도록 순서 변경
 	ObjectManager::instance()->process_new_game_objects();
@@ -691,6 +702,14 @@ void GameFramework::update_game_logic(float deltaTime)
 
 void GameFramework::update_physics(float elapsedTime)
 {
+	CameraComponent* camera = CameraComponent::get_main();
+	if (!camera)
+	{
+		// 로직이 돌기 위해서는 카메라가 하나 이상 필요함
+		CERROR("로직이 돌기 위해서는 카메라가 하나 이상 필요함")
+			return;
+	}
+
 	_physicsTimeAccumulator += elapsedTime;
 	const float fixedTimeStep = 0.02f;
 

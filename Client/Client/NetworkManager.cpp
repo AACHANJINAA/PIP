@@ -648,6 +648,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 				//NPC->transform()->set_local_scale({ 25.f, 25.f, 25.f });
 			}
 			break;
+		case common::packet::NPCType::Elevator:
+		{
+			NPC_logic = NPC->add_component<NPCScript>().get(); // TainerScript 부착
+		}
+		break;
 		default:
 			CLOG("Unknown NPC Type: " << (int)npc_spawn_packet._npc_type);
 			NPC_logic = NPC->add_component<NPCScript>().get();
