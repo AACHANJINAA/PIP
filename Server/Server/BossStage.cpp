@@ -86,6 +86,6 @@ namespace PIP::SERVER
 
     const common::Vec3 BossStage::get_spawn_pos() const
     {
-        return { 16.12f, -9.85f, 0.0f }; // 보스 방 스폰 위치
+        return { 0.f, 0.f, 0.0f }; // 보스 방 스폰 위치
     }
 }

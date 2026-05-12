@@ -110,6 +110,7 @@ namespace common::packet
 		S2C_P_NPC_COUNT = 506,
 
 		//------------------------------------------- 디버깅용 패킷 --------------------------------------- //
+		C2S_P_DEBUG_COMMAND = 600,
 		S2C_P_DEBUG_DRAW = 601,
 		S2C_P_DEBUG_BT_INFO = 602,
 		S2C_P_DEBUG_SHAPE = 603,
@@ -223,7 +224,8 @@ namespace common::packet
 	};
 
 	enum class DebugCommandType : uint8_t {
-		PHYSICS_SNAPSHOT = 1, // 1프레임 물리 스냅샷 찍기
+		PHYSICS_SNAPSHOT = 1, // 물리 녹화 시작
+		PHYSICS_STOP = 2,     // 물리 녹화 중지
 	};
 
 	struct CS_PACKET_DEBUG_COMMAND : PacketHeader {

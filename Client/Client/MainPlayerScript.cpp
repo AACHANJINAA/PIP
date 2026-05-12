@@ -497,6 +497,11 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 void MainPlayerScript::handle_input(float deltaTime)
 {
+	if (InputManager::instance()->IsKeyDown(VK_F8))
+	{
+		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::PHYSICS_SNAPSHOT);
+	}
+
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp() || _state == common::packet::EntityState::GRABBED)
 	{
@@ -511,7 +516,12 @@ void MainPlayerScript::handle_input(float deltaTime)
 	bool is_moving_input = false;
 
 	// [방어 코드] 카메라가 로딩되지 않았거나 nullptr인 경우 입력 처리를 스킵하여 크래시 방지
-	if (!_camera || !_camera->transform()) return;
+	if (!_camera)
+	{
+		CERROR("카메라가 널 포인터임");
+		return;
+	}
+			
 
 	XMFLOAT3 camForward = _camera->transform()->forward();
 	XMFLOAT3 camFwdV = Vector3::Normalize({ camForward.x, 0.0f, camForward.z });

@@ -12,6 +12,7 @@ namespace PIP::packet
 		RegisterHandler(PacketType::C2S_P_ROOM_LIST, Handle_C2S_ROOM_LIST);
 		RegisterHandler(PacketType::C2S_P_CHAT_IN_ROOM, Handle_C2S_CHAT_IN_ROOM);
         RegisterHandler(PacketType::C2S_P_PLAYER_READY, Handle_C2S_PLAYER_READY);
+        RegisterHandler(PacketType::C2S_P_DEBUG_COMMAND, Handle_C2S_DEBUG_COMMAND);
 	}
 
 	void PacketManager::Dispatch(const std::shared_ptr<PIP::SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
@@ -51,6 +52,7 @@ namespace PIP::packet
                     case packet::PacketType::C2S_P_ENTER_ROOM: // 인게임 중 다른 방으로 이동
                     case packet::PacketType::C2S_P_ROOM_LIST:  // 인게임 중 방 목록 요청
 					case packet::PacketType::C2S_P_PLAYER_READY: // 게임 시작 준비 패킷
+                    case packet::PacketType::C2S_P_DEBUG_COMMAND:
                         bIsValidPacket = true;
                         break;
                 }
