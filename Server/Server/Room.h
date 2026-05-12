@@ -177,8 +177,9 @@ namespace PIP::SERVER
 
 		std::ofstream _dumpFile;
 		std::unique_ptr<JPH::StreamOutWrapper> _streamOut;
+#ifdef DEBUG_VIEWER
 		std::unique_ptr<JPH::DebugRendererRecorder> _recorder;
-
+#endif
 		bool _isSessionOpen = false;     // 파일이 열려있는지 여부
 		bool _captureNextFrame = false;  // 이번 프레임을 기록할지 여부 (F8 트리거)
 	};
