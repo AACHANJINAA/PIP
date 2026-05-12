@@ -34,6 +34,7 @@ void OtherPlayerScript::on_sync_rotation(const XMFLOAT4& newRotation)
     if (transform())
     {
         transform()->set_local_rotation(newRotation);
+		transform()->rotate(0, 180, 0); // 서버와 클라이언트 간 모델 회전 차이 보정
 	}
 }
 
