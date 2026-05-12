@@ -740,7 +740,7 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 
 	// 땅 파고듦 방지 (중요!)
 	if (_isGrounded && _logicalPosition.y < groundHeight) {
-		_logicalPosition.y = groundHeight;
+		//_logicalPosition.y = groundHeight;
 	}
 
 	// 3. 시각적 오프셋 감쇄 (부드럽게 0으로 수렴)
