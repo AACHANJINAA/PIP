@@ -80,6 +80,7 @@ public:
 	UINT get_occlusion_query_index() const { return _occlusionQueryIndex; }
 	UINT set_occlusion_query_index(UINT index) { return _occlusionQueryIndex = index; }
 	bool has_allocated_index() const { return _occlusionQueryIndex != 0xFFFFFFFF; }
+	D3D12_GPU_VIRTUAL_ADDRESS get_cb_gpu_address(UINT frame_index) const { return _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress(); }
 
 protected:
     std::shared_ptr<Mesh> _mesh;

@@ -385,6 +385,13 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
                 // 4) 재질 정보 업데이트 (그룹 내 첫 번째 객체 기준)
                 auto firstObj = instances[0];
+				auto renderComp = firstObj->get_component<RenderComponent>();
+                if (renderComp) {
+                    // 1. 상수 버퍼 업데이트 (여기서 otherplayer_id가 -1로 설정됨)
+                    renderComp->update_world_matrix_cb(frame_index);
+                    // 2. Root Parameter 0번에 해당 버퍼 바인딩
+                    commandList->SetGraphicsRootConstantBufferView(0, renderComp->get_cb_gpu_address(frame_index));
+                }
                 proto_it->second->update_per_object(commandList, this, firstObj.get());
                 firstObj->prepare_render();
 
