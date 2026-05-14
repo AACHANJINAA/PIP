@@ -72,6 +72,18 @@
     <Filter Include="소스 파일\Game\Stage\Stages">
       <UniqueIdentifier>{e3e2de1b-2652-4bee-acc0-0561287dc608}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\NPC\Elevator">
+      <UniqueIdentifier>{54b02c53-59a2-4b5b-aa60-f0fb2187093f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\External">
+      <UniqueIdentifier>{cb97ed7a-8ab7-43b4-a1d7-9ed75262e490}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\External\Detour">
+      <UniqueIdentifier>{0cfba1b5-7592-4057-81dd-e15a386757c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\External\Raycast">
+      <UniqueIdentifier>{cb76e6ba-f70c-4a6b-b823-4df18a812bd9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PacketHandlers.cpp">
@@ -174,7 +186,64 @@
       <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClCompile>
     <ClCompile Include="Elevator.cpp">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\Game\NPC\Elevator</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourAlloc.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourAssert.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourCommon.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourNavMesh.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourNavMeshBuilder.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourNavMeshQuery.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Detour\Source\DetourNode.cpp">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\Recast.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastAlloc.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastArea.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastAssert.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastContour.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastFilter.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastLayers.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastMesh.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastMeshDetail.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastRasterization.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="Recast\Source\RecastRegion.cpp">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicGuard.cpp">
+      <Filter>소스 파일\Game\NPC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -305,7 +374,46 @@
       <Filter>소스 파일\Game\Stage\Stages</Filter>
     </ClInclude>
     <ClInclude Include="Elevator.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\Game\NPC\Elevator</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourAlloc.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourAssert.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourCommon.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourMath.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourNavMesh.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourNavMeshBuilder.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourNavMeshQuery.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourNode.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Detour\Include\DetourStatus.h">
+      <Filter>소스 파일\External\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="Recast\Include\Recast.h">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClInclude>
+    <ClInclude Include="Recast\Include\RecastAlloc.h">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClInclude>
+    <ClInclude Include="Recast\Include\RecastAssert.h">
+      <Filter>소스 파일\External\Raycast</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicGuard.h">
+      <Filter>소스 파일\Game\NPC</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

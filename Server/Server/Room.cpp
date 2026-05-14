@@ -15,6 +15,7 @@
 #include "InventoryComponent.h"
 #include "StageManager.h"
 #include "Elevator.h"
+#include "MagicGuard.h"
 
 namespace PIP::SERVER
 {

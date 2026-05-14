@@ -52,6 +52,15 @@ namespace PIP
 		// [추가] 서버 전용: 클라이언트에서 Export한 JSON을 로드하여 StaticMeshTile 리스트로 변환 (맵 데이터와 별개로 관리)
 		void LoadServerExportData(const std::string& groupName, std::string_view jsonPath, bool enableBinSave = false); 
 
+		// OBJ 파일을 읽어 NavMesh 초기화 (멀티 스테이지 대응을 위해 name 추가)
+		bool LoadNavMesh(const std::string& name, std::string_view obj_path);
+
+		// 길찾기 함수 (Y-up 좌표계 기준)
+		bool FindPath(const std::string& name, const common::Vec3& start, const common::Vec3& end, std::vector<common::Vec3>& outPath);
+
+		bool GetClosestPoint(const std::string& name, const common::Vec3& pos, common::Vec3& outPos);
+		bool IsWalkable(const std::string& name, const common::Vec3& start, const common::Vec3& end);
+
 		std::vector<const StaticMeshTile*> GetStaticMeshGroup(const std::string& groupName) const;// 각 방에서 참조할 Shape 리스트 반환
 
 		// [추가] 수동 그룹화 정의: "그룹명"과 "포함될 타일 이름들"을 매핑
@@ -72,6 +81,15 @@ namespace PIP
 		// [추가] 월드 경계 반환 (minX, maxX, minZ, maxZ)
 		std::tuple<float, float, float, float> GetWorldBounds() const { return { _worldMinX, _worldMaxX, _worldMinZ, _worldMaxZ }; }
 	private:
+		struct NavMeshInfo {
+			dtNavMesh* navMesh = nullptr;
+			dtNavMeshQuery* navQuery = nullptr;
+			~NavMeshInfo() {
+				if (navQuery) dtFreeNavMeshQuery(navQuery);
+				if (navMesh) dtFreeNavMesh(navMesh);
+			}
+		};
+
 		std::vector<MapObject> _map_objects;
 		std::vector<TerrainTile> _terrainTiles;
 		std::vector<StaticMeshTile> _staticMeshTiles;
@@ -82,5 +100,16 @@ namespace PIP
 		float _worldMinZ = std::numeric_limits<float>::max();
 		float _worldMaxZ = -std::numeric_limits<float>::max();
 		std::vector<StaticMeshTile> _findMeshShape;
+
+		std::unordered_map<std::string, std::shared_ptr<NavMeshInfo>> _navMeshes;
+
+		// OBJ 파싱을 위한 내부 구조체
+		struct RawMeshData {
+			std::vector<float> vertices;
+			std::vector<int> indices;
+			std::vector<int> polyCounts; // 각 폴리곤의 정점 수 (OBJ는 보통 3~6개)
+		};
+
+		bool ParseOBJ(std::string_view path, RawMeshData& outData);
 	};
 }

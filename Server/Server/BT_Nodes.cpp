@@ -986,4 +986,88 @@ namespace PIP::GAME
 
 		return NodeStatus::FAILURE;
 	}
+
+	NodeStatus Action_FindPath::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		// 1. 길찾기 빈도 제한 (스태거링)
+		float nextSearchTimer = _blackboard->get<float>("path_search_cooldown");
+		if (nextSearchTimer > 0.0f) {
+			nextSearchTimer -= dt;
+			_blackboard->set("path_search_cooldown", nextSearchTimer);
+			return NodeStatus::SUCCESS; // 아직 쿨타임이면 기존 경로 유지
+		}
+
+		auto npc = _blackboard->get<NPC*>("owner_npc");
+		common::Vec3 start = npc->GetPosition();
+		common::Vec3 end = _blackboard->get<common::Vec3>("target_pos");
+
+		// 2. 타겟이 의미 있게 움직였을 때만 실제 A* 수행 (예: 2m 이상)
+		common::Vec3 lastTarget = _blackboard->get<common::Vec3>("last_search_pos");
+		if (common::DistanceSq(lastTarget, end) < 4.0f) {
+			nextSearchTimer = 0.5f; // 짧은 휴식 후 재체크
+			_blackboard->set("path_search_cooldown", nextSearchTimer);
+			return NodeStatus::SUCCESS;
+		}
+
+		// 3. 실제 탐색 호출
+		std::vector<common::Vec3> newPath;
+		if (MapDataManager::Instance()->FindPath(_navName, start, end, newPath)) {
+			_blackboard->set("path", std::move(newPath));
+			lastTarget = end;
+			nextSearchTimer = 1.0f + (rand() % 500) * 0.001f; // 1.0~1.5초 무작위 쿨타임 (부하 분산)
+			_blackboard->set("path_search_cooldown", nextSearchTimer);
+			return NodeStatus::SUCCESS;
+		}
+		return NodeStatus::FAILURE;
+	}
+
+	NodeStatus Action_FollowPath::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		if (!_blackboard->has("path")) return NodeStatus::FAILURE;
+		auto path = _blackboard->get<std::vector<common::Vec3>>("path");
+		if (path.empty()) return NodeStatus::FAILURE;
+
+		auto npc = _blackboard->get<NPC*>("owner_npc");
+		if (!npc) return NodeStatus::FAILURE;
+
+		auto nc = npc->GetNPCController();
+		auto tc = npc->GetTransform();
+		if (!nc || !tc) return NodeStatus::FAILURE;
+
+		common::Vec3 currentPos = tc->GetPosition();
+		common::Vec3 nextTarget = path[0];
+
+		// 도착 판정 (수평 거리 기준 1.0m 이내면 도달로 간주)
+		common::Vec3 diff = nextTarget - currentPos;
+		diff.y = 0;
+
+		if (common::Distance(currentPos, nextTarget) < 1.0f) {
+			path.erase(path.begin());
+			_blackboard->set("path", path);
+			if (path.empty()) {
+				nc->SetVelocity({ 0, 0, 0 });
+				return NodeStatus::SUCCESS;
+			}
+			nextTarget = path[0];
+			diff = nextTarget - currentPos;
+			diff.y = 0;
+		}
+
+		// 이동 처리
+		if (common::LengthSq(diff) > 0.001f) {
+			common::Vec3 moveDir = common::Normalize(diff);
+			nc->SetVelocity(moveDir * _speed);
+
+			// 회전 처리
+			float angle = std::atan2(moveDir.x, moveDir.z);
+			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(0, angle, 0);
+			common::Quat rot;
+			XMStoreFloat4((XMFLOAT4*)&rot, q);
+			tc->SetRotation(rot);
+
+			npc->SetState(common::packet::EntityState::MOVE);
+		}
+
+		return NodeStatus::RUNNING;
+	}
 }

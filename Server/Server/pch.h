@@ -109,8 +109,14 @@ using namespace DirectX;
 // Jolt 관련 편의를 위한 using
 using namespace JPH::literals; // 1.0_r 같은 리터럴 사용 시
 
-// 1. 로그용 전역 뮤텍스는 그대로 사용합니다.
-inline std::mutex g_log_mutex;
+
+//Detour, Raycast 헤더
+#include "DetourNavMesh.h"
+#include "DetourNavMeshQuery.h"
+#include "DetourNavMeshBuilder.h"
+
+
+
 
 using namespace common::VectorHelper; // XMFLOAT3 연산자 오버로드 사용 위해
 
@@ -143,6 +149,9 @@ inline std::string W2S(const wchar_t* wstr) {
 }
 inline std::string W2S(const std::wstring& wstr) { return W2S(wstr.c_str()); }
 
+
+// 1. 로그용 전역 뮤텍스는 그대로 사용합니다.
+inline std::mutex g_log_mutex;
 #ifdef _DEBUG
 	#ifdef ENABLE_DEBUG_LOG
 		

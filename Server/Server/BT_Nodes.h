@@ -194,6 +194,22 @@ namespace PIP::GAME
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 
+    // [행동] NavMesh 길찾기 수행
+    class Action_FindPath : public Action {
+        std::string _navName;
+    public:
+        Action_FindPath(std::string_view navName) : _navName(navName) { set_name("Action_FindPath"); }
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+
+    // [행동] 경로 따라가기
+    class Action_FollowPath : public Action {
+        float _speed;
+    public:
+        Action_FollowPath(float speed) : _speed(speed) { set_name("Action_FollowPath"); }
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+
     class Action_ChargeAttack : public Action 
 	{
     public:
