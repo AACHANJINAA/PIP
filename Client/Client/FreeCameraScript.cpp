@@ -25,6 +25,7 @@ void FreeCameraScript::awake()
      // 또한 CameraComponent는 생성자에서 스스로 초기화까지 완료합니다.
      // 따라서 awake에서는 그저 포인터를 캐싱해두기만 하면 됩니다.
     _cameraComponent = game_object()->get_component<CameraComponent>().get();
+    _isFreeCameraMode = false;
 }
 
 void FreeCameraScript::update(float delta_time)
