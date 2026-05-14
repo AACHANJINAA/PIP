@@ -90,6 +90,9 @@ public:
 
 	void OnDestroy();
 
+	int get_window_width() const { return _wndClientWidth; }
+	int get_window_height() const { return _wndClientHeight; }
+
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeaps();
 	void CreateDirect3DDevice();

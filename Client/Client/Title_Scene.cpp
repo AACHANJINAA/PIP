@@ -422,7 +422,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     //const float startFadeOutTime = 8.5f; // 페이드 아웃
 	const float startTime = 8.5f; // UI 연출 종료 -> 카메라 회전 시작하는 시간
 	const float move_start_time = 16.5f; // 움직임 시작하는 시간 -> UI 연출이 끝나고 3초 정도는 카메라 회전만 하다가, 16.5초부터 움직임 시작 -> 이때가 성이 보이는 시점
-    const float midTime = 23.7f; // 성 진입
+    const float midTime = 23.4f; // 성 진입
     const float endTime = 32.0f; // 주인공 옆 도착
 	const float spawnUIENDTime = 33.0f; // ui 페이트인 끝나는 시간 -> 초에 ui도 다 끝나야함
 
