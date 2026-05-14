@@ -201,7 +201,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
     float radii[3] = {
           shadow_max_distance * 0.1f,  // Cascade 0: 30m
-          shadow_max_distance * 0.3f,  // Cascade 1: 90m
+          shadow_max_distance * 0.5f,  // Cascade 1: 150m
           shadow_max_distance * 1.0f   // Cascade 2: 300m
     };
 

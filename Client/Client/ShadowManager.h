@@ -38,7 +38,7 @@ private:
 
     int _shadowmapSize = 4096;
 
-    float shadow_max_distance = 300.0f;
+    float shadow_max_distance = 500;
 
     ComPtr<ID3D12Resource>       _shadowMapArray;
     ComPtr<ID3D12DescriptorHeap> _dsvHeap;        // CPU only, 3 slots

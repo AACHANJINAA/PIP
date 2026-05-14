@@ -247,7 +247,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
         float distSq = toObj.x * toObj.x + toObj.y * toObj.y + toObj.z * toObj.z; // 직접 제곱 계산 (가장 빠름)
 
         // --- 1. 일반 렌더링 리스트 빌드 (View Frustum Culling) ---
-        float renderLimit = (psoName == "terrain") ? 700.0f : 400.0f;
+        float renderLimit = (psoName == "terrain") ? 700.0f : 500.0f;
         if (psoName == "gltf_instanced") renderLimit = 3000.0f;
         if (distSq < (renderLimit * renderLimit))
         {
