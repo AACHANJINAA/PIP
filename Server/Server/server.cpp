@@ -260,6 +260,9 @@ namespace PIP::SERVER
 		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" });
 		mdm->AddTerrainGroup("VillageStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "VillageCollisions" });
 		mdm->AddTerrainGroup("BossStage", { "BossStageCollisions" });
+
+		mdm->LoadNavMesh("MainStage_NavMesh", "Resource/NavMesh.obj");
+
 		MYLOG("[SERVER] Successful Loaded the Map");
 	}
 	void Server::Start(int io_thread_count, int logic_thread_count)

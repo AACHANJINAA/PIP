@@ -665,6 +665,232 @@ namespace PIP
 		//MYLOG("[MapData] Instances with COM offset error: " << com_err_count);
 	}
 
+	bool MapDataManager::LoadNavMesh(const std::string& name, std::string_view obj_path)
+	{
+		MYLOG("Loading NavMesh: " << name << " from OBJ: " << obj_path);
+		RawMeshData rawData;
+		if (!ParseOBJ(obj_path, rawData)) {
+			MYERROR("Failed to parse NavMesh OBJ: " << obj_path);
+			return false;
+		}
+
+		if (rawData.vertices.empty()) return false;
+
+		// 1. 바운딩 박스 계산
+		float bmin[3], bmax[3];
+		bmin[0] = bmax[0] = rawData.vertices[0];
+		bmin[1] = bmax[1] = rawData.vertices[1];
+		bmin[2] = bmax[2] = rawData.vertices[2];
+
+		for (size_t i = 3; i < rawData.vertices.size(); i += 3) {
+			bmin[0] = (std::min)(bmin[0], rawData.vertices[i]);
+			bmax[0] = (std::max)(bmax[0], rawData.vertices[i]);
+			bmin[1] = (std::min)(bmin[1], rawData.vertices[i + 1]);
+			bmax[1] = (std::max)(bmax[1], rawData.vertices[i + 1]);
+			bmin[2] = (std::min)(bmin[2], rawData.vertices[i + 2]);
+			bmax[2] = (std::max)(bmax[2], rawData.vertices[i + 2]);
+		}
+
+		// 2. Detour 생성 파라미터 설정
+		dtNavMeshCreateParams params;
+		memset(&params, 0, sizeof(params));
+
+		// 해상도 설정 (정밀도와 맵 크기 사이의 트레이드오프)
+		// 0.1f (10cm) 정도면 6.5km 맵까지 unsigned short로 커버 가능
+		params.cs = 0.1f; 
+		params.ch = 0.1f;
+
+		// 정점을 Voxel 단위(unsigned short)로 변환
+		std::vector<unsigned short> voxelVerts;
+		voxelVerts.reserve(rawData.vertices.size());
+		for (size_t i = 0; i < rawData.vertices.size(); i += 3) {
+			voxelVerts.push_back(static_cast<unsigned short>((rawData.vertices[i] - bmin[0]) / params.cs));
+			voxelVerts.push_back(static_cast<unsigned short>((rawData.vertices[i + 1] - bmin[1]) / params.ch));
+			voxelVerts.push_back(static_cast<unsigned short>((rawData.vertices[i + 2] - bmin[2]) / params.cs));
+		}
+
+		params.verts = voxelVerts.data();
+		params.vertCount = static_cast<int>(voxelVerts.size() / 3);
+		
+		// 폴리곤 데이터 재구성 (nvp * 2 구조)
+		params.nvp = 6; // 최대 정점 수
+		std::vector<unsigned short> detourPolys(rawData.polyCounts.size() * 2 * params.nvp, 0xffff);
+		int vertOffset = 0;
+		for (int i = 0; i < rawData.polyCounts.size(); ++i) {
+			int pCount = rawData.polyCounts[i];
+			for (int j = 0; j < pCount && j < params.nvp; ++j) {
+				detourPolys[i * 2 * params.nvp + j] = static_cast<unsigned short>(rawData.indices[vertOffset + j]);
+			}
+			vertOffset += pCount;
+		}
+
+		params.polys = detourPolys.data();
+		params.polyCount = static_cast<int>(rawData.polyCounts.size());
+		
+		// 기본 플래그 및 구역 설정
+		std::vector<unsigned short> polyFlags(params.polyCount, 1); // 1: Walkable
+		params.polyFlags = polyFlags.data();
+		std::vector<unsigned char> polyAreas(params.polyCount, 0);
+		params.polyAreas = polyAreas.data();
+
+		params.bmin[0] = bmin[0]; params.bmin[1] = bmin[1]; params.bmin[2] = bmin[2];
+		params.bmax[0] = bmax[0]; params.bmax[1] = bmax[1]; params.bmax[2] = bmax[2];
+		
+		params.walkableHeight = 2.0f;
+		params.walkableRadius = 0.5f;
+		params.walkableClimb = 0.5f;
+
+		// 3. NavMesh 데이터 생성 (바이너리 블롭)
+		unsigned char* navData = nullptr;
+		int navDataSize = 0;
+		if (!dtCreateNavMeshData(&params, &navData, &navDataSize)) {
+			MYERROR("dtCreateNavMeshData failed for NavMesh: " << name);
+			return false;
+		}
+
+		// 4. NavMesh 및 Query 인스턴스 초기화
+		auto info = std::make_shared<NavMeshInfo>();
+		info->navMesh = dtAllocNavMesh();
+		if (!info->navMesh || dtStatusFailed(info->navMesh->init(navData, navDataSize, DT_TILE_FREE_DATA))) {
+			MYERROR("dtNavMesh init failed for: " << name);
+			return false;
+		}
+
+		info->navQuery = dtAllocNavMeshQuery();
+		if (!info->navQuery || dtStatusFailed(info->navQuery->init(info->navMesh, 2048))) {
+			MYERROR("dtNavMeshQuery init failed for: " << name);
+			return false;
+		}
+
+		_navMeshes[name] = info;
+		MYLOG("NavMesh '" << name << "' Loaded Successfully. Polys: " << params.polyCount);
+		return true;
+	}
+	bool MapDataManager::FindPath(const std::string& name, const common::Vec3& start, const common::Vec3& end, std::vector<common::Vec3>& outPath) {
+		auto it = _navMeshes.find(name);
+		if (it == _navMeshes.end()) return false;
+		auto query = it->second->navQuery;
+
+		float startPos[3] = { start.x, start.y, start.z };
+		float endPos[3] = { end.x, end.y, end.z };
+
+		// 1. 시작점과 도착점에서 가장 가까운 폴리곤 찾기
+		dtQueryFilter filter;
+		filter.setIncludeFlags(1); // 걷기 가능 플래그(1)만 탐색
+		float extents[3] = { 2.0f, 4.0f, 2.0f }; // 탐색 범위 (오차 허용 범위)
+
+		dtPolyRef startPoly, endPoly;
+		float nearestStart[3], nearestEnd[3];
+
+		query->findNearestPoly(startPos, extents, &filter, &startPoly, nearestStart);
+		query->findNearestPoly(endPos, extents, &filter, &endPoly, nearestEnd);
+
+		if (!startPoly || !endPoly) return false;
+
+		// 2. 폴리곤 경로 찾기 (A*)
+		static const int MAX_POLYS = 256;
+		dtPolyRef polyPath[MAX_POLYS];
+		int pathCount = 0;
+
+		dtStatus status = query->findPath(startPoly, endPoly, nearestStart, nearestEnd, &filter, polyPath, &pathCount, MAX_POLYS);
+
+		if (dtStatusFailed(status) || pathCount <= 0) return false;
+
+		// 3. 직선 경로 추출 (String Pulling / Funnel Algorithm)
+		static const int MAX_STEER_POINTS = 64;
+		float steerPath[MAX_STEER_POINTS * 3];
+		unsigned char steerFlags[MAX_STEER_POINTS];
+		dtPolyRef steerPolys[MAX_STEER_POINTS];
+		int steerCount = 0;
+
+		status = query->findStraightPath(nearestStart, nearestEnd, polyPath, pathCount, steerPath, steerFlags, steerPolys, &steerCount, MAX_STEER_POINTS);
+
+		if (dtStatusFailed(status)) return false;
+
+		// 4. 결과 좌표 벡터에 담기
+		for (int i = 0; i < steerCount; ++i) {
+			outPath.push_back({ steerPath[i * 3 + 0], steerPath[i * 3 + 1], steerPath[i * 3 + 2] });
+		}
+
+		return true;
+	}
+	bool MapDataManager::ParseOBJ(std::string_view path, RawMeshData& outData)
+	{
+		std::ifstream file(path.data());
+		if (!file.is_open()) return false;
+
+		std::string line;
+		while (std::getline(file, line)) {
+			if (line.substr(0, 2) == "v ") { // 정점 데이터
+				std::istringstream s(line.substr(2));
+				float x, y, z;
+				s >> x >> y >> z;
+				outData.vertices.push_back(x);
+				outData.vertices.push_back(y);
+				outData.vertices.push_back(z);
+			}
+			else if (line.substr(0, 2) == "f ") { // 면(폴리곤) 데이터
+				std::istringstream s(line.substr(2));
+				std::string part;
+				int count = 0;
+				while (s >> part) {
+					// v/vt/vn 형식 대응
+					size_t slashPos = part.find('/');
+					int idx = std::stoi(part.substr(0, slashPos)) - 1;
+					outData.indices.push_back(idx);
+					count++;
+				}
+				outData.polyCounts.push_back(count);
+			}
+		}
+		return true;
+	}
+
+	// 해당 위치에서 가장 가까운 네비메쉬 위 좌표 반환 (스냅 기능)
+	bool MapDataManager::GetClosestPoint(const std::string& name, const common::Vec3& pos, common::Vec3& outPos) {
+		auto it = _navMeshes.find(name);
+		if (it == _navMeshes.end()) return false;
+		auto query = it->second->navQuery;
+
+		dtQueryFilter filter;
+		filter.setIncludeFlags(1);
+		float extents[3] = { 1.0f, 5.0f, 1.0f };
+		dtPolyRef polyRef;
+		float p[3] = { pos.x, pos.y, pos.z };
+		float nearest[3];
+
+		bool res = dtStatusSucceed(query->findNearestPoly(p, extents, &filter, &polyRef, nearest));
+		if (res) outPos = { nearest[0], nearest[1], nearest[2] };
+		return res;
+	}
+
+	// 두 지점 사이에 장애물(네비메쉬 단절)이 있는지 체크 (Raycast)
+	bool MapDataManager::IsWalkable(const std::string& name, const common::Vec3& start, const common::Vec3& end) {
+		auto it = _navMeshes.find(name);
+		if (it == _navMeshes.end()) return false;
+		auto query = it->second->navQuery;
+
+		dtQueryFilter filter;
+		filter.setIncludeFlags(1);
+		float t = 0;
+		float hitNormal[3];
+		dtPolyRef polyPath[32];
+		int pathCount = 0;
+		dtPolyRef startPoly;
+		float nearest[3];
+
+		float s[3] = { start.x, start.y, start.z };
+		float e[3] = { end.x, end.y, end.z };
+
+		float halfExtents[3] = { 2.0f, 4.0f, 2.0f };
+		query->findNearestPoly(s, halfExtents, &filter, &startPoly, nearest);
+
+		dtStatus status = query->raycast(startPoly, s, e, &filter, &t, hitNormal, polyPath, &pathCount, 32);
+
+		// t가 1.0 이상이면 가로막는 것 없이 도달 가능하다는 뜻
+		return dtStatusSucceed(status) && t >= 1.0f;
+	}
+
 	std::vector<const StaticMeshTile*> MapDataManager::GetStaticMeshGroup(const std::string& groupName) const
 	{
 		std::vector<const StaticMeshTile*> result;

@@ -132,7 +132,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Jolt;$(ProjectDir)\lua-5.4.2_Win64_dll17_lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Jolt;$(ProjectDir)\lua-5.4.2_Win64_dll17_lib\include;Detour\Include;Recast\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -153,7 +153,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Jolt;$(ProjectDir)\lua-5.4.2_Win64_dll17_lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Jolt;$(ProjectDir)\lua-5.4.2_Win64_dll17_lib\include;Detour\Include;Recast\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -173,6 +173,13 @@
     <ClCompile Include="CharacterControllerComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DBManager.cpp" />
+    <ClCompile Include="Detour\Source\DetourAlloc.cpp" />
+    <ClCompile Include="Detour\Source\DetourAssert.cpp" />
+    <ClCompile Include="Detour\Source\DetourCommon.cpp" />
+    <ClCompile Include="Detour\Source\DetourNavMesh.cpp" />
+    <ClCompile Include="Detour\Source\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="Detour\Source\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="Detour\Source\DetourNode.cpp" />
     <ClCompile Include="Elevator.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="glTFMeshLoader.cpp" />
@@ -180,6 +187,7 @@
     <ClCompile Include="HitboxComponent.cpp" />
     <ClCompile Include="InventoryComponent.cpp" />
     <ClCompile Include="LuaManager.cpp" />
+    <ClCompile Include="MagicGuard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainStage.cpp" />
     <ClCompile Include="MapDataManager.cpp" />
@@ -198,6 +206,17 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerControllerComponent.cpp" />
     <ClCompile Include="Profiling.cpp" />
+    <ClCompile Include="Recast\Source\Recast.cpp" />
+    <ClCompile Include="Recast\Source\RecastAlloc.cpp" />
+    <ClCompile Include="Recast\Source\RecastArea.cpp" />
+    <ClCompile Include="Recast\Source\RecastAssert.cpp" />
+    <ClCompile Include="Recast\Source\RecastContour.cpp" />
+    <ClCompile Include="Recast\Source\RecastFilter.cpp" />
+    <ClCompile Include="Recast\Source\RecastLayers.cpp" />
+    <ClCompile Include="Recast\Source\RecastMesh.cpp" />
+    <ClCompile Include="Recast\Source\RecastMeshDetail.cpp" />
+    <ClCompile Include="Recast\Source\RecastRasterization.cpp" />
+    <ClCompile Include="Recast\Source\RecastRegion.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="StageManager.cpp" />
@@ -222,6 +241,15 @@
     <ClInclude Include="CombatDef.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DBManager.h" />
+    <ClInclude Include="Detour\Include\DetourAlloc.h" />
+    <ClInclude Include="Detour\Include\DetourAssert.h" />
+    <ClInclude Include="Detour\Include\DetourCommon.h" />
+    <ClInclude Include="Detour\Include\DetourMath.h" />
+    <ClInclude Include="Detour\Include\DetourNavMesh.h" />
+    <ClInclude Include="Detour\Include\DetourNavMeshBuilder.h" />
+    <ClInclude Include="Detour\Include\DetourNavMeshQuery.h" />
+    <ClInclude Include="Detour\Include\DetourNode.h" />
+    <ClInclude Include="Detour\Include\DetourStatus.h" />
     <ClInclude Include="Elevator.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="glTFMeshLoader.h" />
@@ -230,6 +258,7 @@
     <ClInclude Include="InventoryComponent.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LuaManager.h" />
+    <ClInclude Include="MagicGuard.h" />
     <ClInclude Include="MainStage.h" />
     <ClInclude Include="MapDataManager.h" />
     <ClInclude Include="NPC.h" />
@@ -242,6 +271,9 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayerControllerComponent.h" />
     <ClInclude Include="Profiling.h" />
+    <ClInclude Include="Recast\Include\Recast.h" />
+    <ClInclude Include="Recast\Include\RecastAlloc.h" />
+    <ClInclude Include="Recast\Include\RecastAssert.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="Stage.h" />

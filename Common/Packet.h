@@ -134,6 +134,7 @@ namespace common::packet
 		Basic = 1,
 		Tainer = 2,
 		Elevator = 3, // [추가] 엘리베이터 객체
+		MagicGuard = 4, // [신규] 길찾기 경비병
 		// 향후 추가될 NPC 유형들...
 	};
 	enum class InventoryUpdateType : uint8_t {
