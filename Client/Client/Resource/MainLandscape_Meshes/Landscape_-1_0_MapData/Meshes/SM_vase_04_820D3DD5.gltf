@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 2598,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 666,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.365535676, -1.13364335e-16, -0.295904428 ],
+			"max": [ 0.365535676, 0.804942787, 0.302673608 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 666,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 666,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 666,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 666,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_vase_04_820D3DD5.bin",
+			"byteLength": 42492
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 5196,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7992,
+			"byteOffset": 5196,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7992,
+			"byteOffset": 13188,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 10656,
+			"byteOffset": 21180,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5328,
+			"byteOffset": 31836,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5328,
+			"byteOffset": 37164,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Vase_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_vase_C.png"
+		},
+		{
+			"uri": "T_vase_N.png"
+		},
+		{
+			"uri": "T_vase_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Vase",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_vase_04",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_vase_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Vase_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_vase_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_vase_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}
