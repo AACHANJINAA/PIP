@@ -57,12 +57,12 @@ namespace PIP::SERVER
         // 엘리베이터 생성 (16.12, -11.85, 0) -> (16.12, -1.85, 0) 10m 상승
         room->spawn_elevator(
             common::Vec3(16.12f, -11.80f, 0.0f),
-            common::Vec3(16.12f, 5.48f, 0.0f),
+            common::Vec3(16.12f, 0.48f, 0.0f),
             2.0f, 3.0f, "BossElevator"
         );
 
         // 보스 테이너 배치
-        //room->spawn_npc(GAME::NPCType::Tainer, { 0,1,0 }, "Tainer the Gatekeeper");
+        room->spawn_npc(GAME::NPCType::Tainer, { 0,1,0 }, "Tainer the Gatekeeper");
 
         room->StartGame();
     }

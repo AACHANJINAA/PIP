@@ -10,17 +10,20 @@ CameraComponent::CameraComponent(float fov) :
 	_aspect(static_cast<float>(FRAME_BUFFER_WIDTH) / static_cast<float>(FRAME_BUFFER_HEIGHT)),
 	_near(0.1f), _far(5000.0f)
 {
-	// 역할 이전 (from CCamera constructor):
-	// 행렬들을 단위 행렬로 초기화합니다.
+	// 1. 프레임워크에서 현재 진짜 창 크기를 가져오기
+	int currentWidth = GameFramework::instance()->get_window_width();
+	int currentHeight = GameFramework::instance()->get_window_height();
+
+	// 2. 종횡비(Aspect)를 현재 크기에 맞게 계산
+	_aspect = static_cast<float>(currentWidth) / static_cast<float>(currentHeight);
+
 	XMStoreFloat4x4(&_viewMatrix, XMMatrixIdentity());
 	XMStoreFloat4x4(&_projectionMatrix, XMMatrixIdentity());
 
-	// 뷰포트와 시저렉트를 기본값으로 설정합니다.
-	_viewport = { 0, 0, static_cast<float>(FRAME_BUFFER_WIDTH), static_cast<float>(FRAME_BUFFER_HEIGHT),
-		0.0f, 1.0f };
-	_scissorRect = { 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT };
+	// 3. 매크로 대신 현재 창 크기로 뷰포트 초기화!
+	_viewport = { 0, 0, static_cast<float>(currentWidth), static_cast<float>(currentHeight), 0.0f, 1.0f };
+	_scissorRect = { 0, 0, currentWidth, currentHeight };
 
-	// 이 컴포넌트가 생성될 때, 메인 카메라가 없다면 자신을 메인 카메라로 설정합니다.
 	if (!_mainCamera)
 	{
 		_mainCamera = this;
