@@ -58,6 +58,12 @@ private:
 	// ui 띄우기 용
 	void die_ui_update(float deltaTime);
 
+	// 스킬 비주얼 함수
+	void update_skill_visuals(float deltaTime);
+
+	// 실제 공격 판정과 패킷 전송을 처리하는 함수 (애니메이션 프레임에 맞춰 호출)
+	void process_attack_and_packet(); // 애니메이션 시간은 내부에서 직접 구함
+
 	// 무기 오브젝트 참조 (필요 시)
 	std::shared_ptr<GameObject> _currentWeaponObject = nullptr;
 	std::shared_ptr<WeaponScript> _currentWeapon;
@@ -87,12 +93,19 @@ private:
 
 
 	// 스킬을 위한 변수들
-	bool _isSkilling = false;   // [추가] 스킬 사용 중인지 여부
-	float _nowSkillTime = 0.0f;    // [추가] 스킬 사용 시작 시점부터의 경과 시간
+	bool _isSkilling = false;   // 스킬 사용 중인지 여부
+	bool _isSkillEnd = false;   // 스킬 종료 했는지 여부
+	float _nowSkillTime = 0.0f;    // 스킬 사용 시작 시점부터의 경과 시간
 	
-	float skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
-	float _skillBigSowrdSpawn = 0.95f * (1.f/skillAnimationspeed); // 대검 생성 시점
-	float _skillDontFollowAnimationTime = 1.095f * (1.f / skillAnimationspeed); // 대검 안따라가는 시점
+	float _skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
+	float _skillParticleSpawnTime = 0.25f;       // 파티클 생성 시작 시간 및 애니메이션 멈추는 시간(6프레임)
+	float _particleGatherDuration = 1.0f;         // 파티클이 흩어져 있다가 100% 모이는 데 걸리는 시간
+	bool _isSwordGathered = false; // 대검이 모였는지 여부
+	float _skillGatherTimer = 0.0f; // 대검이 모이는 시간 측정용 타이머
+
+	float _skillEndingAnimationSpeed = 0.5f; // 스킬이 끝나는 애니메이션의 속도
+	float _skillEndingTimer = 1.0f; // 스킬이 끝나는 애니메이션이 재생되는 시간
+
 	std::shared_ptr<GameObject> _SkillObject = nullptr;
 	std::shared_ptr<GameObject> _particleEffectObject = nullptr;
 	void init_skill_variables();
