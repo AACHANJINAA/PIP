@@ -31,6 +31,13 @@ namespace PIP
 		JPH::Vec3 position;
 		JPH::Quat rotation;
 	};
+
+	// TODO: 나중에 필터링값들을  findpath에 넘겨서 원하는 곳만 찾아 갈 수 있도록 바꿀수 있을듯
+	enum QueryFilter : int32_t 
+	{
+		Land = 1,
+		Block = 0
+	};
 	class MapDataManager : public Singleton<MapDataManager>
 	{
 		friend class Singleton<MapDataManager>;
@@ -60,6 +67,8 @@ namespace PIP
 
 		bool GetClosestPoint(const std::string& name, const common::Vec3& pos, common::Vec3& outPos);
 		bool IsWalkable(const std::string& name, const common::Vec3& start, const common::Vec3& end);
+
+		void TestNavMesh();
 
 		std::vector<const StaticMeshTile*> GetStaticMeshGroup(const std::string& groupName) const;// 각 방에서 참조할 Shape 리스트 반환
 

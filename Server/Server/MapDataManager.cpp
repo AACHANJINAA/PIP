@@ -691,6 +691,8 @@ namespace PIP
 			bmax[2] = (std::max)(bmax[2], rawData.vertices[i + 2]);
 		}
 
+		MYLOG("[MapData] NavMesh Bounds - Min: (" << bmin[0] << ", " << bmin[1] << ", " << bmin[2] << "), Max: (" << bmax[0] << ", " << bmax[1] << ", " << bmax[2] << ")");
+
 		// 2. Detour 생성 파라미터 설정
 		dtNavMeshCreateParams params;
 		memset(&params, 0, sizeof(params));
@@ -771,13 +773,16 @@ namespace PIP
 		if (it == _navMeshes.end()) return false;
 		auto query = it->second->navQuery;
 
+		outPath.clear();
+
 		float startPos[3] = { start.x, start.y, start.z };
 		float endPos[3] = { end.x, end.y, end.z };
 
 		// 1. 시작점과 도착점에서 가장 가까운 폴리곤 찾기
 		dtQueryFilter filter;
 		filter.setIncludeFlags(1); // 걷기 가능 플래그(1)만 탐색
-		float extents[3] = { 2.0f, 4.0f, 2.0f }; // 탐색 범위 (오차 허용 범위)
+		filter.setExcludeFlags(0);
+		float extents[3] = { 2.0f, 50.0f, 2.0f }; // 탐색 범위 (오차 허용 범위)
 
 		dtPolyRef startPoly, endPoly;
 		float nearestStart[3], nearestEnd[3];
@@ -825,9 +830,9 @@ namespace PIP
 				std::istringstream s(line.substr(2));
 				float x, y, z;
 				s >> x >> y >> z;
-				outData.vertices.push_back(x);
-				outData.vertices.push_back(y);
 				outData.vertices.push_back(z);
+				outData.vertices.push_back(y);
+				outData.vertices.push_back(x);
 			}
 			else if (line.substr(0, 2) == "f ") { // 면(폴리곤) 데이터
 				std::istringstream s(line.substr(2));
@@ -854,7 +859,8 @@ namespace PIP
 
 		dtQueryFilter filter;
 		filter.setIncludeFlags(1);
-		float extents[3] = { 1.0f, 5.0f, 1.0f };
+		filter.setExcludeFlags(0);
+		float extents[3] = { 1.0f, 50.0f, 1.0f };
 		dtPolyRef polyRef;
 		float p[3] = { pos.x, pos.y, pos.z };
 		float nearest[3];
@@ -889,6 +895,37 @@ namespace PIP
 
 		// t가 1.0 이상이면 가로막는 것 없이 도달 가능하다는 뜻
 		return dtStatusSucceed(status) && t >= 1.0f;
+	}
+
+	void MapDataManager::TestNavMesh()
+	{
+		// 서버 초기화 완료 직후 테스트 코드 삽입
+		std::vector<common::Vec3> testPath;
+		common::Vec3 start = { 178.8f, 10.f, -180.f }; // 시작점 (확실히 평지인 곳)
+		common::Vec3 end = { 152.0f, 10.f, -186.f };   // 도착점 (장애물 너머)
+
+		MYLOG("[NavMesh Test] 테스트 좌표 시작점: " << "(" << start.x << ", " << start.y << ", " << start.z << ")");
+		MYLOG("도착점: " << "(" << end.x << ", " << end.y << ", " << end.z << ")");
+		bool success = FindPath("MainStage_NavMesh", start, end, testPath);
+		if (success && !testPath.empty()) {
+			MYLOG("[NavMesh Test] 길찾기 성공! 총 웨이포인트 수: " << testPath.size() / 3);
+			for (size_t i = 0; i < testPath.size(); i += 3) {
+				MYLOG(" -> Point: (" << testPath[i].x << ", " << testPath[i].y << ", " << testPath[i].z << ")");
+			}
+		}
+		else {
+
+			MYLOG("[NavMesh Test] 길찾기 실패! 좌표가 네비메쉬 밖이거나 단절됨.");
+		}
+
+		common::Vec3 testPos = start;// 허공에 붕 뜬 좌표
+		common::Vec3 snappedPos;
+
+		if (GetClosestPoint("MainStage_NavMesh", testPos, snappedPos)) {
+			MYLOG("[Snap Test] 허공 (" << testPos.x << ", " << testPos.y << ", " << testPos.z << ") -> 바닥 스냅: ("
+				<< snappedPos.x << ", " << snappedPos.y << ", " << snappedPos.z << ")");
+		}
+
 	}
 
 	std::vector<const StaticMeshTile*> MapDataManager::GetStaticMeshGroup(const std::string& groupName) const

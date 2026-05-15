@@ -262,7 +262,7 @@ namespace PIP::SERVER
 		mdm->AddTerrainGroup("BossStage", { "BossStageCollisions" });
 
 		mdm->LoadNavMesh("MainStage_NavMesh", "Resource/NavMesh.obj");
-
+		mdm->TestNavMesh();
 		MYLOG("[SERVER] Successful Loaded the Map");
 	}
 	void Server::Start(int io_thread_count, int logic_thread_count)
