@@ -420,5 +420,8 @@
     <None Include="Monster.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
+    <None Include="NPC_Data.lua">
+      <Filter>소스 파일\Game\NPC\LuaScript</Filter>
+    </None>
   </ItemGroup>
 </Project>
