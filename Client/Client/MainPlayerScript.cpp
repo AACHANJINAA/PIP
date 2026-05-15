@@ -373,7 +373,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	{
 		_state = common::packet::EntityState::DEAD;
 		if (_currentWeapon) _currentWeapon->set_attack_active(false);
-		_particleEffectObject->set_enabled(false);
+		init_skill_variables();
 		anim_comp->play("die", false);
 		return;
 	}
@@ -381,7 +381,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 	// [추가] 잡힌 상태 애니메이션 처리
 	if (_state == common::packet::EntityState::GRABBED) {
 		if (_currentWeapon) _currentWeapon->set_attack_active(false);
-		_particleEffectObject->set_enabled(false);
+		init_skill_variables();
 		anim_comp->play("die", false); // 잡힌 동안 고통받는 모습 (죽는 모션 재활용 혹은 피격 모션)
 		return;
 	}
@@ -393,6 +393,13 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_actionId = common::packet::ActionID::Common::SKILL1;
 			anim_comp->play("skill", false, skillAnimationspeed);
 			_nowSkillTime += deltaTime;
+			float current_anim_time = anim_comp->get_anim_time();
+
+			if (current_anim_time >= _skillDontFollowAnimationTime)
+			{
+				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+			}
+
 			if (_nowSkillTime >= _skillBigSowrdSpawn)
 			{
 				//_SkillObject->get_component<RenderComponent>()->set_enabled(true);
@@ -402,12 +409,12 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 			}
 
-			if (_nowSkillTime >= _skillDontFollowAnimationTime)
+			/*if (_nowSkillTime >= _skillDontFollowAnimationTime)
 			{
 				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
-			}
+			}*/
 
-			float progress = std::clamp(_nowSkillTime / _skillBigSowrdSpawn, 0.0f, 1.0f);
+			float progress = std::clamp(current_anim_time / _skillBigSowrdSpawn, 0.0f, 1.0f);
 
 			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
 			if (psComp)
@@ -824,6 +831,7 @@ void MainPlayerScript::init_skill_variables()
 	_nowSkillTime = 0.0f;
 	_SkillObject->get_component<RenderComponent>()->set_enabled(false);
 	game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true);
+	_particleEffectObject->set_enabled(false);
 }
 
 void MainPlayerScript::reset_state()
