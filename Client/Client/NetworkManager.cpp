@@ -387,6 +387,7 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 			other_player_script->on_sync_position(move_packet._position);
 			other_player_script->on_sync_rotation(move_packet._rotation);
 			other_player_script->on_sync_state(move_packet._state);
+			other_player_script->on_sync_action_id(move_packet._action_id);
 			other_player_script->on_sync_grab(move_packet._grabbed_by_id, move_packet._grab_slot); // [추가]
 			other_player_script->on_sync_velocity(move_packet._velocity); // [추가]
 			other_player_script->on_sync_hp(move_packet._hp);             // [추가]
