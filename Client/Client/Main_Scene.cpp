@@ -15,6 +15,7 @@
 #include "UIManager.h"
 #include "UIRenderComponent.h"
 #include "SoundManager.h"
+#include "InputManager.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -62,8 +63,12 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
     auto cameraComp = cameraObject->add_component<CameraComponent>(45.f);
 
-	cameraObject->add_component<FreeCameraScript>();
+	auto freeCameraScript = cameraObject->add_component<FreeCameraScript>();
 	cameraObject->set_layer("Camera");
+    if(InputManager::instance()->GetIsShowCusor())
+    {
+        InputManager::instance()->ChangeShowCusor();
+    }
 
 	cameraComp->set_main_camera();
 
