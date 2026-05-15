@@ -89,7 +89,7 @@ namespace PIP::SERVER
         }
 
         // 2. 보스 테이너 배치
-        room->spawn_npc(GAME::NPCType::Tainer, center, "Tainer the Gatekeeper");
+        //room->spawn_npc(GAME::NPCType::Tainer, center, "Tainer the Gatekeeper");
 
         room->StartGame();
     }
@@ -97,14 +97,14 @@ namespace PIP::SERVER
     void MainStage::update(Room* room, float dt)
     {
         // 10초 후 자동으로 BossScene으로 이동
-        if (!_isTransitioning) {
+        /*if (!_isTransitioning) {
             _bossSceneTimer += dt;
             if (_bossSceneTimer >= 30.0f) {
                 _isTransitioning = true;
                 MYLOG("[MainStage] 30 seconds passed. Transitioning to BossStage...");
                 room->ChangeScene("BossStage");
             }
-        }
+        }*/
     }
 
     void MainStage::on_exit(Room* room)
