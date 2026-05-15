@@ -223,6 +223,7 @@ void MainPlayerScript::awake()
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill01_end");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
 
@@ -233,6 +234,7 @@ void MainPlayerScript::awake()
 	animation_component->add_animation("run", idleMesh, "run");
 	animation_component->add_animation("attack", idleMesh, "attack01");
 	animation_component->add_animation("skill", idleMesh, "skill01");
+	animation_component->add_animation("skill_end", idleMesh, "skill01_end");
 	animation_component->add_animation("die", idleMesh, "death");
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
@@ -391,49 +393,10 @@ void MainPlayerScript::handle_state(float deltaTime)
 		{
 			_state = common::packet::EntityState::ACTION;
 			_actionId = common::packet::ActionID::Common::SKILL1;
-			anim_comp->play("skill", false, skillAnimationspeed);
-			_nowSkillTime += deltaTime;
-			float current_anim_time = anim_comp->get_anim_time();
-
-			if (current_anim_time >= _skillDontFollowAnimationTime)
-			{
-				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
-			}
-
-			if (_nowSkillTime >= _skillBigSowrdSpawn)
-			{
-				//_SkillObject->get_component<RenderComponent>()->set_enabled(true);
-			}
-			else
-			{
-
-			}
-
-			/*if (_nowSkillTime >= _skillDontFollowAnimationTime)
-			{
-				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
-			}*/
-
-			float progress = std::clamp(current_anim_time / _skillBigSowrdSpawn, 0.0f, 1.0f);
-
-			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
-			if (psComp)
-			{
-				// 파티클 오브젝트를 활성화
-				_particleEffectObject->set_enabled(true);
-
-				// 연산을 쏘지 않고, 데이터만 저장만 하기
-				psComp->set_compute_data(
-					_SkillObject->transform()->world_matrix(),
-					transform()->local_position(),
-					progress
-				);
-			}
-
-			if (progress >= 1.0f)
-			{
-				//_SkillObject->get_component<RenderComponent>()->set_enabled(true);
-			}
+			anim_comp->play("skill", false, _skillAnimationspeed);
+			
+			// 스킬 비주얼 업데이트 함수 호출 (파티클 생성 및 애니메이션 제어)
+			update_skill_visuals(deltaTime);
 
 		}
 		else
@@ -442,37 +405,31 @@ void MainPlayerScript::handle_state(float deltaTime)
 			anim_comp->play("attack", false);
 		}
 
-		// 실제 타격 패킷 전송 (애니메이션 중간 지점)
-		float progress = anim_comp->get_anim_time();
-		float duration = anim_comp->get_anim_duration();
-
-		if (_currentWeapon) {
-			if (progress >= (duration * 0.3f) && progress <= (duration * 0.6f)) {
-				_currentWeapon->set_attack_active(true);
-			}
-			else {
-				_currentWeapon->set_attack_active(false);
-			}
-		}
-
-		if (common::packet::EntityState::ACTION == _state
-			&& !_packetSent && progress >= (duration * 0.3f)) {
-			int64_t targetId = -1;
-			if (auto targeting_comp = game_object()->get_component<TargetingComponent>()) {
-				targetId = targeting_comp->current_target_id();
-			}
-			auto tr = transform();
-			if (!tr)
-			{
-				CERROR("MainPlayerScript::handle_state - TransformComponent이 없습니다.");
-			}
-
-			NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
-			_packetSent = true;
-		}
+		// 실제 공격 패킷 전송 함수 부분
+		process_attack_and_packet();
 
 		// 공격 종료 체크
-		if (anim_comp->is_anim_finished()) {
+		if (_isSkilling) // 스킬할 때는 스킬end 애니메이션이 끝나야 함
+		{
+			if (_isSkillEnd)
+			{
+				_isAttacking = false;
+				init_skill_variables(); // 스킬 관련 변수 초기화
+				_packetSent = false;
+				_actionId = 0;
+				_state = common::packet::EntityState::IDLE;
+
+				if (_currentWeapon) _currentWeapon->set_attack_active(false);
+
+				// 따라가는 것만 멈추도록 수정
+				game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+
+				anim_comp->play("idle");
+				send_network_sync(0.0f);
+			}
+		}
+		else if (anim_comp->is_anim_finished()) 
+		{
 			_isAttacking = false;
 			init_skill_variables(); // 스킬 관련 변수 초기화
 			_packetSent = false;
@@ -480,7 +437,9 @@ void MainPlayerScript::handle_state(float deltaTime)
 			_state = common::packet::EntityState::IDLE;
 
 			if (_currentWeapon) _currentWeapon->set_attack_active(false);
-			_particleEffectObject->set_enabled(false);
+
+			// 따라가는 것만 멈추도록 수정
+			game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
 
 			anim_comp->play("idle");
 			send_network_sync(0.0f);
@@ -638,6 +597,15 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::SKILL1;
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
+
+		// 두 번째 스킬 사용 시 연출을 처음부터 다시 하기 위한 초기화
+		_isSwordGathered = false;
+		_skillGatherTimer = 0.0f;
+		game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true); // 손에 다시 쥐어줌
+		if (_particleEffectObject) {
+			// 파티클 죽는 연출 끄기
+			_particleEffectObject->get_component<ParticleSystemComponent>()->set_particle_dying(false);
+		}
 	}
 
 	if (InputManager::instance()->IsKeyDown(VK_MBUTTON) || InputManager::instance()->IsKeyDown(VK_TAB)) {
@@ -825,13 +793,110 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 	
 }
 
+void MainPlayerScript::update_skill_visuals(float deltaTime)
+{
+	auto anim_comp = game_object()->get_component<AnimationComponent>();
+	if (!anim_comp) return;
+	float current_anim_time = anim_comp->get_anim_time();
+
+	// 애니메이션이 0.25초(6프레임)를 넘어가면 파티클 연출 시작
+	if (current_anim_time >= _skillParticleSpawnTime)
+	{
+		_particleEffectObject->set_enabled(true);
+		auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+
+		if (!_isSwordGathered)
+		{
+			anim_comp->set_anim_speed(0.f);
+			_skillGatherTimer += deltaTime;
+
+			float progress = std::clamp(_skillGatherTimer / _particleGatherDuration, 0.0f, 1.0f);
+
+			if (psComp) {
+				psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), progress);
+			}
+
+			if (progress >= 1.0f) {
+				_isSwordGathered = true;
+				anim_comp->set_anim_speed(_skillAnimationspeed);
+			}
+		}
+		else
+		{
+			if (psComp) {
+				psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), 1.0f);
+			}
+		}
+	}
+}
+
+void MainPlayerScript::process_attack_and_packet()
+{
+	auto anim_comp = game_object()->get_component<AnimationComponent>();
+	if (!anim_comp) return;
+	float anim_progress = anim_comp->get_anim_time();
+	float duration = anim_comp->get_anim_duration();
+
+	int64_t targetId = -1;
+	if (auto targeting_comp = game_object()->get_component<TargetingComponent>()) {
+		targetId = targeting_comp->current_target_id();
+	}
+
+	if (_isSkilling)
+	{
+		if (anim_comp->is_anim_finished())
+		{
+			game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+
+			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+			if (psComp) psComp->set_particle_dying(true);
+
+			if (_currentWeapon) _currentWeapon->set_attack_active(true);
+
+			if (!_packetSent) {
+				NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
+				_packetSent = true;
+			}
+		}
+	}
+	else
+	{
+		if (_currentWeapon) {
+			if (anim_progress >= (duration * 0.3f) && anim_progress <= (duration * 0.6f)) {
+				_currentWeapon->set_attack_active(true);
+			}
+			else {
+				_currentWeapon->set_attack_active(false);
+			}
+		}
+
+		if (!_packetSent && anim_progress >= (duration * 0.3f)) {
+			NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
+			_packetSent = true;
+		}
+	}
+}
+
 void MainPlayerScript::init_skill_variables()
 {
 	_isSkilling = false;
 	_nowSkillTime = 0.0f;
-	_SkillObject->get_component<RenderComponent>()->set_enabled(false);
-	game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true);
-	_particleEffectObject->set_enabled(false);
+	if (game_object()) 
+	{
+		// 검 따라가기 멈추기
+		if (auto socket = game_object()->get_component<SocketComponenet>())
+			socket->set_isFollowAnimation(false);
+	}
+
+	if (_particleEffectObject)
+	{
+		// 파티클 죽는 연출 시작
+		if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+			psComp->set_particle_dying(true);
+	}
+	/*_SkillObject->get_component<RenderComponent>()->set_enabled(false);
+	game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true);*/
+
 }
 
 void MainPlayerScript::reset_state()

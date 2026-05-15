@@ -22,6 +22,13 @@ public:
 
     DirectX::XMFLOAT4 get_particle_color() const { return _particleColor; }
 
+	// 파티클 없어지는 연출 관련 함수들
+	void set_particle_dying(bool isDying) { _isDying = isDying; }
+	bool is_dying() const { return _isDying; }
+
+	// 없어지는 연출이 끝났는지 여부를 확인하는 함수
+	bool is_death_timer_end() const { return _deathTimerEnd; }
+
 private:
     void create_compute_pso();
 
@@ -37,4 +44,11 @@ private:
     DirectX::XMFLOAT3 _playerPos;
 	DirectX::XMFLOAT4 _particleColor{ 1,1,1,1 }; // 파티클 색상 (기본값 흰색)
     float _skillProgress = 0.0f;
+
+
+    // 파티클 사라지는 연출을 위한 타이머
+	bool _isDying = false;
+	bool _deathTimerEnd = false;
+	float _deathTimer = 0.0f;
+
 };
