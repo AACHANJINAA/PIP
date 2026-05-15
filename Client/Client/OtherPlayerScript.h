@@ -2,11 +2,12 @@
 #include "RenderComponent.h"
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
+#include "SocketComponenet.h"
 
 class OtherPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, AnimationComponent>;
+	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponenet>;
     OtherPlayerScript() = default;
     virtual ~OtherPlayerScript() = default;
 
@@ -40,4 +41,20 @@ public:
     common::Vec3    _velocity;          // 추측 항법을 위한 속도 (옵션)
 
     float           _lerpFactor = 15.0f; // 보간 속도 (수치가 클수록 서버 위치에 빨리 도달)
+
+    // 스킬을 위한 변수들
+    bool _isSkilling = false;   // [추가] 스킬 사용 중인지 여부
+    float _nowSkillTime = 0.0f;    // [추가] 스킬 사용 시작 시점부터의 경과 시간
+
+    float skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
+    float _skillBigSowrdSpawn = 0.95f * (1.f / skillAnimationspeed); // 대검 생성 시점
+    float _skillDontFollowAnimationTime = 1.095f * (1.f / skillAnimationspeed); // 대검 안따라가는 시점
+    std::shared_ptr<GameObject> _SkillObject = nullptr;
+    std::shared_ptr<GameObject> _particleEffectObject = nullptr;
+    void init_skill_variables();
+
+    // 무기 오브젝트 참조 (필요 시)
+    std::shared_ptr<GameObject> _currentWeaponObject = nullptr;
+    //std::shared_ptr<WeaponScript> _currentWeapon;
+
 };
