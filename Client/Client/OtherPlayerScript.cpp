@@ -75,10 +75,20 @@ void OtherPlayerScript::reset_state()
 void OtherPlayerScript::init_skill_variables()
 {
     _isSkilling = false;
-    _nowSkillTime = 0.0f;
-    _SkillObject->get_component<RenderComponent>()->set_enabled(false);
-    game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true);
-    _particleEffectObject->set_enabled(false);
+    _isSkillAnimationStarted = false;
+    _isSkillEndAnimationStart = false;
+    _skillGatherTimer = 0.0f;
+    _isSwordGathered = false;
+
+    if (game_object()) {
+        if (auto socket = game_object()->get_component<SocketComponenet>())
+            socket->set_isFollowAnimation(false); // 검 따라가기 해제
+    }
+
+    if (_particleEffectObject) {
+        if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+            psComp->set_particle_dying(true); // 흩어짐 연출 시작
+    }
 }
 
 
@@ -153,67 +163,131 @@ void OtherPlayerScript::update(float deltaTime)
 	case common::packet::EntityState::ACTION:
         if (_action_id == common::packet::ActionID::Common::Attack)
         {
+            if (_isSkillAnimationStarted) init_skill_variables(); // 혹시 스킬 쓰다 평타로 넘어왔을 때 초기화
             anim_comp->play("attack", false);
         }
         else if (_action_id == common::packet::ActionID::Common::SKILL1)
         {
-            anim_comp->play("skill", false, skillAnimationspeed);
-            _nowSkillTime += deltaTime;
-            float current_anim_time = anim_comp->get_anim_time();
-
-            if (current_anim_time >= _skillDontFollowAnimationTime)
+            // 1. [스킬 최초 시작 시 1회 셋업] 
+            if (!_isSkillAnimationStarted)
             {
-                game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+                _isSkillAnimationStarted = true;
+                _isSkillEndAnimationStart = false;
+                _isSwordGathered = false;
+                _skillGatherTimer = 0.0f;
+
+                if (game_object()) {
+                    if (auto socket = game_object()->get_component<SocketComponenet>())
+                        socket->set_isFollowAnimation(true); // 손에 다시 붙이기
+                }
+                if (_particleEffectObject) {
+                    if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+                        psComp->set_particle_dying(false); // 흩어짐 플래그 끄기
+                }
+
+                anim_comp->play("skill", false, _skillAnimationspeed);
             }
 
-            float progress = std::clamp(current_anim_time / _skillDontFollowAnimationTime, 0.0f, 1.0f);
-
-            auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
-            if (psComp)
+            // 2. [스킬 종료 애니메이션 진행 중일 때]
+            if (_isSkillEndAnimationStart) {
+                // 이미 타격하고 흩어지는 중이므로 연산 패스 (서버가 IDLE로 바꿔줄 때까지 대기)
+            }
+            // 3. [Phase 1 & 2: 모으고 찍기]
+            else
             {
-                // 파티클 오브젝트를 활성화
-                _particleEffectObject->set_enabled(true);
+                float current_anim_time = anim_comp->get_anim_time();
 
-                // 연산을 쏘지 않고, 데이터만 저장만 하기
-                psComp->set_compute_data(
-                    _SkillObject->transform()->world_matrix(),
-                    transform()->local_position(),
-                    progress
-                );
+                if (current_anim_time >= _skillParticleSpawnTime)
+                {
+                    _particleEffectObject->set_enabled(true);
+                    auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+
+                    // 아직 안 모임 -> 애니 정지 및 타이머 누적
+                    if (!_isSwordGathered)
+                    {
+                        anim_comp->set_anim_speed(0.f);
+                        _skillGatherTimer += deltaTime;
+
+                        float progress = std::clamp(_skillGatherTimer / _particleGatherDuration, 0.0f, 1.0f);
+
+                        if (psComp) psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), progress);
+
+                        // 다 모임 -> 애니 다시 재생
+                        if (progress >= 1.0f) {
+                            _isSwordGathered = true;
+                            anim_comp->set_anim_speed(_skillAnimationspeed);
+                        }
+                    }
+                    // 다 모인 상태 유지
+                    else
+                    {
+                        if (psComp) psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), 1.0f);
+                    }
+                }
+
+                // 4. [Phase 3: 타격 순간 흩어짐 연출]
+                if (anim_comp->is_anim_finished())
+                {
+                    _isSkillEndAnimationStart = true;
+
+                    if (game_object()) {
+                        if (auto socket = game_object()->get_component<SocketComponenet>())
+                            socket->set_isFollowAnimation(false); // 검 공중에 정지
+                    }
+
+                    anim_comp->play("skill_end", false, _skillEndingAnimationSpeed);
+
+                    if (_particleEffectObject) {
+                        if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+                            psComp->set_particle_dying(true); // 파티클 흩어짐
+                    }
+                }
             }
         }
         else
         {
-            init_skill_variables();
+            if (_isSkillAnimationStarted) 
+            {
+                init_skill_variables();
+            }
         }
         break;
     case common::packet::EntityState::MOVE:
+        if (_isSkillAnimationStarted) 
+        {
+            init_skill_variables();
+        }
         anim_comp->play("walk", true, (common::move_speed::player_walk_speed / common::anim_speed::player_walk_animation));
-        init_skill_variables();
         break;
     case common::packet::EntityState::RUN:
+        if (_isSkillAnimationStarted)
+        {
+            init_skill_variables();
+        }
         anim_comp->play("run", true, (common::move_speed::player_run_speed / common::anim_speed::player_run_animation));
-        init_skill_variables();
+       
         break;
 	case common::packet::EntityState::IDLE:
+        if (_isSkillAnimationStarted)
+        {
+            init_skill_variables();
+        }
 		anim_comp->play("idle");
-        init_skill_variables();
+       
         break;
     case common::packet::EntityState::GRABBED: // [추가]
-        if (_currentWeaponObject)
+        if (_isSkillAnimationStarted)
         {
-            _currentWeaponObject->set_enabled(false);
+            init_skill_variables();
         }
-        init_skill_variables();
         anim_comp->play("die", false); // 잡힌 동안 고통받는 모습
         break;
     case common::packet::EntityState::DEAD:
         // 피격 애니메이션 재생 (예시)
-        if (_currentWeaponObject)
+        if (_isSkillAnimationStarted)
         {
-            _currentWeaponObject->set_enabled(false);
+            init_skill_variables();
         }
-        init_skill_variables();
         anim_comp->play("die", false);
 		break;
     }
@@ -233,6 +307,7 @@ void OtherPlayerScript::awake()
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill_end");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
     
 	render_comp->set_mesh(idleMesh);
@@ -242,6 +317,7 @@ void OtherPlayerScript::awake()
     animation_comp->add_animation("run", idleMesh, "run");
     animation_comp->add_animation("attack", idleMesh, "attack02");
     animation_comp->add_animation("skill", idleMesh, "skill01");
+    animation_comp->add_animation("skill_end", idleMesh, "skill_end");
     animation_comp->add_animation("die", idleMesh, "death");
     
 
@@ -274,7 +350,7 @@ void OtherPlayerScript::awake()
         "hand_r", // 반대쪽 손
         "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
         { 0.f,0.f,0.f },   // hand_l 기준 X값 반전 시도
-        { 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
+        { -10.f, -80.f, -9.0f },       // 오른손 파지 각도에 맞게 회전 조정
         { 15.f, 15.f, 15.f }
     );
     //// 무기 렌더링 끄기

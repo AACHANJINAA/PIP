@@ -46,6 +46,7 @@ void MainPlayerScript::update(float deltaTime)
 {
 	die_ui_update(deltaTime);
 	update_hp_bar(deltaTime);
+	update_skill_cooltime(deltaTime);
 	handle_input(deltaTime);
 	handle_state(deltaTime);
 	update_physics_and_visuals(deltaTime);
@@ -271,7 +272,7 @@ void MainPlayerScript::awake()
 		"hand_r", // 반대쪽 손
 		"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
 		{ 0.f,0.f,0.f },   // hand_l 기준 X값 반전 시도
-		{ 10.f, -90.f, 0.f },       // 오른손 파지 각도에 맞게 회전 조정
+		{ -10.f, -80.f, -9.0f },       // 오른손 파지 각도에 맞게 회전 조정
 		{ 15.f, 15.f, 15.f }
 	);
 	//
@@ -365,6 +366,19 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 	}
 }
 
+void MainPlayerScript::update_skill_cooltime(float deltaTime)
+{
+	if (!_isCanUseSkill)
+	{
+		_skillCoolTimer += deltaTime;
+		if (_skillCoolTimer >= _skillCoolTime)
+		{
+			_isCanUseSkill = true;
+			_skillCoolTimer = 0.0f;
+		}
+	}
+}
+
 void MainPlayerScript::handle_state(float deltaTime)
 {
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
@@ -393,7 +407,6 @@ void MainPlayerScript::handle_state(float deltaTime)
 		{
 			_state = common::packet::EntityState::ACTION;
 			_actionId = common::packet::ActionID::Common::SKILL1;
-			anim_comp->play("skill", false, _skillAnimationspeed);
 			
 			// 스킬 비주얼 업데이트 함수 호출 (파티클 생성 및 애니메이션 제어)
 			update_skill_visuals(deltaTime);
@@ -411,8 +424,9 @@ void MainPlayerScript::handle_state(float deltaTime)
 		// 공격 종료 체크
 		if (_isSkilling) // 스킬할 때는 스킬end 애니메이션이 끝나야 함
 		{
-			if (_isSkillEnd)
+			if (_isSkillEndAnimationStart && anim_comp->is_anim_finished())
 			{
+				_isSkillEnd = true; // 스킬 종료 플래그 설정
 				_isAttacking = false;
 				init_skill_variables(); // 스킬 관련 변수 초기화
 				_packetSent = false;
@@ -592,19 +606,24 @@ void MainPlayerScript::handle_input(float deltaTime)
 	}
 
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_RBUTTON)) {
-		_isAttacking = true;
-		_isSkilling = true;
-		_packetSent = false;
-		_actionId = common::packet::ActionID::Common::SKILL1;
-		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
 
-		// 두 번째 스킬 사용 시 연출을 처음부터 다시 하기 위한 초기화
-		_isSwordGathered = false;
-		_skillGatherTimer = 0.0f;
-		game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true); // 손에 다시 쥐어줌
-		if (_particleEffectObject) {
-			// 파티클 죽는 연출 끄기
-			_particleEffectObject->get_component<ParticleSystemComponent>()->set_particle_dying(false);
+		if (_isCanUseSkill) // 스킬이 사용 가능 할 때만
+		{
+			init_skill_variables(); // 스킬 관련 변수 초기화
+			_isAttacking = true;
+			_isSkilling = true;
+			_packetSent = false;
+			_actionId = common::packet::ActionID::Common::SKILL1;
+			// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
+
+			// 두 번째 스킬 사용 시 연출을 처음부터 다시 하기 위한 초기화
+			_isSwordGathered = false;
+			_skillGatherTimer = 0.0f;
+			game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(true); // 손에 다시 쥐어줌
+			if (_particleEffectObject) {
+				// 파티클 죽는 연출 끄기
+				_particleEffectObject->get_component<ParticleSystemComponent>()->set_particle_dying(false);
+			}
 		}
 	}
 
@@ -795,9 +814,21 @@ void MainPlayerScript::die_ui_update(float deltaTime)
 
 void MainPlayerScript::update_skill_visuals(float deltaTime)
 {
+	if (_isSkillEndAnimationStart) // 스킬이 끝나는 애니메이션이 시작된 이후에는 더 이상 스킬 연출을 업데이트하지 않음
+	{
+		return;
+	}
+
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
 	if (!anim_comp) return;
-	float current_anim_time = anim_comp->get_anim_time();
+
+	if(!_isSkillAnimationStarted)
+	{
+		anim_comp->play("skill", false, _skillAnimationspeed);
+		_isSkillAnimationStarted = true;
+	}
+
+	float current_anim_time = anim_comp->get_anim_time(); // 이거 스킬 재생 후 가져와야 함
 
 	// 애니메이션이 0.25초(6프레임)를 넘어가면 파티클 연출 시작
 	if (current_anim_time >= _skillParticleSpawnTime)
@@ -812,11 +843,13 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 
 			float progress = std::clamp(_skillGatherTimer / _particleGatherDuration, 0.0f, 1.0f);
 
-			if (psComp) {
+			if (psComp) 
+			{
 				psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), progress);
 			}
 
-			if (progress >= 1.0f) {
+			if (progress >= 1.0f) 
+			{
 				_isSwordGathered = true;
 				anim_comp->set_anim_speed(_skillAnimationspeed);
 			}
@@ -844,16 +877,21 @@ void MainPlayerScript::process_attack_and_packet()
 
 	if (_isSkilling)
 	{
-		if (anim_comp->is_anim_finished())
+		if (!_isSkillEndAnimationStart && anim_comp->is_anim_finished()) // 마지막은 아니고 스킬 애니메이션이 끝났을 때
 		{
+			_isSkillEndAnimationStart = true;
+
 			game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+
+			anim_comp->play("skill_end", false, _skillEndingAnimationSpeed);
 
 			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
 			if (psComp) psComp->set_particle_dying(true);
 
 			if (_currentWeapon) _currentWeapon->set_attack_active(true);
 
-			if (!_packetSent) {
+			if (!_packetSent) 
+			{
 				NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
 				_packetSent = true;
 			}
@@ -861,8 +899,10 @@ void MainPlayerScript::process_attack_and_packet()
 	}
 	else
 	{
-		if (_currentWeapon) {
-			if (anim_progress >= (duration * 0.3f) && anim_progress <= (duration * 0.6f)) {
+		if (_currentWeapon)
+		{
+			if (anim_progress >= (duration * 0.3f) && anim_progress <= (duration * 0.6f)) 
+			{
 				_currentWeapon->set_attack_active(true);
 			}
 			else {
@@ -870,7 +910,8 @@ void MainPlayerScript::process_attack_and_packet()
 			}
 		}
 
-		if (!_packetSent && anim_progress >= (duration * 0.3f)) {
+		if (!_packetSent && anim_progress >= (duration * 0.3f)) 
+		{
 			NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
 			_packetSent = true;
 		}
@@ -880,7 +921,14 @@ void MainPlayerScript::process_attack_and_packet()
 void MainPlayerScript::init_skill_variables()
 {
 	_isSkilling = false;
+	_isSkillAnimationStarted = false;
+	_isSkillEndAnimationStart = false;
+	_isSkillEnd = false;
 	_nowSkillTime = 0.0f;
+	_skillCoolTimer = 0.0f;
+	_skillGatherTimer = 0.0f;
+	_isSwordGathered = false;
+	_isCanUseSkill = false;
 	if (game_object()) 
 	{
 		// 검 따라가기 멈추기

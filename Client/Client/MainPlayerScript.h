@@ -50,6 +50,7 @@ public:
 private:
 	// --- update 기능 분리용 private 함수 ---
 	void update_hp_bar(float deltaTime);
+	void update_skill_cooltime(float deltaTime);
 	void handle_state(float deltaTime);
 	void handle_input(float deltaTime);
 	void update_physics_and_visuals(float deltaTime);
@@ -94,7 +95,8 @@ private:
 
 	// 스킬을 위한 변수들
 	bool _isSkilling = false;   // 스킬 사용 중인지 여부
-	bool _isSkillEnd = false;   // 스킬 종료 했는지 여부
+	bool _isSkillAnimationStarted = false; // 스킬 애니메이션이 시작되었는지 여부
+	bool _isSkillEndAnimationStart = false;   // 스킬 종료 애니메이션 시작 했는지 여부
 	float _nowSkillTime = 0.0f;    // 스킬 사용 시작 시점부터의 경과 시간
 	
 	float _skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
@@ -103,8 +105,16 @@ private:
 	bool _isSwordGathered = false; // 대검이 모였는지 여부
 	float _skillGatherTimer = 0.0f; // 대검이 모이는 시간 측정용 타이머
 
-	float _skillEndingAnimationSpeed = 0.5f; // 스킬이 끝나는 애니메이션의 속도
+	bool _isSkillEnd = false;   // 아예 스킬이 종료했는지 여부 //스킬 종료 했는지 여부 마지막 스킬 마무리 애니메이션이 끝났는지 여부
+	float _skillEndingAnimationSpeed = 1.f; // 스킬이 끝나는 애니메이션의 속도
 	float _skillEndingTimer = 1.0f; // 스킬이 끝나는 애니메이션이 재생되는 시간
+
+
+	// DW예정 : 추후에 서버에서 보내주는 신호로 바뀔 예정이지만, 현재는 테스트를 위해 키 입력으로 스킬 사용을 트리거할 수 있도록 설정
+	float _skillCoolTime = 3.0f; // 스킬 쿨타임
+	float _skillCoolTimer = 0.0f; // 스킬 쿨타임 타이머
+
+	bool _isCanUseSkill = false; // DW예정 : 스킬을 사용할 수 있는지 여부 추후에 서버에서 보내주는 신호로 바뀔 예정
 
 	std::shared_ptr<GameObject> _SkillObject = nullptr;
 	std::shared_ptr<GameObject> _particleEffectObject = nullptr;
