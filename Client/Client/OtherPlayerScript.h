@@ -43,12 +43,17 @@ public:
     float           _lerpFactor = 15.0f; // 보간 속도 (수치가 클수록 서버 위치에 빨리 도달)
 
     // 스킬을 위한 변수들
-    bool _isSkilling = false;   // [추가] 스킬 사용 중인지 여부
-    float _nowSkillTime = 0.0f;    // [추가] 스킬 사용 시작 시점부터의 경과 시간
+    bool _isSkilling = false;
+    bool _isSkillAnimationStarted = false;      // [추가] 스킬 최초 시작 체크용
+    bool _isSkillEndAnimationStart = false;     // [추가] 후딜레이(skill_end) 진입 체크용
 
-    float skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
-    float _skillBigSowrdSpawn = 0.95f * (1.f / skillAnimationspeed); // 대검 생성 시점
-    float _skillDontFollowAnimationTime = 1.095f * (1.f / skillAnimationspeed); // 대검 안따라가는 시점
+    float _skillAnimationspeed = 0.65f;
+    float _skillParticleSpawnTime = 0.25f;      // 0.25초(6프레임) 정지 시점
+    float _particleGatherDuration = 1.0f;       // 파티클 모이는 시간
+    bool _isSwordGathered = false;              // 다 모였는지 플래그
+    float _skillGatherTimer = 0.0f;             // 파티클 타이머
+    float _skillEndingAnimationSpeed = 1.0f;    // [추가] 마무리 애니메이션 속도
+
     std::shared_ptr<GameObject> _SkillObject = nullptr;
     std::shared_ptr<GameObject> _particleEffectObject = nullptr;
     void init_skill_variables();
