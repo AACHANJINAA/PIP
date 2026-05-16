@@ -12,6 +12,8 @@ cbuffer cbParticle : register(b2)
 {
     float4 g_Color;
     float g_Size;
+    float progress; // 0~1 사이의 값으로, 파티클이 다 모였는지?
+    float dying_progress; // 0 ~ 1로, 파티클이 사라지는 중인지?
 };
 
 // 컴퓨트 셰이더가 계산해둔 현재 파티클 위치 버퍼 (읽기 전용)
@@ -53,6 +55,11 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
     Out.Pos = mul(Out.Pos, g_matProjection);
     Out.UV = QuadUVs[vI];
     Out.Color = g_Color;
+    
+    // 알파값 서서히 줄이기
+    // 진행도가 0.2(20%)를 넘어가면 서서히 투명해지기 시작해서 1.0일 때 완전히 사라짐
+    float alphaFade = 1.0f - saturate((dying_progress - 0.2f) / 0.8f);
+    Out.Color.a *= alphaFade;
     
     return Out;
 }

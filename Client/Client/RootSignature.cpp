@@ -809,8 +809,8 @@ ComPtr<ID3D12RootSignature> ComputeParticleRootSignatureGenerator::create(ID3D12
 
     CD3DX12_ROOT_PARAMETER params[3];
 
-    // [0] b0: 상수 버퍼 20개 (행렬 16개 + 위치 3개 + 진행도 1개)
-    params[0].InitAsConstants(20, 0);
+    // [0] b0: 상수 버퍼 20개 (행렬 16개 + 위치 3개 + 진행도 1개 + 사라지는 연출 진행도 1개)
+    params[0].InitAsConstants(21, 0);
     // [1] t0: 타겟 버퍼 (SRV)
     params[1].InitAsShaderResourceView(0);
 
@@ -850,8 +850,8 @@ ComPtr<ID3D12RootSignature> ParticleRootSignatureGenerator::create(ID3D12Device*
     params[0].InitAsConstantBufferView(0); // [0] b0: 기본 ObjectInfo (엔진 호환용)
     params[1].InitAsConstantBufferView(1); // [1] b1: Camera (빌보딩에 필수!)
 
-    // [2] b2: 파티클 정보 (색상 4개 + 크기 1개 = 총 5개의 float)
-    params[2].InitAsConstants(5, 2, 0, D3D12_SHADER_VISIBILITY_ALL);
+    // [2] b2: 파티클 정보 (색상 4개 + 크기 1개 + 진행도 1개 + 파티클 사라지는 연출 진행도 1개 = 총 7개의 float)
+    params[2].InitAsConstants(7, 2, 0, D3D12_SHADER_VISIBILITY_ALL);
 
     // [3] t0: 컴퓨트 셰이더가 연산해둔 파티클 위치 버퍼 (가상 주소로 직접 바인딩)
     params[3].InitAsShaderResourceView(0);

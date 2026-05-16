@@ -13,6 +13,17 @@ ParticleSystemComponent::~ParticleSystemComponent()
 {
 }
 
+void ParticleSystemComponent::update(float deltaTime)
+{
+    if (_isDying && !_deathTimerEnd) {
+        _deathTimer += deltaTime;
+        if (_deathTimer >= _deathDuration) {
+            _deathTimer = _deathDuration;
+            _deathTimerEnd = true;
+        }
+    }
+}
+
 void ParticleSystemComponent::create_compute_pso()
 {
     auto device = GameFramework::instance()->device();
@@ -95,13 +106,15 @@ void ParticleSystemComponent::dispatch_compute(ID3D12GraphicsCommandList* comman
         DirectX::XMFLOAT4X4 WorldMatrix;
         DirectX::XMFLOAT3 PlayerPos;
         float SkillProgress;
+        float DyingProgress; // 파티클 사라지는 연출 여부 (0 또는 1)
     } constants;
 
     DirectX::XMStoreFloat4x4(&constants.WorldMatrix, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&_weaponWorld)));
     constants.PlayerPos = _playerPos;
     constants.SkillProgress = _skillProgress;
+    constants.DyingProgress = get_dying_progress();
 
-    command_list->SetComputeRoot32BitConstants(0, 20, &constants, 0);
+    command_list->SetComputeRoot32BitConstants(0, 21, &constants, 0);
 
     command_list->SetComputeRootShaderResourceView(1, _targetBuffer->GetGPUVirtualAddress());
     command_list->SetComputeRootUnorderedAccessView(2, _currentBuffer->GetGPUVirtualAddress());

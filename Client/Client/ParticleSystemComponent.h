@@ -23,11 +23,25 @@ public:
     DirectX::XMFLOAT4 get_particle_color() const { return _particleColor; }
 
 	// 파티클 없어지는 연출 관련 함수들
-	void set_particle_dying(bool isDying) { _isDying = isDying; }
+	void set_particle_dying(bool isDying)
+	{
+		_isDying = isDying;
+		if (!isDying) {
+			_deathTimer = 0.0f; // 다시 살아날 때 타이머 리셋
+			_deathTimerEnd = false;
+		}
+	}
 	bool is_dying() const { return _isDying; }
+	float get_progress() const { return _skillProgress; }
+
+	// 1.5초 기준의 죽음 진행도 (0.0 ~ 1.0) 반환
+	float get_dying_progress() const { return std::clamp(_deathTimer / _deathDuration, 0.0f, 1.0f); }
 
 	// 없어지는 연출이 끝났는지 여부를 확인하는 함수
 	bool is_death_timer_end() const { return _deathTimerEnd; }
+
+	// Behavior의 update 오버라이드
+	void update(float deltaTime) override;
 
 private:
     void create_compute_pso();
@@ -50,5 +64,6 @@ private:
 	bool _isDying = false;
 	bool _deathTimerEnd = false;
 	float _deathTimer = 0.0f;
+	float _deathDuration = 1.5f; // 사라지는 연출 총 시간 (1.5초)
 
 };

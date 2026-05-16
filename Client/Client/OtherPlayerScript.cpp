@@ -152,6 +152,16 @@ void OtherPlayerScript::update(float deltaTime)
         transform()->set_local_position(visualPosition);
     }
 
+	// 파티클 효과가 활성화된 상태에서 애니메이션이 끝났는지 체크하여, 끝났다면 파티클 효과도 비활성화
+    if (_particleEffectObject && _particleEffectObject->is_enable())
+    {
+        auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+        if (psComp && psComp->is_death_timer_end())
+        {
+            _particleEffectObject->set_enabled(false);
+        }
+    }
+
 
 	auto anim_comp = game_object()->get_component<AnimationComponent>();
 	if (!anim_comp)
@@ -205,7 +215,7 @@ void OtherPlayerScript::update(float deltaTime)
                     // 아직 안 모임 -> 애니 정지 및 타이머 누적
                     if (!_isSwordGathered)
                     {
-                        anim_comp->set_anim_speed(0.f);
+                        anim_comp->set_anim_speed(0.0f);
                         _skillGatherTimer += deltaTime;
 
                         float progress = std::clamp(_skillGatherTimer / _particleGatherDuration, 0.0f, 1.0f);
@@ -215,7 +225,7 @@ void OtherPlayerScript::update(float deltaTime)
                         // 다 모임 -> 애니 다시 재생
                         if (progress >= 1.0f) {
                             _isSwordGathered = true;
-                            anim_comp->set_anim_speed(_skillAnimationspeed);
+                            anim_comp->set_anim_speed(0.8f); // 스킬이 모인후에 내려찍는 애니메이션 속도
                         }
                     }
                     // 다 모인 상태 유지
@@ -351,7 +361,7 @@ void OtherPlayerScript::awake()
         "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
         { 0.f,0.f,0.f },   // hand_l 기준 X값 반전 시도
         { -10.f, -80.f, -9.0f },       // 오른손 파지 각도에 맞게 회전 조정
-        { 15.f, 15.f, 15.f }
+        { 10.f, 10.f, 10.f }
     );
     //// 무기 렌더링 끄기
     _currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);

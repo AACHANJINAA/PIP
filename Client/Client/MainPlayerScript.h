@@ -101,7 +101,7 @@ private:
 	
 	float _skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
 	float _skillParticleSpawnTime = 0.25f;       // 파티클 생성 시작 시간 및 애니메이션 멈추는 시간(6프레임)
-	float _particleGatherDuration = 1.0f;         // 파티클이 흩어져 있다가 100% 모이는 데 걸리는 시간
+	float _particleGatherDuration = 1.5f;         // 파티클이 흩어져 있다가 100% 모이는 데 걸리는 시간
 	bool _isSwordGathered = false; // 대검이 모였는지 여부
 	float _skillGatherTimer = 0.0f; // 대검이 모이는 시간 측정용 타이머
 

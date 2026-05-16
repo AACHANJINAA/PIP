@@ -65,6 +65,8 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
     struct ParticleInfo {
         DirectX::XMFLOAT4 Color;
         float Size;
+		float progress; // 0~1 사이의 값으로, 파티클이 다 모였는지?
+		float dying_progress; // 0~1 사이의 값으로, 파티클이 사라지는 중인지?
     } pInfo;
 
     static const DirectX::XMFLOAT3 PlayerColors[4] =
@@ -84,7 +86,11 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
 
     pInfo.Size = 0.03f; // 파티클 입자 하나의 크기 (수정하며 테스트)
 
-    command_list->SetGraphicsRoot32BitConstants(2, 5, &pInfo, 0);
+    pInfo.dying_progress = particleComponent->get_dying_progress();
+    pInfo.progress = particleComponent->get_progress();
+
+
+    command_list->SetGraphicsRoot32BitConstants(2, 7, &pInfo, 0);
 
 
     // 텍스쳐 버림 그냥 바인딩도 하지마 셰이더에서 호출 하지도 마
