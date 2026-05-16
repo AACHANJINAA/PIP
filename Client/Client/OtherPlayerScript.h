@@ -49,7 +49,7 @@ public:
 
     float _skillAnimationspeed = 0.65f;
     float _skillParticleSpawnTime = 0.25f;      // 0.25초(6프레임) 정지 시점
-    float _particleGatherDuration = 1.0f;       // 파티클 모이는 시간
+    float _particleGatherDuration = 1.5f;       // 파티클 모이는 시간
     bool _isSwordGathered = false;              // 다 모였는지 플래그
     float _skillGatherTimer = 0.0f;             // 파티클 타이머
     float _skillEndingAnimationSpeed = 1.0f;    // [추가] 마무리 애니메이션 속도

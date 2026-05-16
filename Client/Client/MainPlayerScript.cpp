@@ -273,7 +273,7 @@ void MainPlayerScript::awake()
 		"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
 		{ 0.f,0.f,0.f },   // hand_l 기준 X값 반전 시도
 		{ -10.f, -80.f, -9.0f },       // 오른손 파지 각도에 맞게 회전 조정
-		{ 15.f, 15.f, 15.f }
+		{ 10.f, 10.f, 10.f }
 	);
 	//
 	//// 무기 렌더링 끄기
@@ -368,6 +368,16 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 
 void MainPlayerScript::update_skill_cooltime(float deltaTime)
 {
+	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
+	if (_particleEffectObject && _particleEffectObject->is_enable())
+	{
+		auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+		if (psComp && psComp->is_death_timer_end())
+		{
+			_particleEffectObject->set_enabled(false);
+		}
+	}
+
 	if (!_isCanUseSkill)
 	{
 		_skillCoolTimer += deltaTime;
@@ -838,7 +848,7 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 
 		if (!_isSwordGathered)
 		{
-			anim_comp->set_anim_speed(0.f);
+			anim_comp->set_anim_speed(0.0f);
 			_skillGatherTimer += deltaTime;
 
 			float progress = std::clamp(_skillGatherTimer / _particleGatherDuration, 0.0f, 1.0f);
@@ -851,7 +861,8 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 			if (progress >= 1.0f) 
 			{
 				_isSwordGathered = true;
-				anim_comp->set_anim_speed(_skillAnimationspeed);
+				//anim_comp->set_anim_speed(_skillAnimationspeed);
+				anim_comp->set_anim_speed(0.8f); // 스킬이 모인후에 내려찍는 애니메이션 속도
 			}
 		}
 		else
