@@ -91,16 +91,18 @@ void CS_Main(uint3 DTid : SV_DispatchThreadID)
     // =========================================================
     // 파티클 산화(사라짐) 연출 - 오른쪽 하늘로 날아감
     // =========================================================
-    if (g_DyingProgress > 0.0f)
+    float flyProgress = saturate((g_DyingProgress - 0.66f) / 0.34f);
+
+    if (flyProgress > 0.0f)
     {
         // 날아갈 기본 방향 (우상단) + 파티클마다 약간 다른 방향으로 퍼지게 난수 추가
         float3 driftDir = float3(2.0f, 4.0f, 1.0f) + (hash31((float) idx) * 1.5f);
         
-        // 처음엔 천천히, 나중엔 빠르게 날아가도록 진행도를 제곱(pow) 처리
-        float moveT = pow(g_DyingProgress, 1.5f);
+        // 날아가는 가속도
+        float moveT = pow(flyProgress, 1.5f);
         
-        // 시간(moveT)에 비례해서 파티클 위치를 하늘로 이동시킴 (최대 5배속)
-        finalPos += driftDir * moveT * 5.0f;
+        // 시간(moveT)에 비례해서 파티클 위치를 하늘로 이동시킴 (속도 3.0f 적용)
+        finalPos += driftDir * moveT * 1.0f;
     }
     
     
