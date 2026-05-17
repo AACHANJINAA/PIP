@@ -48,11 +48,13 @@ public:
     bool _isSkillEndAnimationStart = false;     // [추가] 후딜레이(skill_end) 진입 체크용
 
     float _skillAnimationspeed = 0.65f;
+    float _skillSwingAnimationSpeed = 0.8f; // 검이 완성된 후 스킬 휘두르는 애니메이션 속도
     float _skillParticleSpawnTime = 0.25f;      // 0.25초(6프레임) 정지 시점
-    float _particleGatherDuration = 1.5f;       // 파티클 모이는 시간
+    float _particleGatherDuration = 2.0f;       // 파티클 모이는 시간
     bool _isSwordGathered = false;              // 다 모였는지 플래그
     float _skillGatherTimer = 0.0f;             // 파티클 타이머
-    float _skillEndingAnimationSpeed = 1.0f;    // [추가] 마무리 애니메이션 속도
+    float _skillEndingAnimationSpeed = 1.0f;    // 마무리 애니메이션 속도
+
 
     std::shared_ptr<GameObject> _SkillObject = nullptr;
     std::shared_ptr<GameObject> _particleEffectObject = nullptr;

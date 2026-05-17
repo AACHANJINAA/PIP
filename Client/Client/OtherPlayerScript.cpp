@@ -225,7 +225,7 @@ void OtherPlayerScript::update(float deltaTime)
                         // 다 모임 -> 애니 다시 재생
                         if (progress >= 1.0f) {
                             _isSwordGathered = true;
-                            anim_comp->set_anim_speed(0.8f); // 스킬이 모인후에 내려찍는 애니메이션 속도
+                            anim_comp->set_anim_speed(_skillSwingAnimationSpeed); // 스킬이 모인후에 내려찍는 애니메이션 속도
                         }
                     }
                     // 다 모인 상태 유지
