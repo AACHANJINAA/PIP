@@ -101,13 +101,14 @@ private:
 	
 	float _skillAnimationspeed = 0.65f; // 스킬 애니메이션 속도
 	float _skillParticleSpawnTime = 0.25f;       // 파티클 생성 시작 시간 및 애니메이션 멈추는 시간(6프레임)
-	float _particleGatherDuration = 1.5f;         // 파티클이 흩어져 있다가 100% 모이는 데 걸리는 시간
+	float _particleGatherDuration = 2.f;         // 파티클이 흩어져 있다가 100% 모이는 데 걸리는 시간
 	bool _isSwordGathered = false; // 대검이 모였는지 여부
 	float _skillGatherTimer = 0.0f; // 대검이 모이는 시간 측정용 타이머
 
 	bool _isSkillEnd = false;   // 아예 스킬이 종료했는지 여부 //스킬 종료 했는지 여부 마지막 스킬 마무리 애니메이션이 끝났는지 여부
 	float _skillEndingAnimationSpeed = 1.f; // 스킬이 끝나는 애니메이션의 속도
-	float _skillEndingTimer = 1.0f; // 스킬이 끝나는 애니메이션이 재생되는 시간
+
+	float _skillSwingAnimationSpeed = 0.8f; // 검이 완성된 후 스킬 휘두르는 애니메이션 속도
 
 
 	// DW예정 : 추후에 서버에서 보내주는 신호로 바뀔 예정이지만, 현재는 테스트를 위해 키 입력으로 스킬 사용을 트리거할 수 있도록 설정

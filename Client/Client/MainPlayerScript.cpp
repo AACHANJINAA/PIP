@@ -858,11 +858,10 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 				psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), progress);
 			}
 
-			if (progress >= 1.0f) 
+			if (progress >= 1.0f)
 			{
 				_isSwordGathered = true;
-				//anim_comp->set_anim_speed(_skillAnimationspeed);
-				anim_comp->set_anim_speed(0.8f); // 스킬이 모인후에 내려찍는 애니메이션 속도
+				anim_comp->set_anim_speed(_skillSwingAnimationSpeed); // 스킬이 모인후에 내려찍는 애니메이션 속도
 			}
 		}
 		else

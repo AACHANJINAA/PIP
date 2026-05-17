@@ -34,7 +34,7 @@ public:
 	bool is_dying() const { return _isDying; }
 	float get_progress() const { return _skillProgress; }
 
-	// 1.5초 기준의 죽음 진행도 (0.0 ~ 1.0) 반환
+	// 3초 기준의 죽음 진행도 (0.0 ~ 1.0) 반환
 	float get_dying_progress() const { return std::clamp(_deathTimer / _deathDuration, 0.0f, 1.0f); }
 
 	// 없어지는 연출이 끝났는지 여부를 확인하는 함수
@@ -64,6 +64,6 @@ private:
 	bool _isDying = false;
 	bool _deathTimerEnd = false;
 	float _deathTimer = 0.0f;
-	float _deathDuration = 1.5f; // 사라지는 연출 총 시간 (1.5초)
+	float _deathDuration = 3.f; // 사라지는 연출 총 시간 (3초)
 
 };

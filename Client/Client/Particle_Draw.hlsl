@@ -58,7 +58,8 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
     
     // 알파값 서서히 줄이기
     // 진행도가 0.2(20%)를 넘어가면 서서히 투명해지기 시작해서 1.0일 때 완전히 사라짐
-    float alphaFade = 1.0f - saturate((dying_progress - 0.2f) / 0.8f);
+    float fadeProgress = saturate((dying_progress - 0.66f) / 0.34f);
+    float alphaFade = 1.0f - fadeProgress;
     Out.Color.a *= alphaFade;
     
     return Out;
@@ -73,12 +74,39 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 
 float4 PS_Particle(VS_OUT In) : SV_TARGET
 {
-    // 잠시 텍스처 샘플링을 주석 처리합니다!
-    //float4 texColor = g_txParticle.Sample(g_samLinear, In.UV);
-    //return texColor * In.Color;
+   // -------------------------------------------------------------------
+    // 1. UV 좌표를 이용해 '부드러운 원(Soft Circle)' 형태 만들기
+    // -------------------------------------------------------------------
+    float dist = distance(In.UV, float2(0.5f, 0.5f));
+
+    // 거리가 0.5(외곽)에 가까울수록 투명(0.0)해지고, 0.2(중심)로 갈수록 불투명(1.0)
+    // 각진 네모가 아니라, 외곽이 은은하게 퍼지는 아름다운 동그란 빛무리(Orb)
+    float shapeAlpha = smoothstep(0.5f, 0.2f, dist);
+
+    // 외곽선이 칼같이 딱 떨어지는 선명한 동그라미
+    // if (dist > 0.5f) discard;
+    // float shapeAlpha = 1.0f;
+
+
+    // -------------------------------------------------------------------
+    // 2. 모이는 진행도(progress)에 따라 밝기를 쭈욱 끌어올리기
+    // -------------------------------------------------------------------
+    // progress(0.0 ~ 1.0)에 따라 밝기 배율을 정합니다.
+    // 처음 사방으로 퍼져있을 땐 원래 색상의 0.3배(어두움), 
+    // 검으로 다 모였을 땐 1.0배(빛이 폭발하듯 쨍해짐)가 됩니다.
+    float brightness = lerp(0.3f, 1.0f, progress);
+
+
+    // -------------------------------------------------------------------
+    // 3. 최종 색상 조합
+    // -------------------------------------------------------------------
+    float4 finalColor;
     
-    return In.Color;
+    // RGB 색상에는 밝기 배율을 곱해줍니다. (값이 1.0을 넘어가면 Bloom 효과가 겹쳐 빛나게 됩니다)
+    finalColor.rgb = In.Color.rgb * brightness;
     
-    // [디버그용 강제 출력] 무조건 눈부신 민트색(Cyan)으로 빛나게 합니다.
-    //return float4(0.0f, 1.0f, 1.0f, 0.5f);
+    // Alpha(투명도)에는 원 모양으로 깎아낸 마스크(shapeAlpha)를 곱해줍니다.
+    finalColor.a = In.Color.a * shapeAlpha;
+
+    return finalColor;
 }
