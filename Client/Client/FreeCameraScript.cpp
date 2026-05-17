@@ -111,7 +111,7 @@ void FreeCameraScript::player_camera_conflict_update(float delta_time)
     {
         // 1. 레이캐스트 시작점 (플레이어의 머리)
         XMFLOAT3 playerPos = player->transform()->position();
-        XMFLOAT3 rayStart = XMFLOAT3{ playerPos.x, playerPos.y + player->transform()->get_world_scale().y * 5.5f, playerPos.z };
+        XMFLOAT3 rayStart = XMFLOAT3{ playerPos.x, playerPos.y + (player->transform()->get_world_scale().y * 1.5f), playerPos.z };
 
         // 2. 카메라가 원래 있어야 할 이상적인 위치 계산
         XMFLOAT3 camForward = transform()->forward();
