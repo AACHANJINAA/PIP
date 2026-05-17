@@ -131,7 +131,8 @@ void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, 
             HPBarVertex v;
             // 몬스터 머리 위로 띄우기 위해 Y축에 오프셋(예: 2.0f) 추가
             DirectX::XMFLOAT3 pos = hpComponent.get()->game_object().get()->transform().get()->get_world_position();
-            v.pos = { pos.x, pos.y + 5.0f, pos.z };
+			float yOffset = monsterObj->transform()->get_world_scale().y; // 필요에 따라 조절
+            v.pos = { pos.x, pos.y + yOffset, pos.z };
             v.hpRatio = hpComponent.get()->get_hp_ratio();
             vtxBuffer.push_back(v);
 

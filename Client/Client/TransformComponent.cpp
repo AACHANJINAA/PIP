@@ -235,32 +235,27 @@ void TransformComponent::move_up(float distance)
 XMFLOAT3 TransformComponent::get_world_scale()
 {
     auto gameObject = _gameObject.lock();
-    auto render_component = gameObject.get()->get_component<RenderComponent>();
+    auto render_component = gameObject->get_component<RenderComponent>();
 
     if (render_component)
     {
         BoundingOrientedBox local_bounding_box = render_component->mesh()->bounding_box();
-        XMFLOAT3 local_min = local_bounding_box.Center;
-        XMFLOAT3 local_max = local_bounding_box.Extents;
-        XMFLOAT3 world_min;
-        XMFLOAT3 world_max;
         XMMATRIX worldMat = XMLoadFloat4x4(&world_matrix());
-        // 로컬 최소점과 최대점을 월드 공간으로 변환
-        XMVECTOR localMinVec = XMLoadFloat3(&local_min);
-        XMVECTOR localMaxVec = XMLoadFloat3(&local_max);
-        XMVECTOR worldMinVec = XMVector3Transform(localMinVec, worldMat);
-        XMVECTOR worldMaxVec = XMVector3Transform(localMaxVec, worldMat);
-        XMStoreFloat3(&world_min, worldMinVec);
-        XMStoreFloat3(&world_max, worldMaxVec);
-        // 월드 공간에서의 크기 계산
-        XMFLOAT3 world_scale;
-        world_scale.x = fabs(world_max.x - world_min.x);
-        world_scale.y = fabs(world_max.y - world_min.y);
-        world_scale.z = fabs(world_max.z - world_min.z);
-        return world_scale;
-	}
 
-    return XMFLOAT3();
+        // 1. 로컬 바운딩 박스를 통째로 월드 공간으로 변환 (회전, 스케일, 이동 모두 자동 적용)
+        BoundingOrientedBox world_bounding_box;
+        local_bounding_box.Transform(world_bounding_box, worldMat);
+
+        // 2. Extents는 '절반 크기(Half-size)'이므로 2.0을 곱해야 전체 길이나 나옴
+        XMFLOAT3 world_size;
+        world_size.x = world_bounding_box.Extents.x * 2.0f;
+        world_size.y = world_bounding_box.Extents.y * 2.0f;
+        world_size.z = world_bounding_box.Extents.z * 2.0f;
+
+        return world_size;
+    }
+
+    return XMFLOAT3(0, 0, 0);
 }
 
 XMFLOAT3 TransformComponent::get_world_position()
