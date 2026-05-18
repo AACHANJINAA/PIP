@@ -76,7 +76,7 @@ namespace PIP::GAME
 
 		// 이미 AIComponent::Initialize()에서 owner가 설정되었겠지만 명확히 하기 위해 재설정
 		bb->set("owner", static_cast<GameObject*>(this));
-		bb->set("owner_npc", this); // [최적화] dynamic_cast 제거용 NPC* 직접 저장
+		bb->set("owner_npc", static_cast<NPC*>(this)); // [수정] 명시적 캐스팅
 		bb->set("stuck_timer", 0.0f);
 		bb->set("last_pos", GetPosition());
 		bb->set("room_id", _room_id);
@@ -139,6 +139,8 @@ namespace PIP::GAME
 		root->set_blackboard(bb);
 		_aiComponent->SetBehaviorTree(root);
 	}
+
+
 
 	bool NPC::IsDirty() const
 	{
