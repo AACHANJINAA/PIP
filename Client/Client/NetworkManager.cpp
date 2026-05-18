@@ -639,6 +639,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	switch (npc_spawn_packet._npc_type)
 	{
 		case common::packet::NPCType::Basic:
+		case common::packet::NPCType::MagicGuard: // [추가] 매직 가드도 일반 NPC 스크립트 사용
 			{
 				NPC_logic = NPC->add_component<NPCScript>().get();
 			}
@@ -794,6 +795,10 @@ void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& strea
 	else if ("BossStage" == nextSceneName)
 	{
 		client_scene_name = "BossScene";
+	}
+	else if ("CastleStage" == nextSceneName)
+	{
+		client_scene_name = "MainScene";
 	}
 	SceneManager::instance()->set_network_scene_name(client_scene_name);
 	SceneManager::instance()->change_scene(client_scene_name);

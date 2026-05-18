@@ -609,6 +609,76 @@ namespace PIP::GAME
 		return NodeStatus::RUNNING;
 	}
 
+	NodeStatus Action_SetNextPatrolPos::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		if (!_blackboard->has("patrol_points")) return NodeStatus::FAILURE;
+		if (_blackboard->has("target_pos")) return NodeStatus::SUCCESS; // 아직 이동 중
+
+		auto patrolPoints = _blackboard->get<std::vector<common::Vec3>>("patrol_points");
+		int index = _blackboard->get<int>("patrol_index");
+
+		common::Vec3 nextPos = patrolPoints[index];
+		_blackboard->set("target_pos", nextPos);
+		_blackboard->set("patrol_index", (index + 1) % (int)patrolPoints.size());
+
+		//MYLOG("[Patrol] NPC " << _blackboard->get<NPC*>("owner_npc")->GetId() << " moving to Point Index: " << index);
+		return NodeStatus::SUCCESS;
+	}
+
+	bool Condition_DetectPlayer::check()
+	{
+		auto owner = _blackboard->get<GameObject*>("owner");
+		if (!owner) return false;
+
+		int room_id = _blackboard->get<int>("room_id");
+		auto room = SERVER::Server::Instance()->GetRoom(room_id);
+		if (!room) return false;
+
+		common::Vec3 myPos = owner->GetComponent<TransformComponent>()->GetPosition();
+
+		// [최적화] 전체 플레이어 루프 대신 그리드 맵이나 기존 플레이어 맵 사용
+		auto players = room->GetPlayersPos();
+		float minDistSq = _radius * _radius;
+		int64_t nearestPlayerId = -1;
+
+		for (auto const& [id, pos] : players)
+		{
+			float distSq = common::DistanceSq(myPos, pos);
+			if (distSq < minDistSq)
+			{
+				minDistSq = distSq;
+				nearestPlayerId = id;
+			}
+		}
+
+		if (nearestPlayerId != -1)
+		{
+			_blackboard->set("target_enemy", nearestPlayerId);
+			return true;
+		}
+
+		return false;
+	}
+
+	NodeStatus Action_UpdateEnemyPosToTarget::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		if (!_blackboard->has("target_enemy")) return NodeStatus::FAILURE;
+
+		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+		int room_id = _blackboard->get<int>("room_id");
+		auto room = SERVER::Server::Instance()->GetRoom(room_id);
+		if (!room) return NodeStatus::FAILURE;
+
+		auto target = room->GetActor(targetId);
+		if (!target) {
+			_blackboard->set("target_enemy", std::any());
+			return NodeStatus::FAILURE;
+		}
+
+		_blackboard->set("target_pos", target->GetPosition());
+		return NodeStatus::SUCCESS;
+	}
+
 	NodeStatus Action_ChargeAttack::tick(float dt, JPH::TempAllocator* allocator)
 	{
 		// 1. [핵심] 쿨타임 감소 (매 틱 실행)
@@ -1019,20 +1089,29 @@ namespace PIP::GAME
 		auto npc = _blackboard->get<NPC*>("owner_npc");
 		common::Vec3 start = npc->GetPosition();
 		common::Vec3 end = _blackboard->get<common::Vec3>("target_pos");
+		MapDataManager::Instance()->GetClosestPoint(_navName, end, end); // [수정] 타겟 위치를 네비게이션 포인트로 보정
 
 		// 2. 타겟이 의미 있게 움직였을 때만 실제 A* 수행 (예: 2m 이상)
-		common::Vec3 lastTarget = _blackboard->get<common::Vec3>("last_search_pos");
-		if (common::DistanceSq(lastTarget, end) < 4.0f) {
-			nextSearchTimer = 0.5f; // 짧은 휴식 후 재체크
-			_blackboard->set("path_search_cooldown", nextSearchTimer);
-			return NodeStatus::SUCCESS;
+		if (_blackboard->has("last_search_pos")) {
+			common::Vec3 lastTarget = _blackboard->get<common::Vec3>("last_search_pos");
+			if (common::DistanceSq(lastTarget, end) < 2.0f) {
+				nextSearchTimer = 0.5f; // 짧은 휴식 후 재체크
+				_blackboard->set("path_search_cooldown", nextSearchTimer);
+				return NodeStatus::SUCCESS;
+			}
 		}
 
 		// 3. 실제 탐색 호출
 		std::vector<common::Vec3> newPath;
 		if (MapDataManager::Instance()->FindPath(_navName, start, end, newPath)) {
+			/*MYLOG("[Path Debug] Start: (" << start.x << ", " << start.y << ", " << start.z << ") -> End: (" << end.x << ", " << end.y << ", " << end.z << ")");
+			MYLOG("[Path Debug] Total Waypoints: " << newPath.size());
+			for (size_t i = 0; i < newPath.size(); ++i) {
+				MYLOG("   Waypoint[" << i << "]: (" << newPath[i].x << ", " << newPath[i].y << ", " << newPath[i].z << ")");
+			}*/
+
 			_blackboard->set("path", std::move(newPath));
-			lastTarget = end;
+			_blackboard->set("last_search_pos", end); // [수정] 검색 완료된 타겟 위치 저장
 			nextSearchTimer = 1.0f + (rand() % 500) * 0.001f; // 1.0~1.5초 무작위 쿨타임 (부하 분산)
 			_blackboard->set("path_search_cooldown", nextSearchTimer);
 			return NodeStatus::SUCCESS;
@@ -1056,15 +1135,18 @@ namespace PIP::GAME
 		common::Vec3 currentPos = tc->GetPosition();
 		common::Vec3 nextTarget = path[0];
 
-		// 도착 판정 (수평 거리 기준 1.0m 이내면 도달로 간주)
+		// [수정] 도착 판정 거리를 0.3f로 정밀하게 조정 (좁은 길 대응)
 		common::Vec3 diff = nextTarget - currentPos;
 		diff.y = 0;
 
-		if (common::Distance(currentPos, nextTarget) < 1.0f) {
+		if (common::Distance(currentPos, nextTarget) < 0.3f) {
 			path.erase(path.begin());
 			_blackboard->set("path", path);
 			if (path.empty()) {
 				nc->SetVelocity({ 0, 0, 0 });
+				// [핵심] 목적지 정보를 완전히 지워야 다음 순찰 지점으로 넘어갑니다.
+				_blackboard->set("target_pos", std::any());
+				npc->SetState(common::packet::EntityState::IDLE);
 				return NodeStatus::SUCCESS;
 			}
 			nextTarget = path[0];

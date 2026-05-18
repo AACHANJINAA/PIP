@@ -194,6 +194,28 @@ namespace PIP::GAME
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
     };
 
+    // [신규] 다음 순찰 지점을 목표(target_pos)로 설정
+    class Action_SetNextPatrolPos : public Action {
+    public:
+        Action_SetNextPatrolPos() { set_name("Action_SetNextPatrolPos"); }
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+
+    // [신규] 반경 내에 플레이어가 있는지 체크 (있으면 target_enemy 세팅)
+    class Condition_DetectPlayer : public Condition {
+        float _radius;
+    public:
+        Condition_DetectPlayer(float radius) : _radius(radius) { set_name("Condition_DetectPlayer"); }
+        bool check() override;
+    };
+
+    // [신규] target_enemy의 현재 위치를 target_pos로 실시간 업데이트
+    class Action_UpdateEnemyPosToTarget : public Action {
+    public:
+        Action_UpdateEnemyPosToTarget() { set_name("Action_UpdateEnemyPosToTarget"); }
+        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+
     // [행동] NavMesh 길찾기 수행
     class Action_FindPath : public Action {
         std::string _navName;

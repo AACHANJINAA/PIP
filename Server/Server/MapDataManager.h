@@ -69,6 +69,8 @@ namespace PIP
 		bool IsWalkable(const std::string& name, const common::Vec3& start, const common::Vec3& end);
 
 		void TestNavMesh();
+		void DumpPolyInfo(dtNavMesh* navMesh, dtPolyRef ref, const std::string& label);
+		
 
 		std::vector<const StaticMeshTile*> GetStaticMeshGroup(const std::string& groupName) const;// 각 방에서 참조할 Shape 리스트 반환
 

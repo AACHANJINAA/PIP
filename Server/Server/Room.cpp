@@ -56,7 +56,7 @@ namespace PIP::SERVER
 
 
 		// [수정] MainStage에서 시작하여 10초 후 BossScene으로 이동하도록 설정
-		_currentStage = StageManager::Instance()->create_stage("MainStage");
+		_currentStage = StageManager::Instance()->create_stage("CastleStage");
 		if (_currentStage) {
 			_currentStage->on_initialize(this); // 지형 물리 바디 등록
 		}
@@ -2090,6 +2090,7 @@ namespace PIP::SERVER
 		npc->SetPosition(npc->GetSpawnPosition());
 		npc->SetActive(true);
 		npc->SetupBT();
+		
 
 		// 2. 물리 및 그리드 복구
 		if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {

@@ -726,6 +726,41 @@ namespace PIP
 			vertOffset += pCount;
 		}
 
+		// =========================================================================
+		// [추가된 로직] 폴리곤 이웃(Adjacency) 정보 강제 계산
+		// =========================================================================
+
+		int totalPolys = static_cast<int>(rawData.polyCounts.size());
+		for (int i = 0; i < totalPolys; ++i) {
+			int pCount = rawData.polyCounts[i];
+			for (int j = 0; j < pCount; ++j) {
+				// 현재 폴리곤의 엣지 (v0 -> v1)
+				int v0 = detourPolys[i * 2 * params.nvp + j];
+				int v1 = detourPolys[i * 2 * params.nvp + ((j + 1) % pCount)];
+
+				// 다른 모든 폴리곤을 뒤져서 맞닿은 엣지 (v1 -> v0) 찾기
+				for (int k = 0; k < totalPolys; ++k) {
+					if (i == k) continue; // 자기 자신 제외
+
+					int kCount = rawData.polyCounts[k];
+					bool isNeighbor = false;
+					for (int m = 0; m < kCount; ++m) {
+						int kv0 = detourPolys[k * 2 * params.nvp + m];
+						int kv1 = detourPolys[k * 2 * params.nvp + ((m + 1) % kCount)];
+
+						// 정점 인덱스가 반대로 교차하면 서로 맞닿은 엣지!
+						if (v0 == kv1 && v1 == kv0) {
+							// nvp(6)만큼 뒤에 있는 공간이 이웃 정보를 저장하는 슬롯
+							detourPolys[i * 2 * params.nvp + params.nvp + j] = static_cast<unsigned short>(k);
+							isNeighbor = true;
+							break;
+						}
+					}
+					if (isNeighbor) break;
+				}
+			}
+		}
+		// =========================================================================
 		params.polys = detourPolys.data();
 		params.polyCount = static_cast<int>(rawData.polyCounts.size());
 		
@@ -782,7 +817,7 @@ namespace PIP
 		dtQueryFilter filter;
 		filter.setIncludeFlags(1); // 걷기 가능 플래그(1)만 탐색
 		filter.setExcludeFlags(0);
-		float extents[3] = { 2.0f, 50.0f, 2.0f }; // 탐색 범위 (오차 허용 범위)
+		float extents[3] = { 2.f, 50.0f, 2.f }; // 탐색 범위 (오차 허용 범위)
 
 		dtPolyRef startPoly, endPoly;
 		float nearestStart[3], nearestEnd[3];
@@ -790,6 +825,10 @@ namespace PIP
 		query->findNearestPoly(startPos, extents, &filter, &startPoly, nearestStart);
 		query->findNearestPoly(endPos, extents, &filter, &endPoly, nearestEnd);
 
+
+		//auto navMesh = it->second->navMesh; // 현재 사용 중인 dtNavMesh 포인터
+		//DumpPolyInfo(navMesh, startPoly, "Start Poly (9125 기대)");
+		//DumpPolyInfo(navMesh, endPoly, "End Poly (9452 기대)");
 		if (!startPoly || !endPoly) return false;
 
 		// 2. 폴리곤 경로 찾기 (A*)
@@ -800,6 +839,12 @@ namespace PIP
 		dtStatus status = query->findPath(startPoly, endPoly, nearestStart, nearestEnd, &filter, polyPath, &pathCount, MAX_POLYS);
 
 		if (dtStatusFailed(status) || pathCount <= 0) return false;
+
+		if (status & DT_PARTIAL_RESULT) {
+			MYLOG("[NavMesh Warning] 목적지가 단절되어 부분 경로만 생성됨!");
+			// 만약 완벽한 경로가 아니면 실패 처리하고 싶다면 여기서 return false;를 하시면 됩니다.
+			// return false; 
+		}
 
 		// 3. 직선 경로 추출 (String Pulling / Funnel Algorithm)
 		static const int MAX_STEER_POINTS = 64;
@@ -830,9 +875,9 @@ namespace PIP
 				std::istringstream s(line.substr(2));
 				float x, y, z;
 				s >> x >> y >> z;
-				outData.vertices.push_back(z);
-				outData.vertices.push_back(y);
 				outData.vertices.push_back(x);
+				outData.vertices.push_back(y);
+				outData.vertices.push_back(z);
 			}
 			else if (line.substr(0, 2) == "f ") { // 면(폴리곤) 데이터
 				std::istringstream s(line.substr(2));
@@ -860,7 +905,7 @@ namespace PIP
 		dtQueryFilter filter;
 		filter.setIncludeFlags(1);
 		filter.setExcludeFlags(0);
-		float extents[3] = { 1.0f, 50.0f, 1.0f };
+		float extents[3] = { 5.0f, 50.0f, 5.0f };
 		dtPolyRef polyRef;
 		float p[3] = { pos.x, pos.y, pos.z };
 		float nearest[3];
@@ -888,7 +933,7 @@ namespace PIP
 		float s[3] = { start.x, start.y, start.z };
 		float e[3] = { end.x, end.y, end.z };
 
-		float halfExtents[3] = { 2.0f, 4.0f, 2.0f };
+		float halfExtents[3] = { 2.0f, 50.0f, 2.0f };
 		query->findNearestPoly(s, halfExtents, &filter, &startPoly, nearest);
 
 		dtStatus status = query->raycast(startPoly, s, e, &filter, &t, hitNormal, polyPath, &pathCount, 32);
@@ -901,31 +946,79 @@ namespace PIP
 	{
 		// 서버 초기화 완료 직후 테스트 코드 삽입
 		std::vector<common::Vec3> testPath;
+		std::vector<std::pair<common::Vec3, common::Vec3>> start_ends;
 		common::Vec3 start = { 178.8f, 10.f, -180.f }; // 시작점 (확실히 평지인 곳)
-		common::Vec3 end = { 152.0f, 10.f, -186.f };   // 도착점 (장애물 너머)
+		common::Vec3 end = { 152.0f, 10.f, -190.f };   // 도착점 (장애물 너머)
+		start_ends.push_back(std::make_pair(start, end));
+		start_ends.push_back({ start , {179.8, 5.3, -179} });
+		start_ends.push_back({{ 179.8, 5.3, -179 }, { 185, 5.3, -173 }});
+		start_ends.push_back({ { 185, 5.3, -173 } , { 198.4, 6.0, -176 }});
+		start_ends.push_back({ { 198.4, 6.0, -176 } , { 193.0, 6.0, -190 }});
 
-		MYLOG("[NavMesh Test] 테스트 좌표 시작점: " << "(" << start.x << ", " << start.y << ", " << start.z << ")");
-		MYLOG("도착점: " << "(" << end.x << ", " << end.y << ", " << end.z << ")");
-		bool success = FindPath("MainStage_NavMesh", start, end, testPath);
-		if (success && !testPath.empty()) {
-			MYLOG("[NavMesh Test] 길찾기 성공! 총 웨이포인트 수: " << testPath.size() / 3);
-			for (size_t i = 0; i < testPath.size(); i += 3) {
-				MYLOG(" -> Point: (" << testPath[i].x << ", " << testPath[i].y << ", " << testPath[i].z << ")");
+
+		for (auto [s, e] : start_ends)
+		{
+			
+
+			MYLOG("[NavMesh Test] 테스트 좌표 시작점: " << "(" << s.x << ", " << s.y << ", " << s.z << ")");
+			MYLOG("도착점: " << "(" << e.x << ", " << e.y << ", " << e.z << ")");
+			GetClosestPoint("MainStage_NavMesh", s, s);
+			GetClosestPoint("MainStage_NavMesh", e, e);
+
+			if (IsWalkable("MainStage_NavMesh", s, e))
+			{
+				MYLOG("[NavMesh Test] 시작점에서 도착점까지 이동 가능!");
+			}
+			bool success = FindPath("MainStage_NavMesh", s, e, testPath);
+			if (success && !testPath.empty()) {
+				MYLOG("[NavMesh Test] 길찾기 성공! 총 웨이포인트 수: " << testPath.size());
+				for (size_t i = 0; i < testPath.size(); ++i) {
+					MYLOG(" -> Point: (" << testPath[i].x << ", " << testPath[i].y << ", " << testPath[i].z << ")");
+				}
+			}
+			else {
+
+				MYLOG("[NavMesh Test] 길찾기 실패! 좌표가 네비메쉬 밖이거나 단절됨.");
 			}
 		}
-		else {
+	}
 
-			MYLOG("[NavMesh Test] 길찾기 실패! 좌표가 네비메쉬 밖이거나 단절됨.");
+	void MapDataManager::DumpPolyInfo(dtNavMesh* navMesh, dtPolyRef ref, const std::string& label) {
+		if (!navMesh || !ref) {
+			MYLOG("[Poly Debug] "<< label<< ": PolyRef가 유효하지 않습니다 (0).");
+			return;
 		}
 
-		common::Vec3 testPos = start;// 허공에 붕 뜬 좌표
-		common::Vec3 snappedPos;
+		const dtMeshTile* tile = 0;
+		const dtPoly* poly = 0;
 
-		if (GetClosestPoint("MainStage_NavMesh", testPos, snappedPos)) {
-			MYLOG("[Snap Test] 허공 (" << testPos.x << ", " << testPos.y << ", " << testPos.z << ") -> 바닥 스냅: ("
-				<< snappedPos.x << ", " << snappedPos.y << ", " << snappedPos.z << ")");
+		// PolyRef를 통해 실제 타일과 폴리곤 데이터를 가져옵니다.
+		if (dtStatusFailed(navMesh->getTileAndPolyByRef(ref, &tile, &poly))) {
+			MYLOG("[Poly Debug] "<< label <<": Tile/Poly 데이터를 가져오는데 실패했습니다.");
+			return;
 		}
 
+		MYLOG("========== [ " << label << " (Ref: " << ref <<") ] ==========");
+
+		// 1. 폴리곤을 구성하는 정점(Vertex)들 출력
+		MYLOG(" -> 정점 개수:" << poly->vertCount);
+		for (int i = 0; i < poly->vertCount; ++i) {
+			const float* v = &tile->verts[poly->verts[i] * 3];
+			// 좌표가 서버의 기대값(예: 178, 5, -180)과 일치하는지 확인!
+			MYLOG("    Vert["<<i<<"]: (" << v[0]<< "," << v[1]<<"," << v[2] << ")");
+		}
+
+		// 2. 이 폴리곤과 이어진(Link) 이웃 폴리곤들 출력
+		int linkCount = 0;
+		for (unsigned int i = poly->firstLink; i != DT_NULL_LINK; i = tile->links[i].next) {
+			const dtLink* link = &tile->links[i];
+			MYLOG("    Link["<< linkCount++ <<"] -> 이어진 이웃 PolyRef: " << link->ref);
+		}
+
+		if (linkCount == 0) {
+			MYLOG("    [경고!!!] 이어진 Link가 하나도 없습니다! 완전히 고립된 폴리곤(낭떠러지)입니다.");
+		}
+		MYLOG("==========================================");
 	}
 
 	std::vector<const StaticMeshTile*> MapDataManager::GetStaticMeshGroup(const std::string& groupName) const
