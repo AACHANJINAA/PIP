@@ -7,7 +7,7 @@
 #include "HitboxComponent.h"
 #include "NPCControllerComponent.h"
 #include "PhysicsComponent.h"
-
+#include "LuaManager.h"
 
 namespace PIP::GAME
 {
@@ -209,6 +209,24 @@ namespace PIP::GAME
 			}
 		}
 		return false;
+	}
+
+	void NPC::ApplySpawnData(const NPCSpawnData& data)
+	{
+		_hp = data.max_hp;
+		_maxHp = data.max_hp;
+		_spawnPosition = data.pos;
+		_patrolPoints = data.patrol_points;
+
+		SetPosition(data.pos);
+
+		// AI 블랙보드에도 순찰 지점 데이터 동기화
+		if (_aiComponent)
+		{
+			auto bb = _aiComponent->GetBlackboard();
+			bb->set("patrol_points", _patrolPoints);
+			bb->set("patrol_index", 0);
+		}
 	}
 
 	void NPC::Update(float deltaTime, JPH::TempAllocator* allocator)

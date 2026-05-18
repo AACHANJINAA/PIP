@@ -7,7 +7,7 @@
 
 namespace PIP::SERVER
 {
-	void StageManager::initialize()
+	void StageManager::Initialize()
 	{
 		register_stage<MainStage>("MainStage");
 		register_stage<CastleStage>("CastleStage");

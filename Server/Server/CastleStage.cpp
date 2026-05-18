@@ -81,16 +81,12 @@ namespace PIP::SERVER
         MYLOG("[CastleStage] Spawning NPCs and Boss...");
 
         // 1. 잡몹 500마리 무작위 배치 (CastleStage의 규칙)
-        common::Vec3 center = get_spawn_pos();
         for (int i = 0; i < 500; ++i) {
-            float rx = std::uniform_real_distribution<float>(-100, 100)(gen);
-            float rz = std::uniform_real_distribution<float>(-100, 100)(gen);
-
-            room->spawn_npc(GAME::NPCType::Basic, { center.x + rx, center.y, center.z + rz });
+            room->spawn_npc(GAME::NPCType::Basic);
         }
 
         // 2. 보스 테이너 배치
-        room->spawn_npc(GAME::NPCType::Tainer, center, "Tainer the Gatekeeper");
+        room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
 
         room->StartGame();
     }

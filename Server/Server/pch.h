@@ -219,7 +219,8 @@ protected:
 public:
 	Singleton(const Singleton&) = delete;
 	Singleton& operator=(const Singleton&) = delete;
-	virtual void initialize() {}
+	virtual void Initialize() {}
+	virtual void Release() {}
 	static T* Instance()
 	{
 		static T instance;

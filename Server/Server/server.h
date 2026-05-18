@@ -151,7 +151,7 @@ namespace PIP::SERVER
 		~Server() override;
 	public:
 
-		void initialize() override;
+		void Initialize() override;
 		void Start(int io_thread_count, int logic_thread_count);
 		void Stop();
 

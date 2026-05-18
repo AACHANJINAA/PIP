@@ -206,13 +206,13 @@ namespace PIP::SERVER
 		Stop();
 		CloseHandle(_iocp);
 	}
-	void Server::initialize()
+	void Server::Initialize()
 	{
-		PIP::PhysicsManager::Instance()->initialize();
+		PIP::PhysicsManager::Instance()->Initialize();
 		MYLOG("PhysicsManager Initialized." << std::endl);
-		PIP::packet::PacketManager::Instance()->initialize();
+		PIP::packet::PacketManager::Instance()->Initialize();
 		MYLOG("PacketManager Initialized." << std::endl);
-		SERVER::StageManager::Instance()->initialize();
+		SERVER::StageManager::Instance()->Initialize();
 		MYLOG("StageManager Initialized." << std::endl);
 
 		// --- [추가] DB 매니저 초기화 ---
@@ -263,6 +263,12 @@ namespace PIP::SERVER
 
 		mdm->LoadNavMesh("MainStage_NavMesh", "Resource/NavMesh.obj");
 		mdm->TestNavMesh();
+
+		MYLOG("lua manager initializing...");
+		auto lua = LuaManager::Instance();
+		lua->Initialize();
+		lua->LoadDataFile();
+
 		MYLOG("[SERVER] Successful Loaded the Map");
 	}
 	void Server::Start(int io_thread_count, int logic_thread_count)
@@ -381,6 +387,7 @@ namespace PIP::SERVER
 			}
 		}
 
+		LuaManager::Instance()->Release();
 		MYLOG("Server stopped.");
 	}
 
