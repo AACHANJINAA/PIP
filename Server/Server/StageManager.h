@@ -8,7 +8,7 @@ namespace PIP::SERVER
         friend class Singleton<StageManager>;
 
     public:
-        void initialize() override;
+        void Initialize() override;
 
         // 스테이지 타입 등록 (클라이언트 register_scene과 동일 방식)
         template<typename T>

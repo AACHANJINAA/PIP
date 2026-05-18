@@ -21,6 +21,79 @@ namespace PIP
 		lua_register(L, "Log", Lua_Log);
 	}
 
+	
+
+	void LuaManager::Initialize()
+	{
+		if (L)
+		{
+            lua_close(L);
+		}
+        L = luaL_newstate();
+        luaL_openlibs(L);
+	}
+
+	void LuaManager::Release()
+	{
+        if (L)
+        {
+            lua_close(L);
+            L = nullptr;
+		}
+	}
+
+	const NPCSpawnData* LuaManager::GetNPCSpawnData(common::packet::NPCType type, int index) const 
+    {
+        if (_npcSpawnData.contains(type) && index >= 0 && index < _npcSpawnData.at(type).size())
+        {
+            return &_npcSpawnData.at(type)[index];
+        }
+        return nullptr;
+    }
+
+	void LuaManager::LoadDataFile()
+	{
+        if (L)
+        {
+            LuaManager::Instance()->LoadNPCData();
+        }
+	}
+
+	void LuaManager::LoadNPCData()
+	{
+        lua_register(L, "API_LoadNPCData", Lua_LoadNPCData);
+        int ret = luaL_dofile(L, "NPC_Data.lua");
+        if (ret != LUA_OK)
+        {
+            const char* err = lua_tostring(L, -1);
+            MYERROR("Failed to load NPC_Data.lua: " << err);
+            lua_pop(L, 1);
+        }
+        else
+        {
+            // 3. Lua 스크립트에 정의된 LoadNPCData() 함수 호출
+            lua_getglobal(L, "LoadNPCData");
+            if (lua_isfunction(L, -1))
+            {
+                // 함수 실행 (인자 0개, 반환값 0개)
+                if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+                {
+                    const char* err = lua_tostring(L, -1);
+                    MYERROR("Failed to call LoadNPCData in Lua: " << err);
+                    lua_pop(L, 1);
+                }
+                else
+                {
+                    MYLOG("NPC Data Loaded from Lua successfully.");
+                }
+            }
+            else
+            {
+                lua_pop(L, 1); // 함수가 없으면 스택에서 뺌
+            }
+        }
+	}
+
 	GAME::GameObject* LuaManager::GetOwner(lua_State* L)
 	{
         lua_getglobal(L, "__gameObject"); 
@@ -118,4 +191,56 @@ namespace PIP
         }
         return 0;
     }
+
+    int LuaManager::Lua_LoadNPCData(lua_State* L)
+	{
+        // // 인자 순서: 1:type, 2:x, 3:y, 4:z, 5:patrols, 6:max_hp
+        const char* type_str = lua_tostring(L, 1);
+        float x = static_cast<float>(lua_tonumber(L, 2));
+        float y = static_cast<float>(lua_tonumber(L, 3));
+        float z = static_cast<float>(lua_tonumber(L, 4));
+        int32_t max_hp = static_cast<int32_t>(lua_tointeger(L, 5));
+
+        common::packet::NPCType type = common::packet::NPCType::error;
+        std::string sType(type_str);
+        if (sType == "Basic") type = common::packet::NPCType::Basic;
+        else if (sType == "Tainer") type = common::packet::NPCType::Tainer;
+        else if (sType == "MagicGuard") type = common::packet::NPCType::MagicGuard;
+        else if (sType == "Elevator") type = common::packet::NPCType::Elevator;
+
+        NPCSpawnData data;
+        data.pos = { x, y, z };
+        data.max_hp = max_hp; // 기본값
+
+        // Patrol points (table of {x,y,z})
+        if (lua_istable(L, 6))
+        {
+            size_t len = lua_rawlen(L, 6);
+            for (size_t i = 1; i <= len; ++i)
+            {
+                lua_rawgeti(L, 6, (int)i); // push patrols[i]
+                if (lua_istable(L, -1))
+                {
+                    lua_getfield(L, -1, "x");
+                    float px = static_cast<float>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "y");
+                    float py = static_cast<float>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "z");
+                    float pz = static_cast<float>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+
+                    data.patrol_points.push_back({ px, py, pz });
+                }
+                lua_pop(L, 1);
+            }
+        }
+
+        LuaManager::Instance()->_npcSpawnData[type].push_back(data);
+
+        return 0;
+	}
 }

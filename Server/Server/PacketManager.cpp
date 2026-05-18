@@ -2,7 +2,7 @@
 #include "PacketManager.h"
 namespace PIP::packet
 {
-	void PacketManager::initialize()
+	void PacketManager::Initialize()
 	{
 		// Packet.h에 정의된 이름으로 수정
 		RegisterHandler(PacketType::C2S_P_LOGIN, Handle_C2S_LOGIN);

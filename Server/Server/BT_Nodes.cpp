@@ -35,6 +35,25 @@ namespace PIP::GAME
 		{
 			return NodeStatus::FAILURE;
 		}
+
+		//// [추가] 순찰 지점이 있으면 다음 순찰 지점으로 설정
+		//if (_blackboard->has("patrol_points"))
+		//{
+		//	auto patrolPoints = _blackboard->get<std::vector<common::Vec3>>("patrol_points");
+		//	if (!patrolPoints.empty())
+		//	{
+		//		int index = _blackboard->get<int>("patrol_index");
+		//		if (index >= patrolPoints.size()) index = 0;
+
+		//		common::Vec3 targetPos = patrolPoints[index];
+		//		_blackboard->set("target_pos", targetPos);
+		//		_blackboard->set("stuck_timer", 0.0f);
+		//		_blackboard->set("patrol_index", (index + 1) % (int)patrolPoints.size());
+
+		//		return NodeStatus::SUCCESS;
+		//	}
+		//}
+
 		auto tc = owner->GetComponent<TransformComponent>();
 		if (!tc)
 		{

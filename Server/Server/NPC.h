@@ -6,6 +6,11 @@
 #include "NPCControllerComponent.h"
 #include "TransformComponent.h"
 
+namespace PIP
+{
+	struct NPCSpawnData;
+}
+
 namespace PIP::GAME
 {
 	// NPC의 상태를 나타내는 열거형
@@ -85,6 +90,9 @@ namespace PIP::GAME
 			return { 0,0,0 };
 		}
 
+		void ApplySpawnData(const NPCSpawnData& data);
+		const std::vector<common::Vec3>& GetPatrolPoints() const { return _patrolPoints; }
+
 		common::Vec3 GetVelocity() const override {
 			if (_npcController) return _npcController->GetVelocity();
 			return { 0,0,0 };
@@ -139,6 +147,7 @@ namespace PIP::GAME
 		int64_t _lastSentGrabbedById = -1; // [추가]
 		int8_t _lastSentGrabSlot = -1; // [추가]
 		common::Vec3 _spawnPosition; // 리스폰 위치 저장 (죽었을 때 원래 위치로 돌아가기 위해)
+		std::vector<common::Vec3> _patrolPoints; // [추가] 순찰 경로 포인트들
 
 		// [최적화] 매 프레임 GetComponent(8%)를 피하기 위한 캐싱
 		NPCControllerComponent* _npcController = nullptr;

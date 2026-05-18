@@ -186,7 +186,7 @@ namespace PIP::SERVER
 		}
 		if (new_player->_player) {
 			if (auto cc = new_player->_player->GetComponent<GAME::CharacterControllerComponent>()) {
-				cc->Initialize(_physicsSystem, 1.0f, 0.5f);
+				cc->Initialize(_physicsSystem, 1.5f, 0.5f);
 			}
 		}
 		new_player->_logic_thread_idx = _logic_thread_idx;
@@ -269,7 +269,7 @@ namespace PIP::SERVER
 
 		MYLOG("[Room] NPC " << npcId << " has been removed and cleaned up.");
 	}
-	GAME::NPC* Room::spawn_npc(GAME::NPCType type, const common::Vec3& pos, const std::string& name)
+	GAME::NPC* Room::spawn_npc(GAME::NPCType type, const std::string& name)
 	{
 		// 1. NPC 고유 ID 생성 (방 번호 기반으로 충돌 방지)
 		int64_t npc_id = _next_npc_id + (_room_id * 10000LL) + _npcs.size();
@@ -279,12 +279,40 @@ namespace PIP::SERVER
 		float radius = 0.5f;
 		float height = 1.8f;
 
-		if (type == GAME::NPCType::Tainer) {
-			new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, pos);
-			radius = 1.0f; height = 1.5f; // 보스 규격
+		const NPCSpawnData* data = LuaManager::Instance()->GetNPCSpawnData(type, 0);
+
+		switch (type)
+		{
+		case GAME::NPCType::Tainer:
+			{
+				new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, data->pos);
+				radius = 1.0f; height = 2.5f; // 보스 규격
+				break;
+			}
+		case GAME::NPCType::Basic:
+			{
+				new_npc = std::make_unique<GAME::NPC>(npc_id, type, _room_id, data->pos, data->max_hp);
+				break;
+			}
+		case GAME::NPCType::MagicGuard:
+			{
+				new_npc = std::make_unique<GAME::MagicGuard>(npc_id, _room_id, data->pos, data->max_hp);
+				break;
+			}
+		default:
+			MYERROR("[Room] Attempted to spawn unknown NPC type: " << static_cast<int>(type));
+			break;
 		}
-		else {
-			new_npc = std::make_unique<GAME::NPC>(npc_id, type, _room_id, pos, 100);
+
+		// [추가] LuaManager에서 해당 위치의 데이터를 찾아와서 적용
+		if (data)
+		{
+			new_npc->ApplySpawnData(*data);
+		}
+		else
+		{
+			// Lua에 데이터가 없는 경우(예: 수동 스폰) 기본값 설정
+			new_npc->SetHP(100);
 		}
 
 		if (!name.empty()) new_npc->SetName(name);
@@ -295,7 +323,7 @@ namespace PIP::SERVER
 
 		// 4. [핵심] 안전한 위치 찾기 (지형 레이캐스트 + 건물 끼임 체크)
 		JPH::Shape* npc_shape = (JPH::Shape*)cc->GetShape();
-		common::Vec3 safe_pos = find_safe_spawn_position(pos, npc_shape);
+		common::Vec3 safe_pos = find_safe_spawn_position(data->pos, npc_shape);
 
 		// 5. 확정된 위치로 물리 및 트랜스폼 설정
 		new_npc->SetPosition(safe_pos);

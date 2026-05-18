@@ -80,12 +80,8 @@ namespace PIP::SERVER
         MYLOG("[MainStage] Spawning NPCs and Boss...");
 
         // 1. 잡몹 500마리 무작위 배치 (MainStage의 규칙)
-        common::Vec3 center = get_spawn_pos();
-        for (int i = 0; i < 500; ++i) {
-            float rx = std::uniform_real_distribution<float>(-100, 100)(gen);
-            float rz = std::uniform_real_distribution<float>(-100, 100)(gen);
-
-            room->spawn_npc(GAME::NPCType::Basic, { center.x + rx, center.y, center.z + rz });
+        for (int i = 0; i < 1; ++i) {
+            room->spawn_npc(GAME::NPCType::Basic);
         }
 
         // 2. 보스 테이너 배치

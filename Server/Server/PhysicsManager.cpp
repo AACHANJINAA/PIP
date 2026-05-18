@@ -28,7 +28,7 @@ namespace PIP
 {
 	
 
-	void PhysicsManager::initialize()
+	void PhysicsManager::Initialize()
 	{
 		if (_isInitialized) return;
 

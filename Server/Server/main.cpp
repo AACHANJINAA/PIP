@@ -23,7 +23,7 @@ int main()
 	MYLOG("[System] Detected P-Cores (Logical): " << total_cores << ", Logic Threads: " << logic_worker_thread_count 
 			<< ", DB Threads: " << 1 << std::endl);
 
-	SERVER::Server::Instance()->initialize();
+	SERVER::Server::Instance()->Initialize();
 	// 서버 스탈트!
 	SERVER::Server::Instance()->Start(io_worker_thread_count, logic_worker_thread_count);
 
