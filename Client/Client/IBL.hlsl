@@ -41,6 +41,7 @@ float3 CalculateIrradianceSH(float3 N)
         2.0 * C2 * L10 * N.z
     );
 }
+
 TextureCube g_IrradianceDummy : register(t8);
 // t9: Prefiltered Environment Map - Specular IBL용 (Mipmap으로 Roughness 표현)
 TextureCube g_PrefilteredMap : register(t9);
@@ -98,12 +99,8 @@ float3 CalculateSpecularIBL(float3 N, float3 V, float3 albedo, float metallic, f
 	float Ess = brdf.r + brdf.g;
 	Ess = max(Ess, 0.1); // 0으로 나누기 방지
 
-	// Energy Compensation Factor 계산
-	// 수식: 1.0 + F0 * (1.0/Ess - 1.0)
-	// 의미: 손실된 에너지를 F0에 비례하여 복구
-	float3 energyCompensation = 1.0 + F0 * (1.0 / Ess - 1.0);
-	// 9. 최종 Specular = Single Scattering * Energy Compensation
-    return prefilteredColor * specularSingle;// * energyCompensation;
+	// 9. 최종 Specular = Single Scattering 
+    return prefilteredColor * specularSingle;
 }
 
     // IBL 통합 함수
