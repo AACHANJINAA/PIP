@@ -2171,6 +2171,15 @@ bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayD
 	// 전체 박스에 맞았다면, 디테일한 개별 프리미티브 OBB들을 순회하며 진짜 맞았는지 검사
 	for (const auto& primitive : _primitives)
 	{
+		// nan 방어코드 추가
+		if (std::isnan(primitive->_orientedBoundingBox.Center.x)
+			|| std::isnan(primitive->_orientedBoundingBox.Extents.x)
+			|| std::isnan(primitive->_orientedBoundingBox.Orientation.x))
+		{
+			// 깨진 데이터는 무시해버림
+			continue;
+		}
+
 		BoundingOrientedBox worldPrimOBB;
 		primitive->_orientedBoundingBox.Transform(worldPrimOBB, worldMatrix);
 
