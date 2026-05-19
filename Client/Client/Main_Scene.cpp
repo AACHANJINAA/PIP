@@ -58,6 +58,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
     // 성
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
+    load_foliage_from_file("Resource/MainLandscape_Meshes/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
