@@ -81,6 +81,9 @@ private:
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
 
+	// DW설명 & 작명 : 윈도우 타이틀에 프레임 레이트, 카메라 정보, 플레이어 위치 표시하는 함수
+	void view_window_title_bar_with_frame_rate_and_camera_info_and_main_player_pos();
+
 	GameFramework();
 	~GameFramework();
 public:

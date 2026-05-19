@@ -576,38 +576,8 @@ void GameFramework::FrameAdvance()
 	_gameTimer.GetFrameRate(_frameRate + 7, 42);
 
 
+	view_window_title_bar_with_frame_rate_and_camera_info_and_main_player_pos();
 
-	std::wstring windowTitle = _frameRate;
-
-	if(_isCheckCameraPos)
-	{
-		// 현재 씬에 있는 "Camera"라는 이름의 게임 오브젝트를 찾습니다.
-		auto cameraObj = ObjectManager::instance()->find_by_name("Camera");
-		if (cameraObj && cameraObj->transform())
-		{
-			// 위치 정보
-			DirectX::XMFLOAT3 pos = cameraObj->transform()->get_world_position();
-
-			DirectX::XMFLOAT3 rot = cameraObj->transform()->local_rotation_euler();
-
-			WCHAR camInfoText[256];
-			// Pos(위치)와 Rot(각도: Pitch, Yaw, Roll)를 한눈에 보이게 포맷팅
-			swprintf_s(camInfoText, 256,
-				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]",
-				pos.x, pos.y, pos.z,  // 위치
-				rot.x, rot.y, rot.z   // 각도 (Pitch, Yaw, Roll)
-			);
-
-			windowTitle += camInfoText;
-		}
-
-		// 최종 문자열을 윈도우 창 제목 표시줄에 출력
-		::SetWindowText(_hWnd, windowTitle.c_str());
-	}
-	else
-	{
-		::SetWindowText(_hWnd, _frameRate);
-	}
 
 	_isRendering = false;
 }
@@ -776,5 +746,63 @@ void GameFramework::update_physics(float elapsedTime)
 		PhysicsManager::instance()->update(fixedTimeStep);
 
 		_physicsTimeAccumulator -= fixedTimeStep;
+	}
+}
+
+void GameFramework::view_window_title_bar_with_frame_rate_and_camera_info_and_main_player_pos()
+{
+	std::wstring windowTitle = _frameRate;
+
+	if (_isCheckCameraPos)
+	{
+		// 현재 씬에 있는 "Camera"라는 이름의 게임 오브젝트를 찾습니다.
+		auto cameraObj = ObjectManager::instance()->find_by_name("Camera");
+		// 플레이어 위치도 가져와서 표시하기 (Camera 오브젝트가 존재하고 Transform이 있는 경우)
+		auto MainPlayer = ObjectManager::instance()->find_by_name("MainPlayer");
+
+		if (cameraObj && cameraObj->transform() && MainPlayer && MainPlayer->transform())
+		{
+			// 위치 정보
+			DirectX::XMFLOAT3 pos = cameraObj->transform()->get_world_position();
+
+			DirectX::XMFLOAT3 rot = cameraObj->transform()->local_rotation_euler();
+
+			WCHAR camInfoText[256];
+			// Pos(위치)와 Rot(각도: Pitch, Yaw, Roll)를 한눈에 보이게 포맷팅
+			swprintf_s(camInfoText, 256,
+				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]   |   MainPlayerPos: [%.2f, %.2f, %.2f]",
+				pos.x, pos.y, pos.z,  // 위치
+				rot.x, rot.y, rot.z,   // 각도 (Pitch, Yaw, Roll)
+				MainPlayer->transform()->get_world_position().x,
+				MainPlayer->transform()->get_world_position().y,
+				MainPlayer->transform()->get_world_position().z
+			);
+
+			windowTitle += camInfoText;
+		}
+		else if (cameraObj && cameraObj->transform())
+		{
+			// 위치 정보
+			DirectX::XMFLOAT3 pos = cameraObj->transform()->get_world_position();
+
+			DirectX::XMFLOAT3 rot = cameraObj->transform()->local_rotation_euler();
+
+			WCHAR camInfoText[256];
+			// Pos(위치)와 Rot(각도: Pitch, Yaw, Roll)를 한눈에 보이게 포맷팅
+			swprintf_s(camInfoText, 256,
+				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]",
+				pos.x, pos.y, pos.z,  // 위치
+				rot.x, rot.y, rot.z   // 각도 (Pitch, Yaw, Roll)
+			);
+
+			windowTitle += camInfoText;
+		}
+
+		// 최종 문자열을 윈도우 창 제목 표시줄에 출력
+		::SetWindowText(_hWnd, windowTitle.c_str());
+	}
+	else
+	{
+		::SetWindowText(_hWnd, _frameRate);
 	}
 }
