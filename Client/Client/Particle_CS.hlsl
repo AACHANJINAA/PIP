@@ -91,7 +91,7 @@ void CS_Main(uint3 DTid : SV_DispatchThreadID)
     // =========================================================
     // 파티클 산화(사라짐) 연출 - 오른쪽 하늘로 날아감
     // =========================================================
-    float flyProgress = saturate((g_DyingProgress - 0.66f) / 0.34f);
+    float flyProgress = saturate((g_DyingProgress - 0.34f) / 0.34f);
 
     if (flyProgress > 0.0f)
     {
