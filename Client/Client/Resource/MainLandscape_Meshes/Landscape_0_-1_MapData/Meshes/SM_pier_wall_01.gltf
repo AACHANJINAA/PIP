@@ -1,0 +1,365 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 4746,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1679,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 0, -0.0200767517, -1.00839388 ],
+			"max": [ 4.02049446, 3.11960077, 1.52587887e-07 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1679,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1679,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1679,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1679,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 36,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 24,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 0.116589732, 0.0208369438, -0.946442604 ],
+			"max": [ 3.91108227, 3.02083683, -0.159948096 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 24,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 24,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 24,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 24,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_pier_wall_01.bin",
+			"byteLength": 104896
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 9492,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 20148,
+			"byteOffset": 9492,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 20148,
+			"byteOffset": 29640,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 26864,
+			"byteOffset": 49788,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 13432,
+			"byteOffset": 76652,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 13432,
+			"byteOffset": 90084,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 36,
+			"byteOffset": 103516,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 288,
+			"byteOffset": 103552,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 288,
+			"byteOffset": 103840,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 384,
+			"byteOffset": 104128,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 192,
+			"byteOffset": 104512,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 192,
+			"byteOffset": 104704,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_BaseColor.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_Normal.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_Occlusion.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_pier_wall_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.0100125987, -0.0164582785 ],
+							"scale": [ 1.24160016, 2.04088879 ]
+						}
+					}
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.0100125987, -0.0164582785 ],
+							"scale": [ 1.24160016, 2.04088879 ]
+						}
+					}
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.0100125987, -0.0164582785 ],
+						"scale": [ 1.24160016, 2.04088879 ]
+					}
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 7,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.0100125987, -0.0164582785 ],
+						"scale": [ 1.24160016, 2.04088879 ]
+					}
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_pier_wall_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 7
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_BaseColor",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_Normal",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_pier_wall_01_Occlusion",
+			"sampler": 0,
+			"source": 6
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}

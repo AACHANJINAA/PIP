@@ -1,0 +1,326 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 6108,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 2167,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.822869182, -0.58464855, -1.04134738 ],
+			"max": [ 0.822849572, 0.646140456, 1.03532982 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 2167,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 2167,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 2167,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 2167,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 1122,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 378,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.551354527, 0.0206488017, -1.02124047 ],
+			"max": [ 0.531354487, 0.678614497, 2.46749353 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 378,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 378,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 378,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 378,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_carriage_01.bin",
+			"byteLength": 156980
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 12216,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 26004,
+			"byteOffset": 12216,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 26004,
+			"byteOffset": 38220,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 34672,
+			"byteOffset": 64224,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 17336,
+			"byteOffset": 98896,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 17336,
+			"byteOffset": 116232,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2244,
+			"byteOffset": 133568,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4536,
+			"byteOffset": 135812,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4536,
+			"byteOffset": 140348,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6048,
+			"byteOffset": 144884,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3024,
+			"byteOffset": 150932,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3024,
+			"byteOffset": 153956,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Furniture_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "T_Furniture_01_C.png"
+		},
+		{
+			"uri": "T_Furniture_01_N.png"
+		},
+		{
+			"uri": "T_Furniture_01_M.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Furniture_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6
+			},
+			"occlusionTexture":
+			{
+				"index": 7
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_carriage_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Furniture_01_C",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Furniture_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Furniture_01_N",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "T_Furniture_01_M",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 7
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

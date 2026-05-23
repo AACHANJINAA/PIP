@@ -1,0 +1,318 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 50376,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 24419,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -13.5646782, 0.343264192, -13.5200377 ],
+			"max": [ 13.557682, 23.2037754, 13.581234 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 24419,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 24419,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 24419,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 24419,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 9843,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 4833,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -13.4440699, 0.020434089, -13.4477301 ],
+			"max": [ 13.4409685, 10.0057211, 13.4489555 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 4833,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 4833,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 4833,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 4833,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Big_Tower_03_roof_01.bin",
+			"byteLength": 1758552
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 100752,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 293028,
+			"byteOffset": 100752,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 293028,
+			"byteOffset": 393780,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 390704,
+			"byteOffset": 686808,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 195352,
+			"byteOffset": 1077512,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 195352,
+			"byteOffset": 1272864,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 19686,
+			"byteOffset": 1468216,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 57996,
+			"byteOffset": 1487904,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 57996,
+			"byteOffset": 1545900,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 77328,
+			"byteOffset": 1603896,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 38664,
+			"byteOffset": 1681224,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 38664,
+			"byteOffset": 1719888,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Roof_01_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_OcclusionRoughnessMetallic.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_Normal.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Roof_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		},
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
+			},
+			"occlusionTexture":
+			{
+				"index": 6
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Big_Tower_03_roof_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Roof_01_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_roof_texture_lambert1_OcclusionRoughnessMetallic",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "T_roof_texture_lambert1_Normal",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}
