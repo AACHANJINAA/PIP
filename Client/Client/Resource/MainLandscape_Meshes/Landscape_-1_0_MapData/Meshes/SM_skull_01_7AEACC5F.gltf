@@ -1,0 +1,178 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 2142,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 580,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.0775182173, -0.00720112119, -0.122710995 ],
+			"max": [ 0.0767990872, 0.167938113, 0.115657143 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 580,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 580,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 580,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 580,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_skull_01_7AEACC5F.bin",
+			"byteLength": 36764
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 4284,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6960,
+			"byteOffset": 4284,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6960,
+			"byteOffset": 11244,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9280,
+			"byteOffset": 18204,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4640,
+			"byteOffset": 27484,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4640,
+			"byteOffset": 32124,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "T_Skeleton_C.png"
+		},
+		{
+			"uri": "T_Skeleton_M.png"
+		},
+		{
+			"uri": "T_Skeleton_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Skeleton",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_skull_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Skeleton_C",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Skeleton_M",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Skeleton_N",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}

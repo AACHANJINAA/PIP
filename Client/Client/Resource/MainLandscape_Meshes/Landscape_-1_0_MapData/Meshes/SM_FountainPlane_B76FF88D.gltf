@@ -1,0 +1,131 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 120,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 41,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.81318402, 0.313183725, -1.8131845 ],
+			"max": [ 1.81318402, 0.313183725, 1.8131845 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 41,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 41,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 41,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 41,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_FountainPlane_B76FF88D.bin",
+			"byteLength": 2416
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 120,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 492,
+			"byteOffset": 120,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 492,
+			"byteOffset": 612,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 656,
+			"byteOffset": 1104,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 328,
+			"byteOffset": 1760,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 328,
+			"byteOffset": 2088,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "M_water_PLane",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0.5, 0.5, 0.5, 1 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_FountainPlane",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	]
+}

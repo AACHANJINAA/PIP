@@ -1,0 +1,187 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1074,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 497,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 1.52587887e-07, -2.44929106e-16, -3.99999571 ],
+			"max": [ 4.99999762, 3.97403121, 0.0356747434 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 497,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 497,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 497,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 497,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_wall_tonnel_06_BD43C808.bin",
+			"byteLength": 29980
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2148,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5964,
+			"byteOffset": 2148,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5964,
+			"byteOffset": 8112,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7952,
+			"byteOffset": 14076,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3976,
+			"byteOffset": 22028,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3976,
+			"byteOffset": 26004,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_wall_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_wall_01_Occlusion.png"
+		},
+		{
+			"uri": "T_wall01_C.png"
+		},
+		{
+			"uri": "T_wall01_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_wall_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_wall_tonnel_06",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_wall01_C",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_wall_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_wall01_N",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_wall_01_Occlusion",
+			"sampler": 0,
+			"source": 1
+		}
+	]
+}
