@@ -147,8 +147,8 @@ float4 PS_Main(PS_Input input) : SV_TARGET
 
         // 3. 레이어별 텍스처 블렌딩
         final_albedo = float3(0, 0, 0);
-        final_normal_TS = float3(0, 0, 1); // Tangent space default normal
-        final_roughness = 0.5;
+        final_normal_TS = float3(0, 0, 0); // Tangent space default normal
+        final_roughness = 0.0;
 
         for (int i = 0; i < NumLayers; ++i)
         {
