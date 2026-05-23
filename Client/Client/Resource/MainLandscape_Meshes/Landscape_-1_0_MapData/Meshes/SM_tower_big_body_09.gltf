@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1638,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 582,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -9.76314545, -0.00398292718, -0.00609089434 ],
+			"max": [ 0.0170687456, 7.74878216, 9.76381588 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 582,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 582,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 582,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 582,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_tower_big_body_09.bin",
+			"byteLength": 35868
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 3276,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6984,
+			"byteOffset": 3276,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6984,
+			"byteOffset": 10260,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9312,
+			"byteOffset": 17244,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4656,
+			"byteOffset": 26556,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4656,
+			"byteOffset": 31212,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Brick_02_BaseColor.png"
+		},
+		{
+			"uri": "MI_Brick_02_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Brick_02_Normal.png"
+		},
+		{
+			"uri": "MI_Brick_02_Occlusion.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Brick_02",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_tower_big_body_09",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Brick_02_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Brick_02_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Brick_02_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Brick_02_Occlusion",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

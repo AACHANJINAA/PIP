@@ -1,0 +1,446 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 9630,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 4698,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -4.23410225, -0.000769546547, -4.23540354 ],
+			"max": [ 4.23299074, 3.46413898, 4.23571062 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 4698,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 4698,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 4698,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 4698,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 31920,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 13937,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -4.37526131, 0.0593066402, -4.3905201 ],
+			"max": [ 4.38622618, 7.87789774, 4.37810087 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 13937,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 13937,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 13937,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 13937,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 12,
+			"count": 6,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 13,
+			"count": 4,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -3.20951414, 0.321040034, -3.2095058 ],
+			"max": [ -1.8914541, 0.321040034, -1.8914454 ]
+		},
+		{
+			"bufferView": 14,
+			"count": 4,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 15,
+			"count": 4,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 16,
+			"count": 4,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 17,
+			"count": 4,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_round_tower_roof_01.bin",
+			"byteLength": 1126892
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 19260,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 56376,
+			"byteOffset": 19260,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 56376,
+			"byteOffset": 75636,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 75168,
+			"byteOffset": 132012,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 37584,
+			"byteOffset": 207180,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 37584,
+			"byteOffset": 244764,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 63840,
+			"byteOffset": 282348,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 167244,
+			"byteOffset": 346188,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 167244,
+			"byteOffset": 513432,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 222992,
+			"byteOffset": 680676,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 111496,
+			"byteOffset": 903668,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 111496,
+			"byteOffset": 1015164,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6,
+			"byteOffset": 1126660,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 48,
+			"byteOffset": 1126668,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 48,
+			"byteOffset": 1126716,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64,
+			"byteOffset": 1126764,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 32,
+			"byteOffset": 1126828,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 32,
+			"byteOffset": 1126860,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "MI_Roof_01_BaseColor.png"
+		},
+		{
+			"uri": "WorldGridMaterial_BaseColor.png"
+		},
+		{
+			"uri": "WorldGridMaterial_MetallicRoughness.png"
+		},
+		{
+			"uri": "WorldGridMaterial_Normal.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_OcclusionRoughnessMetallic.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_Normal.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Roof_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6
+			},
+			"occlusionTexture":
+			{
+				"index": 5
+			}
+		},
+		{
+			"name": "WorldGridMaterial",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 7
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 8
+				}
+			},
+			"normalTexture":
+			{
+				"index": 9
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_round_tower_roof_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 13,
+						"NORMAL": 14,
+						"TANGENT": 15,
+						"TEXCOORD_0": 16,
+						"TEXCOORD_1": 17
+					},
+					"indices": 12,
+					"material": 2
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 7
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Roof_01_BaseColor",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "T_roof_texture_lambert1_OcclusionRoughnessMetallic",
+			"sampler": 0,
+			"source": 8
+		},
+		{
+			"name": "T_roof_texture_lambert1_Normal",
+			"sampler": 0,
+			"source": 9
+		},
+		{
+			"name": "WorldGridMaterial_BaseColor",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "WorldGridMaterial_MetallicRoughness",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "WorldGridMaterial_Normal",
+			"sampler": 0,
+			"source": 6
+		}
+	]
+}

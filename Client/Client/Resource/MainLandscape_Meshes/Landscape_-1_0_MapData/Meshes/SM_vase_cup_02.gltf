@@ -1,0 +1,326 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1308,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 311,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.211585179, -0.144018322, -0.211900458 ],
+			"max": [ 0.210833281, 0.0180005636, 0.210517898 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 311,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 311,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 311,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 311,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 1770,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 405,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.199816734, -0.131002426, -0.199816808 ],
+			"max": [ 0.233583406, 0.0179865696, 0.199816734 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 405,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 405,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 405,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 405,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_vase_cup_02.bin",
+			"byteLength": 46252
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2616,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3732,
+			"byteOffset": 2616,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3732,
+			"byteOffset": 6348,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4976,
+			"byteOffset": 10080,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2488,
+			"byteOffset": 15056,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2488,
+			"byteOffset": 17544,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3540,
+			"byteOffset": 20032,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4860,
+			"byteOffset": 23572,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4860,
+			"byteOffset": 28432,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6480,
+			"byteOffset": 33292,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3240,
+			"byteOffset": 39772,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3240,
+			"byteOffset": 43012,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Vase_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Atlas_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_vase_C.png"
+		},
+		{
+			"uri": "T_vase_N.png"
+		},
+		{
+			"uri": "T_vase_M.png"
+		},
+		{
+			"uri": "T_Atlas_C.png"
+		},
+		{
+			"uri": "T_Atlas_N.png"
+		},
+		{
+			"uri": "T_Atlas_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Vase",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Atlas_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6
+			},
+			"occlusionTexture":
+			{
+				"index": 7
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_vase_cup_02",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_vase_C",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Vase_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_vase_N",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "T_vase_M",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "T_Atlas_C",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Atlas_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Atlas_N",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "T_Atlas_M",
+			"sampler": 0,
+			"source": 7
+		}
+	]
+}

@@ -1,0 +1,178 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 19206,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 7866,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.175828874, -0.00895874016, -5.76381445 ],
+			"max": [ 11.5178185, 8.2730341, 5.76381207 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 7866,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 7866,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 7866,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 7866,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_palace_roof_03.bin",
+			"byteLength": 478908
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 38412,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 94392,
+			"byteOffset": 38412,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 94392,
+			"byteOffset": 132804,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 125856,
+			"byteOffset": 227196,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 62928,
+			"byteOffset": 353052,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 62928,
+			"byteOffset": 415980,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Roof_01_BaseColor.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_OcclusionRoughnessMetallic.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_Normal.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Roof_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_palace_roof_03",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Roof_01_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_roof_texture_lambert1_OcclusionRoughnessMetallic",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_roof_texture_lambert1_Normal",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}

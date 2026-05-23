@@ -1,0 +1,9299 @@
+﻿[
+	{
+		"Name": "Landscape_WaterBrushManager_StaticMeshComponent_0",
+		"MeshFile": "Meshes/MatineeCam_SM.gltf",
+		"Materials": [
+			"MatineeCam_mat"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"Rotation":
+			{
+				"X": 0.70710700750350952,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0
+			},
+			"Scale":
+			{
+				"X": 0.0099999997764825821,
+				"Y": 0.0099999997764825821,
+				"Z": 0.0099999997764825821
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid438_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 325.99151611328125,
+				"Y": 9.4608116149902344,
+				"Z": 16.42161750793457
+			},
+			"Rotation":
+			{
+				"X": 0.0016580000519752502,
+				"Y": -0.81760102510452271,
+				"Z": -0.0017630000365898013,
+				"W": 0.57577997446060181
+			},
+			"Scale":
+			{
+				"X": 0.82383596897125244,
+				"Y": 0.8631889820098877,
+				"Z": 1.0510489940643311
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid435_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 329.18212890625,
+				"Y": 1.1352740526199341,
+				"Z": 7.7695469856262207
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70625197887420654,
+				"Z": 0,
+				"W": 0.70796000957489014
+			},
+			"Scale":
+			{
+				"X": 0.82383596897125244,
+				"Y": 0.82383596897125244,
+				"Z": 1.0510489940643311
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid441_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 341.39010620117188,
+				"Y": 3.9482080936431885,
+				"Z": 9.836090087890625
+			},
+			"Rotation":
+			{
+				"X": -0.00034599998616613448,
+				"Y": -0.059000998735427856,
+				"Z": -0.0023950000759214163,
+				"W": 0.99825501441955566
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 0.63092797994613647
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid223_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 484.41305541992188,
+				"Y": 25.523159027099609,
+				"Z": 76.471366882324219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9908369779586792,
+				"Z": 0,
+				"W": -0.13505999743938446
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid226_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 481.120361328125,
+				"Y": 21.023159027099609,
+				"Z": 2.4907810688018799
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.92145001888275146,
+				"Z": 0,
+				"W": -0.38849800825119019
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid232_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 501.62020874023438,
+				"Y": 39.451488494873047,
+				"Z": 15.64472770690918
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.28376901149749756,
+				"Z": 0,
+				"W": 0.95889300107955933
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_29_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 29.046319961547852,
+				"Y": 7.2516899108886719,
+				"Z": 0.035780999809503555
+			},
+			"Rotation":
+			{
+				"X": 0.049408998340368271,
+				"Y": -0.58900797367095947,
+				"Z": -0.067427001893520355,
+				"W": 0.80379301309585571
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_30_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 29.620038986206055,
+				"Y": 6.9298930168151855,
+				"Z": 1.8518359661102295
+			},
+			"Rotation":
+			{
+				"X": 0.035525999963283539,
+				"Y": -0.62663900852203369,
+				"Z": -0.056437000632286072,
+				"W": 0.7764509916305542
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_40_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 30.024885177612305,
+				"Y": 6.6729588508605957,
+				"Z": 3.7358200550079346
+			},
+			"Rotation":
+			{
+				"X": 0.04084400087594986,
+				"Y": -0.5481870174407959,
+				"Z": -0.052715998142957687,
+				"W": 0.83369302749633789
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_67_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 30.781343460083008,
+				"Y": 6.4178371429443359,
+				"Z": 5.4851560592651367
+			},
+			"Rotation":
+			{
+				"X": 0.044250998646020889,
+				"Y": -0.49166300892829895,
+				"Z": -0.049890000373125076,
+				"W": 0.86822801828384399
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_68_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 31.772129058837891,
+				"Y": 6.2138528823852539,
+				"Z": 7.1326560974121094
+			},
+			"Rotation":
+			{
+				"X": 0.049818001687526703,
+				"Y": -0.38602298498153687,
+				"Z": -0.044332001358270645,
+				"W": 0.92007601261138916
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_93_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 33.107738494873047,
+				"Y": 5.9841752052307129,
+				"Z": 8.4833202362060547
+			},
+			"Rotation":
+			{
+				"X": 0.049818001687526703,
+				"Y": -0.38602298498153687,
+				"Z": -0.044332001358270645,
+				"W": 0.92007601261138916
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_131_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 34.546340942382812,
+				"Y": 5.8473291397094727,
+				"Z": 9.8328123092651367
+			},
+			"Rotation":
+			{
+				"X": 0.0056839999742805958,
+				"Y": -0.91295599937438965,
+				"Z": -0.066445998847484589,
+				"W": 0.40257099270820618
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_132_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 33.296977996826172,
+				"Y": 5.729248046875,
+				"Z": 11.190234184265137
+			},
+			"Rotation":
+			{
+				"X": 0.0018690000288188457,
+				"Y": -0.93450897932052612,
+				"Z": -0.06666400283575058,
+				"W": 0.34963700175285339
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_133_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 31.829643249511719,
+				"Y": 5.631904125213623,
+				"Z": 12.459063529968262
+			},
+			"Rotation":
+			{
+				"X": 0.0018690000288188457,
+				"Y": -0.93450897932052612,
+				"Z": -0.06666400283575058,
+				"W": 0.34963700175285339
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_152_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 30.349205017089844,
+				"Y": 5.5337262153625488,
+				"Z": 13.738984107971191
+			},
+			"Rotation":
+			{
+				"X": -0.025620000436902046,
+				"Y": -0.95542997121810913,
+				"Z": -0.059719998389482498,
+				"W": 0.28797799348831177
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_153_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 28.728403091430664,
+				"Y": 5.5620660781860352,
+				"Z": 14.815781593322754
+			},
+			"Rotation":
+			{
+				"X": 0.031589999794960022,
+				"Y": -0.96260100603103638,
+				"Z": -0.074928000569343567,
+				"W": 0.25843098759651184
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_154_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 27.028902053833008,
+				"Y": 5.3519339561462402,
+				"Z": 15.782462120056152
+			},
+			"Rotation":
+			{
+				"X": -0.027195999398827553,
+				"Y": -0.96273601055145264,
+				"Z": -0.059020001441240311,
+				"W": 0.26251900196075439
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_155_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 25.356391906738281,
+				"Y": 5.4037752151489258,
+				"Z": 16.772499084472656
+			},
+			"Rotation":
+			{
+				"X": -0.0076049999333918095,
+				"Y": -0.9630889892578125,
+				"Z": -0.064350001513957977,
+				"W": 0.26126798987388611
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_156_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 23.691022872924805,
+				"Y": 5.3671679496765137,
+				"Z": 17.745155334472656
+			},
+			"Rotation":
+			{
+				"X": 0.018418999388813972,
+				"Y": -0.97501301765441895,
+				"Z": -0.070217996835708618,
+				"W": 0.2099509984254837
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_607_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 42.056041717529297,
+				"Y": 5.795835018157959,
+				"Z": 8.6862497329711914
+			},
+			"Rotation":
+			{
+				"X": 0.048937998712062836,
+				"Y": -0.29058501124382019,
+				"Z": -0.012595999985933304,
+				"W": 0.95551401376724243
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_606_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 40.460182189941406,
+				"Y": 5.7878861427307129,
+				"Z": 7.6105079650878906
+			},
+			"Rotation":
+			{
+				"X": 0.041117001324892044,
+				"Y": -0.29179701209068298,
+				"Z": 0.01307000033557415,
+				"W": 0.95550698041915894
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_605_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 39.020973205566406,
+				"Y": 5.9708061218261719,
+				"Z": 6.3882417678833008
+			},
+			"Rotation":
+			{
+				"X": 0.058977000415325165,
+				"Y": -0.346110999584198,
+				"Z": -0.029705999419093132,
+				"W": 0.93586701154708862
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_596_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 37.558986663818359,
+				"Y": 6.148320198059082,
+				"Z": 5.1455860137939453
+			},
+			"Rotation":
+			{
+				"X": 0.055780999362468719,
+				"Y": -0.3466390073299408,
+				"Z": -0.021069999784231186,
+				"W": 0.93610197305679321
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_168_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 36.255680084228516,
+				"Y": 6.1870322227478027,
+				"Z": 3.7329690456390381
+			},
+			"Rotation":
+			{
+				"X": 0.044433001428842545,
+				"Y": -0.40116599202156067,
+				"Z": 0.0084800003096461296,
+				"W": 0.91488802433013916
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_167_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 35.540035247802734,
+				"Y": 6.4050440788269043,
+				"Z": 1.9130469560623169
+			},
+			"Rotation":
+			{
+				"X": 0.052423998713493347,
+				"Y": -0.5631830096244812,
+				"Z": -0.031396001577377319,
+				"W": 0.82406997680664062
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_158_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 34.836936950683594,
+				"Y": 6.6576709747314453,
+				"Z": 0.13039100170135498
+			},
+			"Rotation":
+			{
+				"X": 0.058077000081539154,
+				"Y": -0.56262797117233276,
+				"Z": -0.03966899961233139,
+				"W": 0.82371300458908081
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_608_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 43.687328338623047,
+				"Y": 5.6927251815795898,
+				"Z": 9.7741403579711914
+			},
+			"Rotation":
+			{
+				"X": 0.049639999866485596,
+				"Y": -0.22938300669193268,
+				"Z": -0.0094659999012947083,
+				"W": 0.97202402353286743
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_609_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 45.406459808349609,
+				"Y": 5.6136088371276855,
+				"Z": 10.629336357116699
+			},
+			"Rotation":
+			{
+				"X": 0.049639999866485596,
+				"Y": -0.22938300669193268,
+				"Z": -0.0094659999012947083,
+				"W": 0.97202402353286743
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_610_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 47.185928344726562,
+				"Y": 5.5317387580871582,
+				"Z": 11.514453887939453
+			},
+			"Rotation":
+			{
+				"X": 0.048705998808145523,
+				"Y": -0.3076309859752655,
+				"Z": -0.013469000346958637,
+				"W": 0.95016300678253174
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_611_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 48.763797760009766,
+				"Y": 5.4235601425170898,
+				"Z": 12.650117874145508
+			},
+			"Rotation":
+			{
+				"X": 0.048705998808145523,
+				"Y": -0.3076309859752655,
+				"Z": -0.013469000346958637,
+				"W": 0.95016300678253174
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Stone111_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Stone2.gltf",
+		"Materials": [
+			"MI_Rock_island"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 239.2413330078125,
+				"Y": 5.0310840606689453,
+				"Z": 2.6099998950958252
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.56309598684310913,
+				"Z": 0,
+				"W": 0.82639199495315552
+			},
+			"Scale":
+			{
+				"X": 5.7162561416625977,
+				"Y": 5.7162561416625977,
+				"Z": 5.7162561416625977
+			}
+		}
+	},
+	{
+		"Name": "SM_Stone106_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Stone4.gltf",
+		"Materials": [
+			"MI_Rocks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 242.18539428710938,
+				"Y": 5.0310797691345215,
+				"Z": 2.0170309543609619
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.60320800542831421,
+				"Z": 0,
+				"W": 0.79758399724960327
+			},
+			"Scale":
+			{
+				"X": 3.500359058380127,
+				"Y": 3.500359058380127,
+				"Z": 3.500359058380127
+			}
+		}
+	},
+	{
+		"Name": "SM_Stone107_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Stone3.gltf",
+		"Materials": [
+			"MI_Rocks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 240.75062561035156,
+				"Y": 5.0310840606689453,
+				"Z": 0.036718998104333878
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.56309497356414795,
+				"Z": 0,
+				"W": 0.82639199495315552
+			},
+			"Scale":
+			{
+				"X": 4.9147181510925293,
+				"Y": 4.9147181510925293,
+				"Z": 4.9147181510925293
+			}
+		}
+	},
+	{
+		"Name": "SM_Stone108_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Stone2.gltf",
+		"Materials": [
+			"MI_Rock_island"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 244.00468444824219,
+				"Y": 5.0310840606689453,
+				"Z": 1.059999942779541
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.56309598684310913,
+				"Z": 0,
+				"W": 0.82639199495315552
+			},
+			"Scale":
+			{
+				"X": 5.7162561416625977,
+				"Y": 5.7162561416625977,
+				"Z": 5.7162561416625977
+			}
+		}
+	},
+	{
+		"Name": "SM_Stone110_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Stone3.gltf",
+		"Materials": [
+			"MI_Rocks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 235.9871826171875,
+				"Y": 5.0310840606689453,
+				"Z": 1.586758017539978
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.56309497356414795,
+				"Z": 0,
+				"W": 0.82639199495315552
+			},
+			"Scale":
+			{
+				"X": 4.9147181510925293,
+				"Y": 4.9147181510925293,
+				"Z": 4.9147181510925293
+			}
+		}
+	},
+	{
+		"Name": "SM_Stone109_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Stone4.gltf",
+		"Materials": [
+			"MI_Rocks"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 237.42195129394531,
+				"Y": 5.0310797691345215,
+				"Z": 3.5670309066772461
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.60320800542831421,
+				"Z": 0,
+				"W": 0.79758399724960327
+			},
+			"Scale":
+			{
+				"X": 3.500359058380127,
+				"Y": 3.500359058380127,
+				"Z": 3.500359058380127
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1075_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 348.4088134765625,
+				"Y": 3.8151760101318359,
+				"Z": 0.7656019926071167
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.93686199188232422,
+				"Z": 0,
+				"W": -0.34970000386238098
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_682_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 309.6358642578125,
+				"Y": 5.3264307975769043,
+				"Z": 1.7191020250320435
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.83681797981262207,
+				"Z": 0,
+				"W": 0.54748201370239258
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1072_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 353.32672119140625,
+				"Y": 3.8151760101318359,
+				"Z": 3.7995250225067139
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97900998592376709,
+				"Z": 0,
+				"W": -0.20381200313568115
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1073_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 351.52743530273438,
+				"Y": 3.8151760101318359,
+				"Z": 3.0160219669342041
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96457701921463013,
+				"Z": 0,
+				"W": -0.2637999951839447
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1074_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 349.84722900390625,
+				"Y": 3.8151760101318359,
+				"Z": 2.0132219791412354
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.93686199188232422,
+				"Z": 0,
+				"W": -0.34970000386238098
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "rock_01_low18_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_rock_01.gltf",
+		"Materials": [
+			"MI_Rock_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 0.23379099369049072,
+				"Y": -33.627120971679688,
+				"Z": 465.99624633789062
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.95553702116012573,
+				"Z": 0,
+				"W": 0.29486998915672302
+			},
+			"Scale":
+			{
+				"X": 1.6723849773406982,
+				"Y": 1.6723849773406982,
+				"Z": 1.6723849773406982
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid21_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 64.742401123046875,
+				"Y": -6.5,
+				"Z": 53.504219055175781
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99856901168823242,
+				"Z": 0,
+				"W": -0.053484000265598297
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid22_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 104.16412353515625,
+				"Y": -2.5999999046325684,
+				"Z": 49.794376373291016
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99856901168823242,
+				"Z": 0,
+				"W": -0.053484000265598297
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid23_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock1_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 30.040439605712891,
+				"Y": -13.600000381469727,
+				"Z": 55.408046722412109
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99856901168823242,
+				"Z": 0,
+				"W": -0.053484000265598297
+			},
+			"Scale":
+			{
+				"X": 2.9346439838409424,
+				"Y": 2.9346439838409424,
+				"Z": 2.9346439838409424
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid24_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 62.844139099121094,
+				"Y": 13.699999809265137,
+				"Z": 59.938243865966797
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.81237196922302246,
+				"Z": 0,
+				"W": 0.58314001560211182
+			},
+			"Scale":
+			{
+				"X": 1.0857869386672974,
+				"Y": 1.0857869386672974,
+				"Z": 1.0857869386672974
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid25_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 103.02867126464844,
+				"Y": 10.399999618530273,
+				"Z": 59.428241729736328
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.95016098022460938,
+				"Z": 0,
+				"W": -0.31175899505615234
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid16_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 178.36015319824219,
+				"Y": -6.5000438690185547,
+				"Z": 57.992870330810547
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99856901168823242,
+				"Z": 0,
+				"W": -0.053484000265598297
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid17_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 221.63334655761719,
+				"Y": 7.1001272201538086,
+				"Z": 36.957202911376953
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99856901168823242,
+				"Z": 0,
+				"W": -0.053484000265598297
+			},
+			"Scale":
+			{
+				"X": 0.99968600273132324,
+				"Y": 0.99968600273132324,
+				"Z": 0.99968600273132324
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid18_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock1_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 144.14044189453125,
+				"Y": -13.600000381469727,
+				"Z": 55.408046722412109
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99856901168823242,
+				"Z": 0,
+				"W": -0.053484000265598297
+			},
+			"Scale":
+			{
+				"X": 2.9346439838409424,
+				"Y": 2.9346439838409424,
+				"Z": 2.9346439838409424
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid19_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 176.94413757324219,
+				"Y": 13.699999809265137,
+				"Z": 59.938243865966797
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.81237196922302246,
+				"Z": 0,
+				"W": 0.58314001560211182
+			},
+			"Scale":
+			{
+				"X": 1.0857869386672974,
+				"Y": 1.0857869386672974,
+				"Z": 1.0857869386672974
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid20_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 219.80615234375,
+				"Y": 10.399999618530273,
+				"Z": 55.009307861328125
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.95016098022460938,
+				"Z": 0,
+				"W": -0.31175899505615234
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid13_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock1_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 255.55682373046875,
+				"Y": -1.4340620040893555,
+				"Z": 43.774986267089844
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9998289942741394,
+				"Z": 0,
+				"W": 0.018502000719308853
+			},
+			"Scale":
+			{
+				"X": 1.8838109970092773,
+				"Y": 1.1775269508361816,
+				"Z": 1.8838109970092773
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid11_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 280.02297973632812,
+				"Y": 4.4137110710144043,
+				"Z": 39.343971252441406
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97061997652053833,
+				"Z": 0,
+				"W": 0.24061699211597443
+			},
+			"Scale":
+			{
+				"X": 0.82251697778701782,
+				"Y": 0.82251697778701782,
+				"Z": 0.82251697778701782
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid12_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 325.149658203125,
+				"Y": -2.5999999046325684,
+				"Z": 45.228439331054688
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9998289942741394,
+				"Z": 0,
+				"W": 0.018502000719308853
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid14_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 285.71343994140625,
+				"Y": 13.699999809265137,
+				"Z": 61.197811126708984
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.76830697059631348,
+				"Z": 0,
+				"W": 0.64008098840713501
+			},
+			"Scale":
+			{
+				"X": 1.0857869386672974,
+				"Y": 1.0857869386672974,
+				"Z": 1.0857869386672974
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid15_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 325.40872192382812,
+				"Y": 10.399999618530273,
+				"Z": 54.925506591796875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97013002634048462,
+				"Z": 0,
+				"W": -0.24258700013160706
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid63_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 314.20870971679688,
+				"Y": 19.899999618530273,
+				"Z": 69.225509643554688
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.54697299003601074,
+				"Z": 0,
+				"W": 0.837149977684021
+			},
+			"Scale":
+			{
+				"X": 2.5112330913543701,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid64_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 304.3685302734375,
+				"Y": 4.8975591659545898,
+				"Z": 34.957901000976562
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9998289942741394,
+				"Z": 0,
+				"W": 0.018502000719308853
+			},
+			"Scale":
+			{
+				"X": 0.82383596897125244,
+				"Y": 0.82383596897125244,
+				"Z": 0.82383596897125244
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid158_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 413.5648193359375,
+				"Y": 4.2579569816589355,
+				"Z": 92.707649230957031
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99999898672103882,
+				"Z": 0,
+				"W": 0.001129999989643693
+			},
+			"Scale":
+			{
+				"X": 1.7189790010452271,
+				"Y": 1.7189790010452271,
+				"Z": 1.7189790010452271
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid159_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 449.004638671875,
+				"Y": 7.8218288421630859,
+				"Z": 85.409828186035156
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99999898672103882,
+				"Z": 0,
+				"W": 0.0011259999591857195
+			},
+			"Scale":
+			{
+				"X": 1.7189790010452271,
+				"Y": 1.7189790010452271,
+				"Z": 1.7189790010452271
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid160_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock1_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 381.08474731445312,
+				"Y": -2.2684569358825684,
+				"Z": 98.08233642578125
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99999898672103882,
+				"Z": 0,
+				"W": 0.0011259999591857195
+			},
+			"Scale":
+			{
+				"X": 2.7725169658660889,
+				"Y": 2.7725169658660889,
+				"Z": 2.7725169658660889
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid161_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 412.733154296875,
+				"Y": 21.071701049804688,
+				"Z": 98.297760009765625
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.77932298183441162,
+				"Z": 0,
+				"W": 0.62662297487258911
+			},
+			"Scale":
+			{
+				"X": 0.92365902662277222,
+				"Y": 0.92365902662277222,
+				"Z": 0.92365902662277222
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid162_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 448.93313598632812,
+				"Y": 19.701389312744141,
+				"Z": 94.272880554199219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96576601266860962,
+				"Z": 0,
+				"W": -0.25941601395606995
+			},
+			"Scale":
+			{
+				"X": 1.7189790010452271,
+				"Y": 1.7189790010452271,
+				"Z": 1.7189790010452271
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid163_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock1_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 391.09619140625,
+				"Y": 22.706110000610352,
+				"Z": 92.330184936523438
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99999898672103882,
+				"Z": 0,
+				"W": 0.0011259999591857195
+			},
+			"Scale":
+			{
+				"X": 1.5093189477920532,
+				"Y": 1.5093189477920532,
+				"Z": 1.5093189477920532
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid164_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 368.94683837890625,
+				"Y": 26.201841354370117,
+				"Z": 90.437767028808594
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.88269501924514771,
+				"Z": 0,
+				"W": -0.46994501352310181
+			},
+			"Scale":
+			{
+				"X": 0.91047900915145874,
+				"Y": 0.91047900915145874,
+				"Z": 0.91047900915145874
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid165_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 432.793701171875,
+				"Y": 26.047748565673828,
+				"Z": 94.006706237792969
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.90737402439117432,
+				"Z": 0,
+				"W": 0.42032501101493835
+			},
+			"Scale":
+			{
+				"X": 0.82799696922302246,
+				"Y": 0.82799696922302246,
+				"Z": 0.82799696922302246
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid439_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 355.48092651367188,
+				"Y": 4.6521439552307129,
+				"Z": 24.099985122680664
+			},
+			"Rotation":
+			{
+				"X": 0.00069499999517574906,
+				"Y": -0.47368600964546204,
+				"Z": -0.0023179999552667141,
+				"W": 0.88068997859954834
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid440_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 371.19418334960938,
+				"Y": 6.2038769721984863,
+				"Z": 45.267086029052734
+			},
+			"Rotation":
+			{
+				"X": 0.0021599999163299799,
+				"Y": -0.78361201286315918,
+				"Z": 0.0010920000495389104,
+				"W": -0.62124598026275635
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid437_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 294.734375,
+				"Y": 9.4609775543212891,
+				"Z": 40.496261596679688
+			},
+			"Rotation":
+			{
+				"X": 0.0011200000299140811,
+				"Y": -0.63144201040267944,
+				"Z": -0.002145000034943223,
+				"W": 0.77541899681091309
+			},
+			"Scale":
+			{
+				"X": 0.82383596897125244,
+				"Y": 0.8631889820098877,
+				"Z": 1.0510489940643311
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid436_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock2_mid.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 319.45623779296875,
+				"Y": 2.031670093536377,
+				"Z": 20.806631088256836
+			},
+			"Rotation":
+			{
+				"X": 0.089473001658916473,
+				"Y": 0.28293898701667786,
+				"Z": -0.026520000770688057,
+				"W": 0.95458698272705078
+			},
+			"Scale":
+			{
+				"X": 0.82383596897125244,
+				"Y": 0.82383596897125244,
+				"Z": 1.0510489940643311
+			}
+		}
+	},
+	{
+		"Name": "SM_log_80_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_log_01.gltf",
+		"Materials": [
+			"MI_Atlas_01",
+			"MI_Log_props_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 89.218879699707031,
+				"Y": -5.1588039398193359,
+				"Z": 425.92596435546875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98653000593185425,
+				"Z": 0,
+				"W": -0.16358000040054321
+			},
+			"Scale":
+			{
+				"X": 1.541174054145813,
+				"Y": 1,
+				"Z": 1.541174054145813
+			}
+		}
+	},
+	{
+		"Name": "SM_log_90_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_log_01.gltf",
+		"Materials": [
+			"MI_Atlas_01",
+			"MI_Log_props_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 83.207878112792969,
+				"Y": -5.1588039398193359,
+				"Z": 418.8441162109375
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98844701051712036,
+				"Z": 0,
+				"W": -0.15156500041484833
+			},
+			"Scale":
+			{
+				"X": 1.541174054145813,
+				"Y": 1,
+				"Z": 1.541174054145813
+			}
+		}
+	},
+	{
+		"Name": "SM_log_101_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_log_01.gltf",
+		"Materials": [
+			"MI_Atlas_01",
+			"MI_Log_props_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 95.761566162109375,
+				"Y": -5.1588039398193359,
+				"Z": 405.46890258789062
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.168286994099617,
+				"Z": 0,
+				"W": 0.98573797941207886
+			},
+			"Scale":
+			{
+				"X": 1.541174054145813,
+				"Y": 1,
+				"Z": 1.541174054145813
+			}
+		}
+	},
+	{
+		"Name": "SM_log_105_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_log_01.gltf",
+		"Materials": [
+			"MI_Atlas_01",
+			"MI_Log_props_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 96.676521301269531,
+				"Y": -5.1588039398193359,
+				"Z": 391.7913818359375
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.20937499403953552,
+				"Z": 0,
+				"W": 0.97783499956130981
+			},
+			"Scale":
+			{
+				"X": 1.541174054145813,
+				"Y": 1,
+				"Z": 1.541174054145813
+			}
+		}
+	},
+	{
+		"Name": "BP_Fireplace_33_SM_fireplace_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fireplace_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props",
+			"MI_Log_props_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 105.43344879150391,
+				"Y": 1.5208300352096558,
+				"Z": 487.11688232421875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_Fireplace_26_SM_fireplace_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fireplace_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props",
+			"MI_Log_props_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 105.43344879150391,
+				"Y": 1.5208319425582886,
+				"Z": 487.11688232421875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_614_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 31.188329696655273,
+				"Y": 5.3608889579772949,
+				"Z": 20.497655868530273
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.2842940092086792,
+				"Z": 0,
+				"W": 0.95873701572418213
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_616_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 34.608127593994141,
+				"Y": 5.3144388198852539,
+				"Z": 18.732187271118164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.18587599694728851,
+				"Z": 0,
+				"W": 0.98257297277450562
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_641_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 113.62438201904297,
+				"Y": 5.3074321746826172,
+				"Z": 20.972499847412109
+			},
+			"Rotation":
+			{
+				"X": -4.7000001359265298e-05,
+				"Y": 0.15744200348854065,
+				"Z": -0.013327999971807003,
+				"W": 0.98743802309036255
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_630_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 90.241012573242188,
+				"Y": 5.3264307975769043,
+				"Z": 18.591796875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.10148700326681137,
+				"Z": 0,
+				"W": 0.99483698606491089
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_619_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 39.461898803710938,
+				"Y": 5.3144187927246094,
+				"Z": 15.720117568969727
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.044250998646020889,
+				"Z": 0,
+				"W": 0.99901998043060303
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_635_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 116.31085205078125,
+				"Y": 5.3150200843811035,
+				"Z": 13.153477668762207
+			},
+			"Rotation":
+			{
+				"X": 0.0016319999704137444,
+				"Y": 0.019966999068856239,
+				"Z": -0.0120430001989007,
+				"W": 0.99972701072692871
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_636_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 118.24560546875,
+				"Y": 5.2685060501098633,
+				"Z": 13.076055526733398
+			},
+			"Rotation":
+			{
+				"X": 0.0026090000756084919,
+				"Y": 0.10148199647665024,
+				"Z": -0.011869000270962715,
+				"W": 0.99476301670074463
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_637_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 120.10948944091797,
+				"Y": 5.2245659828186035,
+				"Z": 12.691641807556152
+			},
+			"Rotation":
+			{
+				"X": 0.0015059999423101544,
+				"Y": 0.0096270004287362099,
+				"Z": -0.012059000320732594,
+				"W": 0.99988001585006714
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_638_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 122.06623840332031,
+				"Y": 5.1774168014526367,
+				"Z": 12.653867721557617
+			},
+			"Rotation":
+			{
+				"X": 0.0021929999347776175,
+				"Y": 0.066724002361297607,
+				"Z": -0.011951999738812447,
+				"W": 0.99769800901412964
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_639_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 123.95278167724609,
+				"Y": 5.1325588226318359,
+				"Z": 12.400274276733398
+			},
+			"Rotation":
+			{
+				"X": 0.00069600000279024243,
+				"Y": -0.057294998317956924,
+				"Z": -0.012133000418543816,
+				"W": 0.99828296899795532
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_640_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 125.83937835693359,
+				"Y": 5.0863919258117676,
+				"Z": 12.61754035949707
+			},
+			"Rotation":
+			{
+				"X": 0.00069600000279024243,
+				"Y": -0.057294998317956924,
+				"Z": -0.012133000418543816,
+				"W": 0.99828296899795532
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_620_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 41.398250579833984,
+				"Y": 5.3144187927246094,
+				"Z": 15.548243522644043
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.16300199925899506,
+				"Z": 0,
+				"W": 0.98662596940994263
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_68_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 89.619895935058594,
+				"Y": 5.3265089988708496,
+				"Z": 18.027460098266602
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.68759196996688843,
+				"Z": 0,
+				"W": 0.7260969877243042
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_632_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 94.062736511230469,
+				"Y": 5.3264307975769043,
+				"Z": 18.169727325439453
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.066728003323078156,
+				"Z": 0,
+				"W": 0.99777102470397949
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_631_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 92.105438232421875,
+				"Y": 5.3264307975769043,
+				"Z": 18.207422256469727
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.0096279997378587723,
+				"Z": 0,
+				"W": 0.9999539852142334
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_629_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 88.305694580078125,
+				"Y": 5.3264307975769043,
+				"Z": 18.669179916381836
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.019968999549746513,
+				"Z": 0,
+				"W": 0.99980098009109497
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_633_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 95.949836730957031,
+				"Y": 5.3264307975769043,
+				"Z": 17.916210174560547
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.057298999279737473,
+				"Z": 0,
+				"W": 0.99835699796676636
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_634_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 97.83697509765625,
+				"Y": 5.3264307975769043,
+				"Z": 18.133554458618164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.057298999279737473,
+				"Z": 0,
+				"W": 0.99835699796676636
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_623_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 46.802768707275391,
+				"Y": 5.3144240379333496,
+				"Z": 17.147851943969727
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.28870898485183716,
+				"Z": 0,
+				"W": 0.95741701126098633
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_67_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 128.84048461914062,
+				"Y": 4.9671978950500488,
+				"Z": 17.379804611206055
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.72553896903991699,
+				"Z": 0,
+				"W": -0.68818098306655884
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_642_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 115.46456909179688,
+				"Y": 5.2564358711242676,
+				"Z": 20.370233535766602
+			},
+			"Rotation":
+			{
+				"X": 0.001041000010445714,
+				"Y": 0.23748999834060669,
+				"Z": -0.013287000358104706,
+				"W": 0.97129899263381958
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_643_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 117.15280151367188,
+				"Y": 5.2082328796386719,
+				"Z": 19.49199104309082
+			},
+			"Rotation":
+			{
+				"X": -0.00018499999714549631,
+				"Y": 0.14722199738025665,
+				"Z": -0.013326000422239304,
+				"W": 0.98901396989822388
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_644_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 119.02489471435547,
+				"Y": 5.1565189361572266,
+				"Z": 18.921875
+			},
+			"Rotation":
+			{
+				"X": 0.0005769999697804451,
+				"Y": 0.20346599817276001,
+				"Z": -0.013314000330865383,
+				"W": 0.97899097204208374
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_645_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 120.77062225341797,
+				"Y": 5.1073198318481445,
+				"Z": 18.163320541381836
+			},
+			"Rotation":
+			{
+				"X": -0.0010760000441223383,
+				"Y": 0.080719001591205597,
+				"Z": -0.013283999636769295,
+				"W": 0.99664801359176636
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_646_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 122.64484405517578,
+				"Y": 5.0566802024841309,
+				"Z": 17.857734680175781
+			},
+			"Rotation":
+			{
+				"X": -0.0010760000441223383,
+				"Y": 0.080716997385025024,
+				"Z": -0.013283999636769295,
+				"W": 0.99664801359176636
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_624_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 48.334400177001953,
+				"Y": 5.3144240379333496,
+				"Z": 18.163984298706055
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.28870898485183716,
+				"Z": 0,
+				"W": 0.95741701126098633
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_615_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 32.831062316894531,
+				"Y": 5.3144388198852539,
+				"Z": 19.429452896118164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.18587599694728851,
+				"Z": 0,
+				"W": 0.98257297277450562
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_613_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 29.544357299804688,
+				"Y": 5.3608889579772949,
+				"Z": 21.566640853881836
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.2842940092086792,
+				"Z": 0,
+				"W": 0.95873701572418213
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_612_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 27.809274673461914,
+				"Y": 5.3608889579772949,
+				"Z": 22.435234069824219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.22999599575996399,
+				"Z": 0,
+				"W": 0.9731910228729248
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_617_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 36.394626617431641,
+				"Y": 5.3144388198852539,
+				"Z": 18.031171798706055
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.3172760009765625,
+				"Z": 0,
+				"W": 0.9483330249786377
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_618_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 37.902523040771484,
+				"Y": 5.3144388198852539,
+				"Z": 16.895038604736328
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.3172760009765625,
+				"Z": 0,
+				"W": 0.9483330249786377
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_621_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 43.147167205810547,
+				"Y": 5.3144187927246094,
+				"Z": 16.142305374145508
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.11820200085639954,
+				"Z": 0,
+				"W": 0.99299001693725586
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_622_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 45.009918212890625,
+				"Y": 5.3144240379333496,
+				"Z": 16.592187881469727
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.14971399307250977,
+				"Z": 0,
+				"W": 0.98872900009155273
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_625_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 49.900753021240234,
+				"Y": 5.3144240379333496,
+				"Z": 19.203163146972656
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.14591099321842194,
+				"Z": 0,
+				"W": 0.98929798603057861
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_626_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 51.781528472900391,
+				"Y": 5.3144240379333496,
+				"Z": 19.770273208618164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.14591099321842194,
+				"Z": 0,
+				"W": 0.98929798603057861
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_627_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 53.562534332275391,
+				"Y": 5.3144240379333496,
+				"Z": 20.307304382324219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.14591099321842194,
+				"Z": 0,
+				"W": 0.98929798603057861
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_628_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 55.435962677001953,
+				"Y": 5.3144240379333496,
+				"Z": 20.872226715087891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.073523998260498047,
+				"Z": 0,
+				"W": 0.99729400873184204
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_69_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 40.858116149902344,
+				"Y": 5.2729148864746094,
+				"Z": 16.385429382324219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.64498001337051392,
+				"Z": 0,
+				"W": 0.76419901847839355
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_659_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 237.73515319824219,
+				"Y": 4.9134039878845215,
+				"Z": 7.4230470657348633
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.073555000126361847,
+				"Z": 0,
+				"W": 0.9972909688949585
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_660_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 239.65095520019531,
+				"Y": 4.9134039878845215,
+				"Z": 7.7072267532348633
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.0080730002373456955,
+				"Z": 0,
+				"W": 0.99996697902679443
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_661_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 241.55441284179688,
+				"Y": 4.9134039878845215,
+				"Z": 7.6764850616455078
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.083866000175476074,
+				"Z": 0,
+				"W": 0.99647700786590576
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_662_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 243.484375,
+				"Y": 4.9134039878845215,
+				"Z": 8.0037107467651367
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.026807999238371849,
+				"Z": 0,
+				"W": 0.99964100122451782
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_663_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 245.38589477539062,
+				"Y": 4.9134039878845215,
+				"Z": 8.1058597564697266
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.15035100281238556,
+				"Z": 0,
+				"W": 0.98863297700881958
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_664_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 247.19947814941406,
+				"Y": 4.9134039878845215,
+				"Z": 8.6705083847045898
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.15035100281238556,
+				"Z": 0,
+				"W": 0.98863297700881958
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_703_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 213.4464111328125,
+				"Y": 5.0145020484924316,
+				"Z": 13.725899696350098
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.26530098915100098,
+				"Z": 0,
+				"W": 0.96416598558425903
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_650_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 182.57212829589844,
+				"Y": 5.3264307975769043,
+				"Z": 20.024883270263672
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99861502647399902,
+				"Z": 0,
+				"W": 0.0526139996945858
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_651_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 180.67849731445312,
+				"Y": 5.3264307975769043,
+				"Z": 20.224922180175781
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99744701385498047,
+				"Z": 0,
+				"W": -0.071414001286029816
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_705_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 216.82366943359375,
+				"Y": 5.0145020484924316,
+				"Z": 11.906875610351562
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.19696800410747528,
+				"Z": 0,
+				"W": 0.98040997982025146
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_704_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 215.08322143554688,
+				"Y": 5.0144977569580078,
+				"Z": 12.751133918762207
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.22393199801445007,
+				"Z": 0,
+				"W": 0.9746050238609314
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_706_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 218.60456848144531,
+				"Y": 5.0145020484924316,
+				"Z": 11.161133766174316
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.19696800410747528,
+				"Z": 0,
+				"W": 0.98040997982025146
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_648_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 186.40420532226562,
+				"Y": 5.3264307975769043,
+				"Z": 19.711093902587891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99617201089859009,
+				"Z": 0,
+				"W": 0.087412998080253601
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_66_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 182.7725830078125,
+				"Y": 5.2814459800720215,
+				"Z": 19.413984298706055
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.66303998231887817,
+				"Z": 0,
+				"W": 0.74858397245407104
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_656_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 214.18009948730469,
+				"Y": 5.4278759956359863,
+				"Z": 19.384452819824219
+			},
+			"Rotation":
+			{
+				"X": -0.025024000555276871,
+				"Y": -0.96047401428222656,
+				"Z": 0.00082000001566484571,
+				"W": 0.27724200487136841
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_654_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 217.47647094726562,
+				"Y": 5.2402439117431641,
+				"Z": 17.414257049560547
+			},
+			"Rotation":
+			{
+				"X": -0.025038000196218491,
+				"Y": -0.95022100210189819,
+				"Z": -5.2999999752501026e-05,
+				"W": 0.31056898832321167
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_696_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 145.4827880859375,
+				"Y": 5.4152297973632812,
+				"Z": 19.174062728881836
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.12582500278949738,
+				"Z": 0,
+				"W": 0.99205201864242554
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_698_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 149.19601440429688,
+				"Y": 5.4152350425720215,
+				"Z": 20.241327285766602
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.15314100682735443,
+				"Z": 0,
+				"W": 0.98820400238037109
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_697_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 147.35588073730469,
+				"Y": 5.4152350425720215,
+				"Z": 19.656991958618164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.15314100682735443,
+				"Z": 0,
+				"W": 0.98820400238037109
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_695_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 143.60409545898438,
+				"Y": 5.4152350425720215,
+				"Z": 18.857383728027344
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.083399996161460876,
+				"Z": 0,
+				"W": 0.99651598930358887
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_64_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 259.88656616210938,
+				"Y": 5.3264508247375488,
+				"Z": 10.48203182220459
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.74421399831771851,
+				"Z": 0,
+				"W": 0.66794097423553467
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_699_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 181.66397094726562,
+				"Y": 5.4152350425720215,
+				"Z": 25.113985061645508
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99957698583602905,
+				"Z": 0,
+				"W": 0.029068000614643097
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_700_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 179.76197814941406,
+				"Y": 5.4152297973632812,
+				"Z": 25.224765777587891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9999079704284668,
+				"Z": 0,
+				"W": -0.013589999638497829
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_701_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 177.82835388183594,
+				"Y": 5.4152350425720215,
+				"Z": 25.172147750854492
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99915200471878052,
+				"Z": 0,
+				"W": -0.041163001209497452
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_702_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 175.90420532226562,
+				"Y": 5.4152350425720215,
+				"Z": 25.013399124145508
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99915200471878052,
+				"Z": 0,
+				"W": -0.041163001209497452
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_652_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 178.79833984375,
+				"Y": 5.3264307975769043,
+				"Z": 19.954296112060547
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99744701385498047,
+				"Z": 0,
+				"W": -0.071414001286029816
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_658_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 210.7664794921875,
+				"Y": 5.6153707504272461,
+				"Z": 20.984024047851562
+			},
+			"Rotation":
+			{
+				"X": -0.024730000644922256,
+				"Y": -0.98740696907043457,
+				"Z": 0.003911999985575676,
+				"W": 0.15620799362659454
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_647_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 188.3408203125,
+				"Y": 5.3264307975769043,
+				"Z": 19.6884765625
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99998301267623901,
+				"Z": 0,
+				"W": 0.0058289999142289162
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_65_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 230.84205627441406,
+				"Y": 4.991337776184082,
+				"Z": 13.090585708618164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.73401397466659546,
+				"Z": 0,
+				"W": -0.6791350245475769
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_649_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.52955627441406,
+				"Y": 5.3264307975769043,
+				"Z": 20.042539596557617
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99998998641967773,
+				"Z": 0,
+				"W": -0.0045139999128878117
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_653_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 219.20236206054688,
+				"Y": 5.1444392204284668,
+				"Z": 16.540626525878906
+			},
+			"Rotation":
+			{
+				"X": -0.024957999587059021,
+				"Y": -0.97239601612091064,
+				"Z": 0.0019910000264644623,
+				"W": 0.23198899626731873
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_657_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 212.57098388671875,
+				"Y": 5.5202832221984863,
+				"Z": 20.3984375
+			},
+			"Rotation":
+			{
+				"X": -0.024730000644922256,
+				"Y": -0.98740696907043457,
+				"Z": 0.003911999985575676,
+				"W": 0.15620799362659454
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_655_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 215.94233703613281,
+				"Y": 5.3307619094848633,
+				"Z": 18.537813186645508
+			},
+			"Rotation":
+			{
+				"X": -0.024935999885201454,
+				"Y": -0.97474402189254761,
+				"Z": 0.0022489998955279589,
+				"W": 0.22191800177097321
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_711_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 307.01113891601562,
+				"Y": 5.3264508247375488,
+				"Z": 15.686211585998535
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.39674299955368042,
+				"Z": 0,
+				"W": 0.917930006980896
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_722_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 298.45126342773438,
+				"Y": 5.3264508247375488,
+				"Z": 14.637226104736328
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.25752198696136475,
+				"Z": 0,
+				"W": 0.96627300977706909
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1047_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 369.69180297851562,
+				"Y": 3.7387790679931641,
+				"Z": 6.6073307991027832
+			},
+			"Rotation":
+			{
+				"X": 0.002001000102609396,
+				"Y": -0.36802399158477783,
+				"Z": 0.0052020000293850899,
+				"W": 0.92979997396469116
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_675_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 278.82366943359375,
+				"Y": 5.3264307975769043,
+				"Z": 16.237968444824219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99324601888656616,
+				"Z": 0,
+				"W": -0.1160300001502037
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_665_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 279.39486694335938,
+				"Y": 5.3264307975769043,
+				"Z": 20.280780792236328
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99895298480987549,
+				"Z": 0,
+				"W": -0.045735999941825867
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_720_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 294.8057861328125,
+				"Y": 5.3264508247375488,
+				"Z": 15.859572410583496
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.13469399511814117,
+				"Z": 0,
+				"W": 0.99088698625564575
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_721_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 296.6715087890625,
+				"Y": 5.3264508247375488,
+				"Z": 15.342774391174316
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.18759900331497192,
+				"Z": 0,
+				"W": 0.98224598169326782
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_716_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 312.63259887695312,
+				"Y": 5.3264451026916504,
+				"Z": 7.9310550689697266
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.58331900835037231,
+				"Z": 0,
+				"W": 0.81224298477172852
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_727_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 306.084716796875,
+				"Y": 5.3264451026916504,
+				"Z": 8.8515615463256836
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.45760798454284668,
+				"Z": 0,
+				"W": 0.88915401697158813
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_718_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 290.97628784179688,
+				"Y": 5.3264508247375488,
+				"Z": 16.689491271972656
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.077827997505664825,
+				"Z": 0,
+				"W": 0.99696701765060425
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_670_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 269.87576293945312,
+				"Y": 5.3264307975769043,
+				"Z": 19.562656402587891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99243801832199097,
+				"Z": 0,
+				"W": -0.12274300307035446
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_719_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 292.90133666992188,
+				"Y": 5.3264508247375488,
+				"Z": 16.387069702148438
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.13469399511814117,
+				"Z": 0,
+				"W": 0.99088698625564575
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_723_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 300.10174560546875,
+				"Y": 5.3264508247375488,
+				"Z": 13.69019603729248
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.30519500374794006,
+				"Z": 0,
+				"W": 0.95228999853134155
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_724_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 301.65768432617188,
+				"Y": 5.3264451026916504,
+				"Z": 12.57871150970459
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.30519598722457886,
+				"Z": 0,
+				"W": 0.95228999853134155
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_725_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 303.24053955078125,
+				"Y": 5.3264451026916504,
+				"Z": 11.448007583618164
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.36156401038169861,
+				"Z": 0,
+				"W": 0.93234699964523315
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_726_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 304.67593383789062,
+				"Y": 5.3264451026916504,
+				"Z": 10.137696266174316
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.36156401038169861,
+				"Z": 0,
+				"W": 0.93234699964523315
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_728_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 307.197998046875,
+				"Y": 5.3264451026916504,
+				"Z": 7.2925000190734863
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.45760798454284668,
+				"Z": 0,
+				"W": 0.88915401697158813
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_666_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 277.46621704101562,
+				"Y": 5.3264307975769043,
+				"Z": 20.103828430175781
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99935400485992432,
+				"Z": 0,
+				"W": 0.035939998924732208
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_667_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 275.5673828125,
+				"Y": 5.3264307975769043,
+				"Z": 20.240547180175781
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99842697381973267,
+				"Z": 0,
+				"W": -0.05606599897146225
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_668_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 273.62225341796875,
+				"Y": 5.3264307975769043,
+				"Z": 20.021368026733398
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99999898672103882,
+				"Z": 0,
+				"W": 0.0010620000539347529
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_669_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 271.718017578125,
+				"Y": 5.3264307975769043,
+				"Z": 20.025390625
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99243801832199097,
+				"Z": 0,
+				"W": -0.12274300307035446
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_673_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 282.67572021484375,
+				"Y": 5.3264307975769043,
+				"Z": 16.401054382324219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99878299236297607,
+				"Z": 0,
+				"W": -0.049311000853776932
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_710_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 305.51348876953125,
+				"Y": 5.3264508247375488,
+				"Z": 16.878711700439453
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.32993000745773315,
+				"Z": 0,
+				"W": 0.94400602579116821
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_707_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 300.455810546875,
+				"Y": 5.3264508247375488,
+				"Z": 19.823163986206055
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.22350500524044037,
+				"Z": 0,
+				"W": 0.97470301389694214
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_717_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 313.24465942382812,
+				"Y": 5.3264451026916504,
+				"Z": 6.1156249046325684
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.58331900835037231,
+				"Z": 0,
+				"W": 0.81224298477172852
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_street_Lght_63_SM_street_lamp_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_street_lamp_01.gltf",
+		"Materials": [
+			"MI_Candle",
+			"MI_Candle_light",
+			"MI_Light_props",
+			"MI_Light_props",
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 307.54852294921875,
+				"Y": 5.2499852180480957,
+				"Z": 14.596562385559082
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9831550121307373,
+				"Z": 0,
+				"W": -0.18277299404144287
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_709_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 303.87860107421875,
+				"Y": 5.3264508247375488,
+				"Z": 17.915664672851562
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.27886399626731873,
+				"Z": 0,
+				"W": 0.9603310227394104
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1046_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 368.306884765625,
+				"Y": 3.7232129573822021,
+				"Z": 5.3072381019592285
+			},
+			"Rotation":
+			{
+				"X": 0.002001000102609396,
+				"Y": -0.36802399158477783,
+				"Z": 0.0052020000293850899,
+				"W": 0.92979997396469116
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1045_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 366.6409912109375,
+				"Y": 3.7045459747314453,
+				"Z": 4.3850588798522949
+			},
+			"Rotation":
+			{
+				"X": 0.0013429999817162752,
+				"Y": -0.25008401274681091,
+				"Z": 0.0054100002162158489,
+				"W": 0.96820801496505737
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1014_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 361.722900390625,
+				"Y": 3.6494140625,
+				"Z": 1.3520530462265015
+			},
+			"Rotation":
+			{
+				"X": 0.0015940000303089619,
+				"Y": -0.29511898756027222,
+				"Z": 0.0053389999084174633,
+				"W": 0.95544397830963135
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1043_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 363.32235717773438,
+				"Y": 3.6673629283905029,
+				"Z": 2.4443199634552002
+			},
+			"Rotation":
+			{
+				"X": 0.0011520000407472253,
+				"Y": -0.21615900099277496,
+				"Z": 0.0054520000703632832,
+				"W": 0.97634202241897583
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1044_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 365.0477294921875,
+				"Y": 3.6866750717163086,
+				"Z": 3.247870922088623
+			},
+			"Rotation":
+			{
+				"X": 0.0016479999758303165,
+				"Y": -0.30498099327087402,
+				"Z": 0.0053229997865855694,
+				"W": 0.95234197378158569
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_715_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 311.65859985351562,
+				"Y": 5.3264451026916504,
+				"Z": 9.5712118148803711
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.49466899037361145,
+				"Z": 0,
+				"W": 0.86908197402954102
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_671_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 286.5032958984375,
+				"Y": 5.3264307975769043,
+				"Z": 16.389532089233398
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99923998117446899,
+				"Z": 0,
+				"W": -0.038977999240159988
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_672_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 284.57241821289062,
+				"Y": 5.3264307975769043,
+				"Z": 16.238672256469727
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99908798933029175,
+				"Z": 0,
+				"W": 0.042700000107288361
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_674_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 280.72772216796875,
+				"Y": 5.3264307975769043,
+				"Z": 16.208242416381836
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9999690055847168,
+				"Z": 0,
+				"W": 0.007825000211596489
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_676_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 276.97540283203125,
+				"Y": 5.3264307975769043,
+				"Z": 15.80015754699707
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99324601888656616,
+				"Z": 0,
+				"W": -0.1160300001502037
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_712_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 308.31500244140625,
+				"Y": 5.3264508247375488,
+				"Z": 14.30015754699707
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.4418410062789917,
+				"Z": 0,
+				"W": 0.8970940113067627
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_708_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 302.20977783203125,
+				"Y": 5.3264508247375488,
+				"Z": 18.974102020263672
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.27886399626731873,
+				"Z": 0,
+				"W": 0.9603310227394104
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_713_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 309.48056030273438,
+				"Y": 5.3264451026916504,
+				"Z": 12.784336090087891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.4418410062789917,
+				"Z": 0,
+				"W": 0.8970940113067627
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_714_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 310.666259765625,
+				"Y": 5.3264451026916504,
+				"Z": 11.242265701293945
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.49466899037361145,
+				"Z": 0,
+				"W": 0.86908197402954102
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1087_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 458.05850219726562,
+				"Y": 2.9443850517272949,
+				"Z": 31.788152694702148
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98685497045516968,
+				"Z": 0,
+				"W": 0.1616089940071106
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1080_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 439.92337036132812,
+				"Y": 2.9443850517272949,
+				"Z": 42.371170043945312
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.95100700855255127,
+				"Z": 0,
+				"W": 0.30917000770568848
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1084_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 463.16708374023438,
+				"Y": 2.9443850517272949,
+				"Z": 29.087255477905273
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.95100700855255127,
+				"Z": 0,
+				"W": 0.30917000770568848
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1100_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 426.259033203125,
+				"Y": 2.9443850517272949,
+				"Z": 60.831684112548828
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.88630098104476929,
+				"Z": 0,
+				"W": -0.46310898661613464
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1101_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 425.13851928710938,
+				"Y": 2.9443850517272949,
+				"Z": 59.220348358154297
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.85605800151824951,
+				"Z": 0,
+				"W": -0.51687997579574585
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1102_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 424.23455810546875,
+				"Y": 2.9443850517272949,
+				"Z": 57.484794616699219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.80595999956130981,
+				"Z": 0,
+				"W": -0.59197002649307251
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1103_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 423.66513061523438,
+				"Y": 2.9443850517272949,
+				"Z": 55.667858123779297
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.80595999956130981,
+				"Z": 0,
+				"W": -0.59197002649307251
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1092_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 473.10906982421875,
+				"Y": 3.9042339324951172,
+				"Z": 14.01399040222168
+			},
+			"Rotation":
+			{
+				"X": 0.051908001303672791,
+				"Y": -0.84073400497436523,
+				"Z": 0.087053000926971436,
+				"W": 0.53187799453735352
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1071_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.56649780273438,
+				"Y": 2.6715428829193115,
+				"Z": 80.707221984863281
+			},
+			"Rotation":
+			{
+				"X": -0.003840999910607934,
+				"Y": 0.68231898546218872,
+				"Z": 0.0040349997580051422,
+				"W": 0.73103398084640503
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1119_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.25979614257812,
+				"Y": 3.9407670497894287,
+				"Z": 132.20013427734375
+			},
+			"Rotation":
+			{
+				"X": -0.031745001673698425,
+				"Y": 0.68175899982452393,
+				"Z": -0.037032000720500946,
+				"W": 0.72994899749755859
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1120_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.39105224609375,
+				"Y": 3.752187967300415,
+				"Z": 130.276611328125
+			},
+			"Rotation":
+			{
+				"X": 0.028613999485969543,
+				"Y": -0.73907297849655151,
+				"Z": 0.039498999714851379,
+				"W": -0.67185801267623901
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1121_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.2093505859375,
+				"Y": 3.5706300735473633,
+				"Z": 128.39065551757812
+			},
+			"Rotation":
+			{
+				"X": -0.032124001532793045,
+				"Y": 0.67417198419570923,
+				"Z": -0.036701001226902008,
+				"W": 0.73696202039718628
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1122_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.3822021484375,
+				"Y": 3.3799419403076172,
+				"Z": 126.45024108886719
+			},
+			"Rotation":
+			{
+				"X": 0.029974000528454781,
+				"Y": -0.71518701314926147,
+				"Z": 0.038477998226881027,
+				"W": -0.69722902774810791
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1123_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.33285522460938,
+				"Y": 3.196113109588623,
+				"Z": 124.55549621582031
+			},
+			"Rotation":
+			{
+				"X": -0.034508001059293747,
+				"Y": 0.62332499027252197,
+				"Z": -0.034471001476049423,
+				"W": 0.78043997287750244
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1124_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.7518310546875,
+				"Y": 3.0121579170227051,
+				"Z": 122.71174621582031
+			},
+			"Rotation":
+			{
+				"X": -0.034508001059293747,
+				"Y": 0.62332499027252197,
+				"Z": -0.034471001476049423,
+				"W": 0.78043997287750244
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1054_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 396.61288452148438,
+				"Y": 2.9016308784484863,
+				"Z": 40.990009307861328
+			},
+			"Rotation":
+			{
+				"X": -0.020060999318957329,
+				"Y": -0.9253309965133667,
+				"Z": -0.01728300005197525,
+				"W": -0.37823399901390076
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1055_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 395.23184204101562,
+				"Y": 2.9988770484924316,
+				"Z": 39.635543823242188
+			},
+			"Rotation":
+			{
+				"X": -0.018583999946713448,
+				"Y": -0.9531090259552002,
+				"Z": -0.018864000216126442,
+				"W": -0.30146798491477966
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1056_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 393.67578125,
+				"Y": 3.0879590511322021,
+				"Z": 38.542858123779297
+			},
+			"Rotation":
+			{
+				"X": -0.020240999758243561,
+				"Y": -0.92136698961257935,
+				"Z": -0.017076000571250916,
+				"W": -0.38779100775718689
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1057_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 392.30850219726562,
+				"Y": 3.1868798732757568,
+				"Z": 37.145503997802734
+			},
+			"Rotation":
+			{
+				"X": -0.019232999533414841,
+				"Y": -0.94201898574829102,
+				"Z": -0.018201999366283417,
+				"W": -0.33451399207115173
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1058_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 390.831787109375,
+				"Y": 3.2790870666503906,
+				"Z": 35.946495056152344
+			},
+			"Rotation":
+			{
+				"X": -0.021337999030947685,
+				"Y": -0.89335298538208008,
+				"Z": -0.015682000666856766,
+				"W": -0.44857499003410339
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1059_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 389.69851684570312,
+				"Y": 3.3782179355621338,
+				"Z": 34.425334930419922
+			},
+			"Rotation":
+			{
+				"X": -0.021337999030947685,
+				"Y": -0.89335298538208008,
+				"Z": -0.015682000666856766,
+				"W": -0.44857499003410339
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1061_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 427.88626098632812,
+				"Y": 2.6099419593811035,
+				"Z": 69.957794189453125
+			},
+			"Rotation":
+			{
+				"X": 0.0034000000450760126,
+				"Y": -0.6176379919052124,
+				"Z": 0.0044140000827610493,
+				"W": 0.78644299507141113
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1118_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 419.57022094726562,
+				"Y": 2.852910041809082,
+				"Z": 64.051071166992188
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.81625199317932129,
+				"Z": 0,
+				"W": -0.57769602537155151
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1091_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 448.75985717773438,
+				"Y": 2.9443850517272949,
+				"Z": 46.104682922363281
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96840500831604004,
+				"Z": 0,
+				"W": 0.24938300251960754
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1086_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 459.863037109375,
+				"Y": 2.9443850517272949,
+				"Z": 31.180898666381836
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98685497045516968,
+				"Z": 0,
+				"W": 0.1616089940071106
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1117_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 418.911376953125,
+				"Y": 2.8529050350189209,
+				"Z": 62.213218688964844
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.86274999380111694,
+				"Z": 0,
+				"W": -0.5056309700012207
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1083_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 434.8148193359375,
+				"Y": 2.9443850517272949,
+				"Z": 45.072067260742188
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98685497045516968,
+				"Z": 0,
+				"W": 0.1616089940071106
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid247_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 485.1697998046875,
+				"Y": 49.559711456298828,
+				"Z": 69.339530944824219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.4999530017375946,
+				"Z": 0,
+				"W": 0.86605298519134521
+			},
+			"Scale":
+			{
+				"X": 1.9445090293884277,
+				"Y": 1.9675630331039429,
+				"Z": 1.2549149990081787
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1066_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.53750610351562,
+				"Y": 2.6834468841552734,
+				"Z": 90.204078674316406
+			},
+			"Rotation":
+			{
+				"X": 0.0041439998894929886,
+				"Y": -0.73674899339675903,
+				"Z": -0.0037259999662637711,
+				"W": -0.67614299058914185
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1076_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 426.84762573242188,
+				"Y": 2.9443850517272949,
+				"Z": 45.673995971679688
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99129897356033325,
+				"Z": 0,
+				"W": 0.131632000207901
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1077_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 424.95285034179688,
+				"Y": 2.9443850517272949,
+				"Z": 46.185737609863281
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99752897024154663,
+				"Z": 0,
+				"W": 0.070249997079372406
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1078_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 423.0142822265625,
+				"Y": 2.9443850517272949,
+				"Z": 46.451854705810547
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99980002641677856,
+				"Z": 0,
+				"W": -0.019984999671578407
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1079_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.11166381835938,
+				"Y": 2.9443850517272949,
+				"Z": 46.375694274902344
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.99980002641677856,
+				"Z": 0,
+				"W": -0.019984999671578407
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1081_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 438.33563232421875,
+				"Y": 2.9443850517272949,
+				"Z": 43.524936676025391
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96826297044754028,
+				"Z": 0,
+				"W": 0.24993200600147247
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1088_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 453.30426025390625,
+				"Y": 2.9443850517272949,
+				"Z": 42.535430908203125
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.91947901248931885,
+				"Z": 0,
+				"W": 0.39313900470733643
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1089_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 451.94793701171875,
+				"Y": 2.9443850517272949,
+				"Z": 43.954044342041016
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.94197499752044678,
+				"Z": 0,
+				"W": 0.33568400144577026
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1090_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 450.427001953125,
+				"Y": 2.9443850517272949,
+				"Z": 45.185146331787109
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96840500831604004,
+				"Z": 0,
+				"W": 0.24938300251960754
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid238_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 502.66500854492188,
+				"Y": 16.105722427368164,
+				"Z": 40.724842071533203
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.77957099676132202,
+				"Z": 0,
+				"W": 0.62631398439407349
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1082_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 436.61932373046875,
+				"Y": 2.9443850517272949,
+				"Z": 44.464813232421875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98685497045516968,
+				"Z": 0,
+				"W": 0.1616089940071106
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid233_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 490.14218139648438,
+				"Y": 44.951488494873047,
+				"Z": 92.589607238769531
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.025985999032855034,
+				"Z": 0,
+				"W": 0.99966198205947876
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1060_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 427.7391357421875,
+				"Y": 2.6081058979034424,
+				"Z": 68.026397705078125
+			},
+			"Rotation":
+			{
+				"X": 0.0037489999085664749,
+				"Y": -0.67975801229476929,
+				"Z": 0.004118999931961298,
+				"W": 0.73341500759124756
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1062_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 428.33718872070312,
+				"Y": 2.6151559352874756,
+				"Z": 71.807014465332031
+			},
+			"Rotation":
+			{
+				"X": 0.0037909999955445528,
+				"Y": -0.68730401992797852,
+				"Z": 0.0040839998982846737,
+				"W": 0.72634798288345337
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1063_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 428.44512939453125,
+				"Y": 2.6165530681610107,
+				"Z": 73.761421203613281
+			},
+			"Rotation":
+			{
+				"X": 0.0035520000383257866,
+				"Y": -0.64468801021575928,
+				"Z": 0.0042929998598992825,
+				"W": 0.76442497968673706
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1064_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 428.7662353515625,
+				"Y": 2.6203269958496094,
+				"Z": 75.638519287109375
+			},
+			"Rotation":
+			{
+				"X": 0.0040549999102950096,
+				"Y": -0.73436999320983887,
+				"Z": 0.0038209999911487103,
+				"W": 0.67872601747512817
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1065_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 428.6170654296875,
+				"Y": 2.6188530921936035,
+				"Z": 77.532310485839844
+			},
+			"Rotation":
+			{
+				"X": 0.0040549999102950096,
+				"Y": -0.73436999320983887,
+				"Z": 0.0038209999911487103,
+				"W": 0.67872601747512817
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid234_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 449.22738647460938,
+				"Y": 37.557979583740234,
+				"Z": 102.41027069091797
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.81073302030563354,
+				"Z": 0,
+				"W": -0.58541601896286011
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1135_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.80218505859375,
+				"Y": 3.0518898963928223,
+				"Z": 122.208740234375
+			},
+			"Rotation":
+			{
+				"X": -0.024878999218344688,
+				"Y": 0.64880597591400146,
+				"Z": -0.020659999921917915,
+				"W": 0.76026701927185059
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1134_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.97402954101562,
+				"Y": 3.1746439933776855,
+				"Z": 124.10129547119141
+			},
+			"Rotation":
+			{
+				"X": 0.022126000374555588,
+				"Y": -0.73796898126602173,
+				"Z": 0.023579999804496765,
+				"W": -0.67405998706817627
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1136_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.1004638671875,
+				"Y": 2.9308741092681885,
+				"Z": 120.33660888671875
+			},
+			"Rotation":
+			{
+				"X": -0.024878999218344688,
+				"Y": 0.64880597591400146,
+				"Z": -0.020659999921917915,
+				"W": 0.76026701927185059
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1052_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 398.4639892578125,
+				"Y": 3.3819580078125,
+				"Z": 32.144962310791016
+			},
+			"Rotation":
+			{
+				"X": 0.00052100000903010368,
+				"Y": -0.48148998618125916,
+				"Z": 0.010545000433921814,
+				"W": 0.87638801336288452
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1112_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 412.8897705078125,
+				"Y": 2.8528859615325928,
+				"Z": 54.632522583007812
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9311559796333313,
+				"Z": 0,
+				"W": -0.36462101340293884
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1111_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 409.9462890625,
+				"Y": 2.8528809547424316,
+				"Z": 51.996646881103516
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.35144799947738647,
+				"Z": 0,
+				"W": 0.93620800971984863
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1067_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.3717041015625,
+				"Y": 2.6813819408416748,
+				"Z": 88.274002075195312
+			},
+			"Rotation":
+			{
+				"X": 0.0044309999793767929,
+				"Y": -0.78947699069976807,
+				"Z": -0.0033770001027733088,
+				"W": -0.61375397443771362
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1068_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.902587890625,
+				"Y": 2.6759428977966309,
+				"Z": 86.429374694824219
+			},
+			"Rotation":
+			{
+				"X": 0.0041020000353455544,
+				"Y": -0.72971701622009277,
+				"Z": -0.0037710000760853291,
+				"W": -0.68372601270675659
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1069_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.77536010742188,
+				"Y": 2.6742970943450928,
+				"Z": 84.476104736328125
+			},
+			"Rotation":
+			{
+				"X": 0.0043099997565150261,
+				"Y": -0.76759302616119385,
+				"Z": -0.0035290000960230827,
+				"W": -0.64091402292251587
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1070_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.4359130859375,
+				"Y": 2.6703078746795654,
+				"Z": 82.602333068847656
+			},
+			"Rotation":
+			{
+				"X": -0.003840999910607934,
+				"Y": 0.68231898546218872,
+				"Z": 0.0040349997580051422,
+				"W": 0.73103398084640503
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid239_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 494.0765380859375,
+				"Y": 29.761602401733398,
+				"Z": 45.1416015625
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.92145001888275146,
+				"Z": 0,
+				"W": -0.38849800825119019
+			},
+			"Scale":
+			{
+				"X": 1.2633509635925293,
+				"Y": 1.2633509635925293,
+				"Z": 1.2633509635925293
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1131_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.2239990234375,
+				"Y": 3.5480759143829346,
+				"Z": 129.86228942871094
+			},
+			"Rotation":
+			{
+				"X": -0.023210000246763229,
+				"Y": 0.70559900999069214,
+				"Z": -0.022518999874591827,
+				"W": 0.70787298679351807
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1132_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.23028564453125,
+				"Y": 3.4228470325469971,
+				"Z": 127.92913818359375
+			},
+			"Rotation":
+			{
+				"X": 0.021293999627232552,
+				"Y": -0.76103001832962036,
+				"Z": 0.024337999522686005,
+				"W": -0.64791101217269897
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1133_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 421.92684936523438,
+				"Y": 3.3011178970336914,
+				"Z": 126.05406188964844
+			},
+			"Rotation":
+			{
+				"X": -0.023437999188899994,
+				"Y": 0.69824099540710449,
+				"Z": -0.022275999188423157,
+				"W": 0.71513199806213379
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1050_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 395.81903076171875,
+				"Y": 3.3058300018310547,
+				"Z": 29.340969085693359
+			},
+			"Rotation":
+			{
+				"X": -0.00018600000475998968,
+				"Y": -0.42177000641822815,
+				"Z": 0.01055500004440546,
+				"W": 0.90664201974868774
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1053_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 399.482421875,
+				"Y": 3.4161040782928467,
+				"Z": 33.748172760009766
+			},
+			"Rotation":
+			{
+				"X": 0.00052100000903010368,
+				"Y": -0.48148900270462036,
+				"Z": 0.010545000433921814,
+				"W": 0.8763890266418457
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1106_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 428.16500854492188,
+				"Y": 2.8528809547424316,
+				"Z": 52.681350708007812
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.03665899857878685,
+				"Z": 0,
+				"W": 0.99932801723480225
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1108_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 405.5013427734375,
+				"Y": 2.8528809547424316,
+				"Z": 48.342506408691406
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.29708999395370483,
+				"Z": 0,
+				"W": 0.9548490047454834
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_wood_module_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_wood_module_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 417.97561645507812,
+				"Y": 3.014070987701416,
+				"Z": 44.540603637695312
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1116_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 417.9561767578125,
+				"Y": 2.852895975112915,
+				"Z": 60.507827758789062
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.86274999380111694,
+				"Z": 0,
+				"W": -0.5056309700012207
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1051_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 397.07955932617188,
+				"Y": 3.3435890674591064,
+				"Z": 30.838079452514648
+			},
+			"Rotation":
+			{
+				"X": -0.00078699999721720815,
+				"Y": -0.36929300427436829,
+				"Z": 0.010526999831199646,
+				"W": 0.9292529821395874
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1085_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 461.57937622070312,
+				"Y": 2.9443850517272949,
+				"Z": 30.241020202636719
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96826297044754028,
+				"Z": 0,
+				"W": 0.24993200600147247
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1096_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 480.95782470703125,
+				"Y": 5.392880916595459,
+				"Z": 12.580160140991211
+			},
+			"Rotation":
+			{
+				"X": 0.024653999134898186,
+				"Y": 0.48110300302505493,
+				"Z": 0.051819000393152237,
+				"W": 0.87478399276733398
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1097_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 482.0015869140625,
+				"Y": 5.6173877716064453,
+				"Z": 10.933382034301758
+			},
+			"Rotation":
+			{
+				"X": 0.02780500054359436,
+				"Y": 0.42625698447227478,
+				"Z": 0.050202000886201859,
+				"W": 0.90277999639511108
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1098_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 483.24368286132812,
+				"Y": 5.841069221496582,
+				"Z": 9.4380359649658203
+			},
+			"Rotation":
+			{
+				"X": 0.032219000160694122,
+				"Y": 0.3431130051612854,
+				"Z": 0.047488000243902206,
+				"W": 0.93753999471664429
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1099_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 484.69070434570312,
+				"Y": 6.0526809692382812,
+				"Z": 8.2189836502075195
+			},
+			"Rotation":
+			{
+				"X": 0.032219000160694122,
+				"Y": 0.3431130051612854,
+				"Z": 0.047488998621702194,
+				"W": 0.93753999471664429
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1107_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 430.06414794921875,
+				"Y": 2.8528809547424316,
+				"Z": 52.821033477783203
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.03665899857878685,
+				"Z": 0,
+				"W": 0.99932801723480225
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1109_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 407.11737060546875,
+				"Y": 2.8528809547424316,
+				"Z": 49.456211090087891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.35540899634361267,
+				"Z": 0,
+				"W": 0.93471097946166992
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1110_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 408.51254272460938,
+				"Y": 2.8528809547424316,
+				"Z": 50.743534088134766
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.35144799947738647,
+				"Z": 0,
+				"W": 0.93620800971984863
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1113_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 414.32412719726562,
+				"Y": 2.8528859615325928,
+				"Z": 55.959327697753906
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9311559796333313,
+				"Z": 0,
+				"W": -0.36462101340293884
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1114_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 415.67074584960938,
+				"Y": 2.852895975112915,
+				"Z": 57.370414733886719
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9179149866104126,
+				"Z": 0,
+				"W": -0.3967759907245636
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1115_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 417.019775390625,
+				"Y": 2.852895975112915,
+				"Z": 58.8045654296875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9179149866104126,
+				"Z": 0,
+				"W": -0.3967759907245636
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1048_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 393.06976318359375,
+				"Y": 3.2290430068969727,
+				"Z": 26.679027557373047
+			},
+			"Rotation":
+			{
+				"X": -0.00029600001289509237,
+				"Y": -0.41236799955368042,
+				"Z": 0.010552000254392624,
+				"W": 0.91095602512359619
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1049_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 394.34762573242188,
+				"Y": 3.2667338848114014,
+				"Z": 28.134208679199219
+			},
+			"Rotation":
+			{
+				"X": -0.0011559999547898769,
+				"Y": -0.33665600419044495,
+				"Z": 0.010493000037968159,
+				"W": 0.94156897068023682
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1095_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 469.9302978515625,
+				"Y": 3.7694530487060547,
+				"Z": 18.837799072265625
+			},
+			"Rotation":
+			{
+				"X": 0.06448499858379364,
+				"Y": -0.91158097982406616,
+				"Z": 0.078190997242927551,
+				"W": 0.39843100309371948
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1093_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 472.26644897460938,
+				"Y": 3.9145359992980957,
+				"Z": 15.786787986755371
+			},
+			"Rotation":
+			{
+				"X": 0.057172000408172607,
+				"Y": -0.87195199728012085,
+				"Z": 0.08369000256061554,
+				"W": 0.4789850115776062
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid250_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 476.191650390625,
+				"Y": 10.766183853149414,
+				"Z": 76.426559448242188
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.57464396953582764,
+				"Z": 0,
+				"W": 0.81840300559997559
+			},
+			"Scale":
+			{
+				"X": 1.2819370031356812,
+				"Y": 1.6216529607772827,
+				"Z": 0.7640569806098938
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid235_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 416.76455688476562,
+				"Y": 43.225482940673828,
+				"Z": 96.566871643066406
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.93140900135040283,
+				"Z": 0,
+				"W": -0.3639729917049408
+			},
+			"Scale":
+			{
+				"X": 2.2467770576477051,
+				"Y": 2.2467770576477051,
+				"Z": 1.1566720008850098
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1105_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 426.21865844726562,
+				"Y": 2.8528809547424316,
+				"Z": 52.882614135742188
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.053606998175382614,
+				"Z": 0,
+				"W": 0.99856197834014893
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1094_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 471.2139892578125,
+				"Y": 3.8746728897094727,
+				"Z": 17.435678482055664
+			},
+			"Rotation":
+			{
+				"X": 0.064484000205993652,
+				"Y": -0.91158199310302734,
+				"Z": 0.078193001449108124,
+				"W": 0.39842900633811951
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1104_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 424.30801391601562,
+				"Y": 2.8528809547424316,
+				"Z": 53.331119537353516
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.11508499830961227,
+				"Z": 0,
+				"W": 0.99335598945617676
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1127_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.87411499023438,
+				"Y": 5.076347827911377,
+				"Z": 148.55732727050781
+			},
+			"Rotation":
+			{
+				"X": -0.017955999821424484,
+				"Y": 0.69845199584960938,
+				"Z": -0.014902999624609947,
+				"W": 0.71527600288391113
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1141_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 419.32589721679688,
+				"Y": 8.2252445220947266,
+				"Z": 179.54800415039062
+			},
+			"Rotation":
+			{
+				"X": -0.079712003469467163,
+				"Y": 0.67477399110794067,
+				"Z": -0.095228999853134155,
+				"W": 0.72750097513198853
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1147_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 432.81893920898438,
+				"Y": 15.077661514282227,
+				"Z": 209.28266906738281
+			},
+			"Rotation":
+			{
+				"X": -0.084357000887393951,
+				"Y": 0.65543699264526367,
+				"Z": -0.095642000436782837,
+				"W": 0.74440497159957886
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1125_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 423.1712646484375,
+				"Y": 5.2550148963928223,
+				"Z": 152.36935424804688
+			},
+			"Rotation":
+			{
+				"X": -0.017802000045776367,
+				"Y": 0.70581197738647461,
+				"Z": -0.01508800033479929,
+				"W": 0.70801401138305664
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1126_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 423.17770385742188,
+				"Y": 5.1649169921875,
+				"Z": 150.43426513671875
+			},
+			"Rotation":
+			{
+				"X": 0.016509000211954117,
+				"Y": -0.7612529993057251,
+				"Z": 0.016488000750541687,
+				"W": -0.64803600311279297
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1128_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.9208984375,
+				"Y": 4.9854831695556641,
+				"Z": 146.60258483886719
+			},
+			"Rotation":
+			{
+				"X": 0.01707799918949604,
+				"Y": -0.73818701505661011,
+				"Z": 0.015907999128103256,
+				"W": -0.67419302463531494
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1129_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 422.74911499023438,
+				"Y": 4.8966360092163086,
+				"Z": 144.7081298828125
+			},
+			"Rotation":
+			{
+				"X": -0.018912000581622124,
+				"Y": 0.64900600910186768,
+				"Z": -0.013667999766767025,
+				"W": 0.76042497158050537
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1130_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 423.04757690429688,
+				"Y": 4.8104491233825684,
+				"Z": 142.83409118652344
+			},
+			"Rotation":
+			{
+				"X": -0.018912000581622124,
+				"Y": 0.64900600910186768,
+				"Z": -0.013667999766767025,
+				"W": 0.76042497158050537
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1139_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 419.78311157226562,
+				"Y": 9.1479835510253906,
+				"Z": 183.2633056640625
+			},
+			"Rotation":
+			{
+				"X": 0.073160000145435333,
+				"Y": -0.72196400165557861,
+				"Z": 0.10034900158643723,
+				"W": -0.68069499731063843
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1144_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 433.44754028320312,
+				"Y": 16.492940902709961,
+				"Z": 214.81834411621094
+			},
+			"Rotation":
+			{
+				"X": 0.068146996200084686,
+				"Y": -0.765097975730896,
+				"Z": 0.10779400169849396,
+				"W": -0.63115799427032471
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1137_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 420.40899658203125,
+				"Y": 10.052980422973633,
+				"Z": 186.92955017089844
+			},
+			"Rotation":
+			{
+				"X": 0.072121001780033112,
+				"Y": -0.72896599769592285,
+				"Z": 0.10110099613666534,
+				"W": -0.67319101095199585
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1138_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 420.24795532226562,
+				"Y": 9.5855417251586914,
+				"Z": 185.05644226074219
+			},
+			"Rotation":
+			{
+				"X": 0.063625998795032501,
+				"Y": -0.78149402141571045,
+				"Z": 0.10665100067853928,
+				"W": -0.61142802238464355
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1140_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 419.660888671875,
+				"Y": 8.6737499237060547,
+				"Z": 181.36814880371094
+			},
+			"Rotation":
+			{
+				"X": 0.067305997014045715,
+				"Y": -0.75968998670578003,
+				"Z": 0.10436700284481049,
+				"W": -0.63831698894500732
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1142_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 419.46078491210938,
+				"Y": 7.7576661109924316,
+				"Z": 177.7117919921875
+			},
+			"Rotation":
+			{
+				"X": -0.079712003469467163,
+				"Y": 0.67477399110794067,
+				"Z": -0.095228999853134155,
+				"W": 0.72750097513198853
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1143_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 433.50888061523438,
+				"Y": 16.977222442626953,
+				"Z": 216.69309997558594
+			},
+			"Rotation":
+			{
+				"X": 0.076719999313354492,
+				"Y": -0.71100002527236938,
+				"Z": 0.10187099874019623,
+				"W": -0.69153100252151489
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1145_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 433.07839965820312,
+				"Y": 16.035469055175781,
+				"Z": 213.00810241699219
+			},
+			"Rotation":
+			{
+				"X": 0.077766001224517822,
+				"Y": -0.70380902290344238,
+				"Z": 0.10107100009918213,
+				"W": -0.69884902238845825
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1146_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 433.05679321289062,
+				"Y": 15.544697761535645,
+				"Z": 211.11334228515625
+			},
+			"Rotation":
+			{
+				"X": 0.071855001151561737,
+				"Y": -0.74261200428009033,
+				"Z": 0.1053370013833046,
+				"W": -0.65747100114822388
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1148_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 433.05105590820312,
+				"Y": 14.597133636474609,
+				"Z": 207.45953369140625
+			},
+			"Rotation":
+			{
+				"X": -0.084357000887393951,
+				"Y": 0.65543699264526367,
+				"Z": -0.095642000436782837,
+				"W": 0.74440497159957886
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_wood_fence_74_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_wood_fence_bark_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 199.70924377441406,
+				"Y": 17.400772094726562,
+				"Z": 374.72708129882812
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.5154229998588562,
+				"Z": 0,
+				"W": 0.85693597793579102
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_wood_fence_17_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_wood_gate_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 273.16534423828125,
+				"Y": 19.893861770629883,
+				"Z": 443.72735595703125
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.96922898292541504,
+				"Z": 0,
+				"W": 0.24616299569606781
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": -1
+			}
+		}
+	},
+	{
+		"Name": "SM_wood_fence_88_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_wood_fence_bark_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 186.76713562011719,
+				"Y": 13.660063743591309,
+				"Z": 380.32675170898438
+			},
+			"Rotation":
+			{
+				"X": 0.06924399733543396,
+				"Y": -0.98917698860168457,
+				"Z": 0.030087999999523163,
+				"W": -0.12581700086593628
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_wood_fence_49_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_wood_fence_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 238.57252502441406,
+				"Y": 17.118965148925781,
+				"Z": 438.28680419921875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.3257099986076355,
+				"Z": 0,
+				"W": 0.94546997547149658
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_wood_fence_47_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_wood_fence_bark_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 230.18658447265625,
+				"Y": 17.118965148925781,
+				"Z": 446.2747802734375
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.22529399394989014,
+				"Z": 0,
+				"W": 0.97429102659225464
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1233_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 347.22543334960938,
+				"Y": 19.843461990356445,
+				"Z": 438.3262939453125
+			},
+			"Rotation":
+			{
+				"X": -0.0045850002206861973,
+				"Y": 0.53662300109863281,
+				"Z": 0.065342001616954803,
+				"W": 0.84127599000930786
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1234_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 348.031005859375,
+				"Y": 20.046855926513672,
+				"Z": 436.57632446289062
+			},
+			"Rotation":
+			{
+				"X": -0.0099020004272460938,
+				"Y": 0.60347700119018555,
+				"Z": 0.064745999872684479,
+				"W": 0.79468601942062378
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1235_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 348.5318603515625,
+				"Y": 20.220046997070312,
+				"Z": 434.74789428710938
+			},
+			"Rotation":
+			{
+				"X": -0.0039029999170452356,
+				"Y": 0.52790498733520508,
+				"Z": 0.065388001501560211,
+				"W": 0.84677398204803467
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1236_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 349.382080078125,
+				"Y": 20.428804397583008,
+				"Z": 432.9974365234375
+			},
+			"Rotation":
+			{
+				"X": -0.0076319999061524868,
+				"Y": 0.57539600133895874,
+				"Z": 0.065062999725341797,
+				"W": 0.81524699926376343
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1237_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_02.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 350.009033203125,
+				"Y": 20.613857269287109,
+				"Z": 431.2091064453125
+			},
+			"Rotation":
+			{
+				"X": 0.00049599999329075217,
+				"Y": 0.4699769914150238,
+				"Z": 0.06550300121307373,
+				"W": 0.88024497032165527
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "SM_fence_wood_1238_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fence_wood_01.gltf",
+		"Materials": [
+			"MI_Wood_Trim"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 351.05340576171875,
+				"Y": 20.833747863769531,
+				"Z": 429.63702392578125
+			},
+			"Rotation":
+			{
+				"X": 0.00049299997044727206,
+				"Y": 0.46997198462486267,
+				"Z": 0.065497003495693207,
+				"W": 0.88024801015853882
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 99.16583251953125,
+				"Y": 25.986719131469727,
+				"Z": 0.90380299091339111
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.66225796937942505,
+				"Z": 0,
+				"W": 0.74927598237991333
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 106.42046356201172,
+				"Y": 25.878427505493164,
+				"Z": 0.2566629946231842
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.028952999040484428,
+				"Z": 0,
+				"W": -0.999580979347229
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 68.240280151367188,
+				"Y": 25.728408813476562,
+				"Z": 1.4408359527587891
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.4991849958896637,
+				"Z": 0,
+				"W": -0.86649501323699951
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 55.032913208007812,
+				"Y": 26.341333389282227,
+				"Z": 3.8781449794769287
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.25644698739051819,
+				"Z": 0,
+				"W": 0.96655797958374023
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 173.06584167480469,
+				"Y": 25.986719131469727,
+				"Z": 0.90380299091339111
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.66225796937942505,
+				"Z": 0,
+				"W": 0.74927598237991333
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 180.32046508789062,
+				"Y": 25.878427505493164,
+				"Z": 0.2566629946231842
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.028952999040484428,
+				"Z": 0,
+				"W": -0.999580979347229
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 210.06584167480469,
+				"Y": 25.986719131469727,
+				"Z": 0.90380299091339111
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.66225796937942505,
+				"Z": 0,
+				"W": 0.74927598237991333
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 217.32046508789062,
+				"Y": 25.878427505493164,
+				"Z": 0.2566629946231842
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.028952999040484428,
+				"Z": 0,
+				"W": -0.999580979347229
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 136.16583251953125,
+				"Y": 25.986719131469727,
+				"Z": 0.90380299091339111
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.66225796937942505,
+				"Z": 0,
+				"W": 0.74927598237991333
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "BP_torch_01_torch",
+		"MeshFile": "Meshes/SM_torch_01.gltf",
+		"Materials": [
+			"MI_Furniture_01",
+			"MI_Light_props"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 143.42044067382812,
+				"Y": 25.878427505493164,
+				"Z": 0.2566629946231842
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.028952999040484428,
+				"Z": 0,
+				"W": -0.999580979347229
+			},
+			"Scale":
+			{
+				"X": 1.5,
+				"Y": 1.5,
+				"Z": 1.5
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid294_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 382.327392578125,
+				"Y": 46.957977294921875,
+				"Z": 115.31027221679688
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.81073302030563354,
+				"Z": 0,
+				"W": -0.58541601896286011
+			},
+			"Scale":
+			{
+				"X": 1.881106972694397,
+				"Y": 1.881106972694397,
+				"Z": 1.881106972694397
+			}
+		}
+	},
+	{
+		"Name": "SM_Rock2_mid296_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_Rock3.gltf",
+		"Materials": [
+			"MI_Rock_Tile_01"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 485.1697998046875,
+				"Y": 47.359710693359375,
+				"Z": 43.539531707763672
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.4999530017375946,
+				"Z": 0,
+				"W": 0.86605298519134521
+			},
+			"Scale":
+			{
+				"X": 1.9445090293884277,
+				"Y": 1.9675630331039429,
+				"Z": 1.2549149990081787
+			}
+		}
+	}
+]
