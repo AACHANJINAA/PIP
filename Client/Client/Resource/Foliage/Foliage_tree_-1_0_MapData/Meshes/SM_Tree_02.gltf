@@ -1,0 +1,321 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 12,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 8,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.00561324228, 0.48500523, 0.157484353 ],
+			"max": [ 0.0704433396, 0.516780674, 0.229127973 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 8,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 8,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 8,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 15000,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 6,
+			"count": 8780,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.376788467, 0.394307733, -0.289191365 ],
+			"max": [ 0.256311744, 0.692963839, 0.400253206 ]
+		},
+		{
+			"bufferView": 7,
+			"count": 8780,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 8,
+			"count": 8780,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 8780,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 4851,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 11,
+			"count": 4285,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.326840997, 0.00234522414, -0.228662565 ],
+			"max": [ 0.209264234, 0.639593482, 0.343830168 ]
+		},
+		{
+			"bufferView": 12,
+			"count": 4285,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 13,
+			"count": 4285,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 14,
+			"count": 4285,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "base_foliage_tree.bin",
+			"byteLength": 667220
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 12,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96,
+			"byteOffset": 12,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96,
+			"byteOffset": 108,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 128,
+			"byteOffset": 204,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64,
+			"byteOffset": 332,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 30000,
+			"byteOffset": 396,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 105360,
+			"byteOffset": 30396,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 105360,
+			"byteOffset": 135756,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 140480,
+			"byteOffset": 241116,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 70240,
+			"byteOffset": 381596,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9702,
+			"byteOffset": 451836,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 51420,
+			"byteOffset": 461540,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 51420,
+			"byteOffset": 512960,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 68560,
+			"byteOffset": 564380,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 34280,
+			"byteOffset": 632940,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "material_baseColor.png"
+		},
+		{
+			"uri": "Vegetation_Bark_Maple_1_baseColor.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "formica_cinza_SM_Tree_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0.400000006, 0.400000006, 0.400000006, 1 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.600000024
+			},
+			"doubleSided": true
+		},
+		{
+			"name": "material_SM_Tree_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.600000024
+			},
+			"doubleSided": true
+		},
+		{
+			"name": "Vegetation_Bark_Maple_1_SM_Tree_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 1
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.600000024
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Tree_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 6,
+						"NORMAL": 7,
+						"TANGENT": 8,
+						"TEXCOORD_0": 9
+					},
+					"indices": 5,
+					"material": 1
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 11,
+						"NORMAL": 12,
+						"TANGENT": 13,
+						"TEXCOORD_0": 14
+					},
+					"indices": 10,
+					"material": 2
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"name": "SM_Tree_01",
+			"translation": [ 0.0519919656, -0.0393575765, -0.0307481736 ],
+			"scale": [ 7.0, 7.0, 7.0 ],
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"name": "O-Stage",
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "material_baseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "Vegetation_Bark_Maple_1_baseColor",
+			"sampler": 0,
+			"source": 1
+		}
+	]
+}
