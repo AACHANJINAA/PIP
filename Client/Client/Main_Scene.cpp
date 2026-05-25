@@ -106,8 +106,6 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     auto name_img_obj = ObjectManager::instance()->create_game_object("Player_Name_Image");
     auto name_renderer = name_img_obj->add_component<UIRenderComponent>();
 
-    long long my_id = NetworkManager::instance()->get_my_session_id(); // 이거 가져오면 안될듯 이상한 값으로 가져오네
-
     name_renderer->set_screen_position(5.0f, 5.0f);
     name_renderer->set_size(200.f, 200.f);         
     name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -116,7 +114,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 	// 1. HP Frame (뒤에 렌더링될 프레임) & HP Bar (앞에 렌더링될 체력바)
     auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
-    auto hp_frame = hp_frame_obj->add_component<UIFrameRenderComponent>();
+    auto hp_frame = hp_frame_obj->add_component<UIRenderComponent>();
     auto hp_bar_obj = ObjectManager::instance()->create_game_object("HP_Bar");
     auto hp_bar = hp_bar_obj->add_component<UIRenderComponent>();
 
@@ -138,7 +136,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
     // 2. MP Frame (뒤에 렌더링될 프레임) & MP Bar (앞에 렌더링될 체력바)
     auto mp_frame_obj = ObjectManager::instance()->create_game_object("MP_Frame");
-    auto mp_frame = mp_frame_obj->add_component<UIFrameRenderComponent>();
+    auto mp_frame = mp_frame_obj->add_component<UIRenderComponent>();
     auto mp_bar_obj = ObjectManager::instance()->create_game_object("MP_Bar");
     auto mp_bar = mp_bar_obj->add_component<UIRenderComponent>();
 
