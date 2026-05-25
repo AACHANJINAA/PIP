@@ -84,7 +84,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	Spawn_UI(device, commandList);
     Spawn_Monster_HP_UI(device, commandList);
-	TestMesh(device, commandList);
+	//TestMesh(device, commandList);
 
     std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
     DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
@@ -106,7 +106,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     auto name_img_obj = ObjectManager::instance()->create_game_object("Player_Name_Image");
     auto name_renderer = name_img_obj->add_component<UIRenderComponent>();
 
-    long long my_id = NetworkManager::instance()->get_my_session_id();
+    long long my_id = NetworkManager::instance()->get_my_session_id(); // 이거 가져오면 안될듯 이상한 값으로 가져오네
 
     name_renderer->set_screen_position(5.0f, 5.0f);
     name_renderer->set_size(200.f, 200.f);         
@@ -128,13 +128,35 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
     hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
 
-    hp_bar->set_screen_position(hp_bar_pos.first + 12.0f, hp_bar_pos.second + 8.0f);        // Frame보다 안쪽
-    hp_bar->set_size(hp_bar_size.first - 20.f, hp_bar_size.second - 16.f);                   // Frame보다 작게
+    hp_bar->set_screen_position(hp_bar_pos.first + 11.0f, hp_bar_pos.second + 4.0f);        // Frame보다 안쪽
+    hp_bar->set_size(hp_bar_size.first - 24.f, hp_bar_size.second - 9.f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
 
     UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
+
+    // 2. MP Frame (뒤에 렌더링될 프레임) & MP Bar (앞에 렌더링될 체력바)
+    auto mp_frame_obj = ObjectManager::instance()->create_game_object("MP_Frame");
+    auto mp_frame = mp_frame_obj->add_component<UIFrameRenderComponent>();
+    auto mp_bar_obj = ObjectManager::instance()->create_game_object("MP_Bar");
+    auto mp_bar = mp_bar_obj->add_component<UIRenderComponent>();
+
+    std::pair<float, float> mp_bar_pos = { 200.0f , 80.0f };
+    std::pair<float, float> mp_bar_size = { 410.0f , 26.0f };
+
+    mp_frame->set_screen_position(mp_bar_pos.first, mp_bar_pos.second);     
+    mp_frame->set_size(mp_bar_size.first, mp_bar_size.second);                 
+    mp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  
+    mp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+    
+    mp_bar->set_screen_position(mp_bar_pos.first + 11.0f, mp_bar_pos.second + 4.0f);        
+    mp_bar->set_size(mp_bar_size.first - 24.f, mp_bar_size.second - 9.f);             
+    mp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+    mp_bar->set_texture("Resource/UI/MP_Bar.dds");
+
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerMPFrame", mp_frame_obj);
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerMPBar", mp_bar_obj);
 
     // 3.사망 ui 배경
     auto death_ui_background_obj = ObjectManager::instance()->create_game_object("death_ui_background");
