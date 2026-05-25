@@ -20,8 +20,6 @@ public:
 	// 서버로 패킷 전송 함수 즉시 전송(Blocking)
     void send_packet(const char* data, size_t size);
 
-    long long get_my_session_id() const { return _my_session_id; }
-
 public:
     // 클라이언트 -> 서버 패킷 전송 함수
     void SendLoginPacket();
