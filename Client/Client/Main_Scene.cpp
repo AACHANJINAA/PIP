@@ -16,6 +16,7 @@
 #include "UIRenderComponent.h"
 #include "SoundManager.h"
 #include "InputManager.h"
+#include "NetworkManager.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -101,24 +102,38 @@ void Main_Scene::scene_process(float deltaTime)
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    // 1. HP Frame (뒤에 렌더링될 프레임)
+    // 0. player id별 텍스쳐  
+    auto name_img_obj = ObjectManager::instance()->create_game_object("Player_Name_Image");
+    auto name_renderer = name_img_obj->add_component<UIRenderComponent>();
+
+    long long my_id = NetworkManager::instance()->get_my_session_id();
+
+    name_renderer->set_screen_position(5.0f, 5.0f);
+    name_renderer->set_size(200.f, 200.f);         
+    name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+    name_renderer->set_texture("Resource/UI/ID/Player_1.dds");
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
+
+	// 1. HP Frame (뒤에 렌더링될 프레임) & HP Bar (앞에 렌더링될 체력바)
     auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
     auto hp_frame = hp_frame_obj->add_component<UIFrameRenderComponent>();
-
-    hp_frame->set_screen_position(30.0f, 30.0f);      // 화면 왼쪽 상단
-    hp_frame->set_size(410.0f, 30.0f);                 // Bar보다 좀 더 큼
-    hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
-    hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
-    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
-
-    // 2. HP Bar (앞에 렌더링될 바)
     auto hp_bar_obj = ObjectManager::instance()->create_game_object("HP_Bar");
     auto hp_bar = hp_bar_obj->add_component<UIRenderComponent>();
 
-    hp_bar->set_screen_position(42.0f, 38.0f);        // Frame보다 안쪽
-    hp_bar->set_size(390.0f, 14.0f);                   // Frame보다 작게
+    std::pair<float, float> hp_bar_pos = { 200.0f , 50.0f};
+    std::pair<float, float> hp_bar_size = { 410.0f , 26.0f};
+
+    hp_frame->set_screen_position(hp_bar_pos.first, hp_bar_pos.second);      // 화면 왼쪽 상단
+    hp_frame->set_size(hp_bar_size.first, hp_bar_size.second);                 // Bar보다 좀 더 큼
+    hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
+    hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+
+    hp_bar->set_screen_position(hp_bar_pos.first + 12.0f, hp_bar_pos.second + 8.0f);        // Frame보다 안쪽
+    hp_bar->set_size(hp_bar_size.first - 20.f, hp_bar_size.second - 16.f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
+
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
 
     // 3.사망 ui 배경
@@ -156,7 +171,6 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "UI_Background_UI", _logo_ui_background_obj);
-
 }
 
 void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
