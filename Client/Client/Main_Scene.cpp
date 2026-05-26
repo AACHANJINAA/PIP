@@ -16,6 +16,7 @@
 #include "UIRenderComponent.h"
 #include "SoundManager.h"
 #include "InputManager.h"
+#include "NetworkManager.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -50,15 +51,23 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf", "attack");
 	// =========================================================================
 
-    // 오두막
-    load_foliage_from_file("Resource/MainLandscape_Meshes/Foliage_stone_-1_-1_MapData/Foliage_stone_-1_-1_MapData.json", device, commandList);
-    load_foliage_from_file("Resource/MainLandscape_Meshes/Foliage_bush_-1_-1_MapData/Foliage_bush_-1_-1_MapData.json", device, commandList);
+    // 그 외
+    load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_0_0_MapData/Landscape_0_0_ExportedClientData.json", device, commandList);
+    load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_0_-1_MapData/Landscape_0_-1_ExportedClientData.json", device, commandList);
+    load_foliage_from_file("Resource/Foliage/Foliage_tree_0_0_MapData/Foliage_tree_0_0_MapData.json", device, commandList);
 
-	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
+    // 오두막
+    load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
+    //load_foliage_from_file("Resource/Foliage/Foliage_stone_-1_-1_MapData/Foliage_stone_-1_-1_MapData.json", device, commandList);
+    load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_-1_MapData/Foliage_tree_-1_-1_MapData.json", device, commandList);
 
     // 성
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
-    load_foliage_from_file("Resource/MainLandscape_Meshes/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
+    load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
+
+    // 성당
+    load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-2_-1_MapData/Landscape_-2_-1_ExportedClientData.json", device, commandList);
+
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
@@ -75,7 +84,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	Spawn_UI(device, commandList);
     Spawn_Monster_HP_UI(device, commandList);
-	TestMesh(device, commandList);
+	//TestMesh(device, commandList);
 
     std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
     DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
@@ -93,25 +102,62 @@ void Main_Scene::scene_process(float deltaTime)
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    // 1. HP Frame (뒤에 렌더링될 프레임)
+    // 0. player id별 텍스쳐  
+    auto name_img_obj = ObjectManager::instance()->create_game_object("Player_Name_Image");
+    auto name_renderer = name_img_obj->add_component<UIRenderComponent>();
+
+    name_renderer->set_screen_position(5.0f, 5.0f);
+    name_renderer->set_size(200.f, 200.f);         
+    name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    long long my_id = NetworkManager::instance()->get_my_session_id();
+	std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";  
+    name_renderer->set_texture(resource_name);
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
+
+	// 1. HP Frame (뒤에 렌더링될 프레임) & HP Bar (앞에 렌더링될 체력바)
     auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
-    auto hp_frame = hp_frame_obj->add_component<UIFrameRenderComponent>();
-
-    hp_frame->set_screen_position(30.0f, 30.0f);      // 화면 왼쪽 상단
-    hp_frame->set_size(410.0f, 30.0f);                 // Bar보다 좀 더 큼
-    hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
-    hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
-    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
-
-    // 2. HP Bar (앞에 렌더링될 바)
+    auto hp_frame = hp_frame_obj->add_component<UIRenderComponent>();
     auto hp_bar_obj = ObjectManager::instance()->create_game_object("HP_Bar");
     auto hp_bar = hp_bar_obj->add_component<UIRenderComponent>();
 
-    hp_bar->set_screen_position(42.0f, 38.0f);        // Frame보다 안쪽
-    hp_bar->set_size(390.0f, 14.0f);                   // Frame보다 작게
+    std::pair<float, float> hp_bar_pos = { 200.0f , 50.0f};
+    std::pair<float, float> hp_bar_size = { 410.0f , 26.0f};
+
+    hp_frame->set_screen_position(hp_bar_pos.first, hp_bar_pos.second);      // 화면 왼쪽 상단
+    hp_frame->set_size(hp_bar_size.first, hp_bar_size.second);                 // Bar보다 좀 더 큼
+    hp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색 (텍스처 원본 색)
+    hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+
+    hp_bar->set_screen_position(hp_bar_pos.first + 11.0f, hp_bar_pos.second + 4.0f);        // Frame보다 안쪽
+    hp_bar->set_size(hp_bar_size.first - 24.f, hp_bar_size.second - 9.f);                   // Frame보다 작게
     hp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     hp_bar->set_texture("Resource/UI/HP_Bar.dds");
+
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
+
+    // 2. MP Frame (뒤에 렌더링될 프레임) & MP Bar (앞에 렌더링될 체력바)
+    auto mp_frame_obj = ObjectManager::instance()->create_game_object("MP_Frame");
+    auto mp_frame = mp_frame_obj->add_component<UIRenderComponent>();
+    auto mp_bar_obj = ObjectManager::instance()->create_game_object("MP_Bar");
+    auto mp_bar = mp_bar_obj->add_component<UIRenderComponent>();
+
+    std::pair<float, float> mp_bar_pos = { 200.0f , 80.0f };
+    std::pair<float, float> mp_bar_size = { 410.0f , 26.0f };
+
+    mp_frame->set_screen_position(mp_bar_pos.first, mp_bar_pos.second);     
+    mp_frame->set_size(mp_bar_size.first, mp_bar_size.second);                 
+    mp_frame->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  
+    mp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+    
+    mp_bar->set_screen_position(mp_bar_pos.first + 11.0f, mp_bar_pos.second + 4.0f);        
+    mp_bar->set_size(mp_bar_size.first - 24.f, mp_bar_size.second - 9.f);             
+    mp_bar->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+    mp_bar->set_texture("Resource/UI/MP_Bar.dds");
+
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerMPFrame", mp_frame_obj);
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerMPBar", mp_bar_obj);
 
     // 3.사망 ui 배경
     auto death_ui_background_obj = ObjectManager::instance()->create_game_object("death_ui_background");
@@ -148,7 +194,6 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
     logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "UI_Background_UI", _logo_ui_background_obj);
-
 }
 
 void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

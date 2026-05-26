@@ -1,0 +1,188 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 24,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 9,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.18358326, 9.80903248e-10, -0.179375917 ],
+			"max": [ 0.167611569, 9.80903248e-10, 0.193775997 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 9,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 9,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 9,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 9,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_candle_05_940F4D34.bin",
+			"byteLength": 528
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 24,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 108,
+			"byteOffset": 24,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 108,
+			"byteOffset": 132,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 144,
+			"byteOffset": 240,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 72,
+			"byteOffset": 384,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 72,
+			"byteOffset": 456,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Candle_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_candle_C.png"
+		},
+		{
+			"uri": "T_candle_N.png"
+		},
+		{
+			"uri": "T_candle_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Candle",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_candle_05",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_candle_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Candle_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_candle_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_candle_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

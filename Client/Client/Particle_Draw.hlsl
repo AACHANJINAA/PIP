@@ -58,7 +58,7 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
     
     // 알파값 서서히 줄이기
     // 진행도가 0.2(20%)를 넘어가면 서서히 투명해지기 시작해서 1.0일 때 완전히 사라짐
-    float fadeProgress = saturate((dying_progress - 0.66f) / 0.34f);
+    float fadeProgress = saturate((dying_progress - 0.34f) / 0.34f);
     float alphaFade = 1.0f - fadeProgress;
     Out.Color.a *= alphaFade;
     

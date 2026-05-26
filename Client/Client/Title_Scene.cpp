@@ -177,12 +177,9 @@ void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList
 
     spawn_opening_sequence_object();
 
-    // 오두막
-    //load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
-
     // 성
    load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
-   load_foliage_from_file("Resource/MainLandscape_Meshes/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
+   load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
 }
 
 void Title_Scene::spawn_opening_sequence_object()

@@ -62,7 +62,7 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
     float2x2 rotationMat = float2x2(c, -s, s, c);
  
       // Cascade별 기본 필터 크기
-    float baseFilterRadii[3] = { 0.8f, 1.5f, 3.0f };
+    float baseFilterRadii[3] = { 1.5f, 1.5f, 3.0f };
       
       // viewDepth를 0~1로 정규화 (Cascade 2의 끝 범위 기준)
     float maxViewDepth = g_shadowSplitMid + 100.0f;

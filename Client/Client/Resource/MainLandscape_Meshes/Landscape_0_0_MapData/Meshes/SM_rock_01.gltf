@@ -1,0 +1,176 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 5004,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1360,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.54706043, -0.682774484, -1.18947351 ],
+			"max": [ 0.801902294, 0.637460291, 1.33635449 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1360,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1360,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1360,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1360,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_rock_01.bin",
+			"byteLength": 86168
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 10008,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 16320,
+			"byteOffset": 10008,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 16320,
+			"byteOffset": 26328,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 21760,
+			"byteOffset": 42648,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 10880,
+			"byteOffset": 64408,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 10880,
+			"byteOffset": 75288,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Rock_01_Normal.png"
+		},
+		{
+			"uri": "T_rock_01_C.png"
+		},
+		{
+			"uri": "T_rock_01_M_Linear.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Rock_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.607843161
+			},
+			"normalTexture":
+			{
+				"index": 1
+			},
+			"occlusionTexture":
+			{
+				"index": 2
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_rock_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_rock_01_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Rock_01_Normal",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_rock_01_M_Linear",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}

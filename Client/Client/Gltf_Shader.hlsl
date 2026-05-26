@@ -234,12 +234,12 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     // 3. 최종 색상 계산: 직접광 + IBL + Emissive, 모두 그림자 영향을 받음
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
+
+    if (g_otherplayerid == -2) finalColor += albedo * 0.05f;
+    else if (g_otherplayerid > -1) finalColor = lerp_op(finalColor);
     
     // MASK 모드: alphaCutoff 이하의 픽셀을 폐기 (clip 함수 사용)
-    if (AlphaMode == 1) // MASK
-    {
-        clip(diffuseSample.a - AlphaCutoff); // 알파가 cutoff보다 작으면 픽셀 폐기
-    }
+    if (AlphaMode == 1) clip(diffuseSample.a - AlphaCutoff); // 알파가 cutoff보다 작으면 픽셀 폐기
     
     // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
@@ -251,10 +251,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     
     //finalColor = lerp_op(finalColor, lerp_strength);
     
-    if (g_otherplayerid > -1)
-    {
-        finalColor = lerp_op(finalColor);
-    }
+   
     
     return float4(finalColor, diffuseSample.a);
 }

@@ -300,21 +300,8 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 
 			auto player_logic = playerObject->add_component<MainPlayerScript>();
 			player_logic->set_name(name);
-			auto hp_bar = ObjectManager::instance()->find_by_name("HP_Bar");
-			if (hp_bar)
-			{
-				auto hp_ui = hp_bar->get_component<UIRenderComponent>();
-				player_logic->set_hp_bar_ui(hp_ui);
-			}
 			player_logic->set_hp(spawn_data._hp);
 			player_logic->set_id(_my_session_id);
-			auto hp_frame_obj = ObjectManager::instance()->find_by_name("HP_Frame");
-			if (hp_frame_obj) {
-				auto hp_frame_ui = hp_frame_obj->get_component<UIFrameRenderComponent>();
-				if (hp_frame_ui) {
-					hp_frame_ui->set_other_player_id(_my_session_id);
-				}
-			}
 			player_logic->set_position(spawn_data._position);
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
 		}
