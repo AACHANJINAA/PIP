@@ -174,7 +174,7 @@ void OtherPlayerScript::update(float deltaTime)
         if (_action_id == common::packet::ActionID::Common::Attack)
         {
             if (_isSkillAnimationStarted) init_skill_variables(); // 혹시 스킬 쓰다 평타로 넘어왔을 때 초기화
-            anim_comp->play("attack", false);
+            anim_comp->play("attack", false, _attackAnimationSpeed);
         }
         else if (_action_id == common::packet::ActionID::Common::SKILL1)
         {
@@ -315,7 +315,7 @@ void OtherPlayerScript::awake()
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
-    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_02.gltf", "attack02");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill_end");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
@@ -325,7 +325,7 @@ void OtherPlayerScript::awake()
     animation_comp->add_animation("idle", idleMesh, "idle");
     animation_comp->add_animation("walk", idleMesh, "walk");
     animation_comp->add_animation("run", idleMesh, "run");
-    animation_comp->add_animation("attack", idleMesh, "attack02");
+    animation_comp->add_animation("attack", idleMesh, "attack01");
     animation_comp->add_animation("skill", idleMesh, "skill01");
     animation_comp->add_animation("skill_end", idleMesh, "skill_end");
     animation_comp->add_animation("die", idleMesh, "death");

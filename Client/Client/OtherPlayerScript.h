@@ -42,6 +42,10 @@ public:
 
     float           _lerpFactor = 15.0f; // 보간 속도 (수치가 클수록 서버 위치에 빨리 도달)
 
+
+	// 공격 관련 변수들
+	float _attackAnimationSpeed = 1.8f; // 공격 애니메이션 속도
+
     // 스킬을 위한 변수들
     bool _isSkilling = false;
     bool _isSkillAnimationStarted = false;      // [추가] 스킬 최초 시작 체크용

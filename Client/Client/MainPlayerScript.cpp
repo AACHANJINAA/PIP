@@ -425,7 +425,7 @@ void MainPlayerScript::handle_state(float deltaTime)
 		else
 		{
 			_state = common::packet::EntityState::ACTION;
-			anim_comp->play("attack", false);
+			anim_comp->play("attack", false, _attackAnimationSpeed);
 		}
 
 		// 실제 공격 패킷 전송 함수 부분
