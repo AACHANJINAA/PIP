@@ -118,16 +118,12 @@ namespace PIP::SERVER
 		{
 			int available = _prev_size - processed_bytes;
 			if (available < sizeof(packet::PacketHeader)) break;
-
 			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_over._buffer[processed_bytes]);
-			constexpr int MAX_PACKET_SIZE = 4096;
 			if (header->_size < sizeof(packet::PacketHeader) || header->_size > 4096) {
 				disconnect(); // 패킷 헤더 오류 시 연결 끊기
 				return;
 			}
 			if ((uint16_t)available < header->_size) break;
-			
-
 			auto task =
 				[session = shared_from_this(),
 				stream = packet::PacketStream(_recv_over._buffer.data() + processed_bytes, header->_size)]
@@ -135,12 +131,10 @@ namespace PIP::SERVER
 			{
 				packet::PacketManager::Instance()->Dispatch(session, stream);
 			};
-
 			server_ptr->get_logic_queue(_logic_thread_idx)->push({ std::move(task) });
 
 			processed_bytes += header->_size;
 		}
-
 		// 남은 데이터 앞으로 밀기
 		_prev_size -= processed_bytes;
 		if (_prev_size > 0 && processed_bytes > 0) {
@@ -444,9 +438,8 @@ namespace PIP::SERVER
 	std::shared_ptr<SESSION> Server::AcquireSession(SOCKET s, int64_t id, int logic_idx)
 	{
 		SESSION* raw_ptr = nullptr;
-		if (!_session_pool.try_pop(raw_ptr)) {
-			raw_ptr = new SESSION(id, s, logic_idx); // 풀이 비었으면 생성
-		}
+		raw_ptr = new SESSION(id, s, logic_idx); 
+		
 
 		raw_ptr->init(s, id, logic_idx);
 
@@ -459,7 +452,6 @@ namespace PIP::SERVER
 	{
 		session->clear(); // 소켓 닫기 확인 및 버퍼 정리
 		// 세션 데이터 완전 초기화 후 풀에 삽입
-		_session_pool.push(session);
 	}
 
 	void Server::do_accept(SOCKET& client_socket, EXP_OVER& accept_over)

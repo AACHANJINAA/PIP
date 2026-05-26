@@ -5,23 +5,7 @@
 #include "Player.h"
 #include "Profiling.h"
 
-template<typename T>
-class ThreadSafeStack {
-	std::stack<T> _stack;
-	std::mutex _mutex;
-public:
-	void push(T val) {
-		std::lock_guard lock(_mutex);
-		_stack.push(val);
-	}
-	bool try_pop(T& val) {
-		std::lock_guard lock(_mutex);
-		if (_stack.empty()) return false;
-		val = _stack.top();
-		_stack.pop();
-		return true;
-	}
-};
+
 
 namespace PIP::SERVER
 {
@@ -196,7 +180,6 @@ namespace PIP::SERVER
 		std::vector<std::unique_ptr<Room>> _rooms;
 
 		concurrency::concurrent_unordered_map<int64_t, std::shared_ptr<SESSION>> _sessions; // 임시 세션 저장소 (참조 카운터용)
-		ThreadSafeStack<SESSION*> _session_pool;
 
 		static std::atomic<int64_t> _actor_id_gen;
 	};
