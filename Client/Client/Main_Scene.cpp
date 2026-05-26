@@ -109,7 +109,10 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     name_renderer->set_screen_position(5.0f, 5.0f);
     name_renderer->set_size(200.f, 200.f);         
     name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-    name_renderer->set_texture("Resource/UI/ID/Player_1.dds");
+
+    long long my_id = NetworkManager::instance()->get_my_session_id();
+	std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";  
+    name_renderer->set_texture(resource_name);
     UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
 
 	// 1. HP Frame (뒤에 렌더링될 프레임) & HP Bar (앞에 렌더링될 체력바)

@@ -32,6 +32,7 @@ public:
     void SendEnterRoomPacket(int room_id_to_enter);
     void SendDebugCommandPacket(common::packet::DebugCommandType command);
     bool is_running() const { return _isRunning; }
+    long long get_my_session_id() const { return _my_session_id; }
     XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
 
 private:
