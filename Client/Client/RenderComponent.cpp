@@ -233,7 +233,7 @@ void RenderComponent::update_world_matrix_cb(UINT frame_index)
         _mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
     }
     else if (auto mp_script = game_object()->get_component<MainPlayerScript>()) {
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
+        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -2;
     }
     else {
         _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;

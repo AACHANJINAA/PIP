@@ -1,0 +1,282 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1812,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 591,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.0884299427, -2.01132355e-09, -0.0884299576 ],
+			"max": [ 0.0884299576, 0.431370229, 0.0884299353 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 591,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 591,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 591,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 591,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 96,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 64,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.0771612227, 0.0118924892, -0.0770276114 ],
+			"max": [ 0.0771613419, 0.211099237, 0.0770279989 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 64,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 64,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 64,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 64,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_hand_lamp_01.bin",
+			"byteLength": 40400
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 3624,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7092,
+			"byteOffset": 3624,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7092,
+			"byteOffset": 10716,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9456,
+			"byteOffset": 17808,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4728,
+			"byteOffset": 27264,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4728,
+			"byteOffset": 31992,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96,
+			"byteOffset": 36720,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 768,
+			"byteOffset": 36816,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 768,
+			"byteOffset": 37584,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1024,
+			"byteOffset": 38352,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 512,
+			"byteOffset": 39376,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 512,
+			"byteOffset": 39888,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Props_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Props_C.png"
+		},
+		{
+			"uri": "T_Props_N.png"
+		},
+		{
+			"uri": "T_Props_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Props",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Light1",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0, 0, 0, 1 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			},
+			"emissiveFactor": [ 0.98046875, 0.699785531, 0.32297796 ]
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_hand_lamp_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Props_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Props_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Props_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Props_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 768,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 192,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.542327702, -1.10315339e-08, -0.157042846 ],
+			"max": [ 0.542327702, 2.18774819, 0.157042846 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 192,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 192,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 192,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 192,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_grave_plate_04.bin",
+			"byteLength": 11520
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 768,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2304,
+			"byteOffset": 768,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2304,
+			"byteOffset": 3072,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3072,
+			"byteOffset": 5376,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1536,
+			"byteOffset": 8448,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1536,
+			"byteOffset": 9984,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Grave_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Grave_C.png"
+		},
+		{
+			"uri": "T_Grave_N.png"
+		},
+		{
+			"uri": "T_Grave_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Grave",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_grave_plate_04",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Grave_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Grave_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Grave_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Grave_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}
