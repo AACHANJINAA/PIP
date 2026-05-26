@@ -90,7 +90,9 @@ private:
 	float _speed{ 5.f };
 	float _sendTimer{ 0.f };
 
+	// 공격 관련 변수들
 	bool _isAttacking = false;
+	float _attackAnimationSpeed = 1.8f; // 공격 애니메이션 속도
 
 
 	// 스킬을 위한 변수들
