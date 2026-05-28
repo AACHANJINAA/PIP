@@ -679,6 +679,41 @@ namespace PIP::GAME
 		return NodeStatus::SUCCESS;
 	}
 
+	bool Condition_IsTargetInLeashRange::check()
+	{
+		// 1. target_enemy 키가 없으면 추격 대상 없음
+		if (!_blackboard->has("target_enemy")) return false;
+
+		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+		int room_id = _blackboard->get<int>("room_id");
+		auto room = SERVER::Server::Instance()->GetRoom(room_id);
+		if (!room) return false;
+
+		// 2. 타겟 Actor가 사라졌거나 사망했으면 클리어
+		auto target = room->GetActor(targetId);
+		if (!target || target->GetHP() <= 0) {
+			_blackboard->set("target_enemy", std::any());
+			_blackboard->set("target_pos",   std::any());
+			return false;
+		}
+
+		// 3. 오너 위치 가져오기
+		auto owner = _blackboard->get<GameObject*>("owner");
+		if (!owner) return false;
+
+		float distSq = common::DistanceSq(owner->GetComponent<TransformComponent>()->GetPosition(),
+		                                   target->GetPosition());
+
+		// 4. leash 거리 초과 시 추격 포기 → 순찰 복귀
+		if (distSq > _leashRange * _leashRange) {
+			_blackboard->set("target_enemy", std::any());
+			_blackboard->set("target_pos",   std::any());
+			return false;
+		}
+
+		return true;
+	}
+
 	NodeStatus Action_ChargeAttack::tick(float dt, JPH::TempAllocator* allocator)
 	{
 		// 1. [핵심] 쿨타임 감소 (매 틱 실행)

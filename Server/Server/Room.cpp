@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -2084,21 +2084,31 @@ namespace PIP::SERVER
 
 	void Room::RespawnNPC(GAME::NPC* npc)
 	{
-		// 1. 상태 및 위치 초기화
-		npc->SetState(packet::EntityState::IDLE);
-		npc->SetHP(npc->GetMaxHP());
-		npc->SetPosition(npc->GetSpawnPosition());
-		npc->SetActive(true);
-		npc->SetupBT();
-		
+		// [순서 중요]
+		// SetActive(true) 이전에 BT와 상태를 완전히 초기화해야
+		// UpdateLogics/UpdatePhysics 스레드가 초기화 안 된 상태로 틱하는 것을 방지합니다.
 
-		// 2. 물리 및 그리드 복구
+		// 1. BT 재구성 (Blackboard·노드 타이머 모두 새로 생성)
+		npc->SetupBT();
+
+		// 2. 전투 상태·dirty 필드 전체 초기화
+		npc->SetHP(npc->GetMaxHP());
+		npc->ResetForRespawn();             // _hitCooldown, _actionId, dirty 필드 리셋
+
+		// 3. 위치 초기화 (Transform 기준)
+		npc->SetPosition(npc->GetSpawnPosition());
+
+		// 4. 물리 컨트롤러 복구 (위치 동기화 포함)
 		if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
 			cc->SetPhysicsActive(true);
 			cc->SetPosition(npc->GetSpawnPosition());
 		}
+
+		// 5. 마지막에 Active 활성화 (이 시점부터 UpdateLogics 루프에 진입)
+		npc->SetActive(true);
 		_gridMap.Add(npc);
 
+		// 6. 주변 플레이어에게 Spawn 패킷 전송
 		for (auto& [pid, session] : _players)
 		{
 			common::Vec3 playerPos = session->_player->GetPosition();
@@ -2111,6 +2121,7 @@ namespace PIP::SERVER
 			}
 		}
 	}
+
 
 	void Room::OnPlayerDead(const std::shared_ptr<SESSION>& session)
 	{

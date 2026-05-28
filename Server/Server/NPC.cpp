@@ -213,6 +213,18 @@ namespace PIP::GAME
 		return false;
 	}
 
+	void NPC::ResetForRespawn() 
+	{
+		_hitCooldown = 0.0f;
+		_actionId = 0;
+		_state = common::packet::EntityState::IDLE;
+		// dirty 필드를 엉뚱한 값으로 세팅 → 부활 직후 반드시 패킷 발송
+		_lastSentPos = { 9999.f, 9999.f, 9999.f };
+		_lastSentRot = { 0.f, 0.f, 0.f, -1.f };
+		_lastSentState = common::packet::EntityState::DEAD;
+		_lastSentActionId = -1;
+	}
+
 	void NPC::ApplySpawnData(const NPCSpawnData& data)
 	{
 		_hp = data.max_hp;

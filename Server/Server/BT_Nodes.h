@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "BehaviorTree.h"
 #include "GameObject.h"
 #include "CharacterControllerComponent.h"
@@ -214,6 +214,16 @@ namespace PIP::GAME
     public:
         Action_UpdateEnemyPosToTarget() { set_name("Action_UpdateEnemyPosToTarget"); }
         NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+    };
+
+    // [신규] 타겟이 추격 포기 거리(leash) 밖이면 target_enemy를 클리어하고 순찰 복귀
+    class Condition_IsTargetInLeashRange : public Condition {
+        float _leashRange;
+    public:
+        Condition_IsTargetInLeashRange(float leashRange) : _leashRange(leashRange) {
+            set_name("Condition_IsTargetInLeashRange");
+        }
+        bool check() override;
     };
 
     // [행동] NavMesh 길찾기 수행
