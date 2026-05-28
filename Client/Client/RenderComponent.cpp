@@ -43,61 +43,61 @@ RenderComponent::RenderComponent()
 {
 	set_name("RenderComponent");
 
-    ComPtr<ID3D12Device> device = GameFramework::instance()->device();
-    if (!device)
-    {
-        CERROR("RenderComponent::awake: Device¸¦ °¡Á®¿Ã ¼ö ¾ø½À´Ï´Ù.");
-        return;
-    }
+	ComPtr<ID3D12Device> device = GameFramework::instance()->device();
+	if (!device)
+	{
+		CERROR("RenderComponent::awake: Deviceë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+		return;
+	}
 
-    // 2. »ó¼ö ¹öÆÛÀÇ Èü(Heap) ¼Ó¼ºÀ» Á¤ÀÇÇÕ´Ï´Ù.
-    // CPU¿¡¼­ ¸Å ÇÁ·¹ÀÓ ¾÷µ¥ÀÌÆ®ÇØ¾ß ÇÏ¹Ç·Î, CPU ¾²±â ¹× GPU ÀĞ±â°¡ ¸ğµÎ °¡´ÉÇÑ UPLOAD Èü Å¸ÀÔ »ç¿ëÇÕ´Ï´Ù.
-    D3D12_HEAP_PROPERTIES heap_props = {};
-    heap_props.Type = D3D12_HEAP_TYPE_UPLOAD;
-    heap_props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-    heap_props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-    heap_props.CreationNodeMask = 1;
-    heap_props.VisibleNodeMask = 1;
+	// 2. ìƒìˆ˜ ë²„í¼ì˜ í™(Heap) ì†ì„±ì„ ì •ì˜í•©ë‹ˆë‹¤.
+	// CPUì—ì„œ ë§¤ í”„ë ˆì„ ì—…ë°ì´íŠ¸í•´ì•¼ í•˜ë¯€ë¡œ, CPU ì“°ê¸° ë° GPU ì½ê¸°ê°€ ëª¨ë‘ ê°€ëŠ¥í•œ UPLOAD í™ íƒ€ì… ì‚¬ìš©í•©ë‹ˆë‹¤.
+	D3D12_HEAP_PROPERTIES heap_props = {};
+	heap_props.Type = D3D12_HEAP_TYPE_UPLOAD;
+	heap_props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heap_props.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	heap_props.CreationNodeMask = 1;
+	heap_props.VisibleNodeMask = 1;
 
-    // 3. »ó¼ö ¹öÆÛÀÇ ¸®¼Ò½º(Resource) ¼Ó¼ºÀ» Á¤ÀÇÇÕ´Ï´Ù.
-    // D3D12ÀÇ ±ÔÄ¢¿¡ µû¶ó, »ó¼ö ¹öÆÛÀÇ Å©±â´Â ¹İµå½Ã 256¹ÙÀÌÆ®ÀÇ ¹è¼ö¿©¾ß ÇÕ´Ï´Ù.
-    UINT buffer_size = (sizeof(CbGameObjectInfo) + 255) & ~255;
+	// 3. ìƒìˆ˜ ë²„í¼ì˜ ë¦¬ì†ŒìŠ¤(Resource) ì†ì„±ì„ ì •ì˜í•©ë‹ˆë‹¤.
+	// D3D12ì˜ ê·œì¹™ì— ë”°ë¼, ìƒìˆ˜ ë²„í¼ì˜ í¬ê¸°ëŠ” ë°˜ë“œì‹œ 256ë°”ì´íŠ¸ì˜ ë°°ìˆ˜ì—¬ì•¼ í•©ë‹ˆë‹¤.
+	UINT buffer_size = (sizeof(CbGameObjectInfo) + 255) & ~255;
 
-    D3D12_RESOURCE_DESC resource_desc = {};
-    resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resource_desc.Alignment = 0;
-    resource_desc.Width = buffer_size;
-    resource_desc.Height = 1;
-    resource_desc.DepthOrArraySize = 1;
-    resource_desc.MipLevels = 1;
-    resource_desc.Format = DXGI_FORMAT_UNKNOWN;
-    resource_desc.SampleDesc.Count = 1;
-    resource_desc.SampleDesc.Quality = 0;
-    resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	D3D12_RESOURCE_DESC resource_desc = {};
+	resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resource_desc.Alignment = 0;
+	resource_desc.Width = buffer_size;
+	resource_desc.Height = 1;
+	resource_desc.DepthOrArraySize = 1;
+	resource_desc.MipLevels = 1;
+	resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+	resource_desc.SampleDesc.Count = 1;
+	resource_desc.SampleDesc.Quality = 0;
+	resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-    for (int i = 0; i < _cbGameObjectInfo.size(); ++i)
-    {
-        // 4. À§¿¡¼­ Á¤ÀÇÇÑ ¼Ó¼ºµéÀ» »ç¿ëÇÏ¿© ½ÇÁ¦ »ó¼ö ¹öÆÛ ¸®¼Ò½º¸¦ »ı¼ºÇÕ´Ï´Ù.
-        HRESULT hr = device->CreateCommittedResource(
-            &heap_props,                    // Èü ¼Ó¼º
-            D3D12_HEAP_FLAG_NONE,
-            &resource_desc,                 // ¸®¼Ò½º ¼Ó¼º
-            D3D12_RESOURCE_STATE_GENERIC_READ, // ¾÷·Îµå ÈüÀÇ ÃÊ±â »óÅÂ´Â GENERIC_READ ÀÔ´Ï´Ù.
-            nullptr,                        // ÃÖÀûÈ­µÈ ÃÊ±âÈ­ °ª ¾øÀ½
-            IID_PPV_ARGS(&_cbGameObjectInfo[i])); // »ı¼ºµÈ ¸®¼Ò½º´Â _cbGameObjectInfo ¸â¹ö¿¡ ÀúÀåµË´Ï´Ù.
+	for (int i = 0; i < _cbGameObjectInfo.size(); ++i)
+	{
+		// 4. ìœ„ì—ì„œ ì •ì˜í•œ ì†ì„±ë“¤ì„ ì‚¬ìš©í•˜ì—¬ ì‹¤ì œ ìƒìˆ˜ ë²„í¼ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+		HRESULT hr = device->CreateCommittedResource(
+			&heap_props,                    // í™ ì†ì„±
+			D3D12_HEAP_FLAG_NONE,
+			&resource_desc,                 // ë¦¬ì†ŒìŠ¤ ì†ì„±
+			D3D12_RESOURCE_STATE_GENERIC_READ, // ì—…ë¡œë“œ í™ì˜ ì´ˆê¸° ìƒíƒœëŠ” GENERIC_READ ì…ë‹ˆë‹¤.
+			nullptr,                        // ìµœì í™”ëœ ì´ˆê¸°í™” ê°’ ì—†ìŒ
+			IID_PPV_ARGS(&_cbGameObjectInfo[i])); // ìƒì„±ëœ ë¦¬ì†ŒìŠ¤ëŠ” _cbGameObjectInfo ë©¤ë²„ì— ì €ì¥ë©ë‹ˆë‹¤.
 
-        if (FAILED(hr))
-        {
-            CERROR("RenderComponent: »ó¼ö ¹öÆÛ »ı¼º¿¡ ½ÇÆĞÇß½À´Ï´Ù.");
-            return;
-        }
+		if (FAILED(hr))
+		{
+			CERROR("RenderComponent: ìƒìˆ˜ ë²„í¼ ìƒì„±ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
+			return;
+		}
 
-        // 5. »ı¼ºµÈ ¸®¼Ò½ºÀÇ °¡»ó ÁÖ¼Ò¸¦ CPU°¡ ¾²±â °¡´ÉÇÏµµ·Ï ¿µ±¸ÀûÀ¸·Î ¸ÊÇÎ(mapping)ÇÕ´Ï´Ù.
-        //    _mappedCbGameObjectInfo Æ÷ÀÎÅÍ¸¦ ÅëÇØ CPU¿¡¼­ ÀÌ ¹öÆÛ¿¡ µ¥ÀÌÅÍ¸¦ ¾µ ¼ö ÀÖ°Ô µË´Ï´Ù.
-        //    (¾÷·Îµå Èü¿¡ »ı¼ºÇÑ ¸®¼Ò½º´Â UnmapÀ» È£ÃâÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.)
-        _cbGameObjectInfo[i]->Map(0, nullptr, reinterpret_cast<void**>(&_mappedCbGameObjectInfo[i]));
-    }
+		// 5. ìƒì„±ëœ ë¦¬ì†ŒìŠ¤ì˜ ê°€ìƒ ì£¼ì†Œë¥¼ CPUê°€ ì“°ê¸° ê°€ëŠ¥í•˜ë„ë¡ ì˜êµ¬ì ìœ¼ë¡œ ë§µí•‘(mapping)í•©ë‹ˆë‹¤.
+		//    _mappedCbGameObjectInfo í¬ì¸í„°ë¥¼ í†µí•´ CPUì—ì„œ ì´ ë²„í¼ì— ë°ì´í„°ë¥¼ ì“¸ ìˆ˜ ìˆê²Œ ë©ë‹ˆë‹¤.
+		//    (ì—…ë¡œë“œ í™ì— ìƒì„±í•œ ë¦¬ì†ŒìŠ¤ëŠ” Unmapì„ í˜¸ì¶œí•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.)
+		_cbGameObjectInfo[i]->Map(0, nullptr, reinterpret_cast<void**>(&_mappedCbGameObjectInfo[i]));
+	}
 }
 
 RenderComponent::~RenderComponent()
@@ -112,43 +112,68 @@ RenderComponent::~RenderComponent()
 		}
 	}
 
-    if (_occlusionQueryIndex != 0xFFFFFFFF) {
-        OcclusionManager::instance()->release_query_index(_occlusionQueryIndex);
-    }
+	if (_occlusionQueryIndex != 0xFFFFFFFF) {
+		OcclusionManager::instance()->release_query_index(_occlusionQueryIndex);
+	}
 }
 
 
 BoundingOrientedBox RenderComponent::get_world_bounding_box() const
 {
-    BoundingOrientedBox localObb = _mesh->bounding_box();
-    BoundingOrientedBox worldObb; // °á°ú¸¦ ´ãÀ» º°µµÀÇ º¯¼ö
+	if (_isStatic && _isCached)
+		return _cachedWorldOBB;
 
-    if (game_object() && game_object()->transform())
-    {
-        XMMATRIX worldMatrix = XMLoadFloat4x4(&game_object()->transform()->world_matrix());
-        localObb.Transform(worldObb, worldMatrix); // [¼öÁ¤] Ã¹ ¹øÂ°¿Í µÎ ¹øÂ° ÆÄ¶ó¹ÌÅÍ ºĞ¸®
-    }
-    else
-    {
-        worldObb = localObb;
-    }
-
-    return worldObb;
+	return get_world_bounding_box_internal();
 }
+
+void RenderComponent::mark_as_static()
+{
+	_isStatic = true;
+	if (!_mesh) return;
+	_cachedWorldOBB = get_world_bounding_box_internal();
+	_isCached = true;
+}
+
+BoundingOrientedBox RenderComponent::get_world_bounding_box_internal() const
+{
+	BoundingOrientedBox localObb = _mesh->bounding_box();
+	BoundingOrientedBox worldObb; //    ê²°ê³¼ë¥¼ ë‹´ì„ ë³„ë„ì˜ ë³€ìˆ˜
+
+	if (game_object() && game_object()->transform())
+	{
+		XMMATRIX worldMatrix = XMLoadFloat4x4(&game_object()->transform()->world_matrix());
+		localObb.Transform(worldObb, worldMatrix); // [ìˆ˜ì •] ì²« ë²ˆì§¸ì™€ ë‘ ë²ˆì§¸ íŒŒë¼ë¯¸í„° ë¶„ë¦¬
+	}
+	else
+	{
+		worldObb = localObb;
+	}
+
+	return worldObb;
+}
+
 bool RenderComponent::is_visible(const BoundingFrustum& frustum) const
 {
-    if (!_mesh) return false;
-    if (!_frustumCullingEnabled) return true;
+	if (!_mesh) return false;
+	if (!_frustumCullingEnabled) return true;
 
-    BoundingOrientedBox obb = get_world_bounding_box();
+	if (_isStatic && _isCached)
+		return frustum.Intersects(_cachedWorldOBB);
 
-    // [¹Ú½º À¯È¿¼º °Ë»ç] ¹Ú½º°¡ 0ÀÌ°Å³ª ±úÁ³À¸¸é ±×¸®Áö ¾ÊÀ½ (false)
-    if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
-    {
-        return false;
-    }
+	if (_isStatic && !_isCached && _mesh)
+	{
+		return frustum.Intersects(get_world_bounding_box_internal());
+	}
 
-    return frustum.Intersects(obb);
+	BoundingOrientedBox obb = get_world_bounding_box();
+
+	// [ë°•ìŠ¤ ìœ íš¨ì„± ê²€ì‚¬] ë°•ìŠ¤ê°€ 0ì´ê±°ë‚˜ ê¹¨ì¡Œìœ¼ë©´ ê·¸ë¦¬ì§€ ì•ŠìŒ (false)
+	if (obb.Extents.x <= 0.0f || std::isnan(obb.Center.x))
+	{
+		return false;
+	}
+
+	return frustum.Intersects(obb);
 }
 
 void RenderComponent::pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer)
@@ -157,96 +182,96 @@ void RenderComponent::pre_render(ID3D12GraphicsCommandList* commandList, class R
 
 const std::string& RenderComponent::pso_name() const
 {
-    return _psoName;
+	return _psoName;
 }
 
 void RenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-    // ¿©±â¼­ Ã¼Å©: ÀÌ¹Ì Shadow Pass¿¡¼­ °è»êÇß´Ù¸é ¾Æ¹«°Íµµ ¾È ÇÏ°í Åë°úÇÔ
-    update_world_matrix_cb(frame_index);
+	// ì—¬ê¸°ì„œ ì²´í¬: ì´ë¯¸ Shadow Passì—ì„œ ê³„ì‚°í–ˆë‹¤ë©´ ì•„ë¬´ê²ƒë„ ì•ˆ í•˜ê³  í†µê³¼í•¨
+	update_world_matrix_cb(frame_index);
 
-    // °è»êµÈ(È¤Àº ÀÌ¹Ì ÀÖ´ø) »ó¼ö ¹öÆÛ ÁÖ¼Ò¸¸ GPU¿¡ Àü´Ş
-    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
+	// ê³„ì‚°ëœ(í˜¹ì€ ì´ë¯¸ ìˆë˜) ìƒìˆ˜ ë²„í¼ ì£¼ì†Œë§Œ GPUì— ì „ë‹¬
+	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
 
-    pre_render(commandList, Renderer::instance());
-    _mesh->render(commandList);
+	pre_render(commandList, Renderer::instance());
+	_mesh->render(commandList);
 }
 
 void RenderComponent::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-    if (!_mesh) return;
+	if (!_mesh) return;
 
-    // ¿©±â¼­ Ã¼Å©: 3°³ÀÇ Ä³½ºÄÉÀÌµå Áß Ã¹ ¹øÂ° È£Ãâ ¶§¸¸ °è»êÇÏ°í ³ª¸ÓÁö´Â Åë°ú
-    update_world_matrix_cb(frame_index);
+	// ì—¬ê¸°ì„œ ì²´í¬: 3ê°œì˜ ìºìŠ¤ì¼€ì´ë“œ ì¤‘ ì²« ë²ˆì§¸ í˜¸ì¶œ ë•Œë§Œ ê³„ì‚°í•˜ê³  ë‚˜ë¨¸ì§€ëŠ” í†µê³¼
+	update_world_matrix_cb(frame_index);
 
-    commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
-    _mesh->render_CascadeShadowMap(commandList);
+	commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
+	_mesh->render_CascadeShadowMap(commandList);
 }
 
 
 UINT RenderComponent::get_occlusion_query_index()
 {
-    // Ã³À½ È£ÃâµÉ ¶§ ¸Å´ÏÀú·ÎºÎÅÍ ÀÎµ¦½º ÇÒ´ç
-    if (_occlusionQueryIndex == 0xFFFFFFFF) {
-        _occlusionQueryIndex = OcclusionManager::instance()->allocate_query_index();
-    }
-    return _occlusionQueryIndex;
+	// ì²˜ìŒ í˜¸ì¶œë  ë•Œ ë§¤ë‹ˆì €ë¡œë¶€í„° ì¸ë±ìŠ¤ í• ë‹¹
+	if (_occlusionQueryIndex == 0xFFFFFFFF) {
+		_occlusionQueryIndex = OcclusionManager::instance()->allocate_query_index();
+	}
+	return _occlusionQueryIndex;
 }
 
 XMMATRIX RenderComponent::get_occlusion_box_world_matrix() {
-    // 1. °´Ã¼ÀÇ ·ÎÄÃ ¹Ù¿îµù ¹Ú½º Á¤º¸ °¡Á®¿À±â
-    BoundingOrientedBox obb = get_world_bounding_box();
+	// 1. ê°ì²´ì˜ ë¡œì»¬ ë°”ìš´ë”© ë°•ìŠ¤ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
+	BoundingOrientedBox obb = get_world_bounding_box();
 
-    // 2. ¹Ù¿îµù ¹Ú½ºÀÇ Áß½ÉÁ¡(Center)°ú Å©±â(Extents)¸¦ Çà·Ä·Î º¯È¯
-    // Äõ¸®¿ë Unit Cube°¡ (-0.5~0.5) Å©±â¶ó°í °¡Á¤ÇÒ ¶§:
-    float box_scale = 2.0f;
-    XMMATRIX scale = XMMatrixScaling(obb.Extents.x * box_scale, obb.Extents.y * box_scale, obb.Extents.z * box_scale);
-    XMMATRIX rotation = XMMatrixRotationQuaternion(XMLoadFloat4(&obb.Orientation));
-    XMMATRIX translation = XMMatrixTranslation(obb.Center.x, obb.Center.y, obb.Center.z);
+	// 2. ë°”ìš´ë”© ë°•ìŠ¤ì˜ ì¤‘ì‹¬ì (Center)ê³¼ í¬ê¸°(Extents)ë¥¼ í–‰ë ¬ë¡œ ë³€í™˜
+	// ì¿¼ë¦¬ìš© Unit Cubeê°€ (-0.5~0.5) í¬ê¸°ë¼ê³  ê°€ì •í•  ë•Œ:
+	float box_scale = 2.0f;
+	XMMATRIX scale = XMMatrixScaling(obb.Extents.x * box_scale, obb.Extents.y * box_scale, obb.Extents.z * box_scale);
+	XMMATRIX rotation = XMMatrixRotationQuaternion(XMLoadFloat4(&obb.Orientation));
+	XMMATRIX translation = XMMatrixTranslation(obb.Center.x, obb.Center.y, obb.Center.z);
 
-    // 3. ÃÖÁ¾ ¹Ú½º ¿ùµå Çà·Ä = Scale * Rotation * Translation
-    return scale * rotation * translation;
+	// 3. ìµœì¢… ë°•ìŠ¤ ì›”ë“œ í–‰ë ¬ = Scale * Rotation * Translation
+	return scale * rotation * translation;
 }
 
 void RenderComponent::update_world_matrix_cb(UINT frame_index)
 {
-    // 1. ÇöÀç ¿£ÁøÀÇ Àü¿ª ÇÁ·¹ÀÓ ¹øÈ£¸¦ °¡Á®¿É´Ï´Ù.
+	// 1. í˜„ì¬ ì—”ì§„ì˜ ì „ì—­ í”„ë ˆì„ ë²ˆí˜¸ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
 	UINT64 currentTotalFrame = GameFramework::instance()->get_total_frame_count();
 
-    // 2. ÀÌ¹ø ½ÇÁ¦ ÇÁ·¹ÀÓ¿¡ ÀÌ¹Ì °è»êÀ» ¸¶ÃÆ´Ù¸é Áï½Ã ¸®ÅÏ (Áßº¹ °è»ê ¹æÁö ÇÙ½É)
-    if (_lastUpdatedFrame == currentTotalFrame)
-        return;
+	// 2. ì´ë²ˆ ì‹¤ì œ í”„ë ˆì„ì— ì´ë¯¸ ê³„ì‚°ì„ ë§ˆì³¤ë‹¤ë©´ ì¦‰ì‹œ ë¦¬í„´ (ì¤‘ë³µ ê³„ì‚° ë°©ì§€ í•µì‹¬)
+	if (_lastUpdatedFrame == currentTotalFrame)
+		return;
 
-    // 3. Çà·Ä °è»ê ½ÃÀÛ (ÀÌÁ¦ ÀÌ ºÎºĞÀº ÇÁ·¹ÀÓ´ç µü ÇÑ ¹ø¸¸ ½ÇÇàµË´Ï´Ù.)
-    const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
-    XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
+	// 3. í–‰ë ¬ ê³„ì‚° ì‹œì‘ (ì´ì œ ì´ ë¶€ë¶„ì€ í”„ë ˆì„ë‹¹ ë”± í•œ ë²ˆë§Œ ì‹¤í–‰ë©ë‹ˆë‹¤.)
+	const XMFLOAT4X4& worldMatrixData = game_object()->transform()->world_matrix();
+	XMMATRIX worldMatrix = XMLoadFloat4x4(&worldMatrixData);
 
-    // World Matrix (TransposeÇØ¼­ GPU Àü¼Û¿ëÀ¸·Î ÀúÀå)
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
+	// World Matrix (Transposeí•´ì„œ GPU ì „ì†¡ìš©ìœ¼ë¡œ ì €ì¥)
+	XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_world, XMMatrixTranspose(worldMatrix));
 
-    // ¿ªÇà·Ä °è»ê (Shadow Pass¿Í Main Pass¿¡¼­ Áßº¹À¸·Î ÇÏ´ø ºñ½Ñ ¿¬»ê)
-    XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
-    XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
+	// ì—­í–‰ë ¬ ê³„ì‚° (Shadow Passì™€ Main Passì—ì„œ ì¤‘ë³µìœ¼ë¡œ í•˜ë˜ ë¹„ì‹¼ ì—°ì‚°)
+	XMMATRIX worldInverse = XMMatrixInverse(nullptr, worldMatrix);
+	XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
 
-    // 4. ±âÅ¸ »óÅÂ°ª ¼³Á¤ (±âÁ¸ render() ÇÔ¼ö¿¡ ÀÖ´ø ·ÎÁ÷µé)
-    if (auto op_script = game_object()->get_component<OtherPlayerScript>()) {
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
-    }
-    else if (auto mp_script = game_object()->get_component<MainPlayerScript>()) {
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -2;
-    }
-    else {
-        _mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
-    }
+	// 4. ê¸°íƒ€ ìƒíƒœê°’ ì„¤ì • (ê¸°ì¡´ render() í•¨ìˆ˜ì— ìˆë˜ ë¡œì§ë“¤)
+	if (auto op_script = game_object()->get_component<OtherPlayerScript>()) {
+		_mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
+	}
+	else if (auto mp_script = game_object()->get_component<MainPlayerScript>()) {
+		_mappedCbGameObjectInfo[frame_index]->otherplayer_id = -2;
+	}
+	else {
+		_mappedCbGameObjectInfo[frame_index]->otherplayer_id = -1;
+	}
 
-    // ±×¸²ÀÚ ¼ö½Å ¿©ºÎ ¼³Á¤
-    if (_psoName == "skinned") {
-        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
-    }
-    else {
-        _mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
-    }
+	// ê·¸ë¦¼ì ìˆ˜ì‹  ì—¬ë¶€ ì„¤ì •
+	if (_psoName == "skinned") {
+		_mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 0;
+	}
+	else {
+		_mappedCbGameObjectInfo[frame_index]->bReceiveShadow = 1;
+	}
 
-    // 5. ¾÷µ¥ÀÌÆ® ¿Ï·á Ç¥½Ã
-    _lastUpdatedFrame = currentTotalFrame;
+	// 5. ì—…ë°ì´íŠ¸ ì™„ë£Œ í‘œì‹œ
+	_lastUpdatedFrame = currentTotalFrame;
 }

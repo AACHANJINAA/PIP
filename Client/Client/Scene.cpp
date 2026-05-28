@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Scene.h"
 
 #include "ObjectManager.h"
@@ -107,6 +107,8 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 transformJson["Scale"].value("Z", 1.0f)
                 });
         }
+
+        Renderer::instance()->register_static_object(gameObject);
     }
 }
 
@@ -219,6 +221,8 @@ void Scene::load_foliage_from_file(const std::string& filename, ID3D12Device* de
             // 파싱한 행렬 배열을 인스턴싱 컴포넌트에 넘겨줍니다.
             // 내부적으로 D3D12 StructuredBuffer 또는 InstanceBuffer를 생성하게 끔 구현하셔야 합니다.
             renderComp->set_instance_data(instanceTransforms);
+
+            Renderer::instance()->register_static_object(groupObject);
 
             CLOG("Created Foliage Group: " << meshName << " with " << instanceTransforms.size() << " instances.");
         }

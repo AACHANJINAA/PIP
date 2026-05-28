@@ -756,7 +756,7 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 	// 이렇게 해야 렌더링은 부드럽고, 서버에 보내는 좌표는 정확해집니다.
 	if (transform())
 	{
-		common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{ 0, -0.1, 0 };
+		common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{ 0, -0.1f, 0 };
 		transform()->set_local_position(visualPosition);
 	}
 }
