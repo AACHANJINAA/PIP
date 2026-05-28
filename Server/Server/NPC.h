@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Actor.h"
 #include "GameObject.h"
 #include "PhysicsComponent.h"
@@ -66,6 +66,10 @@ namespace PIP::GAME
 		void SetRoom(int room_id) { _room_id = room_id; }
 		void SetHP(int new_hp) { _hp = new_hp; }
 		void SetLastUpdateTime(std::chrono::steady_clock::time_point t) { _lastUpdateTime = t; }
+
+		// [리스폰] BT 재구성 후 전투/dirty 상태를 한꺼번에 초기화
+		void ResetForRespawn();
+		
 
 		void SetPosition(common::Vec3 newPosition)
 		{
