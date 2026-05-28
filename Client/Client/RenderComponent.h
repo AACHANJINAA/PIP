@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 
 #include "Behavior.h"
@@ -10,19 +10,19 @@ class Shader;
 
 struct Material
 {
-	XMFLOAT4 _ambient;     // È¯°æ±¤(Ambient) 
-	XMFLOAT4 _diffuse;     // ³­¹İ»ç(Diffuse) 
-	XMFLOAT4 _specular;    // Á¤¹İ»ç(Specular)
-	XMFLOAT4 _emissive;    // ¹æÃâ±¤(Emissive)
+	XMFLOAT4 _ambient;     // í™˜ê²½ê´‘(Ambient) 
+	XMFLOAT4 _diffuse;     // ë‚œë°˜ì‚¬(Diffuse) 
+	XMFLOAT4 _specular;    // ì •ë°˜ì‚¬(Specular)
+	XMFLOAT4 _emissive;    // ë°©ì¶œê´‘(Emissive)
 };
 
 struct CbGameObjectInfo
 {
 	XMFLOAT4X4 _world;
-    XMFLOAT4X4 _worldInverseTranspose;
-    int bReceiveShadow;
-    int otherplayer_id;
-    XMFLOAT2 padding;
+	XMFLOAT4X4 _worldInverseTranspose;
+	int bReceiveShadow;
+	int otherplayer_id;
+	XMFLOAT2 padding;
 };
 
 class Material_Shader
@@ -46,57 +46,67 @@ private:
 class RenderComponent : public Behavior
 {
 public:
-    RenderComponent();
-    virtual ~RenderComponent();
+	RenderComponent();
+	virtual ~RenderComponent();
 
-    // render ÇÔ¼ö´Â ÀÌÁ¦ Renderer¿¡ ÀÇÇØ È£ÃâµË´Ï´Ù.
-    virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
-	// render_CascadeShadowMap ÇÔ¼ö
+	// render í•¨ìˆ˜ëŠ” ì´ì œ Rendererì— ì˜í•´ í˜¸ì¶œë©ë‹ˆë‹¤.
+	virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index);
+	// render_CascadeShadowMap í•¨ìˆ˜
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, UINT frame_index);
 
-    // --- Getters & Setters ---
-    virtual void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
+	// --- Getters & Setters ---
+	virtual void set_mesh(const std::shared_ptr<Mesh>& mesh) { _mesh = mesh; }
 
-    //void set_material(std::shared_ptr<GltfMaterial> material) { _material = material; };
-    //void set_materials(const std::vector<std::shared_ptr<GltfMaterial>>& materials) { _materials = materials; }
+	//void set_material(std::shared_ptr<GltfMaterial> material) { _material = material; };
+	//void set_materials(const std::vector<std::shared_ptr<GltfMaterial>>& materials) { _materials = materials; }
    
-    virtual void set_pso_name(const std::string& name) { _psoName = name; }
+	virtual void set_pso_name(const std::string& name) { _psoName = name; }
 
-    virtual BoundingOrientedBox get_world_bounding_box() const;
-    virtual std::shared_ptr<Mesh> mesh() const { return _mesh; }
-    virtual const std::string& pso_name() const;
+	virtual BoundingOrientedBox get_world_bounding_box() const;
+	BoundingOrientedBox get_world_bounding_box_internal() const;
+	virtual std::shared_ptr<Mesh> mesh() const { return _mesh; }
+	virtual const std::string& pso_name() const;
 
-    virtual bool is_visible(const BoundingFrustum& frustum) const;
+	virtual bool is_visible(const BoundingFrustum& frustum) const;
 
-    virtual void pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer);
+	virtual void pre_render(ID3D12GraphicsCommandList* commandList, class Renderer* renderer);
 
-    void set_frustum_culling_enabled(bool enabled) { _frustumCullingEnabled = enabled; }
+	void set_frustum_culling_enabled(bool enabled) { _frustumCullingEnabled = enabled; }
 
-    UINT get_occlusion_query_index();
-    XMMATRIX get_occlusion_box_world_matrix();
-    void update_world_matrix_cb(UINT frame_index);
-    void set_skip_occlusion(bool skip) { _skipOcclusion = skip; }
-    bool skip_occlusion() const { return _skipOcclusion; }
+	// --- Static ìµœì í™” ---
+	void mark_as_static();
+	bool is_static() const { return _isStatic; }
+	const BoundingOrientedBox& cached_world_obb() const { return _cachedWorldOBB; }
+
+	UINT get_occlusion_query_index();
+	XMMATRIX get_occlusion_box_world_matrix();
+	void update_world_matrix_cb(UINT frame_index);
+	void set_skip_occlusion(bool skip) { _skipOcclusion = skip; }
+	bool skip_occlusion() const { return _skipOcclusion; }
 	UINT get_occlusion_query_index() const { return _occlusionQueryIndex; }
 	UINT set_occlusion_query_index(UINT index) { return _occlusionQueryIndex = index; }
 	bool has_allocated_index() const { return _occlusionQueryIndex != 0xFFFFFFFF; }
 	D3D12_GPU_VIRTUAL_ADDRESS get_cb_gpu_address(UINT frame_index) const { return _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress(); }
 
 protected:
-    std::shared_ptr<Mesh> _mesh;
-    //std::shared_ptr<GltfMaterial> _material;                // ¼ÎÀÌ´õ ¶Ç´Â ¸ÓÆ¼¸®¾ó
-    //std::vector<std::shared_ptr<GltfMaterial>> _materials;  // ¼­ºê ¸®¼Ò½º¸¦ ÀÌ¿ëÇÑ ´ÙÁß ÅØ½ºÃÄ¸µÀ» À§ÇÑ º¯¼ö
-    std::string _psoName = "default";
-    // ÇÁ·¹ÀÓ °³¼ö¸¸Å­ ´Ã¸®±â
-    std::array<ComPtr<ID3D12Resource>, SWAP_CHAIN_BUFFERS> _cbGameObjectInfo;
-    std::array<CbGameObjectInfo*, SWAP_CHAIN_BUFFERS> _mappedCbGameObjectInfo;
+	std::shared_ptr<Mesh> _mesh;
+	//std::shared_ptr<GltfMaterial> _material;                // ì…°ì´ë” ë˜ëŠ” ë¨¸í‹°ë¦¬ì–¼
+	//std::vector<std::shared_ptr<GltfMaterial>> _materials;  // ì„œë¸Œ ë¦¬ì†ŒìŠ¤ë¥¼ ì´ìš©í•œ ë‹¤ì¤‘ í…ìŠ¤ì³ë§ì„ ìœ„í•œ ë³€ìˆ˜
+	std::string _psoName = "default";
+	// í”„ë ˆì„ ê°œìˆ˜ë§Œí¼ ëŠ˜ë¦¬ê¸°
+	std::array<ComPtr<ID3D12Resource>, SWAP_CHAIN_BUFFERS> _cbGameObjectInfo;
+	std::array<CbGameObjectInfo*, SWAP_CHAIN_BUFFERS> _mappedCbGameObjectInfo;
 
-    bool _frustumCullingEnabled = true;
+	bool _frustumCullingEnabled = true;
 
-	// occlusion query¸¦ À§ÇÑ ÀÎµ¦½º
-    UINT _occlusionQueryIndex = 0xFFFFFFFF; // ÃÊ±â°ª
-    bool _skipOcclusion = false;
+	// Static ì˜¤ë¸Œì íŠ¸ ìµœì í™”ìš©
+	bool                  _isStatic      = false;
+	bool                  _isCached      = false;
+	BoundingOrientedBox   _cachedWorldOBB;
 
-    UINT64 _lastUpdatedFrame = 0xFFFFFFFFFFFFFFFF;
+	// occlusion queryë¥¼ ìœ„í•œ ì¸ë±ìŠ¤
+	UINT _occlusionQueryIndex = 0xFFFFFFFF; // ì´ˆê¸°ê°’
+	bool _skipOcclusion = false;
+
+	UINT64 _lastUpdatedFrame = 0xFFFFFFFFFFFFFFFF;
 };
-

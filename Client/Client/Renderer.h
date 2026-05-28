@@ -33,6 +33,7 @@ public:
     const auto& get_shadow_render_map() const { return _shadowRenderMap; }
     const auto& get_gltf_shadow_instance_groups() const { return _gltfShadowInstanceGroups; }
 
+    void register_static_object(const std::shared_ptr<GameObject>& obj);
 private:
     void create_root_signatures(ID3D12Device* device);
     void create_pipeline_state_objects(ID3D12Device* device);
@@ -44,6 +45,8 @@ private:
     void render_pso_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, CameraComponent* camera, UINT frame_index);
     void draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
 
+    // --- Static 렌더 리스트 관리 ---
+    void clear_static_render_list();
 
     // [변경] 개별 ComPtr 대신, 이름으로 루트 시그니처를 관리하는 map을 사용합니다.
     std::unordered_map<std::string, ComPtr<ID3D12RootSignature>> _rootSignatures;
@@ -77,6 +80,11 @@ private:
 
     std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfInstanceGroups;
     std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfShadowInstanceGroups;
+
+    // Static Pre-built 렌더 리스트
+    std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>> _staticRenderList;
+    std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _staticGltfInstanceGroups;
+    bool _staticListBuilt = false;
 
 public:
     UINT get_total_render_count() const { return _totalRenderCount; }

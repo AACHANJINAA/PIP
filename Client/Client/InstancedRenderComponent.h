@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "RenderComponent.h"
 
 class InstancedRenderComponent : public RenderComponent
