@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -10,6 +10,7 @@
 #include "CameraComponent.h"
 #include "DebugDrawManager.h"
 #include "MonsterHPUIRenderComponent.h"
+#include "AnimationComponent.h"
 #include "ReadGLTFMesh.h"
 #include "UIFrameRenderComponent.h"
 #include "UIManager.h"
@@ -17,6 +18,7 @@
 #include "SoundManager.h"
 #include "InputManager.h"
 #include "NetworkManager.h"
+#include "QuestNPCScript.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -47,6 +49,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolem.gltf", true);
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolemRd.gltf", true);
 	ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+    ResourceManager::instance()->load_mesh("Resource/Character/Bandit_Rd_NPC/Bandit_Rd_NPC.gltf",true);
 	auto idle_brute_mesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
 	dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf", "attack");
 	// =========================================================================
@@ -68,6 +71,9 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
     // 성당
     load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-2_-1_MapData/Landscape_-2_-1_ExportedClientData.json", device, commandList);
 
+    // NPC
+    auto questNpc = ObjectManager::instance()->create_game_object("QuestNPC");
+    questNpc->add_component<QuestNPCScript>();
 
 	// 카메라 생성
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
@@ -203,6 +209,7 @@ void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommand
     monster_hp_ui_renderer->set_hp_back_texture("Resource/UI/HP_Bar_Frame.dds");
     monster_hp_ui_renderer->set_hp_bar_texture("Resource/UI/HP_Bar.dds");
 }
+
 
 void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
