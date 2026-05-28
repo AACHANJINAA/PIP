@@ -159,6 +159,9 @@
     <Filter Include="0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent">
       <UniqueIdentifier>{d601eca4-60f3-4a85-b575-3ef6c7e4c32e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="1. Game\2. Scripts\MainLogics\QuestNPC">
+      <UniqueIdentifier>{5e725bc6-bba7-4953-8b37-a49db4e3fb95}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -500,6 +503,9 @@
     <ClInclude Include="InstanceglTFShader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="QuestNPCScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\QuestNPC</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -807,6 +813,9 @@
     </ClCompile>
     <ClCompile Include="InstancedRenderComponent.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="QuestNPCScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\QuestNPC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

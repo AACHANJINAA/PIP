@@ -770,12 +770,15 @@ void GameFramework::view_window_title_bar_with_frame_rate_and_camera_info_and_ma
 			WCHAR camInfoText[256];
 			// Pos(위치)와 Rot(각도: Pitch, Yaw, Roll)를 한눈에 보이게 포맷팅
 			swprintf_s(camInfoText, 256,
-				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]   |   MainPlayerPos: [%.2f, %.2f, %.2f]",
+				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]   |   MainPlayerPos: [%.2f, %.2f, %.2f]   |   MainPlayerRot: [%.1f, %.1f, %.1f]",
 				pos.x, pos.y, pos.z,  // 위치
 				rot.x, rot.y, rot.z,   // 각도 (Pitch, Yaw, Roll)
 				MainPlayer->transform()->get_world_position().x,
 				MainPlayer->transform()->get_world_position().y,
-				MainPlayer->transform()->get_world_position().z
+				MainPlayer->transform()->get_world_position().z,
+				MainPlayer->transform()->local_rotation_euler().x,
+				MainPlayer->transform()->local_rotation_euler().y,
+				MainPlayer->transform()->local_rotation_euler().z
 			);
 
 			windowTitle += camInfoText;

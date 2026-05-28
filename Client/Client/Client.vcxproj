@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -168,6 +168,7 @@
     <ClInclude Include="PhysicsColliderComponent.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerShader.h" />
+    <ClInclude Include="QuestNPCScript.h" />
     <ClInclude Include="ReadFBXMesh.h" />
     <ClInclude Include="ReadGLBMesh.h" />
     <ClInclude Include="ReadGLTFMesh.h" />
@@ -300,6 +301,7 @@
     <ClCompile Include="PhysicsColliderComponent.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerShader.cpp" />
+    <ClCompile Include="QuestNPCScript.cpp" />
     <ClCompile Include="ReadFBXMesh.cpp" />
     <ClCompile Include="ReadGLBMesh.cpp" />
     <ClCompile Include="ReadGLTFMesh.cpp" />
@@ -463,7 +465,7 @@
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+      <ErrorText>???꾨줈?앺듃????而댄벂?곗뿉 ?녿뒗 NuGet ?⑦궎吏瑜?李몄“?⑸땲?? ?대떦 ?⑦궎吏瑜??ㅼ슫濡쒕뱶?섎젮硫?NuGet ?⑦궎吏 蹂듭썝???ъ슜?섏떗?쒖삤. ?먯꽭???댁슜? http://go.microsoft.com/fwlink/?LinkID=322105瑜?李몄“?섏떗?쒖삤. ?꾨씫???뚯씪? {0}?낅땲??</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets'))" />
     <Error Condition="!Exists('..\packages\directxtex_desktop_win10.2025.7.10.1\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtex_desktop_win10.2025.7.10.1\build\native\directxtex_desktop_win10.targets'))" />
