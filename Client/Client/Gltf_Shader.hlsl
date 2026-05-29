@@ -1,16 +1,16 @@
- #define MAX_LIGHTS 16
+#define MAX_LIGHTS 16
 
- #define POINT_LIGHT 1
- #define SPOT_LIGHT 2
- #define DIRECTIONAL_LIGHT 3
+#define POINT_LIGHT 1
+#define SPOT_LIGHT 2
+#define DIRECTIONAL_LIGHT 3
 
 cbuffer cbMaterial : register(b2)
 {
     float4 BaseColorFactor;
     
     float4 EmissiveAndMetallicFactor; // RGB: Emissive, A: Metallic (Offset 16)
-	#define EmissiveFactor (EmissiveAndMetallicFactor.rgb)
-	#define MetallicFactor (EmissiveAndMetallicFactor.a)
+#define EmissiveFactor (EmissiveAndMetallicFactor.rgb)
+#define MetallicFactor (EmissiveAndMetallicFactor.a)
 
     float RoughnessFactor; // 다음 16바이트 레지스터 시작 (Offset 32)
     float NormalTextureScale;
@@ -141,7 +141,8 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
 
 float3 lerp_op(float3 final_color)
 {
-	const float3 playercolors[4] = {
+    const float3 playercolors[4] =
+    {
         float3(0.863f, 0.078f, 0.235f), // crimson red
 		float3(0.0f, 1.0f, 0.498f), // spring green
 		float3(1.0f, 0.843f, 0.0f), // gold
@@ -162,36 +163,15 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
     float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
-
-    // 3. orm, occlusion 텍스처가 있는지 여부에 따라 Factor 또는 텍스처 샘플링 값 사용
 	
-    float hasOcclusion = (float) (HasOcclusionTexture > 0);
-    float hasORM = (float) (HasMetallicRoughnessTexture > 0);
-    float occSample = g_txOcclusion.Sample(g_samLinear, In.TexCoord).r;
-    float ormSample = orm.r;
-
-	// 로직 합성 (역순으로 조립) / Base -> ORM 적용 -> Occlusion 적용 순서로 덮어씌움
-    float ao = 1.0f; // 기본값
-
-	// ORM 텍스처가 있으면 ormSample을, 없으면 기존 ao(1.0) 유지
-	// Occlusion 텍스처가 있으면 occSample을, 없으면 직전 ao 유지 (가장 높은 우선순위)
-    ao = lerp(ao, ormSample, hasORM);
-    ao = lerp(ao, occSample, hasOcclusion);
-
-    float roughness;
-    float metallic;
-
-    if (HasMetallicRoughnessTexture > 0)
-    {
-		// 텍스처가 있는 경우: 텍스처 값 * Factor
-        roughness = orm.g * RoughnessFactor;
-        metallic = orm.b * MetallicFactor;
-    }
-    else
-    {
-        roughness = RoughnessFactor;
-        metallic = MetallicFactor; 
-    }
+    float hasOccTex = step(0.5f, (float) HasOcclusionTexture);
+    float hasMetTex = step(0.5f, (float) HasMetallicRoughnessTexture);
+	// AO 계산 (기본 1.0 -> ORM 텍스처 -> Occlusion 텍스처 순으로 덮어씌움)
+    float ao = lerp(1.0f, orm.r, hasMetTex);
+    ao = lerp(ao, g_txOcclusion.Sample(g_samLinear, In.TexCoord).r, hasOccTex);
+    
+    float roughness = lerp(RoughnessFactor, orm.g * RoughnessFactor, hasMetTex);
+    float metallic = lerp(MetallicFactor, orm.b * MetallicFactor, hasMetTex);
 
      // 3. Normal Map
     float3 N = normalize(In.Normal);
@@ -199,34 +179,35 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
     float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
 
-    if (length(normalMapSample) > 0.1f)
-    {
-        float3 N_map = normalMapSample * 2.0 - 1.0;
-        
-        float3 T = normalize(In.Tangent);
-        float3 B = normalize(In.Bitangent);
+    float3 N_map = normalMapSample * 2.0 - 1.0;
+    float3 T = normalize(In.Tangent);
+    float3 B = normalize(In.Bitangent);
+    float3x3 TBN = float3x3(T, B, N_geom);
+    float3 N_mapped = normalize(mul(N_map, TBN));
 
-             // TBN 행렬을 이용한 변환
-        float3x3 TBN = float3x3(T, B, N_geom);
-        N = normalize(mul(N_map, TBN));
-    }
+	// 노멀맵 데이터가 유효한지(길이가 0.1 초과인지) 판별
+    float hasNormal = step(0.1f, length(normalMapSample));
 
-         // 4. Emissive
+	// 조건에 따라 원래 지오메트리 노멀과 맵이 적용된 노멀 사이를 보간
+    N = lerp(N_geom, N_mapped, hasNormal);
+
+    // 4. Emissive
     float3 emissiveSample = g_txEmissive.Sample(g_samLinear, In.TexCoord).rgb;
     float3 finalEmissive = emissiveSample * EmissiveFactor;
 
-         // 5. View vector
+    // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-    if (dot(N, V) < 0.0)
-    {
-        N = -N;
-    }
+	// faceforward 함수는 세 번째 인자(Normal)를 기준으로 첫 번째 인자(Normal)의 방향을 결정.
+	// 두 번째 인자(-V)는 시점에서 표면으로 향하는 벡터의 반대 방향(즉, 표면에서 시점으로 향하는 벡터)입니다.
+	// 따라서, 만약 Normal이 시점에서 표면으로 향하는 벡터와 같은 방향을 가리키고 있다면, faceforward는 Normal의 방향을 뒤집어서 시점에서 표면으로 향하도록 합니다.
+    N = faceforward(N, -V, N);
+
     // 1. 직접광 계산 (Light.hlsl의 Lighting 함수)
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao, SpecularFactor);
 
    // 2. 환경광 계산 (IBL.hlsl의 CalculateIBL 함수)
-    float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao); 
+    float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
     
     // View 공간에서의 깊이(Z) 값 계산 (어떤 Cascade를 쓸지 결정하기 위함)
     float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
@@ -238,23 +219,20 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 3. 최종 색상 계산: 직접광 + IBL + Emissive, 모두 그림자 영향을 받음
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
 
-    if (g_otherplayerid == -2) finalColor += albedo * 0.05f;
-    else if (g_otherplayerid > -1) finalColor = lerp_op(finalColor);
+    // 4. 플레이어일 경우 색상 보정 (g_otherplayerid에 따라 색상 변경)
+    float isMinusTwo = 1.0f - step(0.1f, abs((float) g_otherplayerid + 2.0f));
+    float GreaterThanMinusOne = step(-0.5f, (float) g_otherplayerid);
+
+    finalColor += albedo * 0.05f * isMinusTwo;
+    finalColor = lerp(finalColor, lerp_op(finalColor), GreaterThanMinusOne);
     
     // MASK 모드: alphaCutoff 이하의 픽셀을 폐기 (clip 함수 사용)
-    if (AlphaMode == 1) clip(diffuseSample.a - AlphaCutoff); // 알파가 cutoff보다 작으면 픽셀 폐기
+    if (AlphaMode == 1)
+        clip(diffuseSample.a - AlphaCutoff); // 알파가 cutoff보다 작으면 픽셀 폐기
     
     // 톤 매핑 및 감마 보정
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
-    
-    // 음수인지 판별 1: 양수, 0: 음수
-    //float lerp_strength = clamp((float) g_otherplayerid + 1.0f, 0.0f, 1.0f);
-    
-    
-    //finalColor = lerp_op(finalColor, lerp_strength);
-    
-   
     
     return float4(finalColor, diffuseSample.a);
 }
