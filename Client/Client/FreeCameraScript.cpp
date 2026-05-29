@@ -135,7 +135,8 @@ void FreeCameraScript::player_camera_conflict_update(float delta_time)
         for (const auto& obj : allGameObjects)
         {
             if (!obj || !obj->is_enable() || obj->is_destroyed() ||
-                obj->is_in_layer("Player") || obj->is_in_layer("OtherPlayer") || obj->is_in_layer("Enemy") || obj->name() == "Camera" || obj->name() == "TestMesh")
+                obj->is_in_layer("Player") || obj->is_in_layer("OtherPlayer") || obj->is_in_layer("Enemy") || obj->name() == "Camera" || obj->name() == "TestMesh"
+                || obj->name() == "QuestNPC")
             {
                 continue;
             }
