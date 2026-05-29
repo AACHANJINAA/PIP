@@ -102,49 +102,45 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
 
     float3 Lo = float3(0.0, 0.0, 0.0);
 
-       [unroll(MAX_LIGHTS)]
+	[unroll(MAX_LIGHTS)]
     for (int i = 0; i < gnLights; i++)
     {
-        if (!gLights[i].m_bEnable)
-            continue;
+         // 1. 활성화 및 거리 체크 (continue 대신 가중치 0으로 렌더링 무효화)
+        float isEnable = (float) gLights[i].m_bEnable;
+        float distance_to_Light = length(gLights[i].m_vPosition - worldPos);
 
-        float distandce_to_Light = length(gLights[i].m_vPosition - worldPos);
-        if (gLights[i].m_nType != DIRECTIONAL_LIGHT && distandce_to_Light > gLights[i].m_fRange * 1.2f)
-            continue;
+		// Directional은 거리 무관(1.0), 나머지는 거리 체크
+        float isDirLight_chk = step(2.5f, (float) gLights[i].m_nType); // DIRECTIONAL(3)
+        float inRange = step(distance_to_Light, gLights[i].m_fRange * 1.2f);
+        float validLight = isEnable * saturate(isDirLight_chk + inRange);
 
-        float3 L;
-        float attenuation = 1.0;
+		// 2. 빛 타입 식별
+        float isDir = step(2.5f, (float) gLights[i].m_nType); // 3이면 1.0
+        float isSpot = step(1.5f, (float) gLights[i].m_nType) - isDir; // 2이면 1.0
+        float isPoint = step(0.5f, (float) gLights[i].m_nType) - step(1.5f, (float) gLights[i].m_nType); // 1이면 1.0
 
-           // Light 타입별 처리 (기존과 동일)
-        if (gLights[i].m_nType == DIRECTIONAL_LIGHT)
-        {
-            L = normalize(-gLights[i].m_vDirection);
-            attenuation = 1.0;
-        }
-        else if (gLights[i].m_nType == POINT_LIGHT)
-        {
-            L = normalize(gLights[i].m_vPosition - worldPos);
-            float distance = length(gLights[i].m_vPosition - worldPos);
+    	// --- DIRECTIONAL 연산 ---
+        float3 L_dir = normalize(-gLights[i].m_vDirection);
+        float atten_dir = 1.0f;
 
-            if (distance > gLights[i].m_fRange)
-                continue;
+		// --- POINT 연산 ---
+        float3 L_point = normalize(gLights[i].m_vPosition - worldPos);
+        float atten_point = 1.0f / dot(gLights[i].m_vAttenuation, float3(1.0f, distance_to_Light, distance_to_Light * distance_to_Light));
+        atten_point *= step(distance_to_Light, gLights[i].m_fRange); // 사거리 밖은 0
 
-            attenuation = 1.0 / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
-        }
-        else if (gLights[i].m_nType == SPOT_LIGHT)
-        {
-            L = normalize(gLights[i].m_vPosition - worldPos);
-            float distance = length(gLights[i].m_vPosition - worldPos);
+		// --- SPOT 연산 ---
+        float3 L_spot = normalize(gLights[i].m_vPosition - worldPos);
+        float fAlpha = max(dot(-L_spot, gLights[i].m_vDirection), 0.0f);
+        float fSpotFactor = pow(max(((fAlpha - gLights[i].m_fPhi) / (gLights[i].m_fTheta - gLights[i].m_fPhi)), 0.0f), gLights[i].m_fFalloff);
+        float atten_spot = fSpotFactor / dot(gLights[i].m_vAttenuation, float3(1.0f, distance_to_Light, distance_to_Light * distance_to_Light));
+        atten_spot *= step(distance_to_Light, gLights[i].m_fRange);
 
-            if (distance > gLights[i].m_fRange)
-                continue;
+		// 3. 최종 L과 Attenuation 도출 (if문 대체)
+        float3 L = L_dir * isDir + L_point * isPoint + L_spot * isSpot;
+        L = normalize(L); // 0벡터 방지
+        float attenuation = (atten_dir * isDir + atten_point * isPoint + atten_spot * isSpot) * validLight;
 
-            float fAlpha = max(dot(-L, gLights[i].m_vDirection), 0.0f);
-            float fSpotFactor = pow(max(((fAlpha - gLights[i].m_fPhi) / (gLights[i].m_fTheta -gLights[i].m_fPhi)), 0.0f), gLights[i].m_fFalloff);
-            attenuation = fSpotFactor / dot(gLights[i].m_vAttenuation, float3(1.0, distance, distance * distance));
-        }
-
-           // 벡터 및 Dot products 계산
+    	// 벡터 및 Dot products 계산
         float3 H = normalize(V + L);
         float3 radiance = gLights[i].m_cDiffuse.rgb * attenuation;
 
