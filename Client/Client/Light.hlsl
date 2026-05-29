@@ -102,11 +102,10 @@ float4 Lighting(float3 worldPos, float3 N, float3 V, float3 albedo, float metall
 
     float3 Lo = float3(0.0, 0.0, 0.0);
 
-       [unroll(MAX_LIGHTS)]
+	[unroll(MAX_LIGHTS)]
     for (int i = 0; i < gnLights; i++)
     {
-        if (!gLights[i].m_bEnable)
-            continue;
+        if (!gLights[i].m_bEnable) continue;
 
         float distandce_to_Light = length(gLights[i].m_vPosition - worldPos);
         if (gLights[i].m_nType != DIRECTIONAL_LIGHT && distandce_to_Light > gLights[i].m_fRange * 1.2f)

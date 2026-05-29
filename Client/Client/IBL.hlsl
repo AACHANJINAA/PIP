@@ -112,11 +112,12 @@ float3 CalculateIBL(float3 N, float3 V, float3 albedo, float metallic, float rou
     // 2. Specular IBL 계산
     float3 specular = CalculateSpecularIBL(N, V, albedo, metallic, roughness);
 
-    // 3. Metalic 수치일 때의 최소 스페큘러 강도를 설정
-    float specularScale = 0.4f;
-    if (metallic < 0.1f)
-        specularScale = 0.0f;
-    specular *= specularScale;
+    // 3. Metalic 수치에 따라 최소 스페큘러 강도를 설정
+	// metallic / 0.1f는 metallic이 0.1 이상일 때 1.0 이상의 값을 갖게 됩니다.
+	// 이를 saturate 함수로 감싸서 값을 [0, 1] 사이로 제한
+	// metallic이 0이면 lerp(0.0, 0.4, 0) = 0.4 가 되고, 0.1 이상이면 lerp(0.0, 0.4, 1) = 0.4이 됩니다.
+    float specular_scale = lerp(0.0f, 0.4f, saturate(metallic / 0.1f));
+    specular *= specular_scale;
 
     // 4. 합산 후 AO 적용
     return (diffuse + specular) * ao;

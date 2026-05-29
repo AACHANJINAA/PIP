@@ -163,17 +163,20 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 2. ORM (Occlusion, Roughness, Metallic) 값 설정
     float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
 
-     // Occlusion: 별도 텍스처가 있으면 그것을 사용, 없으면 ORM.r 사용
-    float ao = 1.0f; // 기본값은 밝음
-    if (HasOcclusionTexture > 0)
-    {
-        ao = g_txOcclusion.Sample(g_samLinear, In.TexCoord).r;
-    }
-    else if (HasMetallicRoughnessTexture > 0)
-    {
-    // Occlusion 전용 텍스처는 없지만 ORM 텍스처는 있는 경우, R채널 사용
-        ao = orm.r;
-    }
+    // 3. orm, occlusion 텍스처가 있는지 여부에 따라 Factor 또는 텍스처 샘플링 값 사용
+	
+    float hasOcclusion = (float) (HasOcclusionTexture > 0);
+    float hasORM = (float) (HasMetallicRoughnessTexture > 0);
+    float occSample = g_txOcclusion.Sample(g_samLinear, In.TexCoord).r;
+    float ormSample = orm.r;
+
+	// 로직 합성 (역순으로 조립) / Base -> ORM 적용 -> Occlusion 적용 순서로 덮어씌움
+    float ao = 1.0f; // 기본값
+
+	// ORM 텍스처가 있으면 ormSample을, 없으면 기존 ao(1.0) 유지
+	// Occlusion 텍스처가 있으면 occSample을, 없으면 직전 ao 유지 (가장 높은 우선순위)
+    ao = lerp(ao, ormSample, hasORM);
+    ao = lerp(ao, occSample, hasOcclusion);
 
     float roughness;
     float metallic;
