@@ -25,7 +25,6 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 {
     ShadowManager::instance()->set_shadow_max_distance(250.0f);
     // 효과음 테스트
->>>>>>> 9b0881b8762e9f3263988c323b8ab3430b84015b
 	SoundManager::instance()->load_sound("Swing", "Resource/Sound/Dust.wav", true);
 	SoundManager::instance()->play_3d("Swing", {-360,10,-212},SoundType::SFX,1.0f,true);
 
