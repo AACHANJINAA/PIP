@@ -30,6 +30,9 @@ public:
     void update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index);
     void bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shadowCbParamIdx, UINT shadowSrvParamIdx, class Renderer* renderer);
 
+	void set_shadow_max_distance(float distance) { shadow_max_distance = distance; }
+	float get_shadow_max_distance() const { return shadow_max_distance; }
+
 private:
     ShadowManager() = default;
     ~ShadowManager() = default;
@@ -38,7 +41,7 @@ private:
 
     int _shadowmapSize = 6144;
 
-    float shadow_max_distance = 500;
+    float shadow_max_distance = 250;
 
     ComPtr<ID3D12Resource>       _shadowMapArray;
     ComPtr<ID3D12DescriptorHeap> _dsvHeap;        // CPU only, 3 slots

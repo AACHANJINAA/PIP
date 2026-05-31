@@ -21,11 +21,14 @@
 #include "SoundManager.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
+#include "ShadowManager.h"
 
 extern HINSTANCE hInst;
 
 void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    ShadowManager::instance()->set_shadow_max_distance(500.0f);
+
     // 일단 검은 창을 띄우고 로드하도록 수정
     
     // 오프닝 연출에 필요한 리소스 로드 및 캐릭터 생성
