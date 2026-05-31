@@ -220,11 +220,10 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
 
     // 4. 플레이어일 경우 색상 보정 (g_otherplayerid에 따라 색상 변경)
-    float isMinusTwo = 1.0f - step(0.1f, abs((float) g_otherplayerid + 2.0f));
-    float GreaterThanMinusOne = step(-0.5f, (float) g_otherplayerid);
-
-    finalColor += albedo * 0.05f * isMinusTwo;
-    finalColor = lerp(finalColor, lerp_op(finalColor), GreaterThanMinusOne);
+    if (g_otherplayerid == -2) 
+        finalColor += albedo * 0.05f;
+    else if (g_otherplayerid > -1) 
+        finalColor = lerp_op(finalColor);
     
     // MASK 모드: alphaCutoff 이하의 픽셀을 폐기 (clip 함수 사용)
     if (AlphaMode == 1)
