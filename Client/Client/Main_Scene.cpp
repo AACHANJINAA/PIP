@@ -18,12 +18,6 @@
 #include "SoundManager.h"
 #include "InputManager.h"
 #include "NetworkManager.h"
-<<<<<<< HEAD
-
-void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
-{
-	// 효과음 테스트
-=======
 #include "QuestNPCScript.h"
 #include "ShadowManager.h"
 
