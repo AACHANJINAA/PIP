@@ -25,7 +25,7 @@ void Scene::on_scene_loaded()
 {
 }
 
-void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,ID3D12GraphicsCommandList* commandList)
+void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,ID3D12GraphicsCommandList* commandList, bool IsTitle)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -108,6 +108,15 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
                 });
         }
 
+        if (IsTitle)
+        {
+            renderComp->set_culling_distance(500.0f);
+        }
+        else
+        {
+            if (filename.find("Landscape_-1_0") != std::string::npos) renderComp->set_culling_distance(200.0f);
+            else  renderComp->set_culling_distance(300.0f);
+        }
         Renderer::instance()->register_static_object(gameObject);
     }
 }
