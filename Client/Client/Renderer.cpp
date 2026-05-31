@@ -258,6 +258,9 @@ void Renderer::build_render_list(const CameraComponent* camera)
 		// --- 1. 일반 렌더링 리스트 빌드 (View Frustum Culling) ---
 		float renderLimit = (psoName == "terrain") ? 700.0f : 500.0f;
 		if (psoName == "gltf_instanced") renderLimit = 3000.0f;
+
+		if (renderComp->culling_distance() >= 0.0f) renderLimit = renderComp->culling_distance();
+
 		if (distSq < (renderLimit * renderLimit))
 		{
 			bool isVisible = renderComp->is_visible(frustum);
