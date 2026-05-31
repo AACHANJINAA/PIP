@@ -21,6 +21,15 @@ namespace PIP
 		std::vector<common::Vec3> patrol_points;
 	};
 
+	struct QuestData
+	{
+		int32_t id;
+		common::packet::QuestType type;
+		std::string target_name; // e.g., "Tainer"
+		int32_t target_count;
+		int32_t reward_exp;
+	};
+
 	class LuaManager : public Singleton<LuaManager>
 	{
 		friend class Singleton<LuaManager>;
@@ -37,9 +46,11 @@ namespace PIP
 		void LoadDataFile();
 
 		const NPCSpawnData* GetNPCSpawnData(common::packet::NPCType type, int index) const;
+		const QuestData* GetQuestData(int32_t id) const; // [추가]
 		
 	private:
 		void LoadNPCData();
+		void LoadQuestData(); // [추가]
 
 		static GAME::GameObject* GetOwner(lua_State* L);
 
@@ -51,9 +62,11 @@ namespace PIP
 		static int Lua_Log(lua_State* L);
 
 		static int Lua_LoadNPCData(lua_State* L);
+		static int Lua_LoadQuestData(lua_State* L); // [추가]
 
 	public:
 		lua_State* L = nullptr; // Lua 상태를 저장하는 멤버 변수
 		std::unordered_map<common::packet::NPCType, std::vector<NPCSpawnData>> _npcSpawnData; // NPC 유형별 스폰 데이터 맵
+		std::unordered_map<int32_t, QuestData> _questData; // [추가] 퀘스트 원본 데이터
 	};
 }

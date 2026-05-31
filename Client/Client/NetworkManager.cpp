@@ -18,6 +18,7 @@
 #include "SceneManager.h"
 #include "TainerScript.h"
 #include "UIFrameRenderComponent.h"
+#include "QuestNPCScript.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -215,6 +216,18 @@ void NetworkManager::SendActionPacket(int32_t actionID, int64_t targetID,
 	packet._target_id = targetID;
 	packet._position = pos;
 	packet._direction = dir;
+
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+void NetworkManager::SendNPCInteractPacket(int64_t npc_id, int32_t quest_id)
+{
+	if (!_isLogin) return;
+	common::packet::CS_PACKET_NPC_INTERACT packet;
+	packet._type = common::packet::PacketType::C2S_P_NPC_INTERACT;
+	packet._size = sizeof(packet);
+	packet._npc_id = npc_id;
+	packet._quest_id = quest_id;
 
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
@@ -556,17 +569,9 @@ void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
 		int64_t npc_id = npc_start_id + i;
 		auto NPC = ObjectManager::instance()->create_game_object("npc_pool" + std::to_string(npc_id));
 		NPC->set_layer("Enemy");
-
-		// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
-		NPC->add_component<MonsterHPComponent>();
-		NPC->add_component<AnimationComponent>();
-		NPC->add_component<RenderComponent>();
 		NPC->set_enabled(false); // 처음에는 비활성화 상태로 풀에 저장
 
-		auto NPC_logic= NPC->add_component<NPCScript>();
-
-		auto rs = GameFramework::instance()->get_replication_system();
-		if (rs) rs->register_entity(npc_id, NPC_logic.get());
+		// 실제 컴포넌트 부착과 ReplicationSystem 등록은 HANDLE_S2C_SPAWN_NPC에서 타입별로 수행합니다.
 
 		ObjectManager::instance()->register_npc(npc_id, NPC);
 	}
@@ -577,17 +582,9 @@ void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
 		int64_t boss_id = boss_start_id + i;
 		auto Boss = ObjectManager::instance()->create_game_object("boss_pool" + std::to_string(boss_id));
 		Boss->set_layer("Enemy");
-
-		// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
-		Boss->add_component<MonsterHPComponent>();
-		Boss->add_component<AnimationComponent>();
-		Boss->add_component<RenderComponent>();
 		Boss->set_enabled(false); // 처음에는 비활성화 상태로 풀에 저장
 
-		auto NPC_logic = Boss->add_component<TainerScript>().get();
-
-		auto rs = GameFramework::instance()->get_replication_system();
-		if (rs) rs->register_entity(boss_id, NPC_logic);
+		// 실제 컴포넌트 부착과 ReplicationSystem 등록은 HANDLE_S2C_SPAWN_NPC에서 수행합니다.
 
 		ObjectManager::instance()->register_npc(boss_id, Boss);
 	}
@@ -600,23 +597,33 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	std::string npc_name;
 	stream >> npc_name;
 
-	// [수정] 이미 존재하는지 확인 (AOI 재진입 대응)
+	// [수정] 이미 존재하는지 확인 (AOI 재진입 대응 및 Pool 사용)
 	auto existingNPC = ObjectManager::instance()->find_npc(npc_spawn_packet._npc_id);
+	std::shared_ptr<GameObject> NPC = nullptr;
+	
 	if (existingNPC)
 	{
-		// [수정] 풀에서 찾은 경우 렌더링을 켜고 초기화 진행
-		existingNPC->set_enabled(true);
-		if (auto script = existingNPC->get_component<NPCScript>()) {
-			script->initialize_from_server(npc_spawn_packet);
+		NPC = existingNPC;
+		NPC->set_enabled(true);
+		
+		// 이미 초기화된 오브젝트인지 확인 (컴포넌트가 있는지)
+		auto existing_script = NPC->get_component<NPCScript>();
+		if (existing_script) {
+			// AOI 재진입의 경우
+			existing_script->initialize_from_server(npc_spawn_packet);
+			return;
 		}
-		return;
+	}
+	else
+	{
+		NPC = ObjectManager::instance()->create_game_object(npc_name);
+		NPC->set_layer("Enemy");
 	}
 
-	auto NPC = ObjectManager::instance()->create_game_object(npc_name);
-	NPC->set_layer("Enemy");
-
 	// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
-	NPC->add_component<MonsterHPComponent>();
+	if (npc_spawn_packet._npc_type != common::packet::NPCType::QuestNPC) {
+		NPC->add_component<MonsterHPComponent>();
+	}
 	NPC->add_component<AnimationComponent>();
 	NPC->add_component<RenderComponent>();
 
@@ -642,6 +649,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 			NPC_logic = NPC->add_component<NPCScript>().get(); // TainerScript 부착
 		}
 		break;
+		case common::packet::NPCType::QuestNPC:
+		{
+			NPC_logic = NPC->add_component<QuestNPCScript>().get();
+		}
+		break;
 		default:
 			CLOG("Unknown NPC Type: " << (int)npc_spawn_packet._npc_type);
 			NPC_logic = NPC->add_component<NPCScript>().get();
@@ -656,7 +668,9 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		auto rs = GameFramework::instance()->get_replication_system();
 		if (rs) rs->register_entity(npc_spawn_packet._npc_id, NPC_logic);
 
+		if (existingNPC == nullptr) {
 		ObjectManager::instance()->register_npc(npc_spawn_packet._npc_id, NPC);
+	}
 	}
 }
 void NetworkManager::HANDLE_S2C_MOVE_NPC(common::packet::PacketStream& stream)
@@ -798,6 +812,31 @@ void NetworkManager::Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& 
 	//TODO: 실제로는 여기서 씬이 전환되어야함 -> 
 	// 예를 들어 로딩화면 보여주고 있다가 로딩 다 되어도 대기하고 있다가 이 패킷이 오면 로딩씬 제거하고 게임씬 보여주기
 	CLOG("All players are ready. Game starts now!");
+}
+
+void NetworkManager::HANDLE_S2C_QUEST_UPDATE(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_QUEST_UPDATE pkt;
+	stream >> pkt;
+
+	CLOG("[Quest] Quest " << pkt._quest_info._quest_id << " updated! State: " << (int)pkt._quest_info._state 
+		<< ", Progress: " << pkt._quest_info._current_count << " / " << pkt._quest_info._target_count);
+
+	_quests[pkt._quest_info._quest_id] = pkt._quest_info;
+}
+
+void NetworkManager::HANDLE_S2C_QUEST_INFO(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_QUEST_INFO header;
+	stream >> header;
+
+	for (uint8_t i = 0; i < header._quest_count; ++i)
+	{
+		common::packet::QuestUpdateInfo info;
+		stream >> info;
+		_quests[info._quest_id] = info;
+		CLOG("[Quest] Loaded Quest " << info._quest_id << " State: " << (int)info._state);
+	}
 }
 
 void NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream) 
@@ -956,6 +995,12 @@ bool NetworkManager::init_network()
 		std::bind(&NetworkManager::Handle_S2C_P_ITEM_UPDATE, this, std::placeholders::_1));
 	RegisterHandler(common::packet::PacketType::S2C_P_INVENTORY_ALL_INFO,
 		std::bind(&NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO, this, std::placeholders::_1));
+
+	RegisterHandler(common::packet::PacketType::S2C_P_QUEST_UPDATE,
+		std::bind(&NetworkManager::HANDLE_S2C_QUEST_UPDATE, this, std::placeholders::_1));
+	RegisterHandler(common::packet::PacketType::S2C_P_QUEST_INFO,
+		std::bind(&NetworkManager::HANDLE_S2C_QUEST_INFO, this, std::placeholders::_1));
+
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != 0) {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "GltfShader.h"
 
 class InstancedglTFShader : public GltfShader {

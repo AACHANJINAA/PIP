@@ -51,11 +51,22 @@ namespace PIP
         return nullptr;
     }
 
+	const QuestData* LuaManager::GetQuestData(int32_t id) const
+	{
+		auto it = _questData.find(id);
+		if (it != _questData.end())
+		{
+			return &it->second;
+		}
+		return nullptr;
+	}
+
 	void LuaManager::LoadDataFile()
 	{
         if (L)
         {
             LuaManager::Instance()->LoadNPCData();
+            LuaManager::Instance()->LoadQuestData(); // [추가]
         }
 	}
 
@@ -92,6 +103,39 @@ namespace PIP
                 lua_pop(L, 1); // 함수가 없으면 스택에서 뺌
             }
         }
+	}
+
+	void LuaManager::LoadQuestData()
+	{
+		lua_register(L, "API_LoadQuestData", Lua_LoadQuestData);
+		int ret = luaL_dofile(L, "QuestData.lua");
+		if (ret != LUA_OK)
+		{
+			const char* err = lua_tostring(L, -1);
+			MYERROR("Failed to load QuestData.lua: " << err);
+			lua_pop(L, 1);
+		}
+		else
+		{
+			lua_getglobal(L, "LoadQuestData");
+			if (lua_isfunction(L, -1))
+			{
+				if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+				{
+					const char* err = lua_tostring(L, -1);
+					MYERROR("Failed to call LoadQuestData in Lua: " << err);
+					lua_pop(L, 1);
+				}
+				else
+				{
+					MYLOG("Quest Data Loaded from Lua successfully.");
+				}
+			}
+			else
+			{
+				lua_pop(L, 1);
+			}
+		}
 	}
 
 	GAME::GameObject* LuaManager::GetOwner(lua_State* L)
@@ -207,6 +251,7 @@ namespace PIP
         else if (sType == "Tainer") type = common::packet::NPCType::Tainer;
         else if (sType == "MagicGuard") type = common::packet::NPCType::MagicGuard;
         else if (sType == "Elevator") type = common::packet::NPCType::Elevator;
+        else if (sType == "QuestNPC") type = common::packet::NPCType::QuestNPC;
 
         NPCSpawnData data;
         data.pos = { x, y, z };
@@ -242,5 +287,32 @@ namespace PIP
         LuaManager::Instance()->_npcSpawnData[type].push_back(data);
 
         return 0;
+	}
+
+	int LuaManager::Lua_LoadQuestData(lua_State* L)
+	{
+		// 인자 순서: 1:id, 2:type_str, 3:target_name, 4:target_count, 5:reward_exp
+		int32_t id = static_cast<int32_t>(lua_tointeger(L, 1));
+		const char* type_str = lua_tostring(L, 2);
+		const char* target_name = lua_tostring(L, 3);
+		int32_t target_count = static_cast<int32_t>(lua_tointeger(L, 4));
+		int32_t reward_exp = static_cast<int32_t>(lua_tointeger(L, 5));
+
+		common::packet::QuestType type = common::packet::QuestType::KILL_MONSTER; // 기본값
+		std::string sType(type_str);
+		if (sType == "KILL_MONSTER") type = common::packet::QuestType::KILL_MONSTER;
+		else if (sType == "GATHER_ITEM") type = common::packet::QuestType::GATHER_ITEM;
+		else if (sType == "TALK_TO_NPC") type = common::packet::QuestType::TALK_TO_NPC;
+
+		QuestData data;
+		data.id = id;
+		data.type = type;
+		data.target_name = target_name ? target_name : "";
+		data.target_count = target_count;
+		data.reward_exp = reward_exp;
+
+		LuaManager::Instance()->_questData[id] = data;
+
+		return 0;
 	}
 }

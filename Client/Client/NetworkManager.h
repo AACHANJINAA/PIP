@@ -28,12 +28,20 @@ public:
         const int32_t& action_id, const uint32_t& current_tick);
     void SendAttackPacket(); // 공격 패킷 전송 함수 추가
     void SendActionPacket(int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
+    void SendNPCInteractPacket(int64_t npc_id, int32_t quest_id); // 퀘스트/상호작용 패킷 전송
     void SendRoomListPacket();
     void SendEnterRoomPacket(int room_id_to_enter);
     void SendDebugCommandPacket(common::packet::DebugCommandType command);
     bool is_running() const { return _isRunning; }
     long long get_my_session_id() const { return _my_session_id; }
     XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
+
+    // [퀘스트] 클라이언트 측 퀘스트 저장소 접근
+    const common::packet::QuestUpdateInfo* get_quest(int32_t quest_id) const {
+        auto it = _quests.find(quest_id);
+        if (it != _quests.end()) return &it->second;
+        return nullptr;
+    }
 
 private:
 	void network_worker(); // 네트워크 스레드 함수
@@ -57,6 +65,9 @@ private:
     void HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream);
 	void HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& stream);
+
+    void HANDLE_S2C_QUEST_UPDATE(common::packet::PacketStream& stream); // 퀘스트 상태 업데이트 수신
+    void HANDLE_S2C_QUEST_INFO(common::packet::PacketStream& stream);   // 퀘스트 전체 정보 수신
 
     void HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream);
     void HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream);
@@ -86,6 +97,9 @@ private:
     std::string _name;
 	std::string _server_addr = "127.0.0.1";
 	bool _isLogin = false;
+
+    // 퀘스트 상태 저장 (UI 연동용)
+    std::unordered_map<int32_t, common::packet::QuestUpdateInfo> _quests;
 
     // 패킷 핸들러 함수 포인터 타입 정의
     std::unordered_map<common::packet::PacketType, PacketHandler> _handlers;

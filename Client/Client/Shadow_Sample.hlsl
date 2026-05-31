@@ -89,13 +89,13 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
     else if (cascade == 1)
     {
       [unroll]
-        for (int i = 0; i < 16; ++i) // 16샘플
+        for (int i = 0; i < 8; ++i) // 16샘플
         {
             float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
             float2 offset = rotatedOffset * texelSize * filterRadius;
             shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
         }
-        return shadow / 16.0f;
+        return shadow / 8.0f;
     }
     else // cascade 2
     {

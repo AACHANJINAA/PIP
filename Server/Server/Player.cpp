@@ -1,10 +1,8 @@
 ﻿#include "pch.h"
 #include "Player.h"
-
-#include <algorithm>
-
 #include "HitboxComponent.h"
 #include "InventoryComponent.h"
+#include "LuaManager.h"
 #include "MapDataManager.h"
 #include "server.h"
 #include "PlayerControllerComponent.h"
@@ -142,6 +140,66 @@ namespace PIP::GAME
 		res._grab_slot = _grabSlot;         // [추가]
 		res._hp = _hp;                     // [추가] 실시간 HP 동기화
 		return res;
+	}
+
+	common::packet::QuestUpdateInfo Player::AddQuest(int32_t quest_id)
+	{
+		const QuestData* qData = LuaManager::Instance()->GetQuestData(quest_id);
+		if (!qData) return {};
+
+		common::packet::QuestUpdateInfo info;
+		info._quest_id = quest_id;
+		info._state = common::packet::QuestState::IN_PROGRESS;
+		info._current_count = 0;
+		info._target_count = qData->target_count;
+
+		_quests[quest_id] = info;
+		return info;
+	}
+
+	common::packet::QuestUpdateInfo Player::CompleteQuest(int32_t quest_id)
+	{
+		auto it = _quests.find(quest_id);
+		if (it != _quests.end())
+		{
+			it->second._state = common::packet::QuestState::REWARDED;
+			
+			// 보상 지급 로직 추가 가능 (경험치 등)
+			const QuestData* qData = LuaManager::Instance()->GetQuestData(quest_id);
+			if (qData) {
+				_exp += qData->reward_exp;
+			}
+
+			return it->second;
+		}
+		return {};
+	}
+
+	common::packet::QuestUpdateInfo Player::UpdateQuestProgress(int32_t quest_id, int32_t current_count)
+	{
+		auto it = _quests.find(quest_id);
+		if (it != _quests.end())
+		{
+			it->second._current_count = current_count;
+			if (it->second._current_count >= it->second._target_count)
+			{
+				it->second._current_count = it->second._target_count;
+				it->second._state = common::packet::QuestState::COMPLETED;
+			}
+
+			return it->second;
+		}
+		return {};
+	}
+
+	common::packet::QuestUpdateInfo* Player::GetQuest(int32_t quest_id)
+	{
+		auto it = _quests.find(quest_id);
+		if (it != _quests.end())
+		{
+			return &it->second;
+		}
+		return nullptr;
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,

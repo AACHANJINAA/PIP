@@ -206,6 +206,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerControllerComponent.cpp" />
     <ClCompile Include="Profiling.cpp" />
+    <ClCompile Include="QuestNPC.cpp" />
     <ClCompile Include="Recast\Source\Recast.cpp" />
     <ClCompile Include="Recast\Source\RecastAlloc.cpp" />
     <ClCompile Include="Recast\Source\RecastArea.cpp" />
@@ -271,6 +272,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayerControllerComponent.h" />
     <ClInclude Include="Profiling.h" />
+    <ClInclude Include="QuestNPC.h" />
     <ClInclude Include="Recast\Include\Recast.h" />
     <ClInclude Include="Recast\Include\RecastAlloc.h" />
     <ClInclude Include="Recast\Include\RecastAssert.h" />
@@ -284,6 +286,7 @@
   <ItemGroup>
     <None Include="Monster.lua" />
     <None Include="NPC_Data.lua" />
+    <None Include="QuestData.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

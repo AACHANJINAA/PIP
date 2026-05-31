@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -16,6 +16,7 @@
 #include "StageManager.h"
 #include "Elevator.h"
 #include "MagicGuard.h"
+#include "QuestNPC.h"
 
 namespace PIP::SERVER
 {
@@ -297,6 +298,11 @@ namespace PIP::SERVER
 		case GAME::NPCType::MagicGuard:
 			{
 				new_npc = std::make_unique<GAME::MagicGuard>(npc_id, _room_id, data->pos, data->max_hp);
+				break;
+			}
+		case GAME::NPCType::QuestNPC:
+			{
+				new_npc = std::make_unique<GAME::QuestNPC>(npc_id, type, _room_id, data->pos, data->max_hp);
 				break;
 			}
 		default:
@@ -1295,83 +1301,75 @@ namespace PIP::SERVER
 	}
 
 	/*void Room::HandleAttack(const std::shared_ptr<SESSION>& attacker) {
-		if (attacker == nullptr) return;
+		//레거시 삭제
+	}*/
+	
+	void Room::Execute_C2S_NPC_INTERACT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_NPC_INTERACT& interact_packet)
+	{
+		if (!session || !session->_player) return;
+		int64_t npc_id = interact_packet._npc_id;
+		int32_t quest_id = interact_packet._quest_id;
 
-		BoundingSphere attackerSphere{ attacker->_player->GetPosition(), 5.0f };
-		const int32_t damage = attacker->_player->_damage;
+		GAME::NPC* npc = GetNPC(npc_id);
+		if (!npc) return; // NPC가 방에 없음
 
-		std::vector<packet::NPCHitInfo> npc_hits;
-		std::vector<packet::PlayerHitInfo> player_hits;
-
-		for (auto& [npc_id, npc] : _npcs)
-		{
-			BoundingSphere npcSphere{ npc->GetPosition(), 2.0f };
-			if (attackerSphere.Intersects(npcSphere))
-			{
-				int32_t new_hp = npc->GetHP() - damage;
-				if (new_hp < 0) new_hp = 0;
-				npc->SetHP(new_hp);
-
-				npc_hits.emplace_back(npc_id, damage, new_hp);
-			}
+		// 거리 검사 (예: 반경 5m 이내)
+		if (common::DistanceSq(session->_player->GetPosition(), npc->GetPosition()) > 25.0f) {
+			MYLOG("[Quest] Interaction failed. NPC too far.");
+			return;
 		}
-
-		for (auto const& [player_id, player_session] : _players)
-		{
-			if (player_session && player_id != attacker->_id)
-			{
-				BoundingSphere targetSphere{ player_session->_player->GetPosition(), 2.0f };
-				if (attackerSphere.Intersects(targetSphere))
+		common::packet::QuestUpdateInfo info;
+		if (quest_id != 0) {
+			auto quest = session->_player->GetQuest(quest_id);
+			if (!quest) {
+				// 퀘스트 수락
+				info = session->_player->AddQuest(quest_id);
+				if (info._state == packet::QuestState::NONE)
 				{
-					int32_t new_hp = player_session->_player->GetHP() - damage;
-					if (new_hp < 0) new_hp = 0;
-					player_session->_player->SetHP(new_hp);
-
-					player_hits.emplace_back(player_id, damage, new_hp);
+					MYERROR("[Quest] Failed to add quest " << quest_id << " for session " << session->_id);
+					return;
+				}
+				SendQuestUpdate(session, info);
+				MYLOG("[Quest] Session " << session->_id << " accepted quest " << quest_id);
+			} else {
+				// 퀘스트 완료 처리 (조건 만족 시)
+				if (quest->_state == common::packet::QuestState::COMPLETED) {
+					info = session->_player->CompleteQuest(quest_id);
+					if (info._state == packet::QuestState::NONE)
+					{
+						MYERROR("[Quest] Failed to complete quest " << quest_id << " for session " << session->_id);
+						return;
+					}
+					SendQuestUpdate(session, info);
+					MYLOG("[Quest] Session " << session->_id << " completed quest " << quest_id);
 				}
 			}
-		}
-
-		if (!npc_hits.empty())
-		{
-			packet::PacketStream stream;
-			packet::SC_PACKET_NPC_ATTACK packet;
-			packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
-			packet._attacker_id = attacker->_id;
-			packet._hit_count = static_cast<uint8_t>(npc_hits.size());
-
-			stream << packet;
-			for (const auto& hit : npc_hits)
-			{
-				stream << hit;
+		} else {
+			// quest_id가 0인 경우 해당 NPC가 주는 기본 퀘스트를 처리 (임시 하드코딩 - 1번 퀘스트)
+			int32_t default_quest_id = 1; 
+			auto quest = session->_player->GetQuest(default_quest_id);
+			if (!quest) {
+				info = session->_player->AddQuest(default_quest_id);
+				if (info._state == packet::QuestState::NONE)
+				{
+					MYERROR("[Quest] Failed to add quest " << quest_id << " for session " << session->_id);
+					return;
+				}
+				SendQuestUpdate(session, info);
+				MYLOG("[Quest] Session " << session->_id << " accepted default quest " << default_quest_id);
+			} else if (quest->_state == common::packet::QuestState::COMPLETED) {
+				info = session->_player->CompleteQuest(default_quest_id);
+				if (info._state == packet::QuestState::NONE)
+				{
+					MYERROR("[Quest] Failed to complete quest " << quest_id << " for session " << session->_id);
+					return;
+				}
+				SendQuestUpdate(session, info);
+				MYLOG("[Quest] Session " << session->_id << " completed default quest " << default_quest_id);
 			}
-
-			auto* final_packet = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
-			final_packet->_size = static_cast<uint16_t>(stream.Size());
-
-			Broadcast(stream.constable_data(), stream.Size());
 		}
+	}
 
-		if (!player_hits.empty())
-		{
-			packet::PacketStream stream;
-			packet::SC_PACKET_PLAYER_ATTACK header;
-			header._type = packet::PacketType::S2C_P_PLAYER_ATTACK;
-			header._attacker_id = attacker->_id;
-			header._hit_count = static_cast<uint8_t>(player_hits.size());
-
-			stream << header;
-			for (const auto& hit : player_hits)
-			{
-				stream << hit;
-			}
-
-			auto* final_header = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
-			final_header->_size = static_cast<uint16_t>(stream.Size());
-
-			Broadcast(stream.constable_data(), stream.Size());
-		}
-	}*/
 	void Room::Execute_C2S_ACTION(const std::shared_ptr<SESSION>& session,
 	                        const common::packet::CS_PACKET_ACTION& action_packet)
 	{
@@ -1812,6 +1810,16 @@ namespace PIP::SERVER
 		MYLOG("[Room] Broadcast EquipUpdate: Player " << player_id << " equipped ItemID " << static_cast<uint32_t>(equip.item_id));
 	}
 
+	void Room::SendQuestUpdate(const std::shared_ptr<SESSION>& session, const common::packet::QuestUpdateInfo& info)
+	{
+		if (!session) return;
+		packet::SC_PACKET_QUEST_UPDATE quest_update_pkt;
+		quest_update_pkt._type = packet::PacketType::S2C_P_QUEST_UPDATE;
+		quest_update_pkt._size = sizeof(quest_update_pkt);
+		quest_update_pkt._quest_info = info;
+		session->do_send(reinterpret_cast<const char*>(&quest_update_pkt), sizeof(quest_update_pkt));
+	}
+
 	GAME::Player* Room::GetPlayer(int64_t player_id)
 	{
 		if (_players.contains(player_id))
@@ -1819,6 +1827,19 @@ namespace PIP::SERVER
 			return _players[player_id]->_player.get();
 		}
 		return nullptr;
+	}
+
+	void Room::GetNPCTypeName(common::packet::NPCType type, std::string& npcTypeName)
+	{
+		switch (type)
+		{
+		case common::packet::NPCType::Basic: npcTypeName = "Basic"; break;
+		case common::packet::NPCType::Tainer: npcTypeName = "Tainer"; break;
+		case common::packet::NPCType::MagicGuard: npcTypeName = "MagicGuard"; break;
+		case common::packet::NPCType::Elevator: npcTypeName = "Elevator"; break;
+		case common::packet::NPCType::QuestNPC: npcTypeName = "QuestNPC"; break;
+		default: npcTypeName = "Basic"; break;
+		}
 	}
 
 	GAME::Actor* Room::GetActor(int64_t actor_id)
@@ -2042,6 +2063,35 @@ namespace PIP::SERVER
 	{
 		int64_t npcId = npc->GetId();
 		
+		// [추가] 퀘스트 킬 카운트 업데이트
+		std::string npcTypeName = "";
+		switch (npc->GetNpcType()) {
+		case common::packet::NPCType::Basic: npcTypeName = "Basic"; break;
+		case common::packet::NPCType::Tainer: npcTypeName = "Tainer"; break;
+		case common::packet::NPCType::MagicGuard: npcTypeName = "MagicGuard"; break;
+		case common::packet::NPCType::Elevator: npcTypeName = "Elevator"; break;
+		case common::packet::NPCType::QuestNPC: npcTypeName = "QuestNPC"; break;
+		default: 
+			npcTypeName = "Basic";
+			MYLOG("[Room] Unknown NPC Type: " << static_cast<int>(npc->GetNpcType()));
+			break;
+		}
+
+		if (!npcTypeName.empty()) {
+			for (auto& [pid, session] : _players) {
+				if (session && session->_player) {
+					for (auto& [quest_id, quest_info] : session->_player->_quests) {
+						if (quest_info._state == common::packet::QuestState::IN_PROGRESS) {
+							const QuestData* qData = LuaManager::Instance()->GetQuestData(quest_id);
+							if (qData && qData->type == common::packet::QuestType::KILL_MONSTER && qData->target_name == npcTypeName) {
+								session->_player->UpdateQuestProgress(quest_id, quest_info._current_count + 1);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		npc->SetState(packet::EntityState::DEAD);
 		npc->SetDeathAnimationTime(std::chrono::milliseconds(5000));
 		// 1. 물리 및 그리드 제거

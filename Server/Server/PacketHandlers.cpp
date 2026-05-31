@@ -1,8 +1,5 @@
 ﻿#include "pch.h"
 #include "PacketHandlers.h"
-
-#include <algorithm>
-
 #include "DBManager.h"
 #include "InventoryComponent.h"
 #include "MapDataManager.h"
@@ -538,6 +535,20 @@ namespace PIP::packet
 				if (debug_packet._command == packet::DebugCommandType::PHYSICS_SNAPSHOT) {
 					room->StartPhysicsRecording();
 				}
+			});
+		}
+	}
+
+	void Handle_C2S_NPC_INTERACT(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
+	{
+		packet::CS_PACKET_NPC_INTERACT interact_packet;
+		stream >> interact_packet;
+
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+		if (room) {
+			room->PushJob([session, interact_packet, room]() {
+				if (session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
+				room->Execute_C2S_NPC_INTERACT(session, interact_packet);
 			});
 		}
 	}

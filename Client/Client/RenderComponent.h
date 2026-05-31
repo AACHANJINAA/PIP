@@ -109,4 +109,11 @@ protected:
 	bool _skipOcclusion = false;
 
 	UINT64 _lastUpdatedFrame = 0xFFFFFFFFFFFFFFFF;
+
+private:
+	float _culling_distance = -1.0f;  // 기본값
+
+public:
+	void set_culling_distance(float distance) { _culling_distance = distance; }
+	float culling_distance() const { return _culling_distance; }
 };

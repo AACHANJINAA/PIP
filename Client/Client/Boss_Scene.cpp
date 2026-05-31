@@ -9,13 +9,14 @@
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
+#include "ShadowManager.h"
 #include "TransformComponent.h"
 #include "UIFrameRenderComponent.h"
 #include "UIManager.h"
 
 void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-
+    ShadowManager::instance()->set_shadow_max_distance(600.0f);
 	SceneManager::instance()->build_skybox(device, commandList,
 		"Resource/SkyBox/",
 		"farmland/farmland_skybox.dds",

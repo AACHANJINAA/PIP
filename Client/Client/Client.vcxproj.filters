@@ -162,6 +162,9 @@
     <Filter Include="1. Game\2. Scripts\MainLogics\QuestNPC">
       <UniqueIdentifier>{5e725bc6-bba7-4953-8b37-a49db4e3fb95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="1. Game\4. Quest">
+      <UniqueIdentifier>{5469a0dd-abae-486b-81b2-cb96830ca0c8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -858,6 +861,9 @@
     </None>
     <None Include="IBL.hlsl">
       <Filter>2. Shaders</Filter>
+    </None>
+    <None Include="QuestData.lua">
+      <Filter>1. Game\4. Quest</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
