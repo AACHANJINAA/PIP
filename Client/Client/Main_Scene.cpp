@@ -217,7 +217,8 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	quest_marker_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 노란색으로 ? 표시 느낌
 	quest_marker_ui->set_texture("Resource/UI/Quest_Question_UI.png");
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestMarker_UI", quest_marker_obj);
-	UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestMarker_UI", true);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestMarker_UI", false);
+	ResourceManager::instance()->load_texture("Resource/UI/Quest_Exclamation_UI.png", true);
 }
 
 void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

@@ -67,11 +67,11 @@ void QuestNPCScript::init_visual()
     _markerObject->transform()->set_local_position(transform()->get_world_position());
 
     _markerRenderer = _markerObject->add_component<BillboardUIRenderComponent>();
-	_markerRenderer->set_size(2.0f, 2.0f); // 3D 공간에서의 크기 (2x2)
+	_markerRenderer->set_size(0.8f, 0.8f); // 3D 공간에서의 크기 (2x2)
 
 	// y축 보정 (NPC 중앙에 UI가 뜨도록)
 	_uiYOffset = transform()->get_world_scale().y * 1.5f;
-    _markerYOffset = transform()->get_world_scale().y * 1.8f; // 마커는 NPC 머리보다 좀 더 위로
+    _markerYOffset = transform()->get_world_scale().y * 2.7f; // 마커는 NPC 머리보다 좀 더 위로
     _markerRenderer->set_y_offset(_markerYOffset);
 }
 
@@ -196,7 +196,7 @@ void QuestNPCScript::update_QuestMarker_UI(float deltaTime)
 
     // 퀘스트 상태에 따른 마커 텍스처와 색상 변경
     if (state == common::packet::QuestState::NONE) {
-        _markerRenderer->set_texture("Resource/UI/Quest_Exclamation.png");
+        _markerRenderer->set_texture("Resource/UI/Quest_Exclamation_UI.png");
         _markerRenderer->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)); // 흰색 느낌표
     }
     else if (state == common::packet::QuestState::IN_PROGRESS) {
