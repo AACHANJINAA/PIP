@@ -94,10 +94,6 @@ float4 PS(GS_OUTPUT input) : SV_TARGET
 {
     float4 color = g_Texture.Sample(g_Sampler, input.UV);
     
-    // 디버깅 용: 텍스처가 투명해서 안보이는 것인지 확인하기 위해 무조건 붉은색 반환
-    // 텍스처 문제인지, 행렬/위치 문제인지 완벽하게 분리하기 위함입니다.
-    //return float4(1.0f, 0.0f, 0.0f, 1.0f); 
-    
     // 원래 로직 (임시 주석 처리)
     color *= g_Color;
     color.a *= g_Alpha;
