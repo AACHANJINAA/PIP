@@ -4,10 +4,10 @@ class IRootSignatureGenerator
 public:
     virtual ~IRootSignatureGenerator() = default;
 
-    // ÀÚ½ÅÀÌ »ı¼ºÇÒ ·çÆ® ½Ã±×´ÏÃ³ÀÇ ÀÌ¸§À» ¹İÈ¯ÇØ¾ß ÇÕ´Ï´Ù.
+    // ìì‹ ì´ ìƒì„±í•  ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ì˜ ì´ë¦„ì„ ë°˜í™˜í•´ì•¼ í•©ë‹ˆë‹¤.
     virtual const std::string& name() const = 0;
 
-    // device¸¦ ¹Ş¾Æ ½ÇÁ¦ ·çÆ® ½Ã±×´ÏÃ³ °´Ã¼¸¦ »ı¼ºÇÏ°í ¹İÈ¯ÇØ¾ß ÇÕ´Ï´Ù.
+    // deviceë¥¼ ë°›ì•„ ì‹¤ì œ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ê°ì²´ë¥¼ ìƒì„±í•˜ê³  ë°˜í™˜í•´ì•¼ í•©ë‹ˆë‹¤.
     virtual ComPtr<ID3D12RootSignature> create(ID3D12Device* device) = 0;
 };
 
@@ -60,6 +60,13 @@ public:
     virtual const std::string& name() const override;
 
     ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
+};
+
+class BillboardUIRootSignatureGenerator : public IRootSignatureGenerator
+{
+public:
+    virtual const std::string& name() const override;
+    virtual ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
 };
 
 class MonsterHPUIRootSignatureGenerator : public IRootSignatureGenerator

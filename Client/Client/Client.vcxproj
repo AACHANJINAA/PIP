@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -168,6 +168,8 @@
     <ClInclude Include="PhysicsColliderComponent.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerShader.h" />
+    <ClInclude Include="BillboardUIShader.h" />
+    <ClInclude Include="BillboardUIRenderComponent.h" />
     <ClInclude Include="QuestNPCScript.h" />
     <ClInclude Include="ReadFBXMesh.h" />
     <ClInclude Include="ReadGLBMesh.h" />
@@ -301,6 +303,8 @@
     <ClCompile Include="PhysicsColliderComponent.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerShader.cpp" />
+    <ClCompile Include="BillboardUIShader.cpp" />
+    <ClCompile Include="BillboardUIRenderComponent.cpp" />
     <ClCompile Include="QuestNPCScript.cpp" />
     <ClCompile Include="ReadFBXMesh.cpp" />
     <ClCompile Include="ReadGLBMesh.cpp" />
@@ -408,6 +412,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <FileType>Document</FileType>
+    </None>
+    <None Include="BillboardUI_Shader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <FxCompile Include="Minimap_shader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

@@ -62,6 +62,18 @@ void UIManager::set_visible(UILayer layer, const std::string& name, bool is_visi
     }
 }
 
+bool UIManager::is_visible(UILayer layer, const std::string& name) const
+{
+    auto layer_idx = static_cast<int>(layer);
+    auto it = _uiLayers[layer_idx].find(name);
+    if (it != _uiLayers[layer_idx].end())
+    {
+        return it->second->get_component<UIRenderComponent>()->is_enabled();
+    }
+    CERROR("UI visibility retrieval failed - UI not found: " << name);
+	return false;
+}
+
 std::shared_ptr<UIRenderComponent> UIManager::ui_component(UILayer layer, const std::string& name) const
 {
     auto layer_idx = static_cast<int>(layer);

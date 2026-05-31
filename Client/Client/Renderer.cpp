@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 
 #include "Renderer.h"
 
@@ -8,6 +8,7 @@
 #include "GlbShader.h"
 #include "GltfShader.h"
 #include "PlayerShader.h"
+#include "BillboardUIShader.h"
 #include "SkyboxShader.h"
 #include "GltfSkinnedShader.h"
 #include "TerrainShader.h"
@@ -68,6 +69,7 @@ void Renderer::initialize(ID3D12Device* device)
 	_rootSignatureGenerators.push_back(std::make_unique<OcclusionRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<ComputeParticleRootSignatureGenerator>());
 	_rootSignatureGenerators.push_back(std::make_unique<ParticleRootSignatureGenerator>());
+	_rootSignatureGenerators.push_back(std::make_unique<BillboardUIRootSignatureGenerator>());
 	// 새 루트 시그니처가 필요하면 여기에 생성기만 추가하면 끝입니다.
 
 	// [추가] PSO를 생성할 셰이더 프로토타입들을 등록합니다.
@@ -123,6 +125,9 @@ void Renderer::initialize(ID3D12Device* device)
 	auto instanced_gltf = std::make_shared<InstancedglTFShader>();
 	_shaderPrototypes[instanced_gltf->pso_name()] = instanced_gltf;
 
+	auto billboardUI = std::make_shared<BillboardUIShader>();
+	_shaderPrototypes[billboardUI->pso_name()] = billboardUI;
+
 	create_root_signatures(device);
 	create_pipeline_state_objects(device);
 }
@@ -167,7 +172,8 @@ void Renderer::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 	if (!camera)
 	{
 		// 렌더링할 카메라가 없으면 아무것도 하지 않습니다.
-		CERROR("렌더시에 카메라 1개이상은 필요함")
+		// CERROR("렌더시에 카메라 1개이상은 필요함")
+		CERROR("No main camera found for rendering. Skipping frame.");
 		return;
 	}
 
@@ -244,7 +250,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
 
 		// UI, Skybox 등 특수 객체 처리
 		if (psoName == "ui" || psoName == "Monster_HP_UI" || psoName == "ui_frame" ||
-			psoName == "skybox" || psoName == "particle_draw")
+			psoName == "skybox" || psoName == "particle_draw" || psoName == "billboard_ui")
 		{
 			if (psoName != "ui") _renderMap[psoName].push_back(gameObject);
 			return;
@@ -366,6 +372,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 		"particle_draw",// 파티클
 		"Monster_HP_UI",// 몬스터 HP UI
 		"ui_frame",     // UI Frame
+		"billboard_ui",    // Billboard UI
 		"ui"            // UI
 	};
 
@@ -811,8 +818,8 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 		}
 	}
 
-	// --- STEP 6: UI를 가장 먼저 렌더링 (Early-Z 활용을 위해) ---
-	std::string ui_targets[] = { "Monster_HP_UI", "ui_frame", "ui" };
+	// --- STEP 6: UI 및 특수 렌더 (Early-Z 활용 안 함) ---
+	std::string ui_targets[] = { "billboard_ui", "Monster_HP_UI", "ui_frame", "ui" };
 	for (const std::string& target : ui_targets) {
 		auto it = _renderMap.find(target);
 		if (it == _renderMap.end() || it->second.empty()) continue;
