@@ -79,6 +79,13 @@ namespace PIP::GAME
 		void removeMaterial(common::packet::ItemId item_id, uint32_t count);
 
 		common::packet::SC_PACKET_MOVE CreateMovePacket() const;
+
+		// [추가] 퀘스트 관련
+		common::packet::QuestUpdateInfo AddQuest(int32_t quest_id);
+		common::packet::QuestUpdateInfo CompleteQuest(int32_t quest_id);
+		common::packet::QuestUpdateInfo UpdateQuestProgress(int32_t quest_id, int32_t current_count);
+		common::packet::QuestUpdateInfo* GetQuest(int32_t quest_id);
+
 		//common::Vec3				_position;
 		//common::Quat				_rotation;
 		
@@ -99,6 +106,9 @@ namespace PIP::GAME
 		int64_t _lastSentGrabbedById = -1; // [추가]
 		int8_t _lastSentGrabSlot = -1; // [추가]
 		int32_t _lastSentHp = 0; // [추가]
+
+		// [추가] 퀘스트 데이터 (진행중, 완료된 퀘스트 모두 포함)
+		std::unordered_map<int32_t, common::packet::QuestUpdateInfo> _quests;
 
 	private:
 		float _hitCooldown = 0.0f;

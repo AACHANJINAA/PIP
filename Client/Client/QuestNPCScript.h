@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"
 #include "AnimationComponent.h"
+#include "NPCScript.h"
 
-class QuestNPCScript : public ScriptComponent
+class QuestNPCScript : public NPCScript
 {
 public:
     using required_components = std::tuple<RenderComponent, AnimationComponent>;
@@ -11,13 +12,15 @@ public:
     QuestNPCScript() = default;
     virtual ~QuestNPCScript() = default;
 
-    virtual void awake() override;
+    virtual void init_visual() override;
     virtual void update(float deltaTime) override;
 
 private:
     void update_F_interaction_UI(float deltaTime);
 
     std::shared_ptr<class UIRenderComponent> _uiRenderer;
+    std::shared_ptr<class UIRenderComponent> _markerRenderer;
+	float _markerYOffset = 0.0f;          // 마커의 y축 보정
 
 
 	bool _isTalking = false;            // 플레이어와 대화 중인지 여부

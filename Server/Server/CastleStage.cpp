@@ -84,7 +84,7 @@ namespace PIP::SERVER
         for (int i = 0; i < 1; ++i) {
             room->spawn_npc(GAME::NPCType::MagicGuard);
         }
-
+        room->spawn_npc(GAME::NPCType::QuestNPC);
         // 2. 보스 테이너 배치
         //room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
 
@@ -114,7 +114,7 @@ namespace PIP::SERVER
 
     const common::Vec3 CastleStage::get_spawn_pos() const
     {
-        return { 178.8, 10.0,-180.0 }; // 월드 중앙 등 원하는 위치로 반환
+        return { -215.27f, 6.59f, -366.41f }; // 월드 중앙 등 원하는 위치로 반환
     }
 
 }

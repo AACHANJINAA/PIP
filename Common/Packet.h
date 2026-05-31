@@ -47,6 +47,19 @@ namespace common::packet
 		}
 	}
 
+	enum class QuestState : uint8_t {
+		NONE = 0,
+		IN_PROGRESS,
+		COMPLETED,
+		REWARDED
+	};
+
+	enum class QuestType : uint8_t {
+		KILL_MONSTER = 1,
+		GATHER_ITEM = 2,
+		TALK_TO_NPC = 3
+	};
+
 	//enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
 	//	IDLE	,	// 대기
 	//	WALK	,	// 걷기
@@ -119,6 +132,11 @@ namespace common::packet
 		S2C_P_INVENTORY_ALL_INFO = 701, // 인벤토리 전체 정보 패킷 (방 입장 시 또는 인벤토리 변경 시 전체 정보 전송)
 		S2C_P_ITEM_UPDATE = 702, // 아이템 업데이트 패킷 (아이템 추가/제거/수량 변경 등)
 		S2C_P_EQUIP_ITEM_UPDATE = 703, // 장착 아이템 업데이트 패킷 (장착/해제/강화 등)
+
+		//------------------------------------------- 퀘스트 관련 패킷 --------------------------------------- //
+		C2S_P_NPC_INTERACT = 801, // 퀘스트 수락/완료용 (클라 -> 서버)
+		S2C_P_QUEST_UPDATE = 802, // 퀘스트 상태 변경 (서버 -> 클라)
+		S2C_P_QUEST_INFO = 803,   // 현재 퀘스트 목록 동기화 (서버 -> 클라)
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -135,6 +153,7 @@ namespace common::packet
 		Tainer = 2,
 		Elevator = 3, // [추가] 엘리베이터 객체
 		MagicGuard = 4, // [신규] 길찾기 경비병
+		QuestNPC = 5,   // [추가] 퀘스트 제공 NPC
 		// 향후 추가될 NPC 유형들...
 	};
 	enum class InventoryUpdateType : uint8_t {
@@ -206,6 +225,11 @@ namespace common::packet
 		uint32_t     _client_time_stamp; // 클라이언트 타임스탬프 (밀리초)
 	};
 
+	// 클라 -> 서버: NPC 상호작용 (퀘스트 등)
+	struct CS_PACKET_NPC_INTERACT : PacketHeader {
+		int64_t _npc_id;    // 상호작용한 NPC의 ID
+		int32_t _quest_id;  // 특정 퀘스트 상호작용 시 ID (없으면 0)
+	};
 	//struct CS_PACKET_MOVE : PacketHeader
 	struct CS_PACKET_ATTACK : PacketHeader
 	{
@@ -297,13 +321,13 @@ namespace common::packet
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)
-    /*struct SC_PACKET_ATTACK : PacketHeader
+	/*struct SC_PACKET_ATTACK : PacketHeader
 	{
-        int64_t     _attacker_id;
-        int64_t     _target_id;
-        int32_t     _damage;
-        int32_t     _target_current_hp;
-    };*/
+		int64_t     _attacker_id;
+		int64_t     _target_id;
+		int32_t     _damage;
+		int32_t     _target_current_hp;
+	};*/
 
 	// 플레이어 단일 피격 정보를 담는 구조체
 	struct PlayerHitInfo {
@@ -444,6 +468,26 @@ namespace common::packet
 		InventoryUpdateType _update_type;
 		EquipItem			_equip_data;
 	};
+
+	// ------------------------------------------ 퀘스트 관련 패킷 ------------------------------------------ //
+	struct QuestUpdateInfo {
+		int32_t _quest_id = -1;
+		QuestState _state = QuestState::NONE;
+		int32_t _current_count = 0; // 현재 진행도 (예: 몬스터 처치 수)
+		int32_t _target_count = 0;  // 목표 수치
+	};
+
+	// [S2C] 퀘스트 상태 개별 업데이트
+	struct SC_PACKET_QUEST_UPDATE : PacketHeader {
+		QuestUpdateInfo _quest_info;
+	};
+
+	// [S2C] 퀘스트 전체 목록 (로그인 시)
+	struct SC_PACKET_QUEST_INFO : PacketHeader {
+		uint16_t _quest_count;
+		// 이 뒤에 QuestUpdateInfo 구조체가 _quest_count 만큼 이어짐
+	};
+
 #pragma pack (pop)
 }
 
@@ -460,6 +504,3 @@ namespace common::move_speed // 실제 이동속도 이므로 더 빨라저야 �
 	constexpr float player_walk_speed = 2.0f;
 	constexpr float player_run_speed = 50.f;
 }
-
-// TEST COMMENT: This is for testing purposes.
-// is for testing purposes.

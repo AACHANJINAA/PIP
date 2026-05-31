@@ -111,6 +111,11 @@ void NPCScript::init_visual()
 		return;
 	}
 
+	if (_npcType == common::packet::NPCType::QuestNPC) {
+		// QuestNPC 비주얼은 QuestNPCScript::awake()에서 개별적으로 로드하므로 여기서 스킵
+		return;
+	}
+
 	// 기본 Brute 모델 설정
 	auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Character/DragonBrute/SK_DragonBrute.gltf", true);
 
@@ -133,9 +138,6 @@ void NPCScript::init_visual()
 
 void NPCScript::awake()
 {
-	
-	init_visual();
-
 	_serverPos = transform()->local_position();
 	_serverRot = transform()->local_rotation();
 	_serverVel = { 0, 0, 0 };
@@ -209,6 +211,8 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	}
 
 	_isFirstUpdate = false; // 이제 업데이트 가능 상태로 전환
+    
+    init_visual();
 }
 
 

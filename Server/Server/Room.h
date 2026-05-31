@@ -75,6 +75,7 @@ namespace PIP::SERVER
 
 		//void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void Execute_C2S_ACTION(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
+		void Execute_C2S_NPC_INTERACT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_NPC_INTERACT& interact_packet); // [추가] 퀘스트 등 상호작용
 		void ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
@@ -90,6 +91,8 @@ namespace PIP::SERVER
 		void SendItemUpdate(const std::shared_ptr<SESSION>& session, common::packet::ItemId id, uint32_t amount, common::packet::InventoryUpdateType type);
 		void SendEquipUpdateBroadcast(int64_t player_id, const common::packet::EquipItem& equip); // 장착 시 주변에 알림
 
+		//---------- 퀘스트 관련 ---------------
+		void SendQuestUpdate(const std::shared_ptr<SESSION>& session, const common::packet::QuestUpdateInfo& info);
 
 		//---------- getter ----------------
 		size_t GetPlayerCount() const { return _players.size(); }
@@ -99,6 +102,7 @@ namespace PIP::SERVER
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
 
 		GAME::Player* GetPlayer(int64_t player_id);
+		void GetNPCTypeName(common::packet::NPCType type, std::string& npcTypeName);
 		GAME::Actor* GetActor(int64_t actor_id);
 		std::shared_ptr<SESSION> GetSession(int64_t player_id) {
 			auto it = _players.find(player_id);

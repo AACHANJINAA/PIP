@@ -950,10 +950,10 @@ namespace PIP
 		common::Vec3 start = { 178.8f, 10.f, -180.f }; // 시작점 (확실히 평지인 곳)
 		common::Vec3 end = { 152.0f, 10.f, -190.f };   // 도착점 (장애물 너머)
 		start_ends.push_back(std::make_pair(start, end));
-		start_ends.push_back({ start , {179.8, 5.3, -179} });
-		start_ends.push_back({{ 179.8, 5.3, -179 }, { 185, 5.3, -173 }});
-		start_ends.push_back({ { 185, 5.3, -173 } , { 198.4, 6.0, -176 }});
-		start_ends.push_back({ { 198.4, 6.0, -176 } , { 193.0, 6.0, -190 }});
+		start_ends.push_back({ start , {179.8f, 5.3f, -179} });
+		start_ends.push_back({{ 179.8f, 5.3f, -179 }, { 185.f, 5.3f, -173.f }});
+		start_ends.push_back({ { 185.f, 5.3f, -173.f } , { 198.4f, 6.0f, -176.f }});
+		start_ends.push_back({ { 198.4f, 6.0f, -176.f } , { 193.0f, 6.0f, -190.f }});
 
 
 		for (auto [s, e] : start_ends)

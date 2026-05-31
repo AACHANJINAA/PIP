@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "PacketManager.h"
 namespace PIP::packet
 {
@@ -13,6 +13,7 @@ namespace PIP::packet
 		RegisterHandler(PacketType::C2S_P_CHAT_IN_ROOM, Handle_C2S_CHAT_IN_ROOM);
         RegisterHandler(PacketType::C2S_P_PLAYER_READY, Handle_C2S_PLAYER_READY);
         RegisterHandler(PacketType::C2S_P_DEBUG_COMMAND, Handle_C2S_DEBUG_COMMAND);
+		RegisterHandler(PacketType::C2S_P_NPC_INTERACT, Handle_C2S_NPC_INTERACT);
 	}
 
 	void PacketManager::Dispatch(const std::shared_ptr<PIP::SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
@@ -53,6 +54,7 @@ namespace PIP::packet
                     case packet::PacketType::C2S_P_ROOM_LIST:  // 인게임 중 방 목록 요청
 					case packet::PacketType::C2S_P_PLAYER_READY: // 게임 시작 준비 패킷
                     case packet::PacketType::C2S_P_DEBUG_COMMAND:
+					case packet::PacketType::C2S_P_NPC_INTERACT:
                         bIsValidPacket = true;
                         break;
                 }
