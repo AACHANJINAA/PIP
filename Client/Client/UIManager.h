@@ -30,6 +30,9 @@ public:
     // Setter -> 렌더링 키고 끄기
     void set_visible(UILayer layer, const std::string& name, bool is_visible);
 
+	// getter -> 렌더링 켜져있는지 확인
+	bool is_visible(UILayer layer, const std::string& name) const;
+
     // UIRenderComponent를 가져올 수 있도록 하였음 -> UI 속성 설정 변경 가능
     std::shared_ptr<UIRenderComponent> ui_component(UILayer layer, const std::string& name) const;
 
