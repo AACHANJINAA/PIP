@@ -515,6 +515,9 @@
     <ClInclude Include="QuestNPCScript.h">
       <Filter>1. Game\2. Scripts\MainLogics\QuestNPC</Filter>
     </ClInclude>
+    <ClInclude Include="FoliageRenderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -831,6 +834,9 @@
     </ClCompile>
     <ClCompile Include="QuestNPCScript.cpp">
       <Filter>1. Game\2. Scripts\MainLogics\QuestNPC</Filter>
+    </ClCompile>
+    <ClCompile Include="FoliageRenderComponent.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

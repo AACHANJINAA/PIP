@@ -13,7 +13,6 @@ public:
     // Renderer가 호출할 드로우 함수
     virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
 
-private:
     ComPtr<ID3D12Resource> _instanceBuffer;
     UINT _instanceCount = 0;
 };
