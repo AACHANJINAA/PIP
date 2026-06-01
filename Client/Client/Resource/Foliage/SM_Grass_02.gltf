@@ -1,0 +1,224 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 648,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 329,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.699999988, -1.91912193e-08, -0.699999988 ],
+			"max": [ 0.699999988, 0.965925813, 0.699999988 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 329,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 329,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 329,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 329,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 329,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 7,
+			"count": 329,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Grass_02.bin",
+			"byteLength": 24984
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 1296,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3948,
+			"byteOffset": 1296,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3948,
+			"byteOffset": 5244,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5264,
+			"byteOffset": 9192,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2632,
+			"byteOffset": 14456,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2632,
+			"byteOffset": 17088,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2632,
+			"byteOffset": 19720,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2632,
+			"byteOffset": 22352,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Grass_1_SM_Grass_1_BaseColor.png"
+		},
+		{
+			"uri": "MI_Grass_1_SM_Grass_1_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Grass_1_SM_Grass_1_Normal.png"
+		},
+		{
+			"uri": "MI_Grass_1_SM_Grass_1_Specular.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Grass_1_SM_Grass_1",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994,
+			"doubleSided": true,
+			"extensions":
+			{
+				"KHR_materials_specular":
+				{
+					"specularTexture":
+					{
+						"index": 3
+					}
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Grass_1",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5,
+						"TEXCOORD_2": 6,
+						"TEXCOORD_3": 7
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Grass_1_SM_Grass_1_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Grass_1_SM_Grass_1_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Grass_1_SM_Grass_1_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Grass_1_SM_Grass_1_Specular",
+			"sampler": 0,
+			"source": 3
+		}
+	],
+	"extensionsUsed": [
+		"KHR_materials_specular"
+	]
+}

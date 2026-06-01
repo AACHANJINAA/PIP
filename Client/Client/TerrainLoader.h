@@ -94,6 +94,13 @@ private:
 	// 풀 인스턴스의 변환 행렬 생성 (회전 적용)
 	XMMATRIX create_grass_instance_transform(float x, float z) const;
 
+	// Weightmap 데이터 캐싱 (CPU 메모리)
+	// Key: layer index, Value: 2D float array (width × height)
+	std::vector<std::vector<float>> _weightmapCaches;
+
+	// Weightmap 파일 경로 저장
+	std::vector<std::string> _weightmapFilePaths;
+
 private:
 	std::string _heightmapTextureKey;		  // HeightMap 
 	std::string _materialName;				  // Material 
