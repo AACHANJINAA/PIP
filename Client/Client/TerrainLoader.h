@@ -80,6 +80,7 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE get_heightmap_cpu_srv() const;
 
 	void generate_grass_chunks(
+		const std::string& layer_name,
 		const std::string& grass_mesh_path,
 		float chunk_size = 20.0f,
 		int instances_per_chunk = 200,
@@ -87,9 +88,7 @@ public:
 
 private:
 	void create_flat_grid(int grid_width, int grid_height);
-
-	// Weightmap에서 특정 위치의 Grass 가중치를 샘플링
-	float get_grass_weight_at(float world_x, float world_z) const;
+	float get_grass_weight_at(float world_x, float world_z, int layer_index) const;
 
 	// 풀 인스턴스의 변환 행렬 생성 (회전 적용)
 	XMMATRIX create_grass_instance_transform(float x, float z) const;
