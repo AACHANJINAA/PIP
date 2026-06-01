@@ -149,11 +149,24 @@ D3D12_CPU_DESCRIPTOR_HANDLE TerrainLoader::get_heightmap_cpu_srv() const
 }
 
 void TerrainLoader::generate_grass_chunks(
+	const std::string& layer_name,
 	const std::string& grass_mesh_path,
 	float chunk_size,
 	int instances_per_chunk,
 	float grass_weight_threshold)
 {
+	int layer_index = -1;
+	for (size_t i = 0; i < _layers.size(); ++i)
+	{
+		if (_layers[i].name == layer_name)
+		{
+			layer_index = static_cast<int>(i);
+			break;
+		}
+	}
+
+	if (layer_index < 0 || layer_index >= static_cast<int>(_weightmapCaches.size())) return;
+
 	// Grass 메시 로드
 	auto grass_mesh = ResourceManager::instance()->load_mesh(grass_mesh_path);
 	if (!grass_mesh) {
@@ -188,7 +201,7 @@ void TerrainLoader::generate_grass_chunks(
 					continue;
 
 				// Weightmap 샘플링
-				float grass_weight = get_grass_weight_at(px, pz);
+				float grass_weight = get_grass_weight_at(px, pz, layer_index);
 				if (grass_weight < grass_weight_threshold)
 					continue;
 
@@ -214,6 +227,7 @@ void TerrainLoader::generate_grass_chunks(
 			chunk_obj->transform()->set_local_position(
 				XMFLOAT3(x + chunk_size / 2.0f, 0.0f, z + chunk_size / 2.0f)
 			);
+			chunk_obj->transform()->set_local_scale({ 1.4f, 1.4f, 1.4f });
 
 			// FoliageRenderComponent 추가
 			auto foliage_comp = chunk_obj->add_component<FoliageRenderComponent>();
@@ -229,22 +243,10 @@ void TerrainLoader::generate_grass_chunks(
 	}
 }
 
-float TerrainLoader::get_grass_weight_at(float world_x, float world_z) const
+float TerrainLoader::get_grass_weight_at(float world_x, float world_z, int layer_index) const
 {
-	if (!_hasLayers || _layers.empty()) {
-		return 0.0f;
-	}
-
-	// Grass 레이어 찾기
-	int grass_layer_index = -1;
-	for (size_t i = 0; i < _layers.size(); ++i) {
-		if (_layers[i].name == "Grass") {
-			grass_layer_index = static_cast<int>(i);
-			break;
-		}
-	}
-
-	if (grass_layer_index < 0)
+	if (!_hasLayers || _layers.empty()) return 0.0f;
+	if (layer_index < 0 || layer_index >= static_cast<int>(_weightmapCaches.size()))
 		return 0.0f;
 
 	const auto& info = _terrainData.GetInfo();
@@ -254,32 +256,27 @@ float TerrainLoader::get_grass_weight_at(float world_x, float world_z) const
 		world_z < info.min_z || world_z > info.max_z) {
 		return 0.0f;
 	}
+
 	float u = (world_x - info.min_x) / (info.max_x - info.min_x);
 	float v = (world_z - info.min_z) / (info.max_z - info.min_z);
 
-	// clamp
 	u = (u < 0.0f) ? 0.0f : (u > 1.0f) ? 1.0f : u;
 	v = (v < 0.0f) ? 0.0f : (v > 1.0f) ? 1.0f : v;
 
-	// 실제 Weightmap 데이터에서 샘플링
 	int width = static_cast<int>(info.width);
 	int height = static_cast<int>(info.height);
 
 	int pixel_x = static_cast<int>(u * (width - 1));
 	int pixel_y = static_cast<int>(v * (height - 1));
 
-	// 범위 안전 체크
 	pixel_x = (pixel_x < 0) ? 0 : (pixel_x >= width) ? width - 1 : pixel_x;
 	pixel_y = (pixel_y < 0) ? 0 : (pixel_y >= height) ? height - 1 : pixel_y;
 
-	// 2D 인덱싱: row-major (y * width + x)
 	int index = pixel_y * width + pixel_x;
 
-	const auto& cache = _weightmapCaches[grass_layer_index];
+	const auto& cache = _weightmapCaches[layer_index];
 	if (index >= 0 && index < static_cast<int>(cache.size()))
-	{
-		return cache[index];  // 0.0~1.0 범위의 실제 값 반환
-	}
+		return cache[index];
 
 	return 0.0f;
 }

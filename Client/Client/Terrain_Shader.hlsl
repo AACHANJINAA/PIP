@@ -132,11 +132,6 @@ float4 PS_Main(PS_Input input) : SV_TARGET
             weights[6] = 1.0f;
         }
         
-        float grass_mix_ratio = 0.5f; // 섞고 싶은 풀의 양 (0.0 ~ 1.0)
-        
-        float painted_rock = weights[0];
-        weights[0] = painted_rock * (1.0f - grass_mix_ratio);
-        weights[3] += painted_rock * grass_mix_ratio;
         
         float original_weights[MAX_TERRAIN_LAYERS];
         for (int i = 0; i < NumLayers; ++i)
