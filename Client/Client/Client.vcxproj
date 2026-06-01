@@ -116,6 +116,7 @@
     <ClInclude Include="DebugShader.h" />
     <ClInclude Include="DefaultObjectShader.h" />
     <ClInclude Include="DescriptorManager.h" />
+    <ClInclude Include="FoliageRenderComponent.h" />
     <ClInclude Include="FreeCameraScript.h" />
     <ClInclude Include="GlbShader.h" />
     <ClInclude Include="GltfShader.h" />
@@ -228,6 +229,7 @@
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DefaultObjectShader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
+    <ClCompile Include="FoliageRenderComponent.cpp" />
     <ClCompile Include="FreeCameraScript.cpp" />
     <ClCompile Include="GltfShader.cpp" />
     <ClCompile Include="GltfSkinnedShader.cpp" />

@@ -39,6 +39,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	// 2. MainScene 전용 Landscape 로드
 	SceneManager::instance()->build_main_landscapes(device, commandList);
+	SceneManager::instance()->generate_grass_for_all_landscapes("Resource/Foliage/SM_Grass_01.gltf");
 
 	// 3. 미니맵 활성화 -> 지형 이후에 호출해야함
 	//SceneManager::instance()->build_minimap(device, commandList);
@@ -59,16 +60,16 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// 그 외
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_0_0_MapData/Landscape_0_0_ExportedClientData.json", device, commandList);
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_0_-1_MapData/Landscape_0_-1_ExportedClientData.json", device, commandList);
-	load_foliage_from_file("Resource/Foliage/Foliage_tree_0_0_MapData/Foliage_tree_0_0_MapData.json", device, commandList);
+	//load_foliage_from_file("Resource/Foliage/Foliage_tree_0_0_MapData/Foliage_tree_0_0_MapData.json", device, commandList);
 
 	// 오두막
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json", device, commandList);
 	//load_foliage_from_file("Resource/Foliage/Foliage_stone_-1_-1_MapData/Foliage_stone_-1_-1_MapData.json", device, commandList);
-	load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_-1_MapData/Foliage_tree_-1_-1_MapData.json", device, commandList);
+	//load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_-1_MapData/Foliage_tree_-1_-1_MapData.json", device, commandList);
 
 	// 성
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList);
-	load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
+	//load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
 
 	// 성당
 	load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-2_-1_MapData/Landscape_-2_-1_ExportedClientData.json", device, commandList);

@@ -1,6 +1,8 @@
 ﻿#include "stdafx.h"
 #include "TerrainLoader.h"
 
+#include "FoliageRenderComponent.h"
+#include "ObjectManager.h"
 #include "PhysicsManager.h"
 #include "ResourceManager.h"
 
@@ -146,6 +148,138 @@ D3D12_CPU_DESCRIPTOR_HANDLE TerrainLoader::get_heightmap_cpu_srv() const
 	return {};
 }
 
+void TerrainLoader::generate_grass_chunks(
+	const std::string& grass_mesh_path,
+	float chunk_size,
+	int instances_per_chunk,
+	float grass_weight_threshold)
+{
+	// Grass 메시 로드
+	auto grass_mesh = ResourceManager::instance()->load_mesh(grass_mesh_path);
+	if (!grass_mesh) {
+		CERROR("Failed to load grass mesh: " << grass_mesh_path);
+		return;
+	}
+
+	const auto& info = _terrainData.GetInfo();
+	float min_x = info.min_x;
+	float max_x = info.max_x;
+	float min_z = info.min_z;
+	float max_z = info.max_z;
+
+	CLOG("Generating grass for tile ("
+		<< min_x << "~" << max_x << ", "
+		<< min_z << "~" << max_z << ")");
+
+	int chunk_count = 0;
+	int total_instances = 0;
+
+	// 구역별 처리 (각 타일 내에서만)
+	for (float x = min_x; x < max_x; x += chunk_size) {
+		for (float z = min_z; z < max_z; z += chunk_size) {
+			std::vector<XMMATRIX> instances;
+			instances.reserve(instances_per_chunk);
+
+			// 해당 구역 내 랜덤 배치
+			for (int i = 0; i < instances_per_chunk; ++i) {
+				float rand_x = static_cast<float>(rand()) / RAND_MAX;
+				float rand_z = static_cast<float>(rand()) / RAND_MAX;
+				float px = x + rand_x * chunk_size;
+				float pz = z + rand_z * chunk_size;
+
+				// 범위 체크
+				if (px < min_x || px > max_x || pz < min_z || pz > max_z)
+					continue;
+
+				// Weightmap 샘플링
+				float grass_weight = get_grass_weight_at(px, pz);
+				if (grass_weight < grass_weight_threshold)
+					continue;
+
+				// 높이 샘플링
+				float py = get_height_at(px, pz);
+
+				// 변환 행렬 생성
+				XMMATRIX rotation = create_grass_instance_transform(px, pz);
+				XMMATRIX translation = XMMatrixTranslation(px, py, pz);
+				instances.push_back(XMMatrixMultiply(rotation, translation));
+			}
+
+			if (instances.empty())
+				continue;
+
+			// ObjectManager를 통해 청크 오브젝트 생성
+			auto chunk_obj = ObjectManager::instance()->create_game_object("GrassChunk");
+			if (!chunk_obj) {
+				CERROR("Failed to create grass chunk object");
+				continue;
+			}
+
+			chunk_obj->transform()->set_local_position(
+				XMFLOAT3(x + chunk_size / 2.0f, 0.0f, z + chunk_size / 2.0f)
+			);
+
+			// FoliageRenderComponent 추가
+			auto foliage_comp = chunk_obj->add_component<FoliageRenderComponent>();
+			foliage_comp->set_mesh(grass_mesh);
+			foliage_comp->set_instance_data(instances);
+			foliage_comp->set_cast_shadow(false);
+			foliage_comp->set_frustum_culling_enabled(true);
+			foliage_comp->set_cull_distance(100.0f);
+
+			chunk_count++;
+			total_instances += static_cast<int>(instances.size());
+		}
+	}
+
+	CLOG("Grass generated: " << chunk_count << " chunks, "
+		<< total_instances << " instances for this tile");
+}
+
+float TerrainLoader::get_grass_weight_at(float world_x, float world_z) const
+{
+	if (!_hasLayers || _layers.empty()) {
+		return 0.0f;
+	}
+
+	// Grass 레이어 찾기
+	int grass_layer_index = -1;
+	for (size_t i = 0; i < _layers.size(); ++i) {
+		if (_layers[i].name == "Grass") {
+			grass_layer_index = static_cast<int>(i);
+			break;
+		}
+	}
+
+	if (grass_layer_index < 0)
+		return 0.0f;
+
+	const auto& info = _terrainData.GetInfo();
+
+	// 범위 체크
+	if (world_x < info.min_x || world_x > info.max_x ||
+		world_z < info.min_z || world_z > info.max_z) {
+		return 0.0f;
+	}
+
+	// UV 좌표 계산
+	float u = (world_x - info.min_x) / (info.max_x - info.min_x);
+	float v = (world_z - info.min_z) / (info.max_z - info.min_z);
+
+	// Clamp
+	u = (u < 0.0f) ? 0.0f : (u > 1.0f) ? 1.0f : u;
+	v = (v < 0.0f) ? 0.0f : (v > 1.0f) ? 1.0f : v;
+
+	// 임시: Grass 레이어 존재 시 높은 가중치 반환
+	// 추후 실제 Weightmap 텍스처 샘플링 구현
+	return 0.7f;
+}
+
+XMMATRIX TerrainLoader::create_grass_instance_transform(float x, float z) const
+{
+	float angle = static_cast<float>(rand()) / RAND_MAX * XM_2PI;
+	return XMMatrixRotationY(angle);
+}
 void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 {
 	const auto& info = _terrainData.GetInfo();

@@ -51,6 +51,7 @@ public:
 	void build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 	void build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
 	void build_minimap(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
+	void generate_grass_for_all_landscapes(const std::string& grass_mesh_path);
 
 private:
 	std::unique_ptr<Scene> _currentScene = nullptr; // ÇöÀç ¾À

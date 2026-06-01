@@ -1,0 +1,188 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 888,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 618,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.506587505, -0.300000042, -0.526414633 ],
+			"max": [ 0.484426677, 1.0595063, 0.546083629 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 618,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 618,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 618,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 618,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Grass_01.bin",
+			"byteLength": 36384
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 1776,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7416,
+			"byteOffset": 1776,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7416,
+			"byteOffset": 9192,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9888,
+			"byteOffset": 16608,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4944,
+			"byteOffset": 26496,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4944,
+			"byteOffset": 31440,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Grass_01_SM_Grass_01_BaseColor.png"
+		},
+		{
+			"uri": "MI_Grass_01_SM_Grass_01_Normal.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Grass_01_SM_Grass_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00820250995, -0.00820658542 ],
+							"scale": [ 1.0171423, 1.01764762 ]
+						}
+					}
+				},
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			},
+			"normalTexture":
+			{
+				"index": 1,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00820250995, -0.00820658542 ],
+						"scale": [ 1.0171423, 1.01764762 ]
+					}
+				}
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994,
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Grass_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Grass_01_SM_Grass_01_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Grass_01_SM_Grass_01_Normal",
+			"sampler": 0,
+			"source": 1
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}

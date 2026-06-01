@@ -439,3 +439,24 @@ void SceneManager::build_minimap(ID3D12Device* device, ID3D12GraphicsCommandList
     else return;
 }
 
+void SceneManager::generate_grass_for_all_landscapes(const std::string& grass_mesh_path)
+{
+	for (const auto& landscapeObj : _MainlandscapeObjects)
+	{
+		if (!landscapeObj) continue;
+
+		auto terrainRenderComp = landscapeObj->get_component<TerrainRenderComponent>();
+		if (!terrainRenderComp) continue;
+
+		auto mesh = terrainRenderComp->mesh();
+		auto terrain_loader = std::dynamic_pointer_cast<TerrainLoader>(mesh);
+		if (!terrain_loader) continue;
+
+		terrain_loader->generate_grass_chunks(
+			grass_mesh_path,
+			20.0f,   // chunk_size
+			100,     // instances_per_chunk
+			0.5f     // grass_weight_threshold
+		);
+	}
+}

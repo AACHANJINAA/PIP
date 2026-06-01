@@ -42,6 +42,7 @@
 #include "ResourceManager.h"
 #include "ShadowManager.h"
 #include "MinimapShader.h"
+#include "FoliageRenderComponent.h"
 
 void Renderer::initialize(ID3D12Device* device)
 {
