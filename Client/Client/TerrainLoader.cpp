@@ -167,10 +167,6 @@ void TerrainLoader::generate_grass_chunks(
 	float min_z = info.min_z;
 	float max_z = info.max_z;
 
-	CLOG("Generating grass for tile ("
-		<< min_x << "~" << max_x << ", "
-		<< min_z << "~" << max_z << ")");
-
 	int chunk_count = 0;
 	int total_instances = 0;
 
@@ -231,9 +227,6 @@ void TerrainLoader::generate_grass_chunks(
 			total_instances += static_cast<int>(instances.size());
 		}
 	}
-
-	CLOG("Grass generated: " << chunk_count << " chunks, "
-		<< total_instances << " instances for this tile");
 }
 
 float TerrainLoader::get_grass_weight_at(float world_x, float world_z) const
@@ -261,18 +254,34 @@ float TerrainLoader::get_grass_weight_at(float world_x, float world_z) const
 		world_z < info.min_z || world_z > info.max_z) {
 		return 0.0f;
 	}
-
-	// UV 좌표 계산
 	float u = (world_x - info.min_x) / (info.max_x - info.min_x);
 	float v = (world_z - info.min_z) / (info.max_z - info.min_z);
 
-	// Clamp
+	// clamp
 	u = (u < 0.0f) ? 0.0f : (u > 1.0f) ? 1.0f : u;
 	v = (v < 0.0f) ? 0.0f : (v > 1.0f) ? 1.0f : v;
 
-	// 임시: Grass 레이어 존재 시 높은 가중치 반환
-	// 추후 실제 Weightmap 텍스처 샘플링 구현
-	return 0.7f;
+	// 실제 Weightmap 데이터에서 샘플링
+	int width = static_cast<int>(info.width);
+	int height = static_cast<int>(info.height);
+
+	int pixel_x = static_cast<int>(u * (width - 1));
+	int pixel_y = static_cast<int>(v * (height - 1));
+
+	// 범위 안전 체크
+	pixel_x = (pixel_x < 0) ? 0 : (pixel_x >= width) ? width - 1 : pixel_x;
+	pixel_y = (pixel_y < 0) ? 0 : (pixel_y >= height) ? height - 1 : pixel_y;
+
+	// 2D 인덱싱: row-major (y * width + x)
+	int index = pixel_y * width + pixel_x;
+
+	const auto& cache = _weightmapCaches[grass_layer_index];
+	if (index >= 0 && index < static_cast<int>(cache.size()))
+	{
+		return cache[index];  // 0.0~1.0 범위의 실제 값 반환
+	}
+
+	return 0.0f;
 }
 
 XMMATRIX TerrainLoader::create_grass_instance_transform(float x, float z) const
@@ -362,8 +371,6 @@ void TerrainLoader::create_flat_grid(int grid_width, int grid_height)
 		 XMFLOAT3(info.min_x, 0.0f, info.min_z),
 		 XMFLOAT3(info.max_x, max_height, info.max_z)
 	);
-
-	 CLOG("Terrain Grid Created: " << vertex_count_x << " x " << vertex_count_z << " vertices, " << _indices.size() / 3 << " triangles");
 }
 
 
@@ -433,6 +440,8 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 		CERROR("No weightmap paths provided.");
 		return;
 	}
+
+	_weightmapFilePaths = weightmap_paths;
 	
 	// ===== [미니맵용 Heightmap GPU 업로드] =====
 	const auto& minimap_info = _terrainData.GetInfo();
@@ -491,7 +500,6 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 
 	if (_layers.empty())
 	{
-		CLOG("No valid layers found after filtering");
 		return;
 	}
 
@@ -562,6 +570,41 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 	{
 		CERROR("Failed to create layer texture arrays for: " << landscape_name);
 		return;
+	}
+
+	// [추가] Weightmap 데이터를 CPU 메모리에 캐싱
+	_weightmapCaches.clear();
+	_weightmapCaches.reserve(_layers.size());
+
+	for (size_t layer_idx = 0; layer_idx < _layers.size(); ++layer_idx)
+	{
+		std::vector<float> cache_data;
+		cache_data.reserve(width * height);
+
+		std::string path = _layers[layer_idx].weightmap_file;
+
+		// R8 바이너리 파일 읽기
+		std::ifstream file(path, std::ios::binary);
+		if (!file.is_open())
+		{
+			// 파일 없으면 모두 0.0f로 채움
+			cache_data.resize(width * height, 0.0f);
+			_weightmapCaches.push_back(cache_data);
+			continue;
+		}
+
+		// 바이너리 데이터 읽기 (R8 형식: uint8 배열)
+		std::vector<uint8_t> raw_data(width * height);
+		file.read(reinterpret_cast<char*>(raw_data.data()), width * height);
+		file.close();
+
+		// uint8 (0~255) → float (0.0~1.0) 변환
+		for (uint8_t value : raw_data)
+		{
+			cache_data.push_back(static_cast<float>(value) / 255.0f);
+		}
+
+		_weightmapCaches.push_back(cache_data);
 	}
 
 	_hasLayers = true;
