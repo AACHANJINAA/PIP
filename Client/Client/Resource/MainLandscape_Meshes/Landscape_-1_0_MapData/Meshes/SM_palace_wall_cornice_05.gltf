@@ -1,0 +1,365 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1485,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 533,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 0, -3.05175774e-07, -0.101183839 ],
+			"max": [ 10.0000019, 5.90318155, 2.09480906 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 533,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 533,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 533,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 533,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 12,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 8,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 0, 0, -2.15623222e-16 ],
+			"max": [ 10.0000019, 3.52139449, 1.2207031e-06 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 8,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 8,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 8,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 8,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_palace_wall_cornice_05.bin",
+			"byteLength": 33280
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2970,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6396,
+			"byteOffset": 2972,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6396,
+			"byteOffset": 9368,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8528,
+			"byteOffset": 15764,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4264,
+			"byteOffset": 24292,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4264,
+			"byteOffset": 28556,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 12,
+			"byteOffset": 32820,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96,
+			"byteOffset": 32832,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96,
+			"byteOffset": 32928,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 128,
+			"byteOffset": 33024,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64,
+			"byteOffset": 33152,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64,
+			"byteOffset": 33216,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Brick_02_BaseColor.png"
+		},
+		{
+			"uri": "MI_Brick_02_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Brick_02_Normal.png"
+		},
+		{
+			"uri": "MI_Brick_02_Occlusion.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_BaseColor.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_Normal.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_Occlusion.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Brick_02",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.0124319308, -0.0141584622 ],
+							"scale": [ 1.54160643, 1.75570285 ]
+						}
+					}
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.0124319308, -0.0141584622 ],
+							"scale": [ 1.54160643, 1.75570285 ]
+						}
+					}
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.0124319308, -0.0141584622 ],
+						"scale": [ 1.54160643, 1.75570285 ]
+					}
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 7,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.0124319308, -0.0141584622 ],
+						"scale": [ 1.54160643, 1.75570285 ]
+					}
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_palace_wall_cornice_05",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Brick_02_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Brick_02_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Brick_02_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Brick_02_Occlusion",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_BaseColor",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_MetallicRoughness",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_Normal",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_cornice_05_Occlusion",
+			"sampler": 0,
+			"source": 7
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}
