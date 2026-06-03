@@ -1,0 +1,178 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 894,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 266,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -4.24118137, -1.12052586e-13, -0.318269104 ],
+			"max": [ 4.24118137, 18.2152176, 0.318269789 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 266,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 266,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 266,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 266,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_gate_big_frame_01.bin",
+			"byteLength": 16684
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 1788,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3192,
+			"byteOffset": 1788,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3192,
+			"byteOffset": 4980,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4256,
+			"byteOffset": 8172,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2128,
+			"byteOffset": 12428,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2128,
+			"byteOffset": 14556,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "T_Metal_Trim_C.png"
+		},
+		{
+			"uri": "T_Metal_Trim_M.png"
+		},
+		{
+			"uri": "T_Metal_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Metall_Trim_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_gate_big_frame_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Metal_Trim_C",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Metal_Trim_M",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Metal_Trim_N",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}

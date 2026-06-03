@@ -1,0 +1,278 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 10206,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 3078,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.472126275, -0.0381695442, -1.54233003 ],
+			"max": [ 0.55218488, 5.90519047, 1.62877285 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 3078,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 3078,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 3078,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 3078,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 10206,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 3078,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.253991693, -0.0313537195, -1.32086289 ],
+			"max": [ 0.587411284, 4.85071802, 1.28398561 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 3078,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 3078,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 3078,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 3078,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Climbing_Foliage_03.bin",
+			"byteLength": 385560
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 20412,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 36936,
+			"byteOffset": 20412,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 36936,
+			"byteOffset": 57348,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 49248,
+			"byteOffset": 94284,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 24624,
+			"byteOffset": 143532,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 24624,
+			"byteOffset": 168156,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 20412,
+			"byteOffset": 192780,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 36936,
+			"byteOffset": 213192,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 36936,
+			"byteOffset": 250128,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 49248,
+			"byteOffset": 287064,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 24624,
+			"byteOffset": 336312,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 24624,
+			"byteOffset": 360936,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Foliage_BaseColor.png"
+		},
+		{
+			"uri": "MI_Foliage1_BaseColor.png"
+		},
+		{
+			"uri": "T_Leaf_low_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Foliage",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicFactor": 0
+			},
+			"normalTexture":
+			{
+				"index": 1
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994,
+			"doubleSided": true
+		},
+		{
+			"name": "MI_Foliage1",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 2
+				},
+				"metallicFactor": 0
+			},
+			"normalTexture":
+			{
+				"index": 1
+			},
+			"alphaMode": "MASK",
+			"alphaCutoff": 0.333299994,
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Climbing_Foliage_03",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Foliage_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Leaf_low_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Foliage1_BaseColor",
+			"sampler": 0,
+			"source": 1
+		}
+	]
+}

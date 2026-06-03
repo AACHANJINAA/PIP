@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 4134,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1097,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.135630488, -4.44519515e-08, -0.0540151969 ],
+			"max": [ 0.135630488, 0.369392306, 0.0540151969 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1097,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1097,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1097,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1097,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_candelier_02.bin",
+			"byteLength": 69700
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 8268,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 13164,
+			"byteOffset": 8268,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 13164,
+			"byteOffset": 21432,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 17552,
+			"byteOffset": 34596,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8776,
+			"byteOffset": 52148,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8776,
+			"byteOffset": 60924,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Light_props_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Light_C.png"
+		},
+		{
+			"uri": "T_Light_N.png"
+		},
+		{
+			"uri": "T_Light_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Light_props",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_candelier_02",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Light_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Light_props_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_Light_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Light_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}

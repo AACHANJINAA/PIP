@@ -1,0 +1,186 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 978,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 388,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.30166364, -0.0232587736, -0.16760768 ],
+			"max": [ 0.0016961802, 0.0232587736, 0.167604372 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 388,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 388,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 388,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 388,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_axe_02.bin",
+			"byteLength": 23684
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 1956,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4656,
+			"byteOffset": 1956,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4656,
+			"byteOffset": 6612,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6208,
+			"byteOffset": 11268,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3104,
+			"byteOffset": 17476,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3104,
+			"byteOffset": 20580,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Weapon_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_vase_veapon_C.png"
+		},
+		{
+			"uri": "T_vase_veapon_N.png"
+		},
+		{
+			"uri": "T_vase_veapon_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Weapon",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_axe_02",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_vase_veapon_C",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Weapon_MetallicRoughness",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_vase_veapon_N",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_vase_veapon_M",
+			"sampler": 0,
+			"source": 3
+		}
+	]
+}
