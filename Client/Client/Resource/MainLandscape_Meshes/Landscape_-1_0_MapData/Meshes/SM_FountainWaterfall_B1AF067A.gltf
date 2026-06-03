@@ -1,0 +1,131 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 384,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 85,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.117704466, -1.27837849, -0.100624934 ],
+			"max": [ 0.129878461, 0.117704466, 0.10205429 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 85,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 85,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 85,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 85,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_FountainWaterfall_B1AF067A.bin",
+			"byteLength": 5144
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 384,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1020,
+			"byteOffset": 384,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1020,
+			"byteOffset": 1404,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1360,
+			"byteOffset": 2424,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 680,
+			"byteOffset": 3784,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 680,
+			"byteOffset": 4464,
+			"target": 34962
+		}
+	],
+	"materials": [
+		{
+			"name": "M_water_PLane",
+			"pbrMetallicRoughness":
+			{
+				"baseColorFactor": [ 0.5, 0.5, 0.5, 1 ],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_FountainWaterfall",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	]
+}

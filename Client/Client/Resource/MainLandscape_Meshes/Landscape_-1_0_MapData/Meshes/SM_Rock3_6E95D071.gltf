@@ -1,0 +1,225 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1572,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 322,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -16.5674572, -7.56116152, -10.9165602 ],
+			"max": [ 16.6098232, 7.00528193, 10.4985371 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 322,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 322,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 322,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 322,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_Rock3_6E95D071.bin",
+			"byteLength": 21176
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 3144,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3864,
+			"byteOffset": 3144,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3864,
+			"byteOffset": 7008,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5152,
+			"byteOffset": 10872,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2576,
+			"byteOffset": 16024,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2576,
+			"byteOffset": 18600,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Rock_Tile_01_SM_Rock3_BaseColor.png"
+		},
+		{
+			"uri": "MI_Rock_Tile_01_SM_Rock3_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Rock_Tile_01_SM_Rock3_Normal.png"
+		},
+		{
+			"uri": "MI_Rock_Tile_01_SM_Rock3_Occlusion.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Rock_Tile_01_SM_Rock3",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00819843821, -0.00819843821 ],
+							"scale": [ 1.01663733, 1.01663733 ]
+						}
+					}
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00819843821, -0.00819843821 ],
+							"scale": [ 1.01663733, 1.01663733 ]
+						}
+					}
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00819843821, -0.00819843821 ],
+						"scale": [ 1.01663733, 1.01663733 ]
+					}
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 3,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00819843821, -0.00819843821 ],
+						"scale": [ 1.01663733, 1.01663733 ]
+					}
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_Rock3",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Rock_Tile_01_SM_Rock3_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Rock_Tile_01_SM_Rock3_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Rock_Tile_01_SM_Rock3_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Rock_Tile_01_SM_Rock3_Occlusion",
+			"sampler": 0,
+			"source": 3
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}
