@@ -87,11 +87,11 @@ void QuestNPCScript::update(float deltaTime)
     {
         // 나중에 서버와 연결 부
         // 서버에 NPC 상호작용 (서버로부터 부여받은 id() 사용)
-        // NetworkManager::instance()->SendNPCInteractPacket(id(), 0);
+        NetworkManager::instance()->SendNPCInteractPacket(id(), 0);
         // 인터랙션 시 대화 중 상태로 전환 (UI 숨기기를 위해)
 
         // 대화 상태 전환 테스트
-        _isTalking != _isTalking;
+        _isTalking = !_isTalking;
     }
 }
 
