@@ -1,0 +1,365 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 828,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 432,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -11.3765888, -4.57763645e-06, -11.3765869 ],
+			"max": [ 15.5696135, 10.085083, 15.5696135 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 432,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 432,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 432,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 432,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 1398,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 602,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -10.8806171, -6.66245517e-16, -10.8806152 ],
+			"max": [ 13.4120359, 19.0000286, 13.4120359 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 602,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 602,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 602,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 602,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_tower_big_body_01_8979E6C1.bin",
+			"byteLength": 62356
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 1656,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5184,
+			"byteOffset": 1656,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5184,
+			"byteOffset": 6840,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 6912,
+			"byteOffset": 12024,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3456,
+			"byteOffset": 18936,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3456,
+			"byteOffset": 22392,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2796,
+			"byteOffset": 25848,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7224,
+			"byteOffset": 28644,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7224,
+			"byteOffset": 35868,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 9632,
+			"byteOffset": 43092,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4816,
+			"byteOffset": 52724,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4816,
+			"byteOffset": 57540,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Brick_02_BaseColor.png"
+		},
+		{
+			"uri": "MI_Brick_02_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Brick_02_Normal.png"
+		},
+		{
+			"uri": "MI_Brick_02_Occlusion.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_BaseColor.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_Normal.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_Occlusion.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Brick_02",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00817527529, -0.00820658542 ],
+							"scale": [ 1.01761603, 1.01764762 ]
+						}
+					}
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00817527529, -0.00820658542 ],
+							"scale": [ 1.01761603, 1.01764762 ]
+						}
+					}
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00817527529, -0.00820658542 ],
+						"scale": [ 1.01761603, 1.01764762 ]
+					}
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 7,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00817527529, -0.00820658542 ],
+						"scale": [ 1.01761603, 1.01764762 ]
+					}
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_tower_big_body_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Brick_02_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Brick_02_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Brick_02_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Brick_02_Occlusion",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_BaseColor",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_Normal",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_tower_big_body_01_Occlusion",
+			"sampler": 0,
+			"source": 7
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}
