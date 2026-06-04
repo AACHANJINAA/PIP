@@ -66,17 +66,17 @@ void GS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> outputStream)
     float halfHeight = g_Size.y * 0.5f;
 
     float4 v[4];
-    v[0] = float4(posW + halfWidth * right - halfHeight * up, 1.0f); // 우측 하단
-    v[1] = float4(posW + halfWidth * right + halfHeight * up, 1.0f); // 우측 상단
-    v[2] = float4(posW - halfWidth * right - halfHeight * up, 1.0f); // 좌측 하단
-    v[3] = float4(posW - halfWidth * right + halfHeight * up, 1.0f); // 좌측 상단
+    v[0] = float4(posW + halfWidth * right - halfHeight * up, 1.0f); // 카메라 기준 좌측 하단
+    v[1] = float4(posW + halfWidth * right + halfHeight * up, 1.0f); // 카메라 기준 좌측 상단
+    v[2] = float4(posW - halfWidth * right - halfHeight * up, 1.0f); // 카메라 기준 우측 하단
+    v[3] = float4(posW - halfWidth * right + halfHeight * up, 1.0f); // 카메라 기준 우측 상단
 
     float2 uv[4] =
     {
-        float2(1.0f, 1.0f),
-        float2(1.0f, 0.0f),
-        float2(0.0f, 1.0f),
-        float2(0.0f, 0.0f)
+        float2(0.0f, 1.0f), // 좌측 하단
+        float2(0.0f, 0.0f), // 좌측 상단
+        float2(1.0f, 1.0f), // 우측 하단
+        float2(1.0f, 0.0f)  // 우측 상단
     };
 
     GS_OUTPUT output;
@@ -94,10 +94,11 @@ float4 PS(GS_OUTPUT input) : SV_TARGET
 {
     float4 color = g_Texture.Sample(g_Sampler, input.UV);
     
-    // 원래 로직 (임시 주석 처리)
+    // 원래 로직 (페이드 효과 및 알파 테스트)
     color *= g_Color;
     color.a *= g_Alpha;
-    //if (color.a < 0.01f)
-    //    discard;
+    if (color.a < 0.01f)
+        discard;
+        
     return color;
 }
