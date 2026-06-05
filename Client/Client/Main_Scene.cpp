@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -221,6 +221,48 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestMarker_UI", quest_marker_obj);
 	UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestMarker_UI", false);
 	ResourceManager::instance()->load_texture("Resource/UI/Quest_Exclamation_UI.png", true);
+
+    // 8. 퀘스트 배경 UI (검은색 반투명 그라데이션)
+    auto quest_bg_obj = ObjectManager::instance()->create_game_object("quest_bg_ui");
+    auto quest_bg_ui = quest_bg_obj->add_component<UIRenderComponent>();
+    float bg_w = 400.f;
+    float bg_h = 100.f;
+    quest_bg_ui->set_screen_position(0.f, FRAME_BUFFER_HEIGHT / 2.0f - bg_h / 2.0f);
+    quest_bg_ui->set_size(bg_w, bg_h);
+    quest_bg_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.8f)); // 반투명
+    quest_bg_ui->set_texture("Resource/UI/Quest_BG.png");
+    UIManager::instance()->add_ui(UILayer::BACKGROUND, "QuestBanner_UI", quest_bg_obj); // 이름은 그대로 유지해서 로직 안깨지게 함
+    UIManager::instance()->set_visible(UILayer::BACKGROUND, "QuestBanner_UI", false);
+
+    // 8-1. 퀘스트 고정 타이틀 글씨 (마을 주변 몬스터 제거)
+    auto quest_title_obj = ObjectManager::instance()->create_game_object("quest_title_ui");
+    auto quest_title_ui = quest_title_obj->add_component<UIRenderComponent>();
+    float title_w = 250.f;
+    float title_h = 50.f;
+    quest_title_ui->set_screen_position(20.f, FRAME_BUFFER_HEIGHT / 2.0f - title_h / 2.0f - 15.f);
+    quest_title_ui->set_size(title_w, title_h);
+    quest_title_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+    quest_title_ui->set_texture("Resource/UI/Quest_Title.png");
+    UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestTitle_UI", quest_title_obj);
+    UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", false);
+
+    // 9. 퀘스트 텍스트(진행도) UI (00/00 등 총 5자리)
+    float num_w = 20.f;
+    float num_h = 30.f;
+    float start_x = 20.f; // 타이틀 바로 아래에 배치
+    float start_y = FRAME_BUFFER_HEIGHT / 2.0f + 10.f; // 중앙보다 살짝 아래
+    for (int i = 0; i < 5; ++i) {
+        std::string name = "QuestNumber_" + std::to_string(i);
+        auto num_obj = ObjectManager::instance()->create_game_object(name);
+        auto num_ui = num_obj->add_component<UIRenderComponent>();
+        num_ui->set_screen_position(start_x + i * (num_w * 0.8f), start_y);
+        num_ui->set_size(num_w, num_h);
+        num_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+        num_ui->set_texture("Resource/UI/Quest_Numbers.png");
+        num_ui->set_uv_scale(1.0f / 11.0f, 1.0f);
+        UIManager::instance()->add_ui(UILayer::MIDDLE, name, num_obj);
+        UIManager::instance()->set_visible(UILayer::MIDDLE, name, false);
+    }
 }
 
 void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
 #include "AnimationComponent.h"
@@ -47,6 +47,8 @@ public:
 	/*void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }*/
 	void sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket);
 	void reset_state(); // [추가] 리스폰 시 상태 초기화
+	void update_quest_ui(); // 퀘스트 UI 업데이트
+
 private:
 	// --- update 기능 분리용 private 함수 ---
 	void update_hp_bar(float deltaTime);
