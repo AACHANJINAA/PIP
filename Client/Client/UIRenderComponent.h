@@ -2,50 +2,50 @@
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 
-// UI¿ë °£´ÜÇÑ Quad ¸Ş½Ã Å¬·¡½º
+// UIìš© ê°„ë‹¨í•œ Quad ë©”ì‹œ í´ë˜ìŠ¤
 class UIQuadMesh : public Mesh
 {
 public:
     UIQuadMesh()
     {
-        // UI¿ë °£´ÜÇÑ Á¤Á¡ ±¸Á¶Ã¼
+        // UIìš© ê°„ë‹¨í•œ ì •ì  êµ¬ì¡°ì²´
         struct UIVertex
         {
             XMFLOAT3 position;
             XMFLOAT2 texcoord;
         };
 
-        // Quad Á¤Á¡ µ¥ÀÌÅÍ (0~1 ÁÂÇ¥°è)
+        // Quad ì •ì  ë°ì´í„° (0~1 ì¢Œí‘œê³„)
         std::vector<UIVertex> vertices = {
-            { XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },  // ¿ŞÂÊ »ó´Ü
-            { XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },  // ¿À¸¥ÂÊ »ó´Ü
-            { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },  // ¿ŞÂÊ ÇÏ´Ü
-            { XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }   // ¿À¸¥ÂÊ ÇÏ´Ü
+            { XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },  // ì™¼ìª½ ìƒë‹¨
+            { XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },  // ì˜¤ë¥¸ìª½ ìƒë‹¨
+            { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },  // ì™¼ìª½ í•˜ë‹¨
+            { XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }   // ì˜¤ë¥¸ìª½ í•˜ë‹¨
         };
 
-        // Á¤Á¡ µ¥ÀÌÅÍ ¼³Á¤
+        // ì •ì  ë°ì´í„° ì„¤ì •
         set_vertex_data_buffer(vertices);
 
-        // ÀÎµ¦½º µ¥ÀÌÅÍ ¼³Á¤ (protected ¸â¹ö¿¡ Á¢±Ù °¡´É)
+        // ì¸ë±ìŠ¤ ë°ì´í„° ì„¤ì • (protected ë©¤ë²„ì— ì ‘ê·¼ ê°€ëŠ¥)
         _indices = { 0, 1, 2, 2, 1, 3 };
 
-        // Topology ¼³Á¤
+        // Topology ì„¤ì •
         _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     }
 };
 
-// UI ¿ä¼Ò »ó¼ö ¹öÆÛ ±¸Á¶Ã¼
+// UI ìš”ì†Œ ìƒìˆ˜ ë²„í¼ êµ¬ì¡°ì²´
 struct CbUIElement
 {
-    XMFLOAT2 screen_position;  // È­¸é»ó À§Ä¡ (ÇÈ¼¿)
-    XMFLOAT2 size;              // UI Å©±â (ÇÈ¼¿)
-    XMFLOAT4 color;             // »ö»ó tint
-    XMFLOAT2 uv_offset;         // UV ¿ÀÇÁ¼Â
-    XMFLOAT2 uv_scale;          // UV ½ºÄÉÀÏ
-    int use_texture;            // ÅØ½ºÃ³ »ç¿ë ¿©ºÎ (1: »ç¿ë, 0: ´Ü»ö)
-    float padding;              // ÆĞµù
+    XMFLOAT2 screen_position;  // í™”ë©´ìƒ ìœ„ì¹˜ (í”½ì…€)
+    XMFLOAT2 size;              // UI í¬ê¸° (í”½ì…€)
+    XMFLOAT4 color;             // ìƒ‰ìƒ tint
+    XMFLOAT2 uv_offset;         // UV ì˜¤í”„ì…‹
+    XMFLOAT2 uv_scale;          // UV ìŠ¤ì¼€ì¼
+    int use_texture;            // í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€ (1: ì‚¬ìš©, 0: ë‹¨ìƒ‰)
+    float padding;              // íŒ¨ë”©
 };
-// È­¸é Á¤º¸ »ó¼ö ¹öÆÛ ±¸Á¶Ã¼
+// í™”ë©´ ì •ë³´ ìƒìˆ˜ ë²„í¼ êµ¬ì¡°ì²´
 struct CbScreenInfo
 {
     float screen_width;
@@ -59,10 +59,10 @@ public:
     UIRenderComponent();
     virtual ~UIRenderComponent();
 
-    // UI´Â frustum culling ºÒÇÊ¿ä
+    // UIëŠ” frustum culling ë¶ˆí•„ìš”
     virtual bool is_visible(const BoundingFrustum& frustum) const override { return true; }
 
-    // UI´Â À¯È¿ÇÏÁö ¾ÊÀº bounding box ¹İÈ¯
+    // UIëŠ” ìœ íš¨í•˜ì§€ ì•Šì€ bounding box ë°˜í™˜
     virtual BoundingOrientedBox get_world_bounding_box() const override
     {
         BoundingOrientedBox box;
@@ -72,10 +72,10 @@ public:
         return box;
     }
 
-    // UI ·»´õ¸µ
+    // UI ë Œë”ë§
     virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
 
-    // UI ¼Ó¼º ¼³Á¤
+    // UI ì†ì„± ì„¤ì •
     void set_screen_position(float x, float y) { _screen_position = XMFLOAT2(x, y); }
     void set_size(float width, float height) { _size = XMFLOAT2(width, height); }
     void set_size_x(float width) { _size.x = width; }
@@ -83,28 +83,29 @@ public:
     void set_color(const XMFLOAT4& color) { _color = color; }
     void set_texture(const std::string& texture_path);
     void set_uv_scale(float u, float v) { _uv_scale = XMFLOAT2(u, v); }
+    void set_uv_offset(float u, float v) { _uv_offset = XMFLOAT2(u, v); }
 
 protected:
-    // UI ¼Ó¼º
+    // UI ì†ì„±
     XMFLOAT2 _screen_position = XMFLOAT2(0.0f, 0.0f);
     XMFLOAT2 _size = XMFLOAT2(100.0f, 100.0f);
     XMFLOAT4 _color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
     XMFLOAT2 _uv_offset = XMFLOAT2(0.0f, 0.0f);
     XMFLOAT2 _uv_scale = XMFLOAT2(1.0f, 1.0f);
 
-    // »ó¼ö ¹öÆÛ
+    // ìƒìˆ˜ ë²„í¼
     ComPtr<ID3D12Resource> _cb_ui_element;
     CbUIElement* _mapped_ui_element = nullptr;
 
-    // È­¸é Á¤º¸ ¹öÆÛ (static - ¸ğµç UI°¡ °øÀ¯)
+    // í™”ë©´ ì •ë³´ ë²„í¼ (static - ëª¨ë“  UIê°€ ê³µìœ )
     static ComPtr<ID3D12Resource> _cb_screen_info;
     static CbScreenInfo* _mapped_screen_info;
     static bool _screen_info_initialized;
 
-    // ÅØ½ºÃ³ Á¤º¸
+    // í…ìŠ¤ì²˜ ì •ë³´
     ResourceManager::TextureInfo* _texture_info = nullptr;
 
-    // Quad mesh ÃÊ±âÈ­
+    // Quad mesh ì´ˆê¸°í™”
     void initialize_quad_mesh();
     virtual void initialize_constant_buffers();
     static void initialize_screen_info();

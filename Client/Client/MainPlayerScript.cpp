@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -50,6 +50,7 @@ void MainPlayerScript::update(float deltaTime)
 	handle_input(deltaTime);
 	handle_state(deltaTime);
 	update_physics_and_visuals(deltaTime);
+	update_quest_ui(); // 퀘스트 UI 실시간 반영
 	send_network_sync(deltaTime);
 
 	//// HP Bar lerp 갱신
@@ -364,6 +365,72 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
 		_hpBar_ui->set_uv_scale(ratio, 1.0f);
 	}
+}
+
+void MainPlayerScript::update_quest_ui()
+{
+    // 현재 진행 중인 퀘스트를 찾습니다.
+    const auto active_quest = NetworkManager::instance()->get_quest(2);
+
+    bool is_visible = false;
+    int current = 0;
+    int target = 0;
+    int quest_id = 0;
+    
+    if (active_quest) {
+        is_visible = true;
+        current = active_quest->_current_count;
+        target = active_quest->_target_count;
+        quest_id = active_quest->_quest_id;
+    }
+    else {
+        // [디버깅 용] 활성화된 퀘스트가 없을 때 기본적으로 1번 퀘스트 표시
+        is_visible = true;
+        current = 0;
+        target = 15;
+        quest_id = 1;
+    }
+    
+    // 배너 및 타이틀 켜기/끄기
+    UIManager::instance()->set_visible(UILayer::BACKGROUND, "QuestBanner_UI", is_visible);
+    UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", is_visible);
+    
+    // 퀘스트 ID에 맞춰 타이틀 이미지 변경
+    if (is_visible) {
+        auto title_ui = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestTitle_UI");
+        if (title_ui) {
+            if (quest_id == 2) {
+                title_ui->set_texture("Resource/UI/Quest_Title_2.png");
+            } else {
+                title_ui->set_texture("Resource/UI/Quest_Title_1.png"); // 기본: 1번
+            }
+        }
+    }
+
+    for (int i = 0; i < 5; ++i) {
+        UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_" + std::to_string(i), is_visible);
+	}
+
+	if (is_visible) {
+		float uv_scale_x = 1.0f / 11.0f; // 0~9, /
+
+		int cur_tens = (current / 10) % 10;
+		int cur_ones = current % 10;
+		int max_tens = (target / 10) % 10;
+		int max_ones = target % 10;
+
+		auto n0 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_0");
+		auto n1 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_1");
+		auto n2 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_2");
+		auto n3 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_3");
+		auto n4 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_4");
+        
+        if (n0) n0->set_uv_offset(cur_tens * uv_scale_x, 0.0f);
+        if (n1) n1->set_uv_offset(cur_ones * uv_scale_x, 0.0f);
+        if (n2) n2->set_uv_offset(10 * uv_scale_x, 0.0f); // '/'
+        if (n3) n3->set_uv_offset(max_tens * uv_scale_x, 0.0f);
+        if (n4) n4->set_uv_offset(max_ones * uv_scale_x, 0.0f);
+    }
 }
 
 void MainPlayerScript::update_skill_cooltime(float deltaTime)
