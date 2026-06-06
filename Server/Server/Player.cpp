@@ -40,6 +40,8 @@ namespace PIP::GAME
 		_owner_id = id;
 		_hp = 100;
 		_max_hp = 100;
+		_mp = 100; // [추가]
+		_max_mp = 100; // [추가]
 		_level = 0;
 		_exp = 0;
 		_damage = 50;
@@ -74,7 +76,8 @@ namespace PIP::GAME
 		bool isRotated = !common::IsEqual(GetRotation(), _lastSentRot);
 		bool isGrabChanged = (GetGrabbedById() != _lastSentGrabbedById) || (GetGrabSlot() != _lastSentGrabSlot);
 		bool isHpChanged = (_hp != _lastSentHp); // [추가] DoT 시각화를 위해 HP 변화 감지
-		return isMoved || isStateChanged || isRotated || isGrabChanged || isHpChanged;
+		bool isMpChanged = (_mp != _lastSentMp); // [추가]
+		return isMoved || isStateChanged || isRotated || isGrabChanged || isHpChanged || isMpChanged;
 	}
 
 	void Player::SyncSentData()
@@ -85,6 +88,7 @@ namespace PIP::GAME
 		_lastSentGrabbedById = GetGrabbedById();
 		_lastSentGrabSlot = GetGrabSlot();
 		_lastSentHp = _hp; // [추가]
+		_lastSentMp = _mp; // [추가]
 	}
 
 	void Player::addMaterial(common::packet::ItemId item_id, uint32_t count)
@@ -139,6 +143,7 @@ namespace PIP::GAME
 		res._grabbed_by_id = _grabbedById; // [추가]
 		res._grab_slot = _grabSlot;         // [추가]
 		res._hp = _hp;                     // [추가] 실시간 HP 동기화
+		res._mp = _mp;                     // [추가] 실시간 MP 동기화
 		return res;
 	}
 
@@ -242,6 +247,16 @@ namespace PIP::GAME
 	void Player::Update(float deltaTime, JPH::TempAllocator* allocator)
 	{
 		if (_hitCooldown > 0.0f) _hitCooldown -= deltaTime;
+
+		// [추가] 마나 자동 회복 (1초에 8)
+		if (_mp < _max_mp) {
+			_mpRegenTimer += deltaTime;
+			if (_mpRegenTimer >= 1.0f) {
+				_mpRegenTimer -= 1.0f;
+				_mp = std::min(_mp + 8, _max_mp);
+			}
+		}
+
 		Actor::Update(deltaTime, allocator);
 	}
 

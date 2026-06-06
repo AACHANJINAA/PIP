@@ -14,6 +14,12 @@ namespace PIP::GAME
 		return npc && npc->GetState() == EntityState::HITTED;
 	}
 
+	bool Condition_IsNotHitted::check()
+	{
+		auto npc = _blackboard->get<NPC*>("owner_npc");
+		return npc && npc->GetState() != EntityState::HITTED;
+	}
+
 	bool Condition_IsAlive::check()
 	{
 		auto npc = _blackboard->get<NPC*>("owner_npc");
@@ -779,7 +785,7 @@ namespace PIP::GAME
 
 			if (_internalTimer <= 0.0f) {
 				_currentPhase = Phase::DASHING;
-				_internalTimer = 2.0f; // [추가] 최대 돌진 제한 시간 (벽에 끼임 방지)
+				_internalTimer = 1.2f; // [수정] 최대 돌진 제한 시간 단축
 			}
 			return NodeStatus::RUNNING;
 		}
@@ -805,7 +811,7 @@ namespace PIP::GAME
 			// [핵심] 도착 판정 로직 개선
 			// 1. 거리가 매우 가깝거나 (0.2m 이내)
 			// 2. 목적지를 지나쳤을 때 (목표 방향 _dashDir과 현재 남은 방향 toTarget의 내적이 음수면 지나친 것)
-			// 3. [추가] 제한 시간(2초)이 초과되었을 때 (벽이나 플레이어에 막혀서 못 가는 경우)
+			// 3. [추가] 제한 시간(1.2초)이 초과되었을 때 (벽이나 플레이어에 막혀서 못 가는 경우)
 			float dot = toTarget.x * _dashDir.x + toTarget.y * _dashDir.y + toTarget.z * _dashDir.z;
 			float distSq = common::LengthSq(toTarget);
 
@@ -915,7 +921,7 @@ namespace PIP::GAME
 			if (_internalTimer <= 0.0f) {
 				_currentPhase = Phase::DASHING;
 				_dashDir = { 0, 0, 0 };
-				_internalTimer = 2.0f; // [추가] 돌진 최대 지속 시간 (2초)
+				_internalTimer = 1.2f; // [수정] 돌진 최대 지속 시간 단축 (지형에 걸렸을 때 빨리 빠져나오기 위함)
 			}
 			return NodeStatus::RUNNING;
 		}
@@ -937,7 +943,7 @@ namespace PIP::GAME
 			float dot = toTarget.x * _dashDir.x + toTarget.y * _dashDir.y + toTarget.z * _dashDir.z;
 			float distSq = common::LengthSq(toTarget);
 
-			// [수정] 도착 판정 혹은 2초 타임아웃 시 실패 처리
+			// [수정] 도착 판정 혹은 타임아웃 시 실패 처리
 			if (distSq < 0.2f * 0.2f || dot < 0 || _internalTimer <= 0.0f) {
 				auto nc = owner->GetComponent<NPCControllerComponent>();
 				if (nc) nc->SetVelocity({ 0, 0, 0 });
@@ -947,7 +953,7 @@ namespace PIP::GAME
 				_dashDir = { 0, 0, 0 };
 				
 				if (_internalTimer <= 0.0f) {
-					MYLOG("[Grab] Dash timed out (2s) - Grab failed.");
+					MYLOG("[Grab] Dash timed out (1.2s) - Grab failed.");
 				}
 				return NodeStatus::FAILURE; // 잡기 실패
 			}

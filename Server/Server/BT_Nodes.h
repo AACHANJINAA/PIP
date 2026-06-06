@@ -15,6 +15,11 @@ namespace PIP::GAME
     public:
 		bool check() override;
     };
+    class Condition_IsNotHitted : public Condition
+    {
+    public:
+		bool check() override;
+    };
     class Condition_IsAlive : public Condition
     {
     public:

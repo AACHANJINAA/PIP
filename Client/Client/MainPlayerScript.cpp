@@ -42,11 +42,30 @@ void MainPlayerScript::set_hp(int hp)
 	// UI 직접 갱신은 하지 않음 — update()의 lerp가 담당
 }
 
+void MainPlayerScript::set_mp(int mp)
+{
+	if (_mp != mp)
+	{
+		CLOG("[Player MP] " << mp << " / " << _maxMp);
+	}
+	_mp = std::clamp(mp, 0, _maxMp);
+}
+
 void MainPlayerScript::update(float deltaTime)
 {
 	die_ui_update(deltaTime);
 	update_hp_bar(deltaTime);
-	update_skill_cooltime(deltaTime);
+	
+	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
+	if (_particleEffectObject && _particleEffectObject->is_enable())
+	{
+		auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+		if (psComp && psComp->is_death_timer_end())
+		{
+			_particleEffectObject->set_enabled(false);
+		}
+	}
+
 	handle_input(deltaTime);
 	handle_state(deltaTime);
 	update_physics_and_visuals(deltaTime);
@@ -343,6 +362,7 @@ void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& mo
 	_grabbedById = movePacket._grabbed_by_id; // [추가]
 	_grabSlot = movePacket._grab_slot;         // [추가]
 	set_hp(movePacket._hp);                   // [추가] 실시간 HP 동기화
+	set_mp(movePacket._mp);                   // [추가] 실시간 MP 동기화
 
 	// 3. [핵심] 화면이 튀지 않게 오프셋 재계산
 	// (이전 시각적 위치 - 새로운 논리 위치)를 오프셋으로 설정하여 화면상 위치를 유지함
@@ -433,28 +453,6 @@ void MainPlayerScript::update_quest_ui()
     }
 }
 
-void MainPlayerScript::update_skill_cooltime(float deltaTime)
-{
-	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
-	if (_particleEffectObject && _particleEffectObject->is_enable())
-	{
-		auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
-		if (psComp && psComp->is_death_timer_end())
-		{
-			_particleEffectObject->set_enabled(false);
-		}
-	}
-
-	if (!_isCanUseSkill)
-	{
-		_skillCoolTimer += deltaTime;
-		if (_skillCoolTimer >= _skillCoolTime)
-		{
-			_isCanUseSkill = true;
-			_skillCoolTimer = 0.0f;
-		}
-	}
-}
 
 void MainPlayerScript::handle_state(float deltaTime)
 {
@@ -689,8 +687,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_RBUTTON)) {
 
-		if (_isCanUseSkill) // 스킬이 사용 가능 할 때만
+		if (_mp >= 80) // 스킬 사용 시 마나 80 소모 (서버에서 차감하므로 여기서는 체크만)
 		{
+			CLOG("[Skill] 스킬 사용! 예상 마나 잔량: " << _mp - 80);
+			set_mp(_mp - 80); // [추가] 서버 응답 전 클라이언트 선 차감 (스팸 방지)
 			init_skill_variables(); // 스킬 관련 변수 초기화
 			_isAttacking = true;
 			_isSkilling = true;
@@ -1007,10 +1007,8 @@ void MainPlayerScript::init_skill_variables()
 	_isSkillEndAnimationStart = false;
 	_isSkillEnd = false;
 	_nowSkillTime = 0.0f;
-	_skillCoolTimer = 0.0f;
 	_skillGatherTimer = 0.0f;
 	_isSwordGathered = false;
-	_isCanUseSkill = false;
 	if (game_object()) 
 	{
 		// 검 따라가기 멈추기

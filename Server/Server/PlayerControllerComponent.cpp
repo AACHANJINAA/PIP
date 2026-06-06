@@ -72,7 +72,12 @@ namespace PIP::GAME
             // [핵심 수정] 0.0f로 강제 고정하면 엘리베이터가 내려갈 때 붕 뜹니다.
             // 지면의 Y 속도 이하로 떨어지지 않게 제한해야 플랫폼과 함께 자연스럽게 내려갑니다.
             // (살짝 더 아래로 눌러주는 -0.1f 오프셋을 주면 StickToFloor와 시너지가 좋습니다)
-            newYVel = std::max(newYVel, groundVelocity.GetY() - 0.1f);
+            // 단, 가만히 있거나 공격 중일 때(수평 이동이 없을 때) -0.1f를 계속 주면 바닥으로 미세하게 가라앉으므로 이동 중에만 적용합니다.
+            if (common::LengthSq(horizontalInput) > 0.001f) {
+                newYVel = std::max(newYVel, groundVelocity.GetY() - 0.1f);
+            } else {
+                newYVel = std::max(newYVel, groundVelocity.GetY());
+            }
         }
 
         // 최종 속도 설정

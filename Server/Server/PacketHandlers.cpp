@@ -22,6 +22,7 @@ namespace PIP::packet
 		spawn_packet_data._position = session->_player->GetPosition();
 		spawn_packet_data._rotation = session->_player->GetRotation();
 		spawn_packet_data._hp = session->_player->GetHP();
+		spawn_packet_data._mp = session->_player->GetMP(); // [추가]
 		spawn_packet_data._level = session->_player->_level;
 		spawn_packet_data._exp = session->_player->_exp;
 		spawn_packet_data._state = session->_player->_state;

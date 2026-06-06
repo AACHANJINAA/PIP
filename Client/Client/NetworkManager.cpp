@@ -321,6 +321,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			if (player_logic) {
 				player_logic->set_name(name);
 				player_logic->set_hp(spawn_data._hp);
+				player_logic->set_mp(spawn_data._mp); // [추가]
 				player_logic->set_id(_my_session_id);
 				player_logic->set_position(spawn_data._position);
 				existing_player->transform()->set_local_rotation(spawn_data._rotation);
@@ -333,6 +334,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			auto player_logic = playerObject->add_component<MainPlayerScript>();
 			player_logic->set_name(name);
 			player_logic->set_hp(spawn_data._hp);
+			player_logic->set_mp(spawn_data._mp); // [추가]
 			player_logic->set_id(_my_session_id);
 			player_logic->set_position(spawn_data._position);
 			player_logic->transform()->set_local_rotation(spawn_data._rotation);
@@ -356,6 +358,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 				other_player_logic->on_sync_position(spawn_data._position);
 				other_player_logic->on_sync_rotation(spawn_data._rotation);
 				other_player_logic->set_hp(spawn_data._hp);
+				other_player_logic->on_sync_mp(spawn_data._mp); // [추가]
 			}
 		} else {
 			// 다른 플레이어 (적) 생성 또는 업데이트
@@ -371,6 +374,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			other_player_logic->on_sync_rotation(spawn_data._rotation);
 
 			other_player_logic->set_hp(spawn_data._hp);
+			other_player_logic->on_sync_mp(spawn_data._mp); // [추가]
 			other_player_logic->set_id(spawn_data._id);
 			
 			// [중요] 생성 시 ObjectManager의 _npcMap에 등록
@@ -424,6 +428,7 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 			other_player_script->on_sync_grab(move_packet._grabbed_by_id, move_packet._grab_slot); // [추가]
 			other_player_script->on_sync_velocity(move_packet._velocity); // [추가]
 			other_player_script->on_sync_hp(move_packet._hp);             // [추가]
+			other_player_script->on_sync_mp(move_packet._mp);             // [추가]
 		}
 	}
 }
@@ -533,6 +538,7 @@ void NetworkManager::HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& s
 				player_logic->set_position(resurrect_packet._position);
 				player_logic->transform()->set_local_rotation({ 0,0,0,1 });
 				player_logic->reset_state(); // [추가] 리스폰 시 상태 초기화
+				player_logic->set_mp(100); // 부활 시 마나 100
 			}
 		}
 	}
