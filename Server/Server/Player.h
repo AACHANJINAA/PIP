@@ -57,6 +57,9 @@ namespace PIP::GAME
 		void SetHP(int hp) override { _hp = hp; }
 		int32_t GetHP() const override { return _hp; }
 
+		void SetMP(int mp) { _mp = std::clamp(mp, 0, _max_mp); } // [추가]
+		int32_t GetMP() const { return _mp; } // [추가]
+
 		void SetState(const common::packet::EntityState& state) override { _state = state; }
 		common::packet::EntityState GetState() const override { return _state; }
 
@@ -90,6 +93,8 @@ namespace PIP::GAME
 		//common::Quat				_rotation;
 		
 		int32_t						_max_hp;
+		int32_t						_max_mp = 100; // [추가]
+		int32_t						_mp = 100; // [추가]
 		int32_t						_level;
 		int32_t						_exp;
 		int32_t						_damage;
@@ -98,6 +103,7 @@ namespace PIP::GAME
 		float						_speed = 10.0f; //방향에 곱해줄 속도값
 
 		// [추가] 위치 보정 관련
+		float						_mpRegenTimer = 0.0f; // [추가] 마나 회복 타이머
 		common::Vec3 _lastClientTargetPos = { 0.0f, 0.0f, 0.0f }; // 클라이언트가 마지막으로 보냈다고 우기는 좌표
 		common::Vec3 _lastSentPos = { 0.0f, 0.0f, 0.0f };         // 서버에서 클라이언트에게 마지막으로 확정해서 보낸 좌표
 		common::packet::EntityState _lastSentState = common::packet::EntityState::IDLE; // 서버에서 클라이언트에게 마지막으로 보낸 상태
@@ -106,6 +112,7 @@ namespace PIP::GAME
 		int64_t _lastSentGrabbedById = -1; // [추가]
 		int8_t _lastSentGrabSlot = -1; // [추가]
 		int32_t _lastSentHp = 0; // [추가]
+		int32_t _lastSentMp = 0; // [추가]
 
 		// [추가] 퀘스트 데이터 (진행중, 완료된 퀘스트 모두 포함)
 		std::unordered_map<int32_t, common::packet::QuestUpdateInfo> _quests;

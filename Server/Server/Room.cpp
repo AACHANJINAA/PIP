@@ -1451,6 +1451,8 @@ namespace PIP::SERVER
 			break;
 		case packet::ActionID::Common::SKILL1:
 			{
+				// (마나 차감은 이미 스킬 시작점인 C2S_MOVE에서 처리됨)
+
 				// 대검 찍기 스킬 (SKILL1) 구현
 				// 요구사항: 플레이어 앞 30cm, 3m 크기의 박스, 높은 데미지 판정
 
@@ -1581,6 +1583,20 @@ namespace PIP::SERVER
 				move_packet._state != common::packet::EntityState::DEAD &&
 				move_packet._state != common::packet::EntityState::HITTED)
 			{
+				// [마나 선차감] 클라이언트에서 스킬을 막 시작했을 때 서버도 즉시 마나 차감
+				if (currentState != common::packet::EntityState::ACTION &&
+					move_packet._state == common::packet::EntityState::ACTION &&
+					move_packet._action_id == common::packet::ActionID::Common::SKILL1)
+				{
+					if (player->GetMP() >= 80) {
+						player->SetMP(player->GetMP() - 80);
+					}
+					else {
+						// 마나가 부족하면 클라이언트의 강제 스킬 진입을 서버가 무시
+						return;
+					}
+				}
+
 				player->SetState(move_packet._state);
 				player->SetActionId(move_packet._action_id);
 			}

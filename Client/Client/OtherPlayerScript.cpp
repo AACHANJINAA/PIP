@@ -94,6 +94,12 @@ void OtherPlayerScript::init_skill_variables()
 
 void OtherPlayerScript::update(float deltaTime)
 {
+    // [추가] _playerId가 -1 이면 Scene Editor에서 배치한 더미 비주얼이므로 삭제 (혹은 비활성화)
+    if (_playerId == -1) {
+        ObjectManager::instance()->remove_game_object(game_object());
+        return;
+    }
+
     // 0. 잡기 상태일 때 본 부착 처리 (다른 플레이어)
     if (_grabbedById != -1) {
         auto bossObj = ObjectManager::instance()->find_npc(_grabbedById);

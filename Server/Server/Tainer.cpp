@@ -73,6 +73,7 @@ namespace PIP::GAME
 		auto root = builder
 			.sequence()
 				.leaf<Condition_IsAlive>()
+				.leaf<Condition_IsNotHitted>() // [추가] 피격 시 이하 노드(돌진 등) 캔슬 및 대기
 				.selector()
 					// --- [전투 시퀀스] 플레이어가 방에 있을 때 ---
 					.sequence()

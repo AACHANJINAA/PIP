@@ -23,6 +23,7 @@ public:
     void on_sync_grab(int64_t grabbed_by_id, int8_t grab_slot); // [추가]
     void on_sync_velocity(const common::Vec3& velocity) { _velocity = velocity; } // [추가]
     void on_sync_hp(int hp) { _hp = hp; } // [추가]
+    void on_sync_mp(int mp) { _mp = mp; } // [추가]
     void reset_state(); // [추가] 리스폰 시 상태 초기화
 
     void set_hp(int hp) { _hp = hp; }    int hp() const { return _hp; }
@@ -30,7 +31,8 @@ public:
     int64_t id() const { return _playerId; }
     private:
     int _hp;
-    int64_t _playerId;
+    int _mp; // [추가]
+    int64_t _playerId = -1; // [수정] Session ID(0) 와의 충돌 방지를 위해 -1 로 초기화
     common::packet::EntityState _state;
     int32_t _action_id = 0;
     int64_t _grabbedById = -1; // [추가]

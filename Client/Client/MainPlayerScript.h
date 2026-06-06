@@ -21,6 +21,9 @@ public:
 
 	void set_hp(int hp);
 	int hp() const { return _hp; }
+	
+	void set_mp(int mp); // [추가]
+	int mp() const { return _mp; } // [추가]
 	void set_position(const f3& pos) const
 	{
 		if (auto transform = this->transform())
@@ -35,13 +38,10 @@ public:
 		_hpBar_ui = ui;
 		if (ui) {
 			float width = ui->get_size_x();
-			// [중요] 만약 width가 0이라면 아직 초기화 전이므로,
-			// 기본값을 주거나 나중에 다시 가져오도록 로그를 찍어보세요.
 			if (width > 0) _hpBar_maxWidth = width;
-
-			//CLOG("[UI] HP Bar Linked. Max Width: " << _hpBar_maxWidth);
 		}
 	}
+
 	int64_t id() const { return _playerId; }
 
 	/*void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }*/
@@ -52,7 +52,6 @@ public:
 private:
 	// --- update 기능 분리용 private 함수 ---
 	void update_hp_bar(float deltaTime);
-	void update_skill_cooltime(float deltaTime);
 	void handle_state(float deltaTime);
 	void handle_input(float deltaTime);
 	void update_physics_and_visuals(float deltaTime);
@@ -76,6 +75,9 @@ private:
 	float _displayHp{ 100.0f };          // <- 추가 (lerp용 표시 HP)
 	float _hpBar_maxWidth{ 100.0f };
 	std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
+
+	int32_t _mp{ 100 };                  // [추가]
+	int32_t _maxMp{ 100 };               // [추가]
 	int64_t _playerId;
 	RenderComponent* _renderComponent	{ nullptr };
 	GameObject* _camera					{ nullptr };
@@ -114,12 +116,6 @@ private:
 
 	float _skillSwingAnimationSpeed = 0.8f; // 검이 완성된 후 스킬 휘두르는 애니메이션 속도
 
-
-	// DW예정 : 추후에 서버에서 보내주는 신호로 바뀔 예정이지만, 현재는 테스트를 위해 키 입력으로 스킬 사용을 트리거할 수 있도록 설정
-	float _skillCoolTime = 3.0f; // 스킬 쿨타임
-	float _skillCoolTimer = 0.0f; // 스킬 쿨타임 타이머
-
-	bool _isCanUseSkill = false; // DW예정 : 스킬을 사용할 수 있는지 여부 추후에 서버에서 보내주는 신호로 바뀔 예정
 
 	std::shared_ptr<GameObject> _SkillObject = nullptr;
 	std::shared_ptr<GameObject> _particleEffectObject = nullptr;
