@@ -384,11 +384,11 @@ void MainPlayerScript::update_quest_ui()
         quest_id = active_quest->_quest_id;
     }
     else {
-        // [디버깅 용] 활성화된 퀘스트가 없을 때 기본적으로 1번 퀘스트 표시
-        is_visible = true;
-        current = 0;
+        // 퀘스트 안할 때
+        is_visible = false;
+        /*current = 0;
         target = 15;
-        quest_id = 1;
+        quest_id = 1;*/
     }
     
     // 배너 및 타이틀 켜기/끄기
