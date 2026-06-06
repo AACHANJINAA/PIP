@@ -1,9 +1,9 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ToolCameraScript.h"
 #include "InputManager.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
-#include "CameraComponent.h" // CameraComponent Çì´õ Æ÷ÇÔ
+#include "CameraComponent.h" // CameraComponent í—¤ë” í¬í•¨
 #include "GameFramework.h"
 #include "ObjectManager.h"
 #include "LightManager.h"
@@ -13,12 +13,12 @@ ToolCameraScript::ToolCameraScript()
 {
 }
 
-// ¿ªÇÒ: ÀÌ ½ºÅ©¸³Æ®°¡ È°¼ºÈ­µÉ ¶§, ÇÊ¿äÇÑ CameraComponent¸¦ È®ÀÎÇÏ°í ¼³Á¤ÇÕ´Ï´Ù.
+// ì—­í• : ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ í™œì„±í™”ë  ë•Œ, í•„ìš”í•œ CameraComponentë¥¼ í™•ì¸í•˜ê³  ì„¤ì •í•©ë‹ˆë‹¤.
 void ToolCameraScript::awake()
 {
-    // RequireComponent ½Ã½ºÅÛ ´öºÐ¿¡ get_component´Â Ç×»ó ¼º°øÇÕ´Ï´Ù.
-     // ¶ÇÇÑ CameraComponent´Â »ý¼ºÀÚ¿¡¼­ ½º½º·Î ÃÊ±âÈ­±îÁö ¿Ï·áÇÕ´Ï´Ù.
-     // µû¶ó¼­ awake¿¡¼­´Â ±×Àú Æ÷ÀÎÅÍ¸¦ Ä³½ÌÇØµÎ±â¸¸ ÇÏ¸é µË´Ï´Ù.
+    // RequireComponent ì‹œìŠ¤í…œ ë•ë¶„ì— get_componentëŠ” í•­ìƒ ì„±ê³µí•©ë‹ˆë‹¤.
+     // ë˜í•œ CameraComponentëŠ” ìƒì„±ìžì—ì„œ ìŠ¤ìŠ¤ë¡œ ì´ˆê¸°í™”ê¹Œì§€ ì™„ë£Œí•©ë‹ˆë‹¤.
+     // ë”°ë¼ì„œ awakeì—ì„œëŠ” ê·¸ì € í¬ì¸í„°ë¥¼ ìºì‹±í•´ë‘ê¸°ë§Œ í•˜ë©´ ë©ë‹ˆë‹¤.
     _cameraComponent = game_object()->get_component<CameraComponent>().get();
 }
 
@@ -29,14 +29,14 @@ void ToolCameraScript::update(float delta_time)
 
 void ToolCameraScript::late_update(float delta_time)
 {
-    if (InputManager::instance()->IsKeyDown('L')) // 'L' Å° ÀÔ·Â °¨Áö (ÇÑ ¹ø¸¸)
+    if (InputManager::instance()->IsKeyDown('L')) // 'L' í‚¤ ìž…ë ¥ ê°ì§€ (í•œ ë²ˆë§Œ)
     {
-        _isFreeCameraMode = !_isFreeCameraMode; // ÀÚÀ¯ Ä«¸Þ¶ó ¸ðµå Åä±Û
-        // ÀÚÀ¯ Ä«¸Þ¶ó ¸ðµå°¡ ÄÑÁö¸é Ä¿¼­ ¼û±è, ²¨Áö¸é Ä¿¼­ º¸ÀÓ
+        _isFreeCameraMode = !_isFreeCameraMode; // ìžìœ  ì¹´ë©”ë¼ ëª¨ë“œ í† ê¸€
+        // ìžìœ  ì¹´ë©”ë¼ ëª¨ë“œê°€ ì¼œì§€ë©´ ì»¤ì„œ ìˆ¨ê¹€, êº¼ì§€ë©´ ì»¤ì„œ ë³´ìž„
         InputManager::instance()->ChangeShowCusor();
     }
 
-    // Ã¢ÀÌ È°¼ºÈ­µÇ¾î ÀÖ°í Ä¿¼­°¡ ¼û°ÜÁø »óÅÂÀÏ ¶§¸¸ ÀÔ·ÂÀ» Ã³¸®ÇÕ´Ï´Ù.
+    // ì°½ì´ í™œì„±í™”ë˜ì–´ ìžˆê³  ì»¤ì„œê°€ ìˆ¨ê²¨ì§„ ìƒíƒœì¼ ë•Œë§Œ ìž…ë ¥ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
     if (GameFramework::instance()->m_bIsWindowActive && !InputManager::instance()->GetIsShowCusor())
     {
         process_mouse_input(delta_time);
@@ -51,14 +51,14 @@ void ToolCameraScript::late_update(float delta_time)
         }
     }
 
-    // ESC Å°¸¦ ´©¸£¸é Ä¿¼­¸¦ º¸ÀÌ°Å³ª ¼û±é´Ï´Ù.
+    // ESC í‚¤ë¥¼ ëˆ„ë¥´ë©´ ì»¤ì„œë¥¼ ë³´ì´ê±°ë‚˜ ìˆ¨ê¹ë‹ˆë‹¤.
     if (InputManager::instance()->IsKeyDown(VK_ESCAPE))
     {
         InputManager::instance()->ChangeShowCusor();
     }
 }
 
-// ¿ªÇÒ ÀÌÀü (from FreeCamera::ProcessInput - mouse part)
+// ì—­í•  ì´ì „ (from FreeCamera::ProcessInput - mouse part)
 void ToolCameraScript::process_mouse_input(float delta_time)
 {
     POINT mouse_delta = InputManager::instance()->GetMouseDelta();
@@ -72,7 +72,7 @@ void ToolCameraScript::process_mouse_input(float delta_time)
     }
 }
 
-// ¿ªÇÒ ÀÌÀü (from FreeCamera::ProcessInput - keyboard part)
+// ì—­í•  ì´ì „ (from FreeCamera::ProcessInput - keyboard part)
 void ToolCameraScript::process_keyboard_input(float delta_time)
 {
     TransformComponent* trans = transform();
@@ -116,19 +116,19 @@ void ToolCameraScript::process_keyboard_input(float delta_time)
     }
     if (InputManager::instance()->IsKeyPress('J'))
     {
-        Light* sun = LightManager::instance()->get_light(0); // Ã¹ ¹øÂ° ¶óÀÌÆ® (ÅÂ¾ç)
+        Light* sun = LightManager::instance()->get_light(0); // ì²« ë²ˆì§¸ ë¼ì´íŠ¸ (íƒœì–‘)
         if (sun)
         {
-            // ÅÂ¾ç ¹æÇâÀ» YÃà ±âÁØÀ¸·Î È¸Àü (½Ã°è ¹æÇâ)
-            float angle = delta_time * 0.5f; // È¸Àü ¼Óµµ
+            // íƒœì–‘ ë°©í–¥ì„ Yì¶• ê¸°ì¤€ìœ¼ë¡œ íšŒì „ (ì‹œê³„ ë°©í–¥)
+            float angle = delta_time * 0.5f; // íšŒì „ ì†ë„
             float x = sun->m_vDirection.x * cos(angle) + sun->m_vDirection.z * sin(angle);
             float z = -sun->m_vDirection.x * sin(angle) + sun->m_vDirection.z * cos(angle);
             sun->m_vDirection.x = x;
             sun->m_vDirection.z = z;
 
-            LightManager::instance()->update(); // º¯°æ»çÇ× GPU·Î Àü¼Û
+            LightManager::instance()->update(); // ë³€ê²½ì‚¬í•­ GPUë¡œ ì „ì†¡
 
-            // µð¹ö±× Ãâ·Â
+            // ë””ë²„ê·¸ ì¶œë ¥
             char buf[256];
             sprintf_s(buf, "Sun Direction: %.2f, %.2f, %.2f\n",
                 sun->m_vDirection.x, sun->m_vDirection.y, sun->m_vDirection.z);
@@ -141,7 +141,7 @@ void ToolCameraScript::process_keyboard_input(float delta_time)
         Light* sun = LightManager::instance()->get_light(0);
         if (sun)
         {
-            // [¼öÁ¤] XÃà È¸Àü: Y-Z Æò¸é¿¡¼­ È¸Àü
+            // [ìˆ˜ì •] Xì¶• íšŒì „: Y-Z í‰ë©´ì—ì„œ íšŒì „
             float angle = delta_time * 0.5f;
             float y = sun->m_vDirection.y * cos(angle) -
                 sun->m_vDirection.z * sin(angle);
@@ -150,7 +150,7 @@ void ToolCameraScript::process_keyboard_input(float delta_time)
             sun->m_vDirection.y = y;
             sun->m_vDirection.z = z;
 
-            // ¹æÇâ º¤ÅÍ Á¤±ÔÈ­
+            // ë°©í–¥ ë²¡í„° ì •ê·œí™”
             XMVECTOR dir = XMLoadFloat3(&sun->m_vDirection);
             dir = XMVector3Normalize(dir);
             XMStoreFloat3(&sun->m_vDirection, dir);

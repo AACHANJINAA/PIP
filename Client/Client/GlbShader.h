@@ -1,29 +1,29 @@
-#pragma once
+ï»¿#pragma once
 #include "Shader.h"
 
-// [¿ªÇÒ] GLB/glTF ÆÄÀÏÀÇ ½ºÅ°´× ¾Ö´Ï¸ŞÀÌ¼Ç ¸Ş½Ã¸¦ ·»´õ¸µÇÏ´Â µ¥ ÇÊ¿äÇÑ PSO Á¤º¸¸¦ Á¦°øÇÕ´Ï´Ù.
+// [ì—­í• ] GLB/glTF íŒŒì¼ì˜ ìŠ¤í‚¤ë‹ ì• ë‹ˆë©”ì´ì…˜ ë©”ì‹œë¥¼ ë Œë”ë§í•˜ëŠ” ë° í•„ìš”í•œ PSO ì •ë³´ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
 class GlbShader : public Shader
 {
 public:
     GlbShader() = default;
     virtual ~GlbShader() = default;
 
-    // --- Shader Å¬·¡½ºÀÇ ¼ø¼ö °¡»ó ÇÔ¼öµéÀ» ¿À¹ö¶óÀÌµåÇÕ´Ï´Ù. ---
+    // --- Shader í´ë˜ìŠ¤ì˜ ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ë“¤ì„ ì˜¤ë²„ë¼ì´ë“œí•©ë‹ˆë‹¤. ---
 
-    // ÀÌ ¼ÎÀÌ´õ°¡ »ı¼ºÇÒ PSOÀÇ ÀÌ¸§À» "skinned"·Î ÁöÁ¤ÇÕ´Ï´Ù.
+    // ì´ ì…°ì´ë”ê°€ ìƒì„±í•  PSOì˜ ì´ë¦„ì„ "skinned"ë¡œ ì§€ì •í•©ë‹ˆë‹¤.
     virtual const std::string& pso_name() const override;
 
 protected:
-    // ½ºÅ°´×µÈ Á¤Á¡(SkinnedVertex) ±¸Á¶¿¡ ¸Â´Â Input LayoutÀ» Á¤ÀÇÇÕ´Ï´Ù.
+    // ìŠ¤í‚¤ë‹ëœ ì •ì (SkinnedVertex) êµ¬ì¡°ì— ë§ëŠ” Input Layoutì„ ì •ì˜í•©ë‹ˆë‹¤.
     virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override;
 
-    // ½ºÅ°´×À» Ã³¸®ÇÏ´Â Vertex Shader Á¤º¸¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+    // ìŠ¤í‚¤ë‹ì„ ì²˜ë¦¬í•˜ëŠ” Vertex Shader ì •ë³´ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
     virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
-    // Pixel Shader Á¤º¸¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+    // Pixel Shader ì •ë³´ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
     virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
-    // ½ºÅ°´× ¼ÎÀÌ´õ´Â º°µµÀÇ ·çÆ® ½Ã±×´ÏÃ³°¡ ÇÊ¿äÇÏ¹Ç·Î, ÀÌ ÇÔ¼ö¸¦ ¿À¹ö¶óÀÌµåÇÕ´Ï´Ù.
+    // ìŠ¤í‚¤ë‹ ì…°ì´ë”ëŠ” ë³„ë„ì˜ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ê°€ í•„ìš”í•˜ë¯€ë¡œ, ì´ í•¨ìˆ˜ë¥¼ ì˜¤ë²„ë¼ì´ë“œí•©ë‹ˆë‹¤.
     virtual std::string required_root_signature() const override;
 };
 

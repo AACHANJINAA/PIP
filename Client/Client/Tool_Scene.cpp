@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Tool_Scene.h"
 #include "ObjectManager.h"
 #include "InputManager.h"
@@ -32,14 +32,14 @@ void Tool_Scene::scene_process(float deltaTime)
 {
     if (InputManager::instance()->IsKeyDown('T'))
     {
-        // ¾À ¸Å´ÏÀú¿¡°Ô Åø ¾ÀÀ¸·Î ³Ñ¾î°¡¶ó°í ¿äÃ»ÇÕ´Ï´Ù.
+        // ì”¬ ë§¤ë‹ˆì €ì—ê²Œ íˆ´ ì”¬ìœ¼ë¡œ ë„˜ì–´ê°€ë¼ê³  ìš”ì²­í•©ë‹ˆë‹¤.
         SceneManager::instance()->change_scene("ChessScene");
     }
     // ==========================================
-    // ImGui ¿¡µğÅÍ Ã¢ ±×¸®±â
+    // ImGui ì—ë””í„° ì°½ ê·¸ë¦¬ê¸°
     // ==========================================
   
-    // ¿øÇÏ´Â ¸Ş½Ã ¶ç¿ì±â
+    // ì›í•˜ëŠ” ë©”ì‹œ ë„ìš°ê¸°
     spawn_want_mesh();
     view_bones();
     spawn_want_socket_mesh();
@@ -57,7 +57,7 @@ void Tool_Scene::spawn_want_mesh()
     ImGui::Text("1. Character Setup");
     ImGui::Separator();
    
-    // ÆÄÀÏ ·Îµå ¹öÆ°
+    // íŒŒì¼ ë¡œë“œ ë²„íŠ¼
     if (ImGui::Button("Load Character (glTF)"))
     {
         std::string filePath = open_file_dialog();
@@ -65,14 +65,14 @@ void Tool_Scene::spawn_want_mesh()
         {
             _loadedCharacterPath = filePath;
 
-            // 1. ±âÁ¸¿¡ Ä³¸¯ÅÍ°¡ ÀÖ´Ù¸é »èÁ¦ (¸Ş¸ğ¸® ´©¼ö ¹æÁö)
+            // 1. ê¸°ì¡´ì— ìºë¦­í„°ê°€ ìˆë‹¤ë©´ ì‚­ì œ (ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ ë°©ì§€)
             if (_targetCharacter)
             {
                 _targetCharacter->destroy();
                 _targetCharacter.reset();
             }
 
-            // 2. »õ °ÔÀÓ ¿ÀºêÁ§Æ® »ı¼º
+            // 2. ìƒˆ ê²Œì„ ì˜¤ë¸Œì íŠ¸ ìƒì„±
             _targetCharacter = ObjectManager::instance()->create_game_object("Editor_Character");
             GameFramework::instance()->WaitForGpuComplete();
 
@@ -83,36 +83,36 @@ void Tool_Scene::spawn_want_mesh()
 
             cmdAlloc->Reset();
             cmdList->Reset(cmdAlloc, nullptr);
-            // ¸Ş½Ã ·Îµå
+            // ë©”ì‹œ ë¡œë“œ
             auto mesh = ResourceManager::instance()->load_mesh(filePath, true);
 
-            // 3. ·»´õ ÄÄÆ÷³ÍÆ® ºÎÂø ¹× ¸Ş½¬ ·Îµå (¾Ö´Ï¸ŞÀÌ¼Ç ¸Ş½¬·Î °¡Á¤)
-            _targetCharacter->add_glTF_conponent_pack(); // ÀÌ ÇÔ¼ö°¡ ¾Ö´Ï¸ŞÀÌ¼Ç°ú ¼ÒÄÏ ÄÄÆ÷³ÍÆ® Ãß°¡ÇÔ
+            // 3. ë Œë” ì»´í¬ë„ŒíŠ¸ ë¶€ì°© ë° ë©”ì‰¬ ë¡œë“œ (ì• ë‹ˆë©”ì´ì…˜ ë©”ì‰¬ë¡œ ê°€ì •)
+            _targetCharacter->add_glTF_conponent_pack(); // ì´ í•¨ìˆ˜ê°€ ì• ë‹ˆë©”ì´ì…˜ê³¼ ì†Œì¼“ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€í•¨
 
-            // ·»´õ·¯¿¡ ¸Ş½Ã µî·Ï
+            // ë Œë”ëŸ¬ì— ë©”ì‹œ ë“±ë¡
             auto renderer = _targetCharacter->get_component<RenderComponent>();
             renderer->set_mesh(mesh);
 
-            // ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ® ±âº»¼³Á¤(T_POSE)
+            // ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ ê¸°ë³¸ì„¤ì •(T_POSE)
             auto animation_renderer = _targetCharacter->get_component<AnimationComponent>();
             animation_renderer->add_animation("t_pose", mesh);
             animation_renderer->play("t_pose");
 
-            // ÀçÁú¼³Á¤
+            // ì¬ì§ˆì„¤ì •
             std::string material = "glTF_Test_material";
 
             ResourceManager::instance()->create_material(material);
             ResourceManager::instance()->set_shader_for_material(material, "skinned");
 
-            // ½ºÅ°´× ¾Ö´Ï¸ŞÀÌ¼Ç pso ¼³Á¤     
+            // ìŠ¤í‚¤ë‹ ì• ë‹ˆë©”ì´ì…˜ pso ì„¤ì •     
             renderer->set_pso_name("skinned");
 
-            // À§Ä¡, È¸Àü Á¤º¸
+            // ìœ„ì¹˜, íšŒì „ ì •ë³´
             _targetCharacter->transform()->set_local_rotation(0.f, 0.f, 0.f);
             _targetCharacter->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
             _targetCharacter->transform()->set_local_position(XMFLOAT3(0.0, 0.0f, 0.0f));
 
-            // »À´ë °¡Á®¿À±â
+            // ë¼ˆëŒ€ ê°€ì ¸ì˜¤ê¸°
             auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh);
             if (gltfMesh)
             {
@@ -126,7 +126,7 @@ void Tool_Scene::spawn_want_mesh()
         }
     }
 
-    // ÇöÀç ·ÎµåµÈ ÆÄÀÏ ÀÌ¸§ Ãâ·Â
+    // í˜„ì¬ ë¡œë“œëœ íŒŒì¼ ì´ë¦„ ì¶œë ¥
     ImGui::Text("Current File: %s", _loadedCharacterPath.c_str());
     ImGui::Spacing(); ImGui::Spacing();
 }
@@ -141,19 +141,19 @@ void Tool_Scene::view_bones()
     std::vector<const char*> combo_items;
     for (const auto& name : _boneNames) combo_items.push_back(name.c_str());
 
-    // ÄŞº¸¹Ú½º °ªÀÌ º¯°æµÇ¾ú´ÂÁö È®ÀÎ
+    // ì½¤ë³´ë°•ìŠ¤ ê°’ì´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ í™•ì¸
     bool bBoneChanged = ImGui::Combo(
         "Bones", 
         &_selectedBoneIndex, 
         combo_items.data(), 
         static_cast<int>(combo_items.size()));
 
-    // »À´ë º¸±â Ã¼Å©¹Ú½º
+    // ë¼ˆëŒ€ ë³´ê¸° ì²´í¬ë°•ìŠ¤
     ImGui::Checkbox("Show Debug Bones", &_bShowBones);
 
     ImGui::Spacing(); ImGui::Spacing();
 
-    // »À´ë ¼±ÅÃÀÌ ¹Ù²î¾ú°í, ÇöÀç ¹«±â°¡ ºÙ¾îÀÖ´Ù¸é Áï½Ã À§Ä¡¸¦ °»½Å
+    // ë¼ˆëŒ€ ì„ íƒì´ ë°”ë€Œì—ˆê³ , í˜„ì¬ ë¬´ê¸°ê°€ ë¶™ì–´ìˆë‹¤ë©´ ì¦‰ì‹œ ìœ„ì¹˜ë¥¼ ê°±ì‹ 
     if (bBoneChanged && _weaponMesh)
     {
         _socketPos = { 0.0f, 0.0f, 0.0f };
@@ -185,13 +185,13 @@ void Tool_Scene::spawn_want_socket_mesh()
         std::string weaponPath = open_file_dialog();
         if (_weaponMesh)
         {
-            // ±âÁ¸¿¡ ºÙ¾îÀÖ´ø ¹«±â°¡ ÀÖ´Ù¸é ¼ÒÄÏ¿¡¼­ Á¦°Å
+            // ê¸°ì¡´ì— ë¶™ì–´ìˆë˜ ë¬´ê¸°ê°€ ìˆë‹¤ë©´ ì†Œì¼“ì—ì„œ ì œê±°
             auto socketComp = _targetCharacter->get_component<SocketComponenet>();
             if (socketComp)
             {
                 socketComp->delete_connecting("ToolSocket");
             }
-            // ¸Ş¸ğ¸® ÇØÁ¦
+            // ë©”ëª¨ë¦¬ í•´ì œ
 			_weaponMesh.reset();
         }
         GameFramework::instance()->WaitForGpuComplete();
@@ -209,7 +209,7 @@ void Tool_Scene::spawn_want_socket_mesh()
             _loadedWeaponPath = weaponPath;
             _weaponMesh = ResourceManager::instance()->load_mesh(weaponPath);
 
-            // »õ ¹«±â¸¦ ·ÎµåÇßÀ¸´Ï ¼öÄ¡ ÃÊ±âÈ­
+            // ìƒˆ ë¬´ê¸°ë¥¼ ë¡œë“œí–ˆìœ¼ë‹ˆ ìˆ˜ì¹˜ ì´ˆê¸°í™”
             _socketPos = { 0.0f, 0.0f, 0.0f };
             _socketRot = { 0.0f, 0.0f, 0.0f };
             _socketScale = { 1.0f, 1.0f, 1.0f };
@@ -266,7 +266,7 @@ void Tool_Scene::draw_and_pick_bones()
     auto mainCam = CameraComponent::get_main();
     if (!mainCam) return;
 
-    // 1. Ä«¸Ş¶ó¿Í È­¸é Á¤º¸ °¡Á®¿À±â
+    // 1. ì¹´ë©”ë¼ì™€ í™”ë©´ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
     XMMATRIX viewMat = XMLoadFloat4x4(&mainCam->view_matrix());
     XMMATRIX projMat = XMLoadFloat4x4(&mainCam->projection_matrix());
     XMMATRIX worldMat = XMLoadFloat4x4(&_targetCharacter->transform()->world_matrix());
@@ -285,17 +285,17 @@ void Tool_Scene::draw_and_pick_bones()
     ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
     // =========================================================================
-    // [Ãß°¡µÊ] ¾ğ¸®¾ó ½ºÅ¸ÀÏ ÆÈ¸éÃ¼(Octahedron) »À´ë ±×¸®±â
+    // [ì¶”ê°€ë¨] ì–¸ë¦¬ì–¼ ìŠ¤íƒ€ì¼ íŒ”ë©´ì²´(Octahedron) ë¼ˆëŒ€ ê·¸ë¦¬ê¸°
     // =========================================================================
     for (int i = 0; i < _boneNames.size(); ++i)
     {
         std::string childName = _boneNames[i];
         std::string parentName = gltfMesh->get_parent_bone_name(childName);
 
-        // ºÎ¸ğ°¡ ¾øÀ¸¸é(·çÆ®) ±×¸± ¼±ÀÌ ¾øÀ¸¹Ç·Î ÆĞ½º
+        // ë¶€ëª¨ê°€ ì—†ìœ¼ë©´(ë£¨íŠ¸) ê·¸ë¦´ ì„ ì´ ì—†ìœ¼ë¯€ë¡œ íŒ¨ìŠ¤
         if (parentName.empty()) continue;
 
-        // ºÎ¸ğ¿Í ÀÚ½ÄÀÇ ¿ùµå À§Ä¡ °è»ê
+        // ë¶€ëª¨ì™€ ìì‹ì˜ ì›”ë“œ ìœ„ì¹˜ ê³„ì‚°
         XMFLOAT4X4 pLocal = gltfMesh->get_socket_transform(parentName);
         XMFLOAT4X4 cLocal = gltfMesh->get_socket_transform(childName);
 
@@ -305,57 +305,57 @@ void Tool_Scene::draw_and_pick_bones()
         XMVECTOR pPos = pMat.r[3];
         XMVECTOR cPos = cMat.r[3];
 
-        // »À´ë ¹æÇâ°ú ±æÀÌ °è»ê
+        // ë¼ˆëŒ€ ë°©í–¥ê³¼ ê¸¸ì´ ê³„ì‚°
         XMVECTOR dirVec = XMVectorSubtract(cPos, pPos);
         XMVECTOR lengthVec = XMVector3Length(dirVec);
         float length = XMVectorGetX(lengthVec);
 
-        if (length < 0.001f) continue; // ³Ê¹« ÂªÀº »À´Â ¹«½Ã
+        if (length < 0.001f) continue; // ë„ˆë¬´ ì§§ì€ ë¼ˆëŠ” ë¬´ì‹œ
 
-        // ¹æÇâ º¤ÅÍ Á¤±ÔÈ­ ¹× ±âÀú º¤ÅÍ(Right, Up) »ı¼º
+        // ë°©í–¥ ë²¡í„° ì •ê·œí™” ë° ê¸°ì € ë²¡í„°(Right, Up) ìƒì„±
         XMVECTOR forward = XMVectorDivide(dirVec, lengthVec);
         XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-        if (abs(XMVectorGetY(forward)) > 0.99f) up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f); // ¼öÁ÷ ¿¹¿Ü Ã³¸®
+        if (abs(XMVectorGetY(forward)) > 0.99f) up = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f); // ìˆ˜ì§ ì˜ˆì™¸ ì²˜ë¦¬
         XMVECTOR right = XMVector3Normalize(XMVector3Cross(up, forward));
         up = XMVector3Cross(forward, right);
 
-        // »À´ë µÎ²² ¹× ÆÈ¸éÃ¼ÀÇ °¡Àå ³ĞÀº ºÎºĞ À§Ä¡ ¼³Á¤
-        float thickness = std::max(0.01f, length * 0.15f); // ±æÀÌÀÇ 15%¸¦ µÎ²²·Î
-        float baseOffset = length * 0.2f;                  // ºÎ¸ğ·ÎºÎÅÍ 20% ÁöÁ¡ÀÌ °¡Àå ³ĞÀ½
+        // ë¼ˆëŒ€ ë‘ê»˜ ë° íŒ”ë©´ì²´ì˜ ê°€ì¥ ë„“ì€ ë¶€ë¶„ ìœ„ì¹˜ ì„¤ì •
+        float thickness = std::max(0.01f, length * 0.15f); // ê¸¸ì´ì˜ 15%ë¥¼ ë‘ê»˜ë¡œ
+        float baseOffset = length * 0.2f;                  // ë¶€ëª¨ë¡œë¶€í„° 20% ì§€ì ì´ ê°€ì¥ ë„“ìŒ
 
-        // ÆÈ¸éÃ¼ÀÇ 6°³ Á¤Á¡ 3D ·ÎÄÃ ÁÂÇ¥ °è»ê
+        // íŒ”ë©´ì²´ì˜ 6ê°œ ì •ì  3D ë¡œì»¬ ì¢Œí‘œ ê³„ì‚°
         XMVECTOR V[6];
-        V[0] = pPos;                                                           // ºÎ¸ğ À§Ä¡ (½ÃÀÛÁ¡)
-        V[1] = cPos;                                                           // ÀÚ½Ä À§Ä¡ (³¡Á¡)
-        V[2] = pPos + forward * baseOffset + right * thickness;                // ¿ìÃø
-        V[3] = pPos + forward * baseOffset - right * thickness;                // ÁÂÃø
-        V[4] = pPos + forward * baseOffset + up * thickness;                   // »ó´Ü
-        V[5] = pPos + forward * baseOffset - up * thickness;                   // ÇÏ´Ü
+        V[0] = pPos;                                                           // ë¶€ëª¨ ìœ„ì¹˜ (ì‹œì‘ì )
+        V[1] = cPos;                                                           // ìì‹ ìœ„ì¹˜ (ëì )
+        V[2] = pPos + forward * baseOffset + right * thickness;                // ìš°ì¸¡
+        V[3] = pPos + forward * baseOffset - right * thickness;                // ì¢Œì¸¡
+        V[4] = pPos + forward * baseOffset + up * thickness;                   // ìƒë‹¨
+        V[5] = pPos + forward * baseOffset - up * thickness;                   // í•˜ë‹¨
 
-        // 3D Á¤Á¡À» 2D È­¸é ÁÂÇ¥·Î Åõ¿µ (Project)
+        // 3D ì •ì ì„ 2D í™”ë©´ ì¢Œí‘œë¡œ íˆ¬ì˜ (Project)
         ImVec2 screenPts[6];
         bool outOfScreen = false;
         for (int v = 0; v < 6; ++v)
         {
             XMVECTOR s = XMVector3Project(V[v], 0, 0, width, height, 0.0f, 1.0f, projMat, viewMat, XMMatrixIdentity());
-            if (XMVectorGetZ(s) < 0.0f || XMVectorGetZ(s) > 1.0f) outOfScreen = true; // Ä«¸Ş¶ó µÚ¿¡ ÀÖÀ¸¸é ±×¸®Áö ¾ÊÀ½
+            if (XMVectorGetZ(s) < 0.0f || XMVectorGetZ(s) > 1.0f) outOfScreen = true; // ì¹´ë©”ë¼ ë’¤ì— ìˆìœ¼ë©´ ê·¸ë¦¬ì§€ ì•ŠìŒ
             screenPts[v] = ImVec2(XMVectorGetX(s), XMVectorGetY(s));
         }
 
         if (outOfScreen) continue;
 
-        // ÆÈ¸éÃ¼¸¦ ±¸¼ºÇÏ´Â 8°³ÀÇ »ï°¢Çü ÀÎµ¦½º ¹è¿­
+        // íŒ”ë©´ì²´ë¥¼ êµ¬ì„±í•˜ëŠ” 8ê°œì˜ ì‚¼ê°í˜• ì¸ë±ìŠ¤ ë°°ì—´
         int faces[8][3] = {
-            {0, 2, 4}, {0, 4, 3}, {0, 3, 5}, {0, 5, 2}, // ºÎ¸ğ ÂÊ ÇÇ¶ó¹Ìµå
-            {1, 4, 2}, {1, 3, 4}, {1, 5, 3}, {1, 2, 5}  // ÀÚ½Ä ÂÊ ÇÇ¶ó¹Ìµå
+            {0, 2, 4}, {0, 4, 3}, {0, 3, 5}, {0, 5, 2}, // ë¶€ëª¨ ìª½ í”¼ë¼ë¯¸ë“œ
+            {1, 4, 2}, {1, 3, 4}, {1, 5, 3}, {1, 2, 5}  // ìì‹ ìª½ í”¼ë¼ë¯¸ë“œ
         };
 
-        // »ö»ó ¼³Á¤ (¼±ÅÃµÈ »ÀÀÇ ºÎ¸ğ/ÀÚ½ÄÀÌ¸é ºÓÀº»ö, ¾Æ´Ï¸é È¸¹é»ö)
+        // ìƒ‰ìƒ ì„¤ì • (ì„ íƒëœ ë¼ˆì˜ ë¶€ëª¨/ìì‹ì´ë©´ ë¶‰ì€ìƒ‰, ì•„ë‹ˆë©´ íšŒë°±ìƒ‰)
         bool isRelatedToSelected = (i == _selectedBoneIndex || gltfMesh->get_bone_index_by_name(parentName) == _selectedBoneIndex);
         ImU32 fillColor = isRelatedToSelected ? IM_COL32(200, 50, 50, 180) : IM_COL32(180, 180, 180, 100);
         ImU32 edgeColor = isRelatedToSelected ? IM_COL32(255, 100, 100, 255) : IM_COL32(50, 50, 50, 200);
 
-        // ImGui DrawList·Î 2D »ï°¢Çü ±×¸®±â
+        // ImGui DrawListë¡œ 2D ì‚¼ê°í˜• ê·¸ë¦¬ê¸°
         for (int f = 0; f < 8; ++f)
         {
             drawList->AddTriangleFilled(screenPts[faces[f][0]], screenPts[faces[f][1]], screenPts[faces[f][2]], fillColor);
@@ -364,7 +364,7 @@ void Tool_Scene::draw_and_pick_bones()
     }
     // =========================================================================
 
-    // ±âÁ¸ÀÇ ³ë¶õ»ö/»¡°£»ö °üÀı Á¡ ±×¸®±â ¹× ÇÇÅ· ·ÎÁ÷ (±âÁ¸ ÄÚµå ±×´ë·Î À¯Áö)
+    // ê¸°ì¡´ì˜ ë…¸ë€ìƒ‰/ë¹¨ê°„ìƒ‰ ê´€ì ˆ ì  ê·¸ë¦¬ê¸° ë° í”¼í‚¹ ë¡œì§ (ê¸°ì¡´ ì½”ë“œ ê·¸ëŒ€ë¡œ ìœ ì§€)
     for (int i = 0; i < _boneNames.size(); ++i)
     {
         XMFLOAT4X4 boneLocal = gltfMesh->get_socket_transform(_boneNames[i]);
@@ -412,16 +412,16 @@ void Tool_Scene::draw_and_pick_bones()
 
 void Tool_Scene::draw_gizmo()
 {
-    // 1. ±âº» Ã¼Å©: µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é ½ÇÇà ¾È ÇÔ
+    // 1. ê¸°ë³¸ ì²´í¬: ë°ì´í„°ê°€ ì—†ìœ¼ë©´ ì‹¤í–‰ ì•ˆ í•¨
     if (!_targetCharacter || !_weaponMesh || _boneNames.empty()) return;
 
     auto mainCam = CameraComponent::get_main();
     if (!mainCam) return;
 
     // -----------------------------------------------------------
-    // [ÇØ°á 1] ÇÇÅ· ¿ÀÇÁ¼Â ÇØ°á: ImGui ¸ŞÀÎ ºäÆ÷Æ® ¿µ¿ª »ç¿ë
-    // À©µµ¿ì Ã¢ÀÇ Å×µÎ¸®³ª Å¸ÀÌÆ² ¹Ù µî¿¡ ÀÇÇÑ ¹Ì¼¼ÇÑ ¿ÀÂ÷¸¦ ¾ø¾Ö±â À§ÇØ,
-    // ImGui°¡ ÀÎ½ÄÇÏ´Â Á¤È®ÇÑ 3D ÀÛ¾÷ ¿µ¿ªÀ» °¡Á®¿Í ±âÁî¸ğ¿¡ ¸ÊÇÎÇÕ´Ï´Ù.
+    // [í•´ê²° 1] í”¼í‚¹ ì˜¤í”„ì…‹ í•´ê²°: ImGui ë©”ì¸ ë·°í¬íŠ¸ ì˜ì—­ ì‚¬ìš©
+    // ìœˆë„ìš° ì°½ì˜ í…Œë‘ë¦¬ë‚˜ íƒ€ì´í‹€ ë°” ë“±ì— ì˜í•œ ë¯¸ì„¸í•œ ì˜¤ì°¨ë¥¼ ì—†ì• ê¸° ìœ„í•´,
+    // ImGuiê°€ ì¸ì‹í•˜ëŠ” ì •í™•í•œ 3D ì‘ì—… ì˜ì—­ì„ ê°€ì ¸ì™€ ê¸°ì¦ˆëª¨ì— ë§µí•‘í•©ë‹ˆë‹¤.
     // -----------------------------------------------------------
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGuizmo::BeginFrame();
@@ -430,7 +430,7 @@ void Tool_Scene::draw_gizmo()
     ImGuizmo::SetRect(viewport->WorkPos.x, viewport->WorkPos.y, viewport->WorkSize.x, viewport->WorkSize.y);
     ImGuizmo::SetOrthographic(false);
 
-    // 'Y' Å° ¸ğµå ÀüÈ¯
+    // 'Y' í‚¤ ëª¨ë“œ ì „í™˜
     static bool yPressed = false;
     if (InputManager::instance()->IsKeyDown('Y')) {
         if (!yPressed) {
@@ -445,7 +445,7 @@ void Tool_Scene::draw_gizmo()
     XMFLOAT4X4 viewF = mainCam->view_matrix();
     XMFLOAT4X4 projF = mainCam->projection_matrix();
 
-    // ºÎ¸ğ Á¤º¸ °è»ê (»À´ë ·ÎÄÃ * Ä³¸¯ÅÍ ¿ùµå)
+    // ë¶€ëª¨ ì •ë³´ ê³„ì‚° (ë¼ˆëŒ€ ë¡œì»¬ * ìºë¦­í„° ì›”ë“œ)
     auto renderComp = _targetCharacter->get_component<RenderComponent>();
     auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
 
@@ -458,9 +458,9 @@ void Tool_Scene::draw_gizmo()
     XMMATRIX parentWorld = boneLocal * charWorld;
 
     // -----------------------------------------------------------
-    // [ÇØ°á 2] È¸Àü Ãà ²¿ÀÓ ÇØ°á: ImGuizmo Àü¿ë Recompose ÇÔ¼ö »ç¿ë
-    // DirectXÀÇ È¸Àü Á¶¸³ ¹æ½Ä(Pitch, Yaw, Roll)°ú ImGuizmoÀÇ ºĞÇØ ¹æ½ÄÀÌ ´Ş¶ó
-    // ÃàÀÌ ²¿ÀÌ´Â Çö»óÀ» ¸·±â À§ÇØ, Á¶¸³ÇÒ ¶§µµ ImGuizmoÀÇ ¼öÇĞÀ» »ç¿ëÇÕ´Ï´Ù.
+    // [í•´ê²° 2] íšŒì „ ì¶• ê¼¬ì„ í•´ê²°: ImGuizmo ì „ìš© Recompose í•¨ìˆ˜ ì‚¬ìš©
+    // DirectXì˜ íšŒì „ ì¡°ë¦½ ë°©ì‹(Pitch, Yaw, Roll)ê³¼ ImGuizmoì˜ ë¶„í•´ ë°©ì‹ì´ ë‹¬ë¼
+    // ì¶•ì´ ê¼¬ì´ëŠ” í˜„ìƒì„ ë§‰ê¸° ìœ„í•´, ì¡°ë¦½í•  ë•Œë„ ImGuizmoì˜ ìˆ˜í•™ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
     // -----------------------------------------------------------
     float fPos[3] = { _socketPos.x, _socketPos.y, _socketPos.z };
     float fRot[3] = { _socketRot.x, _socketRot.y, _socketRot.z };
@@ -470,29 +470,29 @@ void Tool_Scene::draw_gizmo()
     ImGuizmo::RecomposeMatrixFromComponents(fPos, fRot, fScale, (float*)&weaponLocalF);
     XMMATRIX weaponLocal = XMLoadFloat4x4(&weaponLocalF);
 
-    // ¹«±â ÃÖÁ¾ ¿ùµå Çà·Ä (°á°ú¸¦ XMFLOAT4X4¿¡ ´ãÀ½)
+    // ë¬´ê¸° ìµœì¢… ì›”ë“œ í–‰ë ¬ (ê²°ê³¼ë¥¼ XMFLOAT4X4ì— ë‹´ìŒ)
     XMMATRIX weaponWorld = weaponLocal * parentWorld;
     XMFLOAT4X4 modelF;
     XMStoreFloat4x4(&modelF, weaponWorld);
 
     // -----------------------------------------------------------
-    // [Á¶ÀÛ ¹× ¿ª»ê] ImGuizmo::LOCAL ¸ğµå À¯Áö
-    // °´Ã¼ÀÇ ·ÎÄÃ ÃàÀ» ±âÁØÀ¸·Î ±âÁî¸ğ°¡ ÇÔ²² È¸ÀüÇÏµµ·Ï LOCAL ¸ğµå¸¦ ¾¹´Ï´Ù.
+    // [ì¡°ì‘ ë° ì—­ì‚°] ImGuizmo::LOCAL ëª¨ë“œ ìœ ì§€
+    // ê°ì²´ì˜ ë¡œì»¬ ì¶•ì„ ê¸°ì¤€ìœ¼ë¡œ ê¸°ì¦ˆëª¨ê°€ í•¨ê»˜ íšŒì „í•˜ë„ë¡ LOCAL ëª¨ë“œë¥¼ ì”ë‹ˆë‹¤.
     // -----------------------------------------------------------
     if (ImGuizmo::Manipulate((float*)&viewF, (float*)&projF, _currentGizmoOperation, ImGuizmo::LOCAL, (float*)&modelF))
     {
-        // 1. Á¶ÀÛµÈ Çà·Ä ÀĞ¾î¿À±â
+        // 1. ì¡°ì‘ëœ í–‰ë ¬ ì½ì–´ì˜¤ê¸°
         XMMATRIX newWeaponWorld = XMLoadFloat4x4(&modelF);
 
-        // 2. ¿ª»ê: ºÎ¸ğ Çà·Ä Á¦°Å (NewLocal = NewWorld * Inverse(ParentWorld))
+        // 2. ì—­ì‚°: ë¶€ëª¨ í–‰ë ¬ ì œê±° (NewLocal = NewWorld * Inverse(ParentWorld))
         XMMATRIX invParentWorld = XMMatrixInverse(nullptr, parentWorld);
         XMMATRIX newWeaponLocal = newWeaponWorld * invParentWorld;
 
-        // 3. ºĞÇØ¸¦ À§ÇØ ´Ù½Ã XMFLOAT4X4¿¡ ÀúÀå
+        // 3. ë¶„í•´ë¥¼ ìœ„í•´ ë‹¤ì‹œ XMFLOAT4X4ì— ì €ì¥
         XMFLOAT4X4 localF;
         XMStoreFloat4x4(&localF, newWeaponLocal);
 
-        // 4. ÃßÃâ (ImGuizmo´Â Degree ´ÜÀ§·Î ÃßÃâÇØ ÁÜ)
+        // 4. ì¶”ì¶œ (ImGuizmoëŠ” Degree ë‹¨ìœ„ë¡œ ì¶”ì¶œí•´ ì¤Œ)
         float resPos[3], resRot[3], resScale[3];
         ImGuizmo::DecomposeMatrixToComponents((float*)&localF, resPos, resRot, resScale);
 
@@ -506,7 +506,7 @@ void Tool_Scene::draw_gizmo()
         }
     }
 
-    // »óÅÂ Ç¥½Ã UI
+    // ìƒíƒœ í‘œì‹œ UI
     const char* modeStr = (_currentGizmoOperation == ImGuizmo::TRANSLATE) ? "TRANSLATE (LOCAL)" :
         (_currentGizmoOperation == ImGuizmo::ROTATE) ? "ROTATE (LOCAL)" : "SCALE (LOCAL)";
     ImGui::GetForegroundDrawList()->AddText(ImVec2(20, 20), IM_COL32(0, 255, 0, 255), modeStr);
@@ -528,7 +528,7 @@ std::string Tool_Scene::open_file_dialog()
 
     ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
     ofn.lStructSize = sizeof(OPENFILENAMEA);
-    ofn.hwndOwner = InputManager::instance()->GetHWnd(); // °ÔÀÓ Ã¢À» ºÎ¸ğ·Î ¼³Á¤
+    ofn.hwndOwner = InputManager::instance()->GetHWnd(); // ê²Œì„ ì°½ì„ ë¶€ëª¨ë¡œ ì„¤ì •
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = "glTF / GLB Files\0*.gltf;*.glb\0All Files\0*.*\0";
@@ -536,7 +536,7 @@ std::string Tool_Scene::open_file_dialog()
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = NULL;
-    // OFN_NOCHANGEDIR: ÆÄÀÏ Å½»ö±â°¡ ÇöÀç ÀÛ¾÷ Æú´õ(°æ·Î)¸¦ ¹Ù²ÙÁö ¸øÇÏ°Ô ¸·À½ (¸Å¿ì Áß¿ä!)
+    // OFN_NOCHANGEDIR: íŒŒì¼ íƒìƒ‰ê¸°ê°€ í˜„ì¬ ì‘ì—… í´ë”(ê²½ë¡œ)ë¥¼ ë°”ê¾¸ì§€ ëª»í•˜ê²Œ ë§‰ìŒ (ë§¤ìš° ì¤‘ìš”!)
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
     if (GetOpenFileNameA(&ofn) == TRUE)

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include "FreeCamera.h"
 //#include "ObjectManager.h"
 //#include "InputManager.h"
@@ -24,14 +24,14 @@
 //			}
 //			else
 //			{
-//				int i = 0; // DWµð¹ö±ë
+//				int i = 0; // DWë””ë²„ê¹…
 //			}
 //			auto player_Transform = Player->get_component<TransformComponent>();
 //			if (player_Transform)
 //			{
 //				SetPosition(XMFLOAT3(player_Transform->get_position().x - (GetLookVec().x) * m_NowOffset,
 //									 player_Transform->get_position().y - (GetLookVec().y) * m_NowOffset,
-//									 player_Transform->get_position().z - (GetLookVec().z) * m_NowOffset)); // Ä«¸Þ¶ó¸¦ ÇÃ·¹ÀÌ¾îÇÑÅ× ºÙÀÌ±â
+//									 player_Transform->get_position().z - (GetLookVec().z) * m_NowOffset)); // ì¹´ë©”ë¼ë¥¼ í”Œë ˆì´ì–´í•œí…Œ ë¶™ì´ê¸°
 //			}
 //		}
 //	}
@@ -47,7 +47,7 @@
 //void FreeCamera::ProcessInput(float fElapsedTime)
 //{
 //
-//	// Ã¢ÀÌ Æ÷Ä¿½Ì µÇ¾îÀÖ°í, Ä¿¼­°¡ ¾Èº¸ÀÏ ¶§¸¸ È¸Àü Àû¿ë
+//	// ì°½ì´ í¬ì»¤ì‹± ë˜ì–´ìžˆê³ , ì»¤ì„œê°€ ì•ˆë³´ì¼ ë•Œë§Œ íšŒì „ ì ìš©
 //	if (GameFramework::Instance()->m_bIsWindowActive && !InputManager::Instance()->GetIsShowCusor())
 //	{
 //		float cxDelta = InputManager::Instance()->GetMouseDelta().x;

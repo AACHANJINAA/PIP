@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 
 class OcclusionManager : public Singleton<OcclusionManager> {
@@ -8,11 +8,11 @@ private:
 public:
     void initialize(ID3D12Device* device, UINT max_objects = 2000);
 
-    // N-1 ÇÁ·¹ÀÓ °á°ú(ÀĞ±â¿ë): Á¶°ÇºÎ ·»´õ¸µ¿¡ »ç¿ë
+    // N-1 í”„ë ˆì„ ê²°ê³¼(ì½ê¸°ìš©): ì¡°ê±´ë¶€ ë Œë”ë§ì— ì‚¬ìš©
     ID3D12Resource* get_result_buffer_for_predication(UINT frame_index) const {
         return _resultBuffers[(frame_index + 1) % SWAP_CHAIN_BUFFERS].Get();
     }
-    // N ÇÁ·¹ÀÓ °á°ú(¾²±â¿ë): ÀÌ¹ø ÇÁ·¹ÀÓ °á°ú ÀúÀå
+    // N í”„ë ˆì„ ê²°ê³¼(ì“°ê¸°ìš©): ì´ë²ˆ í”„ë ˆì„ ê²°ê³¼ ì €ì¥
     ID3D12Resource* get_result_buffer_for_resolve(UINT frame_index) const {
         return _resultBuffers[frame_index % SWAP_CHAIN_BUFFERS].Get();
     }

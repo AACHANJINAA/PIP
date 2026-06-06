@@ -1,4 +1,4 @@
-
+ï»¿
 #pragma once
 #include "RenderComponent.h"
 
@@ -15,7 +15,7 @@ private:
 	ComPtr<ID3D12Resource> _terrain_info_cbuffer;
 	UINT8* _terrain_info_cbuffer_cpu_address = nullptr;
 
-	// Layer Á¤º¸ »ó¼ö ¹öÆÛ
+	// Layer ì •ë³´ ìƒìˆ˜ ë²„í¼
 	ComPtr<ID3D12Resource> _layer_info_cbuffer;
 	UINT8* _layer_info_cbuffer_cpu_address = nullptr;
 };

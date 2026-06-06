@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 #include "GameObject.h"
 #include "Camera.h"
 
-//°ÔÀÓ °´Ã¼ÀÇ Á¤º¸¸¦ ¼ÎÀÌ´õ¿¡°Ô ³Ñ°ÜÁÖ±â À§ÇÑ ±¸Á¶Ã¼(»ó¼ö ¹öÆÛ)ÀÌ´Ù. 
+//ê²Œì„ ê°ì²´ì˜ ì •ë³´ë¥¼ ì…°ì´ë”ì—ê²Œ ë„˜ê²¨ì£¼ê¸° ìœ„í•œ êµ¬ì¡°ì²´(ìƒìˆ˜ ë²„í¼)ì´ë‹¤. 
 //struct CB_GAMEOBJECT_INFO
 //{
 //	XMFLOAT4X4 _4x4World;
@@ -13,44 +13,44 @@ public:
 	Shader() = default;
 	virtual ~Shader() = default;
 
-	// ÀÌ ÅÛÇÃ¸´ ¸Ş¼­µå´Â ÆÄ»ı Å¬·¡½º°¡ Á¤ÀÇÇÑ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î PSO¸¦ »ı¼ºÇÏ´Â ÀüÃ¼ °úÁ¤À» ´ã´çÇÕ´Ï´Ù.
+	// ì´ í…œí”Œë¦¿ ë©”ì„œë“œëŠ” íŒŒìƒ í´ë˜ìŠ¤ê°€ ì •ì˜í•œ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ PSOë¥¼ ìƒì„±í•˜ëŠ” ì „ì²´ ê³¼ì •ì„ ë‹´ë‹¹í•©ë‹ˆë‹¤.
 	virtual ComPtr<ID3D12PipelineState> create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature);
 
-	// --- ÆÄ»ı Å¬·¡½º°¡ ¹İµå½Ã ±¸ÇöÇØ¾ß ÇÒ Á¤º¸ ---
+	// --- íŒŒìƒ í´ë˜ìŠ¤ê°€ ë°˜ë“œì‹œ êµ¬í˜„í•´ì•¼ í•  ì •ë³´ ---
 
-	// ÀÚ½ÅÀÇ PSO¸¦ ¾î¶² ÀÌ¸§À¸·Î ÀúÀåÇÒÁö ¾Ë·ÁÁà¾ß ÇÕ´Ï´Ù. (¿¹: "default", "skinned")
+	// ìì‹ ì˜ PSOë¥¼ ì–´ë–¤ ì´ë¦„ìœ¼ë¡œ ì €ì¥í• ì§€ ì•Œë ¤ì¤˜ì•¼ í•©ë‹ˆë‹¤. (ì˜ˆ: "default", "skinned")
 	virtual const std::string& pso_name() const = 0;
 
-	// ÀÚ½Å¿¡°Ô ¾î¶² ·çÆ® ½Ã±×´ÏÃ³°¡ ÇÊ¿äÇÑÁö ÀÌ¸§À» ¹İÈ¯ÇÕ´Ï´Ù. (±âº»°ªÀº "default")
-	// ¿À¹ö¶óÀÌµåÇÏÁö ¾ÊÀ¸¸é ±âº» ·çÆ® ½Ã±×´ÏÃ³¸¦ »ç¿ëÇÕ´Ï´Ù.
+	// ìì‹ ì—ê²Œ ì–´ë–¤ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ê°€ í•„ìš”í•œì§€ ì´ë¦„ì„ ë°˜í™˜í•©ë‹ˆë‹¤. (ê¸°ë³¸ê°’ì€ "default")
+	// ì˜¤ë²„ë¼ì´ë“œí•˜ì§€ ì•Šìœ¼ë©´ ê¸°ë³¸ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 	virtual std::string required_root_signature() const { return "default"; }
 
 protected:
-	// --- ÆÄ»ı Å¬·¡½º°¡ PSO »ı¼ºÀ» À§ÇØ ¹İµå½Ã ±¸ÇöÇØ¾ß ÇÒ Àç·áµé ---
+	// --- íŒŒìƒ í´ë˜ìŠ¤ê°€ PSO ìƒì„±ì„ ìœ„í•´ ë°˜ë“œì‹œ êµ¬í˜„í•´ì•¼ í•  ì¬ë£Œë“¤ ---
 
 	virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() = 0;
 	virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) = 0;
 	virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) = 0;
-	virtual D3D12_SHADER_BYTECODE create_geometry_shader(ComPtr<ID3DBlob>& shader_blob) { return { nullptr, 0 }; } // GS´Â Àû¿ëÀÌ °ÅÀÇ ¾ÈµÇ´Ï µğÆúÆ® ÀÌ°É·Î
+	virtual D3D12_SHADER_BYTECODE create_geometry_shader(ComPtr<ID3DBlob>& shader_blob) { return { nullptr, 0 }; } // GSëŠ” ì ìš©ì´ ê±°ì˜ ì•ˆë˜ë‹ˆ ë””í´íŠ¸ ì´ê±¸ë¡œ
 
-	// --- ÇÊ¿ä ½Ã ÆÄ»ı Å¬·¡½º°¡ ÀçÁ¤ÀÇ(override)ÇÒ ¼ö ÀÖ´Â ¿É¼Çµé ---
+	// --- í•„ìš” ì‹œ íŒŒìƒ í´ë˜ìŠ¤ê°€ ì¬ì •ì˜(override)í•  ìˆ˜ ìˆëŠ” ì˜µì…˜ë“¤ ---
 
-	// ±âº» ÅäÆú·ÎÁö´Â »ï°¢Çü ¸®½ºÆ®ÀÔ´Ï´Ù. (¶óÀÎ ·»´õ¸µ µî¿¡¼­ ÀçÁ¤ÀÇ)
+	// ê¸°ë³¸ í† í´ë¡œì§€ëŠ” ì‚¼ê°í˜• ë¦¬ìŠ¤íŠ¸ì…ë‹ˆë‹¤. (ë¼ì¸ ë Œë”ë§ ë“±ì—ì„œ ì¬ì •ì˜)
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive_topology_type() const {
 		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	}
 
-	// ±âº» ·»´õ¸µ »óÅÂ¸¦ ¹İÈ¯ÇÏ´Â °¡»ó ÇÔ¼öµé (ÇÊ¿ä ½Ã ÀçÁ¤ÀÇ)
+	// ê¸°ë³¸ ë Œë”ë§ ìƒíƒœë¥¼ ë°˜í™˜í•˜ëŠ” ê°€ìƒ í•¨ìˆ˜ë“¤ (í•„ìš” ì‹œ ì¬ì •ì˜)
 	virtual D3D12_RASTERIZER_DESC create_rasterizer_state();
 	virtual D3D12_DEPTH_STENCIL_DESC create_depth_stencil_state();
 	virtual D3D12_BLEND_DESC create_blend_state();
 
 public:
-	// --- ¸ğµç ¼ÎÀÌ´õ°¡ °ø¿ëÀ¸·Î »ç¿ëÇÏ´Â ÇïÆÛ ÇÔ¼ö ---
+	// --- ëª¨ë“  ì…°ì´ë”ê°€ ê³µìš©ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” í—¬í¼ í•¨ìˆ˜ ---
 	static D3D12_SHADER_BYTECODE compile_shader_from_file(const std::wstring& file_name, LPCSTR
 		shader_name, LPCSTR shader_profile, ComPtr<ID3DBlob>& shader_blob);
 
-	//  [Ãß°¡] °¢ °´Ã¼¸¦ ±×¸®±â Á÷Àü¿¡ È£ÃâµÉ ÇÔ¼ö. ¼ÎÀÌ´õ°¡ °´Ã¼º° ¸®¼Ò½º ¹ÙÀÎµùÀ» ´ã´çÇÕ´Ï´Ù.    
+	//  [ì¶”ê°€] ê° ê°ì²´ë¥¼ ê·¸ë¦¬ê¸° ì§ì „ì— í˜¸ì¶œë  í•¨ìˆ˜. ì…°ì´ë”ê°€ ê°ì²´ë³„ ë¦¬ì†ŒìŠ¤ ë°”ì¸ë”©ì„ ë‹´ë‹¹í•©ë‹ˆë‹¤.    
 	virtual void update_per_object(ID3D12GraphicsCommandList* commandList, class Renderer* renderer, GameObject* object) {}
 
 	virtual DXGI_FORMAT get_dsv_format() const {

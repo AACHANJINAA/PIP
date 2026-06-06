@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 struct DebugRequest {
     common::packet::DebugShapeType shapeType;
@@ -86,10 +86,10 @@ private:
     std::array<DirectX::XMFLOAT4X4*, 2>   _mappedWorld{};
 
 	// [Add] Remote debug shapes received from server (for rendering)
-    // ¼­¹ö Shape ½Ã°¢È­¸¦ À§ÇÑ µ¿Àû ¹öÆÛ
+    // ì„œë²„ Shape ì‹œê°í™”ë¥¼ ìœ„í•œ ë™ì  ë²„í¼
     ComPtr<ID3D12Resource> _remoteLineVB;
     D3D12_VERTEX_BUFFER_VIEW _remoteLineVBView{};
     std::vector<DebugVertex> _remoteLineVertices;
 
-    std::vector<RemoteDebugShape> _remoteShapes; // ¼­¹ö¿¡¼­ ¹ŞÀº ¿ø°İ µğ¹ö±× ½¦ÀÌÇÁ
+    std::vector<RemoteDebugShape> _remoteShapes; // ì„œë²„ì—ì„œ ë°›ì€ ì›ê²© ë””ë²„ê·¸ ì‰ì´í”„
 };

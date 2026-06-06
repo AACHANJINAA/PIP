@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "BoardCubeScript.h"
 #include "GameObject.h"
 #include "ReadGlbMesh.h"
@@ -13,30 +13,30 @@ BoardCubeScript::BoardCubeScript()
 void BoardCubeScript::awake()
 {
     /*
-      [Ã¶ÇĞ ±¸Çö]
-      ÇÁ·Î±×·¡¸Ó´Â ºó GameObject¿¡ ÀÌ ½ºÅ©¸³Æ® ÇÏ³ª¸¸ Ãß°¡Çß½À´Ï´Ù.
-      ÀÌÁ¦ ÀÌ ½ºÅ©¸³Æ®°¡ '½º½º·Î' ÇÊ¿äÇÑ ±â´ÉµéÀ» GameObject¿¡ Ãß°¡ÇÏ¿©
-      ÀÚ½ÅÀ» ¿ÏÀüÇÑ 'º¸µå Å¥ºê'·Î ¸¸µì´Ï´Ù.
+      [ì² í•™ êµ¬í˜„]
+      í”„ë¡œê·¸ë˜ë¨¸ëŠ” ë¹ˆ GameObjectì— ì´ ìŠ¤í¬ë¦½íŠ¸ í•˜ë‚˜ë§Œ ì¶”ê°€í–ˆìŠµë‹ˆë‹¤.
+      ì´ì œ ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ 'ìŠ¤ìŠ¤ë¡œ' í•„ìš”í•œ ê¸°ëŠ¥ë“¤ì„ GameObjectì— ì¶”ê°€í•˜ì—¬
+      ìì‹ ì„ ì™„ì „í•œ 'ë³´ë“œ íë¸Œ'ë¡œ ë§Œë“­ë‹ˆë‹¤.
       */
 
-      // 1. ·»´õ¸µ ±â´É Ãß°¡ (½º½º·Î¸¦ º¸ÀÌ°Ô ¸¸µé±â)
+      // 1. ë Œë”ë§ ê¸°ëŠ¥ ì¶”ê°€ (ìŠ¤ìŠ¤ë¡œë¥¼ ë³´ì´ê²Œ ë§Œë“¤ê¸°)
     auto render_component = game_object()->add_component<RenderComponent>();
 
-    // 2. ¸Ş½¬ ¼³Á¤ (ÀÚ½ÅÀÇ ¸ğ¾ç °áÁ¤)
-    // TODO: ¸Ş½¬¸¦ µ¿ÀûÀ¸·Î ¼³Á¤ÇÒ ¼ö ÀÖµµ·Ï °³¼±ÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç´Â ±âº»°ªÀ» »ç¿ëÇÕ´Ï´Ù.
+    // 2. ë©”ì‰¬ ì„¤ì • (ìì‹ ì˜ ëª¨ì–‘ ê²°ì •)
+    // TODO: ë©”ì‰¬ë¥¼ ë™ì ìœ¼ë¡œ ì„¤ì •í•  ìˆ˜ ìˆë„ë¡ ê°œì„ í•´ì•¼ í•©ë‹ˆë‹¤. í˜„ì¬ëŠ” ê¸°ë³¸ê°’ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
     auto board_mesh = ResourceManager::instance()->load_mesh("Resource/MapData/SM_Crate_01.glb");
     render_component->set_mesh(board_mesh);
 
-	// CJ ¼³¸í : ResourceManagerÀ» ÅëÇØ ÀçÁú »ı¼º ¹× ¼ÎÀÌ´õ ÇÒ´ç
+	// CJ ì„¤ëª… : ResourceManagerì„ í†µí•´ ì¬ì§ˆ ìƒì„± ë° ì…°ì´ë” í• ë‹¹
 	std::string material_name = "board_cube_material";
 	ResourceManager::instance()->create_material(material_name);
 	ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 
-	// RenderComponent¿¡´Â PSO ÀÌ¸§¸¸ ¼³Á¤
+	// RenderComponentì—ëŠ” PSO ì´ë¦„ë§Œ ì„¤ì •
 	render_component->set_pso_name("gltf");
 }
 
 void BoardCubeScript::update(float delta_time)
 {
-    // ¸Å ÇÁ·¹ÀÓ ½ÇÇàµÉ ·ÎÁ÷
+    // ë§¤ í”„ë ˆì„ ì‹¤í–‰ë  ë¡œì§
 }

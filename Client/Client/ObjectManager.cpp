@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ObjectManager.h"
 #include "GameObject.h"
 #include "Component.h"
@@ -9,14 +9,14 @@
 
 std::shared_ptr<GameObject> ObjectManager::create_game_object(const std::string& name)
 {
-    // 1. make_shared·Î °´Ã¼¸¦ »ı¼ºÇÕ´Ï´Ù. ÀÌÁ¦ »ı¼ºÀÚ´Â ¾ÈÀüÇÕ´Ï´Ù.
+    // 1. make_sharedë¡œ ê°ì²´ë¥¼ ìƒì„±í•©ë‹ˆë‹¤. ì´ì œ ìƒì„±ìëŠ” ì•ˆì „í•©ë‹ˆë‹¤.
     auto newGameObject = std::make_shared<GameObject>(name);
 
-    // 2. shared_ptr »ı¼ºÀÌ ¿Ï·áµÈ ÈÄ, init()À» È£ÃâÇÏ¿© ³ª¸ÓÁö ÃÊ±âÈ­¸¦ ÁøÇàÇÕ´Ï´Ù.
-    // ÀÌ ½ÃÁ¡¿¡´Â shared_from_this()¸¦ ¾ÈÀüÇÏ°Ô È£ÃâÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    // 2. shared_ptr ìƒì„±ì´ ì™„ë£Œëœ í›„, init()ì„ í˜¸ì¶œí•˜ì—¬ ë‚˜ë¨¸ì§€ ì´ˆê¸°í™”ë¥¼ ì§„í–‰í•©ë‹ˆë‹¤.
+    // ì´ ì‹œì ì—ëŠ” shared_from_this()ë¥¼ ì•ˆì „í•˜ê²Œ í˜¸ì¶œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     newGameObject->init();
 
-    // 3. ¸ñ·Ï¿¡ Ãß°¡ÇÏ°í ¹İÈ¯ÇÕ´Ï´Ù.
+    // 3. ëª©ë¡ì— ì¶”ê°€í•˜ê³  ë°˜í™˜í•©ë‹ˆë‹¤.
     _gameObjects.push_back(newGameObject);
     _newGameObjects.push(newGameObject);
     return newGameObject;
@@ -59,13 +59,13 @@ void ObjectManager::process_destructions()
         {
             remove_game_object_from_list(gameObj);
         }
-        // --- [Ãß°¡] ÄÄÆ÷³ÍÆ® ÆÄ±« ·ÎÁ÷ ---
+        // --- [ì¶”ê°€] ì»´í¬ë„ŒíŠ¸ íŒŒê´´ ë¡œì§ ---
         else if (auto component = std::dynamic_pointer_cast<Component>(obj))
         {
-            // ÄÄÆ÷³ÍÆ®°¡ ¼ÓÇÑ °ÔÀÓ¿ÀºêÁ§Æ®°¡ ¾ÆÁ÷ À¯È¿ÇÏ´Ù¸é,
+            // ì»´í¬ë„ŒíŠ¸ê°€ ì†í•œ ê²Œì„ì˜¤ë¸Œì íŠ¸ê°€ ì•„ì§ ìœ íš¨í•˜ë‹¤ë©´,
             if (component->game_object() && !component->game_object()->is_destroyed())
             {
-                // °ÔÀÓ¿ÀºêÁ§Æ®¿¡°Ô ÄÄÆ÷³ÍÆ® Á¦°Å¸¦ ¿äÃ»ÇÕ´Ï´Ù.
+                // ê²Œì„ì˜¤ë¸Œì íŠ¸ì—ê²Œ ì»´í¬ë„ŒíŠ¸ ì œê±°ë¥¼ ìš”ì²­í•©ë‹ˆë‹¤.
                 component->game_object()->remove_component(component);
             }
         }
@@ -77,36 +77,36 @@ void ObjectManager::remove_game_object_from_list(const std::shared_ptr<GameObjec
 
 
     // ---------------------------------------------------------
-    // 1. [Ãß°¡] ¸ğµç ÄÄÆ÷³ÍÆ®ÀÇ on_destroy() È£Ãâ
+    // 1. [ì¶”ê°€] ëª¨ë“  ì»´í¬ë„ŒíŠ¸ì˜ on_destroy() í˜¸ì¶œ
     // ---------------------------------------------------------
-    // GameObject Å¬·¡½º ³»ºÎ¿¡ Á¤ÀÇµÈ _components ¸®½ºÆ®¸¦ ¼øÈ¸ÇÕ´Ï´Ù.
-    // (GameObject.h¿¡ getter°¡ ÀÖ´Ù°í °¡Á¤ÇÏ°Å³ª, Ä£±¸ Å¬·¡½º¶ó¸é Á÷Á¢ Á¢±Ù)
+    // GameObject í´ë˜ìŠ¤ ë‚´ë¶€ì— ì •ì˜ëœ _components ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆœíšŒí•©ë‹ˆë‹¤.
+    // (GameObject.hì— getterê°€ ìˆë‹¤ê³  ê°€ì •í•˜ê±°ë‚˜, ì¹œêµ¬ í´ë˜ìŠ¤ë¼ë©´ ì§ì ‘ ì ‘ê·¼)
     for (const auto& component : gameObject->components())
     {
         if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
         {
-            // ºñÈ°¼ºÈ­ »óÅÂ¿©µµ ÆÄ±« ½ÃÁ¡ÀÇ Á¤¸®´Â ÇÊ¿äÇÏ¹Ç·Î ¹«Á¶°Ç È£ÃâÇÕ´Ï´Ù.
+            // ë¹„í™œì„±í™” ìƒíƒœì—¬ë„ íŒŒê´´ ì‹œì ì˜ ì •ë¦¬ëŠ” í•„ìš”í•˜ë¯€ë¡œ ë¬´ì¡°ê±´ í˜¸ì¶œí•©ë‹ˆë‹¤.
             behavior->on_destroy();
         }
     }
 
-    // --- [º¯°æ] ºÎ¸ğ·ÎºÎÅÍ ¿¬°á ²÷±â ·ÎÁ÷ ---
+    // --- [ë³€ê²½] ë¶€ëª¨ë¡œë¶€í„° ì—°ê²° ëŠê¸° ë¡œì§ ---
     if (auto transform = gameObject->transform())
     {
-        // 1. ¸ğµç ÀÚ½ÄµéÀÇ ºÎ¸ğ¸¦ nullptr·Î ¼³Á¤ÇÏ¿© ¿¬°áÀ» ²÷½À´Ï´Ù.
-        // (ÀÚ½Ä ¸ñ·ÏÀ» º¹»çÇØ¼­ ¼øÈ¸ÇØ¾ß ¾ÈÀüÇÔ)
+        // 1. ëª¨ë“  ìì‹ë“¤ì˜ ë¶€ëª¨ë¥¼ nullptrë¡œ ì„¤ì •í•˜ì—¬ ì—°ê²°ì„ ëŠìŠµë‹ˆë‹¤.
+        // (ìì‹ ëª©ë¡ì„ ë³µì‚¬í•´ì„œ ìˆœíšŒí•´ì•¼ ì•ˆì „í•¨)
         auto childrenCopy = transform->children();
         for (const auto& childTransform : childrenCopy)
         {
             childTransform->set_parent(nullptr);
         }
 
-        // 2. ÀÚ±â ÀÚ½ÅÀÇ ºÎ¸ğ¸¦ nullptr·Î ¼³Á¤ÇÕ´Ï´Ù.
-        // ÀÌ ÇÔ¼ö ³»ºÎ¿¡¼­, ¿ø·¡ ºÎ¸ğÀÇ ÀÚ½Ä ¸ñ·Ï¿¡¼­ ÀÚ½ÅÀ» Á¦°ÅÇÏ´Â ·ÎÁ÷ÀÌ Ã³¸®µË´Ï´Ù.
+        // 2. ìê¸° ìì‹ ì˜ ë¶€ëª¨ë¥¼ nullptrë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
+        // ì´ í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ, ì›ë˜ ë¶€ëª¨ì˜ ìì‹ ëª©ë¡ì—ì„œ ìì‹ ì„ ì œê±°í•˜ëŠ” ë¡œì§ì´ ì²˜ë¦¬ë©ë‹ˆë‹¤.
         transform->set_parent(nullptr);
     }
 
-    // ¸ŞÀÎ ¸®½ºÆ®¿¡¼­ Á¦°Å
+    // ë©”ì¸ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
     std::erase(_gameObjects, gameObject);
 }
 
@@ -122,28 +122,28 @@ std::shared_ptr<GameObject> ObjectManager::find_by_name(const std::string& name)
         [&name](const std::shared_ptr<GameObject>& obj) {
             return obj && obj->name() == name && !obj->is_destroyed();
         });
-	// O(N) Å½»ö °á°ú ¹İÈ¯
+	// O(N) íƒìƒ‰ ê²°ê³¼ ë°˜í™˜
 	return (it != _gameObjects.end()) ? *it : nullptr;
 }
 
 std::vector<std::shared_ptr<GameObject>> ObjectManager::find_by_layer(uint32_t layerMask)
 {
-    // KJ ¿¹½Ã 
-    //// 1. Chess_Scene¿¡¼­ ÇÃ·¹ÀÌ¾î »ı¼º ½Ã
+    // KJ ì˜ˆì‹œ 
+    //// 1. Chess_Sceneì—ì„œ í”Œë ˆì´ì–´ ìƒì„± ì‹œ
     //auto playerObject = ObjectManager::Instance()->create_game_object("MainPlayer");
-    //playerObject->set_layer("Player"); // ÀÌ¸§À¸·Î ·¹ÀÌ¾î ¼³Á¤
+    //playerObject->set_layer("Player"); // ì´ë¦„ìœ¼ë¡œ ë ˆì´ì–´ ì„¤ì •
 
-    //// 2. ¹°¸® ½Ã½ºÅÛ¿¡¼­ ÇÃ·¹ÀÌ¾î¿Í ÀûÀÇ Ãæµ¹¸¸ °Ë»çÇÏ°í ½ÍÀ» ¶§
+    //// 2. ë¬¼ë¦¬ ì‹œìŠ¤í…œì—ì„œ í”Œë ˆì´ì–´ì™€ ì ì˜ ì¶©ëŒë§Œ ê²€ì‚¬í•˜ê³  ì‹¶ì„ ë•Œ
     //uint32_t playerLayer = LayerManager::Instance()->get_layer_value("Player");
     //uint32_t enemyLayer = LayerManager::Instance()->get_layer_value("Enemy");
-    //uint32_t collisionMask = playerLayer | enemyLayer; // µÎ ·¹ÀÌ¾î¸¦ ÇÕÄ£ ¸¶½ºÅ©
+    //uint32_t collisionMask = playerLayer | enemyLayer; // ë‘ ë ˆì´ì–´ë¥¼ í•©ì¹œ ë§ˆìŠ¤í¬
 
     //auto objectsToTest = ObjectManager::Instance()->find_by_layer_mask(collisionMask);
 
     std::vector<std::shared_ptr<GameObject>> foundObjects;
     for (const auto& obj : _gameObjects)
     {
-        // ºñÆ® AND ¿¬»êÀ¸·Î ÇØ´ç ·¹ÀÌ¾î¿¡ ¼ÓÇÏ´ÂÁö È®ÀÎ
+        // ë¹„íŠ¸ AND ì—°ì‚°ìœ¼ë¡œ í•´ë‹¹ ë ˆì´ì–´ì— ì†í•˜ëŠ”ì§€ í™•ì¸
         if (obj && (obj->layer_mask() & layerMask) != 0)
         {
             foundObjects.push_back(obj);
@@ -156,7 +156,7 @@ void ObjectManager::process_new_game_objects()
 {
     if (_newGameObjects.empty()) return;
 
-    // ÀÌ¹ø ÇÁ·¹ÀÓ¿¡ Ã³¸®ÇÒ °´Ã¼µéÀ» ÀÓ½Ã º¤ÅÍ·Î ¿Å±é´Ï´Ù.
+    // ì´ë²ˆ í”„ë ˆì„ì— ì²˜ë¦¬í•  ê°ì²´ë“¤ì„ ì„ì‹œ ë²¡í„°ë¡œ ì˜®ê¹ë‹ˆë‹¤.
     std::vector<std::shared_ptr<GameObject>> processedThisFrame;
     while (!_newGameObjects.empty())
     {
@@ -164,7 +164,7 @@ void ObjectManager::process_new_game_objects()
         _newGameObjects.pop();
     }
 
-    // Awake ´Ü°è: ¸ğµç »õ °´Ã¼ÀÇ awake()¸¦ ¸ÕÀú È£Ãâ
+    // Awake ë‹¨ê³„: ëª¨ë“  ìƒˆ ê°ì²´ì˜ awake()ë¥¼ ë¨¼ì € í˜¸ì¶œ
     for (const auto& newObj : processedThisFrame)
     {
         if (newObj && !newObj->is_destroyed())
@@ -173,7 +173,7 @@ void ObjectManager::process_new_game_objects()
         }
     }
 
-    // Start ´Ü°è: ¸ğµç awake()°¡ ³¡³­ ÈÄ start()¸¦ È£Ãâ
+    // Start ë‹¨ê³„: ëª¨ë“  awake()ê°€ ëë‚œ í›„ start()ë¥¼ í˜¸ì¶œ
     for (const auto& newObj : processedThisFrame)
     {
         if (newObj && !newObj->is_destroyed())
@@ -185,27 +185,27 @@ void ObjectManager::process_new_game_objects()
 
 void ObjectManager::clear_non_persistent_objects()
 {
-    // _allGameObjects¸¦ Á÷Á¢ ¼öÁ¤ÇÏ¸é ¹İº¹ÀÚ°¡ ¹«È¿È­µÉ ¼ö ÀÖÀ¸¹Ç·Î,
-	// ÆÄ±«ÇÒ ¿ÀºêÁ§Æ® ¸ñ·ÏÀ» µû·Î ¸¸µì´Ï´Ù.
+    // _allGameObjectsë¥¼ ì§ì ‘ ìˆ˜ì •í•˜ë©´ ë°˜ë³µìê°€ ë¬´íš¨í™”ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+	// íŒŒê´´í•  ì˜¤ë¸Œì íŠ¸ ëª©ë¡ì„ ë”°ë¡œ ë§Œë“­ë‹ˆë‹¤.
     std::vector<std::shared_ptr<GameObject>> objects_to_destroy;
 
     for (const auto& game_object : _gameObjects)
     {
-        // is_persistent() ÇÃ·¡±×°¡ falseÀÎ ¿ÀºêÁ§Æ®¸¸ ÆÄ±« ¸ñ·Ï¿¡ Ãß°¡ÇÕ´Ï´Ù.
+        // is_persistent() í”Œë˜ê·¸ê°€ falseì¸ ì˜¤ë¸Œì íŠ¸ë§Œ íŒŒê´´ ëª©ë¡ì— ì¶”ê°€í•©ë‹ˆë‹¤.
         if (game_object && !game_object->is_persistent())
         {
             objects_to_destroy.push_back(game_object);
         }
     }
 
-    // ¸ñ·Ï¿¡ ÀÖ´Â ¸ğµç ¿ÀºêÁ§Æ®¿¡ ´ëÇØ ÆÄ±«¸¦ ¿äÃ»ÇÕ´Ï´Ù.
+    // ëª©ë¡ì— ìˆëŠ” ëª¨ë“  ì˜¤ë¸Œì íŠ¸ì— ëŒ€í•´ íŒŒê´´ë¥¼ ìš”ì²­í•©ë‹ˆë‹¤.
     for (const auto& game_object : objects_to_destroy)
     {
         Object::destroy(game_object);
     }
 
     _npcMap.clear();
-    // process_destructions()°¡ ´ÙÀ½ ÇÁ·¹ÀÓ¿¡ ½ÇÁ¦·Î ¸Ş¸ğ¸®¿¡¼­ Á¦°ÅÇÒ °ÍÀÔ´Ï´Ù.
+    // process_destructions()ê°€ ë‹¤ìŒ í”„ë ˆì„ì— ì‹¤ì œë¡œ ë©”ëª¨ë¦¬ì—ì„œ ì œê±°í•  ê²ƒì…ë‹ˆë‹¤.
 }
 
 std::shared_ptr<GameObject> ObjectManager::find_object(const std::string& name)
@@ -215,7 +215,7 @@ std::shared_ptr<GameObject> ObjectManager::find_object(const std::string& name)
             return object->name() == name;
         });
 
-    // Ã£Áö ¸øÇÏ¸é nullptr ¹İÈ¯ (end() ¿ªÂüÁ¶ ¹æÁö)
+    // ì°¾ì§€ ëª»í•˜ë©´ nullptr ë°˜í™˜ (end() ì—­ì°¸ì¡° ë°©ì§€)
     if (it == _gameObjects.end())
     {
         return nullptr;
@@ -231,7 +231,7 @@ std::shared_ptr<GameObject> ObjectManager::find_object(const int& id)
             return object->unique_id() == id;
         });
 
-    // Ã£Áö ¸øÇÏ¸é nullptr ¹İÈ¯ (end() ¿ªÂüÁ¶ ¹æÁö)
+    // ì°¾ì§€ ëª»í•˜ë©´ nullptr ë°˜í™˜ (end() ì—­ì°¸ì¡° ë°©ì§€)
     if (it == _gameObjects.end())
     {
         return nullptr;

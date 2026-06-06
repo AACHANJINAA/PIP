@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 
 enum class SCENE_NUM
 {
-	SCENE_NONE = 0, // º¯°æ ¾ÈÇÒ ¶§
-	SCENE_CHESS, // Ã¼½º ¾À
-	SCENE_MAIN,  // ¸ŞÀÎ ¾À
-	SCENE_OTHER, // ´Ù¸¥ ¾À (¿¹: Pong ¾À)
-	// Ãß°¡ ¾À ¹øÈ£¸¦ ¿©±â¿¡ Á¤ÀÇÇÒ ¼ö ÀÖ½À´Ï´Ù.
+	SCENE_NONE = 0, // ë³€ê²½ ì•ˆí•  ë•Œ
+	SCENE_CHESS, // ì²´ìŠ¤ ì”¬
+	SCENE_MAIN,  // ë©”ì¸ ì”¬
+	SCENE_OTHER, // ë‹¤ë¥¸ ì”¬ (ì˜ˆ: Pong ì”¬)
+	// ì¶”ê°€ ì”¬ ë²ˆí˜¸ë¥¼ ì—¬ê¸°ì— ì •ì˜í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 };
 
 
@@ -20,24 +20,24 @@ public:
 	void initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 	virtual void release() override;
 
-	// [Ãß°¡] ÅÛÇÃ¸´À» »ç¿ëÇÏ¿© »õ·Î¿î ¾À »ı¼º ¹æ¹ıÀ» µî·ÏÇÕ´Ï´Ù.
+	// [ì¶”ê°€] í…œí”Œë¦¿ì„ ì‚¬ìš©í•˜ì—¬ ìƒˆë¡œìš´ ì”¬ ìƒì„± ë°©ë²•ì„ ë“±ë¡í•©ë‹ˆë‹¤.
 	template<typename T>
 	void register_scene(const std::string& scene_name)
 	{
-		// T´Â ¹İµå½Ã SceneÀ» »ó¼Ó¹Ş´Â Å¬·¡½º¿©¾ß ÇÕ´Ï´Ù.
+		// TëŠ” ë°˜ë“œì‹œ Sceneì„ ìƒì†ë°›ëŠ” í´ë˜ìŠ¤ì—¬ì•¼ í•©ë‹ˆë‹¤.
 		static_assert(std::is_base_of<Scene, T>::value, "T must be a descendant of Scene");
 
-		// scene_nameÀ» Å°·Î, ÇØ´ç ¾ÀÀ» »ı¼ºÇÏ´Â ¶÷´Ù ÇÔ¼ö¸¦ °ªÀ¸·Î map¿¡ ÀúÀåÇÕ´Ï´Ù.
+		// scene_nameì„ í‚¤ë¡œ, í•´ë‹¹ ì”¬ì„ ìƒì„±í•˜ëŠ” ëŒë‹¤ í•¨ìˆ˜ë¥¼ ê°’ìœ¼ë¡œ mapì— ì €ì¥í•©ë‹ˆë‹¤.
 		_scene_creators[scene_name] = [scene_name]() { return std::make_unique<T>(scene_name); };
 	}
-	// [Ãß°¡] »õ·Î¿î ¾ÀÀ¸·Î ÀüÈ¯ÇÏ´Â °ÍÀ» ÃÑ°ıÇÏ´Â ÇÔ¼ö
+	// [ì¶”ê°€] ìƒˆë¡œìš´ ì”¬ìœ¼ë¡œ ì „í™˜í•˜ëŠ” ê²ƒì„ ì´ê´„í•˜ëŠ” í•¨ìˆ˜
 	void change_scene(const std::string& scene_name);
 	void set_network_scene_name(const std::string& scene_name) { _networkWantSceneName = scene_name; }
 	const std::string& get_network_scene_name() { return _networkWantSceneName; }
-	// (ÇöÀç ¾ÀÀ» ¹İÈ¯ÇÏ´Â getter µî ´Ù¸¥ À¯Æ¿¸®Æ¼ ÇÔ¼ö...)
+	// (í˜„ì¬ ì”¬ì„ ë°˜í™˜í•˜ëŠ” getter ë“± ë‹¤ë¥¸ ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜...)
 	Scene* current_scene() const { return _currentScene.get(); }
 
-	// [¿ªÇÒ] GameFramework°¡ ¸Å ÇÁ·¹ÀÓ ½ÃÀÛ ½Ã È£ÃâÇÏ¿©, ¾À ÀüÈ¯ ¿äÃ»ÀÌ ÀÖ´Ù¸é Ã³¸®ÇÕ´Ï´Ù.
+	// [ì—­í• ] GameFrameworkê°€ ë§¤ í”„ë ˆì„ ì‹œì‘ ì‹œ í˜¸ì¶œí•˜ì—¬, ì”¬ ì „í™˜ ìš”ì²­ì´ ìˆë‹¤ë©´ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 	void process_scene_change_if_requested(ID3D12Device* device, 
 		ID3D12CommandAllocator* command_allocator, ID3D12GraphicsCommandList* command_list);
 
@@ -55,10 +55,10 @@ public:
 
 
 private:
-	std::unique_ptr<Scene> _currentScene = nullptr; // ÇöÀç ¾À
+	std::unique_ptr<Scene> _currentScene = nullptr; // í˜„ì¬ ì”¬
 	std::string _requestedSceneName{};
 	std::string _networkWantSceneName{};
-	// [Ãß°¡] ¾ÀÀÇ ÀÌ¸§(string)°ú ¾ÀÀ» »ı¼ºÇÏ´Â ÇÔ¼ö(function)¸¦ ¸ÅÇÎÇÏ´Â ÆÑÅä¸® ¸Ê
+	// [ì¶”ê°€] ì”¬ì˜ ì´ë¦„(string)ê³¼ ì”¬ì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜(function)ë¥¼ ë§¤í•‘í•˜ëŠ” íŒ©í† ë¦¬ ë§µ
 	std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> _scene_creators;
 
 	std::shared_ptr<GameObject> _skyboxObject;

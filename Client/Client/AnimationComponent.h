@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "Behavior.h"
 #include "RenderComponent.h"
@@ -16,13 +16,13 @@ public:
 
 public:
 
-	// ¾Ö´Ï¸ŞÀÌ¼Ç ¸®¼Ò½º µî·Ï (¿¹: "Walk", walkMesh, "run_anim")
+	// ì• ë‹ˆë©”ì´ì…˜ ë¦¬ì†ŒìŠ¤ ë“±ë¡ (ì˜ˆ: "Walk", walkMesh, "run_anim")
 	void add_animation(const std::string& want_name, const std::shared_ptr<Mesh>& mesh, const std::string& actualAnimName = "");
 
-	// ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı (ÀÌ¸§ÀÌ °°À¸¸é ¹«½Ã, ´Ù¸£¸é ±³Ã¼)
+	// ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ (ì´ë¦„ì´ ê°™ìœ¼ë©´ ë¬´ì‹œ, ë‹¤ë¥´ë©´ êµì²´)
 	void play(const std::string& name, bool isLoop = true, float speed = 1.0f);
 
-	// ÇöÀç Àç»ı ÁßÀÎ ¾Ö´Ï¸ŞÀÌ¼Ç º°Äª ¹İÈ¯
+	// í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ì• ë‹ˆë©”ì´ì…˜ ë³„ì¹­ ë°˜í™˜
 	const std::string& get_current_name() const { return _currentName; }
 
 
@@ -32,10 +32,10 @@ public:
 	void set_anim_speed(float wantSpeed) { _animationSpeed = std::max(wantSpeed, 0.0f); }
 
 
-	//// DW¼³¸í : »À´ë º¯È¯ Çà·Ä ¹öÆÛ ¾ò±â -> ÀÛµ¿ ¾ÈÇÔ
+	//// DWì„¤ëª… : ë¼ˆëŒ€ ë³€í™˜ í–‰ë ¬ ë²„í¼ ì–»ê¸° -> ì‘ë™ ì•ˆí•¨
 	//const ComPtr<ID3D12Resource>& get_bone_palette_buffer() const { return _bone_palette_buffer; }
 
-	// DW¼³¸í : »À´ë º¯È¯ Çà·Ä ¹öÆÛÀÇ GPU °¡»ó ÁÖ¼Ò ¾ò±â (·»´õ¸µ ½Ã ¼ÎÀÌ´õ¿¡ Àü´ŞÇÏ±â À§ÇØ)
+	// DWì„¤ëª… : ë¼ˆëŒ€ ë³€í™˜ í–‰ë ¬ ë²„í¼ì˜ GPU ê°€ìƒ ì£¼ì†Œ ì–»ê¸° (ë Œë”ë§ ì‹œ ì…°ì´ë”ì— ì „ë‹¬í•˜ê¸° ìœ„í•´)
 	D3D12_GPU_VIRTUAL_ADDRESS get_bone_gpu_virtual_address() const { return _currentBoneGPUAddr; }
 
 private:
@@ -45,38 +45,38 @@ private:
 private:
 	struct AnimResource {
 		std::shared_ptr<Mesh> mesh;
-		std::string actualName; // GLTF ³»ºÎÀÇ ½ÇÁ¦ ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌ¸§
+		std::string actualName; // GLTF ë‚´ë¶€ì˜ ì‹¤ì œ ì• ë‹ˆë©”ì´ì…˜ ì´ë¦„
 	};
 	std::unordered_map<std::string, AnimResource> _animResources;
 
-	std::string _currentName;		 // ÇöÀç Àç»ı ÁßÀÎ º°Äª ("Walk", "Attack" µî)
-	std::string _nowAnimationName{}; // ÇöÀç Àç»ı ÁßÀÎ ½ÇÁ¦ GLTF ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌ¸§
+	std::string _currentName;		 // í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ë³„ì¹­ ("Walk", "Attack" ë“±)
+	std::string _nowAnimationName{}; // í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ì‹¤ì œ GLTF ì• ë‹ˆë©”ì´ì…˜ ì´ë¦„
 
-	bool _isLoop = true; // ¾Ö´Ï¸ŞÀÌ¼Ç ·çÇÁ ¼³Á¤ -> ±âº»ÀûÀ¸·Î ·çÇÁÇÏµµ·Ï ¼³Á¤
-	bool _isFinished = false; // ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³µ´ÂÁö ¼³Á¤!
+	bool _isLoop = true; // ì• ë‹ˆë©”ì´ì…˜ ë£¨í”„ ì„¤ì • -> ê¸°ë³¸ì ìœ¼ë¡œ ë£¨í”„í•˜ë„ë¡ ì„¤ì •
+	bool _isFinished = false; // ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚¬ëŠ”ì§€ ì„¤ì •!
 	float _nowAnimationTime{ 0.f };
-	float _animationSpeed{ 1.f }; // ¾Ö´Ï¸ŞÀÌ¼Ç ¼Óµµ Ãß°¡ 1.0ÀÌ ±âº»ÀÓ
+	float _animationSpeed{ 1.f }; // ì• ë‹ˆë©”ì´ì…˜ ì†ë„ ì¶”ê°€ 1.0ì´ ê¸°ë³¸ì„
 
 	std::shared_ptr<Mesh> _currentMesh{};
-	std::shared_ptr<Mesh> _bufferedMesh = nullptr; // ÇöÀç ¹öÆÛ°¡ ¾î¶² ¸Ş½¬¸¦ ±âÁØÀ¸·Î »ı¼ºµÈ »À ÆÈ·¹Æ® Çà·Ä »ó¼ö ¹öÆÛÀÎÁö È®ÀÎ¿ë
+	std::shared_ptr<Mesh> _bufferedMesh = nullptr; // í˜„ì¬ ë²„í¼ê°€ ì–´ë–¤ ë©”ì‰¬ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ìƒì„±ëœ ë¼ˆ íŒ”ë ˆíŠ¸ í–‰ë ¬ ìƒìˆ˜ ë²„í¼ì¸ì§€ í™•ì¸ìš©
 	
 	
-	//// DW¼³¸í -> ÀÌ°Í ÀÛµ¿ ¾ÈÇÔ
-	//// ÃÖÁ¾ »À´ë º¯È¯ Çà·ÄÀ» ´ãÀ» GPU »ó¼ö ¹öÆÛ -> ±×³É ÀÌ°É ³Ñ±ä´Ù
-	//// »À Çà·Ä±îÁö °¢ÀÚ °¡Áö°í ÀÖÀ» ÇÊ¿ä´Â ¾ø´Ù -> »óÅÂ ºñÀÇÁ¸ÀûÀ¸·Î Á¦ÀÛÇÏ¿´±â ¶§¹®
+	//// DWì„¤ëª… -> ì´ê²ƒ ì‘ë™ ì•ˆí•¨
+	//// ìµœì¢… ë¼ˆëŒ€ ë³€í™˜ í–‰ë ¬ì„ ë‹´ì„ GPU ìƒìˆ˜ ë²„í¼ -> ê·¸ëƒ¥ ì´ê±¸ ë„˜ê¸´ë‹¤
+	//// ë¼ˆ í–‰ë ¬ê¹Œì§€ ê°ì ê°€ì§€ê³  ìˆì„ í•„ìš”ëŠ” ì—†ë‹¤ -> ìƒíƒœ ë¹„ì˜ì¡´ì ìœ¼ë¡œ ì œì‘í•˜ì˜€ê¸° ë•Œë¬¸
 	//ComPtr<ID3D12Resource> _bone_palette_buffer;
-	//UINT8* _mapped_bone_data = nullptr; // ¸ÅÇÎµÈ GPU ¹öÆÛ¿¡ Á÷Á¢ Á¢±ÙÇÏ±â À§ÇÑ Æ÷ÀÎÅÍ (CPU ¸Ş¸ğ¸®)
+	//UINT8* _mapped_bone_data = nullptr; // ë§¤í•‘ëœ GPU ë²„í¼ì— ì§ì ‘ ì ‘ê·¼í•˜ê¸° ìœ„í•œ í¬ì¸í„° (CPU ë©”ëª¨ë¦¬)
 
 
-	// DW¼³¸í : GPU °¡»ó ÁÖ¼Ò´Â ¹öÆÛ°¡ GPU¿¡ ¾÷·ÎµåµÈ ÈÄ¿¡ ¾òÀ» ¼ö ÀÖÀ½ -> ¹öÆÛ°¡ »ı¼ºµÇ°í µ¥ÀÌÅÍ°¡ ¾÷·ÎµåµÈ ÈÄ¿¡ ÀÌ ÁÖ¼Ò¸¦ ¾ò¾î¼­ ÀúÀåÇØµÖ¾ß ÇÔ
-	// Áï ¸Å ÇÁ·¹ÀÓ ÇÒ´ç±â¿¡¼­ ºô·Á¿Ã ÁÖ¼Ò¿Í Å©±â¸¦ ±â¾ïÇÒ º¯¼öµéÀÓ
+	// DWì„¤ëª… : GPU ê°€ìƒ ì£¼ì†ŒëŠ” ë²„í¼ê°€ GPUì— ì—…ë¡œë“œëœ í›„ì— ì–»ì„ ìˆ˜ ìˆìŒ -> ë²„í¼ê°€ ìƒì„±ë˜ê³  ë°ì´í„°ê°€ ì—…ë¡œë“œëœ í›„ì— ì´ ì£¼ì†Œë¥¼ ì–»ì–´ì„œ ì €ì¥í•´ë‘¬ì•¼ í•¨
+	// ì¦‰ ë§¤ í”„ë ˆì„ í• ë‹¹ê¸°ì—ì„œ ë¹Œë ¤ì˜¬ ì£¼ì†Œì™€ í¬ê¸°ë¥¼ ê¸°ì–µí•  ë³€ìˆ˜ë“¤ì„
 	D3D12_GPU_VIRTUAL_ADDRESS _currentBoneGPUAddr = 0;
 	size_t _bonePaletteSize = 0;
 	
 
 
-	// ÀÎ½ºÅÏ½ÌÀ» À§ÇÑ ³ëµå Á¤º¸¿Í, »À´ë Çà·Ä µé°íÀÖ±â
-	std::vector<NodeInfo> _nodes; // ³ëµå Á¤º¸ ¸®½ºÆ® (glTF node index¿Í 1:1 ¸ÅÄª)
-	std::vector<DirectX::XMFLOAT4X4> _boneTransforms; // »À´ë Çà·Ä ÆÈ·¹Æ® (CPU ¸Ş¸ğ¸®) -> »À´ë Çà·ÄµéÀ» ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ®°¡ °ü¸®ÇÏµµ·Ï º¯°æ
+	// ì¸ìŠ¤í„´ì‹±ì„ ìœ„í•œ ë…¸ë“œ ì •ë³´ì™€, ë¼ˆëŒ€ í–‰ë ¬ ë“¤ê³ ìˆê¸°
+	std::vector<NodeInfo> _nodes; // ë…¸ë“œ ì •ë³´ ë¦¬ìŠ¤íŠ¸ (glTF node indexì™€ 1:1 ë§¤ì¹­)
+	std::vector<DirectX::XMFLOAT4X4> _boneTransforms; // ë¼ˆëŒ€ í–‰ë ¬ íŒ”ë ˆíŠ¸ (CPU ë©”ëª¨ë¦¬) -> ë¼ˆëŒ€ í–‰ë ¬ë“¤ì„ ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ê°€ ê´€ë¦¬í•˜ë„ë¡ ë³€ê²½
 };
 

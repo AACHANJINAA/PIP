@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "ScriptComponent.h"
 
 // Forward declaration
@@ -7,39 +7,39 @@ class CameraComponent;
 class ToolCameraScript : public ScriptComponent
 {
 public:
-    // ÀÌ ½ºÅ©¸³Æ®´Â CameraComponent°¡ ¹İµå½Ã ÇÊ¿äÇÏ´Ù°í ½Ã½ºÅÛ¿¡ ¾Ë¸³´Ï´Ù.
+    // ì´ ìŠ¤í¬ë¦½íŠ¸ëŠ” CameraComponentê°€ ë°˜ë“œì‹œ í•„ìš”í•˜ë‹¤ê³  ì‹œìŠ¤í…œì— ì•Œë¦½ë‹ˆë‹¤.
     using required_components = std::tuple<CameraComponent>;
 
     ToolCameraScript();
     virtual ~ToolCameraScript() = default;
 
-    // ÀÌ ½ºÅ©¸³Æ®°¡ È°¼ºÈ­µÉ ¶§, ÇÊ¿äÇÑ CameraComponent¸¦ È®ÀÎÇÏ°í ¼³Á¤ÇÕ´Ï´Ù.
+    // ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ í™œì„±í™”ë  ë•Œ, í•„ìš”í•œ CameraComponentë¥¼ í™•ì¸í•˜ê³  ì„¤ì •í•©ë‹ˆë‹¤.
     virtual void awake() override;
 
-    // ¸Å ÇÁ·¹ÀÓ ÀÔ·ÂÀ» Ã³¸®ÇÕ´Ï´Ù.
+    // ë§¤ í”„ë ˆì„ ì…ë ¥ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
     virtual void update(float delta_time) override;
 
 
     virtual void late_update(float delta_time) override;
 
 private:
-    // ¿ªÇÒ ÀÌÀü (from FreeCamera):
-    // ¸¶¿ì½º ÀÔ·ÂÀ» Ã³¸®ÇÏ¿© Ä«¸Ş¶ó¸¦ È¸Àü½ÃÅµ´Ï´Ù.
+    // ì—­í•  ì´ì „ (from FreeCamera):
+    // ë§ˆìš°ìŠ¤ ì…ë ¥ì„ ì²˜ë¦¬í•˜ì—¬ ì¹´ë©”ë¼ë¥¼ íšŒì „ì‹œí‚µë‹ˆë‹¤.
     void process_mouse_input(float delta_time);
 
-    // ¿ªÇÒ ÀÌÀü (from FreeCamera):
-    // Å°º¸µå ÀÔ·ÂÀ» Ã³¸®ÇÏ¿© Ä«¸Ş¶ó¸¦ ÀÌµ¿½ÃÅµ´Ï´Ù.
+    // ì—­í•  ì´ì „ (from FreeCamera):
+    // í‚¤ë³´ë“œ ì…ë ¥ì„ ì²˜ë¦¬í•˜ì—¬ ì¹´ë©”ë¼ë¥¼ ì´ë™ì‹œí‚µë‹ˆë‹¤.
     void process_keyboard_input(float delta_time);
 
-    // Ä«¸Ş¶óÀÇ ÀÌµ¿ ¹× È¸Àü ¼Óµµ
+    // ì¹´ë©”ë¼ì˜ ì´ë™ ë° íšŒì „ ì†ë„
     float _moveSpeed;
     float _rotationSpeed;
 
-    // 3ÀÎÄª ¿¡¼­ÀÇ offset °Å¸®
+    // 3ì¸ì¹­ ì—ì„œì˜ offset ê±°ë¦¬
     float _thirdPersonOffsetDistance_top = 0.0f;
     float _thirdPersonOffsetDistance_back = -10.0f;
 
-    // ÀÚÁÖ Á¢±ÙÇÏ°Ô µÉ CameraComponent¿¡ ´ëÇÑ Ä³½ÃµÈ Æ÷ÀÎÅÍ
+    // ìì£¼ ì ‘ê·¼í•˜ê²Œ ë  CameraComponentì— ëŒ€í•œ ìºì‹œëœ í¬ì¸í„°
     CameraComponent* _cameraComponent;
 
     bool _isFreeCameraMode = true;

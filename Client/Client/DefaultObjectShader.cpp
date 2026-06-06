@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "DefaultObjectShader.h"
 const std::string& DefaultObjectShader::pso_name() const
 {
@@ -8,7 +8,7 @@ const std::string& DefaultObjectShader::pso_name() const
 
 D3D12_INPUT_LAYOUT_DESC DefaultObjectShader::create_input_layout()
 {
-    // Renderer.cpp¿¡ ÀÖ´ø "default" PSOÀÇ Input Layout Á¤º¸¸¦ ±×´ë·Î °¡Á®¿É´Ï´Ù.
+    // Renderer.cppì— ìˆë˜ "default" PSOì˜ Input Layout ì •ë³´ë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤.
     static const D3D12_INPUT_ELEMENT_DESC input_layout[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
         	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},

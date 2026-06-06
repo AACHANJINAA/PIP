@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "SoundManager.h"
 #include "ObjectManager.h"
 #include "GameObject.h"
@@ -16,11 +16,11 @@ bool SoundManager::initialize()
 {
     FMOD_RESULT result;
 
-    // 1. FMOD ½Ã½ºÅÛ °´Ã¼ »ı¼º
+    // 1. FMOD ì‹œìŠ¤í…œ ê°ì²´ ìƒì„±
     result = FMOD::System_Create(&_system);
     if (!check_fmod_error(result, "System_Create")) return false;
 
-    // 2. ¹öÀü Ã¼Å© (¼±ÅÃ »çÇ×ÀÌÁö¸¸ ¾ÈÀüÀ» À§ÇØ)
+    // 2. ë²„ì „ ì²´í¬ (ì„ íƒ ì‚¬í•­ì´ì§€ë§Œ ì•ˆì „ì„ ìœ„í•´)
     unsigned int version;
     result = _system->getVersion(&version);
     if (version < FMOD_VERSION)
@@ -29,25 +29,25 @@ bool SoundManager::initialize()
         return false;
     }
 
-    // 3. FMOD ½Ã½ºÅÛ ÃÊ±âÈ­ 
-    // (ÃÖ´ë 512°³ÀÇ Ã¤³Î, ±âº» ÃÊ±âÈ­ ¼³Á¤ »ç¿ë, Ãß°¡ ¼³Á¤ ¾øÀ½)
+    // 3. FMOD ì‹œìŠ¤í…œ ì´ˆê¸°í™” 
+    // (ìµœëŒ€ 512ê°œì˜ ì±„ë„, ê¸°ë³¸ ì´ˆê¸°í™” ì„¤ì • ì‚¬ìš©, ì¶”ê°€ ì„¤ì • ì—†ìŒ)
     result = _system->init(512, FMOD_INIT_NORMAL, nullptr);
     if (!check_fmod_error(result, "System Init")) return false;
 
-    // 4. 3D »ç¿îµå È¯°æ ¼³Á¤ (µµÇÃ·¯ ½ºÄÉÀÏ, °Å¸® ºñÀ², ·Ñ¿ÀÇÁ ½ºÄÉÀÏ)
-    // - °ÔÀÓ ½ºÄÉÀÏ¿¡ ¸ÂÃç ³ªÁß¿¡ Á¶Àı °¡´É (±âº»°ªÀº 1.0f)
+    // 4. 3D ì‚¬ìš´ë“œ í™˜ê²½ ì„¤ì • (ë„í”ŒëŸ¬ ìŠ¤ì¼€ì¼, ê±°ë¦¬ ë¹„ìœ¨, ë¡¤ì˜¤í”„ ìŠ¤ì¼€ì¼)
+    // - ê²Œì„ ìŠ¤ì¼€ì¼ì— ë§ì¶° ë‚˜ì¤‘ì— ì¡°ì ˆ ê°€ëŠ¥ (ê¸°ë³¸ê°’ì€ 1.0f)
     _system->set3DSettings(1.0f, 1.0f, 1.0f);
 
 
-    // Ã¤³Î ±×·ì ¼ÂÆÃ-- -
-    // ¸¶½ºÅÍ ±×·ìÀº FMOD°¡ ±âº»ÀûÀ¸·Î µé°í ÀÖÀ¸´Ï °¡Á®¿À±â
+    // ì±„ë„ ê·¸ë£¹ ì…‹íŒ…-- -
+    // ë§ˆìŠ¤í„° ê·¸ë£¹ì€ FMODê°€ ê¸°ë³¸ì ìœ¼ë¡œ ë“¤ê³  ìˆìœ¼ë‹ˆ ê°€ì ¸ì˜¤ê¸°
     _system->getMasterChannelGroup(&_masterGroup);
 
-    // BGM°ú SFX ±×·ì »ı¼º
+    // BGMê³¼ SFX ê·¸ë£¹ ìƒì„±
     _system->createChannelGroup("BGM", &_bgmGroup);
     _system->createChannelGroup("SFX", &_sfxGroup);
 
-    // ¸¶½ºÅÍ ±×·ì ¾Æ·¡¿¡ BGM°ú SFX¸¦ ÀÚ½ÄÀ¸·Î ¼Ò¼Ó½ÃÅ´ (¸¶½ºÅÍ º¼·ı ÁÙÀÌ¸é ´Ù °°ÀÌ ÁÙ¾îµé°Ô)
+    // ë§ˆìŠ¤í„° ê·¸ë£¹ ì•„ë˜ì— BGMê³¼ SFXë¥¼ ìì‹ìœ¼ë¡œ ì†Œì†ì‹œí‚´ (ë§ˆìŠ¤í„° ë³¼ë¥¨ ì¤„ì´ë©´ ë‹¤ ê°™ì´ ì¤„ì–´ë“¤ê²Œ)
     _masterGroup->addGroup(_bgmGroup);
     _masterGroup->addGroup(_sfxGroup);
 
@@ -59,26 +59,26 @@ void SoundManager::update()
 {
     if (_system)
     {
-        // FMOD ÄÚ¾î ¿£Áø ¾÷µ¥ÀÌÆ® (¸Å ÇÁ·¹ÀÓ È£Ãâ ÇÊ¼ö!)
-        // 3D »ç¿îµå °è»ê, Ã¤³Î Á¤¸® µîÀ» ¹é±×¶ó¿îµå¿¡¼­ ¼öÇàÇÔ
+        // FMOD ì½”ì–´ ì—”ì§„ ì—…ë°ì´íŠ¸ (ë§¤ í”„ë ˆì„ í˜¸ì¶œ í•„ìˆ˜!)
+        // 3D ì‚¬ìš´ë“œ ê³„ì‚°, ì±„ë„ ì •ë¦¬ ë“±ì„ ë°±ê·¸ë¼ìš´ë“œì—ì„œ ìˆ˜í–‰í•¨
         
-        // ¿ÀºêÁ§Æ® ¸Å´ÏÀú¿¡¼­ Ä«¸Ş¶ó¸¦ Ã£¾Æ¿È
+        // ì˜¤ë¸Œì íŠ¸ ë§¤ë‹ˆì €ì—ì„œ ì¹´ë©”ë¼ë¥¼ ì°¾ì•„ì˜´
         auto cameraObj = ObjectManager::instance()->find_by_name("Camera");
 
         if (cameraObj && cameraObj->transform())
         {
-            // 1. Ä«¸Ş¶óÀÇ À§Ä¡, ¾Õ ¹æÇâ(Forward), À§ ¹æÇâ(Up)À» °¡Á®¿È
+            // 1. ì¹´ë©”ë¼ì˜ ìœ„ì¹˜, ì• ë°©í–¥(Forward), ìœ„ ë°©í–¥(Up)ì„ ê°€ì ¸ì˜´
             XMFLOAT3 pos = cameraObj->transform()->get_world_position();
             XMFLOAT3 forward = cameraObj->transform()->forward();
             XMFLOAT3 up = cameraObj->transform()->up();          
 
-            // 2. FMOD º¤ÅÍ Æ÷¸ËÀ¸·Î º¯È¯
+            // 2. FMOD ë²¡í„° í¬ë§·ìœ¼ë¡œ ë³€í™˜
             FMOD_VECTOR fmod_pos = { pos.x, pos.y, pos.z };
-            FMOD_VECTOR fmod_vel = { 0.0f, 0.0f, 0.0f }; // Ä«¸Ş¶ó ÀÌµ¿ ¼Óµµ´Â 0À¸·Î µÖµµ ¹«¹æ
+            FMOD_VECTOR fmod_vel = { 0.0f, 0.0f, 0.0f }; // ì¹´ë©”ë¼ ì´ë™ ì†ë„ëŠ” 0ìœ¼ë¡œ ë‘¬ë„ ë¬´ë°©
             FMOD_VECTOR fmod_forward = { forward.x, forward.y, forward.z };
             FMOD_VECTOR fmod_up = { up.x, up.y, up.z };
 
-            // 3. FMOD ¿£ÁøÀÇ ±Í¸¦ ÀÌ Ä«¸Ş¶ó À§Ä¡¿¡ ºÎÂø! (Ã¹ ¹øÂ° ÀÎÀÚ 0Àº 1P¸¦ ÀÇ¹Ì)
+            // 3. FMOD ì—”ì§„ì˜ ê·€ë¥¼ ì´ ì¹´ë©”ë¼ ìœ„ì¹˜ì— ë¶€ì°©! (ì²« ë²ˆì§¸ ì¸ì 0ì€ 1Pë¥¼ ì˜ë¯¸)
             _system->set3DListenerAttributes(0, &fmod_pos, &fmod_vel, &fmod_forward, &fmod_up);
         }
 
@@ -90,7 +90,7 @@ void SoundManager::release()
 {
     if (_system)
     {
-        // ·ÎµåµÈ »ç¿îµå µ¥ÀÌÅÍµé ¸Ş¸ğ¸® ÇØÁ¦
+        // ë¡œë“œëœ ì‚¬ìš´ë“œ ë°ì´í„°ë“¤ ë©”ëª¨ë¦¬ í•´ì œ
         for (auto& pair : _sounds)
         {
             if (pair.second)
@@ -101,7 +101,7 @@ void SoundManager::release()
         _sounds.clear();
         _channels.clear();
 
-        // FMOD ½Ã½ºÅÛ Á¾·á ¹× ÇØÁ¦
+        // FMOD ì‹œìŠ¤í…œ ì¢…ë£Œ ë° í•´ì œ
         _system->close();
         _system->release();
         _system = nullptr;
@@ -114,7 +114,7 @@ bool SoundManager::check_fmod_error(FMOD_RESULT result, const std::string& error
 {
     if (result != FMOD_OK)
     {
-        // CERROR ¸ÅÅ©·Î¸¦ »ç¿ëÇÏ¿© FMOD ¿¡·¯ ÄÚµå¿Í ÄÁÅØ½ºÆ® Ãâ·Â
+        // CERROR ë§¤í¬ë¡œë¥¼ ì‚¬ìš©í•˜ì—¬ FMOD ì—ëŸ¬ ì½”ë“œì™€ ì»¨í…ìŠ¤íŠ¸ ì¶œë ¥
         CERROR("FMOD Error [" << errorContext << "] : " << FMOD_ErrorString(result));
         return false;
     }
@@ -126,26 +126,26 @@ void SoundManager::load_sound(const std::string& name, const std::string& filepa
     if (_sounds.contains(name)) return;
 
     FMOD_MODE mode = FMOD_DEFAULT;
-    mode |= (is_3d) ? FMOD_3D : FMOD_2D; // 3D ¿©ºÎ °áÁ¤ 
-    // DW¼³¸í : Fmod´Â ³»ºÎÀûÀ¸·Î »ç¿îµå ÆÄÀÌÇÁ¶óÀÎÀ» ¼³Á¤ÇÒ ¶§ 2D¿Í 3D »ç¿îµå¸¦ ±¸ºĞÁö¾î Ã³¸®ÇÔ
-    // ÀÌ ±¸ºĞÀ» ·±Å¸ÀÓ¿¡ ÇØÁÖ·Á°í ÇÏ¿´À¸³ª, 3D »ç¿îµå¸¦ Àç»ıÇÏ·Á¸é ¹«°Å¿î °è»ê ³ëµå°¡ Æ÷ÇÔµÈ ÆÄÀÌÇÁ¶óÀÎÀ¸·Î ¸¸µé¾îÁÜ
-    // ÀÌ°É ¸¸µå´Â °úÁ¤¿¡¼­ ¿À¹öÇìµå°¡ ¹ß»ıÇÏ±â ¶§¹®¿¡ ·ÎµåÇÒ ¶§ Á¤ÇØÁÖµµ·Ï Á¦ÀÛÇÏ¿´À½
+    mode |= (is_3d) ? FMOD_3D : FMOD_2D; // 3D ì—¬ë¶€ ê²°ì • 
+    // DWì„¤ëª… : FmodëŠ” ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš´ë“œ íŒŒì´í”„ë¼ì¸ì„ ì„¤ì •í•  ë•Œ 2Dì™€ 3D ì‚¬ìš´ë“œë¥¼ êµ¬ë¶„ì§€ì–´ ì²˜ë¦¬í•¨
+    // ì´ êµ¬ë¶„ì„ ëŸ°íƒ€ì„ì— í•´ì£¼ë ¤ê³  í•˜ì˜€ìœ¼ë‚˜, 3D ì‚¬ìš´ë“œë¥¼ ì¬ìƒí•˜ë ¤ë©´ ë¬´ê±°ìš´ ê³„ì‚° ë…¸ë“œê°€ í¬í•¨ëœ íŒŒì´í”„ë¼ì¸ìœ¼ë¡œ ë§Œë“¤ì–´ì¤Œ
+    // ì´ê±¸ ë§Œë“œëŠ” ê³¼ì •ì—ì„œ ì˜¤ë²„í—¤ë“œê°€ ë°œìƒí•˜ê¸° ë•Œë¬¸ì— ë¡œë“œí•  ë•Œ ì •í•´ì£¼ë„ë¡ ì œì‘í•˜ì˜€ìŒ
 
 
     FMOD::Sound* sound = nullptr;
     FMOD_RESULT result = _system->createSound(filepath.c_str(), mode, nullptr, &sound);
 
-    // Fmod ½ÇÆĞ ½Ã ¿¡·¯ Ã¼Å© ÇÏ´Â ÇÔ¼öÀÌ´Ù.
+    // Fmod ì‹¤íŒ¨ ì‹œ ì—ëŸ¬ ì²´í¬ í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
     if (check_fmod_error(result, "Load Sound: " + name))
     {
-        _sounds[name] = sound; // ¿ì¸®´Â »ç¿îµå¸¦ ÀÌ¸§À¸·Î °ü¸®
+        _sounds[name] = sound; // ìš°ë¦¬ëŠ” ì‚¬ìš´ë“œë¥¼ ì´ë¦„ìœ¼ë¡œ ê´€ë¦¬
         CINFO("Sound Loaded: " << name);
     }
 }
 
 void SoundManager::set_group_volume(SoundType type, float volume)
 {
-    // BGM ¶Ç´Â SFX ÀüÃ¼ º¼·ıÀ» ÇÑ ¹ø¿¡ Á¶Àı
+    // BGM ë˜ëŠ” SFX ì „ì²´ ë³¼ë¥¨ì„ í•œ ë²ˆì— ì¡°ì ˆ
     FMOD::ChannelGroup* targetGroup = (type == SoundType::BGM) ? _bgmGroup : _sfxGroup;
     if (targetGroup)
     {
@@ -155,7 +155,7 @@ void SoundManager::set_group_volume(SoundType type, float volume)
 
 void SoundManager::set_master_volume(float volume)
 {
-    // °ÔÀÓ ÀüÃ¼ »ç¿îµå Å©±â Á¶Àı
+    // ê²Œì„ ì „ì²´ ì‚¬ìš´ë“œ í¬ê¸° ì¡°ì ˆ
     if (_masterGroup)
     {
         _masterGroup->setVolume(volume);
@@ -171,18 +171,18 @@ void SoundManager::play(const std::string& name, SoundType type, float volume, b
 
     if (channel)
     {
-        // 1. ¾î´À ±×·ì¿¡ ¼ÓÇÒÁö ¼³Á¤ (BGMÀÎÁö SFXÀÎÁö)
+        // 1. ì–´ëŠ ê·¸ë£¹ì— ì†í• ì§€ ì„¤ì • (BGMì¸ì§€ SFXì¸ì§€)
         FMOD::ChannelGroup* targetGroup = (type == SoundType::BGM) ? _bgmGroup : _sfxGroup;
         channel->setChannelGroup(targetGroup);
 
-        // 2. º¼·ı ¼ÂÆÃ
+        // 2. ë³¼ë¥¨ ì…‹íŒ…
         channel->setVolume(volume);
 
-        // Àç»ıÇÒ ¶§ Ã¤³ÎÀÇ ¸ğµå¸¦ º¯°æÇØ¼­ ·çÇÁ¸¦ Á¦¾î -> Fmod´Â Ã¤³Î ´ÜÀ§·Î ·çÇÁ ¿©ºÎ¸¦ ¼³Á¤ÇÔ
+        // ì¬ìƒí•  ë•Œ ì±„ë„ì˜ ëª¨ë“œë¥¼ ë³€ê²½í•´ì„œ ë£¨í”„ë¥¼ ì œì–´ -> FmodëŠ” ì±„ë„ ë‹¨ìœ„ë¡œ ë£¨í”„ ì—¬ë¶€ë¥¼ ì„¤ì •í•¨
         if (is_loop)
         {
             channel->setMode(FMOD_LOOP_NORMAL);
-            channel->setLoopCount(-1); // -1Àº ¹«ÇÑ ¹İº¹À» ÀÇ¹Ì
+            channel->setLoopCount(-1); // -1ì€ ë¬´í•œ ë°˜ë³µì„ ì˜ë¯¸
         }
         else
         {
@@ -195,24 +195,24 @@ void SoundManager::play(const std::string& name, SoundType type, float volume, b
 
 void SoundManager::play_3d(const std::string& name, const XMFLOAT3& position, SoundType type, float volume, bool is_loop)
 {
-	if (!_sounds.contains(name)) return; // »ç¿îµå°¡ ·ÎµåµÇ¾î ÀÖÁö ¾ÊÀ¸¸é Àç»ıÇÏÁö ¾ÊÀ½
+	if (!_sounds.contains(name)) return; // ì‚¬ìš´ë“œê°€ ë¡œë“œë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´ ì¬ìƒí•˜ì§€ ì•ŠìŒ
 
     FMOD::Channel* channel = nullptr;
-    _system->playSound(_sounds[name], nullptr, true, &channel); // ½ÃÀÛÇÒ ¶© ÀÏ½ÃÁ¤Áö ÇØ¾ßÇÑ´Ù. // ½ÃÀÛÇÒ ÁØºñ¸¦ ÇÏ°í ½ÃÀÛÇÒ Ã¤³Î ¹Ş±â -> Ã¤³Î ¼³Á¤À» À§ÇÔ
+    _system->playSound(_sounds[name], nullptr, true, &channel); // ì‹œì‘í•  ë• ì¼ì‹œì •ì§€ í•´ì•¼í•œë‹¤. // ì‹œì‘í•  ì¤€ë¹„ë¥¼ í•˜ê³  ì‹œì‘í•  ì±„ë„ ë°›ê¸° -> ì±„ë„ ì„¤ì •ì„ ìœ„í•¨
 
     if (channel)
     {
-        // 1. ¾î´À ±×·ì¿¡ ¼ÓÇÒÁö ¼³Á¤ (BGMÀÎÁö SFXÀÎÁö)
+        // 1. ì–´ëŠ ê·¸ë£¹ì— ì†í• ì§€ ì„¤ì • (BGMì¸ì§€ SFXì¸ì§€)
         FMOD::ChannelGroup* targetGroup = (type == SoundType::BGM) ? _bgmGroup : _sfxGroup;
         channel->setChannelGroup(targetGroup);
 
-        // 2. À§Ä¡ ¹× º¼·ı ¼ÂÆÃ
+        // 2. ìœ„ì¹˜ ë° ë³¼ë¥¨ ì…‹íŒ…
         FMOD_VECTOR fmod_pos = { position.x, position.y, position.z };
         FMOD_VECTOR fmod_vel = { 0.0f, 0.0f, 0.0f };
         channel->set3DAttributes(&fmod_pos, &fmod_vel);
         channel->setVolume(volume);
 
-        // ·çÇÁ ¼ÂÆÃ Ãß°¡
+        // ë£¨í”„ ì…‹íŒ… ì¶”ê°€
         if (is_loop)
         {
             channel->setMode(FMOD_LOOP_NORMAL);
@@ -223,7 +223,7 @@ void SoundManager::play_3d(const std::string& name, const XMFLOAT3& position, So
             channel->setMode(FMOD_LOOP_OFF);
         }
 
-        channel->setPaused(false); // ¼ÂÆÃ ³¡³µÀ¸´Ï ¹ß»ç!
+        channel->setPaused(false); // ì…‹íŒ… ëë‚¬ìœ¼ë‹ˆ ë°œì‚¬!
         _channels[name] = channel;
     }
 }
@@ -235,20 +235,20 @@ void SoundManager::stop(const std::string& name)
     if (channel)
     {
         channel->stop();
-        _channels.erase(name); // Ã¤³Î ¸ñ·Ï¿¡¼­ Á¦°Å
+        _channels.erase(name); // ì±„ë„ ëª©ë¡ì—ì„œ ì œê±°
 	}
 }
 
 bool SoundManager::is_playing(const std::string& name)
 {
-    // Ã¤³Î ¸ñ·Ï¿¡ ÇØ´ç ÀÌ¸§ÀÌ ¾øÀ¸¸é Àç»ı ÁßÀÌ ¾Æ´Ô
+    // ì±„ë„ ëª©ë¡ì— í•´ë‹¹ ì´ë¦„ì´ ì—†ìœ¼ë©´ ì¬ìƒ ì¤‘ì´ ì•„ë‹˜
     if (!_channels.contains(name)) return false;
 
     FMOD::Channel* channel = _channels[name];
     if (channel)
     {
         bool playing = false;
-        channel->isPlaying(&playing); // FMOD Ã¤³Î »óÅÂ È®ÀÎ
+        channel->isPlaying(&playing); // FMOD ì±„ë„ ìƒíƒœ í™•ì¸
         return playing;
     }
 
@@ -263,10 +263,10 @@ float SoundManager::get_playback_position(const std::string& name)
     if (channel)
     {
         unsigned int pos = 0;
-        // FMOD¿¡°Ô ÇöÀç Ã¤³ÎÀÇ Àç»ı À§Ä¡¸¦ ¹Ğ¸®ÃÊ(MS) ´ÜÀ§·Î ¹Ş¾Æ¿É´Ï´Ù.
+        // FMODì—ê²Œ í˜„ì¬ ì±„ë„ì˜ ì¬ìƒ ìœ„ì¹˜ë¥¼ ë°€ë¦¬ì´ˆ(MS) ë‹¨ìœ„ë¡œ ë°›ì•„ì˜µë‹ˆë‹¤.
         channel->getPosition(&pos, FMOD_TIMEUNIT_MS);
 
-        // ¹Ğ¸®ÃÊ¸¦ ÃÊ(Seconds) ´ÜÀ§ÀÇ floatÀ¸·Î º¯È¯ÇÏ¿© ¹İÈ¯
+        // ë°€ë¦¬ì´ˆë¥¼ ì´ˆ(Seconds) ë‹¨ìœ„ì˜ floatìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ë°˜í™˜
         return pos / 1000.0f;
     }
     return 0.0f;

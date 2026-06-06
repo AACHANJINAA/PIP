@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"
 #include "AnimationComponent.h"

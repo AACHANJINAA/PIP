@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "GameFramework.h"
 
 #include <algorithm>
@@ -45,13 +45,13 @@ GameFramework::~GameFramework()
 
 }
 
-//´ÙÀ½ ÇÔ¼ö´Â ÀÀ¿ë ÇÁ·Î±×·¥ÀÌ ½ÇÇàµÇ¾î ÁÖ À©µµ¿ì°¡ »ı¼ºµÇ¸é È£ÃâµÈ´Ù´Â °Í¿¡ À¯ÀÇÇÏ¶ó.
+//ë‹¤ìŒ í•¨ìˆ˜ëŠ” ì‘ìš© í”„ë¡œê·¸ë¨ì´ ì‹¤í–‰ë˜ì–´ ì£¼ ìœˆë„ìš°ê°€ ìƒì„±ë˜ë©´ í˜¸ì¶œëœë‹¤ëŠ” ê²ƒì— ìœ ì˜í•˜ë¼.
 bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	_hInstance = hInstance;
 	_hWnd = hMainWnd;
 
-	// Direct3D µğ¹ÙÀÌ½º, ¸í·É Å¥¿Í ¸í·É ¸®½ºÆ®, ½º¿Ò Ã¼ÀÎ µîÀ» »ı¼ºÇÏ´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+	// Direct3D ë””ë°”ì´ìŠ¤, ëª…ë ¹ íì™€ ëª…ë ¹ ë¦¬ìŠ¤íŠ¸, ìŠ¤ì™‘ ì²´ì¸ ë“±ì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	CreateRtvAndDsvDescriptorHeaps();
@@ -69,10 +69,10 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	else {
 		CLOG("[SUCCESS] PhysicsManager Initialized." << std::endl);
 	}
-	// [Ãß°¡] ¸®ÇÃ¸®ÄÉÀÌ¼Ç ½Ã½ºÅÛ ÃÊ±âÈ­
+	// [ì¶”ê°€] ë¦¬í”Œë¦¬ì¼€ì´ì…˜ ì‹œìŠ¤í…œ ì´ˆê¸°í™”
 	_replicationSystem = std::make_unique<ReplicationSystem>();
 
-	// [Ãß°¡] ¼±Çü ÇÒ´ç±â ÃÊ±âÈ­ (¿¹: ÃÑ 32MB, ÇÁ·¹ÀÓ´ç 16MB) -> ºÎÁ·ÇÒ ½Ã Ãß°¡ÇÏ±â // µÎ¹øÂ° ÀÎÀÚ´Â ÃÑ ÇÒ´çÇÒ ¸Ş¸ğ¸® Å©±â, ¼¼¹øÂ° ÀÎÀÚ·Î µÎ¹øÂ° ÀÎÀÚ¸¸Å­ ÇÒ´çÇÑ °ÍÀ» ³ª´©¾î ÁÙ°ÅÀÓ
+	// [ì¶”ê°€] ì„ í˜• í• ë‹¹ê¸° ì´ˆê¸°í™” (ì˜ˆ: ì´ 32MB, í”„ë ˆì„ë‹¹ 16MB) -> ë¶€ì¡±í•  ì‹œ ì¶”ê°€í•˜ê¸° // ë‘ë²ˆì§¸ ì¸ìëŠ” ì´ í• ë‹¹í•  ë©”ëª¨ë¦¬ í¬ê¸°, ì„¸ë²ˆì§¸ ì¸ìë¡œ ë‘ë²ˆì§¸ ì¸ìë§Œí¼ í• ë‹¹í•œ ê²ƒì„ ë‚˜ëˆ„ì–´ ì¤„ê±°ì„
 	_linearAllocator = std::make_unique<LinearAllocator>(_device.Get(), 32 * 1024 * 1024, SWAP_CHAIN_BUFFERS);
 
 	DescriptorManager::instance()->initialize(_device.Get());
@@ -85,7 +85,7 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	UIManager::instance()->initialize(_device.Get(), _commandList.Get());
 	SoundManager::instance()->initialize();
 
-	// ImGui ¸Å´ÏÀú ÃÊ±âÈ­ (½º¿ÒÃ¼ÀÎ ¹öÆÛ °³¼ö¿Í Æ÷¸Ë Àü´Ş)
+	// ImGui ë§¤ë‹ˆì € ì´ˆê¸°í™” (ìŠ¤ì™‘ì²´ì¸ ë²„í¼ ê°œìˆ˜ì™€ í¬ë§· ì „ë‹¬)
 	ImGuiManager::instance()->initialize(_hWnd, _device.Get(), _commandQueue.Get(), SWAP_CHAIN_BUFFERS, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 #ifdef _DEBUG_PHYSICS_VISUALIZATION
@@ -93,16 +93,16 @@ bool GameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 #endif
 
 	BuildObjects();
-	//·»´õ¸µÇÒ °ÔÀÓ °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
+	//ë Œë”ë§í•  ê²Œì„ ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
 
 	hResult = _commandList->Close();
 	ID3D12CommandList * ppd3dCommandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
 	
-	// GPU°¡ ¸ğµç ÃÊ±âÈ­ ÀÛ¾÷À» ¸¶Ä¥ ¶§±îÁö ±â´Ù¸³´Ï´Ù.
+	// GPUê°€ ëª¨ë“  ì´ˆê¸°í™” ì‘ì—…ì„ ë§ˆì¹  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
 	WaitForGpuComplete();
 
-	// GPU¿¡ µ¥ÀÌÅÍ Àü¼ÛÀÌ ³¡³µÀ¸¹Ç·Î, ÀÓ½Ã ¾÷·Îµå ¹öÆÛµéÀ» ÇØÁ¦ÇÕ´Ï´Ù.
+	// GPUì— ë°ì´í„° ì „ì†¡ì´ ëë‚¬ìœ¼ë¯€ë¡œ, ì„ì‹œ ì—…ë¡œë“œ ë²„í¼ë“¤ì„ í•´ì œí•©ë‹ˆë‹¤.
 	ResourceManager::instance()->release_upload_buffers(UINT_MAX);
 
 	return(true);
@@ -217,7 +217,7 @@ void GameFramework::CreateDirect3DDevice() {
 void GameFramework::CreateCommandQueueAndList()
 {
 	HRESULT hResult;
-	// Å¥ »ı¼º (±âÁ¸ À¯Áö)
+	// í ìƒì„± (ê¸°ì¡´ ìœ ì§€)
 	D3D12_COMMAND_QUEUE_DESC d3dCommandQueueDesc;
 	::ZeroMemory(&d3dCommandQueueDesc, sizeof(D3D12_COMMAND_QUEUE_DESC));
 	d3dCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -225,7 +225,7 @@ void GameFramework::CreateCommandQueueAndList()
 	hResult = _device->CreateCommandQueue(&d3dCommandQueueDesc, IID_PPV_ARGS(&_commandQueue));
 	_ASSERTE(SUCCEEDED(hResult));
 
-	// [¼öÁ¤] ÇÒ´ç±â ¹è¿­ »ı¼º
+	// [ìˆ˜ì •] í• ë‹¹ê¸° ë°°ì—´ ìƒì„±
 	for (int i = 0; i < SWAP_CHAIN_BUFFERS; i++)
 	{
 		hResult = _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&_commandAllocators[i]));
@@ -264,7 +264,7 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 	_dsvDescriptorIncrementSize = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
-//½º¿ÒÃ¼ÀÎÀÇ °¢ ÈÄ¸é ¹öÆÛ¿¡ ´ëÇÑ ·»´õ Å¸°Ù ºä¸¦ »ı¼ºÇÑ´Ù. 
+//ìŠ¤ì™‘ì²´ì¸ì˜ ê° í›„ë©´ ë²„í¼ì— ëŒ€í•œ ë Œë” íƒ€ê²Ÿ ë·°ë¥¼ ìƒì„±í•œë‹¤. 
 void GameFramework::CreateRenderTargetViews()
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -314,7 +314,7 @@ void GameFramework::CreateDepthStencilView()
 
 void GameFramework::BuildObjects()
 {
-	// ºñ¿öµÎÀÚ?
+	// ë¹„ì›Œë‘ì?
 }
 
 void GameFramework::ReleaseObjects()
@@ -343,25 +343,25 @@ void GameFramework::ProcessInput()
 //void GameFramework::AnimateObjects()
 //{
 //	_scene.get()->AnimateObjects(_gameTimer.GetTimeElapsed(), _commandList.Get());
-//} ¾À¿¡ ÀÖ´ø°Å °ÔÀÓÇÁ·¹ÀÓ¿öÅ©·Î ¿Å±è
+//} ì”¬ì— ìˆë˜ê±° ê²Œì„í”„ë ˆì„ì›Œí¬ë¡œ ì˜®ê¹€
 
 void GameFramework::WaitForGpuComplete()
 {
-	// ±âÁ¸ ¹æ½ÄÀÌ Àü¿ª Ææ½º °ªÀ» »ç¿ëÇÏÁö ¾Ê¾Æ Àü¿ª Ææ½º°ªÀ» »ç¿ëÇÏµµ·Ï ¼öÁ¤
+	// ê¸°ì¡´ ë°©ì‹ì´ ì „ì—­ íœìŠ¤ ê°’ì„ ì‚¬ìš©í•˜ì§€ ì•Šì•„ ì „ì—­ íœìŠ¤ê°’ì„ ì‚¬ìš©í•˜ë„ë¡ ìˆ˜ì •
 	_currentFenceValue++;
 	UINT64 fenceToWaitFor = _currentFenceValue;
 
-	// ¸í·É Å¥¿¡ ½Ã±×³ÎÀ» º¸³»±â
+	// ëª…ë ¹ íì— ì‹œê·¸ë„ì„ ë³´ë‚´ê¸°
 	HRESULT hResult = _commandQueue->Signal(_fence.Get(), fenceToWaitFor);
 
-	// ÇØ´ç Ææ½º °ª¿¡ µµ´ŞÇÒ ¶§±îÁö CPU¸¦ ´ë±â
+	// í•´ë‹¹ íœìŠ¤ ê°’ì— ë„ë‹¬í•  ë•Œê¹Œì§€ CPUë¥¼ ëŒ€ê¸°
 	if (_fence->GetCompletedValue() < fenceToWaitFor)
 	{
 		hResult = _fence->SetEventOnCompletion(fenceToWaitFor, _fenceEvent);
 		::WaitForSingleObject(_fenceEvent, INFINITE);
 	}
 
-	// °¢ ¹öÆÛÀÇ ¸¶Áö¸· Ææ½º °ªµµ ÃÖ½ÅÈ­
+	// ê° ë²„í¼ì˜ ë§ˆì§€ë§‰ íœìŠ¤ ê°’ë„ ìµœì‹ í™”
 	for (int i = 0; i < SWAP_CHAIN_BUFFERS; ++i)
 	{
 		_fenceValues[i] = fenceToWaitFor;
@@ -386,7 +386,7 @@ void GameFramework::MoveToNextFrame()
 
 	const UINT64 fenceValueToWaitFor = _fenceValues[_swapChainBufferIndex];
 
-	// DWÁÖ¼® : ÀÌ°Å Ç®¸é gpu¸¦ ±â´Ù¸®´Â ¹æ½ÄÀÌÁö¸¸ ±ôºıÀÌ´Â Çö»óÀº ÇØ°áÇÒ ¼ö ÀÖÀ½
+	// DWì£¼ì„ : ì´ê±° í’€ë©´ gpuë¥¼ ê¸°ë‹¤ë¦¬ëŠ” ë°©ì‹ì´ì§€ë§Œ ê¹œë¹¡ì´ëŠ” í˜„ìƒì€ í•´ê²°í•  ìˆ˜ ìˆìŒ
 	// WaitForGpuComplete();
 
 	if (_fence->GetCompletedValue() < fenceValueToWaitFor)
@@ -403,7 +403,7 @@ void GameFramework::FrameAdvance()
 
 	_totalFrameCount++;
 
-	// ÇÁ·¹ÀÓ ½ÃÀÛ Àü, È­¸é ÀüÈ¯ ¿äÃ»ÀÌ ÀÖ¾ú´Ù¸é ¿©±â¼­ ¾ÈÀüÇÏ°Ô Ã³¸®!
+	// í”„ë ˆì„ ì‹œì‘ ì „, í™”ë©´ ì „í™˜ ìš”ì²­ì´ ìˆì—ˆë‹¤ë©´ ì—¬ê¸°ì„œ ì•ˆì „í•˜ê²Œ ì²˜ë¦¬!
 	if (_isFullscreenToggle)
 	{
 		ChangeSwapChainState();
@@ -411,38 +411,38 @@ void GameFramework::FrameAdvance()
 	}
 
 
-	// [¼öÁ¤] ÇöÀç ÇÁ·¹ÀÓ ÀÎµ¦½º¿¡ ¸Â´Â ÇÒ´ç±â ¼±ÅÃ
+	// [ìˆ˜ì •] í˜„ì¬ í”„ë ˆì„ ì¸ë±ìŠ¤ì— ë§ëŠ” í• ë‹¹ê¸° ì„ íƒ
 	auto& currentRenderAllocator = _commandAllocators[_swapChainBufferIndex];
 	auto& currentUploadAllocator = _uploadAllocators[_swapChainBufferIndex];
 
-	// [Ãß°¡] ¼±Çü ÇÒ´ç±âÀÇ ¿ÀÇÁ¼ÂÀ» ÇöÀç ·»´õ¸µ ÇÁ·¹ÀÓÀÇ ½ÃÀÛ À§Ä¡·Î ¸®¼Â
+	// [ì¶”ê°€] ì„ í˜• í• ë‹¹ê¸°ì˜ ì˜¤í”„ì…‹ì„ í˜„ì¬ ë Œë”ë§ í”„ë ˆì„ì˜ ì‹œì‘ ìœ„ì¹˜ë¡œ ë¦¬ì…‹
 	_linearAllocator->reset(_swapChainBufferIndex);
 
-	// ÇÁ·¹ÀÓ ½ÃÀÛ: ImGui¿¡°Ô »õ ÇÁ·¹ÀÓ ÁØºñ Áö½Ã
+	// í”„ë ˆì„ ì‹œì‘: ImGuiì—ê²Œ ìƒˆ í”„ë ˆì„ ì¤€ë¹„ ì§€ì‹œ
 	ImGuiManager::instance()->new_frame();
 
-	// 1. ¾À ÀüÈ¯ Ã³¸® (ÇÊ¿ä½Ã)
+	// 1. ì”¬ ì „í™˜ ì²˜ë¦¬ (í•„ìš”ì‹œ)
 	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), currentRenderAllocator.Get(), _commandList.Get());
 
-	// 2. Å¸ÀÌ¸Ó & ·ÎÁ÷ & ¹°¸® ¾÷µ¥ÀÌÆ®
+	// 2. íƒ€ì´ë¨¸ & ë¡œì§ & ë¬¼ë¦¬ ì—…ë°ì´íŠ¸
 	_gameTimer.Tick(0.0f);
 	float deltaTime = _gameTimer.GetTimeElapsed();
 
-	// ³Ê¹« Å« µ¨Å¸ Å¸ÀÓÀº ÇÁ·¹ÀÓ µå¶øÀ¸·Î ÀÎÇÑ ÀÏ½ÃÀûÀÎ Çö»óÀÌ¹Ç·Î, ÃÖ´ë°ªÀ» 0.1ÃÊ·Î Á¦ÇÑ (¿¹: 10 FPS ÀÌÇÏ·Î ¶³¾îÁö´Â °æ¿ì)
-	// µ¨Å¸Å¸ÀÓ ½ºÆÄÀÌÅ© ¹æÁö
+	// ë„ˆë¬´ í° ë¸íƒ€ íƒ€ì„ì€ í”„ë ˆì„ ë“œëìœ¼ë¡œ ì¸í•œ ì¼ì‹œì ì¸ í˜„ìƒì´ë¯€ë¡œ, ìµœëŒ€ê°’ì„ 0.1ì´ˆë¡œ ì œí•œ (ì˜ˆ: 10 FPS ì´í•˜ë¡œ ë–¨ì–´ì§€ëŠ” ê²½ìš°)
+	// ë¸íƒ€íƒ€ì„ ìŠ¤íŒŒì´í¬ ë°©ì§€
 	deltaTime = std::min(deltaTime, 0.1f);
 
-	ProcessNetwork(); // (½º·¹µå ºĞ¸®Çß´Ù¸é Å¥ ºñ¿ì±â)
+	ProcessNetwork(); // (ìŠ¤ë ˆë“œ ë¶„ë¦¬í–ˆë‹¤ë©´ í ë¹„ìš°ê¸°)
 
-	// 2. ¸®ÇÃ¸®ÄÉÀÌ¼Ç ½Ã½ºÅÛ ¾÷µ¥ÀÌÆ® (ReplicationSystem)
-	// Ã¤¿öÁø ½º³À¼¦ µ¥ÀÌÅÍ¸¦ °¢ ¿ÀºêÁ§Æ®(INetSync)¿¡ ÀÏ°ı Àû¿ëÇÕ´Ï´Ù.
+	// 2. ë¦¬í”Œë¦¬ì¼€ì´ì…˜ ì‹œìŠ¤í…œ ì—…ë°ì´íŠ¸ (ReplicationSystem)
+	// ì±„ì›Œì§„ ìŠ¤ëƒ…ìƒ· ë°ì´í„°ë¥¼ ê° ì˜¤ë¸Œì íŠ¸(INetSync)ì— ì¼ê´„ ì ìš©í•©ë‹ˆë‹¤.
 	if (_replicationSystem) {
 		_replicationSystem->update(deltaTime);
 	}
 	ProcessInput();
 	update_game_logic(deltaTime);
 	update_physics(deltaTime);
-	// ¾À¿¡¼­ Ã³¸®ÇÒ °ÍÀÌ ÀÖ´Ù¸é Ã³¸®ÇØÁÖ±â
+	// ì”¬ì—ì„œ ì²˜ë¦¬í•  ê²ƒì´ ìˆë‹¤ë©´ ì²˜ë¦¬í•´ì£¼ê¸°
 	Scene* NowScene = SceneManager::instance()->current_scene();
 	if (NowScene)
 	{
@@ -453,41 +453,41 @@ void GameFramework::FrameAdvance()
 		}
 	}
 
-	// »ç¿îµå ¾÷µ¥ÀÌÆ®
+	// ì‚¬ìš´ë“œ ì—…ë°ì´íŠ¸
 	SoundManager::instance()->update();
 
 	// ---------------------------------------------------------
-	// 3. [ºñµ¿±â ¸®¼Ò½º ¾÷·Îµå] (´ë±â ¾øÀ½!)
+	// 3. [ë¹„ë™ê¸° ë¦¬ì†ŒìŠ¤ ì—…ë¡œë“œ] (ëŒ€ê¸° ì—†ìŒ!)
 	// ---------------------------------------------------------
-	// ¾÷·Îµå Àü¿ë ÇÒ´ç±â »ç¿ë -> ·»´õ¸µ ÇÒ´ç±â¿Í Ãæµ¹ ¾È ÇÔ
+	// ì—…ë¡œë“œ ì „ìš© í• ë‹¹ê¸° ì‚¬ìš© -> ë Œë”ë§ í• ë‹¹ê¸°ì™€ ì¶©ëŒ ì•ˆ í•¨
 	UINT64 nextFenceValue = _currentFenceValue + 1;
 
-	// ¾÷·Îµå Ã³¸®½Ã ÀÌ °ªÀ» ¾Ë·ÁÁÜ
+	// ì—…ë¡œë“œ ì²˜ë¦¬ì‹œ ì´ ê°’ì„ ì•Œë ¤ì¤Œ
 	currentUploadAllocator->Reset();
 	_commandList->Reset(currentUploadAllocator.Get(), nullptr);
 
-	// Å¥¿¡ ½×ÀÎ ¸Ş½¬ Áß ÀÏºÎ¸¸(Time Slicing) ¾÷·Îµå ¸í·É ±â·Ï
+	// íì— ìŒ“ì¸ ë©”ì‰¬ ì¤‘ ì¼ë¶€ë§Œ(Time Slicing) ì—…ë¡œë“œ ëª…ë ¹ ê¸°ë¡
 	ResourceManager::instance()->process_pending_uploads(_device.Get(), _commandList.Get(), nextFenceValue);
 
 	_commandList->Close();
 	ID3D12CommandList* ppUploadLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, ppUploadLists);
 
-	// [Áß¿ä] ¿©±â¼­ WaitForGpuComplete() Àı´ë È£Ãâ ±İÁö!
-	// GPU°¡ ¾Ë¾Æ¼­ ¾÷·ÎµåÇÏ°í ³ª¼­ ·»´õ¸µÇÔ (°°Àº Å¥¶ó¼­ ¼ø¼­ º¸ÀåµÊ)
+	// [ì¤‘ìš”] ì—¬ê¸°ì„œ WaitForGpuComplete() ì ˆëŒ€ í˜¸ì¶œ ê¸ˆì§€!
+	// GPUê°€ ì•Œì•„ì„œ ì—…ë¡œë“œí•˜ê³  ë‚˜ì„œ ë Œë”ë§í•¨ (ê°™ì€ íë¼ì„œ ìˆœì„œ ë³´ì¥ë¨)
 
 	// ---------------------------------------------------------
-	// 4. [·»´õ¸µ]
+	// 4. [ë Œë”ë§]
 	// ---------------------------------------------------------
-	// ·»´õ¸µ Àü¿ë ÇÒ´ç±â »ç¿ë
+	// ë Œë”ë§ ì „ìš© í• ë‹¹ê¸° ì‚¬ìš©
 	currentRenderAllocator->Reset();
 	_commandList->Reset(currentRenderAllocator.Get(), nullptr);
 
 	ResourceManager::instance()->set_current_command_list(_commandList.Get());
 
-	// ±âº» RTV ¼³Á¤ Àü¿¡ ±×¸²ÀÚ ¸Ê ¸ÕÀú ·»´õ¸µ
+	// ê¸°ë³¸ RTV ì„¤ì • ì „ì— ê·¸ë¦¼ì ë§µ ë¨¼ì € ë Œë”ë§
 	ShadowManager::instance()->update_and_execute(_commandList.Get(), _swapChainBufferIndex);
-	// ºäÆ÷Æ®¿Í °¡À§ ¿µ¿ªÀ» ¸ŞÀÎ È­¸é Å©±â·Î ´Ù½Ã º¹±¸! (ShadowManager¿¡¼­ 1024x1024·Î ¹Ù²åÀ¸¹Ç·Î)
+	// ë·°í¬íŠ¸ì™€ ê°€ìœ„ ì˜ì—­ì„ ë©”ì¸ í™”ë©´ í¬ê¸°ë¡œ ë‹¤ì‹œ ë³µêµ¬! (ShadowManagerì—ì„œ 1024x1024ë¡œ ë°”ê¿¨ìœ¼ë¯€ë¡œ)
 	D3D12_VIEWPORT viewport = { 0.0f, 0.0f, static_cast<float>(_wndClientWidth),
 	static_cast<float>(_wndClientHeight), 0.0f, 1.0f };
 	D3D12_RECT scissorRect = { 0, 0, static_cast<LONG>(_wndClientWidth),
@@ -495,24 +495,24 @@ void GameFramework::FrameAdvance()
 	_commandList->RSSetViewports(1, &viewport);
 	_commandList->RSSetScissorRects(1, &scissorRect);
 
-	// (¸®¼Ò½º ¹è¸®¾î ¼³Á¤: Present -> RenderTarget)
+	// (ë¦¬ì†ŒìŠ¤ ë°°ë¦¬ì–´ ì„¤ì •: Present -> RenderTarget)
 	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		_renderTargetBuffers[_swapChainBufferIndex].Get(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	_commandList->ResourceBarrier(1, &barrier);
 
-	// ºäÆ÷Æ®, RTV/DSV ¼³Á¤ ¹× Å¬¸®¾î
+	// ë·°í¬íŠ¸, RTV/DSV ì„¤ì • ë° í´ë¦¬ì–´
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	rtvHandle.ptr += (_swapChainBufferIndex * _rtvDescriptorIncrementSize);
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = _dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f }; // °ËÀº»öÀ¸·Î ¼öÁ¤
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f }; // ê²€ì€ìƒ‰ìœ¼ë¡œ ìˆ˜ì •
 	_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,
 		nullptr);
 	_commandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
 
-	// ½ÇÁ¦ ±×¸®±â (¾÷·Îµå ¾È µÈ ¸Ş½¬´Â Mesh::render ³»ºÎ¿¡¼­ skipµÊ)
+	// ì‹¤ì œ ê·¸ë¦¬ê¸° (ì—…ë¡œë“œ ì•ˆ ëœ ë©”ì‰¬ëŠ” Mesh::render ë‚´ë¶€ì—ì„œ skipë¨)
 	Renderer::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
 	if (_totalFrameCount % 60 == 0)
@@ -524,7 +524,7 @@ void GameFramework::FrameAdvance()
 			<< " | DrawCalls: " << drawCalls);
 	}
 
-	// ¾ÀÀÇ ÈÄÃ³¸®
+	// ì”¬ì˜ í›„ì²˜ë¦¬
 	Scene* currentScene = SceneManager::instance()->current_scene();
 	if (currentScene)
 	{
@@ -535,7 +535,7 @@ void GameFramework::FrameAdvance()
 	
 	//MinimapManager::instance()->render(_commandList.Get(), _swapChainBufferIndex);
 
-	// È­¸é ¸Ç À§¿¡ ImGui ±×¸®±â ¸í·É Àü´Ş
+	// í™”ë©´ ë§¨ ìœ„ì— ImGui ê·¸ë¦¬ê¸° ëª…ë ¹ ì „ë‹¬
 	ImGuiManager::instance()->render(_commandList.Get());
 
 #ifdef _WITH_PLAYER_TOP
@@ -543,7 +543,7 @@ void GameFramework::FrameAdvance()
 		nullptr);
 #endif
 
-	// (¸®¼Ò½º ¹è¸®¾î º¹±¸: RenderTarget -> Present)
+	// (ë¦¬ì†ŒìŠ¤ ë°°ë¦¬ì–´ ë³µêµ¬: RenderTarget -> Present)
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		_renderTargetBuffers[_swapChainBufferIndex].Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
@@ -554,7 +554,7 @@ void GameFramework::FrameAdvance()
 	_commandQueue->ExecuteCommandLists(1, ppRenderLists);
 
 	// ---------------------------------------------------------
-	// 5. [ÇÁ·¹ÀÓ Á¾·á]
+	// 5. [í”„ë ˆì„ ì¢…ë£Œ]
 	// ---------------------------------------------------------
 	BOOL bFullScreenState = FALSE;
 	_swapChain->GetFullscreenState(&bFullScreenState, NULL);
@@ -562,15 +562,15 @@ void GameFramework::FrameAdvance()
 	UINT presentFlags = bFullScreenState ? 0 : DXGI_PRESENT_ALLOW_TEARING;
 	_swapChain->Present(0, presentFlags);
 
-	// [Áß¿ä] ÀÓ½Ã ¾÷·Îµå ¹öÆÛ ÇØÁ¦
-	// (½º¸¶Æ® Æ÷ÀÎÅÍ¶ó Å¥¿¡¼­ ºüÁö¸é ¾Ë¾Æ¼­ ÇØÁ¦µÇÁö¸¸, ¸í½ÃÀû È£Ãâµµ °¡´É)
+	// [ì¤‘ìš”] ì„ì‹œ ì—…ë¡œë“œ ë²„í¼ í•´ì œ
+	// (ìŠ¤ë§ˆíŠ¸ í¬ì¸í„°ë¼ íì—ì„œ ë¹ ì§€ë©´ ì•Œì•„ì„œ í•´ì œë˜ì§€ë§Œ, ëª…ì‹œì  í˜¸ì¶œë„ ê°€ëŠ¥)
 
-	// ´ÙÀ½ ÇÁ·¹ÀÓ ÁØºñ (¿©±â¼­¸¸ Ææ½º ´ë±â)
+	// ë‹¤ìŒ í”„ë ˆì„ ì¤€ë¹„ (ì—¬ê¸°ì„œë§Œ íœìŠ¤ ëŒ€ê¸°)
 	MoveToNextFrame();
 
 
 	ResourceManager::instance()->release_upload_buffers(_fence->GetCompletedValue());
-	// ÈÄÃ³¸®
+	// í›„ì²˜ë¦¬
 	ObjectManager::instance()->process_destructions();
 	_gameTimer.GetFrameRate(_frameRate + 7, 42);
 
@@ -583,26 +583,26 @@ void GameFramework::FrameAdvance()
 
 void GameFramework::ChangeSwapChainState()
 {
-	// 1. GPU°¡ ¸ğµç ÀÛ¾÷À» ¸¶Ä¥ ¶§±îÁö ¿Ïº®È÷ ´ë±â
+	// 1. GPUê°€ ëª¨ë“  ì‘ì—…ì„ ë§ˆì¹  ë•Œê¹Œì§€ ì™„ë²½íˆ ëŒ€ê¸°
 	WaitForGpuComplete();
 
-	// DXGIÀÇ µ¶Á¡ ÀüÃ¼È­¸é ÇÔ¼ö´Â »ç¿ëÇÏÁö ¾ÊÀ½ -> ¿À·¡°É¸®°í ±ôºıÀÓ ½ÉÇÔ
+	// DXGIì˜ ë…ì  ì „ì²´í™”ë©´ í•¨ìˆ˜ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ -> ì˜¤ë˜ê±¸ë¦¬ê³  ê¹œë¹¡ì„ ì‹¬í•¨
 	// BOOL bFullScreenState = FALSE;
 	// _swapChain->GetFullscreenState(&bFullScreenState, NULL);
 	// _swapChain->SetFullscreenState(!bFullScreenState, NULL);
 
-	// 2. ·»´õ Å¸°Ù ¸®¼Ò½º ¹× ±íÀÌ ¹öÆÛ ÇØÁ¦ (ResizeBuffers È£Ãâ Àü ÇÊ¼ö)
+	// 2. ë Œë” íƒ€ê²Ÿ ë¦¬ì†ŒìŠ¤ ë° ê¹Šì´ ë²„í¼ í•´ì œ (ResizeBuffers í˜¸ì¶œ ì „ í•„ìˆ˜)
 	for (int i = 0; i < SWAP_CHAIN_BUFFERS; i++)
 	{
 		_renderTargetBuffers[i].Reset();
 	}
 	_depthStencilBuffer.Reset();
 
-	// 3. Å×µÎ¸® ¾ø´Â Ã¢ ¸ğµå <-> ÀÏ¹İ Ã¢ ¸ğµå ÀüÈ¯ ·ÎÁ÷
+	// 3. í…Œë‘ë¦¬ ì—†ëŠ” ì°½ ëª¨ë“œ <-> ì¼ë°˜ ì°½ ëª¨ë“œ ì „í™˜ ë¡œì§
 	UINT newWidth = 0;
 	UINT newHeight = 0;
 
-	// 3. Å×µÎ¸® ¾ø´Â Ã¢ ¸ğµå <-> ÀÏ¹İ Ã¢ ¸ğµå ÀüÈ¯ ·ÎÁ÷
+	// 3. í…Œë‘ë¦¬ ì—†ëŠ” ì°½ ëª¨ë“œ <-> ì¼ë°˜ ì°½ ëª¨ë“œ ì „í™˜ ë¡œì§
 	if (!_isBorderless)
 	{
 		GetWindowRect(_hWnd, &_windowRect);
@@ -612,13 +612,13 @@ void GameFramework::ChangeSwapChainState()
 		MONITORINFO mi = { sizeof(mi) };
 		GetMonitorInfo(hMonitor, &mi);
 
-		// ÀüÃ¼È­¸éÀÏ ¶§´Â ¸ğ´ÏÅÍ ÇØ»óµµ¸¦ Á÷Á¢ ±¸ÇÔ
+		// ì „ì²´í™”ë©´ì¼ ë•ŒëŠ” ëª¨ë‹ˆí„° í•´ìƒë„ë¥¼ ì§ì ‘ êµ¬í•¨
 		newWidth = mi.rcMonitor.right - mi.rcMonitor.left;
 		newHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
 
 		SetWindowPos(_hWnd, HWND_TOP,
 			mi.rcMonitor.left, mi.rcMonitor.top,
-			newWidth, newHeight, // ¿©±â¼­µµ ±¸ÇÑ Å©±â¸¦ »ç¿ë
+			newWidth, newHeight, // ì—¬ê¸°ì„œë„ êµ¬í•œ í¬ê¸°ë¥¼ ì‚¬ìš©
 			SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 
 		_isBorderless = true;
@@ -633,7 +633,7 @@ void GameFramework::ChangeSwapChainState()
 			_windowRect.bottom - _windowRect.top,
 			SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 
-		// Ã¢ ¸ğµå·Î º¹±¸µÈ ÈÄÀÇ ·»´õ¸µ °¡´ÉÇÑ Å¬¶óÀÌ¾ğÆ® ¿µ¿ª Å©±â¸¦ ±¸ÇÔ
+		// ì°½ ëª¨ë“œë¡œ ë³µêµ¬ëœ í›„ì˜ ë Œë”ë§ ê°€ëŠ¥í•œ í´ë¼ì´ì–¸íŠ¸ ì˜ì—­ í¬ê¸°ë¥¼ êµ¬í•¨
 		RECT clientRect;
 		GetClientRect(_hWnd, &clientRect);
 		newWidth = clientRect.right - clientRect.left;
@@ -645,7 +645,7 @@ void GameFramework::ChangeSwapChainState()
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 	_swapChain->GetDesc(&dxgiSwapChainDesc);
 
-	// 4. ½º¿Ò Ã¼ÀÎ ¹öÆÛ ¸®»çÀÌÁî (0, 0 ´ë½Å ¸í½ÃÀûÀ¸·Î Å©±â ÁöÁ¤!)
+	// 4. ìŠ¤ì™‘ ì²´ì¸ ë²„í¼ ë¦¬ì‚¬ì´ì¦ˆ (0, 0 ëŒ€ì‹  ëª…ì‹œì ìœ¼ë¡œ í¬ê¸° ì§€ì •!)
 	HRESULT hr = _swapChain->ResizeBuffers(
 		SWAP_CHAIN_BUFFERS,
 		newWidth, newHeight,
@@ -654,13 +654,13 @@ void GameFramework::ChangeSwapChainState()
 	);
 	_ASSERTE(SUCCEEDED(hr));
 
-	// 5. ÇÁ·¹ÀÓ¿öÅ©°¡ °ü¸®ÇÏ´Â ÇØ»óµµ º¯¼öµµ »õ Å©±â·Î È®½ÇÇÏ°Ô µ¤¾î¾º¿ì±â
+	// 5. í”„ë ˆì„ì›Œí¬ê°€ ê´€ë¦¬í•˜ëŠ” í•´ìƒë„ ë³€ìˆ˜ë„ ìƒˆ í¬ê¸°ë¡œ í™•ì‹¤í•˜ê²Œ ë®ì–´ì”Œìš°ê¸°
 	_wndClientWidth = newWidth;
 	_wndClientHeight = newHeight;
 
 	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
-	// 6. »õ·Î¿î Å©±â¿¡ ¸ÂÃç ºä(View) Àç¹ß±Ş
+	// 6. ìƒˆë¡œìš´ í¬ê¸°ì— ë§ì¶° ë·°(View) ì¬ë°œê¸‰
 	CreateRenderTargetViews();
 	CreateDepthStencilView();
 
@@ -674,17 +674,17 @@ void GameFramework::update_game_logic(float deltaTime)
 	CameraComponent* camera = CameraComponent::get_main();
 	if (!camera)
 	{
-		// ·ÎÁ÷ÀÌ µ¹±â À§ÇØ¼­´Â Ä«¸Ş¶ó°¡ ÇÏ³ª ÀÌ»ó ÇÊ¿äÇÔ
-		CERROR("·ÎÁ÷ÀÌ µ¹±â À§ÇØ¼­´Â Ä«¸Ş¶ó°¡ ÇÏ³ª ÀÌ»ó ÇÊ¿äÇÔ")
+		// ë¡œì§ì´ ëŒê¸° ìœ„í•´ì„œëŠ” ì¹´ë©”ë¼ê°€ í•˜ë‚˜ ì´ìƒ í•„ìš”í•¨
+		CERROR("ë¡œì§ì´ ëŒê¸° ìœ„í•´ì„œëŠ” ì¹´ë©”ë¼ê°€ í•˜ë‚˜ ì´ìƒ í•„ìš”í•¨")
 			return;
 	}
 
-	// Awake¿Í Start°¡ ¸ÕÀú È£ÃâµÇµµ·Ï ¼ø¼­ º¯°æ
+	// Awakeì™€ Startê°€ ë¨¼ì € í˜¸ì¶œë˜ë„ë¡ ìˆœì„œ ë³€ê²½
 	ObjectManager::instance()->process_new_game_objects();
 	 
 	const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
 
-	// .FreeCameraScript°¡ ÀÔ·ÂÀ» ¹Ş¾Æ ÀÚ½ÅÀÇ TransformÀ» ¾÷µ¥ÀÌÆ®
+	// .FreeCameraScriptê°€ ì…ë ¥ì„ ë°›ì•„ ìì‹ ì˜ Transformì„ ì—…ë°ì´íŠ¸
 	for (const auto& gameObject : allGameObjects)
 	{
 		if (gameObject && gameObject->is_enable() && !gameObject->is_destroyed() )
@@ -693,7 +693,7 @@ void GameFramework::update_game_logic(float deltaTime)
 		}
 	}
 
-	// LateUpdate´Â ºä Çà·Ä °è»ê ÈÄ¿¡µµ ¤¡¤º
+	// LateUpdateëŠ” ë·° í–‰ë ¬ ê³„ì‚° í›„ì—ë„ ã„±ã…Š
 	for (const auto& gameObject : allGameObjects)
 	{
 		if (gameObject && gameObject->is_enable() && !gameObject->is_destroyed() )
@@ -701,10 +701,10 @@ void GameFramework::update_game_logic(float deltaTime)
 			gameObject->late_update(deltaTime);
 		}
 	}
-	// Á¶¸í ¸Å´ÏÀú ¾÷µ¥ÀÌÆ®
+	// ì¡°ëª… ë§¤ë‹ˆì € ì—…ë°ì´íŠ¸
 	LightManager::instance()->update();
 
-	// ¸ŞÀÎ Ä«¸Ş¶óÀÇ ºä Çà·Ä °è»ê
+	// ë©”ì¸ ì¹´ë©”ë¼ì˜ ë·° í–‰ë ¬ ê³„ì‚°
 	if (auto main_cam = CameraComponent::get_main())
 	{
 		main_cam->recalculate_view_matrix();
@@ -720,8 +720,8 @@ void GameFramework::update_physics(float elapsedTime)
 	CameraComponent* camera = CameraComponent::get_main();
 	if (!camera)
 	{
-		// ·ÎÁ÷ÀÌ µ¹±â À§ÇØ¼­´Â Ä«¸Ş¶ó°¡ ÇÏ³ª ÀÌ»ó ÇÊ¿äÇÔ
-		CERROR("·ÎÁ÷ÀÌ µ¹±â À§ÇØ¼­´Â Ä«¸Ş¶ó°¡ ÇÏ³ª ÀÌ»ó ÇÊ¿äÇÔ")
+		// ë¡œì§ì´ ëŒê¸° ìœ„í•´ì„œëŠ” ì¹´ë©”ë¼ê°€ í•˜ë‚˜ ì´ìƒ í•„ìš”í•¨
+		CERROR("ë¡œì§ì´ ëŒê¸° ìœ„í•´ì„œëŠ” ì¹´ë©”ë¼ê°€ í•˜ë‚˜ ì´ìƒ í•„ìš”í•¨")
 			return;
 	}
 
@@ -732,7 +732,7 @@ void GameFramework::update_physics(float elapsedTime)
 	{
 		const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
 
-		// 1. Transform -> Physics Body µ¿±âÈ­
+		// 1. Transform -> Physics Body ë™ê¸°í™”
 		for (const auto& gameObject : allGameObjects)
 		{
 			if (gameObject && gameObject->is_enable() && !gameObject->is_destroyed() )
@@ -741,7 +741,7 @@ void GameFramework::update_physics(float elapsedTime)
 			}
 		}
 
-		// 2. Physics Simulation & Event Dispatch (¿©±â¿¡ Ãß°¡!)
+		// 2. Physics Simulation & Event Dispatch (ì—¬ê¸°ì— ì¶”ê°€!)
 		PhysicsManager::instance()->update(fixedTimeStep);
 
 		_physicsTimeAccumulator -= fixedTimeStep;
@@ -754,24 +754,24 @@ void GameFramework::view_window_title_bar_with_frame_rate_and_camera_info_and_ma
 
 	if (_isCheckCameraPos)
 	{
-		// ÇöÀç ¾À¿¡ ÀÖ´Â "Camera"¶ó´Â ÀÌ¸§ÀÇ °ÔÀÓ ¿ÀºêÁ§Æ®¸¦ Ã£½À´Ï´Ù.
+		// í˜„ì¬ ì”¬ì— ìˆëŠ” "Camera"ë¼ëŠ” ì´ë¦„ì˜ ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ìŠµë‹ˆë‹¤.
 		auto cameraObj = ObjectManager::instance()->find_by_name("Camera");
-		// ÇÃ·¹ÀÌ¾î À§Ä¡µµ °¡Á®¿Í¼­ Ç¥½ÃÇÏ±â (Camera ¿ÀºêÁ§Æ®°¡ Á¸ÀçÇÏ°í TransformÀÌ ÀÖ´Â °æ¿ì)
+		// í”Œë ˆì´ì–´ ìœ„ì¹˜ë„ ê°€ì ¸ì™€ì„œ í‘œì‹œí•˜ê¸° (Camera ì˜¤ë¸Œì íŠ¸ê°€ ì¡´ì¬í•˜ê³  Transformì´ ìˆëŠ” ê²½ìš°)
 		auto MainPlayer = ObjectManager::instance()->find_by_name("MainPlayer");
 
 		if (cameraObj && cameraObj->transform() && MainPlayer && MainPlayer->transform())
 		{
-			// À§Ä¡ Á¤º¸
+			// ìœ„ì¹˜ ì •ë³´
 			DirectX::XMFLOAT3 pos = cameraObj->transform()->get_world_position();
 
 			DirectX::XMFLOAT3 rot = cameraObj->transform()->local_rotation_euler();
 
 			WCHAR camInfoText[256];
-			// Pos(À§Ä¡)¿Í Rot(°¢µµ: Pitch, Yaw, Roll)¸¦ ÇÑ´«¿¡ º¸ÀÌ°Ô Æ÷¸ËÆÃ
+			// Pos(ìœ„ì¹˜)ì™€ Rot(ê°ë„: Pitch, Yaw, Roll)ë¥¼ í•œëˆˆì— ë³´ì´ê²Œ í¬ë§·íŒ…
 			swprintf_s(camInfoText, 256,
 				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]   |   MainPlayerPos: [%.2f, %.2f, %.2f]   |   MainPlayerRot: [%.1f, %.1f, %.1f]",
-				pos.x, pos.y, pos.z,  // À§Ä¡
-				rot.x, rot.y, rot.z,   // °¢µµ (Pitch, Yaw, Roll)
+				pos.x, pos.y, pos.z,  // ìœ„ì¹˜
+				rot.x, rot.y, rot.z,   // ê°ë„ (Pitch, Yaw, Roll)
 				MainPlayer->transform()->get_world_position().x,
 				MainPlayer->transform()->get_world_position().y,
 				MainPlayer->transform()->get_world_position().z,
@@ -784,23 +784,23 @@ void GameFramework::view_window_title_bar_with_frame_rate_and_camera_info_and_ma
 		}
 		else if (cameraObj && cameraObj->transform())
 		{
-			// À§Ä¡ Á¤º¸
+			// ìœ„ì¹˜ ì •ë³´
 			DirectX::XMFLOAT3 pos = cameraObj->transform()->get_world_position();
 
 			DirectX::XMFLOAT3 rot = cameraObj->transform()->local_rotation_euler();
 
 			WCHAR camInfoText[256];
-			// Pos(À§Ä¡)¿Í Rot(°¢µµ: Pitch, Yaw, Roll)¸¦ ÇÑ´«¿¡ º¸ÀÌ°Ô Æ÷¸ËÆÃ
+			// Pos(ìœ„ì¹˜)ì™€ Rot(ê°ë„: Pitch, Yaw, Roll)ë¥¼ í•œëˆˆì— ë³´ì´ê²Œ í¬ë§·íŒ…
 			swprintf_s(camInfoText, 256,
 				L"   |   Pos: [%.2f, %.2f, %.2f]   |   Rot: [%.1f, %.1f, %.1f]",
-				pos.x, pos.y, pos.z,  // À§Ä¡
-				rot.x, rot.y, rot.z   // °¢µµ (Pitch, Yaw, Roll)
+				pos.x, pos.y, pos.z,  // ìœ„ì¹˜
+				rot.x, rot.y, rot.z   // ê°ë„ (Pitch, Yaw, Roll)
 			);
 
 			windowTitle += camInfoText;
 		}
 
-		// ÃÖÁ¾ ¹®ÀÚ¿­À» À©µµ¿ì Ã¢ Á¦¸ñ Ç¥½ÃÁÙ¿¡ Ãâ·Â
+		// ìµœì¢… ë¬¸ìì—´ì„ ìœˆë„ìš° ì°½ ì œëª© í‘œì‹œì¤„ì— ì¶œë ¥
 		::SetWindowText(_hWnd, windowTitle.c_str());
 	}
 	else

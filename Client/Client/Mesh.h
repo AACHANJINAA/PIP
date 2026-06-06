@@ -1,39 +1,39 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "Object.h"
 
-// nlohmann/json Çì´õ // json ÆÄ½Ì À§ÇØ Ãß°¡
+// nlohmann/json í—¤ë” // json íŒŒì‹± ìœ„í•´ ì¶”ê°€
 using json = nlohmann::json;
 
-//Á¤Á¡À» Ç¥ÇöÇÏ±â À§ÇÑ Å¬·¡½º¸¦ ¼±¾ğÇÑ´Ù.
+//ì •ì ì„ í‘œí˜„í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤ë¥¼ ì„ ì–¸í•œë‹¤.
 
 
-// Node ±¸Á¶Ã¼ Á¤ÀÇ DW : GLTF/GLB ÆÄÀÏ¿¡¼­ ³ëµå Á¤º¸¸¦ Ç¥ÇöÇÏ±â À§ÇØ Ãß°¡
+// Node êµ¬ì¡°ì²´ ì •ì˜ DW : GLTF/GLB íŒŒì¼ì—ì„œ ë…¸ë“œ ì •ë³´ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•´ ì¶”ê°€
 //struct Node
 //{
 //	std::string name;
-//	int parentIndex = -1; // ºÎ¸ğ°¡ ¾øÀ¸¸é -1
+//	int parentIndex = -1; // ë¶€ëª¨ê°€ ì—†ìœ¼ë©´ -1
 //	std::vector<int> childrenIndices;
 //
-//	// º¯È¯ Á¤º¸
+//	// ë³€í™˜ ì •ë³´
 //	XMFLOAT3 translation = { 0.0f, 0.0f, 0.0f };
-//	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // ÄõÅÍ´Ï¾ğ
+//	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // ì¿¼í„°ë‹ˆì–¸
 //	XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f };
 //
 //	int meshIndex = -1;
 //	int skinIndex = -1;
 //};
 
-//// ½ºÅ°´× Á¤º¸¸¦ Æ÷ÇÔÇÏ´Â »õ·Î¿î Á¤Á¡ ±¸Á¶Ã¼ -> Vertex ´ë½Å¿¡ »ç¿ëÇÒ °ÍÀÓ
+//// ìŠ¤í‚¤ë‹ ì •ë³´ë¥¼ í¬í•¨í•˜ëŠ” ìƒˆë¡œìš´ ì •ì  êµ¬ì¡°ì²´ -> Vertex ëŒ€ì‹ ì— ì‚¬ìš©í•  ê²ƒì„
 //struct SkinnedVertex
 //{
 //	XMFLOAT3 m_xmf3Position;
 //	XMFLOAT3 m_xmf3Normal;
 //	XMFLOAT2 m_xmf2TexCoord;
 //
-//	// Ãß°¡µÈ ½ºÅ°´× µ¥ÀÌÅÍ
-//	XMFLOAT4 m_xmf4BoneIndices; // ¿µÇâÀ» ÁÖ´Â »ÀÀÇ ÀÎµ¦½º (ÃÖ´ë 4°³)
-//	XMFLOAT4 m_xmf4BoneWeights; // °¢ »À·ÎºÎÅÍ ¹Ş´Â ¿µÇâ(°¡ÁßÄ¡)
+//	// ì¶”ê°€ëœ ìŠ¤í‚¤ë‹ ë°ì´í„°
+//	XMFLOAT4 m_xmf4BoneIndices; // ì˜í–¥ì„ ì£¼ëŠ” ë¼ˆì˜ ì¸ë±ìŠ¤ (ìµœëŒ€ 4ê°œ)
+//	XMFLOAT4 m_xmf4BoneWeights; // ê° ë¼ˆë¡œë¶€í„° ë°›ëŠ” ì˜í–¥(ê°€ì¤‘ì¹˜)
 //};
 
 struct MeshPrimitive
@@ -46,13 +46,13 @@ struct MeshPrimitive
 
 	UINT _indices = 0;
 
-	// ³ªÁß¿¡ ÀçÁú(Material) ÀÎµ¦½ºµµ ¿©±â¿¡ ÀúÀåÇÒ ¼ö ÀÖ½À´Ï´Ù.
+	// ë‚˜ì¤‘ì— ì¬ì§ˆ(Material) ì¸ë±ìŠ¤ë„ ì—¬ê¸°ì— ì €ì¥í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 	int _materialIndex = -1;
 
-	ID3D12Resource* _texture = nullptr; // ÅØ½ºÃ³ ¸®¼Ò½º¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ
-	D3D12_GPU_DESCRIPTOR_HANDLE _gpuSrvHandle{}; // SRV ÇÚµéÀ» ÀúÀåÇÒ º¯¼ö
+	ID3D12Resource* _texture = nullptr; // í…ìŠ¤ì²˜ ë¦¬ì†ŒìŠ¤ë¥¼ ì €ì¥í•  í¬ì¸í„°
+	D3D12_GPU_DESCRIPTOR_HANDLE _gpuSrvHandle{}; // SRV í•¸ë“¤ì„ ì €ì¥í•  ë³€ìˆ˜
 
-	// ¼Ò¸êÀÚ¿¡¼­ ¸®¼Ò½º ÇØÁ¦
+	// ì†Œë©¸ìì—ì„œ ë¦¬ì†ŒìŠ¤ í•´ì œ
 	~MeshPrimitive() {
 		if (_d3dVertexBuffer)
 			_d3dVertexBuffer->Release();
@@ -66,7 +66,7 @@ struct MeshPrimitive
 };
 
 
-//struct GltfVertex // GLTF¿¡¼­ »ç¿ëÇÏ´Â Á¤Á¡ ±¸Á¶Ã¼ -> DW°èÈ¹ : ÃßÈÄ ÇÊ¿ä¾ø´Â ±¸Á¶Ã¼´Â »èÁ¦ÇÒ ¿¹Á¤
+//struct GltfVertex // GLTFì—ì„œ ì‚¬ìš©í•˜ëŠ” ì •ì  êµ¬ì¡°ì²´ -> DWê³„íš : ì¶”í›„ í•„ìš”ì—†ëŠ” êµ¬ì¡°ì²´ëŠ” ì‚­ì œí•  ì˜ˆì •
 //{
 //	XMFLOAT3 _position;
 //	XMFLOAT3 _normal;
@@ -84,31 +84,31 @@ struct MeshPrimitive
 //	D3D12_INDEX_BUFFER_VIEW _indexBufferView;
 //
 //	UINT _indexCount = 0;
-//	int _materialIndex = -1; // ÀÌ ÇÁ¸®¹ÌÆ¼ºê°¡ »ç¿ëÇÒ m_textures º¤ÅÍÀÇ ÀÎµ¦½º
+//	int _materialIndex = -1; // ì´ í”„ë¦¬ë¯¸í‹°ë¸Œê°€ ì‚¬ìš©í•  m_textures ë²¡í„°ì˜ ì¸ë±ìŠ¤
 //};
 
 struct Vertex
 {
 public:
-	//Á¤Á¡ÀÇ À§Ä¡ º¤ÅÍÀÌ´Ù(¸ğµç Á¤Á¡Àº ÃÖ¼ÒÇÑ À§Ä¡ º¤ÅÍ¸¦ °¡Á®¾ß ÇÑ´Ù).
+	//ì •ì ì˜ ìœ„ì¹˜ ë²¡í„°ì´ë‹¤(ëª¨ë“  ì •ì ì€ ìµœì†Œí•œ ìœ„ì¹˜ ë²¡í„°ë¥¼ ê°€ì ¸ì•¼ í•œë‹¤).
 	XMFLOAT3 _position;
 public:
 	Vertex() { _position = XMFLOAT3(0.0f, 0.0f, 0.0f); }
 	Vertex(XMFLOAT3 xmf3Position) { _position = xmf3Position; }
 };
-// (Ãß°¡) Á¶¸í È¿°ú¸¦ Ç¥ÇöÇÏ±â À§ÇÑ Á¤Á¡ Å¬·¡½ºÀÌ´Ù. [PONG]
+// (ì¶”ê°€) ì¡°ëª… íš¨ê³¼ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•œ ì •ì  í´ë˜ìŠ¤ì´ë‹¤. [PONG]
 struct IlluminatedVertex : public Vertex
 {
 public:
-	XMFLOAT3 _normal; // ¹ı¼± º¤ÅÍ
-	XMFLOAT2 _texCoord; // ÅØ½ºÃ³ ÁÂÇ¥ (Ãß°¡)
+	XMFLOAT3 _normal; // ë²•ì„  ë²¡í„°
+	XMFLOAT2 _texCoord; // í…ìŠ¤ì²˜ ì¢Œí‘œ (ì¶”ê°€)
 	XMFLOAT3 _tangent;
 
 public:
 	IlluminatedVertex() { 
 		_position = XMFLOAT3(0.0f, 0.0f, 0.0f); 
 		_normal = XMFLOAT3(0.0f, 0.0f, 0.0f); 
-		_texCoord = XMFLOAT2(0.0f, 0.0f); // Ãß°¡
+		_texCoord = XMFLOAT2(0.0f, 0.0f); // ì¶”ê°€
 		_tangent = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	}
 	IlluminatedVertex(XMFLOAT3 p, XMFLOAT3 n, XMFLOAT2 t, XMFLOAT3 tan) {
@@ -122,70 +122,70 @@ public:
 //struct GltfMeshData
 //{
 //	std::vector<IlluminatedVertex> _vertices;
-//	std::vector<uint32_t> _indices; // ÀÎµ¦½º Å¸ÀÔÀº accessor¿¡ µû¶ó ´Ş¶óÁú ¼ö ÀÖÀ½ -> ÀÌ°Å °æ°í ¸·°í½ÍÀºµğ...
+//	std::vector<uint32_t> _indices; // ì¸ë±ìŠ¤ íƒ€ì…ì€ accessorì— ë”°ë¼ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆìŒ -> ì´ê±° ê²½ê³  ë§‰ê³ ì‹¶ì€ë””...
 //};
 
 class Mesh : public Object
 {
 public:
-	// [º¯°æ] »ı¼ºÀÚ´Â ÀÌÁ¦ ÆÄÀÏ °æ·Î¸¸ ¹Ş¾Æ¼­ CPU ¸Ş¸ğ¸®¿¡ µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏ´Â ¿ªÇÒ¸¸ ÇÕ´Ï´Ù.
-	// ±¸Ã¼ÀûÀÎ ÆÄÀÏ ÆÄ½ÌÀº ÆÄ»ı Å¬·¡½º(ReadObjMesh µî)¿¡¼­ ±¸ÇöÇÕ´Ï´Ù.
+	// [ë³€ê²½] ìƒì„±ìëŠ” ì´ì œ íŒŒì¼ ê²½ë¡œë§Œ ë°›ì•„ì„œ CPU ë©”ëª¨ë¦¬ì— ë°ì´í„°ë¥¼ ë¡œë“œí•˜ëŠ” ì—­í• ë§Œ í•©ë‹ˆë‹¤.
+	// êµ¬ì²´ì ì¸ íŒŒì¼ íŒŒì‹±ì€ íŒŒìƒ í´ë˜ìŠ¤(ReadObjMesh ë“±)ì—ì„œ êµ¬í˜„í•©ë‹ˆë‹¤.
 	Mesh();
 	virtual ~Mesh();
 
-	// [Ãß°¡] CPU ¸Ş¸ğ¸®¿¡ ·ÎµåµÈ µ¥ÀÌÅÍ¸¦ ±â¹İÀ¸·Î ½ÇÁ¦ GPU ¹öÆÛ¸¦ »ı¼ºÇÏ´Â ÇÔ¼öÀÔ´Ï´Ù.
-	// Renderer°¡ ·»´õ¸µ Á÷Àü¿¡ È£ÃâÇØÁİ´Ï´Ù.
+	// [ì¶”ê°€] CPU ë©”ëª¨ë¦¬ì— ë¡œë“œëœ ë°ì´í„°ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ì‹¤ì œ GPU ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ì…ë‹ˆë‹¤.
+	// Rendererê°€ ë Œë”ë§ ì§ì „ì— í˜¸ì¶œí•´ì¤ë‹ˆë‹¤.
 	
 	virtual void upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue);
 
 	virtual void release_upload_buffers();
 	
-	// [Ãß°¡] GPU¿¡ ¾÷·ÎµåµÇ¾ú´ÂÁö È®ÀÎÇÏ´Â ÇÃ·¡±×
+	// [ì¶”ê°€] GPUì— ì—…ë¡œë“œë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í”Œë˜ê·¸
 	bool is_uploaded() const { return _isUploaded; }
 
-	// ·»´õ¸µ ÇÔ¼ö´Â VBV/IBV¸¦ ¼³Á¤ÇÏ°í DrawInstanced¸¦ È£ÃâÇÕ´Ï´Ù.
+	// ë Œë”ë§ í•¨ìˆ˜ëŠ” VBV/IBVë¥¼ ì„¤ì •í•˜ê³  DrawInstancedë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
 	virtual void render(ID3D12GraphicsCommandList* commandList);
 	virtual void render_instance(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) {};
 
-	// CSM ·»´õ¸µÀ» À§ÇÑ º°µµÀÇ ·»´õ¸µ ÇÔ¼ö
+	// CSM ë Œë”ë§ì„ ìœ„í•œ ë³„ë„ì˜ ë Œë”ë§ í•¨ìˆ˜
 	virtual void render_instance_CascadeShadowMap(ID3D12GraphicsCommandList* commandList, size_t want_instance_count = 1) {}
 	virtual void render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList);
 
 	virtual const BoundingOrientedBox& bounding_box() const { return _orientedBoundingBox; }
 
 	static std::shared_ptr<Mesh> create_unit_cube();
-	// Occlusion Àü¿ë µå·Î¿ì (±âÁ¸ render ÇÔ¼ö¸¦ È°¿ëÇØµµ ¹«¹æÇÏÁö¸¸ ¸í½ÃÀûÀ¸·Î ºĞ¸® °¡´É)
+	// Occlusion ì „ìš© ë“œë¡œìš° (ê¸°ì¡´ render í•¨ìˆ˜ë¥¼ í™œìš©í•´ë„ ë¬´ë°©í•˜ì§€ë§Œ ëª…ì‹œì ìœ¼ë¡œ ë¶„ë¦¬ ê°€ëŠ¥)
 	virtual void draw_occlusion_box(ID3D12GraphicsCommandList* commandList) { render(commandList); }
 protected:
 	static BoundingOrientedBox CreateOOBB(XMFLOAT3 min, XMFLOAT3 max);
 	virtual void upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue);
 
-	// [Ãß°¡] ÅÛÇÃ¸´ ÇÔ¼ö·Î ´Ù¾çÇÑ Á¤Á¡ Å¸ÀÔÀ» Áö¿øÇÕ´Ï´Ù.
+	// [ì¶”ê°€] í…œí”Œë¦¿ í•¨ìˆ˜ë¡œ ë‹¤ì–‘í•œ ì •ì  íƒ€ì…ì„ ì§€ì›í•©ë‹ˆë‹¤.
 	template<typename VertexType>
 	void set_vertex_data_buffer(const std::vector<VertexType>& temp_vertices)
 	{
-		// 2. ¸ŞÅ¸µ¥ÀÌÅÍ ¼³Á¤
+		// 2. ë©”íƒ€ë°ì´í„° ì„¤ì •
 		_vertexCount = static_cast<UINT>(temp_vertices.size());
 		_vertexStride = sizeof(VertexType);
 
-		// 3. ¿ø½Ã ¹ÙÀÌÆ® µ¥ÀÌÅÍ¸¦ ºÎ¸ğ Å¬·¡½ºÀÇ ¹öÆÛ·Î º¹»ç
+		// 3. ì›ì‹œ ë°”ì´íŠ¸ ë°ì´í„°ë¥¼ ë¶€ëª¨ í´ë˜ìŠ¤ì˜ ë²„í¼ë¡œ ë³µì‚¬
 		_vertexDataBuffer.resize(_vertexStride * _vertexCount);
 		memcpy(_vertexDataBuffer.data(), temp_vertices.data(), _vertexStride * _vertexCount);
 	}
 
 protected:
 	bool _isUploaded = false;
-	// [º¯°æ] »ı¼º ½ÃÁ¡¿¡´Â ÀÌ º¯¼öµé¿¡ Á¤Á¡/ÀÎµ¦½º µ¥ÀÌÅÍ°¡ Ã¤¿öÁı´Ï´Ù.
-	// upload_to_gpu°¡ È£ÃâµÉ ¶§ ½ÇÁ¦ GPU ¹öÆÛ°¡ »ı¼ºµË´Ï´Ù.
-	std::vector<std::byte> _vertexDataBuffer; // ¹ÙÀÌÆ® ´ÜÀ§ÀÇ ¹öÆÛ
-	UINT _vertexCount = 0; // Á¤Á¡ °³¼ö
-	UINT _vertexStride = 0; // Á¤Á¡ ÇÏ³ªÀÇ Å©±â(¹ÙÀÌÆ® ´ÜÀ§)
+	// [ë³€ê²½] ìƒì„± ì‹œì ì—ëŠ” ì´ ë³€ìˆ˜ë“¤ì— ì •ì /ì¸ë±ìŠ¤ ë°ì´í„°ê°€ ì±„ì›Œì§‘ë‹ˆë‹¤.
+	// upload_to_gpuê°€ í˜¸ì¶œë  ë•Œ ì‹¤ì œ GPU ë²„í¼ê°€ ìƒì„±ë©ë‹ˆë‹¤.
+	std::vector<std::byte> _vertexDataBuffer; // ë°”ì´íŠ¸ ë‹¨ìœ„ì˜ ë²„í¼
+	UINT _vertexCount = 0; // ì •ì  ê°œìˆ˜
+	UINT _vertexStride = 0; // ì •ì  í•˜ë‚˜ì˜ í¬ê¸°(ë°”ì´íŠ¸ ë‹¨ìœ„)
 	std::vector<UINT> _indices;
 
 
-	D3D_PRIMITIVE_TOPOLOGY _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // ¼±À¸·Î ·»´õ¸µ
+	D3D_PRIMITIVE_TOPOLOGY _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // ì„ ìœ¼ë¡œ ë Œë”ë§
 
-	// [º¯°æ] ÀÌ GPU ¸®¼Ò½ºµéÀº upload_to_gpu°¡ È£ÃâµÉ ¶§ »ı¼ºµË´Ï´Ù.
+	// [ë³€ê²½] ì´ GPU ë¦¬ì†ŒìŠ¤ë“¤ì€ upload_to_gpuê°€ í˜¸ì¶œë  ë•Œ ìƒì„±ë©ë‹ˆë‹¤.
 	ComPtr<ID3D12Resource> _vertexBuffer;
 	ComPtr<ID3D12Resource> _indexBuffer;
 	ComPtr<ID3D12Resource> _vertexUploadBuffer;
@@ -200,19 +200,19 @@ protected:
 
 struct CollisionPrimitive
 {
-	// Ãæµ¹ °è»ê Àü¿ëÀÇ ÃÖ¼ÒÈ­µÈ Á¤Á¡ µ¥ÀÌÅÍ¸¦ »ç¿ë
+	// ì¶©ëŒ ê³„ì‚° ì „ìš©ì˜ ìµœì†Œí™”ëœ ì •ì  ë°ì´í„°ë¥¼ ì‚¬ìš©
 	std::vector<Vertex> _vertices;
 
-	// Á¤Á¡À» ¿¬°áÇÏ¿© »ï°¢ÇüÀ» ¸¸µå´Â ÀÎµ¦½º µ¥ÀÌÅÍ
+	// ì •ì ì„ ì—°ê²°í•˜ì—¬ ì‚¼ê°í˜•ì„ ë§Œë“œëŠ” ì¸ë±ìŠ¤ ë°ì´í„°
 	std::vector<uint32_t> _indices;
 
-	// ±¤¿ª ´Ü°è¿¡¼­ »ç¿ëÇÒ AABB
+	// ê´‘ì—­ ë‹¨ê³„ì—ì„œ ì‚¬ìš©í•  AABB
 	BoundingBox aabb;
 
-	// (Ãß°¡)Çù¿ª ´Ü°è ¹× ½Ã°¢È­¿ë OBB
+	// (ì¶”ê°€)í˜‘ì—­ ë‹¨ê³„ ë° ì‹œê°í™”ìš© OBB
 	DirectX::BoundingOrientedBox obb;
 
-	// ¿ùµå º¯È¯ Çà·Ä
+	// ì›”ë“œ ë³€í™˜ í–‰ë ¬
 	XMFLOAT4X4 worldTransform;
 	CollisionPrimitive() = default;
 };
@@ -225,11 +225,11 @@ public:
 	virtual ~DebugCollisionBox();
 };
 
-// Á¤Á¡/ÀÎµ¦½º µ¥ÀÌÅÍ¸¦ ¹Ş¾Æ ¿ÍÀÌ¾îÇÁ·¹ÀÓÀ¸·Î ±×¸®´Â ¹ü¿ë µğ¹ö±× ¸Ş½Ã Å¬·¡½º
+// ì •ì /ì¸ë±ìŠ¤ ë°ì´í„°ë¥¼ ë°›ì•„ ì™€ì´ì–´í”„ë ˆì„ìœ¼ë¡œ ê·¸ë¦¬ëŠ” ë²”ìš© ë””ë²„ê·¸ ë©”ì‹œ í´ë˜ìŠ¤
 class DebugWireframeMesh : public Mesh
 {
 public:
-	// »ı¼ºÀÚ¿¡¼­ Á¤Á¡°ú ÀÎµ¦½º ¸ñ·ÏÀ» Á÷Á¢ ¹Ş½À´Ï´Ù.
+	// ìƒì„±ìì—ì„œ ì •ì ê³¼ ì¸ë±ìŠ¤ ëª©ë¡ì„ ì§ì ‘ ë°›ìŠµë‹ˆë‹¤.
 	DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color);
 	virtual ~DebugWireframeMesh();
 };

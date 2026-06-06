@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ParticleSystemComponent.h"
 #include "GameFramework.h"
 #include "Renderer.h"
@@ -106,7 +106,7 @@ void ParticleSystemComponent::dispatch_compute(ID3D12GraphicsCommandList* comman
         DirectX::XMFLOAT4X4 WorldMatrix;
         DirectX::XMFLOAT3 PlayerPos;
         float SkillProgress;
-        float DyingProgress; // ÆÄÆ¼Å¬ »ç¶óÁö´Â ¿¬Ãâ ¿©ºÎ (0 ¶Ç´Â 1)
+        float DyingProgress; // íŒŒí‹°í´ ì‚¬ë¼ì§€ëŠ” ì—°ì¶œ ì—¬ë¶€ (0 ë˜ëŠ” 1)
     } constants;
 
     DirectX::XMStoreFloat4x4(&constants.WorldMatrix, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&_weaponWorld)));

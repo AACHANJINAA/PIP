@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "TargetingComponent.h"
 
 #include "GameObject.h"
@@ -15,7 +15,7 @@ void TargetingComponent::update(float deltaTime)
     }
     else
     {
-        // ¶ô¿Â ÁßÀÏ ¶§ Å¸°ÙÀÌ ¸Ö¾îÁö°Å³ª Á×À¸¸é ÇØÁ¦
+        // ë½ì˜¨ ì¤‘ì¼ ë•Œ íƒ€ê²Ÿì´ ë©€ì–´ì§€ê±°ë‚˜ ì£½ìœ¼ë©´ í•´ì œ
         if (!is_valid_target(_currentTargetId))
         {
             _isLockedOn = false;
@@ -33,21 +33,21 @@ bool TargetingComponent::is_valid_target(int64_t id)
     if (!script || script->hp() <= 0) return false;
 
     float dist = common::Length(npc_obj->transform()->local_position() - game_object()->transform()->local_position());
-    if (dist > _maxDistance * 1.5f) return false; // ¶ô¿Â À¯Áö °Å¸®´Â Á¶±Ý ´õ ³Ë³ËÇÏ°Ô
+    if (dist > _maxDistance * 1.5f) return false; // ë½ì˜¨ ìœ ì§€ ê±°ë¦¬ëŠ” ì¡°ê¸ˆ ë” ë„‰ë„‰í•˜ê²Œ
 
     return true;
 }
 
 void TargetingComponent::find_best_target()
 {
-    // 1. ¸ÞÀÎ Ä«¸Þ¶ó ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+    // 1. ë©”ì¸ ì¹´ë©”ë¼ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
     auto mainCamera = CameraComponent::get_main();
     if (!mainCamera) return;
 
     auto camTransform = mainCamera->game_object()->transform();
     common::Vec3 camPos = camTransform->position();
     common::Vec3 camForward = camTransform->forward();
-    auto frustum = mainCamera->frustum(); // CameraComponent¿¡ Á¤ÀÇµÈ ÇÁ·¯½ºÅÒ
+    auto frustum = mainCamera->frustum(); // CameraComponentì— ì •ì˜ëœ í”„ëŸ¬ìŠ¤í…€
 
     auto enemy_layer = LayerManager::instance()->get_layer_value("Enemy");
     auto enemies = ObjectManager::instance()->find_by_layer(enemy_layer);
@@ -62,19 +62,19 @@ void TargetingComponent::find_best_target()
 
         common::Vec3 enemyPos = enemy->transform()->position();
 
-        // --- ÇÁ·¯½ºÅÒ Ã¼Å© (È­¸é ¾È¿¡ ÀÖ´Â°¡?) ---
-        // BoundingFrustum::Contains´Â Á¡/¹Ú½º°¡ ½Ã¾ß ¾È¿¡ ÀÖ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // --- í”„ëŸ¬ìŠ¤í…€ ì²´í¬ (í™”ë©´ ì•ˆì— ìžˆëŠ”ê°€?) ---
+        // BoundingFrustum::ContainsëŠ” ì /ë°•ìŠ¤ê°€ ì‹œì•¼ ì•ˆì— ìžˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
         if (frustum.Contains(XMLoadFloat3(&enemyPos)) == DirectX::DISJOINT) continue;
 
-        // --- °Å¸® Ã¼Å© ---
+        // --- ê±°ë¦¬ ì²´í¬ ---
         float dist = common::Length(enemyPos - camPos);
         if (dist > _maxDistance) continue;
 
-        // --- È­¸é Áß¾Ó Á¡¼ö °è»ê ---
+        // --- í™”ë©´ ì¤‘ì•™ ì ìˆ˜ ê³„ì‚° ---
         common::Vec3 toEnemy = common::Normalize(enemyPos - camPos);
         float dot = common::Dot(camForward, toEnemy);
 
-        // ³»Àû°ªÀÌ Å¬¼ö·Ï(1.0¿¡ °¡±î¿ï¼ö·Ï) È­¸é Áß¾Ó¿¡ ÀÖ´Â °ÍÀÓ
+        // ë‚´ì ê°’ì´ í´ìˆ˜ë¡(1.0ì— ê°€ê¹Œìš¸ìˆ˜ë¡) í™”ë©´ ì¤‘ì•™ì— ìžˆëŠ” ê²ƒìž„
         if (dot > bestScore)
         {
             bestScore = dot;

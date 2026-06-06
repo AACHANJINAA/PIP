@@ -1,9 +1,9 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "SkyboxMesh.h"
 
 SkyboxMesh::SkyboxMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-	// À§Ä¡¸¸ ÇÊ¿äÇÏ±â¿¡ Vertex ±¸Á¶Ã¼ »ç¿ë
+	// ìœ„ì¹˜ë§Œ í•„ìš”í•˜ê¸°ì— Vertex êµ¬ì¡°ì²´ ì‚¬ìš©
 	std::vector<Vertex> vertices = {
 		Vertex(XMFLOAT3(-1.0f, +1.0f, -1.0f)), // 0
 	    Vertex(XMFLOAT3(+1.0f, +1.0f, -1.0f)), // 1
@@ -15,7 +15,7 @@ SkyboxMesh::SkyboxMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandL
 	    Vertex(XMFLOAT3(-1.0f, -1.0f, +1.0f))  // 7
 	};
 
-	// Å¥ºêÀÇ 6¸é¿¡ ´ëÇÑ 12°³ »ï°¢ÇüÀ» Á¤ÀÇÇÏ´Â ÀÎµ¦½º µ¥ÀÌÅÍÀÔ´Ï´Ù.
+	// íë¸Œì˜ 6ë©´ì— ëŒ€í•œ 12ê°œ ì‚¼ê°í˜•ì„ ì •ì˜í•˜ëŠ” ì¸ë±ìŠ¤ ë°ì´í„°ì…ë‹ˆë‹¤.
 	std::vector<UINT> indices = {
 		// Front
 		0, 1, 2, 
@@ -36,11 +36,11 @@ SkyboxMesh::SkyboxMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandL
 		0, 4, 5,
 		0, 5, 1
 	};
-	// ºÎ¸ğ Å¬·¡½º(Mesh)ÀÇ ÇÔ¼ö¸¦ »ç¿ëÇÏ¿© Á¤Á¡ µ¥ÀÌÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+	// ë¶€ëª¨ í´ë˜ìŠ¤(Mesh)ì˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì—¬ ì •ì  ë°ì´í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
     set_vertex_data_buffer(vertices);
-	// ÀÎµ¦½º µ¥ÀÌÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+	// ì¸ë±ìŠ¤ ë°ì´í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
     _indices = indices;
-	// ÇÁ¸®¹ÌÆ¼ºê ÅäÆú·ÎÁö¸¦ »ï°¢Çü ¸®½ºÆ®·Î ¼³Á¤ÇÕ´Ï´Ù.
+	// í”„ë¦¬ë¯¸í‹°ë¸Œ í† í´ë¡œì§€ë¥¼ ì‚¼ê°í˜• ë¦¬ìŠ¤íŠ¸ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
     _primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	
 }

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 
 enum class SoundType
@@ -7,7 +7,7 @@ enum class SoundType
     SFX
 };
 
-// DW¼³¸í : »ç¿îµå¸¦ °ü¸®ÇÑ´Ù -> 3D »ç¿îµåµµ Àç»ı °¡´ÉÇÏ°Ô Á¦ÀÛÇÏ¿´À½ ·ÎµåÇÒ ¶§ ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ
+// DWì„¤ëª… : ì‚¬ìš´ë“œë¥¼ ê´€ë¦¬í•œë‹¤ -> 3D ì‚¬ìš´ë“œë„ ì¬ìƒ ê°€ëŠ¥í•˜ê²Œ ì œì‘í•˜ì˜€ìŒ ë¡œë“œí•  ë•Œ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨
 class SoundManager : public Singleton<SoundManager>
 {
     friend Singleton<SoundManager>;
@@ -20,40 +20,40 @@ public:
     void update();
     virtual void release() override;
 
-    // »ç¿îµå °ü·Ã ¿¡·¯ Ã¼Å©¿ë À¯Æ¿¸®Æ¼ ÇÔ¼ö
+    // ì‚¬ìš´ë“œ ê´€ë ¨ ì—ëŸ¬ ì²´í¬ìš© ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜
     static bool check_fmod_error(FMOD_RESULT result, const std::string& errorContext);
 
 public:
-    // À½¿ø ·Îµå
+    // ìŒì› ë¡œë“œ
     void load_sound(const std::string& name, const std::string& filepath, bool is_3d = false);
 
-	// º¼·ı Á¶Àı ÇÔ¼ö -> ±×·ìº° º¼·ı Á¶Àı°ú ¸¶½ºÅÍ º¼·ı Á¶Àı·Î ³ª´©¾î¼­ Á¦ÀÛÇÏ¿´À½
+	// ë³¼ë¥¨ ì¡°ì ˆ í•¨ìˆ˜ -> ê·¸ë£¹ë³„ ë³¼ë¥¨ ì¡°ì ˆê³¼ ë§ˆìŠ¤í„° ë³¼ë¥¨ ì¡°ì ˆë¡œ ë‚˜ëˆ„ì–´ì„œ ì œì‘í•˜ì˜€ìŒ
     void set_group_volume(SoundType type, float volume);
     void set_master_volume(float volume);
 
-	// Àç»ı (2D ¶Ç´Â 3D »ç¿îµå ±¸ºĞÇÏ¿© Àç»ı)
+	// ì¬ìƒ (2D ë˜ëŠ” 3D ì‚¬ìš´ë“œ êµ¬ë¶„í•˜ì—¬ ì¬ìƒ)
     void play(const std::string& name, SoundType type = SoundType::SFX, float volume = 1.0f, bool is_loop = false);
     void play_3d(const std::string& name, const XMFLOAT3& position, SoundType type = SoundType::SFX, float volume = 1.0f, bool is_loop = false);
 
-	// »ç¿îµå Á¤Áö
+	// ì‚¬ìš´ë“œ ì •ì§€
 	void stop(const std::string& name);
 
-	// Àç»ıÁßÀÎÁö È®ÀÎÇÏ´Â ÇÔ¼ö -> »ç¿îµå ÀÌ¸§À¸·Î ÇöÀç Àç»ı ÁßÀÎ Ã¤³ÎÀÌ ÀÖ´ÂÁö Ã¼Å©
+	// ì¬ìƒì¤‘ì¸ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ -> ì‚¬ìš´ë“œ ì´ë¦„ìœ¼ë¡œ í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ì±„ë„ì´ ìˆëŠ”ì§€ ì²´í¬
     bool is_playing(const std::string& name);
 
-    // »ç¿îµåÀÇ ÇöÀç Àç»ı À§Ä¡(ÃÊ ´ÜÀ§) ¹İÈ¯
+    // ì‚¬ìš´ë“œì˜ í˜„ì¬ ì¬ìƒ ìœ„ì¹˜(ì´ˆ ë‹¨ìœ„) ë°˜í™˜
     float get_playback_position(const std::string& name);
 
 private:
     FMOD::System* _system = nullptr;
 
-    // »ç¿îµå(¸Ş¸ğ¸®¿¡ ·ÎµåµÈ À½¿ø µ¥ÀÌÅÍ) °ü¸®
+    // ì‚¬ìš´ë“œ(ë©”ëª¨ë¦¬ì— ë¡œë“œëœ ìŒì› ë°ì´í„°) ê´€ë¦¬
     std::unordered_map<std::string, FMOD::Sound*> _sounds;
 
-    // Ã¤³Î(ÇöÀç Àç»ı ÁßÀÎ ¼Ò¸®) °ü¸®
+    // ì±„ë„(í˜„ì¬ ì¬ìƒ ì¤‘ì¸ ì†Œë¦¬) ê´€ë¦¬
     std::unordered_map<std::string, FMOD::Channel*> _channels;
 
-    // º¼·ı ±×·ì °ü¸®¸¦ À§ÇÑ Ã¤³Î ±×·ìµé
+    // ë³¼ë¥¨ ê·¸ë£¹ ê´€ë¦¬ë¥¼ ìœ„í•œ ì±„ë„ ê·¸ë£¹ë“¤
     FMOD::ChannelGroup* _masterGroup = nullptr;
     FMOD::ChannelGroup* _bgmGroup = nullptr;
     FMOD::ChannelGroup* _sfxGroup = nullptr;

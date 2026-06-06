@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "FoliageRenderComponent.h"
 #include "GameObject.h"
 #include "CameraComponent.h"

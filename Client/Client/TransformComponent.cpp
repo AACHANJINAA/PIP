@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "TransformComponent.h"
 #include "GameObject.h"
 #include "RenderComponent.h"
@@ -12,10 +12,10 @@ TransformComponent::TransformComponent() : _isDirty(true)
     set_name("TransformComponent");
 }
 
-// [Ãß°¡] ÀÚ½Å°ú ¸ğµç ÀÚ½Ä¿¡°Ô Àç±ÍÀûÀ¸·Î ´õ·´´Ù°í ¾Ë¸®´Â ÇÔ¼ö
+// [ì¶”ê°€] ìì‹ ê³¼ ëª¨ë“  ìì‹ì—ê²Œ ì¬ê·€ì ìœ¼ë¡œ ë”ëŸ½ë‹¤ê³  ì•Œë¦¬ëŠ” í•¨ìˆ˜
 void TransformComponent::set_hierarchy_dirty()
 {
-    if (_isDirty) return; // ÀÌ¹Ì ´õ·¯¿ì¸é Áßº¹ ÀÛ¾÷À» ¹æÁö
+    if (_isDirty) return; // ì´ë¯¸ ë”ëŸ¬ìš°ë©´ ì¤‘ë³µ ì‘ì—…ì„ ë°©ì§€
     _isDirty = true;
 
     for (const auto& child : _children)
@@ -27,7 +27,7 @@ void TransformComponent::set_hierarchy_dirty()
     }
 }
 
-// [º¯°æ] ÀÚ½ÅÀÇ ¿ùµå Çà·Ä¸¸ °è»êÇÏ´Â ÇÔ¼ö
+// [ë³€ê²½] ìì‹ ì˜ ì›”ë“œ í–‰ë ¬ë§Œ ê³„ì‚°í•˜ëŠ” í•¨ìˆ˜
 void TransformComponent::calculate_world_matrix()
 {
     XMMATRIX localTransform = XMMatrixScalingFromVector(XMLoadFloat3(&_localScale)) *
@@ -36,7 +36,7 @@ void TransformComponent::calculate_world_matrix()
 
     if (auto parent_ptr = _parent.lock())
     {
-        // ºÎ¸ğÀÇ world_matrix()¸¦ È£ÃâÇÏ¿©, ºÎ¸ğ°¡ ¸ÕÀú °è»êµÇµµ·Ï º¸Àå
+        // ë¶€ëª¨ì˜ world_matrix()ë¥¼ í˜¸ì¶œí•˜ì—¬, ë¶€ëª¨ê°€ ë¨¼ì € ê³„ì‚°ë˜ë„ë¡ ë³´ì¥
         XMStoreFloat4x4(&_worldMatrix, localTransform * XMLoadFloat4x4(&parent_ptr->world_matrix()));
     }
     else
@@ -44,10 +44,10 @@ void TransformComponent::calculate_world_matrix()
         XMStoreFloat4x4(&_worldMatrix, localTransform);
     }
 
-    _isDirty = false; // °è»ê ¿Ï·á ÈÄ ÇÃ·¡±× ³»¸®±â
+    _isDirty = false; // ê³„ì‚° ì™„ë£Œ í›„ í”Œë˜ê·¸ ë‚´ë¦¬ê¸°
 }
 
-// --- Getter ÇÔ¼öµé ---
+// --- Getter í•¨ìˆ˜ë“¤ ---
 
 const XMFLOAT4X4& TransformComponent::world_matrix()
 {
@@ -60,7 +60,7 @@ const XMFLOAT4X4& TransformComponent::world_matrix()
 
 XMFLOAT3 TransformComponent::position()
 {
-    const XMFLOAT4X4& worldMat = world_matrix(); // ÀÌ È£Ãâ·Î ÃÖ½Å Çà·ÄÀÓÀÌ º¸ÀåµÊ
+    const XMFLOAT4X4& worldMat = world_matrix(); // ì´ í˜¸ì¶œë¡œ ìµœì‹  í–‰ë ¬ì„ì´ ë³´ì¥ë¨
     return XMFLOAT3(worldMat._41, worldMat._42, worldMat._43);
 }
 
@@ -99,78 +99,78 @@ XMFLOAT3 TransformComponent::forward()
 
 const XMFLOAT3 TransformComponent::local_rotation_euler()
 {
-    // 1. ¿ùµå ÄõÅÍ´Ï¾ğÀ» °¡Á®¿É´Ï´Ù. (ÀÚ½ÅÀÇ È¸Àü + ºÎ¸ğÀÇ È¸ÀüÀÌ ¸ğµÎ Àû¿ëµÈ ÃÖÁ¾°ª)
+    // 1. ì›”ë“œ ì¿¼í„°ë‹ˆì–¸ì„ ê°€ì ¸ì˜µë‹ˆë‹¤. (ìì‹ ì˜ íšŒì „ + ë¶€ëª¨ì˜ íšŒì „ì´ ëª¨ë‘ ì ìš©ëœ ìµœì¢…ê°’)
     XMFLOAT4 worldQuat = rotation();
 
-    // 2. ÀÌ ÄõÅÍ´Ï¾ğÀ» È¸Àü Çà·Ä(Matrix)·Î ¹Ù²ß´Ï´Ù.
+    // 2. ì´ ì¿¼í„°ë‹ˆì–¸ì„ íšŒì „ í–‰ë ¬(Matrix)ë¡œ ë°”ê¿‰ë‹ˆë‹¤.
     XMMATRIX mat = XMMatrixRotationQuaternion(XMLoadFloat4(&worldQuat));
 
-    // 3. Çà·ÄÀÇ ¼ººĞ¿¡ Á¢±ÙÇÏ±â À§ÇØ 4x4 ÇüÅÂ·Î ÀúÀåÇÕ´Ï´Ù.
+    // 3. í–‰ë ¬ì˜ ì„±ë¶„ì— ì ‘ê·¼í•˜ê¸° ìœ„í•´ 4x4 í˜•íƒœë¡œ ì €ì¥í•©ë‹ˆë‹¤.
     XMFLOAT4X4 m;
     XMStoreFloat4x4(&m, mat);
 
     XMFLOAT3 euler;
 
-    // 4. Çà·Ä¿¡¼­ Á÷Á¢ °¢µµ ÃßÃâ (DirectX Left-Handed ±âÁØ)
-    // Pitch (XÃà È¸Àü): Àü¹æ º¤ÅÍÀÇ Y¼ººĞ(-m._32)
+    // 4. í–‰ë ¬ì—ì„œ ì§ì ‘ ê°ë„ ì¶”ì¶œ (DirectX Left-Handed ê¸°ì¤€)
+    // Pitch (Xì¶• íšŒì „): ì „ë°© ë²¡í„°ì˜ Yì„±ë¶„(-m._32)
     euler.x = std::asin(-m._32);
 
-    // Áü¹ú¶ô(Gimbal Lock) ¹æ¾î: Pitch°¡ 90µµ³ª -90µµ(À§/¾Æ·¡¸¦ ¿Ïº®È÷ ÃÄ´Ùº½)¿¡ °¡±î¿îÁö È®ÀÎ
+    // ì§ë²Œë½(Gimbal Lock) ë°©ì–´: Pitchê°€ 90ë„ë‚˜ -90ë„(ìœ„/ì•„ë˜ë¥¼ ì™„ë²½íˆ ì³ë‹¤ë´„)ì— ê°€ê¹Œìš´ì§€ í™•ì¸
     if (std::cos(euler.x) > 0.0001f)
     {
-        // Á¤»ó »óÅÂ: Yaw¿Í Roll Á¤»ó °è»ê
-        euler.y = std::atan2(m._31, m._33); // Yaw (YÃà È¸Àü)
-        euler.z = std::atan2(m._12, m._22); // Roll (ZÃà È¸Àü)
+        // ì •ìƒ ìƒíƒœ: Yawì™€ Roll ì •ìƒ ê³„ì‚°
+        euler.y = std::atan2(m._31, m._33); // Yaw (Yì¶• íšŒì „)
+        euler.z = std::atan2(m._12, m._22); // Roll (Zì¶• íšŒì „)
     }
     else
     {
-        // Áü¹ú¶ô »óÅÂ: Ä«¸Ş¶ó°¡ ¼öÁ÷À¸·Î ¼­ ÀÖÀ» ¶§´Â RollÀ» Æ÷±âÇÏ°í Yaw¸¸ °è»ê
+        // ì§ë²Œë½ ìƒíƒœ: ì¹´ë©”ë¼ê°€ ìˆ˜ì§ìœ¼ë¡œ ì„œ ìˆì„ ë•ŒëŠ” Rollì„ í¬ê¸°í•˜ê³  Yawë§Œ ê³„ì‚°
         euler.y = std::atan2(-m._13, m._11);
         euler.z = 0.0f;
     }
 
-    // 5. ¶óµğ¾È(Radian)À» ´«À¸·Î ÀĞ±â ÆíÇÑ µµ(Degree) ´ÜÀ§·Î º¯È¯
+    // 5. ë¼ë””ì•ˆ(Radian)ì„ ëˆˆìœ¼ë¡œ ì½ê¸° í¸í•œ ë„(Degree) ë‹¨ìœ„ë¡œ ë³€í™˜
     euler.x = DirectX::XMConvertToDegrees(euler.x);
     euler.y = DirectX::XMConvertToDegrees(euler.y);
     euler.z = DirectX::XMConvertToDegrees(euler.z);
 
-    return euler; // ¼¼»ó ±âÁØÀÇ ÁøÂ¥ ¿ÀÀÏ·¯ °¢µµ ¹İÈ¯!
+    return euler; // ì„¸ìƒ ê¸°ì¤€ì˜ ì§„ì§œ ì˜¤ì¼ëŸ¬ ê°ë„ ë°˜í™˜!
 }
 
-// --- Setter ÇÔ¼öµé ---
+// --- Setter í•¨ìˆ˜ë“¤ ---
 
 void TransformComponent::set_world_matrix(const XMFLOAT4X4& matrix)
 {
     XMMATRIX worldMat = XMLoadFloat4x4(&matrix);
-    // ¿ùµå Çà·Ä¿¡¼­ À§Ä¡, È¸Àü, ½ºÄÉÀÏ ºĞÇØ
+    // ì›”ë“œ í–‰ë ¬ì—ì„œ ìœ„ì¹˜, íšŒì „, ìŠ¤ì¼€ì¼ ë¶„í•´
     XMVECTOR scaleVec, rotationQuat, translationVec;
     XMMatrixDecompose(&scaleVec, &rotationQuat, &translationVec, worldMat);
-    // ·ÎÄÃ °ø°£À¸·Î º¯È¯
+    // ë¡œì»¬ ê³µê°„ìœ¼ë¡œ ë³€í™˜
     if (auto parent_ptr = _parent.lock())
     {
         XMMATRIX parentWorldMat = XMLoadFloat4x4(&parent_ptr->world_matrix());
         XMMATRIX parentWorldMatInv = XMMatrixInverse(nullptr, parentWorldMat);
         XMMATRIX localMat = worldMat * parentWorldMatInv;
-        // ´Ù½Ã ºĞÇØ
+        // ë‹¤ì‹œ ë¶„í•´
         XMMatrixDecompose(&scaleVec, &rotationQuat, &translationVec, localMat);
     }
-    // °ª ÀúÀå
+    // ê°’ ì €ì¥
     XMStoreFloat3(&_localPosition, translationVec);
     XMStoreFloat4(&_localRotation, rotationQuat);
     XMStoreFloat3(&_localScale, scaleVec);
-	set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+	set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 void TransformComponent::set_local_position(const XMFLOAT3& position)
 {
     _localPosition = position;
-    set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+    set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 void TransformComponent::set_local_rotation(const XMFLOAT4& rotation)
 {
     _localRotation = rotation;
-    set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+    set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 void TransformComponent::set_local_rotation(float pitch, float yaw, float roll)
@@ -196,40 +196,40 @@ void TransformComponent::set_local_rotation(float x, float y, float z, float w)
 void TransformComponent::set_local_scale(const XMFLOAT3& scale)
 {
     _localScale = scale;
-    set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+    set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 void TransformComponent::move_forward(float distance)
 {
-	world_matrix(); // ÃÖ½Å Çà·Ä º¸Àå
+	world_matrix(); // ìµœì‹  í–‰ë ¬ ë³´ì¥
 
 	_localPosition.x += forward().x * distance;
 	_localPosition.y += forward().y * distance;
 	_localPosition.z += forward().z * distance;
 
-    set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+    set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 void TransformComponent::move_right(float distance)
 {
-    world_matrix(); // ÃÖ½Å Çà·Ä º¸Àå
+    world_matrix(); // ìµœì‹  í–‰ë ¬ ë³´ì¥
 
 	_localPosition.x += right().x * distance;
 	_localPosition.y += right().y * distance;
 	_localPosition.z += right().z * distance;
 
-    set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+    set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 void TransformComponent::move_up(float distance)
 {
-    world_matrix(); // ÃÖ½Å Çà·Ä º¸Àå
+    world_matrix(); // ìµœì‹  í–‰ë ¬ ë³´ì¥
 
 	_localPosition.x += up().x * distance;
 	_localPosition.y += up().y * distance;
 	_localPosition.z += up().z * distance;
 
-    set_hierarchy_dirty(); // ÀÚ½Å°ú ÀÚ½Äµé¿¡°Ô º¯°æ ÀüÆÄ
+    set_hierarchy_dirty(); // ìì‹ ê³¼ ìì‹ë“¤ì—ê²Œ ë³€ê²½ ì „íŒŒ
 }
 
 XMFLOAT3 TransformComponent::get_world_scale()
@@ -242,11 +242,11 @@ XMFLOAT3 TransformComponent::get_world_scale()
         BoundingOrientedBox local_bounding_box = render_component->mesh()->bounding_box();
         XMMATRIX worldMat = XMLoadFloat4x4(&world_matrix());
 
-        // 1. ·ÎÄÃ ¹Ù¿îµù ¹Ú½º¸¦ ÅëÂ°·Î ¿ùµå °ø°£À¸·Î º¯È¯ (È¸Àü, ½ºÄÉÀÏ, ÀÌµ¿ ¸ğµÎ ÀÚµ¿ Àû¿ë)
+        // 1. ë¡œì»¬ ë°”ìš´ë”© ë°•ìŠ¤ë¥¼ í†µì§¸ë¡œ ì›”ë“œ ê³µê°„ìœ¼ë¡œ ë³€í™˜ (íšŒì „, ìŠ¤ì¼€ì¼, ì´ë™ ëª¨ë‘ ìë™ ì ìš©)
         BoundingOrientedBox world_bounding_box;
         local_bounding_box.Transform(world_bounding_box, worldMat);
 
-        // 2. Extents´Â 'Àı¹İ Å©±â(Half-size)'ÀÌ¹Ç·Î 2.0À» °öÇØ¾ß ÀüÃ¼ ±æÀÌ³ª ³ª¿È
+        // 2. ExtentsëŠ” 'ì ˆë°˜ í¬ê¸°(Half-size)'ì´ë¯€ë¡œ 2.0ì„ ê³±í•´ì•¼ ì „ì²´ ê¸¸ì´ë‚˜ ë‚˜ì˜´
         XMFLOAT3 world_size;
         world_size.x = world_bounding_box.Extents.x * 2.0f;
         world_size.y = world_bounding_box.Extents.y * 2.0f;
@@ -260,8 +260,8 @@ XMFLOAT3 TransformComponent::get_world_scale()
 
 XMFLOAT3 TransformComponent::get_world_position()
 {
-    const XMFLOAT4X4& worldMat = world_matrix(); // 1. ¿©±â¼­ ÃÖ½Å ¿ùµå Çà·ÄÀ» °è»êÇØ¼­ °¡Á®¿È
-    return XMFLOAT3(worldMat._41, worldMat._42, worldMat._43); // 2. Çà·Ä¿¡¼­ 'À§Ä¡' °ª¸¸ ½ï »©¿È
+    const XMFLOAT4X4& worldMat = world_matrix(); // 1. ì—¬ê¸°ì„œ ìµœì‹  ì›”ë“œ í–‰ë ¬ì„ ê³„ì‚°í•´ì„œ ê°€ì ¸ì˜´
+    return XMFLOAT3(worldMat._41, worldMat._42, worldMat._43); // 2. í–‰ë ¬ì—ì„œ 'ìœ„ì¹˜' ê°’ë§Œ ì™ ë¹¼ì˜´
 }
 
 void TransformComponent::rotate(float pitch, float yaw, float roll)
@@ -272,16 +272,16 @@ void TransformComponent::rotate(float pitch, float yaw, float roll)
         XMConvertToRadians(roll)
     );
 
-    // ±âÁ¸ ·ÎÄÃ È¸Àü ÄõÅÍ´Ï¾ğÀ» °¡Á®¿É´Ï´Ù.
+    // ê¸°ì¡´ ë¡œì»¬ íšŒì „ ì¿¼í„°ë‹ˆì–¸ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
     XMVECTOR current_local_quat = XMLoadFloat4(&_localRotation);
 
-    // µÎ ÄõÅÍ´Ï¾ğÀ» °öÇÏ¿© È¸ÀüÀ» ´©ÀûÇÕ´Ï´Ù. (¼ø¼­ Áß¿ä: new * old)
+    // ë‘ ì¿¼í„°ë‹ˆì–¸ì„ ê³±í•˜ì—¬ íšŒì „ì„ ëˆ„ì í•©ë‹ˆë‹¤. (ìˆœì„œ ì¤‘ìš”: new * old)
     XMVECTOR new_local_quat = XMQuaternionMultiply(delta_rotation_quat, current_local_quat);
 
-    // °á°ú¸¦ Á¤±ÔÈ­ÇÏ°í ´Ù½Ã ÀúÀåÇÕ´Ï´Ù.
+    // ê²°ê³¼ë¥¼ ì •ê·œí™”í•˜ê³  ë‹¤ì‹œ ì €ì¥í•©ë‹ˆë‹¤.
     XMStoreFloat4(&_localRotation, XMQuaternionNormalize(new_local_quat));
 
-    // Çà·ÄÀÌ ´õ·´ÇôÁ³À½À» Ç¥½ÃÇÕ´Ï´Ù.
+    // í–‰ë ¬ì´ ë”ëŸ½í˜€ì¡ŒìŒì„ í‘œì‹œí•©ë‹ˆë‹¤.
     set_hierarchy_dirty();
 }
 // ---------------------------- Helper Functions ----------------------------
@@ -301,35 +301,35 @@ void TransformComponent::camera_rotate(float pitch, float yaw, float roll)
             total_pitch_rad = XMConvertToRadians(-89.f);
         }
     }
-    else // ¸¸¾à ÀÚÀ¯ ½ÃÁ¡ Ä«¸Ş¶ó°¡ ¾Æ´Ï¶ó¸é? -> Á¦¾à°É±â
+    else // ë§Œì•½ ììœ  ì‹œì  ì¹´ë©”ë¼ê°€ ì•„ë‹ˆë¼ë©´? -> ì œì•½ê±¸ê¸°
     {
-        if (XMConvertToDegrees(total_pitch_rad) > 60.f) // Ä«¸Ş¶ó °í°³ ³»¸®´Â °¢µµ
+        if (XMConvertToDegrees(total_pitch_rad) > 60.f) // ì¹´ë©”ë¼ ê³ ê°œ ë‚´ë¦¬ëŠ” ê°ë„
         {
             total_pitch_rad = XMConvertToRadians(60.f);
         }
-        else if (XMConvertToDegrees(total_pitch_rad) < -60.f) // À­¹æÇâ º¸´Â °¢µµ
+        else if (XMConvertToDegrees(total_pitch_rad) < -60.f) // ìœ—ë°©í–¥ ë³´ëŠ” ê°ë„
         {
             total_pitch_rad = XMConvertToRadians(-60.f);
 		}
     }
 
-    // Yaw´Â Ç×»ó ¿ùµå YÃà(0,1,0)À» ±âÁØÀ¸·Î ÇÕ´Ï´Ù.
+    // YawëŠ” í•­ìƒ ì›”ë“œ Yì¶•(0,1,0)ì„ ê¸°ì¤€ìœ¼ë¡œ í•©ë‹ˆë‹¤.
     XMVECTOR yaw_quat = XMQuaternionRotationAxis(
         XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
         total_yaw_rad
     );
 
-    // Pitch´Â ·ÎÄÃ XÃà(1,0,0)À» ±âÁØÀ¸·Î ÇÕ´Ï´Ù.
+    // PitchëŠ” ë¡œì»¬ Xì¶•(1,0,0)ì„ ê¸°ì¤€ìœ¼ë¡œ í•©ë‹ˆë‹¤.
     XMVECTOR pitch_quat = XMQuaternionRotationAxis(
         XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
         total_pitch_rad
     );
 
-    // ÃÖÁ¾ È¸ÀüÀ» °è»êÇÏ¿© _localRotation¿¡ 'µ¤¾î¾¹´Ï´Ù'. (°öÇÏ´Â °Ô ¾Æ´Ô!)
+    // ìµœì¢… íšŒì „ì„ ê³„ì‚°í•˜ì—¬ _localRotationì— 'ë®ì–´ì”ë‹ˆë‹¤'. (ê³±í•˜ëŠ” ê²Œ ì•„ë‹˜!)
     XMVECTOR final_quat = XMQuaternionMultiply(pitch_quat, yaw_quat);
     XMStoreFloat4(&_localRotation, XMQuaternionNormalize(final_quat));
 
-    // Çà·ÄÀÌ ´õ·´ÇôÁ³À½À» Ç¥½ÃÇÕ´Ï´Ù.
+    // í–‰ë ¬ì´ ë”ëŸ½í˜€ì¡ŒìŒì„ í‘œì‹œí•©ë‹ˆë‹¤.
     set_hierarchy_dirty();
 }
 
@@ -349,55 +349,55 @@ void TransformComponent::set_camera_rotate(float pitch, float yaw, float roll)
             total_pitch_rad = XMConvertToRadians(-89.f);
         }
     }
-    else // ¸¸¾à ÀÚÀ¯ ½ÃÁ¡ Ä«¸Ş¶ó°¡ ¾Æ´Ï¶ó¸é? -> Á¦¾à°É±â
+    else // ë§Œì•½ ììœ  ì‹œì  ì¹´ë©”ë¼ê°€ ì•„ë‹ˆë¼ë©´? -> ì œì•½ê±¸ê¸°
     {
-        if (XMConvertToDegrees(total_pitch_rad) > 60.f) // Ä«¸Ş¶ó °í°³ ³»¸®´Â °¢µµ
+        if (XMConvertToDegrees(total_pitch_rad) > 60.f) // ì¹´ë©”ë¼ ê³ ê°œ ë‚´ë¦¬ëŠ” ê°ë„
         {
             total_pitch_rad = XMConvertToRadians(60.f);
         }
-        else if (XMConvertToDegrees(total_pitch_rad) < -60.f) // À­¹æÇâ º¸´Â °¢µµ
+        else if (XMConvertToDegrees(total_pitch_rad) < -60.f) // ìœ—ë°©í–¥ ë³´ëŠ” ê°ë„
         {
             total_pitch_rad = XMConvertToRadians(-60.f);
         }
     }
 
-    // Yaw´Â Ç×»ó ¿ùµå YÃà(0,1,0)À» ±âÁØÀ¸·Î ÇÕ´Ï´Ù.
+    // YawëŠ” í•­ìƒ ì›”ë“œ Yì¶•(0,1,0)ì„ ê¸°ì¤€ìœ¼ë¡œ í•©ë‹ˆë‹¤.
     XMVECTOR yaw_quat = XMQuaternionRotationAxis(
         XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
         total_yaw_rad
     );
 
-    // Pitch´Â ·ÎÄÃ XÃà(1,0,0)À» ±âÁØÀ¸·Î ÇÕ´Ï´Ù.
+    // PitchëŠ” ë¡œì»¬ Xì¶•(1,0,0)ì„ ê¸°ì¤€ìœ¼ë¡œ í•©ë‹ˆë‹¤.
     XMVECTOR pitch_quat = XMQuaternionRotationAxis(
         XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
         total_pitch_rad
     );
 
-    // ÃÖÁ¾ È¸ÀüÀ» °è»êÇÏ¿© _localRotation¿¡ 'µ¤¾î¾¹´Ï´Ù'. (°öÇÏ´Â °Ô ¾Æ´Ô!)
+    // ìµœì¢… íšŒì „ì„ ê³„ì‚°í•˜ì—¬ _localRotationì— 'ë®ì–´ì”ë‹ˆë‹¤'. (ê³±í•˜ëŠ” ê²Œ ì•„ë‹˜!)
     XMVECTOR final_quat = XMQuaternionMultiply(pitch_quat, yaw_quat);
     XMStoreFloat4(&_localRotation, XMQuaternionNormalize(final_quat));
 
-    // Çà·ÄÀÌ ´õ·´ÇôÁ³À½À» Ç¥½ÃÇÕ´Ï´Ù.
+    // í–‰ë ¬ì´ ë”ëŸ½í˜€ì¡ŒìŒì„ í‘œì‹œí•©ë‹ˆë‹¤.
     set_hierarchy_dirty();
 }
 
 common::Quat TransformComponent::apply_offset_rotation(const common::Quat& base_quat, float pitch_offset_deg,
 	float yaw_offset_deg, float roll_offset_deg)
 {
-    // 1. ±âº» ÄõÅÍ´Ï¾ğ ·Îµå
+    // 1. ê¸°ë³¸ ì¿¼í„°ë‹ˆì–¸ ë¡œë“œ
     XMVECTOR base_q_xm = XMLoadFloat4(&base_quat);
 
-    // 2. ¿ÀÇÁ¼Â ¿ÀÀÏ·¯ °¢À¸·ÎºÎÅÍ ÄõÅÍ´Ï¾ğ »ı¼º
+    // 2. ì˜¤í”„ì…‹ ì˜¤ì¼ëŸ¬ ê°ìœ¼ë¡œë¶€í„° ì¿¼í„°ë‹ˆì–¸ ìƒì„±
     XMVECTOR offset_q_xm = XMQuaternionRotationRollPitchYaw(
         XMConvertToRadians(pitch_offset_deg),
         XMConvertToRadians(yaw_offset_deg),
         XMConvertToRadians(roll_offset_deg)
     );
 
-    // 3. µÎ ÄõÅÍ´Ï¾ğ ÇÕ¼º (¿ÀÇÁ¼Â -> ±âº» ¼ø¼­·Î Àû¿ë)
+    // 3. ë‘ ì¿¼í„°ë‹ˆì–¸ í•©ì„± (ì˜¤í”„ì…‹ -> ê¸°ë³¸ ìˆœì„œë¡œ ì ìš©)
     XMVECTOR combined_q_xm = XMQuaternionMultiply(offset_q_xm, base_q_xm);
 
-    // 4. °á°ú ÀúÀå ¹× ¹İÈ¯
+    // 4. ê²°ê³¼ ì €ì¥ ë° ë°˜í™˜
     common::Quat result_quat;
     XMStoreFloat4(&result_quat, combined_q_xm);
     return result_quat;
@@ -407,14 +407,14 @@ common::Quat TransformComponent::apply_offset_rotation(const common::Quat& base_
 
 void TransformComponent::set_parent(std::shared_ptr<TransformComponent> newParent)
 {
-    // ±âÁ¸ ºÎ¸ğ°¡ ÀÖ´Ù¸é, ±âÁ¸ ºÎ¸ğÀÇ ÀÚ½Ä ¸ñ·Ï¿¡¼­ ³ª¸¦ Á¦°Å
+    // ê¸°ì¡´ ë¶€ëª¨ê°€ ìˆë‹¤ë©´, ê¸°ì¡´ ë¶€ëª¨ì˜ ìì‹ ëª©ë¡ì—ì„œ ë‚˜ë¥¼ ì œê±°
     if (auto oldParent_ptr = _parent.lock())
     {
-        // oldParent_ptrÀÇ private ¸â¹öÀÎ remove_child¸¦ ½º½º·Î È£Ãâ
+        // oldParent_ptrì˜ private ë©¤ë²„ì¸ remove_childë¥¼ ìŠ¤ìŠ¤ë¡œ í˜¸ì¶œ
         oldParent_ptr->remove_child(std::static_pointer_cast<TransformComponent>(shared_from_this()));
     }
 
-    // »õ·Î¿î ºÎ¸ğ°¡ ÀÖ´Ù¸é, »õ ºÎ¸ğÀÇ ÀÚ½Ä ¸ñ·Ï¿¡ ³ª¸¦ Ãß°¡
+    // ìƒˆë¡œìš´ ë¶€ëª¨ê°€ ìˆë‹¤ë©´, ìƒˆ ë¶€ëª¨ì˜ ìì‹ ëª©ë¡ì— ë‚˜ë¥¼ ì¶”ê°€
     if (newParent)
     {
         newParent->add_child(std::static_pointer_cast<TransformComponent>(shared_from_this()));

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "SocketComponenet.h"
 #include "ReadGLTFMesh.h"
 #include "RenderComponent.h"
@@ -22,24 +22,24 @@ void SocketComponenet::late_update(float deltaTime)
 		if (!renderComp) return;
 		auto mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(renderComp->mesh());
 		if (!mesh) return;
-		// ¸ğµç ¿¬°áµÈ °´Ã¼µé¿¡ ´ëÇØ À§Ä¡ °»½Å
+		// ëª¨ë“  ì—°ê²°ëœ ê°ì²´ë“¤ì— ëŒ€í•´ ìœ„ì¹˜ ê°±ì‹ 
 		for (auto& pair : _connectedObjects)
 		{
 			auto& socket_info = pair.second;
 			int bone_index = mesh->get_bone_index_by_name(socket_info.bone_name);
 			if (bone_index < 0) continue;
 
-			// ¼ÒÄÏ ¿ÀºêÁ§Æ®ÀÇ TransformComponent °¡Á®¿À±â
+			// ì†Œì¼“ ì˜¤ë¸Œì íŠ¸ì˜ TransformComponent ê°€ì ¸ì˜¤ê¸°
 			auto socket_object = socket_info.Object;
 			if (!socket_object) continue;
 
-			// ÃÖÁ¾ ¿ùµå Çà·ÄÀ» ¼ÒÄÏ ¿ÀºêÁ§Æ®¿¡ Àû¿ë
-			XMFLOAT4X4 object_world_matrix = object->transform()->world_matrix(); // ÇÃ·¹ÀÌ¾î ¿ùµå Çà·Ä
-			XMFLOAT4X4 socket_transform = mesh->get_socket_transform(socket_info.bone_name); // »À´ë Çà·Ä
+			// ìµœì¢… ì›”ë“œ í–‰ë ¬ì„ ì†Œì¼“ ì˜¤ë¸Œì íŠ¸ì— ì ìš©
+			XMFLOAT4X4 object_world_matrix = object->transform()->world_matrix(); // í”Œë ˆì´ì–´ ì›”ë“œ í–‰ë ¬
+			XMFLOAT4X4 socket_transform = mesh->get_socket_transform(socket_info.bone_name); // ë¼ˆëŒ€ í–‰ë ¬
 
-			XMFLOAT4X4 final_world_float4x4 = pair.second._localMatrix; // °ËÀÇ ·ÎÄÃ Çà·Ä
+			XMFLOAT4X4 final_world_float4x4 = pair.second._localMatrix; // ê²€ì˜ ë¡œì»¬ í–‰ë ¬
 
-			// °ËÀÇ ·ÎÄÃ * ¾Ö´Ï¸ŞÀÌ¼Ç¿¡¼­ °è»êÇÑ ¿øÇÏ´Â »À´ëÀÇ Çà·Ä * ¼ÒÄÏÀ» µé°íÀÖ´Â ÇÃ·¹ÀÌ¾îÀÇ ¿ùµå Çà·Ä
+			// ê²€ì˜ ë¡œì»¬ * ì• ë‹ˆë©”ì´ì…˜ì—ì„œ ê³„ì‚°í•œ ì›í•˜ëŠ” ë¼ˆëŒ€ì˜ í–‰ë ¬ * ì†Œì¼“ì„ ë“¤ê³ ìˆëŠ” í”Œë ˆì´ì–´ì˜ ì›”ë“œ í–‰ë ¬
 			final_world_float4x4 = Matrix4x4::Multiply(final_world_float4x4, socket_transform);
 			final_world_float4x4 = Matrix4x4::Multiply(final_world_float4x4, object_world_matrix);
 
@@ -50,7 +50,7 @@ void SocketComponenet::late_update(float deltaTime)
 
 void SocketComponenet::add_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
 {
-	// Ãß°¡ÇÏ°íÀÚ ÇÏ´Â ¼ÒÄÏ ÀÌ¸§ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+	// ì¶”ê°€í•˜ê³ ì í•˜ëŠ” ì†Œì¼“ ì´ë¦„ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
 	for (const auto& pair : _connectedObjects)
 	{
 		if (pair.first == socket_name)
@@ -60,14 +60,14 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 		}
 	}
 
-	// »õ·Î¿î ¼ÒÄÏ ¿¬°á Á¤º¸¸¦ Ãß°¡ÇÏ´Â ÇÔ¼öÀÓ
+	// ìƒˆë¡œìš´ ì†Œì¼“ ì—°ê²° ì •ë³´ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜ì„
 	ConnectingSocketInfo info;
 	info.bone_name = bone_name;
 	info.Object = ObjectManager::instance()->create_game_object("SocketObject");
 	auto renderComp = info.Object->add_component<RenderComponent>();
-	// ¸Ş½¬ ¼³Á¤
+	// ë©”ì‰¬ ì„¤ì •
 	renderComp->set_mesh(mesh);
-	// ·ÎÄÃ º¯È¯ ¼³Á¤
+	// ë¡œì»¬ ë³€í™˜ ì„¤ì •
 	auto transform = info.Object->transform();
 	if (transform)
 	{
@@ -75,12 +75,12 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 		transform->set_local_rotation(loacl_rotation.x, loacl_rotation.y, loacl_rotation.z);
 		transform->set_local_scale(loacl_scale);
 	}
-	// ·ÎÄÃ Çà·Ä ¸¸µé¾î¼­ ±¸Á¶Ã¼¿¡ ÀúÀå
+	// ë¡œì»¬ í–‰ë ¬ ë§Œë“¤ì–´ì„œ êµ¬ì¡°ì²´ì— ì €ì¥
 	XMMATRIX matScale = XMMatrixScaling(loacl_scale.x, loacl_scale.y, loacl_scale.z);
 
-	float pitchRad = XMConvertToRadians(loacl_rotation.x); // XÃà È¸Àü
-	float yawRad = XMConvertToRadians(loacl_rotation.y); // YÃà È¸Àü
-	float rollRad = XMConvertToRadians(loacl_rotation.z); // ZÃà È¸Àü
+	float pitchRad = XMConvertToRadians(loacl_rotation.x); // Xì¶• íšŒì „
+	float yawRad = XMConvertToRadians(loacl_rotation.y); // Yì¶• íšŒì „
+	float rollRad = XMConvertToRadians(loacl_rotation.z); // Zì¶• íšŒì „
 	XMMATRIX matRotation = XMMatrixRotationRollPitchYaw(pitchRad, yawRad, rollRad);
 
 	XMMATRIX matTranslation = XMMatrixTranslation(loacl_pos.x, loacl_pos.y, loacl_pos.z);
@@ -89,18 +89,18 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 
 	XMStoreFloat4x4(&info._localMatrix, localMatrix);
 
-	// ±¸Á¶Ã¼ º¤ÅÍ¿¡ ³Ö±â
+	// êµ¬ì¡°ì²´ ë²¡í„°ì— ë„£ê¸°
 	_connectedObjects.emplace_back(socket_name, info);
 }
 
-// TODO: KJ¿äÃ» : ¸Ş½¬°¡ ¾ø´Â ¿ÀºêÁ§Æ®µµ Ãß°¡ÇÒ ¼ö ÀÖµµ·Ï ÇÏ´Â add_connecting ÇÔ¼ö ¿À¹ö·Îµå
-// KJ¼öÁ¤ : ¿ÀºêÁ§Æ® ¸®ÅÏ
+// TODO: KJìš”ì²­ : ë©”ì‰¬ê°€ ì—†ëŠ” ì˜¤ë¸Œì íŠ¸ë„ ì¶”ê°€í•  ìˆ˜ ìˆë„ë¡ í•˜ëŠ” add_connecting í•¨ìˆ˜ ì˜¤ë²„ë¡œë“œ
+// KJìˆ˜ì • : ì˜¤ë¸Œì íŠ¸ ë¦¬í„´
 std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& socket_name,
                                                              const std::string& bone_name, const std::string& mesh,
                                                              XMFLOAT3 local_pos, XMFLOAT3 local_rotation,
                                                              XMFLOAT3 local_scale)
 {
-	// Ãß°¡ÇÏ°íÀÚ ÇÏ´Â ¼ÒÄÏ ÀÌ¸§ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+	// ì¶”ê°€í•˜ê³ ì í•˜ëŠ” ì†Œì¼“ ì´ë¦„ì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
 	for (const auto& pair : _connectedObjects)
 	{
 		if (pair.first == socket_name)
@@ -110,12 +110,12 @@ std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& 
 		}
 	}
 
-	// »õ·Î¿î ¼ÒÄÏ ¿¬°á Á¤º¸¸¦ Ãß°¡ÇÏ´Â ÇÔ¼öÀÓ
+	// ìƒˆë¡œìš´ ì†Œì¼“ ì—°ê²° ì •ë³´ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜ì„
 	ConnectingSocketInfo info;
 	info.bone_name = bone_name;
 	info.Object = ObjectManager::instance()->create_game_object("SocketObject");
 	auto renderComp = info.Object->add_component<RenderComponent>();
-	// ¸Ş½¬ ¼³Á¤
+	// ë©”ì‰¬ ì„¤ì •
 	auto socket_mesh = ResourceManager::instance()->load_mesh(mesh);
 	std::string material = "Socket_Material";
 	ResourceManager::instance()->create_material(material);
@@ -123,7 +123,7 @@ std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& 
 	renderComp->set_pso_name("gltf");
 
 	renderComp->set_mesh(socket_mesh);
-	// ·ÎÄÃ º¯È¯ ¼³Á¤
+	// ë¡œì»¬ ë³€í™˜ ì„¤ì •
 	auto transform = info.Object->transform();
 	if (transform)
 	{
@@ -131,12 +131,12 @@ std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& 
 		transform->set_local_rotation(local_rotation.x, local_rotation.y, local_rotation.z);
 		transform->set_local_scale(local_scale);
 	}
-	// ·ÎÄÃ Çà·Ä ¸¸µé¾î¼­ ±¸Á¶Ã¼¿¡ ÀúÀå
+	// ë¡œì»¬ í–‰ë ¬ ë§Œë“¤ì–´ì„œ êµ¬ì¡°ì²´ì— ì €ì¥
 	XMMATRIX matScale = XMMatrixScaling(local_scale.x, local_scale.y, local_scale.z);
 
-	float pitchRad = XMConvertToRadians(local_rotation.x); // XÃà È¸Àü
-	float yawRad = XMConvertToRadians(local_rotation.y); // YÃà È¸Àü
-	float rollRad = XMConvertToRadians(local_rotation.z); // ZÃà È¸Àü
+	float pitchRad = XMConvertToRadians(local_rotation.x); // Xì¶• íšŒì „
+	float yawRad = XMConvertToRadians(local_rotation.y); // Yì¶• íšŒì „
+	float rollRad = XMConvertToRadians(local_rotation.z); // Zì¶• íšŒì „
 	XMMATRIX matRotation = XMMatrixRotationRollPitchYaw(pitchRad, yawRad, rollRad);
 
 	XMMATRIX matTranslation = XMMatrixTranslation(local_pos.x, local_pos.y, local_pos.z);
@@ -145,7 +145,7 @@ std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& 
 
 	XMStoreFloat4x4(&info._localMatrix, localMatrix);
 
-	// ±¸Á¶Ã¼ º¤ÅÍ¿¡ ³Ö±â
+	// êµ¬ì¡°ì²´ ë²¡í„°ì— ë„£ê¸°
 	_connectedObjects.emplace_back(socket_name, info);
 	return info.Object;
 }
@@ -153,7 +153,7 @@ std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& 
 void SocketComponenet::fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, 
 	XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
 {
-	// °íÄ¡ ½ÍÀº ¼ÒÄÏÀ» Ã£¾Æ ¼öÁ¤ÇÏ´Â ÇÔ¼öÀÓ
+	// ê³ ì¹˜ ì‹¶ì€ ì†Œì¼“ì„ ì°¾ì•„ ìˆ˜ì •í•˜ëŠ” í•¨ìˆ˜ì„
 
 	for (auto& pair : _connectedObjects)
 	{
@@ -188,12 +188,12 @@ void SocketComponenet::fix_connecting(std::string socket_name, const std::string
 
 void SocketComponenet::delete_connecting(std::string socket_name)
 {
-	// Áö¿ì°í ½ÍÀº ¼ÒÄÏÀ» Ã£¾Æ »èÁ¦ÇÏ´Â ÇÔ¼öÀÓ
+	// ì§€ìš°ê³  ì‹¶ì€ ì†Œì¼“ì„ ì°¾ì•„ ì‚­ì œí•˜ëŠ” í•¨ìˆ˜ì„
 	for (auto it = _connectedObjects.begin(); it != _connectedObjects.end(); ++it)
 	{
 		if (it->first == socket_name)
 		{
-			// ¼ÒÄÏ ¿ÀºêÁ§Æ®°¡ Á¸ÀçÇÏ¸é ÆÄ±«
+			// ì†Œì¼“ ì˜¤ë¸Œì íŠ¸ê°€ ì¡´ì¬í•˜ë©´ íŒŒê´´
 			if (it->second.Object)
 			{
 				Object::destroy(it->second.Object);

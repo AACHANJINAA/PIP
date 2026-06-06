@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Shader.h"
 class MonsterHPUIShader : public Shader
 {
@@ -6,7 +6,7 @@ class MonsterHPUIShader : public Shader
 	MonsterHPUIShader() = default;
 	virtual ~MonsterHPUIShader() = default;
 
-	// ShaderÀ»(¸¦) ÅëÇØ »ó¼ÓµÊ
+	// Shaderì„(ë¥¼) í†µí•´ ìƒì†ë¨
 	virtual  ComPtr<ID3D12PipelineState> create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 
 	virtual const std::string& pso_name() const override;

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "TerrainRenderComponent.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
@@ -63,7 +63,7 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
     commandList->SetGraphicsRootConstantBufferView(2, _terrain_info_cbuffer->GetGPUVirtualAddress());
 
     // ===== 2. LayerInfo Constant Buffer (b6) =====
-    // [Ãß°¡] cbLayerInfo ±¸Á¶Ã¼
+    // [ì¶”ê°€] cbLayerInfo êµ¬ì¡°ì²´
     struct LayerInfoCB
     {
         int NumLayers;
@@ -92,14 +92,14 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
 
     LayerInfoCB layer_cb = {};
     layer_cb.NumLayers = terrain_loader->has_layers() ? static_cast<int>(terrain_loader->get_layers().size()) : 0;
-    layer_cb.LayerTiling = 32.0f; // ·¹ÀÌ¾îº° Å¸ÀÏ¸µ °ª 
+    layer_cb.LayerTiling = 32.0f; // ë ˆì´ì–´ë³„ íƒ€ì¼ë§ ê°’ 
     memcpy(_layer_info_cbuffer_cpu_address, &layer_cb, sizeof(LayerInfoCB));
     commandList->SetGraphicsRootConstantBufferView(8, _layer_info_cbuffer->GetGPUVirtualAddress());
 
-    // ===== 3. ÅØ½ºÃ³ ¹ÙÀÎµù ºĞ±â Ã³¸® =====
+    // ===== 3. í…ìŠ¤ì²˜ ë°”ì¸ë”© ë¶„ê¸° ì²˜ë¦¬ =====
     if (terrain_loader->has_layers())
     {
-        // ===== Multi-Layer ÁöÇü: t12~t15 ¹ÙÀÎµù =====
+        // ===== Multi-Layer ì§€í˜•: t12~t15 ë°”ì¸ë”© =====
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> layer_texture_handles;
 
         // t12: Weightmap Array
@@ -130,7 +130,7 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
     }
     else
     {
-        // ===== ´ÜÀÏ ÁöÇü: t0~t4 ¹ÙÀÎµù (±âÁ¸ ¹æ½Ä) =====
+        // ===== ë‹¨ì¼ ì§€í˜•: t0~t4 ë°”ì¸ë”© (ê¸°ì¡´ ë°©ì‹) =====
         auto* mat_info = rm->get_material_info(terrain_loader->get_material_name());
         if (!mat_info) {
             CERROR("Material info not found for terrain");
@@ -160,7 +160,7 @@ void TerrainRenderComponent::pre_render(ID3D12GraphicsCommandList * commandList,
     }
 
 
-    //// [Ãß°¡] Terrain IBL ÅØ½ºÃ³ ¹ÙÀÎµù (·çÆ® ½Ã±×´ÏÃ³ ÀÎµ¦½º 5)
+    //// [ì¶”ê°€] Terrain IBL í…ìŠ¤ì²˜ ë°”ì¸ë”© (ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ì¸ë±ìŠ¤ 5)
     //auto* rm = ResourceManager::instance();
     //D3D12_CPU_DESCRIPTOR_HANDLE prefiltered = rm->get_ibl_prefiltered_srv_cpu();
     //D3D12_CPU_DESCRIPTOR_HANDLE brdfLut = rm->get_ibl_brdf_lut_srv_cpu();

@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 
 #include "stdafx.h"
 
 struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
 
-constexpr uint8_t MAX_LIGHTS = 16; // ÃÖ´ë Á¶¸í ¼ö (ÇÊ¿ä¿¡ µû¶ó Á¶Á¤ °¡´É)
+constexpr uint8_t MAX_LIGHTS = 16; // ìµœëŒ€ ì¡°ëª… ìˆ˜ (í•„ìš”ì— ë”°ë¼ ì¡°ì • ê°€ëŠ¥)
 
 struct Light
 {
@@ -21,14 +21,14 @@ struct Light
     int m_bEnable = false;
     int m_nType = 0;
     float m_fRange = 1000.0f;
-    float padding = 0.0f; // ±¸Á¶Ã¼ Å©±â¸¦ 16¹ÙÀÌÆ®ÀÇ ¹è¼ö·Î ¸ÂÃß±â À§ÇÑ ÆĞµù
+    float padding = 0.0f; // êµ¬ì¡°ì²´ í¬ê¸°ë¥¼ 16ë°”ì´íŠ¸ì˜ ë°°ìˆ˜ë¡œ ë§ì¶”ê¸° ìœ„í•œ íŒ¨ë”©
 };
 
 struct LightsConstantBuffer
 {
     Light gLights[MAX_LIGHTS];
     XMFLOAT4 gcGlobalAmbientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
-    XMFLOAT4 g_IblDiffuseSH[9]; // Ãß°¡: 9°³ÀÇ SH °è¼ö (float4 »ç¿ë ±ÇÀå)
+    XMFLOAT4 g_IblDiffuseSH[9]; // ì¶”ê°€: 9ê°œì˜ SH ê³„ìˆ˜ (float4 ì‚¬ìš© ê¶Œì¥)
     int gnLights = 0;
     XMFLOAT3 padding;
 };
@@ -37,16 +37,16 @@ class LightManager : public Singleton<LightManager>
 {
 public:
     friend Singleton<LightManager>;
-    // ÃÊ±âÈ­ ¹× ¼Ò¸ê
+    // ì´ˆê¸°í™” ë° ì†Œë©¸
     void initialize(ID3D12Device* device);
     void destroy();
 
-    // ¸Å ÇÁ·¹ÀÓ È£ÃâÇÏ¿© Á¶¸í ¹öÆÛÀÇ ³»¿ëÀ» GPU·Î ¾÷µ¥ÀÌÆ®
+    // ë§¤ í”„ë ˆì„ í˜¸ì¶œí•˜ì—¬ ì¡°ëª… ë²„í¼ì˜ ë‚´ìš©ì„ GPUë¡œ ì—…ë°ì´íŠ¸
     void update();
 
     void bind(ID3D12GraphicsCommandList* commandList, UINT rootParameterIndex);
 
-    // Á¶¸í Ãß°¡/Á¶È¸
+    // ì¡°ëª… ì¶”ê°€/ì¡°íšŒ
     int add_light(Light && light);
     Light* get_light(int index);
     const std::vector<Light>& get_lights() const { return _lights; }
@@ -62,18 +62,18 @@ private:
     LightManager();
     ~LightManager();
 
-    // º¹»ç ¹× ÀÌµ¿ »ı¼º/´ëÀÔÀ» ¸·À½ (½Ì±ÛÅÏ)
+    // ë³µì‚¬ ë° ì´ë™ ìƒì„±/ëŒ€ì…ì„ ë§‰ìŒ (ì‹±ê¸€í„´)
     LightManager(const LightManager&) = delete;
     LightManager & operator=(const LightManager&) = delete;
     LightManager(LightManager&&) = delete;
     LightManager & operator=(LightManager&&) = delete;
 
-    // Á¶¸í µ¥ÀÌÅÍ
+    // ì¡°ëª… ë°ì´í„°
     std::vector<Light> _lights;
     LightsConstantBuffer _lightsCBData;
 
-    // D3D12 Á¶¸í »ó¼ö ¹öÆÛ ¸®¼Ò½º
+    // D3D12 ì¡°ëª… ìƒìˆ˜ ë²„í¼ ë¦¬ì†ŒìŠ¤
     ComPtr<ID3D12Resource> _lightsConstantBuffer;
-    UINT8 * _pCbvDataBegin = nullptr; // GPU ¹öÆÛ¿¡ ¸ÅÇÎµÈ CPU ¸Ş¸ğ¸® Æ÷ÀÎÅÍ
+    UINT8 * _pCbvDataBegin = nullptr; // GPU ë²„í¼ì— ë§¤í•‘ëœ CPU ë©”ëª¨ë¦¬ í¬ì¸í„°
 };
 

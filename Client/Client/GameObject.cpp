@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "GameObject.h"
 #include "Behavior.h"
 #include "LayerManager.h"
@@ -20,10 +20,10 @@ void GameObject::init()
 
 void GameObject::awake() const
 {
-	_isIterating = true; // ÇÃ·¡±× On
+	_isIterating = true; // í”Œë˜ê·¸ On
 	for (const auto& component : _components)
 	{
-		// ÄÄÆ÷³ÍÆ®°¡ Behaviour¸¦ »ó¼Ó¹Ş¾Ò´ÂÁö È®ÀÎ
+		// ì»´í¬ë„ŒíŠ¸ê°€ Behaviourë¥¼ ìƒì†ë°›ì•˜ëŠ”ì§€ í™•ì¸
 		if (auto behaviour = std::dynamic_pointer_cast<Behavior>(component))
 		{
 			if (behaviour->is_enabled())
@@ -32,7 +32,7 @@ void GameObject::awake() const
 			}
 		}
 	}
-	_isIterating = false; // ÇÃ·¡±× Off
+	_isIterating = false; // í”Œë˜ê·¸ Off
 }
 
 void GameObject::start() const
@@ -51,7 +51,7 @@ void GameObject::start() const
 void GameObject::update(float deltaTime) const
 {
 	_isIterating = true;
-	// ÀÚ½ÅÀÇ ¸ğµç Behaviour ÄÄÆ÷³ÍÆ®ÀÇ update¸¦ È£ÃâÇÕ´Ï´Ù.
+	// ìì‹ ì˜ ëª¨ë“  Behaviour ì»´í¬ë„ŒíŠ¸ì˜ updateë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
 	for (const auto& component : _components)
 	{
 		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
@@ -99,17 +99,17 @@ void GameObject::destroy()
 
 void GameObject::prepare_render() const
 {
-	// DW¼öÁ¤ : ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ®°¡ ·»´õ·¯¿¡¼­ ³Ñ°ÜÁÖ±â ¶§¹®¿¡ ¿©±â¼­ ±âÁ¸¿¡ ÇÏ´ø °ÍÀº ÇØÁÖÁö ¾Ê¾Æµµ µÈ´Ù.
+	// DWìˆ˜ì • : ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ê°€ ë Œë”ëŸ¬ì—ì„œ ë„˜ê²¨ì£¼ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„œ ê¸°ì¡´ì— í•˜ë˜ ê²ƒì€ í•´ì£¼ì§€ ì•Šì•„ë„ ëœë‹¤.
 	
-	// ¸¸¾à ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù¸é, º» ÆÈ·¹Æ® ¹öÆÛ¸¦ °»½Å
+	// ë§Œì•½ ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ê°€ ìˆë‹¤ë©´, ë³¸ íŒ”ë ˆíŠ¸ ë²„í¼ë¥¼ ê°±ì‹ 
 	//for (const auto& animation : _components)
 	//{
-	//	// ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+	//	// ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
 	//	if (auto animation_component = std::dynamic_pointer_cast<AnimationComponent>(animation))
 	//	{
 	//		std::shared_ptr<Mesh> now_mesh = nullptr;
 
-	//		// ·»´õ·¯·ÎºÎÅÍ ¸Ş½¬ °¡Á®¿À±â
+	//		// ë Œë”ëŸ¬ë¡œë¶€í„° ë©”ì‰¬ ê°€ì ¸ì˜¤ê¸°
 	//		for (const auto& component : _components)
 	//		{
 	//			if (auto render_component = std::dynamic_pointer_cast<RenderComponent>(component))
@@ -118,7 +118,7 @@ void GameObject::prepare_render() const
 	//			}
 	//		}
 
-	//		// º» ÆÈ·¹Æ® ¹öÆÛ ¼³Á¤
+	//		// ë³¸ íŒ”ë ˆíŠ¸ ë²„í¼ ì„¤ì •
 	//		auto bone_palette_buffer = animation_component->get_bone_palette_buffer();
 	//		if(bone_palette_buffer)
 	//		{
@@ -130,7 +130,7 @@ void GameObject::prepare_render() const
 
 void GameObject::on_collision_enter(const std::shared_ptr<GameObject>& other)
 {
-	// ÀÌ °´Ã¼¿¡ ºÙÀº ¸ğµç ½ºÅ©¸³Æ®ÀÇ Äİ¹éÀ» È£Ãâ
+	// ì´ ê°ì²´ì— ë¶™ì€ ëª¨ë“  ìŠ¤í¬ë¦½íŠ¸ì˜ ì½œë°±ì„ í˜¸ì¶œ
 	for (const auto& component : _components)
 	{
 		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
@@ -141,7 +141,7 @@ void GameObject::on_collision_enter(const std::shared_ptr<GameObject>& other)
 }
 void GameObject::on_collision_stay(const std::shared_ptr<GameObject>& other)
 {
-	// ÀÌ °´Ã¼¿¡ ºÙÀº ¸ğµç ½ºÅ©¸³Æ®ÀÇ Äİ¹éÀ» È£Ãâ
+	// ì´ ê°ì²´ì— ë¶™ì€ ëª¨ë“  ìŠ¤í¬ë¦½íŠ¸ì˜ ì½œë°±ì„ í˜¸ì¶œ
 	for (const auto& component : _components)
 	{
 		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
@@ -153,7 +153,7 @@ void GameObject::on_collision_stay(const std::shared_ptr<GameObject>& other)
 }
 void GameObject::on_collision_exit(const std::shared_ptr<GameObject>& other)
 {
-	// ÀÌ °´Ã¼¿¡ ºÙÀº ¸ğµç ½ºÅ©¸³Æ®ÀÇ Äİ¹éÀ» È£Ãâ
+	// ì´ ê°ì²´ì— ë¶™ì€ ëª¨ë“  ìŠ¤í¬ë¦½íŠ¸ì˜ ì½œë°±ì„ í˜¸ì¶œ
 	for (const auto& component : _components)
 	{
 		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
@@ -177,8 +177,8 @@ bool GameObject::is_in_layer(const std::string& name) const
 
 void GameObject::add_glTF_conponent_pack()
 {
-	// ¾Ö´Ï¸ŞÀÌ¼Ç, ¼ÒÄÏ ÄÄÆ÷³ÍÆ® Ãß°¡
-	// ¿©±â¿¡ ÀÖ´Â add ¼ø¼­´Â ²À ÁöÄÑÁ®¾ß ÇÔ -> ±×·¡¼­ ÀÌ·¸°Ô pack ÇÔ¼ö·Î ¹­¾îµÒ
+	// ì• ë‹ˆë©”ì´ì…˜, ì†Œì¼“ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
+	// ì—¬ê¸°ì— ìˆëŠ” add ìˆœì„œëŠ” ê¼­ ì§€ì¼œì ¸ì•¼ í•¨ -> ê·¸ë˜ì„œ ì´ë ‡ê²Œ pack í•¨ìˆ˜ë¡œ ë¬¶ì–´ë‘ 
 	add_component<RenderComponent>();
 	add_component<AnimationComponent>();
 	add_component<SocketComponenet>();
@@ -190,7 +190,7 @@ void GameObject::remove_component(const std::shared_ptr<Component>& component)
 	{
 		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
 		{
-			// ºñÈ°¼ºÈ­ »óÅÂ¿©µµ ÆÄ±« ½ÃÁ¡ÀÇ Á¤¸®´Â ÇÊ¿äÇÏ¹Ç·Î ¹«Á¶°Ç È£ÃâÇÕ´Ï´Ù.
+			// ë¹„í™œì„±í™” ìƒíƒœì—¬ë„ íŒŒê´´ ì‹œì ì˜ ì •ë¦¬ëŠ” í•„ìš”í•˜ë¯€ë¡œ ë¬´ì¡°ê±´ í˜¸ì¶œí•©ë‹ˆë‹¤.
 			behavior->on_destroy();
 		}
 		if (_transform == component)

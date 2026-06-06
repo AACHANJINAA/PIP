@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "GltfSkinnedShader.h"
 
 #include "LightManager.h"
@@ -11,7 +11,7 @@ const std::string& GltfSkinnedShader::pso_name() const
 
 D3D12_INPUT_LAYOUT_DESC GltfSkinnedShader::create_input_layout()
 {
-	// GltfSkinnedVertex ±¸Á¶Ã¼¿Í ÀÏÄ¡ÇØ¾ß ÇÕ´Ï´Ù.
+	// GltfSkinnedVertex êµ¬ì¡°ì²´ì™€ ì¼ì¹˜í•´ì•¼ í•©ë‹ˆë‹¤.
 	static const D3D12_INPUT_ELEMENT_DESC d3d_input_element_descs[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -19,10 +19,10 @@ D3D12_INPUT_LAYOUT_DESC GltfSkinnedShader::create_input_layout()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 
-		// [Ãß°¡] »À´ë ÀÎµ¦½º (UINT4) - ¹ÙÀÌÆ® ¿ÀÇÁ¼Â 48 (float 12°³ µÚ)
+		// [ì¶”ê°€] ë¼ˆëŒ€ ì¸ë±ìŠ¤ (UINT4) - ë°”ì´íŠ¸ ì˜¤í”„ì…‹ 48 (float 12ê°œ ë’¤)
 		{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 
-		// [Ãß°¡] °¡ÁßÄ¡ (FLOAT4) - ¹ÙÀÌÆ® ¿ÀÇÁ¼Â 64 (UINT 4°³ µÚ)
+		// [ì¶”ê°€] ê°€ì¤‘ì¹˜ (FLOAT4) - ë°”ì´íŠ¸ ì˜¤í”„ì…‹ 64 (UINT 4ê°œ ë’¤)
 		{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
@@ -31,13 +31,13 @@ D3D12_INPUT_LAYOUT_DESC GltfSkinnedShader::create_input_layout()
 
 D3D12_SHADER_BYTECODE GltfSkinnedShader::create_vertex_shader(ComPtr<ID3DBlob>& shader_blob)
 {
-	// Gltf_Skinned_Shader.hlsl ÆÄÀÏÀÇ VS_GLTF_SKINNED ÇÔ¼ö ÁøÀÔ
+	// Gltf_Skinned_Shader.hlsl íŒŒì¼ì˜ VS_GLTF_SKINNED í•¨ìˆ˜ ì§„ì…
 	return compile_shader_from_file(L"Gltf_Skinned_Shader.hlsl", "VS_GLTF_SKINNED", "vs_5_1", shader_blob);
 }
 
 std::string GltfSkinnedShader::required_root_signature() const
 {
-	// RootSignature.cpp¿¡ Á¤ÀÇµÈ SkinnedRootSignatureGeneratorÀÇ ÀÌ¸§
+	// RootSignature.cppì— ì •ì˜ëœ SkinnedRootSignatureGeneratorì˜ ì´ë¦„
 	return "skinned";
 }
 

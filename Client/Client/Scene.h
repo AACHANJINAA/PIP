@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "TimerManager.h"
 #include "Shader.h"
@@ -6,7 +6,7 @@
 #include "LightManager.h"
 #include "RenderComponent.h"
 
-// LIGHTS ±¸Á¶Ã¼: ¾ÀÀÇ ¸ğµç Á¶¸í Á¤º¸
+// LIGHTS êµ¬ì¡°ì²´: ì”¬ì˜ ëª¨ë“  ì¡°ëª… ì •ë³´
 struct LIGHT
 {
 	XMFLOAT4 m_xmf4Ambient;
@@ -30,7 +30,7 @@ struct LIGHTS
 	XMFLOAT4 m_xmf4GlobalAmbient;
 };
 
-// MATERIALS ±¸Á¶Ã¼: ¾ÀÀÇ ¸ğµç ÀçÁú Á¤º¸.
+// MATERIALS êµ¬ì¡°ì²´: ì”¬ì˜ ëª¨ë“  ì¬ì§ˆ ì •ë³´.
 struct MATERIALS
 {
 	Material m_pReflections[MAX_MATERIALS];
@@ -46,7 +46,7 @@ struct SceneObjectData {
 	} transform;;
 };
 
-// Àü¹æ ¼±¾ğ
+// ì „ë°© ì„ ì–¸
 struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
 
@@ -58,27 +58,27 @@ public:
     virtual ~Scene();
 
     // =================================================================
-    // 1. ¾ÀÀÇ »õ·Î¿î ÇÙ½É ¿ªÇÒ
+    // 1. ì”¬ì˜ ìƒˆë¡œìš´ í•µì‹¬ ì—­í• 
     // =================================================================
 
-    // [¿ªÇÒ À¯Áö] ÆÄ»ı Å¬·¡½º´Â ÀÌ ÇÔ¼ö¸¦ ±¸ÇöÇÏ¿© ¾À¿¡ ÇÊ¿äÇÑ ¸ğµç GameObject¸¦ »ı¼ºÇÏ°í ¼³Á¤ÇØ¾ß ÇÕ´Ï´Ù.
+    // [ì—­í•  ìœ ì§€] íŒŒìƒ í´ë˜ìŠ¤ëŠ” ì´ í•¨ìˆ˜ë¥¼ êµ¬í˜„í•˜ì—¬ ì”¬ì— í•„ìš”í•œ ëª¨ë“  GameObjectë¥¼ ìƒì„±í•˜ê³  ì„¤ì •í•´ì•¼ í•©ë‹ˆë‹¤.
 	virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) = 0;
 
-    // [¿ªÇÒ À¯Áö] ºôµå °úÁ¤¿¡¼­ »ç¿ëµÈ ¾÷·Îµå ¹öÆÛ¸¦ ÇØÁ¦ÇÕ´Ï´Ù.
+    // [ì—­í•  ìœ ì§€] ë¹Œë“œ ê³¼ì •ì—ì„œ ì‚¬ìš©ëœ ì—…ë¡œë“œ ë²„í¼ë¥¼ í•´ì œí•©ë‹ˆë‹¤.
     virtual void release_upload_buffers() = 0;
 
-	// ¾ÀÀÌ Ã³¸®ÇØ¾ß ÇÒ ÀÏÀÌ ÀÖ´Ù¸é Ã³¸®ÇØÁÖ´Â ÇÔ¼ö
+	// ì”¬ì´ ì²˜ë¦¬í•´ì•¼ í•  ì¼ì´ ìˆë‹¤ë©´ ì²˜ë¦¬í•´ì£¼ëŠ” í•¨ìˆ˜
 	virtual void scene_process(float deltaTime) {}
 	virtual void on_scene_loaded();
 
 	void set_scene_name(const std::string& name) { _sceneName = name; }
 	const std::string& scene_name() const { return _sceneName; }
     // =================================================================
-    // 2. À¯Æ¿¸®Æ¼ ÇÔ¼ö (¼±ÅÃÀûÀ¸·Î À¯Áö)
+    // 2. ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜ (ì„ íƒì ìœ¼ë¡œ ìœ ì§€)
     // =================================================================
 
-    // [¿ªÇÒ À¯Áö] ¾À µ¥ÀÌÅÍ¸¦ ÆÄÀÏ¿¡¼­ ·ÎµåÇÏ´Â ±â´ÉÀº À¯¿ëÇÏ¹Ç·Î ³²°ÜµÓ´Ï´Ù.
-    // ´Ü, ³»ºÎ ±¸ÇöÀº »õ·Î¿î ¾ÆÅ°ÅØÃ³¿¡ ¸Â°Ô º¯°æµÇ¾î¾ß ÇÕ´Ï´Ù. (Chess_Scene¿¡¼­ ÀçÁ¤ÀÇ)
+    // [ì—­í•  ìœ ì§€] ì”¬ ë°ì´í„°ë¥¼ íŒŒì¼ì—ì„œ ë¡œë“œí•˜ëŠ” ê¸°ëŠ¥ì€ ìœ ìš©í•˜ë¯€ë¡œ ë‚¨ê²¨ë‘¡ë‹ˆë‹¤.
+    // ë‹¨, ë‚´ë¶€ êµ¬í˜„ì€ ìƒˆë¡œìš´ ì•„í‚¤í…ì²˜ì— ë§ê²Œ ë³€ê²½ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. (Chess_Sceneì—ì„œ ì¬ì •ì˜)
     virtual void load_scene_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList, bool IsTitle = false);
     void load_foliage_from_file(const std::string& filename, ID3D12Device* device,
                                 ID3D12GraphicsCommandList* commandList);

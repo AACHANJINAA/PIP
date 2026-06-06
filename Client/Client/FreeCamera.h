@@ -1,4 +1,4 @@
-//#pragma once
+ï»¿//#pragma once
 //#include "Camera.h"
 //#include "GameObject.h"
 //
@@ -6,7 +6,7 @@
 //{
 //	CAMERA_FREE = 1 ,
 //	CAMERA_THIRD_PERSON = 2 ,
-//	CAMERA_END = 3 // ³¡ ¹øÈ£ÀÓ ÀÇ¹ÌX
+//	CAMERA_END = 3 // ë ë²ˆí˜¸ì„ ì˜ë¯¸X
 //};
 //
 //inline CAMERA_MODE& operator++(CAMERA_MODE& mod)
@@ -34,7 +34,7 @@
 //	CAMERA_MODE GetCameraMode() { return m_NowMode; }
 //	void SetOffset(float Offset) { m_Offset = Offset; }
 //
-//	void UpdateAnimateCamera(float fElapsedTime); // Ä«¸Ş¶ó ¾Ö´Ï¸ŞÀÌ¼Ç
+//	void UpdateAnimateCamera(float fElapsedTime); // ì¹´ë©”ë¼ ì• ë‹ˆë©”ì´ì…˜
 //
 //	void ProcessInput(float fElapsedTime);
 //
@@ -42,26 +42,26 @@
 //
 //	void RotateMouseCamera(float X, float Y);
 //
-//	void MoveForward(float Sign); // ºÎÈ£³Ö±â
-//	void MoveRight(float Sign); // ºÎÈ£³Ö±â
-//	void MoveUP(float Sign); // ºÎÈ£³Ö±â
+//	void MoveForward(float Sign); // ë¶€í˜¸ë„£ê¸°
+//	void MoveRight(float Sign); // ë¶€í˜¸ë„£ê¸°
+//	void MoveUP(float Sign); // ë¶€í˜¸ë„£ê¸°
 //
 //private:
-//	// ÇÃ·¹ÀÌ¾î¸¦ °¡Áö°í ÀÖ±â
+//	// í”Œë ˆì´ì–´ë¥¼ ê°€ì§€ê³  ìˆê¸°
 //	GameObject* m_Player{};
 //
 //	float m_BeforeX{-500.f};
 //	float m_BeforeY{ -500.f };
 //	float m_MoveSpeed{10.f};
 //
-//	float m_NowOffset{0.5f}; // ÇöÀç ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®
-//	float m_Offset{}; // ¸ñÇ¥ °Å¸®
+//	float m_NowOffset{0.5f}; // í˜„ì¬ í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬
+//	float m_Offset{}; // ëª©í‘œ ê±°ë¦¬
 //
-//	float m_Move_Offset_Time{3.f}; // ¸ñÇ¥ °Å¸®±îÁö °¡´Â ½Ã°£
+//	float m_Move_Offset_Time{3.f}; // ëª©í‘œ ê±°ë¦¬ê¹Œì§€ ê°€ëŠ” ì‹œê°„
 //
 //
-//	CAMERA_MODE m_NowMode{}; // ÇöÀç ÇÃ·¹ÀÌ¾î Ä«¸Ş¶ó ¸ğµå
-//	// 0¹ø : ÀÚÀ¯, 1¹ø : 1ÇÃ·¹ÀÌ¾î, 2¹ø : 2ÇÃ·¹ÀÌ¾î
+//	CAMERA_MODE m_NowMode{}; // í˜„ì¬ í”Œë ˆì´ì–´ ì¹´ë©”ë¼ ëª¨ë“œ
+//	// 0ë²ˆ : ììœ , 1ë²ˆ : 1í”Œë ˆì´ì–´, 2ë²ˆ : 2í”Œë ˆì´ì–´
 //	POINT m_ptOldCursorPos{};
 //};
 //

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Behavior.h"
 
 class ParticleSystemComponent : public Behavior
@@ -7,63 +7,63 @@ public:
     ParticleSystemComponent();
     virtual ~ParticleSystemComponent();
 
-    // C++¿¡¼­ ±¸¿î Á¤´äÁö µ¥ÀÌÅÍ¸¦ GPU·Î ¿Ã¸®´Â ÇÔ¼ö
+    // C++ì—ì„œ êµ¬ìš´ ì •ë‹µì§€ ë°ì´í„°ë¥¼ GPUë¡œ ì˜¬ë¦¬ëŠ” í•¨ìˆ˜
     void init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color );
 
-    // [Ãß°¡] ¸Å ÇÁ·¹ÀÓ ¾÷µ¥ÀÌÆ®¿¡¼­ µ¥ÀÌÅÍ¸¸ ÀúÀåÇØµÎ´Â ÇÔ¼ö
+    // [ì¶”ê°€] ë§¤ í”„ë ˆì„ ì—…ë°ì´íŠ¸ì—ì„œ ë°ì´í„°ë§Œ ì €ì¥í•´ë‘ëŠ” í•¨ìˆ˜
     void set_compute_data(const DirectX::XMFLOAT4X4& weapon_world, const DirectX::XMFLOAT3& player_pos, float skill_progress);
 
-    // [Ãß°¡] ·»´õ·¯¿¡¼­ Á÷Á¢ È£ÃâÇÒ ÄÄÇ»Æ® ¼ÎÀÌ´õ ½ÇÇà ÇÔ¼ö
+    // [ì¶”ê°€] ë Œë”ëŸ¬ì—ì„œ ì§ì ‘ í˜¸ì¶œí•  ì»´í“¨íŠ¸ ì…°ì´ë” ì‹¤í–‰ í•¨ìˆ˜
     void dispatch_compute(ID3D12GraphicsCommandList* command_list);
 
-    // ·»´õ¸µ ½Ã »ç¿ëÇÒ ÇöÀç ¹öÆÛÀÇ GPU ÁÖ¼Ò
+    // ë Œë”ë§ ì‹œ ì‚¬ìš©í•  í˜„ì¬ ë²„í¼ì˜ GPU ì£¼ì†Œ
     D3D12_GPU_VIRTUAL_ADDRESS get_current_buffer_address() const { return _currentBuffer ? _currentBuffer->GetGPUVirtualAddress() : 0; }
     UINT get_particle_count() const { return _particleCount; }
 
     DirectX::XMFLOAT4 get_particle_color() const { return _particleColor; }
 
-	// ÆÄÆ¼Å¬ ¾ø¾îÁö´Â ¿¬Ãâ °ü·Ã ÇÔ¼öµé
+	// íŒŒí‹°í´ ì—†ì–´ì§€ëŠ” ì—°ì¶œ ê´€ë ¨ í•¨ìˆ˜ë“¤
 	void set_particle_dying(bool isDying)
 	{
 		_isDying = isDying;
 		if (!isDying) {
-			_deathTimer = 0.0f; // ´Ù½Ã »ì¾Æ³¯ ¶§ Å¸ÀÌ¸Ó ¸®¼Â
+			_deathTimer = 0.0f; // ë‹¤ì‹œ ì‚´ì•„ë‚  ë•Œ íƒ€ì´ë¨¸ ë¦¬ì…‹
 			_deathTimerEnd = false;
 		}
 	}
 	bool is_dying() const { return _isDying; }
 	float get_progress() const { return _skillProgress; }
 
-	// 3ÃÊ ±âÁØÀÇ Á×À½ ÁøÇàµµ (0.0 ~ 1.0) ¹İÈ¯
+	// 3ì´ˆ ê¸°ì¤€ì˜ ì£½ìŒ ì§„í–‰ë„ (0.0 ~ 1.0) ë°˜í™˜
 	float get_dying_progress() const { return std::clamp(_deathTimer / _deathDuration, 0.0f, 1.0f); }
 
-	// ¾ø¾îÁö´Â ¿¬ÃâÀÌ ³¡³µ´ÂÁö ¿©ºÎ¸¦ È®ÀÎÇÏ´Â ÇÔ¼ö
+	// ì—†ì–´ì§€ëŠ” ì—°ì¶œì´ ëë‚¬ëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
 	bool is_death_timer_end() const { return _deathTimerEnd; }
 
-	// BehaviorÀÇ update ¿À¹ö¶óÀÌµå
+	// Behaviorì˜ update ì˜¤ë²„ë¼ì´ë“œ
 	void update(float deltaTime) override;
 
 private:
     void create_compute_pso();
 
 private:
-    ComPtr<ID3D12Resource> _targetBuffer;  // Á¤´äÁö (SRV)
-    ComPtr<ID3D12Resource> _currentBuffer; // ÇöÀç À§Ä¡ (UAV)
+    ComPtr<ID3D12Resource> _targetBuffer;  // ì •ë‹µì§€ (SRV)
+    ComPtr<ID3D12Resource> _currentBuffer; // í˜„ì¬ ìœ„ì¹˜ (UAV)
 
     ComPtr<ID3D12PipelineState> _computePSO;
     UINT _particleCount = 0;
 
-    // [Ãß°¡] ·»´õ·¯·Î ³Ñ°ÜÁÖ±â À§ÇØ ÀÓ½Ã ÀúÀåÇØµÑ µ¥ÀÌÅÍ
+    // [ì¶”ê°€] ë Œë”ëŸ¬ë¡œ ë„˜ê²¨ì£¼ê¸° ìœ„í•´ ì„ì‹œ ì €ì¥í•´ë‘˜ ë°ì´í„°
     DirectX::XMFLOAT4X4 _weaponWorld;
     DirectX::XMFLOAT3 _playerPos;
-	DirectX::XMFLOAT4 _particleColor{ 1,1,1,1 }; // ÆÄÆ¼Å¬ »ö»ó (±âº»°ª Èò»ö)
+	DirectX::XMFLOAT4 _particleColor{ 1,1,1,1 }; // íŒŒí‹°í´ ìƒ‰ìƒ (ê¸°ë³¸ê°’ í°ìƒ‰)
     float _skillProgress = 0.0f;
 
 
-    // ÆÄÆ¼Å¬ »ç¶óÁö´Â ¿¬ÃâÀ» À§ÇÑ Å¸ÀÌ¸Ó
+    // íŒŒí‹°í´ ì‚¬ë¼ì§€ëŠ” ì—°ì¶œì„ ìœ„í•œ íƒ€ì´ë¨¸
 	bool _isDying = false;
 	bool _deathTimerEnd = false;
 	float _deathTimer = 0.0f;
-	float _deathDuration = 3.f; // »ç¶óÁö´Â ¿¬Ãâ ÃÑ ½Ã°£ (3ÃÊ)
+	float _deathDuration = 3.f; // ì‚¬ë¼ì§€ëŠ” ì—°ì¶œ ì´ ì‹œê°„ (3ì´ˆ)
 
 };

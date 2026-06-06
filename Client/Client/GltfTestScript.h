@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "ScriptComponent.h"
 class GltfTestScript : public ScriptComponent
 {
@@ -6,11 +6,11 @@ public:
     GltfTestScript() = default;
     virtual ~GltfTestScript() = default;
 
-    // [¿ªÇÒ] ½ºÅ©¸³Æ®°¡ ±ú¾î³¯ ¶§(ÃÖÃÊ 1È¸) È£ÃâµË´Ï´Ù.
-    // ¿©±â¼­ ÇÊ¿äÇÑ ¸ğµç ÄÄÆ÷³ÍÆ®¸¦ ½º½º·Î ÀåÂøÇÏ´Â ·ÎÁ÷À» ¼öÇàÇÕ´Ï´Ù.
+    // [ì—­í• ] ìŠ¤í¬ë¦½íŠ¸ê°€ ê¹¨ì–´ë‚  ë•Œ(ìµœì´ˆ 1íšŒ) í˜¸ì¶œë©ë‹ˆë‹¤.
+    // ì—¬ê¸°ì„œ í•„ìš”í•œ ëª¨ë“  ì»´í¬ë„ŒíŠ¸ë¥¼ ìŠ¤ìŠ¤ë¡œ ì¥ì°©í•˜ëŠ” ë¡œì§ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
     virtual void awake() override;
 
-    // [¿ªÇÒ] ¸Å ÇÁ·¹ÀÓ È£ÃâµÇ¾î ½Ç½Ã°£ ·ÎÁ÷À» Ã³¸®ÇÕ´Ï´Ù.
+    // [ì—­í• ] ë§¤ í”„ë ˆì„ í˜¸ì¶œë˜ì–´ ì‹¤ì‹œê°„ ë¡œì§ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
     virtual void update(float delta_time) override;
 
 	virtual void late_update(float delta_time) override;

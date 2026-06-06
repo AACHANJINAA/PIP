@@ -1,16 +1,16 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 
-// 256¹ÙÀÌÆ® Á¤·ÄÀ» À§ÇÑ ÇïÆÛ ±¸Á¶Ã¼
+// 256ë°”ì´íŠ¸ ì •ë ¬ì„ ìœ„í•œ í—¬í¼ êµ¬ì¡°ì²´
 struct CbCascadeSingle
 {
     XMFLOAT4X4 lightVP;
-    float padding[48]; // 64¹ÙÀÌÆ®(Çà·Ä) + 192¹ÙÀÌÆ® = 256¹ÙÀÌÆ® ¸ÂÃã
+    float padding[48]; // 64ë°”ì´íŠ¸(í–‰ë ¬) + 192ë°”ì´íŠ¸ = 256ë°”ì´íŠ¸ ë§ì¶¤
 };
 
 struct CbCascades
 {
-    CbCascadeSingle cascades[3]; // ÃÑ 3°³ÀÇ Cascade Çà·Ä
+    CbCascadeSingle cascades[3]; // ì´ 3ê°œì˜ Cascade í–‰ë ¬
 };
 struct CbShadow
 {

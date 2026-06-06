@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "OcclusionManager.h"
 
 void OcclusionManager::initialize(ID3D12Device* device, UINT max_objects) {

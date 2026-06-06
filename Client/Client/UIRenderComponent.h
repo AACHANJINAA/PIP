@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 

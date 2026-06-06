@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Shader.h"
 
 ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature)
@@ -16,14 +16,14 @@ ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootS
 	pso_desc.BlendState = create_blend_state();
 	pso_desc.DepthStencilState = create_depth_stencil_state();
 
-	// DWÃß°¡ : MSAA¸¦ »ç¿ëÇÏÁö ¾Ê´õ¶óµµ ÇÈ¼¿´ç »ç¿ëÇÏ´Â »ùÇÃÀÇ °³¼ö°¡ 1°³´Â ¹«Á¶°Ç ÀÖ¾î¾ß ÇÑ´Ù. -> Áö±İÀº »ùÇÃ ÀüºÎ »ç¿ëÇÏ°Ú´Ù´Â ÀÇ¹ÌÀÎ UINT_MAX »ç¿ë
+	// DWì¶”ê°€ : MSAAë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šë”ë¼ë„ í”½ì…€ë‹¹ ì‚¬ìš©í•˜ëŠ” ìƒ˜í”Œì˜ ê°œìˆ˜ê°€ 1ê°œëŠ” ë¬´ì¡°ê±´ ìˆì–´ì•¼ í•œë‹¤. -> ì§€ê¸ˆì€ ìƒ˜í”Œ ì „ë¶€ ì‚¬ìš©í•˜ê² ë‹¤ëŠ” ì˜ë¯¸ì¸ UINT_MAX ì‚¬ìš©
 	pso_desc.SampleMask = UINT_MAX;
 
-	// [¼öÁ¤] ÆÄ»ı Å¬·¡½º°¡ ÅäÆú·ÎÁö¸¦ ÁöÁ¤ÇÒ ¼ö ÀÖµµ·Ï °¡»ó ÇÔ¼ö·Î ºĞ¸®ÇÏ´Â °ÍÀÌ ÁÁ½À´Ï´Ù.
+	// [ìˆ˜ì •] íŒŒìƒ í´ë˜ìŠ¤ê°€ í† í´ë¡œì§€ë¥¼ ì§€ì •í•  ìˆ˜ ìˆë„ë¡ ê°€ìƒ í•¨ìˆ˜ë¡œ ë¶„ë¦¬í•˜ëŠ” ê²ƒì´ ì¢‹ìŠµë‹ˆë‹¤.
 	// virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive_topology_type() const { return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; }
 	pso_desc.PrimitiveTopologyType = this->primitive_topology_type();
 
-	pso_desc.NumRenderTargets = this->get_num_render_targets(); // °¡»óÇÔ¼ö È£Ãâ·Î º¯°æ
+	pso_desc.NumRenderTargets = this->get_num_render_targets(); // ê°€ìƒí•¨ìˆ˜ í˜¸ì¶œë¡œ ë³€ê²½
 	for (UINT i = 0; i < 8; ++i)
 	{
 		if (i < pso_desc.NumRenderTargets)
@@ -32,17 +32,17 @@ ComPtr<ID3D12PipelineState> Shader::create_pso(ID3D12Device* device, ID3D12RootS
 		}
 		else
 		{
-			// »ç¿ëÇÏÁö ¾Ê´Â ÀÎµ¦½º´Â ¹«Á¶°Ç UNKNOWNÀ¸·Î ¸í½ÃÇØ¾ß D3D12 ¿¡·¯°¡ ³ªÁö ¾Ê½À´Ï´Ù.
+			// ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì¸ë±ìŠ¤ëŠ” ë¬´ì¡°ê±´ UNKNOWNìœ¼ë¡œ ëª…ì‹œí•´ì•¼ D3D12 ì—ëŸ¬ê°€ ë‚˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 			pso_desc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 		}
 	}
-	pso_desc.DSVFormat = this->get_dsv_format(); // °¡»ó ÇÔ¼ö È£Ãâ·Î º¯°æ
+	pso_desc.DSVFormat = this->get_dsv_format(); // ê°€ìƒ í•¨ìˆ˜ í˜¸ì¶œë¡œ ë³€ê²½
 	pso_desc.SampleDesc.Count = 1;
 
 	ComPtr<ID3D12PipelineState> pso;
 	if(!SUCCEEDED(device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(&pso))))
 	{
-		CERROR("PSO »ı¼º ½ÇÆĞ");
+		CERROR("PSO ìƒì„± ì‹¤íŒ¨");
 	}
 
 	return pso;
@@ -123,10 +123,10 @@ D3D12_SHADER_BYTECODE Shader::compile_shader_from_file(const std::wstring& file_
 	{
 		if (pd3dErrorBlob)
 		{
-			// ¿¡·¯ ¸Ş½ÃÁö¸¦ µğ¹ö±× Ãâ·ÂÃ¢¿¡ Ç¥½ÃÇÏ°í ¸ØÃá´Ù.
+			// ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ë””ë²„ê·¸ ì¶œë ¥ì°½ì— í‘œì‹œí•˜ê³  ë©ˆì¶˜ë‹¤.
 			CERROR((char*)pd3dErrorBlob->GetBufferPointer())
 		}
-		return { 0, NULL }; // ½ÇÆĞÇßÀ¸¹Ç·Î ºó ¼ÎÀÌ´õ ¹ÙÀÌÆ®ÄÚµå¸¦ ¹İÈ¯
+		return { 0, NULL }; // ì‹¤íŒ¨í–ˆìœ¼ë¯€ë¡œ ë¹ˆ ì…°ì´ë” ë°”ì´íŠ¸ì½”ë“œë¥¼ ë°˜í™˜
 	}
 
 	D3D12_SHADER_BYTECODE d3dShaderByteCode;

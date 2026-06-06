@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "OcclusionQueryShader.h"
 
 D3D12_INPUT_LAYOUT_DESC OcclusionQueryShader::create_input_layout() {
@@ -28,12 +28,12 @@ ComPtr<ID3D12PipelineState> OcclusionQueryShader::create_pso(ID3D12Device* devic
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
-	// [¼öÁ¤] ±âº» Rasterizer ´ë½Å WireframeÀ¸·Î ¼³Á¤ (¹Ú½º ³»ºÎ¸¦ º¸±â À§ÇÔ)
+	// [ìˆ˜ì •] ê¸°ë³¸ Rasterizer ëŒ€ì‹  Wireframeìœ¼ë¡œ ì„¤ì • (ë°•ìŠ¤ ë‚´ë¶€ë¥¼ ë³´ê¸° ìœ„í•¨)
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	// [¼öÁ¤] 0À¸·Î µÇ¾îÀÖ´ø ¸¶½ºÅ©¸¦ ALL·Î º¯°æ (»ö»ó Ãâ·Â È°¼ºÈ­)
+	// [ìˆ˜ì •] 0ìœ¼ë¡œ ë˜ì–´ìˆë˜ ë§ˆìŠ¤í¬ë¥¼ ALLë¡œ ë³€ê²½ (ìƒ‰ìƒ ì¶œë ¥ í™œì„±í™”)
 	psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = 0;// D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);

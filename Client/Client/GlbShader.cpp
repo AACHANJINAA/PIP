@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "GlbShader.h"
 
 const std::string& GlbShader::pso_name() const
@@ -7,8 +7,8 @@ const std::string& GlbShader::pso_name() const
     return name;
 }
 
-// ½ºÅ°´×µÈ Á¤Á¡ ±¸Á¶¿¡ ¸Â´Â Input LayoutÀ» Á¤ÀÇÇÕ´Ï´Ù.
-// [Áß¿ä] new·Î µ¿Àû ÇÒ´çÇÏ´Â ´ë½Å, static const ¹è¿­·Î ¸¸µé¾î ¸Ş¸ğ¸® ´©¼ö¸¦ ¹æÁöÇÕ´Ï´Ù.
+// ìŠ¤í‚¤ë‹ëœ ì •ì  êµ¬ì¡°ì— ë§ëŠ” Input Layoutì„ ì •ì˜í•©ë‹ˆë‹¤.
+// [ì¤‘ìš”] newë¡œ ë™ì  í• ë‹¹í•˜ëŠ” ëŒ€ì‹ , static const ë°°ì—´ë¡œ ë§Œë“¤ì–´ ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ë¥¼ ë°©ì§€í•©ë‹ˆë‹¤.
 D3D12_INPUT_LAYOUT_DESC GlbShader::create_input_layout()
 {
     static const D3D12_INPUT_ELEMENT_DESC input_layout[] = {
@@ -26,19 +26,19 @@ D3D12_INPUT_LAYOUT_DESC GlbShader::create_input_layout()
     return { input_layout, _countof(input_layout) };
 }
 
-// ½ºÅ°´×À» Ã³¸®ÇÏ´Â Vertex Shader("VSSkinning")¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+// ìŠ¤í‚¤ë‹ì„ ì²˜ë¦¬í•˜ëŠ” Vertex Shader("VSSkinning")ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
 D3D12_SHADER_BYTECODE GlbShader::create_vertex_shader(ComPtr<ID3DBlob>& shader_blob)
 {
     return compile_shader_from_file(L"GLB_Shader.hlsl", "VSSkinning", "vs_5_1", shader_blob);
 }
 
-// Pixel Shader("PSSkinning")¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+// Pixel Shader("PSSkinning")ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
 D3D12_SHADER_BYTECODE GlbShader::create_pixel_shader(ComPtr<ID3DBlob>& shader_blob)
 {
     return compile_shader_from_file(L"GLB_Shader.hlsl", "PSSkinning", "ps_5_1", shader_blob);
 }
 
-// ÀÌ ¼ÎÀÌ´õ´Â "skinned" ¶ó´Â ÀÌ¸§ÀÇ ·çÆ® ½Ã±×´ÏÃ³°¡ ÇÊ¿äÇÏ´Ù°í ¸í½ÃÇÕ´Ï´Ù.
+// ì´ ì…°ì´ë”ëŠ” "skinned" ë¼ëŠ” ì´ë¦„ì˜ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ê°€ í•„ìš”í•˜ë‹¤ê³  ëª…ì‹œí•©ë‹ˆë‹¤.
 std::string GlbShader::required_root_signature() const
 {
     return "skinned";

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "stdafx.h"
 
@@ -7,7 +7,7 @@
 class InputManager : public Singleton<InputManager>
 {
 private:
-	friend class Singleton<InputManager>; // ½Ì±ÛÅæ Á¢±Ù Çã¿ë
+	friend class Singleton<InputManager>; // ì‹±ê¸€í†¤ ì ‘ê·¼ í—ˆìš©
     InputManager();
     ~InputManager() = default;
 
@@ -35,22 +35,22 @@ public:
     bool IsKeyPress(int key) { return m_eKeyState[key] == KEY_STATE::PRESS; }
 
 
-    // ¸¶¿ì½º °ü·Ã Ã³¸® ÇÔ¼ö
+    // ë§ˆìš°ìŠ¤ ê´€ë ¨ ì²˜ë¦¬ í•¨ìˆ˜
     POINT GetMousePos() { return m_ptMousePos; }
-    POINT GetMouseDelta(); // ¸¶¿ì½º ¿òÁ÷ÀÎ °ª ¹Ş±â
+    POINT GetMouseDelta(); // ë§ˆìš°ìŠ¤ ì›€ì§ì¸ ê°’ ë°›ê¸°
     HWND GetHWnd() { return m_hWnd; }
 
-    // Ä¿¼­ º¸ÀÌ´ÂÁö? »óÅÂ È®ÀÎ
+    // ì»¤ì„œ ë³´ì´ëŠ”ì§€? ìƒíƒœ í™•ì¸
     BOOL GetIsShowCusor() { return _isShowCusor; }
-    // Ä¿¼­ º¸ÀÌ°í ²ô±â
+    // ì»¤ì„œ ë³´ì´ê³  ë„ê¸°
     void ChangeShowCusor();
 
 
-private: // ³ªÁß¿¡ ¹Ù±ù¿¡¼­ ÇÊ¿äÇÏ¸é public·Î ¿Å°Üµµ »ó°ü¾øÀ½
-    // ÇöÀç´Â ³»ºÎÀûÀ¸·Î ¸¶¿ì½º¸¦ ¾Èº¸ÀÏ ¶§¸¸ Áß¾Ó¿¡ °íÁ¤½ÃÅ³ ¿¹Á¤
+private: // ë‚˜ì¤‘ì— ë°”ê¹¥ì—ì„œ í•„ìš”í•˜ë©´ publicë¡œ ì˜®ê²¨ë„ ìƒê´€ì—†ìŒ
+    // í˜„ì¬ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ ë§ˆìš°ìŠ¤ë¥¼ ì•ˆë³´ì¼ ë•Œë§Œ ì¤‘ì•™ì— ê³ ì •ì‹œí‚¬ ì˜ˆì •
 
-    void MouseFixCenter(); // ¸¶¿ì½º °íÁ¤ ÇØ¾ßÇÒ ¶§ ex)FPS ¸ğµå
+    void MouseFixCenter(); // ë§ˆìš°ìŠ¤ ê³ ì • í•´ì•¼í•  ë•Œ ex)FPS ëª¨ë“œ
 
-    float _mouseSensitivity = 0.3f; // ¸¶¿ì½º °¨µµ
+    float _mouseSensitivity = 0.3f; // ë§ˆìš°ìŠ¤ ê°ë„
 
 };

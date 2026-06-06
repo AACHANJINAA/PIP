@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ShadowDepthShader.h"
 
 D3D12_INPUT_LAYOUT_DESC ShadowDepthShader::create_input_layout()
@@ -20,7 +20,7 @@ D3D12_SHADER_BYTECODE ShadowDepthShader::create_vertex_shader(ComPtr<ID3DBlob>& 
 
 D3D12_SHADER_BYTECODE ShadowDepthShader::create_pixel_shader(ComPtr<ID3DBlob>& shader_blob)
 {
-    // Depth-only ÆĞ½º´Â ÇÈ¼¿ ¼ÎÀÌ´õ°¡ ÇÊ¿ä ¾ø½À´Ï´Ù.
+    // Depth-only íŒ¨ìŠ¤ëŠ” í”½ì…€ ì…°ì´ë”ê°€ í•„ìš” ì—†ìŠµë‹ˆë‹¤.
     return { nullptr, 0 };
 }
 
@@ -28,10 +28,10 @@ D3D12_RASTERIZER_DESC ShadowDepthShader::create_rasterizer_state()
 {
     D3D12_RASTERIZER_DESC desc = Shader::create_rasterizer_state();
     desc.CullMode = D3D12_CULL_MODE_FRONT;
-    // ÇÏµå¿ş¾î Depth Bias Àû¿ë
+    // í•˜ë“œì›¨ì–´ Depth Bias ì ìš©
     desc.DepthBias = 0;
     desc.DepthBiasClamp = 0.0f;
-    desc.SlopeScaledDepthBias = 1.5f;   // 1.0f ~ 2.0f »çÀÌ ±ÇÀå
+    desc.SlopeScaledDepthBias = 1.5f;   // 1.0f ~ 2.0f ì‚¬ì´ ê¶Œì¥
     return desc;
 }
 

@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 #include "FreeCamera.h"
 #include "Shader.h"
 #include "ImGuiManager.h"
 
-// Àü¹æ ¼±¾ğ
+// ì „ë°© ì„ ì–¸
 class GameObject;
 
 class Tool_Scene : public Scene
@@ -13,47 +13,47 @@ public:
 	using Scene::Scene;
 	Tool_Scene() = default;
 	virtual ~Tool_Scene() = default;
-	// --- SceneÀÇ ¼ø¼ö °¡»ó ÇÔ¼ö ¿À¹ö¶óÀÌµå ---
+	// --- Sceneì˜ ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ ì˜¤ë²„ë¼ì´ë“œ ---
 	virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
 	virtual void release_upload_buffers() override;
 	virtual void scene_process(float deltaTime) override;
 
 private:
-	void spawn_want_mesh();         // 1 ¸ŞÀÎ Ä³¸¯ÅÍ ½ºÆù
-	void view_bones();             // 2 »À´ë ¸®½ºÆ® ÄŞº¸¹Ú½º Ãâ·Â
-	void spawn_want_socket_mesh();   // 3 ¼ÒÄÏ(¹«±â) ¸Ş½¬ ½ºÆù ¹× ºÎÂø
-	void edit_socket_mesh();        // 4 ¼ÒÄÏ Æ®·£½ºÆû ½½¶óÀÌ´õ Á¶Àı
-	void draw_and_pick_bones(); // »À´ë ¸®½ºÆ®¿¡¼­ ¼±ÅÃÇÑ »À´ë¸¦ ¾À¿¡ ½Ã°¢ÀûÀ¸·Î Ç¥½ÃÇÏ°í ¼±ÅÃÇÒ ¼ö ÀÖ°Ô ÇÏ´Â ÇÔ¼ö
-	void draw_gizmo(); // ¼±ÅÃÇÑ »À´ë¿¡ ImGuizmo¸¦ ÀÌ¿ëÇØ À§Ä¡/È¸Àü/½ºÄÉÀÏ Á¶Àı ±â´ÉÀ» Á¦°øÇÏ´Â ÇÔ¼ö
+	void spawn_want_mesh();         // 1 ë©”ì¸ ìºë¦­í„° ìŠ¤í°
+	void view_bones();             // 2 ë¼ˆëŒ€ ë¦¬ìŠ¤íŠ¸ ì½¤ë³´ë°•ìŠ¤ ì¶œë ¥
+	void spawn_want_socket_mesh();   // 3 ì†Œì¼“(ë¬´ê¸°) ë©”ì‰¬ ìŠ¤í° ë° ë¶€ì°©
+	void edit_socket_mesh();        // 4 ì†Œì¼“ íŠ¸ëœìŠ¤í¼ ìŠ¬ë¼ì´ë” ì¡°ì ˆ
+	void draw_and_pick_bones(); // ë¼ˆëŒ€ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì„ íƒí•œ ë¼ˆëŒ€ë¥¼ ì”¬ì— ì‹œê°ì ìœ¼ë¡œ í‘œì‹œí•˜ê³  ì„ íƒí•  ìˆ˜ ìˆê²Œ í•˜ëŠ” í•¨ìˆ˜
+	void draw_gizmo(); // ì„ íƒí•œ ë¼ˆëŒ€ì— ImGuizmoë¥¼ ì´ìš©í•´ ìœ„ì¹˜/íšŒì „/ìŠ¤ì¼€ì¼ ì¡°ì ˆ ê¸°ëŠ¥ì„ ì œê³µí•˜ëŠ” í•¨ìˆ˜
 
 private:
 	void spawn_camera();
 
-	// [Ãß°¡] ÆÄÀÏ Å½»ö±â¸¦ ¶ç¿ì´Â ÇïÆÛ ÇÔ¼ö
+	// [ì¶”ê°€] íŒŒì¼ íƒìƒ‰ê¸°ë¥¼ ë„ìš°ëŠ” í—¬í¼ í•¨ìˆ˜
 	std::string open_file_dialog();
 
-	// [Ãß°¡] Åø ¾À¿¡¼­ ÇöÀç Á¶ÀÛ ÁßÀÎ Å¸°Ù °´Ã¼ (Ä³¸¯ÅÍ)
+	// [ì¶”ê°€] íˆ´ ì”¬ì—ì„œ í˜„ì¬ ì¡°ì‘ ì¤‘ì¸ íƒ€ê²Ÿ ê°ì²´ (ìºë¦­í„°)
 	std::shared_ptr<GameObject> _targetCharacter = nullptr;
 	std::string _loadedCharacterPath = "None";
 
-private: // DW¼³¸í : ¼ÒÄÏ ¿¡µğÅÍ °ü·Ã »óÅÂ º¯¼öµé
-	// »À´ë ¸®½ºÆ® ¹× ¼±ÅÃ »óÅÂ
+private: // DWì„¤ëª… : ì†Œì¼“ ì—ë””í„° ê´€ë ¨ ìƒíƒœ ë³€ìˆ˜ë“¤
+	// ë¼ˆëŒ€ ë¦¬ìŠ¤íŠ¸ ë° ì„ íƒ ìƒíƒœ
 	std::vector<std::string> _boneNames;
 	int _selectedBoneIndex = 0;
 
-	// ¹«±â(¼ÒÄÏ) °ü·Ã »óÅÂ
+	// ë¬´ê¸°(ì†Œì¼“) ê´€ë ¨ ìƒíƒœ
 	std::string _loadedWeaponPath = "None";
 	std::shared_ptr<Mesh> _weaponMesh = nullptr;
 
-	// Á¶ÀÛÇÒ ·ÎÄÃ Transform ¼öÄ¡µé
+	// ì¡°ì‘í•  ë¡œì»¬ Transform ìˆ˜ì¹˜ë“¤
 	DirectX::XMFLOAT3 _socketPos = { 0.0f, 0.0f, 0.0f };
 	DirectX::XMFLOAT3 _socketRot = { 0.0f, 0.0f, 0.0f };
 	DirectX::XMFLOAT3 _socketScale = { 1.0f, 1.0f, 1.0f };
 
-	// »À´ë¸¦ È­¸é¿¡ ±×¸±Áö ¸»Áö °áÁ¤ÇÏ´Â º¯¼ö
+	// ë¼ˆëŒ€ë¥¼ í™”ë©´ì— ê·¸ë¦´ì§€ ë§ì§€ ê²°ì •í•˜ëŠ” ë³€ìˆ˜
 	bool _bShowBones = true;
 
-	// ±âÁî¸ğ Á¶ÀÛ ¸ğµå (À§Ä¡/È¸Àü/½ºÄÉÀÏ)
+	// ê¸°ì¦ˆëª¨ ì¡°ì‘ ëª¨ë“œ (ìœ„ì¹˜/íšŒì „/ìŠ¤ì¼€ì¼)
 	ImGuizmo::OPERATION _currentGizmoOperation = ImGuizmo::TRANSLATE;
 };
 

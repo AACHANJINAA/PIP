@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Object.h"
 class GameObject;
 class Component : public Object
@@ -8,17 +8,17 @@ public:
 	Component(const std::string& name) : Object(name), _gameObject{} {}
     virtual ~Component() = default;
 
-    // ¸ğµç ÄÄÆ÷-³ÍÆ®´Â ÀÌ Å¸ÀÔÀ» °¡Áı´Ï´Ù. ±âº»ÀûÀ¸·Î´Â ÀÇÁ¸¼ºÀÌ ¾øÀ½À» ÀÇ¹ÌÇÕ´Ï´Ù.
+    // ëª¨ë“  ì»´í¬-ë„ŒíŠ¸ëŠ” ì´ íƒ€ì…ì„ ê°€ì§‘ë‹ˆë‹¤. ê¸°ë³¸ì ìœ¼ë¡œëŠ” ì˜ì¡´ì„±ì´ ì—†ìŒì„ ì˜ë¯¸í•©ë‹ˆë‹¤.
     using required_components = std::tuple<>;
 
-    // [¼öÁ¤] ¹İÈ¯ Å¸ÀÔÀ» shared_ptr·Î º¯°æÇÏ°í, ³»ºÎÀûÀ¸·Î weak_ptr¸¦ lock()ÇÏ¿© »ç¿ë
+    // [ìˆ˜ì •] ë°˜í™˜ íƒ€ì…ì„ shared_ptrë¡œ ë³€ê²½í•˜ê³ , ë‚´ë¶€ì ìœ¼ë¡œ weak_ptrë¥¼ lock()í•˜ì—¬ ì‚¬ìš©
     std::shared_ptr<GameObject> game_object() const { return _gameObject.lock(); }
 
-    // [¼öÁ¤] ÀÌÁ¦ shared_ptr¸¦ ¹Ş¾Æ¼­ weak_ptr¿¡ ´ëÀÔ
+    // [ìˆ˜ì •] ì´ì œ shared_ptrë¥¼ ë°›ì•„ì„œ weak_ptrì— ëŒ€ì…
     void set_game_object(const std::shared_ptr<GameObject>& gameObject) { _gameObject = gameObject; }
 
 protected:
-    // [¼öÁ¤] GameObject¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ weak_ptr·Î º¯°æ
+    // [ìˆ˜ì •] GameObjectë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ weak_ptrë¡œ ë³€ê²½
     std::weak_ptr<GameObject> _gameObject;
 };
 

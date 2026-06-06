@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 
 class Object;
@@ -23,16 +23,16 @@ public:
     std::vector<std::shared_ptr<GameObject>> find_by_layer(uint32_t layerMask);
 	const std::vector<std::shared_ptr<GameObject>>& get_all_game_objects() const { return _gameObjects; }
 
-	// [Ãß°¡] »õ·Î »ı¼ºµÈ GameObjectÀÇ Awake/Start¸¦ Ã³¸®ÇÕ´Ï´Ù. (GameFramework°¡ ÇÁ·¹ÀÓ ½ÃÀÛ¿¡ È£Ãâ)
+	// [ì¶”ê°€] ìƒˆë¡œ ìƒì„±ëœ GameObjectì˜ Awake/Startë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤. (GameFrameworkê°€ í”„ë ˆì„ ì‹œì‘ì— í˜¸ì¶œ)
 	void process_new_game_objects();
 
-    // [Ãß°¡] ¿µ¼Ó¼º(persistent) ÇÃ·¡±×°¡ ¾ø´Â ¸ğµç °ÔÀÓ ¿ÀºêÁ§Æ®¸¦ ÆÄ±« ¿äÃ» ¸ñ·Ï¿¡ Ãß°¡ÇÕ´Ï´Ù.
+    // [ì¶”ê°€] ì˜ì†ì„±(persistent) í”Œë˜ê·¸ê°€ ì—†ëŠ” ëª¨ë“  ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¥¼ íŒŒê´´ ìš”ì²­ ëª©ë¡ì— ì¶”ê°€í•©ë‹ˆë‹¤.
     void clear_non_persistent_objects();
 
-	// [Ãß°¡] ÀÌ¸§ ¶Ç´Â °íÀ¯ ID·Î °ÔÀÓ ¿ÀºêÁ§Æ®¸¦ Ã£´Â ÇÔ¼ö
+	// [ì¶”ê°€] ì´ë¦„ ë˜ëŠ” ê³ ìœ  IDë¡œ ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ëŠ” í•¨ìˆ˜
     std::shared_ptr<GameObject> find_object(const std::string& name);
     std::shared_ptr<GameObject> find_object(const int& id);
-    // TODO: Ã£±â ¼º´ÉÀ» ³ôÀÌ±â À§ÇØ¼­ mapÀÌ³ª Æ®¸® ±¸Á¶¸¦ »ç¿ëÇØ¾ßÇÔ -> ÃßÈÄ¿¡ °³¼± ÇÊ¿ä
+    // TODO: ì°¾ê¸° ì„±ëŠ¥ì„ ë†’ì´ê¸° ìœ„í•´ì„œ mapì´ë‚˜ íŠ¸ë¦¬ êµ¬ì¡°ë¥¼ ì‚¬ìš©í•´ì•¼í•¨ -> ì¶”í›„ì— ê°œì„  í•„ìš”
 
     std::shared_ptr<GameObject> find_npc(int64_t id);
 
@@ -42,18 +42,18 @@ public:
     void spawn_monster(size_t how_many_you_want_npc_count);
 private:
     
-    std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : Æ®¸® ±¸Á¶·Î ¹Ù²ã¾ßÇÒ °¡´É¼º ÀÖÀ½
+    std::vector<std::shared_ptr<GameObject>> _gameObjects; // TODO : íŠ¸ë¦¬ êµ¬ì¡°ë¡œ ë°”ê¿”ì•¼í•  ê°€ëŠ¥ì„± ìˆìŒ
     std::vector<std::shared_ptr<Object>>     _destructionQueue;
     std::queue<std::shared_ptr<GameObject>>  _newGameObjects;
-    std::unordered_map<int64_t, std::shared_ptr<GameObject>> _npcMap; // [Ãß°¡] NPC Ä³½Ã
+    std::unordered_map<int64_t, std::shared_ptr<GameObject>> _npcMap; // [ì¶”ê°€] NPC ìºì‹œ
 };
 // =================================================================
- // [Á¦°ÅµÈ ±â´É ¸ñ·Ï]
- // - RequestObject, MakeObject: ¿ªÇÒÀÌ Scene/Factory·Î ÀÌÀüµÇ¾î Á¦°Å
- // - PushObject, PushEnemy, GetObjectVec, GetEnemy µî: Layer ±â¹İ °Ë»öÀ¸·Î ´ëÃ¼µÇ¾î Á¦°Å
- // - MakeRenderMap, GetRenderMap: ¿ªÇÒÀÌ Renderer·Î ÀÌÀüµÇ¾î Á¦°Å
- // - DeleteObject, DeleteAll, ChangeRoom: »õ·Î¿î Áö¿¬ ÆÄ±« ¸ŞÄ¿´ÏÁòÀ¸·Î ´ëÃ¼µÇ¾î Á¦°Å
- // - m_Player, _allobject, _requestobjects, _rendermap µî: »õ·Î¿î ¸â¹ö º¯¼ö·Î ´ëÃ¼/ÅëÇÕµÇ¾î Á¦°Å
+ // [ì œê±°ëœ ê¸°ëŠ¥ ëª©ë¡]
+ // - RequestObject, MakeObject: ì—­í• ì´ Scene/Factoryë¡œ ì´ì „ë˜ì–´ ì œê±°
+ // - PushObject, PushEnemy, GetObjectVec, GetEnemy ë“±: Layer ê¸°ë°˜ ê²€ìƒ‰ìœ¼ë¡œ ëŒ€ì²´ë˜ì–´ ì œê±°
+ // - MakeRenderMap, GetRenderMap: ì—­í• ì´ Rendererë¡œ ì´ì „ë˜ì–´ ì œê±°
+ // - DeleteObject, DeleteAll, ChangeRoom: ìƒˆë¡œìš´ ì§€ì—° íŒŒê´´ ë©”ì»¤ë‹ˆì¦˜ìœ¼ë¡œ ëŒ€ì²´ë˜ì–´ ì œê±°
+ // - m_Player, _allobject, _requestobjects, _rendermap ë“±: ìƒˆë¡œìš´ ë©¤ë²„ ë³€ìˆ˜ë¡œ ëŒ€ì²´/í†µí•©ë˜ì–´ ì œê±°
  // =================================================================
 
 
@@ -67,30 +67,30 @@ private:
 //	~ObjectManager();
 //
 //public:
-//	// ¿äÃ»°ú ¸¸µé±â
+//	// ìš”ì²­ê³¼ ë§Œë“¤ê¸°
 //	void RequestObject(std::shared_ptr<GameObject> WhatYouWant);
 //	void MakeObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 //
-//	// ¸ğµÎ »èÁ¦
+//	// ëª¨ë‘ ì‚­ì œ
 //	void DeleteAll();
 //	void DeleteVec(int WantVecNum);
 //
 //	void DeleteObject();
 //
-//	// ¹æ ¹Ù²Ù±â -> ÀÓ½Ã¹æÆíÀ¸·Î ¹Ù´Ú »©°í ´Ù Áö¿ì´Â °É·Î ÇØ³ù¥’
+//	// ë°© ë°”ê¾¸ê¸° -> ì„ì‹œë°©í¸ìœ¼ë¡œ ë°”ë‹¥ ë¹¼ê³  ë‹¤ ì§€ìš°ëŠ” ê±¸ë¡œ í•´ë†¨ìª™
 //	void ChangeRoom();
 //
-//	// ÇÃ·¹ÀÌ¾î
+//	// í”Œë ˆì´ì–´
 //	void SetPlayer(std::shared_ptr <GameObject> player) { m_Player = player; }
 //	std::shared_ptr<GameObject> GetPlayer() const { return m_Player; }
 //
-//	// ¾î¶² ¼ÎÀÌ´õ¸¦ »ç¿ëÇÏ´ÂÁö¿¡ µû¶ó ·»´õÇÏ±â À§ÇÑ °Íµé
+//	// ì–´ë–¤ ì…°ì´ë”ë¥¼ ì‚¬ìš©í•˜ëŠ”ì§€ì— ë”°ë¼ ë Œë”í•˜ê¸° ìœ„í•œ ê²ƒë“¤
 //	void MakeRenderMap(Camera* pCamera);
 //	std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>>& GetRenderMap();
 //
-//	// ¿ÀºêÁ§Æ® ³Ö±â
-//	// ÇÃ·¹ÀÌ¾î = Ã¼·Â, À§Ä¡(x,y,z), name, id, size
-//	// ´Ù¸¥ ÇÃ·¹ÀÌ¾î = Ã¼·Â, À§Ä¡(x,y,z), name, id, size
+//	// ì˜¤ë¸Œì íŠ¸ ë„£ê¸°
+//	// í”Œë ˆì´ì–´ = ì²´ë ¥, ìœ„ì¹˜(x,y,z), name, id, size
+//	// ë‹¤ë¥¸ í”Œë ˆì´ì–´ = ì²´ë ¥, ìœ„ì¹˜(x,y,z), name, id, size
 //
 //
 //	void PushObject(std::shared_ptr<GameObject> object);
@@ -100,7 +100,7 @@ private:
 //	void PushFloorObject(std::shared_ptr<GameObject> object);
 //
 //
-//	// ¿ÀºêÁ§Æ® ¾ò±â
+//	// ì˜¤ë¸Œì íŠ¸ ì–»ê¸°
 //	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE>& GetAllObject() { return _allobject; }
 //
 //	std::list<std::shared_ptr<GameObject>>& GetObjectVec() { return _allobject[0]; }
@@ -117,10 +117,10 @@ private:
 //
 //	std::shared_ptr <GameObject> m_Player{};
 //
-//	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE> _allobject{}; // ÇöÀç ¾À ¿ÀºêÁ§Æ®
+//	std::array<std::list<std::shared_ptr<GameObject>>, ALLARRAYSIZE> _allobject{}; // í˜„ì¬ ì”¬ ì˜¤ë¸Œì íŠ¸
 //
 //
-//	// ¿äÃ» ÀÓ½Ã º¯¼ö
+//	// ìš”ì²­ ì„ì‹œ ë³€ìˆ˜
 //	std::queue<std::shared_ptr<GameObject>> _requestobjects{};
 //	
 //	std::map<std::type_index, std::vector<std::shared_ptr<GameObject>>> _rendermap{};

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Shader.h"
 
 class ParticleShader : public Shader
@@ -10,7 +10,7 @@ public:
     virtual const std::string& pso_name() const override;
     virtual std::string required_root_signature() const override;
 
-    // [ÇÙ½É 1] ÀÔ·Â ·¹ÀÌ¾Æ¿ô ¾øÀ½ (SV_VertexID »ç¿ë)
+    // [í•µì‹¬ 1] ì…ë ¥ ë ˆì´ì•„ì›ƒ ì—†ìŒ (SV_VertexID ì‚¬ìš©)
     virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override;
 
     virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive_topology_type() const override {

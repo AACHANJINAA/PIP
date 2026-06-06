@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Shader.h"
 
 class ShadowDepthShader : public Shader
@@ -21,7 +21,7 @@ protected:
     virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
     virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
-    // Depth-onlyÀÌ¹Ç·Î Rasterizer ¹× DepthStencil ¼³Á¤ º¯°æ
+    // Depth-onlyì´ë¯€ë¡œ Rasterizer ë° DepthStencil ì„¤ì • ë³€ê²½
     virtual D3D12_RASTERIZER_DESC create_rasterizer_state() override;
     virtual D3D12_DEPTH_STENCIL_DESC create_depth_stencil_state() override;
 
@@ -29,5 +29,5 @@ protected:
         return DXGI_FORMAT_D32_FLOAT;
     }
     virtual UINT get_num_render_targets() const override { return 0; }
-    // µª½º Àü¿ëÀº RTV 0°³
+    // ëìŠ¤ ì „ìš©ì€ RTV 0ê°œ
 };

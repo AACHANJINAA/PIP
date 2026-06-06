@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Component.h"
 #include <DirectXMath.h>
 #include <vector>
@@ -35,25 +35,25 @@ public:
     void set_local_scale(const XMFLOAT3& scale);
     
 
-	// DW¼³¸í : ÇöÀç À§Ä¡¿¡¼­ forward, right, up ¹æÇâÀ¸·Î ¿ÀÇÁ¼Â¸¸Å­ ÀÌµ¿
+	// DWì„¤ëª… : í˜„ì¬ ìœ„ì¹˜ì—ì„œ forward, right, up ë°©í–¥ìœ¼ë¡œ ì˜¤í”„ì…‹ë§Œí¼ ì´ë™
 	void move_forward(float distance);
 	void move_right(float distance);
 	void move_up(float distance);
 
 
-	// DW¼³¸í : ¿ùµå Å©±â ÇÔ¼ö mehsÀÇ ¹Ù¿îµù ¹Ú½º¸¦ °¡Á®¿Í ¿ùµå°ø°£À¸·Î ÀÌÀü ÈÄ max-minÇÏ¿© ½ÇÁ¦ °¡·Î ¼¼·Î ³ôÀÌ °ªÀ» ¹İÈ¯
+	// DWì„¤ëª… : ì›”ë“œ í¬ê¸° í•¨ìˆ˜ mehsì˜ ë°”ìš´ë”© ë°•ìŠ¤ë¥¼ ê°€ì ¸ì™€ ì›”ë“œê³µê°„ìœ¼ë¡œ ì´ì „ í›„ max-miní•˜ì—¬ ì‹¤ì œ ê°€ë¡œ ì„¸ë¡œ ë†’ì´ ê°’ì„ ë°˜í™˜
     XMFLOAT3 get_world_scale();
     XMFLOAT3 get_world_position();
 
-    // [Ãß°¡] ÇöÀç È¸Àü¿¡ pitch, yaw, rollÀ» Ãß°¡·Î Àû¿ëÇÕ´Ï´Ù. (°¢µµ´Â degree ´ÜÀ§)
-	// DW¼³¸í : ¸¶Áö¸· ÀÎÀÚ´Â Ä«¸Ş¶ó È¸Àü¿ëÀÎÁö ±¸ºĞÇÏ´Â ÇÃ·¡±×
+    // [ì¶”ê°€] í˜„ì¬ íšŒì „ì— pitch, yaw, rollì„ ì¶”ê°€ë¡œ ì ìš©í•©ë‹ˆë‹¤. (ê°ë„ëŠ” degree ë‹¨ìœ„)
+	// DWì„¤ëª… : ë§ˆì§€ë§‰ ì¸ìëŠ” ì¹´ë©”ë¼ íšŒì „ìš©ì¸ì§€ êµ¬ë¶„í•˜ëŠ” í”Œë˜ê·¸
     void rotate(float pitch, float yaw, float roll);
 
 	// --------------- Helper Functions ---------------
-	// DW¼³¸í : Ä«¸Ş¶ó Àü¿ë È¸Àü ÇÔ¼ö
-    void camera_rotate(float pitch, float yaw, float roll); // Ä«¸Ş¶óÀÇ È¸Àü·®À» Àû¿ëÇÏ´Â ÇÔ¼ö
-    void set_camera_rotate(float pitch, float yaw, float roll); // Ä«¸Ş¶ó È¸ÀüÀ» ¼³Á¤
-	bool _cameraRotationMode; // true¸é free_camera_rotate, false¸é ÀÏ¹İ rotate
+	// DWì„¤ëª… : ì¹´ë©”ë¼ ì „ìš© íšŒì „ í•¨ìˆ˜
+    void camera_rotate(float pitch, float yaw, float roll); // ì¹´ë©”ë¼ì˜ íšŒì „ëŸ‰ì„ ì ìš©í•˜ëŠ” í•¨ìˆ˜
+    void set_camera_rotate(float pitch, float yaw, float roll); // ì¹´ë©”ë¼ íšŒì „ì„ ì„¤ì •
+	bool _cameraRotationMode; // trueë©´ free_camera_rotate, falseë©´ ì¼ë°˜ rotate
     void set_camera_rotation_mode(bool enable) { _cameraRotationMode = enable; }
     
     static common::Quat apply_offset_rotation(const common::Quat& base_quat, 
@@ -71,10 +71,10 @@ public:
     int child_count() const { return static_cast<int>(_children.size()); }
 
 protected:
-    // [Ãß°¡] ÀÚ½Å°ú ¸ğµç ÀÚ½ÄÀÇ isDirty ÇÃ·¡±×¸¦ true·Î ¼³Á¤ÇÏ´Â Àç±Í ÇÔ¼ö
+    // [ì¶”ê°€] ìì‹ ê³¼ ëª¨ë“  ìì‹ì˜ isDirty í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •í•˜ëŠ” ì¬ê·€ í•¨ìˆ˜
     void set_hierarchy_dirty();
 
-    // [º¯°æ] ÀÌÁ¦ ÀÌ ÇÔ¼ö´Â ºÎ¸ğ¸¦ °Å½½·¯ ¿Ã¶ó°¡Áö ¾Ê°í, ÀÚ½ÅÀÇ Çà·Ä¸¸ °è»ê
+    // [ë³€ê²½] ì´ì œ ì´ í•¨ìˆ˜ëŠ” ë¶€ëª¨ë¥¼ ê±°ìŠ¬ëŸ¬ ì˜¬ë¼ê°€ì§€ ì•Šê³ , ìì‹ ì˜ í–‰ë ¬ë§Œ ê³„ì‚°
     void calculate_world_matrix();
 
     void add_child(std::shared_ptr<TransformComponent> child);
@@ -86,7 +86,7 @@ protected:
     common::Vec3 _localScale;
     bool _isDirty;
 
-    // World space data (Ä³½ÃµÈ °ª)
+    // World space data (ìºì‹œëœ ê°’)
     XMFLOAT4X4 _worldMatrix;
 
     // Hierarchy Data
@@ -94,7 +94,7 @@ protected:
     std::vector<std::shared_ptr<TransformComponent>> _children;
 
 
-    // Ä«¸Ş¶ó °ü·Ã º¯¼ö
+    // ì¹´ë©”ë¼ ê´€ë ¨ ë³€ìˆ˜
    float total_yaw_rad = 0.f;
    float total_pitch_rad = 0.f;
 

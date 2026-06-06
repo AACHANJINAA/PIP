@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ParticleShader.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
@@ -14,14 +14,14 @@ std::string ParticleShader::required_root_signature() const {
     return "particle_draw";
 }
 
-// ¹öÅØ½º ¹öÆÛ¸¦ ¾È ¾²¹Ç·Î ºñ¿öµÓ´Ï´Ù. (¾öÃ»³­ ÃÖÀûÈ­)
+// ë²„í…ìŠ¤ ë²„í¼ë¥¼ ì•ˆ ì“°ë¯€ë¡œ ë¹„ì›Œë‘¡ë‹ˆë‹¤. (ì—„ì²­ë‚œ ìµœì í™”)
 D3D12_INPUT_LAYOUT_DESC ParticleShader::create_input_layout() {
     return D3D12_INPUT_LAYOUT_DESC{ nullptr, 0 };
 }
 
 D3D12_RASTERIZER_DESC ParticleShader::create_rasterizer_state() {
     D3D12_RASTERIZER_DESC desc = Shader::create_rasterizer_state();
-    desc.CullMode = D3D12_CULL_MODE_NONE; // ºôº¸µå¶ó ¾î´À ¹æÇâÀÌµç º¸ÀÌ°Ô ÇÔ
+    desc.CullMode = D3D12_CULL_MODE_NONE; // ë¹Œë³´ë“œë¼ ì–´ëŠ ë°©í–¥ì´ë“  ë³´ì´ê²Œ í•¨
     return desc;
 }
 
@@ -29,7 +29,7 @@ D3D12_BLEND_DESC ParticleShader::create_blend_state() {
     D3D12_BLEND_DESC desc = {};
     desc.RenderTarget[0].BlendEnable = TRUE;
     desc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    desc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA; // °ãÃÄµµ ¾È¹à¾ÆÁö°Ô
+    desc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA; // ê²¹ì³ë„ ì•ˆë°ì•„ì§€ê²Œ
     desc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
     desc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
     desc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -41,10 +41,10 @@ D3D12_BLEND_DESC ParticleShader::create_blend_state() {
 D3D12_DEPTH_STENCIL_DESC ParticleShader::create_depth_stencil_state() {
     D3D12_DEPTH_STENCIL_DESC desc = {};
     desc.DepthEnable = TRUE;
-    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // ÆÄÆ¼Å¬ ³¢¸®´Â °ãÃÄµµ ·»´õ¸µµÇµµ·Ï ±íÀÌ ¾²±â ²ô±â
+    desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // íŒŒí‹°í´ ë¼ë¦¬ëŠ” ê²¹ì³ë„ ë Œë”ë§ë˜ë„ë¡ ê¹Šì´ ì“°ê¸° ë„ê¸°
     desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-    // ±íÀÌ°Ë»ç ²ô´Â µğ¹ö±ë ¿ë
+    // ê¹Šì´ê²€ì‚¬ ë„ëŠ” ë””ë²„ê¹… ìš©
     // desc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
     return desc;
@@ -61,12 +61,12 @@ D3D12_SHADER_BYTECODE ParticleShader::create_pixel_shader(ComPtr<ID3DBlob>& shad
 void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer, GameObject* object) {
     Shader::update_per_object(command_list, renderer, object);
 
-    // ÆÄÆ¼Å¬ »ö»ó(Çª¸¥ ¸¶·Â)°ú Å©±â¸¦ b2 ·çÆ® »ó¼ö·Î Àü´Ş
+    // íŒŒí‹°í´ ìƒ‰ìƒ(í‘¸ë¥¸ ë§ˆë ¥)ê³¼ í¬ê¸°ë¥¼ b2 ë£¨íŠ¸ ìƒìˆ˜ë¡œ ì „ë‹¬
     struct ParticleInfo {
         DirectX::XMFLOAT4 Color;
         float Size;
-		float progress; // 0~1 »çÀÌÀÇ °ªÀ¸·Î, ÆÄÆ¼Å¬ÀÌ ´Ù ¸ğ¿´´ÂÁö?
-		float dying_progress; // 0~1 »çÀÌÀÇ °ªÀ¸·Î, ÆÄÆ¼Å¬ÀÌ »ç¶óÁö´Â ÁßÀÎÁö?
+		float progress; // 0~1 ì‚¬ì´ì˜ ê°’ìœ¼ë¡œ, íŒŒí‹°í´ì´ ë‹¤ ëª¨ì˜€ëŠ”ì§€?
+		float dying_progress; // 0~1 ì‚¬ì´ì˜ ê°’ìœ¼ë¡œ, íŒŒí‹°í´ì´ ì‚¬ë¼ì§€ëŠ” ì¤‘ì¸ì§€?
     } pInfo;
 
     static const DirectX::XMFLOAT3 PlayerColors[4] =
@@ -77,14 +77,14 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
         DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
     };
 
-    pInfo.Color = { 0.1f, 0.5f, 1.0f, 0.5f }; // Ä«¸®¾Æ ´ë°Ë ÆÄÆ¼Å¬ »ö»ó
+    pInfo.Color = { 0.1f, 0.5f, 1.0f, 0.5f }; // ì¹´ë¦¬ì•„ ëŒ€ê²€ íŒŒí‹°í´ ìƒ‰ìƒ
 
     auto particleComponent = object->get_component<ParticleSystemComponent>();
     if (particleComponent) {
         pInfo.Color = particleComponent->get_particle_color();
     }
 
-    pInfo.Size = 0.05f; // ÆÄÆ¼Å¬ ÀÔÀÚ ÇÏ³ªÀÇ Å©±â (¼öÁ¤ÇÏ¸ç Å×½ºÆ®)
+    pInfo.Size = 0.05f; // íŒŒí‹°í´ ì…ì í•˜ë‚˜ì˜ í¬ê¸° (ìˆ˜ì •í•˜ë©° í…ŒìŠ¤íŠ¸)
 
     pInfo.dying_progress = particleComponent->get_dying_progress();
     pInfo.progress = particleComponent->get_progress();
@@ -93,18 +93,18 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
     command_list->SetGraphicsRoot32BitConstants(2, 7, &pInfo, 0);
 
 
-    // ÅØ½ºÃÄ ¹ö¸² ±×³É ¹ÙÀÎµùµµ ÇÏÁö¸¶ ¼ÎÀÌ´õ¿¡¼­ È£Ãâ ÇÏÁöµµ ¸¶
+    // í…ìŠ¤ì³ ë²„ë¦¼ ê·¸ëƒ¥ ë°”ì¸ë”©ë„ í•˜ì§€ë§ˆ ì…°ì´ë”ì—ì„œ í˜¸ì¶œ í•˜ì§€ë„ ë§ˆ
     
-    // ¹İÂ¦ÀÌ´Â ºû ÅØ½ºÃ³ (¹Ì¸® ·ÎµåÇØµĞ ÆÄÆ¼Å¬ ÅØ½ºÃ³ ÀÌ¸§)
+    // ë°˜ì§ì´ëŠ” ë¹› í…ìŠ¤ì²˜ (ë¯¸ë¦¬ ë¡œë“œí•´ë‘” íŒŒí‹°í´ í…ìŠ¤ì²˜ ì´ë¦„)
     //auto particle_tex = ResourceManager::instance()->get_texture("Resource/UI/particle/particle.dds");
 
-    // ¸¸¾à °æ·Î°¡ Æ²·È°Å³ª ·ÎµùÀÌ ¾È µÆÀ» ¶§ Æ¨±âÁö ¾Ê°Ô ±âº» Èò»ö ÅØ½ºÃ³·Î ´ëÃ¼
+    // ë§Œì•½ ê²½ë¡œê°€ í‹€ë ¸ê±°ë‚˜ ë¡œë”©ì´ ì•ˆ ëì„ ë•Œ íŠ•ê¸°ì§€ ì•Šê²Œ ê¸°ë³¸ í°ìƒ‰ í…ìŠ¤ì²˜ë¡œ ëŒ€ì²´
    // if (!particle_tex) {
    //     particle_tex = ResourceManager::instance()->get_texture("__DEFAULT_WHITE__");
     //}
 
    // if (particle_tex) {
-        // ·çÆ® ÆÄ¶ó¹ÌÅÍ ÀÎµ¦½º 4¹ø(t1)¿¡ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí(ÅØ½ºÃ³)À» ¹ÙÀÎµùÇÕ´Ï´Ù.
+        // ë£¨íŠ¸ íŒŒë¼ë¯¸í„° ì¸ë±ìŠ¤ 4ë²ˆ(t1)ì— ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸”(í…ìŠ¤ì²˜)ì„ ë°”ì¸ë”©í•©ë‹ˆë‹¤.
   //      renderer->bind_texture_table(command_list, 4, { particle_tex->cpu_handle });
    // }
 }

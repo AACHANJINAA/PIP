@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "DebugDrawManager.h"
 #include "Renderer.h"
 
@@ -16,7 +16,7 @@ void DebugDrawManager::Initialize(ID3D12Device* device)
             D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
         _cbWorld[i]->Map(0, nullptr, reinterpret_cast<void**>(&_mappedWorld[i]));
     }
-    // [Ãß°¡] ¼­¹ö Àü¼Û¿ë µ¿Àû ¶óÀÎ ¹öÆÛ »ı¼º (¾à 20¸¸°³ Á¤Á¡ È®º¸)
+    // [ì¶”ê°€] ì„œë²„ ì „ì†¡ìš© ë™ì  ë¼ì¸ ë²„í¼ ìƒì„± (ì•½ 20ë§Œê°œ ì •ì  í™•ë³´)
     UINT dynamicBufferSize = sizeof(DebugVertex) * 200000;
     _remoteLineVB = CreateBufferResource(device, nullptr, nullptr, dynamicBufferSize,
         D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
@@ -133,7 +133,7 @@ void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const st
     nlohmann::json root;
     file >> root;
 
-    // 1. ¸Ş½¬ ¶óÀÌºê·¯¸®¿¡¼­ targetMeshÀÇ Convex µ¥ÀÌÅÍ¸¸ ÃßÃâ
+    // 1. ë©”ì‰¬ ë¼ì´ë¸ŒëŸ¬ë¦¬ì—ì„œ targetMeshì˜ Convex ë°ì´í„°ë§Œ ì¶”ì¶œ
     std::vector<std::vector<common::Vec3>> meshConvexParts;
     if (root.contains("MeshLibrary") && root["MeshLibrary"].contains(targetMesh)) {
         const auto& colData = root["MeshLibrary"][targetMesh]["CollisionData"];
@@ -150,7 +150,7 @@ void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const st
         if (colData.contains("Boxes"))
         {
             for (const auto& box : colData["Boxes"]) {
-                // Box´Â 8°³ÀÇ ²ÀÁşÁ¡À¸·Î º¯È¯ (´Ü¼ø ¼± ±×¸®±â¸¦ À§ÇØ)
+                // BoxëŠ” 8ê°œì˜ ê¼­ì§“ì ìœ¼ë¡œ ë³€í™˜ (ë‹¨ìˆœ ì„  ê·¸ë¦¬ê¸°ë¥¼ ìœ„í•´)
                 std::vector<common::Vec3> points;
                 XMVECTOR center = ToCVec(box["Center"]);
                 float ExtentX = box["ExtentX"];
@@ -178,7 +178,7 @@ void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const st
 
     if (meshConvexParts.empty()) return;
 
-    // 2. ÀÎ½ºÅÏ½º¿¡¼­ targetActor Ã£±â
+    // 2. ì¸ìŠ¤í„´ìŠ¤ì—ì„œ targetActor ì°¾ê¸°
     if (root.contains("Instances")) {
         for (const auto& inst : root["Instances"]) {
             if (inst.value("ActorName", "") != targetActor) continue;
@@ -192,19 +192,19 @@ void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const st
                 XMVECTOR relPos = ToCVec(part["RelPos"]);
                 XMVECTOR relRot = ToCQuat(part["RelRot"]);
 
-                // ÃÖÁ¾ ¿ùµå Æ®·£½ºÆû °è»ê (¼­¹ö¿Í µ¿ÀÏÇÑ °ø½Ä)
+                // ìµœì¢… ì›”ë“œ íŠ¸ëœìŠ¤í¼ ê³„ì‚° (ì„œë²„ì™€ ë™ì¼í•œ ê³µì‹)
                 XMVECTOR finalPos = XMVectorAdd(actorPos, XMVector3Rotate(relPos, actorRot));
                 XMVECTOR finalRot = XMQuaternionNormalize(XMQuaternionMultiply(actorRot, relRot));
 
-                // ·»´õ¸µ¿ë µ¥ÀÌÅÍ »ı¼º (±âÁ¸ _remoteShapes ±¸Á¶ ÀçÈ°¿ë)
+                // ë Œë”ë§ìš© ë°ì´í„° ìƒì„± (ê¸°ì¡´ _remoteShapes êµ¬ì¡° ì¬í™œìš©)
                 for (const auto& points : meshConvexParts) {
                     RemoteDebugShape rs;
                     XMStoreFloat3((XMFLOAT3*)&rs.pos, finalPos);
                     XMStoreFloat4((XMFLOAT4*)&rs.rot, finalRot);
 
-                    // ConvexÀÇ Á¤Á¡µéÀ» »ï°¢Çü ÇüÅÂ·Î º¯È¯ (´Ü¼ø ¼± ±×¸®±â¸¦ À§ÇØ)
-                    // ½ÇÁ¦ Convex¸¦ Á¤È®È÷ ±×¸®·Á¸é Hull ¾Ë°í¸®ÁòÀÌ ÇÊ¿äÇÏÁö¸¸,
-                    // ¿©±â¼­´Â ¸ğµç Á¡À» ¿øÁ¡°ú ÀÕ´Â ¹æ½ÄÀ¸·Î ´ë·«ÀûÀÎ ÇüÅÂ¸¸ È®ÀÎÇÕ´Ï´Ù.
+                    // Convexì˜ ì •ì ë“¤ì„ ì‚¼ê°í˜• í˜•íƒœë¡œ ë³€í™˜ (ë‹¨ìˆœ ì„  ê·¸ë¦¬ê¸°ë¥¼ ìœ„í•´)
+                    // ì‹¤ì œ Convexë¥¼ ì •í™•íˆ ê·¸ë¦¬ë ¤ë©´ Hull ì•Œê³ ë¦¬ì¦˜ì´ í•„ìš”í•˜ì§€ë§Œ,
+                    // ì—¬ê¸°ì„œëŠ” ëª¨ë“  ì ì„ ì›ì ê³¼ ì‡ëŠ” ë°©ì‹ìœ¼ë¡œ ëŒ€ëµì ì¸ í˜•íƒœë§Œ í™•ì¸í•©ë‹ˆë‹¤.
                     if (points.size() >= 3) {
                         for (size_t i = 1; i < points.size() - 1; ++i) {
                             rs.triangles.push_back(points[0]);
@@ -221,7 +221,7 @@ void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const st
 
 void DebugDrawManager::CreateDynamicLineBuffer(ID3D12Device* device)
 {
-    // ÃÖ´ë 10¸¸ °³ÀÇ ¼± Á¤Á¡(¾à 5¸¸ °³ ¼±)À» ¼ö¿ëÇÒ ¼ö ÀÖ´Â °ø°£ È®º¸
+    // ìµœëŒ€ 10ë§Œ ê°œì˜ ì„  ì •ì (ì•½ 5ë§Œ ê°œ ì„ )ì„ ìˆ˜ìš©í•  ìˆ˜ ìˆëŠ” ê³µê°„ í™•ë³´
     UINT bufferSize = sizeof(DebugVertex) * 100000;
     _remoteLineVB = CreateBufferResource(device, nullptr, nullptr, bufferSize,
         D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
@@ -339,7 +339,7 @@ void DebugDrawManager::RenderRemoteShape(ID3D12GraphicsCommandList* cmdList, UIN
         XMMATRIX world = XMMatrixRotationQuaternion(XMLoadFloat4((XMFLOAT4*)&shape.rot)) *
             XMMatrixTranslation(shape.pos.x, shape.pos.y, shape.pos.z);
 
-        // [¼öÁ¤] Á¤Á¡ÀÌ 3°³ ¹Ì¸¸À¸·Î ³²¾ÒÀ» °æ¿ì ·çÇÁ Á¾·á (¾ÈÀü ÀåÄ¡)
+        // [ìˆ˜ì •] ì •ì ì´ 3ê°œ ë¯¸ë§Œìœ¼ë¡œ ë‚¨ì•˜ì„ ê²½ìš° ë£¨í”„ ì¢…ë£Œ (ì•ˆì „ ì¥ì¹˜)
         for (size_t i = 0; i + 2 < shape.triangles.size(); i += 3)
         {
             XMVECTOR v0 = XMVector3Transform(XMLoadFloat3((XMFLOAT3*)&shape.triangles[i]), world);
@@ -355,11 +355,11 @@ void DebugDrawManager::RenderRemoteShape(ID3D12GraphicsCommandList* cmdList, UIN
             _remoteLineVertices.push_back(dv1); _remoteLineVertices.push_back(dv2);
             _remoteLineVertices.push_back(dv2); _remoteLineVertices.push_back(dv0);
 
-            if (_remoteLineVertices.size() >= 199000) break; // ¹öÆÛ ¿À¹öÇÃ·Î¿ì ¹æÁö
+            if (_remoteLineVertices.size() >= 199000) break; // ë²„í¼ ì˜¤ë²„í”Œë¡œìš° ë°©ì§€
         }
     }
 
-    // [ÇÙ½É] ¸ğµç ÀÎ½ºÅÏ½ºÀÇ ¼±µéÀ» ÇÏ³ªÀÇ Á¤Á¡ ¹öÆÛ¿¡ ¸ğ¾Æ¼­ ´Ü ÇÑ ¹øÀÇ È£Ãâ·Î ±×¸³´Ï´Ù!
+    // [í•µì‹¬] ëª¨ë“  ì¸ìŠ¤í„´ìŠ¤ì˜ ì„ ë“¤ì„ í•˜ë‚˜ì˜ ì •ì  ë²„í¼ì— ëª¨ì•„ì„œ ë‹¨ í•œ ë²ˆì˜ í˜¸ì¶œë¡œ ê·¸ë¦½ë‹ˆë‹¤!
     if (!_remoteLineVertices.empty()) {
         void* pData = nullptr;
         if (SUCCEEDED(_remoteLineVB->Map(0, nullptr, &pData))) {
