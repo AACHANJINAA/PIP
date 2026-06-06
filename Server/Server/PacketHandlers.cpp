@@ -535,6 +535,9 @@ namespace PIP::packet
 				if (debug_packet._command == packet::DebugCommandType::PHYSICS_SNAPSHOT) {
 					room->StartPhysicsRecording();
 				}
+				else if (debug_packet._command == packet::DebugCommandType::CHANGE_SCENE_BOSS) {
+					room->ChangeScene("BossStage");
+				}
 			});
 		}
 	}
