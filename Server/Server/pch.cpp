@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 
 void PIP::print_error(const char* msg, int err_no)
 {
@@ -14,9 +14,9 @@ void PIP::print_error(const char* msg, int err_no)
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPTSTR)&lpMsgBuf, 0, NULL);
 	std::cout << msg;
-	std::wcout << L" ¿¡·¯ " << lpMsgBuf << std::endl;
+	std::wcout << L" ì—ëŸ¬ " << lpMsgBuf << std::endl;
 #ifdef _DEBUG
-	while (true){}; // µð¹ö±ë ¿ë ±×³É Á×À¸¸é ¾ÈµÇ´Ï±î
+	while (true){}; // ë””ë²„ê¹… ìš© ê·¸ëƒ¥ ì£½ìœ¼ë©´ ì•ˆë˜ë‹ˆê¹Œ
 #endif
 
 	LocalFree(lpMsgBuf);

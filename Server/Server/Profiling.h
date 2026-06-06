@@ -1,7 +1,7 @@
-#pragma once
+ï»¿#pragma once
 namespace PIP::SERVER
 {
-    // --- ¼º´É ÃøÁ¤¿ë ±¸Á¶Ã¼ Ãß°¡ ---
+    // --- ì„±ëŠ¥ ì¸¡ì •ìš© êµ¬ì¡°ì²´ ì¶”ê°€ ---
     struct ProfileData
     {
         std::atomic<long long> total_time_ns{ 0 };

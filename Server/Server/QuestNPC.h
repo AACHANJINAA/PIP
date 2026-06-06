@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "NPC.h"
 
 namespace PIP::GAME
