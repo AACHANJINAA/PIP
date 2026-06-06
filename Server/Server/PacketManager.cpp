@@ -14,6 +14,7 @@ namespace PIP::packet
         RegisterHandler(PacketType::C2S_P_PLAYER_READY, Handle_C2S_PLAYER_READY);
         RegisterHandler(PacketType::C2S_P_DEBUG_COMMAND, Handle_C2S_DEBUG_COMMAND);
 		RegisterHandler(PacketType::C2S_P_NPC_INTERACT, Handle_C2S_NPC_INTERACT);
+		RegisterHandler(PacketType::C2S_P_CUTSCENE_DONE, Handle_C2S_CUTSCENE_DONE);
 	}
 
 	void PacketManager::Dispatch(const std::shared_ptr<PIP::SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
@@ -55,6 +56,7 @@ namespace PIP::packet
 					case packet::PacketType::C2S_P_PLAYER_READY: // 게임 시작 준비 패킷
                     case packet::PacketType::C2S_P_DEBUG_COMMAND:
 					case packet::PacketType::C2S_P_NPC_INTERACT:
+					case packet::PacketType::C2S_P_CUTSCENE_DONE:
                         bIsValidPacket = true;
                         break;
                 }

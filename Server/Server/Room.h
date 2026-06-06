@@ -75,7 +75,8 @@ namespace PIP::SERVER
 
 		//void HandleAttack(const std::shared_ptr<SESSION>& attacker);
 		void Execute_C2S_ACTION(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
-		void Execute_C2S_NPC_INTERACT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_NPC_INTERACT& interact_packet); // [추가] 퀘스트 등 상호작용
+		void Execute_C2S_NPC_INTERACT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_NPC_INTERACT& interact_packet);
+		void Execute_C2S_CUTSCENE_DONE(const std::shared_ptr<SESSION>& session); // [추가] 퀘스트 등 상호작용
 		void ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
@@ -161,6 +162,8 @@ namespace PIP::SERVER
 		std::unique_ptr<Stage> _currentStage;		// 현재 맵 정보 (맵 오브젝트, NPC 스폰 지점 등)
 		std::string            _requestedSceneName; // 전환 대기 중인 씬 이름
 		std::set<int64_t>      _readyPlayers;       // 로딩 완료 보고를 한 플레이어 목록
+		std::set<int64_t>      _cutsceneFinishedPlayers; // 컷씬 종료를 보고한 플레이어 목록
+		std::set<int64_t>      _activatedLevers;         // 작동된 레버들의 ID 집합
 
 
 		std::unordered_map<int64_t, GAME::Actor*>				_actors;

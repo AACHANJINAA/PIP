@@ -558,6 +558,11 @@ void MainPlayerScript::handle_input(float deltaTime)
 	{
 		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::PHYSICS_SNAPSHOT);
 	}
+	if (InputManager::instance()->IsKeyDown(VK_F10))
+	{
+		// 임시 컷씬 종료 패킷 전송 (클라이언트 컷씬 연출이 끝나면 보내는 패킷을 디버깅용으로 F9에 연결)
+		NetworkManager::instance()->SendCutsceneDonePacket();
+	}
 
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp() || _state == common::packet::EntityState::GRABBED)
@@ -823,7 +828,7 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 	// 이렇게 해야 렌더링은 부드럽고, 서버에 보내는 좌표는 정확해집니다.
 	if (transform())
 	{
-		common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{ 0, -0.1f, 0 };
+		common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{ 0, 0.0f, 0 };
 		transform()->set_local_position(visualPosition);
 	}
 }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 // 테스트 주석: common::packet 네임스페이스가 포함된 파일입니다.
 // [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
@@ -109,6 +109,8 @@ namespace common::packet
 		C2S_P_PLAYER_READY = 205,		// [신규] 플레이어 준비 완료 패킷 (게임 시작 트리거용)
 		S2C_P_ALL_PLAYERS_READY = 206,	// [신규] 모든 플레이어 준비 완료 패킷 (게임 시작 트리거용)
 		S2C_P_CHANGE_SCENE = 207,		// [신규] 씬 변경 패킷 (어떤 씬 로딩 할지 보냄)
+		S2C_P_PLAY_CUTSCENE = 208,		// [신규] 컷씬 재생 패킷
+		C2S_P_CUTSCENE_DONE = 209,		// [신규] 컷씬 완료 패킷
 
 		//------------------------------------------ 채팅 관련 패킷 ------------------------------------------ //
 		C2S_P_CHAT_IN_ROOM = 301, // 클라 -> 서버: 방 내부 채팅 메시지
@@ -154,6 +156,7 @@ namespace common::packet
 		Elevator = 3, // [추가] 엘리베이터 객체
 		MagicGuard = 4, // [신규] 길찾기 경비병
 		QuestNPC = 5,   // [추가] 퀘스트 제공 NPC
+		Lever = 6,      // [추가] 보스방 진입 레버
 		// 향후 추가될 NPC 유형들...
 	};
 	enum class InventoryUpdateType : uint8_t {
@@ -204,6 +207,10 @@ namespace common::packet
 	struct CS_PACKET_ENTER_ROOM : PacketHeader
 	{
 		int _room_id;
+	};
+	// 컷씬 완료 패킷
+	struct CS_PACKET_CUTSCENE_DONE : PacketHeader
+	{
 	};
 	// enum class MOVE_TYPE : uint16_t
 	struct CS_PACKET_MOVE : PacketHeader
@@ -297,6 +304,7 @@ namespace common::packet
 		EntityState		_state;
 		int32_t			_action_id;
 		int32_t			_hp;
+		int32_t			_mp; // [추가]
 		int32_t			_level;
 		int32_t			_exp;
 		//뒤에 가변크기 name
@@ -319,6 +327,7 @@ namespace common::packet
 		int64_t			_grabbed_by_id; // [추가] 나를 잡고 있는 객체의 ID (-1이면 없음)
 		int8_t			_grab_slot;     // [추가] 잡힌 슬롯 (0: 왼손, 1: 오른손 등)
 		int32_t			_hp;            // [추가] 실시간 체력 동기화
+		int32_t			_mp;            // [추가] 실시간 마나 동기화
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)
@@ -352,7 +361,12 @@ namespace common::packet
 	};
 	struct SC_PACKET_CHANGE_SCENE : PacketHeader
 	{
-		// 씬 변경 패킷 뒤에 이름이 들어옴
+		// 이 뒤에 가변 길이 씬 이름 문자열(std::string)이 스트림으로 덧붙여집니다.
+	};
+	// 컷씬 재생 패킷
+	struct SC_PACKET_PLAY_CUTSCENE : PacketHeader
+	{
+		int32_t _cutscene_id;
 	};
 	struct SC_PACKET_ALL_PLAYERS_READY : PacketHeader
 	{

@@ -30,8 +30,12 @@ public:
     void SendActionPacket(int32_t actionID, int64_t targetID, common::Vec3 pos, common::Quat dir);
     void SendNPCInteractPacket(int64_t npc_id, int32_t quest_id); // 퀘스트/상호작용 패킷 전송
     void SendRoomListPacket();
-    void SendEnterRoomPacket(int room_id_to_enter);
+    void SendEnterRoomPacket(int room_id);
+    void SendPlayerReadyPacket();
+    void SendCutsceneDonePacket();
     void SendDebugCommandPacket(common::packet::DebugCommandType command);
+
+    void SendAttackResultPacket(int64_t target_id, float damage, float force);
     bool is_running() const { return _isRunning; }
     long long get_my_session_id() const { return _my_session_id; }
     XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
@@ -77,6 +81,7 @@ private:
 	void HANDLE_S2C_MOVE_NPC_BATCH(common::packet::PacketStream& stream);
 
     void HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& stream);
+    void HANDLE_S2C_PLAY_CUTSCENE(common::packet::PacketStream& stream);
     void Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream);
 
 	// Client side: 인벤토리 관련 패킷 처리 함수들

@@ -779,12 +779,15 @@ namespace PIP::GAME
 
 			if (_internalTimer <= 0.0f) {
 				_currentPhase = Phase::DASHING;
+				_internalTimer = 2.0f; // [추가] 최대 돌진 제한 시간 (벽에 끼임 방지)
 			}
 			return NodeStatus::RUNNING;
 		}
 
 		// --- Phase 3: 실제 돌진 (10m 주파) ---
 		if (_currentPhase == Phase::DASHING) {
+			_internalTimer -= dt; // [추가] 돌진 시간 감소
+
 			if (!_blackboard->has("charge_target_pos")) return NodeStatus::FAILURE;
 
 			common::Vec3 targetPos = _blackboard->get<common::Vec3>("charge_target_pos");
@@ -802,10 +805,11 @@ namespace PIP::GAME
 			// [핵심] 도착 판정 로직 개선
 			// 1. 거리가 매우 가깝거나 (0.2m 이내)
 			// 2. 목적지를 지나쳤을 때 (목표 방향 _dashDir과 현재 남은 방향 toTarget의 내적이 음수면 지나친 것)
+			// 3. [추가] 제한 시간(2초)이 초과되었을 때 (벽이나 플레이어에 막혀서 못 가는 경우)
 			float dot = toTarget.x * _dashDir.x + toTarget.y * _dashDir.y + toTarget.z * _dashDir.z;
 			float distSq = common::LengthSq(toTarget);
 
-			if (distSq < 0.2f * 0.2f || dot < 0) {
+			if (distSq < 0.2f * 0.2f || dot < 0 || _internalTimer <= 0.0f) {
 				auto nc = owner->GetComponent<NPCControllerComponent>();
 				if (nc) nc->SetVelocity({ 0, 0, 0 });
 
