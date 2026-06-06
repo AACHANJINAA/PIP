@@ -242,9 +242,10 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     quest_title_ui->set_screen_position(20.f, FRAME_BUFFER_HEIGHT / 2.0f - title_h / 2.0f - 15.f);
     quest_title_ui->set_size(title_w, title_h);
     quest_title_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-    quest_title_ui->set_texture("Resource/UI/Quest_Title.png");
+    quest_title_ui->set_texture("Resource/UI/Quest_Title_1.png");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestTitle_UI", quest_title_obj);
     UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", false);
+	ResourceManager::instance()->load_texture("Resource/UI/Quest_Title_2.png", true);
 
     // 9. 퀘스트 텍스트(진행도) UI (00/00 등 총 5자리)
     float num_w = 20.f;
