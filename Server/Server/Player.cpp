@@ -118,9 +118,9 @@ namespace PIP::GAME
 		// [핵심 보정] 클라이언트의 예측 이동(Dead Reckoning) 오류 방지
 		common::Vec3 sendVelocity = GetVelocity();
 
-		if (_state == common::packet::EntityState::IDLE)
+		if (_state == common::packet::EntityState::IDLE || _state == common::packet::EntityState::ACTION)
 		{
-			// 가만히 있을 때는 속도를 완벽한 0으로 강제 고정
+			// 가만히 있거나 모션 중(공격, 스킬 등)일 때는 속도를 완벽한 0으로 강제 고정
 			sendVelocity = { 0.0f, 0.0f, 0.0f };
 		}
 		else if (_state == common::packet::EntityState::MOVE || _state == common::packet::EntityState::RUN)

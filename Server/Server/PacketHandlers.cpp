@@ -555,4 +555,18 @@ namespace PIP::packet
 			});
 		}
 	}
+
+	void Handle_C2S_CUTSCENE_DONE(const std::shared_ptr<SERVER::SESSION>& session, PIP::packet::PacketStream& stream)
+	{
+		packet::CS_PACKET_CUTSCENE_DONE done_packet;
+		stream >> done_packet;
+
+		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+		if (room) {
+			room->PushJob([session, room]() {
+				if (session->_state != SERVER::SESSION_STATE::ST_INGAME) return;
+				room->Execute_C2S_CUTSCENE_DONE(session);
+			});
+		}
+	}
 }

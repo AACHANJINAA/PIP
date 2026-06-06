@@ -71,6 +71,7 @@ namespace PIP::GAME
 		auto root = builder
 			.sequence()                                     // [루트] 생존 시에만 동작
 				.leaf<Condition_IsAlive>()
+				.leaf<Condition_IsHitted>(DecoratorType::Inverter) // [수정] 피격 상태일 때는 AI 정지
 				.selector()                                 // 우선순위 결정기
 					// ── [P1] 전투/추격 시퀀스 ──────────────────────────
 					.sequence()

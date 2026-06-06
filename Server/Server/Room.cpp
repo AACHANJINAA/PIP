@@ -1344,6 +1344,28 @@ namespace PIP::SERVER
 					MYLOG("[Quest] Session " << session->_id << " completed quest " << quest_id);
 				}
 			}
+		} else if (npc->GetNpcType() == common::packet::NPCType::Lever) {
+			// [신규] 레버 상호작용
+			if (!_activatedLevers.contains(npc_id)) {
+				_activatedLevers.insert(npc_id);
+				MYLOG("[Room " << _room_id << "] Lever activated! Total: " << _activatedLevers.size());
+				
+				if (_activatedLevers.size() == 2) {
+					// 레버 2개 작동 완료 -> 컷씬 재생 패킷 브로드캐스트
+					MYLOG("[Room " << _room_id << "] Both levers activated. Broadcasting PLAY_CUTSCENE.");
+					packet::PacketStream stream;
+					packet::SC_PACKET_PLAY_CUTSCENE pkt;
+					pkt._type = packet::PacketType::S2C_P_PLAY_CUTSCENE;
+					pkt._size = sizeof(pkt);
+					pkt._cutscene_id = 1; // 예: 1번 컷씬 (보스 진입 전)
+					stream << pkt;
+					Broadcast(stream.constable_data(), stream.Size());
+					
+					// 컷씬 상태로 전환
+					_room_state = RoomState::WAITING;
+					_cutsceneFinishedPlayers.clear();
+				}
+			}
 		} else {
 			// quest_id가 0인 경우 해당 NPC가 주는 기본 퀘스트를 처리 (임시 하드코딩 - 1번 퀘스트)
 			int32_t default_quest_id = 1; 
@@ -1370,8 +1392,32 @@ namespace PIP::SERVER
 		}
 	}
 
+	void Room::Execute_C2S_CUTSCENE_DONE(const std::shared_ptr<SESSION>& session)
+	{
+		// [디버깅용 임시 주석처리] 원래는 레버를 통해 WAITING 상태가 되어야만 처리되지만, 
+		// 당장 레버 없이 F9만 눌러서 씬 전환을 테스트해볼 수 있도록 주석 처리해둡니다.
+		// if (_room_state != RoomState::WAITING) return; 
+
+		_cutsceneFinishedPlayers.insert(session->_id);
+		MYLOG("[Room " << _room_id << "] Session " << session->_id << " finished cutscene. " 
+			<< _cutsceneFinishedPlayers.size() << "/" << _players.size());
+
+		// 모든 플레이어가 컷씬 시청 완료 시 보스 씬으로 전환
+		if (_cutsceneFinishedPlayers.size() == _players.size() && !_players.empty()) {
+			MYLOG("[Room " << _room_id << "] All players finished cutscene! Transitioning to BossStage.");
+			_activatedLevers.clear(); // 상태 초기화
+			ChangeScene("BossStage");
+		}
+		else if (_players.empty())
+		{
+			MYLOG("[Room " << _room_id << "] No players in room after cutscene. Transitioning to BossStage.");
+			_activatedLevers.clear(); // 상태 초기화
+			ChangeScene("BossStage");
+		}
+	}
+
 	void Room::Execute_C2S_ACTION(const std::shared_ptr<SESSION>& session,
-	                        const common::packet::CS_PACKET_ACTION& action_packet)
+	                              const common::packet::CS_PACKET_ACTION& action_packet)
 	{
 		if (!session || !session->_player) return;
 

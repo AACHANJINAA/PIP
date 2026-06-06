@@ -249,6 +249,15 @@ void NetworkManager::SendEnterRoomPacket(int room_id_to_enter)
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }
 
+void NetworkManager::SendCutsceneDonePacket()
+{
+	common::packet::CS_PACKET_CUTSCENE_DONE packet;
+	packet._type = common::packet::PacketType::C2S_P_CUTSCENE_DONE;
+	packet._size = sizeof(packet);
+
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
 void NetworkManager::SendDebugCommandPacket(common::packet::DebugCommandType command)
 {
 	common::packet::CS_PACKET_DEBUG_COMMAND packet;
@@ -306,7 +315,17 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	{
 		CLOG("[SPAWN_PLAYER] ID MATCH! Creating MY player (MainPlayer).");
 		// 내 플레이어 정보 업데이트
-		{
+		auto existing_player = ObjectManager::instance()->find_by_name("MainPlayer");
+		if (existing_player) {
+			auto player_logic = existing_player->get_component<MainPlayerScript>();
+			if (player_logic) {
+				player_logic->set_name(name);
+				player_logic->set_hp(spawn_data._hp);
+				player_logic->set_id(_my_session_id);
+				player_logic->set_position(spawn_data._position);
+				existing_player->transform()->set_local_rotation(spawn_data._rotation);
+			}
+		} else {
 			auto playerObject = ObjectManager::instance()->create_game_object("MainPlayer");
 			// MainPlayerScript추가
 			playerObject->set_layer("Player");
@@ -329,20 +348,34 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	else
 	{
 		CLOG("[OtherPlayer] ID MISMATCH! Creating OTHER player (OtherPlayer).");
-		// 다른 플레이어 (적) 생성 또는 업데이트
-		auto other_player = ObjectManager::instance()->create_game_object(name);
-		auto other_player_logic = other_player->add_component<OtherPlayerScript>();
-		other_player->transform()->set_local_position(spawn_data._position);
-		other_player->transform()->set_local_rotation(spawn_data._rotation);
-		other_player->set_layer("OtherPlayer");
+		
+		auto existing_other = ObjectManager::instance()->find_npc(spawn_data._id);
+		if (existing_other) {
+			auto other_player_logic = existing_other->get_component<OtherPlayerScript>();
+			if (other_player_logic) {
+				other_player_logic->on_sync_position(spawn_data._position);
+				other_player_logic->on_sync_rotation(spawn_data._rotation);
+				other_player_logic->set_hp(spawn_data._hp);
+			}
+		} else {
+			// 다른 플레이어 (적) 생성 또는 업데이트
+			auto other_player = ObjectManager::instance()->create_game_object(name);
+			auto other_player_logic = other_player->add_component<OtherPlayerScript>();
+			other_player->transform()->set_local_position(spawn_data._position);
+			other_player->transform()->set_local_rotation(spawn_data._rotation);
+			other_player->set_layer("OtherPlayer");
 
-		// 2. [추가] 스크립트 내부 논리 좌표 초기화
-		// on_sync_position을 호출하여 _logicalPosition을 서버 좌표로 맞춰줍니다.
-		other_player_logic->on_sync_position(spawn_data._position);
-		other_player_logic->on_sync_rotation(spawn_data._rotation);
+			// 2. [추가] 스크립트 내부 논리 좌표 초기화
+			// on_sync_position을 호출하여 _logicalPosition을 서버 좌표로 맞춰줍니다.
+			other_player_logic->on_sync_position(spawn_data._position);
+			other_player_logic->on_sync_rotation(spawn_data._rotation);
 
-		other_player_logic->set_hp(spawn_data._hp);
-		other_player_logic->set_id(spawn_data._id);
+			other_player_logic->set_hp(spawn_data._hp);
+			other_player_logic->set_id(spawn_data._id);
+			
+			// [중요] 생성 시 ObjectManager의 _npcMap에 등록
+			ObjectManager::instance()->register_npc(spawn_data._id, other_player);
+		}
 		
 		CLOG("[S->C] OtherPlayer spawned/updated: ID=" << spawn_data._id
 			<< "Pos=" << spawn_data._position.x << "," << spawn_data._position.y
@@ -793,7 +826,7 @@ void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& strea
 	{
 		client_scene_name = "MainScene";
 	}
-	else if ("BossStage" == nextSceneName)
+	else if ("BossStage" == nextSceneName || "BossScene" == nextSceneName)
 	{
 		client_scene_name = "BossScene";
 	}
@@ -805,6 +838,19 @@ void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& strea
 	SceneManager::instance()->change_scene(client_scene_name);
 
 	CLOG("Scene change requested by server: " << nextSceneName);
+}
+
+void NetworkManager::HANDLE_S2C_PLAY_CUTSCENE(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_PLAY_CUTSCENE cutscene_packet;
+	stream >> cutscene_packet;
+
+	CLOG("[S2C_PLAY_CUTSCENE] Cutscene triggered! ID: " << cutscene_packet._cutscene_id);
+	
+	// TODO: 실제 컷씬 연출 (카메라 워크, 비디오 UI, 애니메이션 등) 호출
+	// 일단 지금은 로그만 남기고 일정 시간 후 완료 패킷을 보내는 방식으로 시뮬레이션 할 수 있지만,
+	// 디버깅 목적으로 MainPlayerScript의 F9 키로 C2S_P_CUTSCENE_DONE을 보내도록 하겠음.
+	//UIManager::instance()->set_main_ui_active(false); // UI 가리기 (임시)
 }
 
 void NetworkManager::Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream)
@@ -986,6 +1032,8 @@ bool NetworkManager::init_network()
 
 	RegisterHandler(common::packet::PacketType::S2C_P_CHANGE_SCENE,
 		std::bind(&NetworkManager::HANDLE_S2C_CHANGE_SCENE, this, std::placeholders::_1));
+	RegisterHandler(common::packet::PacketType::S2C_P_PLAY_CUTSCENE,
+		std::bind(&NetworkManager::HANDLE_S2C_PLAY_CUTSCENE, this, std::placeholders::_1));
 	RegisterHandler(common::packet::PacketType::S2C_P_ALL_PLAYERS_READY,
 		std::bind(&NetworkManager::Handle_S2C_ALL_PLAYERS_READY, this, std::placeholders::_1));
 	RegisterHandler(common::packet::PacketType::S2C_P_PLAYER_RESURRECT,
