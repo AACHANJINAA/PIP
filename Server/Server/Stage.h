@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 namespace PIP::SERVER
 {
@@ -8,16 +8,16 @@ namespace PIP::SERVER
     public:
         virtual ~Stage() = default;
 
-        // 1. ¹°¸® ÁöÇü ¹× Á¤Àû ¿ÀºêÁ§Æ® ÃÊ±âÈ­ (¾À ÀüÈ¯ ½Ã Áï½Ã ½ÇÇà)
+        // 1. ë¬¼ë¦¬ ì§€í˜• ë° ì •ì  ì˜¤ë¸Œì íŠ¸ ì´ˆê¸°í™” (ì”¬ ì „í™˜ ì‹œ ì¦‰ì‹œ ì‹¤í–‰)
         virtual void on_initialize(Room* room) = 0;
 
-        // 2. ÇÃ·¹ÀÌ¾î ÁøÀÔ ¹× NPC ½ºÆù (·Îµù ¿Ï·á ÈÄ ½ÇÇà)
+        // 2. í”Œë ˆì´ì–´ ì§„ì… ë° NPC ìŠ¤í° (ë¡œë”© ì™„ë£Œ í›„ ì‹¤í–‰)
         virtual void on_enter(Room* room) = 0;
 
-        // 3. ½ºÅ×ÀÌÁö Àü¿ë ·ÎÁ÷ ¾÷µ¥ÀÌÆ®
+        // 3. ìŠ¤í…Œì´ì§€ ì „ìš© ë¡œì§ ì—…ë°ì´íŠ¸
         virtual void update(Room* room, float dt) = 0;
 
-        // 4. ÀÚ¿ø Á¤¸® (½ºÅ×ÀÌÁö ÀüÈ¯ ½Ã ½ÇÇà)
+        // 4. ìì› ì •ë¦¬ (ìŠ¤í…Œì´ì§€ ì „í™˜ ì‹œ ì‹¤í–‰)
         virtual void on_exit(Room* room) = 0;
 
         virtual std::string get_stage_name() const = 0;
@@ -28,8 +28,8 @@ namespace PIP::SERVER
 #ifdef _DEBUG
         {
 
-            // 1. ·¹ÀÌ ¼³Á¤: À§(100)¿¡¼­ ¾Æ·¡(-100)·Î 200¸¸Å­ ½ô
-            JPH::Vec3 rayDirection = dir * 200.0f; // ÃæºĞÈ÷ ±ä °Å¸®·Î ·¹ÀÌ ¼³Á¤ (¿¹: 100 À¯´Ö)
+            // 1. ë ˆì´ ì„¤ì •: ìœ„(100)ì—ì„œ ì•„ë˜(-100)ë¡œ 200ë§Œí¼ ì¨
+            JPH::Vec3 rayDirection = dir * 200.0f; // ì¶©ë¶„íˆ ê¸´ ê±°ë¦¬ë¡œ ë ˆì´ ì„¤ì • (ì˜ˆ: 100 ìœ ë‹›)
             MYLOG("[DEBUG] Starting Debug Raycast Test at  "
                 "X: " << rayOrigin.GetX()
                 << " Y: " << rayOrigin.GetY()
@@ -38,15 +38,15 @@ namespace PIP::SERVER
 
             JPH::RayCastResult result;
 
-            // 2. ·¹ÀÌÄ³½ºÆ® ½ÇÇà (NON_MOVING ·¹ÀÌ¾î¸¸ °Ë»ç)
-            // BroadPhaseLayers::NON_MOVING°ú Layers::NON_MOVING »ó¼ö´Â ÇÁ·ÎÁ§Æ® ¼³Á¤¿¡ ¸ÂÃç È®ÀÎ ÇÊ¿ä
+            // 2. ë ˆì´ìºìŠ¤íŠ¸ ì‹¤í–‰ (NON_MOVING ë ˆì´ì–´ë§Œ ê²€ì‚¬)
+            // BroadPhaseLayers::NON_MOVINGê³¼ Layers::NON_MOVING ìƒìˆ˜ëŠ” í”„ë¡œì íŠ¸ ì„¤ì •ì— ë§ì¶° í™•ì¸ í•„ìš”
 
             if (physicsSystem->GetNarrowPhaseQuery().CastRay(ray, result
                 , JPH::SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::NON_MOVING)
                 , JPH::SpecifiedObjectLayerFilter(Layers::NON_MOVING)))
 
             {
-                // 3. Ãæµ¹ ÁöÁ¡ °è»ê
+                // 3. ì¶©ëŒ ì§€ì  ê³„ì‚°
                 JPH::Vec3 hitPos = ray.GetPointOnRay(result.mFraction);
 
                 MYLOG("==========================================================");
@@ -54,7 +54,7 @@ namespace PIP::SERVER
                 MYLOG("[DEBUG] Hit Position - X: " << hitPos.GetX() << " Y: " << hitPos.GetY() << " Z: " <<
                     hitPos.GetZ());
 
-                // ¾î¶² Body¿¡ ¸Â¾Ò´ÂÁö È®ÀÎ
+                // ì–´ë–¤ Bodyì— ë§ì•˜ëŠ”ì§€ í™•ì¸
                 JPH::BodyLockRead lock(physicsSystem->GetBodyLockInterface(), result.mBodyID);
                 if (lock.Succeeded())
                 {

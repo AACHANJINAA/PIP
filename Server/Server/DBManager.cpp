@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "DBManager.h"
 
 #include "server.h"
@@ -11,33 +11,33 @@ namespace PIP::SERVER
 
 		if (conn_str == L"DUMMY") {
 			_is_dummy_mode = true;
-			MYLOG("[DB] DUMMY MODE È°¼ºÈ­: ½ÇÁ¦ DB ¿¬°á ¾øÀÌ Á¢¼ÓÀ» Çã¿ëÇÕ´Ï´Ù.");
+			MYLOG("[DB] DUMMY MODE í™œì„±í™”: ì‹¤ì œ DB ì—°ê²° ì—†ì´ ì ‘ì†ì„ í—ˆìš©í•©ë‹ˆë‹¤.");
 
-			// ¿öÄ¿ ½º·¹µå¸¸ ¶ç¿ì°í ODBC ¿¬°áÀº °Ç³Ê¶Ü
+			// ì›Œì»¤ ìŠ¤ë ˆë“œë§Œ ë„ìš°ê³  ODBC ì—°ê²°ì€ ê±´ë„ˆëœ€
 			_workerThread = std::thread(&DBManager::db_worker_thread, this);
 			return;
 		}
 
-		// 1. ODBC È¯°æ ÇÚµé ÇÒ´ç
+		// 1. ODBC í™˜ê²½ í•¸ë“¤ í• ë‹¹
 		if (SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_henv) != SQL_SUCCESS) {
-			MYERROR("[DB] È¯°æ ÇÚµé ÇÒ´ç ½ÇÆĞ");
+			MYERROR("[DB] í™˜ê²½ í•¸ë“¤ í• ë‹¹ ì‹¤íŒ¨");
 			return;
 		}
 
-		// 2. ODBC ¹öÀü ¼³Á¤ (SQL_OV_ODBC3 ±ÇÀå)
+		// 2. ODBC ë²„ì „ ì„¤ì • (SQL_OV_ODBC3 ê¶Œì¥)
 		SQLSetEnvAttr(_henv, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
 
-		// 3. ¿¬°á ÇÚµé ÇÒ´ç
+		// 3. ì—°ê²° í•¸ë“¤ í• ë‹¹
 		if (SQLAllocHandle(SQL_HANDLE_DBC, _henv, &_hdbc) != SQL_SUCCESS) {
-			MYERROR("[DB] ¿¬°á ÇÚµé ÇÒ´ç ½ÇÆĞ");
+			MYERROR("[DB] ì—°ê²° í•¸ë“¤ í• ë‹¹ ì‹¤íŒ¨");
 			return;
 		}
 		
-		// 4. ½ÇÁ¦ DB ¿¬°á ½Ãµµ
+		// 4. ì‹¤ì œ DB ì—°ê²° ì‹œë„
 		SQLWCHAR out_conn_str[1024];
 		SQLSMALLINT out_conn_str_len;
 
-		// SQLDriverConnect´Â SQLConnectº¸´Ù ´õ À¯¿¬ÇÏ°Ô ¿¬°á ¹®ÀÚ¿­À» Ã³¸®ÇÕ´Ï´Ù.
+		// SQLDriverConnectëŠ” SQLConnectë³´ë‹¤ ë” ìœ ì—°í•˜ê²Œ ì—°ê²° ë¬¸ìì—´ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 		SQLRETURN ret = SQLDriverConnect(_hdbc, NULL, (SQLWCHAR*)_connectionString.c_str(), SQL_NTS,
 			out_conn_str, 1024, &out_conn_str_len, SQL_DRIVER_NOPROMPT);
 
@@ -48,16 +48,16 @@ namespace PIP::SERVER
 			SQLGetDiagRec(SQL_HANDLE_DBC, _hdbc, 1, sql_state, &native_error, msg, 1024, &msg_len);
 
 			
-			MYERROR("[DB] MSSQL ¼­¹ö ¿¬°á ½ÇÆĞ! SQL State: " << W2S(sql_state) << ", Native Error: " << native_error << ", Message: " << W2S(msg));
+			MYERROR("[DB] MSSQL ì„œë²„ ì—°ê²° ì‹¤íŒ¨! SQL State: " << W2S(sql_state) << ", Native Error: " << native_error << ", Message: " << W2S(msg));
 		}
 
-		MYLOG("[DB] MSSQL ¼­¹ö¿¡ ¼º°øÀûÀ¸·Î ¿¬°áµÇ¾ú½À´Ï´Ù.");
+		MYLOG("[DB] MSSQL ì„œë²„ì— ì„±ê³µì ìœ¼ë¡œ ì—°ê²°ë˜ì—ˆìŠµë‹ˆë‹¤.");
 
-		// 2. ÇÚµé·¯ µî·Ï (DBTaskType°ú ½ÇÁ¦ Ã³¸® ÇÔ¼ö ¸ÅÇÎ)
+		// 2. í•¸ë“¤ëŸ¬ ë“±ë¡ (DBTaskTypeê³¼ ì‹¤ì œ ì²˜ë¦¬ í•¨ìˆ˜ ë§¤í•‘)
 		RegisterHandler(DBTaskType::SAVE_INVENTORY_ALL, [this](const DBTask& task) { Handle_SAVE_INVENTORY_ALL(task); });
 		RegisterHandler(DBTaskType::LOGIN_LOAD, [this](const DBTask& task) { Handle_LOGIN_LOAD(task); });
 
-		// 3. ¿öÄ¿ ½º·¹µå ½ÃÀÛ
+		// 3. ì›Œì»¤ ìŠ¤ë ˆë“œ ì‹œì‘
 		_workerThread = std::thread(&DBManager::db_worker_thread, this);
 	}
 
@@ -66,7 +66,7 @@ namespace PIP::SERVER
 		if (_is_running.exchange(false)) {
 			if (_workerThread.joinable()) _workerThread.join();
 
-			// ODBC ÇÚµé ÇØÁ¦ (ÇÒ´çÀÇ ¿ª¼ø)
+			// ODBC í•¸ë“¤ í•´ì œ (í• ë‹¹ì˜ ì—­ìˆœ)
 			if (_hdbc != SQL_NULL_HDBC) {
 				SQLDisconnect(_hdbc);
 				SQLFreeHandle(SQL_HANDLE_DBC, _hdbc);
@@ -74,7 +74,7 @@ namespace PIP::SERVER
 			if (_henv != SQL_NULL_HENV) {
 				SQLFreeHandle(SQL_HANDLE_ENV, _henv);
 			}
-			MYLOG("[DB] ODBC ÇÚµé ÇØÁ¦ ¿Ï·á.");
+			MYLOG("[DB] ODBC í•¸ë“¤ í•´ì œ ì™„ë£Œ.");
 		}
 	}
 
@@ -92,31 +92,31 @@ namespace PIP::SERVER
 							target_queue->push({ std::move(task.callback) });
 						}
 					}
-					continue; // ¾Æ·¡ÀÇ ½ÇÁ¦ ÇÚµé·¯(SQL ·ÎÁ÷) ½ÇÇàÀ» °Ç³Ê¶Ü
+					continue; // ì•„ë˜ì˜ ì‹¤ì œ í•¸ë“¤ëŸ¬(SQL ë¡œì§) ì‹¤í–‰ì„ ê±´ë„ˆëœ€
 				}
 
-				// 1. µî·ÏµÈ ÇÚµé·¯ Ã£¾Æ¼­ ½ÇÇà
+				// 1. ë“±ë¡ëœ í•¸ë“¤ëŸ¬ ì°¾ì•„ì„œ ì‹¤í–‰
 				auto it = _handlers.find(task.type);
 				if (it != _handlers.end()) {
-					it->second(task); // ÀÛ¾÷ ½ÇÇà!
+					it->second(task); // ì‘ì—… ì‹¤í–‰!
 				}
 				else {
-					MYERROR("[DB] µî·ÏµÇÁö ¾ÊÀº DB ÀÛ¾÷ Å¸ÀÔÀÔ´Ï´Ù: " << static_cast<int>(task.type));
+					MYERROR("[DB] ë“±ë¡ë˜ì§€ ì•Šì€ DB ì‘ì—… íƒ€ì…ì…ë‹ˆë‹¤: " << static_cast<int>(task.type));
 				}
 				 
 
-				// [2] ÀÛ¾÷ ¿Ï·á ÈÄ Äİ¹éÀ» ¼¼¼Ç ´ã´ç ·ÎÁ÷ ½º·¹µå Å¥·Î ¹İÈ¯
+				// [2] ì‘ì—… ì™„ë£Œ í›„ ì½œë°±ì„ ì„¸ì…˜ ë‹´ë‹¹ ë¡œì§ ìŠ¤ë ˆë“œ íë¡œ ë°˜í™˜
 				if (task.callback) {
-					// Server Å¬·¡½º¿¡ ±¸ÇöµÈ get_logic_queue¸¦ »ç¿ë
+					// Server í´ë˜ìŠ¤ì— êµ¬í˜„ëœ get_logic_queueë¥¼ ì‚¬ìš©
 					auto* target_queue = Server::Instance()->get_logic_queue(task.logic_thread_idx);
 					if (target_queue) {
-						// LogicJob ±¸Á¶Ã¼¿¡ ´ã¾Æ¼­ Çª½Ã (Server.h¿¡ Á¤ÀÇµÈ ±¸Á¶¿¡ ¸ÂÃã)
+						// LogicJob êµ¬ì¡°ì²´ì— ë‹´ì•„ì„œ í‘¸ì‹œ (Server.hì— ì •ì˜ëœ êµ¬ì¡°ì— ë§ì¶¤)
 						target_queue->push({ std::move(task.callback) });
 					}
 				}
 			}
 			else {
-				// ÀÛ¾÷ÀÌ ¾øÀ¸¸é Âª°Ô ÈŞ½ÄÇÏ¿© CPU Á¡À¯À² ¹æÁö
+				// ì‘ì—…ì´ ì—†ìœ¼ë©´ ì§§ê²Œ íœ´ì‹í•˜ì—¬ CPU ì ìœ ìœ¨ ë°©ì§€
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 		}
@@ -129,43 +129,43 @@ namespace PIP::SERVER
 
 			SQLHSTMT hStmt = SQL_NULL_HSTMT;
 			if (SQLAllocHandle(SQL_HANDLE_STMT, _hdbc, &hStmt) != SQL_SUCCESS) {
-				MYERROR("[DB] Statement ÇÚµé ÇÒ´ç ½ÇÆĞ");
+				MYERROR("[DB] Statement í•¸ë“¤ í• ë‹¹ ì‹¤íŒ¨");
 				return;
 			}
 
 			SQLBIGINT playerId = task.session_id; // long long
 
 			// =======================================================
-			// 1. ±âÁ¸ ÀÎº¥Åä¸® µ¥ÀÌÅÍ ½Ï ºñ¿ì±â (DELETE)
+			// 1. ê¸°ì¡´ ì¸ë²¤í† ë¦¬ ë°ì´í„° ì‹¹ ë¹„ìš°ê¸° (DELETE)
 			// =======================================================
 			std::wstring deleteQuery = L"DELETE FROM PlayerInventory WHERE PlayerId = ?";
 			SQLPrepare(hStmt, (SQLWCHAR*)deleteQuery.c_str(), SQL_NTS);
 
-			// Ã¹ ¹øÂ° '?' ÀÚ¸®¿¡ playerId º¯¼ö ¹­±â
+			// ì²« ë²ˆì§¸ '?' ìë¦¬ì— playerId ë³€ìˆ˜ ë¬¶ê¸°
 			SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT, 0, 0, &playerId, 0, NULL);
 			SQLExecute(hStmt);
 
-			// Statement¸¦ ´İ°í ÆÄ¶ó¹ÌÅÍ ¹ÙÀÎµùÀ» ¸®¼Â (´ÙÀ½ Äõ¸®¸¦ À§ÇØ ÇÊ¼ö!)
+			// Statementë¥¼ ë‹«ê³  íŒŒë¼ë¯¸í„° ë°”ì¸ë”©ì„ ë¦¬ì…‹ (ë‹¤ìŒ ì¿¼ë¦¬ë¥¼ ìœ„í•´ í•„ìˆ˜!)
 			SQLFreeStmt(hStmt, SQL_CLOSE);
 			SQLFreeStmt(hStmt, SQL_RESET_PARAMS);
 
 
 			// =======================================================
-			// 2. ÀÎº¥Åä¸® ²Ë²Ë Ã¤¿ö³Ö±â (INSERT)
+			// 2. ì¸ë²¤í† ë¦¬ ê½‰ê½‰ ì±„ì›Œë„£ê¸° (INSERT)
 			// =======================================================
-			// ItemUid´Â IDENTITY(1,1) ¼³Á¤À¸·Î DB°¡ ¾Ë¾Æ¼­ ¹ß±ŞÇÏ¹Ç·Î »ı·«ÇÕ´Ï´Ù.
+			// ItemUidëŠ” IDENTITY(1,1) ì„¤ì •ìœ¼ë¡œ DBê°€ ì•Œì•„ì„œ ë°œê¸‰í•˜ë¯€ë¡œ ìƒëµí•©ë‹ˆë‹¤.
 			std::wstring insertQuery = L"INSERT INTO PlayerInventory (PlayerId, ItemId, Quantity, EnhanceLevel, IsEquipped) VALUES (?, ?, ?, ?, ?)";
 
-			// DB¾ß, ÀÌ Æ²(ºØ¾î»§ Æ²) ÆÄ½ÌÇØ¼­ Ä³½ÌÇØµÖ!
+			// DBì•¼, ì´ í‹€(ë¶•ì–´ë¹µ í‹€) íŒŒì‹±í•´ì„œ ìºì‹±í•´ë‘¬!
 			SQLPrepare(hStmt, (SQLWCHAR*)insertQuery.c_str(), SQL_NTS);
 
-			// ¹ÙÀÎµùÇÒ ¸Ş¸ğ¸® º¯¼öµé ÁØºñ
+			// ë°”ì¸ë”©í•  ë©”ëª¨ë¦¬ ë³€ìˆ˜ë“¤ ì¤€ë¹„
 			int itemId = 0;
 			int quantity = 0;
 			int enhanceLevel = 0;
-			SQLSMALLINT isEquipped = 0; // BIT Å¸ÀÔÀº º¸Åë C++¿¡¼­ short(SQLSMALLINT)·Î ¸ÅÇÎÇÕ´Ï´Ù.
+			SQLSMALLINT isEquipped = 0; // BIT íƒ€ì…ì€ ë³´í†µ C++ì—ì„œ short(SQLSMALLINT)ë¡œ ë§¤í•‘í•©ë‹ˆë‹¤.
 
-			// °¢ '?' ÀÚ¸®¿¡ º¯¼öÀÇ 'ÁÖ¼Ò(&)'¸¦ ¿¬°áÇØ µÓ´Ï´Ù.
+			// ê° '?' ìë¦¬ì— ë³€ìˆ˜ì˜ 'ì£¼ì†Œ(&)'ë¥¼ ì—°ê²°í•´ ë‘¡ë‹ˆë‹¤.
 			SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT, 0, 0, &playerId, 0, NULL);
 			SQLBindParameter(hStmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &itemId, 0, NULL);
 			SQLBindParameter(hStmt, 3, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &quantity, 0, NULL);
@@ -173,19 +173,19 @@ namespace PIP::SERVER
 			SQLBindParameter(hStmt, 5, SQL_PARAM_INPUT, SQL_C_SSHORT, SQL_BIT, 0, 0, &isEquipped, 0, NULL);
 
 
-			// --- [2-1] Àç·á ¾ÆÀÌÅÛ ÀúÀå ---
+			// --- [2-1] ì¬ë£Œ ì•„ì´í…œ ì €ì¥ ---
 			for (const auto& [id, count] : snapshot.materials) {
-				// º¯¼ö °ª¸¸ »ìÂ¦ ¹Ù²ãÁÖ°í
+				// ë³€ìˆ˜ ê°’ë§Œ ì‚´ì§ ë°”ê¿”ì£¼ê³ 
 				itemId = static_cast<int>(id);
 				quantity = static_cast<int>(count);
 				enhanceLevel = 0;
 				isEquipped = 0;
 
-				// ½ÇÇà! (Äõ¸® ÆÄ½Ì ¾È ÇÏ´Ï±î 0.001ÃÊ ÄÆ)
+				// ì‹¤í–‰! (ì¿¼ë¦¬ íŒŒì‹± ì•ˆ í•˜ë‹ˆê¹Œ 0.001ì´ˆ ì»·)
 				SQLExecute(hStmt);
 			}
 
-			// --- [2-2] Àåºñ ¾ÆÀÌÅÛ ÀúÀå ---
+			// --- [2-2] ì¥ë¹„ ì•„ì´í…œ ì €ì¥ ---
 			for (const auto& [uid, equip] : snapshot.equipments) {
 				itemId = static_cast<int>(equip.item_id);
 				quantity = 1;
@@ -195,46 +195,46 @@ namespace PIP::SERVER
 				SQLExecute(hStmt);
 			}
 
-			// ´Ù ½èÀ¸¸é ÇÚµé ±ò²ûÇÏ°Ô ¹İÈ¯
+			// ë‹¤ ì¼ìœ¼ë©´ í•¸ë“¤ ê¹”ë”í•˜ê²Œ ë°˜í™˜
 			SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-			MYLOG("[DB] ÀÎº¥Åä¸® °»½Å ¿Ï·á! PlayerID: " << playerId
+			MYLOG("[DB] ì¸ë²¤í† ë¦¬ ê°±ì‹  ì™„ë£Œ! PlayerID: " << playerId
 				<< " | Mats: " << snapshot.materials.size()
 				<< " | Equips: " << snapshot.equipments.size());
 
 		}
 		catch (const std::bad_any_cast& e) {
-			MYERROR("[DB] ÀÎº¥Åä¸® ÀúÀå ½ÇÆĞ - Ä³½ºÆÃ ¿¡·¯: " << e.what());
+			MYERROR("[DB] ì¸ë²¤í† ë¦¬ ì €ì¥ ì‹¤íŒ¨ - ìºìŠ¤íŒ… ì—ëŸ¬: " << e.what());
 		}
 	}
 	void DBManager::Handle_LOGIN_LOAD(const DBTask& task) const
 	{
 		try {
-			// ·ÎÁ÷ ½º·¹µå°¡ ³Ñ°ÜÁØ ºó »óÀÚ(Æ÷ÀÎÅÍ)¸¦ ²¨³À´Ï´Ù.
+			// ë¡œì§ ìŠ¤ë ˆë“œê°€ ë„˜ê²¨ì¤€ ë¹ˆ ìƒì(í¬ì¸í„°)ë¥¼ êº¼ëƒ…ë‹ˆë‹¤.
 			auto loaded_data = std::any_cast<std::shared_ptr<std::any>>(task.data);
 
 			SQLHSTMT hStmt = SQL_NULL_HSTMT;
 			if (SQLAllocHandle(SQL_HANDLE_STMT, _hdbc, &hStmt) != SQL_SUCCESS) return;
 
-			// 1. SELECT Äõ¸® ÁØºñ (ItemUidµµ °¡Á®¿É´Ï´Ù!)
+			// 1. SELECT ì¿¼ë¦¬ ì¤€ë¹„ (ItemUidë„ ê°€ì ¸ì˜µë‹ˆë‹¤!)
 			std::wstring query = L"SELECT ItemUid, ItemId, Quantity, EnhanceLevel, IsEquipped FROM PlayerInventory WHERE PlayerId = ?";
 			SQLPrepare(hStmt, (SQLWCHAR*)query.c_str(), SQL_NTS);
 
 			int64_t playerId = task.session_id;
 			SQLBindParameter(hStmt, 1, SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT, 0, 0, &playerId, 0, NULL);
 
-			// 2. Äõ¸® ½ÇÇà
+			// 2. ì¿¼ë¦¬ ì‹¤í–‰
 			if (SQLExecute(hStmt) == SQL_SUCCESS) {
-				// °á°ú¸¦ ¹ŞÀ» º¯¼öµé
+				// ê²°ê³¼ë¥¼ ë°›ì„ ë³€ìˆ˜ë“¤
 				int64_t itemUid = 0;
 				int itemId = 0;
 				int quantity = 0;
 				int enhanceLevel = 0;
 				short isEquipped = 0;
 
-				// µ¥ÀÌÅÍ Å©±â¸¦ ¹ŞÀ» ¹öÆÛ (ODBC ÇÊ¼ö)
+				// ë°ì´í„° í¬ê¸°ë¥¼ ë°›ì„ ë²„í¼ (ODBC í•„ìˆ˜)
 				SQLLEN cbUid, cbId, cbQty, cbEnh, cbEq;
 
-				// ÄÃ·³ ¹ÙÀÎµù (1¹ø ÄÃ·³ºÎÅÍ ¼ø¼­´ë·Î)
+				// ì»¬ëŸ¼ ë°”ì¸ë”© (1ë²ˆ ì»¬ëŸ¼ë¶€í„° ìˆœì„œëŒ€ë¡œ)
 				SQLBindCol(hStmt, 1, SQL_C_SBIGINT, &itemUid, 0, &cbUid);
 				SQLBindCol(hStmt, 2, SQL_C_SLONG, &itemId, 0, &cbId);
 				SQLBindCol(hStmt, 3, SQL_C_SLONG, &quantity, 0, &cbQty);
@@ -243,10 +243,10 @@ namespace PIP::SERVER
 
 				InventorySnapshot snapshot;
 
-				// 3. µ¥ÀÌÅÍ ÇÑ ÁÙ¾¿ ÀĞ¾î¿À±â (Fetch)
+				// 3. ë°ì´í„° í•œ ì¤„ì”© ì½ì–´ì˜¤ê¸° (Fetch)
 				while (SQLFetch(hStmt) == SQL_SUCCESS || SQLFetch(hStmt) == SQL_SUCCESS_WITH_INFO) {
 
-					// [±âÈ¹ ¿¹½Ã] ItemId°¡ 2000 ¹Ì¸¸ÀÌ¸é Àç·á, ÀÌ»óÀÌ¸é Àåºñ·Î °£ÁÖ
+					// [ê¸°íš ì˜ˆì‹œ] ItemIdê°€ 2000 ë¯¸ë§Œì´ë©´ ì¬ë£Œ, ì´ìƒì´ë©´ ì¥ë¹„ë¡œ ê°„ì£¼
 					if (itemId < 2000) {
 						snapshot.materials[static_cast<common::packet::ItemId>(itemId)] = quantity;
 					}
@@ -261,18 +261,18 @@ namespace PIP::SERVER
 					}
 				}
 
-				// 4. ·ÎÁ÷ ½º·¹µå¿¡¼­ ³Ñ°ÜÁØ ºó »óÀÚ¿¡ ½º³À¼¦ ½ï ³Ö±â!
+				// 4. ë¡œì§ ìŠ¤ë ˆë“œì—ì„œ ë„˜ê²¨ì¤€ ë¹ˆ ìƒìì— ìŠ¤ëƒ…ìƒ· ì™ ë„£ê¸°!
 				*loaded_data = snapshot;
 
-				MYLOG("[DB] Session " << playerId << " µ¥ÀÌÅÍ ·Îµå ¿Ï·á. (¾ÆÀÌÅÛ "
-					<< snapshot.materials.size() + snapshot.equipments.size() << "°³)");
+				MYLOG("[DB] Session " << playerId << " ë°ì´í„° ë¡œë“œ ì™„ë£Œ. (ì•„ì´í…œ "
+					<< snapshot.materials.size() + snapshot.equipments.size() << "ê°œ)");
 			}
 
 			SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 
 		}
 		catch (const std::bad_any_cast& e) {
-			MYERROR("[DB] ·Î±×ÀÎ ·Îµå ½ÇÆĞ - »óÀÚ(shared_ptr) Ä³½ºÆÃ ¿¡·¯: " << e.what());
+			MYERROR("[DB] ë¡œê·¸ì¸ ë¡œë“œ ì‹¤íŒ¨ - ìƒì(shared_ptr) ìºìŠ¤íŒ… ì—ëŸ¬: " << e.what());
 		}
 	}
 }

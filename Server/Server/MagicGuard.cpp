@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "MagicGuard.h"
 #include "AIComponent.h"
 #include "BT_Nodes.h"

@@ -1,25 +1,25 @@
-#pragma once
+ï»¿#pragma once
 
 
 namespace PIP::SERVER
 {
-    // DB ÀÛ¾÷ °á°ú ÈÄ ·ÎÁ÷ ½º·¹µå¿¡¼­ ½ÇÇàµÉ Äİ¹é
+    // DB ì‘ì—… ê²°ê³¼ í›„ ë¡œì§ ìŠ¤ë ˆë“œì—ì„œ ì‹¤í–‰ë  ì½œë°±
     using DBJobCallback = std::function<void()>;
 
     enum class DBTaskType  : uint32_t{
         DB_TASK_ERROR = 0,
 
-        LOGIN_AUTH = 1,             // ·Î±×ÀÎ ¹× Ä³¸¯ÅÍ ·Îµå
-		LOGIN_LOAD = 2,             // ·Î±×ÀÎ ÈÄ Ä³¸¯ÅÍ µ¥ÀÌÅÍ ·Îµå
-        SAVE_CHARACTER = 3,         // Ä³¸¯ÅÍ ½ºÅÈ ÀúÀå (HP, À§Ä¡ µî)
-        ADD_ITEM_LOG = 4,           // ¼öÁı/È¹µæ ·Î±× ±â·Ï
+        LOGIN_AUTH = 1,             // ë¡œê·¸ì¸ ë° ìºë¦­í„° ë¡œë“œ
+		LOGIN_LOAD = 2,             // ë¡œê·¸ì¸ í›„ ìºë¦­í„° ë°ì´í„° ë¡œë“œ
+        SAVE_CHARACTER = 3,         // ìºë¦­í„° ìŠ¤íƒ¯ ì €ì¥ (HP, ìœ„ì¹˜ ë“±)
+        ADD_ITEM_LOG = 4,           // ìˆ˜ì§‘/íšë“ ë¡œê·¸ ê¸°ë¡
 
-        SAVE_INVENTORY = 100,       // ÀÎº¥Åä¸® ¾ÆÀÌÅÛ ÀúÀå
-		SAVE_INVENTORY_ALL = 101    // ÀÎº¥Åä¸® ÀüÃ¼ ÀúÀå (ÀÚµ¿ ÀúÀå¿ë)
+        SAVE_INVENTORY = 100,       // ì¸ë²¤í† ë¦¬ ì•„ì´í…œ ì €ì¥
+		SAVE_INVENTORY_ALL = 101    // ì¸ë²¤í† ë¦¬ ì „ì²´ ì €ì¥ (ìë™ ì €ì¥ìš©)
     };
 
-    // [Ãß°¡] ÀÎº¥Åä¸® ½º³À¼¦ Àü¿ë ±¸Á¶Ã¼
-    // ·ÎÁ÷ ½º·¹µå¿¡¼­ º¹»çº»À» ¸¸µé¾î DB ½º·¹µå·Î Àü´ŞÇÒ ¶§ »ç¿ëÇÕ´Ï´Ù.
+    // [ì¶”ê°€] ì¸ë²¤í† ë¦¬ ìŠ¤ëƒ…ìƒ· ì „ìš© êµ¬ì¡°ì²´
+    // ë¡œì§ ìŠ¤ë ˆë“œì—ì„œ ë³µì‚¬ë³¸ì„ ë§Œë“¤ì–´ DB ìŠ¤ë ˆë“œë¡œ ì „ë‹¬í•  ë•Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     struct InventorySnapshot {
         std::unordered_map<common::packet::ItemId, uint32_t> materials;
         std::unordered_map<int64_t, common::packet::EquipItem> equipments;
@@ -27,11 +27,11 @@ namespace PIP::SERVER
 
     struct DBTask {
         DBTaskType type;
-        int logic_thread_idx;   // Äİ¹éÀ» µ¹·Á¹ŞÀ» ·ÎÁ÷ ½º·¹µå ¹øÈ£ (Áß¿ä!)
-        int64_t session_id;     // ´ë»ó ¼¼¼Ç ID
-        DBJobCallback callback; // ·ÎÁ÷ ½º·¹µå¿¡¼­ ½ÇÇàµÉ ½ÇÁ¦ ÇÔ¼ö
+        int logic_thread_idx;   // ì½œë°±ì„ ëŒë ¤ë°›ì„ ë¡œì§ ìŠ¤ë ˆë“œ ë²ˆí˜¸ (ì¤‘ìš”!)
+        int64_t session_id;     // ëŒ€ìƒ ì„¸ì…˜ ID
+        DBJobCallback callback; // ë¡œì§ ìŠ¤ë ˆë“œì—ì„œ ì‹¤í–‰ë  ì‹¤ì œ í•¨ìˆ˜
     
-        // [Ãß°¡] DB ½º·¹µå·Î ³Ñ±æ ÀÓÀÇÀÇ µ¥ÀÌÅÍ (½º³À¼¦ µî)
+        // [ì¶”ê°€] DB ìŠ¤ë ˆë“œë¡œ ë„˜ê¸¸ ì„ì˜ì˜ ë°ì´í„° (ìŠ¤ëƒ…ìƒ· ë“±)
         std::any data;
     };
 
@@ -47,19 +47,19 @@ namespace PIP::SERVER
         void initialize(const std::wstring& conn_str);
         void finalize();
 
-        // ·ÎÁ÷ ½º·¹µå¿¡¼­ DB ¿äÃ»À» ´øÁú ¶§ »ç¿ë
+        // ë¡œì§ ìŠ¤ë ˆë“œì—ì„œ DB ìš”ì²­ì„ ë˜ì§ˆ ë•Œ ì‚¬ìš©
         void push_task(DBTask task) { _taskQueue.push(std::move(task)); }
-        // [Ãß°¡] ÇÚµé·¯ µî·Ï ÇÔ¼ö
+        // [ì¶”ê°€] í•¸ë“¤ëŸ¬ ë“±ë¡ í•¨ìˆ˜
         void RegisterHandler(DBTaskType type, DBHandler handler) {
             _handlers[type] = std::move(handler);
         }
     private:
         void db_worker_thread();
-        // [Ãß°¡] ½ÇÁ¦ ÀÛ¾÷À» ¼öÇàÇÒ ÇÚµé·¯ ÇÔ¼öµé
+        // [ì¶”ê°€] ì‹¤ì œ ì‘ì—…ì„ ìˆ˜í–‰í•  í•¸ë“¤ëŸ¬ í•¨ìˆ˜ë“¤
         void Handle_SAVE_INVENTORY_ALL(const DBTask& task) const;
         void Handle_LOGIN_LOAD(const DBTask& task) const;
 
-        std::unordered_map<DBTaskType, DBHandler> _handlers; // ÇÚµé·¯ ¸Ê ÁÖ¼Ò·Ï
+        std::unordered_map<DBTaskType, DBHandler> _handlers; // í•¸ë“¤ëŸ¬ ë§µ ì£¼ì†Œë¡
 
         std::wstring _connectionString;
         std::thread _workerThread;
