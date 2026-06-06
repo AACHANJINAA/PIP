@@ -13,6 +13,7 @@ public:
     virtual void release_upload_buffers() override;
     virtual void scene_process(float deltaTime) override;
     void Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+    void Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
     void TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 

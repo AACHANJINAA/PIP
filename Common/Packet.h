@@ -251,6 +251,7 @@ namespace common::packet
 	enum class DebugCommandType : uint8_t {
 		PHYSICS_SNAPSHOT = 1, // 물리 녹화 시작
 		PHYSICS_STOP = 2,     // 물리 녹화 중지
+		CHANGE_SCENE_BOSS = 3, // 보스 씬으로 강제 전환
 	};
 
 	struct CS_PACKET_DEBUG_COMMAND : PacketHeader {

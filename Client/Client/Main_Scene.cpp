@@ -104,6 +104,14 @@ void Main_Scene::release_upload_buffers()
 void Main_Scene::scene_process(float deltaTime)
 {
 	// 씬 업데이트 로직 (필요시)
+	if (InputManager::instance()->IsKeyDown(VK_F10))
+	{
+		common::packet::CS_PACKET_DEBUG_COMMAND debug_pkt;
+		debug_pkt._type = common::packet::PacketType::C2S_P_DEBUG_COMMAND;
+		debug_pkt._size = sizeof(debug_pkt);
+		debug_pkt._command = common::packet::DebugCommandType::CHANGE_SCENE_BOSS;
+		NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&debug_pkt), sizeof(debug_pkt));
+	}
 }
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
