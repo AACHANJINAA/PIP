@@ -370,7 +370,7 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 void MainPlayerScript::update_quest_ui()
 {
     // 현재 진행 중인 퀘스트를 찾습니다.
-    const auto active_quest = NetworkManager::instance()->get_quest(2);
+    const auto active_quest = NetworkManager::instance()->get_quest(1);
 
     bool is_visible = false;
     int current = 0;
