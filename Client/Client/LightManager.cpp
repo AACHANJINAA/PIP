@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "LightManager.h"
 #include <stdexcept>
 
@@ -30,7 +30,7 @@ void LightManager::initialize(ID3D12Device* device)
 	UINT bufferSize = CalcConstantBufferByteSize(sizeof(LightsConstantBuffer));
 
     D3D12_HEAP_PROPERTIES heap_props = {};
-	heap_props.Type = D3D12_HEAP_TYPE_UPLOAD; // CPU Á¢±Ù
+	heap_props.Type = D3D12_HEAP_TYPE_UPLOAD; // CPU ì ‘ê·¼
 
 	D3D12_RESOURCE_DESC buffer_desc = {};
 
@@ -50,14 +50,14 @@ void LightManager::initialize(ID3D12Device* device)
 				nullptr,
 				IID_PPV_ARGS(&_lightsConstantBuffer)));
 
-    // CPU ¸ÅÇÎ ÈÄ, Á¾·áÀü±îÁö ÇØÁ¦ x
-    D3D12_RANGE read_range = { 0, 0 }; // CPU¿¡¼­ ÀÌ ¸®¼Ò½º¸¦ ÀĞÁö ¾ÊÀ» °ÍÀÓ
+    // CPU ë§¤í•‘ í›„, ì¢…ë£Œì „ê¹Œì§€ í•´ì œ x
+    D3D12_RANGE read_range = { 0, 0 }; // CPUì—ì„œ ì´ ë¦¬ì†ŒìŠ¤ë¥¼ ì½ì§€ ì•Šì„ ê²ƒì„
     ThrowIfFailed(_lightsConstantBuffer->Map(0, &read_range, reinterpret_cast<void**>(&_pCbvDataBegin)));
 
 
     set_global_ambient({ 0.2f, 0.2f, 0.2f, 1.0f });
 
-    // 2. ÁÖ ¹æÇâ Á¶¸í (ÅÂ¾ç) »ı¼º
+    // 2. ì£¼ ë°©í–¥ ì¡°ëª… (íƒœì–‘) ìƒì„±
     Light sun;
     sun.m_bEnable = TRUE;
     sun.m_nType = DIRECTIONAL_LIGHT;
@@ -82,14 +82,14 @@ void LightManager::destroy()
 
 void LightManager::update()
 {
-   // °ü¸® ÁßÀÎ Á¶¸í ¸ñ·Ï(m_lights)À» »ó¼ö ¹öÆÛ ±¸Á¶Ã¼(m_lightsCBData)·Î º¹»ç
+   // ê´€ë¦¬ ì¤‘ì¸ ì¡°ëª… ëª©ë¡(m_lights)ì„ ìƒìˆ˜ ë²„í¼ êµ¬ì¡°ì²´(m_lightsCBData)ë¡œ ë³µì‚¬
    _lightsCBData.gnLights = static_cast<int>(_lights.size());
    for (int i = 0; i < _lightsCBData.gnLights; ++i)
    {
        _lightsCBData.gLights[i] = _lights[i];
    }
 
-   // »ó¼ö ¹öÆÛ ±¸Á¶Ã¼ÀÇ ³»¿ëÀ» GPU ¸Ş¸ğ¸®·Î º¹»ç
+   // ìƒìˆ˜ ë²„í¼ êµ¬ì¡°ì²´ì˜ ë‚´ìš©ì„ GPU ë©”ëª¨ë¦¬ë¡œ ë³µì‚¬
     memcpy(_pCbvDataBegin, &_lightsCBData, sizeof(LightsConstantBuffer));
 }
 
@@ -105,7 +105,7 @@ int LightManager::add_light(Light && light)
         _lights.push_back(std::move(light));
         return static_cast<int>(_lights.size() - 1);
     }
-    return -1; // ÃÖ´ë Á¶¸í °³¼ö ÃÊ°ú
+    return -1; // ìµœëŒ€ ì¡°ëª… ê°œìˆ˜ ì´ˆê³¼
 }
 
 Light* LightManager::get_light(int index)
@@ -124,7 +124,7 @@ void LightManager::set_global_ambient(const DirectX::XMFLOAT4& ambient)
 
 XMFLOAT3 LightManager::get_sun_direction() const
 {
-    // Ã¹ ¹øÂ° Directional Light Ã£±â
+    // ì²« ë²ˆì§¸ Directional Light ì°¾ê¸°
     for (const auto& light : _lights)
     {
         if (light.m_nType == DIRECTIONAL_LIGHT && light.m_bEnable)
@@ -133,6 +133,6 @@ XMFLOAT3 LightManager::get_sun_direction() const
         }
     }
 
-    // ±âº»°ª (Ã£Áö ¸øÇÏ¸é)
+    // ê¸°ë³¸ê°’ (ì°¾ì§€ ëª»í•˜ë©´)
     return XMFLOAT3(0.05f, -0.4f, -0.82f);
 }

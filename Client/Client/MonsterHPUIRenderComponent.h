@@ -1,16 +1,16 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "RenderComponent.h"
 #include "ResourceManager.h"
 
 struct alignas(16) HPBarCB {
-	DirectX::XMFLOAT2 size;     // g_Size (°¡·Î, ¼¼·Î ¹İÆø)
-	float             padding[2]; // 16¹ÙÀÌÆ® Á¤·ÄÀ» À§ÇÑ 8¹ÙÀÌÆ® ÆĞµù
+	DirectX::XMFLOAT2 size;     // g_Size (ê°€ë¡œ, ì„¸ë¡œ ë°˜í­)
+	float             padding[2]; // 16ë°”ì´íŠ¸ ì •ë ¬ì„ ìœ„í•œ 8ë°”ì´íŠ¸ íŒ¨ë”©
 };
 
 struct HPBarVertex {
-	DirectX::XMFLOAT3 pos;      // 12¹ÙÀÌÆ® (float x, y, z) -> POSITION
-	float             hpRatio;  // 4¹ÙÀÌÆ® (float)          -> TEXCOORD0
+	DirectX::XMFLOAT3 pos;      // 12ë°”ì´íŠ¸ (float x, y, z) -> POSITION
+	float             hpRatio;  // 4ë°”ì´íŠ¸ (float)          -> TEXCOORD0
 };
 
 class MonsterHPUIRenderComponent : public RenderComponent
@@ -18,17 +18,17 @@ class MonsterHPUIRenderComponent : public RenderComponent
 public:
 	MonsterHPUIRenderComponent();
 	virtual ~MonsterHPUIRenderComponent();
-	// render ÇÔ¼ö´Â ÀÌÁ¦ Renderer¿¡ ÀÇÇØ È£ÃâµË´Ï´Ù.
+	// render í•¨ìˆ˜ëŠ” ì´ì œ Rendererì— ì˜í•´ í˜¸ì¶œë©ë‹ˆë‹¤.
 	virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
 
-	void set_hp_back_texture(const std::string& texture_path); // HP ¹Ù ¹è°æ ÅØ½ºÃ³ ¼³Á¤
-	void set_hp_bar_texture(const std::string& texture_path); // HP ¹Ù ÅØ½ºÃ³ ¼³Á¤
+	void set_hp_back_texture(const std::string& texture_path); // HP ë°” ë°°ê²½ í…ìŠ¤ì²˜ ì„¤ì •
+	void set_hp_bar_texture(const std::string& texture_path); // HP ë°” í…ìŠ¤ì²˜ ì„¤ì •
 
 
-	// UI´Â frustum culling ºÒÇÊ¿ä
+	// UIëŠ” frustum culling ë¶ˆí•„ìš”
 	virtual bool is_visible(const BoundingFrustum& frustum) const override { return true; }
 
-	// UI´Â À¯È¿ÇÏÁö ¾ÊÀº bounding box ¹İÈ¯
+	// UIëŠ” ìœ íš¨í•˜ì§€ ì•Šì€ bounding box ë°˜í™˜
 	virtual BoundingOrientedBox get_world_bounding_box() const override
 	{
 		BoundingOrientedBox box;
@@ -44,19 +44,19 @@ private:
 	void upload_shader();
 
 
-	DirectX::XMFLOAT2 _size{ 0.1f, 0.02f }; // HP ¹Ù Å©±â
+	DirectX::XMFLOAT2 _size{ 0.1f, 0.02f }; // HP ë°” í¬ê¸°
 
-	// »ó¼ö ¹öÆÛ °ü·Ã ¸â¹ö º¯¼ö
-	ComPtr<ID3D12Resource> _cbResource; // GPU ¸®¼Ò½º
-	HPBarCB* _cbMappedData = nullptr; // CPU¿¡¼­ Á¢±Ù °¡´ÉÇÑ ÁÖ¼Ò
+	// ìƒìˆ˜ ë²„í¼ ê´€ë ¨ ë©¤ë²„ ë³€ìˆ˜
+	ComPtr<ID3D12Resource> _cbResource; // GPU ë¦¬ì†ŒìŠ¤
+	HPBarCB* _cbMappedData = nullptr; // CPUì—ì„œ ì ‘ê·¼ ê°€ëŠ¥í•œ ì£¼ì†Œ
 
-	// Á¤Á¡ ¹öÆÛ °ü·Ã ¸â¹ö º¯¼ö
+	// ì •ì  ë²„í¼ ê´€ë ¨ ë©¤ë²„ ë³€ìˆ˜
 	ComPtr<ID3D12Resource> _vertexBuffer;
 	HPBarVertex* _vbMappedData = nullptr;
 
-	const UINT _maxMonsterCount = 10000; // ³Ë³ËÇÏ°Ô 10000¸¶¸®±îÁö Áö¿ø
+	const UINT _maxMonsterCount = 10000; // ë„‰ë„‰í•˜ê²Œ 10000ë§ˆë¦¬ê¹Œì§€ ì§€ì›
 
-	ResourceManager::TextureInfo* _texture_HP_back = nullptr; // HP¹Ù ¹è°æ ÅØ½ºÃ³
-	ResourceManager::TextureInfo* _texture_HP_Bar = nullptr; // HP ¹Ù ÅØ½ºÃ³
+	ResourceManager::TextureInfo* _texture_HP_back = nullptr; // HPë°” ë°°ê²½ í…ìŠ¤ì²˜
+	ResourceManager::TextureInfo* _texture_HP_Bar = nullptr; // HP ë°” í…ìŠ¤ì²˜
 };
 

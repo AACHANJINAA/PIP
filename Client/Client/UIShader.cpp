@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "UIShader.h"
 
 const std::string& UIShader::pso_name() const
@@ -14,7 +14,7 @@ std::string UIShader::required_root_signature() const
 
 D3D12_INPUT_LAYOUT_DESC UIShader::create_input_layout()
 {
-    // UI´Â Position(float3) + TexCoord(float2)¸¸ ÇÊ¿ä
+    // UIëŠ” Position(float3) + TexCoord(float2)ë§Œ í•„ìš”
     static const D3D12_INPUT_ELEMENT_DESC input_elements[] =
     {
         {
@@ -46,7 +46,7 @@ D3D12_BLEND_DESC UIShader::create_blend_state()
     blend_desc.AlphaToCoverageEnable = FALSE;
     blend_desc.IndependentBlendEnable = FALSE;
 
-    // ¾ËÆÄ ºí·»µù È°¼ºÈ­
+    // ì•ŒíŒŒ ë¸”ë Œë”© í™œì„±í™”
     blend_desc.RenderTarget[0].BlendEnable = TRUE;
     blend_desc.RenderTarget[0].LogicOpEnable = FALSE;
 
@@ -69,7 +69,7 @@ D3D12_DEPTH_STENCIL_DESC UIShader::create_depth_stencil_state()
 {
     D3D12_DEPTH_STENCIL_DESC depth_stencil_desc = {};
 
-    // UI´Â Ç×»ó ÃÖ»óÀ§¿¡ ±×·ÁÁöµµ·Ï depth test ºñÈ°¼ºÈ­
+    // UIëŠ” í•­ìƒ ìµœìƒìœ„ì— ê·¸ë ¤ì§€ë„ë¡ depth test ë¹„í™œì„±í™”
     depth_stencil_desc.DepthEnable = FALSE;
     depth_stencil_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
     depth_stencil_desc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
@@ -82,7 +82,7 @@ D3D12_RASTERIZER_DESC UIShader::create_rasterizer_state()
 {
     D3D12_RASTERIZER_DESC rasterizer_desc = {};
     rasterizer_desc.FillMode = D3D12_FILL_MODE_SOLID;
-    rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE; // UI´Â ¾ç¸é ·»´õ¸µ
+    rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE; // UIëŠ” ì–‘ë©´ ë Œë”ë§
     rasterizer_desc.FrontCounterClockwise = FALSE;
     rasterizer_desc.DepthBias = 0;
     rasterizer_desc.DepthBiasClamp = 0.0f;

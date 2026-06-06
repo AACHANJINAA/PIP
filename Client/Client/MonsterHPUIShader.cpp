@@ -1,16 +1,16 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "MonsterHPUIShader.h"
 
 ComPtr<ID3D12PipelineState> MonsterHPUIShader::create_pso(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = {};
-	// GS¸¦ À§ÇØ vs, ps ¿Ü¿¡ gs_blobÀ» Ãß°¡·Î ¼±¾ğÇÕ´Ï´Ù.
+	// GSë¥¼ ìœ„í•´ vs, ps ì™¸ì— gs_blobì„ ì¶”ê°€ë¡œ ì„ ì–¸í•©ë‹ˆë‹¤.
 	ComPtr<ID3DBlob> vs_blob, gs_blob, ps_blob;
 
 	pso_desc.pRootSignature = root_signature;
 	pso_desc.VS = create_vertex_shader(vs_blob);
 
-	// 1. [Ãß°¡] ±âÇÏ ½¦ÀÌ´õ(GS)¸¦ »ı¼ºÇÏ°í ÆÄÀÌÇÁ¶óÀÎ¿¡ µî·ÏÇÕ´Ï´Ù.
+	// 1. [ì¶”ê°€] ê¸°í•˜ ì‰ì´ë”(GS)ë¥¼ ìƒì„±í•˜ê³  íŒŒì´í”„ë¼ì¸ì— ë“±ë¡í•©ë‹ˆë‹¤.
 	pso_desc.GS = create_geometry_shader(gs_blob);
 
 	pso_desc.PS = create_pixel_shader(ps_blob);
@@ -18,16 +18,16 @@ ComPtr<ID3D12PipelineState> MonsterHPUIShader::create_pso(ID3D12Device* device, 
 
 	pso_desc.RasterizerState = create_rasterizer_state();
 
-	// 2. [È®ÀÎ] HP_Bar.ddsÀÇ ¹İÅõ¸íµµ¸¦ Ç¥ÇöÇÏ±â À§ÇØ ºí·»µùÀÌ È°¼ºÈ­µÇ¾î ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+	// 2. [í™•ì¸] HP_Bar.ddsì˜ ë°˜íˆ¬ëª…ë„ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•´ ë¸”ë Œë”©ì´ í™œì„±í™”ë˜ì–´ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
 	pso_desc.BlendState = create_blend_state();
 
-	// 3. [È®ÀÎ] UI°¡ Ä³¸¯ÅÍ ¸ö ¶Õ°í ³ª¿ÀÁö ¾Ê°Ô ÇÏµÇ, ±íÀÌ ¾²±â´Â ²¨µÎ´Â ¼³Á¤À» ±ÇÀåÇÕ´Ï´Ù.
+	// 3. [í™•ì¸] UIê°€ ìºë¦­í„° ëª¸ ëš«ê³  ë‚˜ì˜¤ì§€ ì•Šê²Œ í•˜ë˜, ê¹Šì´ ì“°ê¸°ëŠ” êº¼ë‘ëŠ” ì„¤ì •ì„ ê¶Œì¥í•©ë‹ˆë‹¤.
 	pso_desc.DepthStencilState = create_depth_stencil_state();
 
 	pso_desc.SampleMask = UINT_MAX;
 
-	// 4. [¼öÁ¤] ¸ó½ºÅÍ À§Ä¡ 'Á¡(Point)' ¸®½ºÆ®¸¦ ÀÔ·ÂÀ¸·Î ¹ŞÀ¸¹Ç·Î Å¸ÀÔÀ» POINT·Î ¹Ù²ß´Ï´Ù.
-	// GS¿¡¼­ ÀÌ Á¡À» 8°³ÀÇ Á¤Á¡(»ï°¢Çü ½ºÆ®¸³)À¸·Î È®ÀåÇÏ°Ô µË´Ï´Ù.
+	// 4. [ìˆ˜ì •] ëª¬ìŠ¤í„° ìœ„ì¹˜ 'ì (Point)' ë¦¬ìŠ¤íŠ¸ë¥¼ ì…ë ¥ìœ¼ë¡œ ë°›ìœ¼ë¯€ë¡œ íƒ€ì…ì„ POINTë¡œ ë°”ê¿‰ë‹ˆë‹¤.
+	// GSì—ì„œ ì´ ì ì„ 8ê°œì˜ ì •ì (ì‚¼ê°í˜• ìŠ¤íŠ¸ë¦½)ìœ¼ë¡œ í™•ì¥í•˜ê²Œ ë©ë‹ˆë‹¤.
 	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 
 	pso_desc.NumRenderTargets = 1;
@@ -38,7 +38,7 @@ ComPtr<ID3D12PipelineState> MonsterHPUIShader::create_pso(ID3D12Device* device, 
 	ComPtr<ID3D12PipelineState> pso;
 	if (!SUCCEEDED(device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(&pso))))
 	{
-		CERROR("Monster HP UI PSO »ı¼º ½ÇÆĞ");
+		CERROR("Monster HP UI PSO ìƒì„± ì‹¤íŒ¨");
 	}
 
 	return pso;
@@ -85,20 +85,20 @@ D3D12_BLEND_DESC MonsterHPUIShader::create_blend_state()
 {
 	D3D12_BLEND_DESC blend_desc = {};
 	blend_desc.AlphaToCoverageEnable = FALSE;
-	blend_desc.IndependentBlendEnable = FALSE; // ¸ğµç ·»´õ Å¸°Ù¿¡ µ¿ÀÏ ¼³Á¤ Àû¿ë
+	blend_desc.IndependentBlendEnable = FALSE; // ëª¨ë“  ë Œë” íƒ€ê²Ÿì— ë™ì¼ ì„¤ì • ì ìš©
 
-	// 0¹ø ·»´õ Å¸°Ù(±âº» È­¸é)¿¡ ´ëÇÑ ºí·»µå ¼³Á¤
+	// 0ë²ˆ ë Œë” íƒ€ê²Ÿ(ê¸°ë³¸ í™”ë©´)ì— ëŒ€í•œ ë¸”ë Œë“œ ì„¤ì •
 	D3D12_RENDER_TARGET_BLEND_DESC& rt_blend_desc = blend_desc.RenderTarget[0];
 
-	rt_blend_desc.BlendEnable = TRUE;             // ºí·»µù È°¼ºÈ­
+	rt_blend_desc.BlendEnable = TRUE;             // ë¸”ë Œë”© í™œì„±í™”
 	rt_blend_desc.LogicOpEnable = FALSE;
 
-	// ÄÃ·¯ ºí·»µù °ø½Ä: (Source * SrcAlpha) + (Dest * (1 - SrcAlpha))
+	// ì»¬ëŸ¬ ë¸”ë Œë”© ê³µì‹: (Source * SrcAlpha) + (Dest * (1 - SrcAlpha))
 	rt_blend_desc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	rt_blend_desc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	rt_blend_desc.BlendOp = D3D12_BLEND_OP_ADD;
 
-	// ¾ËÆÄ Ã¤³Î ºí·»µù °ø½Ä (º¸Åë 1°ú 0À» »ç¿ëÇÏ¿© °á°ú ¾ËÆÄ¸¦ °áÁ¤)
+	// ì•ŒíŒŒ ì±„ë„ ë¸”ë Œë”© ê³µì‹ (ë³´í†µ 1ê³¼ 0ì„ ì‚¬ìš©í•˜ì—¬ ê²°ê³¼ ì•ŒíŒŒë¥¼ ê²°ì •)
 	rt_blend_desc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	rt_blend_desc.DestBlendAlpha = D3D12_BLEND_ZERO;
 	rt_blend_desc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -113,7 +113,7 @@ D3D12_RASTERIZER_DESC MonsterHPUIShader::create_rasterizer_state()
 {
 	D3D12_RASTERIZER_DESC rasterizer_desc = {};
 	rasterizer_desc.FillMode = D3D12_FILL_MODE_SOLID;
-	rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE; // UI´Â ¾ç¸é ·»´õ¸µ
+	rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE; // UIëŠ” ì–‘ë©´ ë Œë”ë§
 	rasterizer_desc.FrontCounterClockwise = FALSE;
 	rasterizer_desc.DepthBias = 0;
 	rasterizer_desc.DepthBiasClamp = 0.0f;
@@ -131,8 +131,8 @@ D3D12_DEPTH_STENCIL_DESC MonsterHPUIShader::create_depth_stencil_state()
 {
 	D3D12_DEPTH_STENCIL_DESC ds_desc = {};
 
-	// 1. ±íÀÌ Å×½ºÆ® ºñÈ°¼ºÈ­ (Z-Fighting ¿øÃµ Â÷´Ü)
-	// ÀÌ·¸°Ô ÇÏ¸é ¸ó½ºÅÍ ¸öÃ¼ µÚ¿¡ ÀÖ¾îµµ HP ¹Ù°¡ Åõ¸íÇÏ°Ô º¸ÀÔ´Ï´Ù.
+	// 1. ê¹Šì´ í…ŒìŠ¤íŠ¸ ë¹„í™œì„±í™” (Z-Fighting ì›ì²œ ì°¨ë‹¨)
+	// ì´ë ‡ê²Œ í•˜ë©´ ëª¬ìŠ¤í„° ëª¸ì²´ ë’¤ì— ìˆì–´ë„ HP ë°”ê°€ íˆ¬ëª…í•˜ê²Œ ë³´ì…ë‹ˆë‹¤.
 	ds_desc.DepthEnable = FALSE;
 	ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	ds_desc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;

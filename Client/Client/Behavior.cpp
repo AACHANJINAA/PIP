@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Behavior.h"
 
 Behavior::Behavior() : Component(), _isEnabled{ true }

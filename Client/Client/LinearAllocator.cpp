@@ -1,16 +1,16 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "LinearAllocator.h"
 
 LinearAllocator::LinearAllocator(ID3D12Device* device, size_t totalSize, UINT frameCount)
 {
-	// 256¹ÙÀÌÆ® Á¤·ÄÀÌ °¡´ÉÇÏµµ·Ï ÀüÃ¼ »çÀÌÁî º¸Á¤
+	// 256ë°”ì´íŠ¸ ì •ë ¬ì´ ê°€ëŠ¥í•˜ë„ë¡ ì „ì²´ ì‚¬ì´ì¦ˆ ë³´ì •
 	_totalSize = (totalSize + CB_ALIGNMENT) & ~CB_ALIGNMENT;
 
-	// ÀüÃ¼ °ø°£À» ÇÁ·¹ÀÓ °³¼ö(SWAP_CHAIN_BUFFERS)¸¸Å­ ±Õµî ºĞÇÒ
+	// ì „ì²´ ê³µê°„ì„ í”„ë ˆì„ ê°œìˆ˜(SWAP_CHAIN_BUFFERS)ë§Œí¼ ê· ë“± ë¶„í• 
 	_frameSize = _totalSize / frameCount;
-	_frameSize = (_frameSize + CB_ALIGNMENT) & ~CB_ALIGNMENT; // ÇÁ·¹ÀÓ »çÀÌÁîµµ 256 Á¤·Ä
+	_frameSize = (_frameSize + CB_ALIGNMENT) & ~CB_ALIGNMENT; // í”„ë ˆì„ ì‚¬ì´ì¦ˆë„ 256 ì •ë ¬
 
-	// CPU°¡ ¸Å ÇÁ·¹ÀÓ µ¥ÀÌÅÍ¸¦ µ¤¾î¾µ °ÍÀÌ¹Ç·Î UPLOAD Èü »ç¿ë
+	// CPUê°€ ë§¤ í”„ë ˆì„ ë°ì´í„°ë¥¼ ë®ì–´ì“¸ ê²ƒì´ë¯€ë¡œ UPLOAD í™ ì‚¬ìš©
 	auto heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	auto bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(_totalSize);
 
@@ -26,12 +26,12 @@ LinearAllocator::LinearAllocator(ID3D12Device* device, size_t totalSize, UINT fr
 
 	_resource->SetName(L"LinearAllocator_UploadBuffer");
 
-	// CPU ¸ÅÇÎ (MapÀº µü ÇÑ ¹ø¸¸ È£ÃâÇÏ°í ÇÁ·Î±×·¥ Á¾·á ½Ã±îÁö À¯ÁöÇÕ´Ï´Ù)
-	CD3DX12_RANGE readRange(0, 0); // CPU°¡ ÀĞÁö´Â ¾ÊÀ¸¹Ç·Î (0, 0)
+	// CPU ë§¤í•‘ (Mapì€ ë”± í•œ ë²ˆë§Œ í˜¸ì¶œí•˜ê³  í”„ë¡œê·¸ë¨ ì¢…ë£Œ ì‹œê¹Œì§€ ìœ ì§€í•©ë‹ˆë‹¤)
+	CD3DX12_RANGE readRange(0, 0); // CPUê°€ ì½ì§€ëŠ” ì•Šìœ¼ë¯€ë¡œ (0, 0)
 	hr = _resource->Map(0, &readRange, &_cpuBase);
 	_ASSERTE(SUCCEEDED(hr));
 
-	// GPU °¡»ó ÁÖ¼Ò È¹µæ
+	// GPU ê°€ìƒ ì£¼ì†Œ íšë“
 	_gpuBase = _resource->GetGPUVirtualAddress();
 }
 
@@ -46,24 +46,24 @@ LinearAllocator::~LinearAllocator()
 
 LinearAllocator::Allocation LinearAllocator::allocate(size_t size)
 {
-	// ÇÒ´çÇÒ Å©±â¸¦ 256¹ÙÀÌÆ® ¹è¼ö·Î ¿Ã¸² ¿¬»ê
+	// í• ë‹¹í•  í¬ê¸°ë¥¼ 256ë°”ì´íŠ¸ ë°°ìˆ˜ë¡œ ì˜¬ë¦¼ ì—°ì‚°
 	size_t alignedSize = (size + CB_ALIGNMENT) & ~CB_ALIGNMENT;
 
-	// ÇöÀç ÇÁ·¹ÀÓ¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸® ¹üÀ§¸¦ ÃÊ°úÇÏ´ÂÁö °Ë»ç (¸Ş¸ğ¸® ºÎÁ· ¹æ¾î)
+	// í˜„ì¬ í”„ë ˆì„ì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ ë²”ìœ„ë¥¼ ì´ˆê³¼í•˜ëŠ”ì§€ ê²€ì‚¬ (ë©”ëª¨ë¦¬ ë¶€ì¡± ë°©ì–´)
 	size_t frameMaxBoundary = (_currentFrameIndex + 1) * _frameSize;
 	if (_currentOffset + alignedSize > frameMaxBoundary)
 	{
-		// ÀÌ ·Î±×°¡ ¶á´Ù¸é ÃÊ±â ¼³Á¤ÇÑ 32MB ¿ë·®ÀÌ ºÎÁ·ÇÏ´Ù´Â ¶æ
+		// ì´ ë¡œê·¸ê°€ ëœ¬ë‹¤ë©´ ì´ˆê¸° ì„¤ì •í•œ 32MB ìš©ëŸ‰ì´ ë¶€ì¡±í•˜ë‹¤ëŠ” ëœ»
 		CERROR("LinearAllocator Out of Memory in current frame! -> Memory Bu Jok Ham");
 		return { nullptr, 0 };
 	}
 
-	// ÇÒ´çÇÒ À§Ä¡ °è»ê
+	// í• ë‹¹í•  ìœ„ì¹˜ ê³„ì‚°
 	Allocation alloc;
 	alloc.cpuPtr = static_cast<uint8_t*>(_cpuBase) + _currentOffset;
 	alloc.gpuAddr = _gpuBase + _currentOffset;
 
-	// ¿ÀÇÁ¼Â Áõ°¡ (´ÙÀ½ NPC°¡ ¾µ ÁÖ¼Ò °»½Å)
+	// ì˜¤í”„ì…‹ ì¦ê°€ (ë‹¤ìŒ NPCê°€ ì“¸ ì£¼ì†Œ ê°±ì‹ )
 	_currentOffset += alignedSize;
 
 	return alloc;
@@ -72,6 +72,6 @@ LinearAllocator::Allocation LinearAllocator::allocate(size_t size)
 void LinearAllocator::reset(UINT frameIndex)
 {
 	_currentFrameIndex = frameIndex;
-	// ÀÌ¹ø ÇÁ·¹ÀÓ Àü¿ë ¸Ş¸ğ¸® ±¸¿ªÀÇ ½ÃÀÛÁ¡À¸·Î ¿ÀÇÁ¼Â Á¡ÇÁ
+	// ì´ë²ˆ í”„ë ˆì„ ì „ìš© ë©”ëª¨ë¦¬ êµ¬ì—­ì˜ ì‹œì‘ì ìœ¼ë¡œ ì˜¤í”„ì…‹ ì í”„
 	_currentOffset = frameIndex * _frameSize;
 }

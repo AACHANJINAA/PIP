@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 #include "FreeCamera.h"
 #include "Shader.h"
 
-// Àü¹æ ¼±¾ğ
+// ì „ë°© ì„ ì–¸
 class GameObject;
 
 class Chess_Scene : public Scene
@@ -13,7 +13,7 @@ public:
     Chess_Scene() = default;
     virtual ~Chess_Scene() = default;
 
-    // --- SceneÀÇ ¼ø¼ö °¡»ó ÇÔ¼ö ¿À¹ö¶óÀÌµå ---
+    // --- Sceneì˜ ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ ì˜¤ë²„ë¼ì´ë“œ ---
     virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
     virtual void release_upload_buffers() override;
     virtual void scene_process(float deltaTime) override;
@@ -21,7 +21,7 @@ public:
 private:
     void SpawnDummyNPC(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
-    // BruTe Sonyeondan ºê·çÆ® ¼Ò³â´Ü »ı¼ºÇÔ¼ö
+    // BruTe Sonyeondan ë¸Œë£¨íŠ¸ ì†Œë…„ë‹¨ ìƒì„±í•¨ìˆ˜
     void SpawnBTS(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void SpawnGrammy_Walk(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     void SpawnTestBoss(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);

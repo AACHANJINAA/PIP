@@ -1,13 +1,13 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 
-// DX12ÀÇ »ó¼ö ¹öÆÛ´Â ¹«Á¶°Ç 256¹ÙÀÌÆ® ´ÜÀ§·Î Á¤·ÄµÇ¾î¾ß ÇÔ
+// DX12ì˜ ìƒìˆ˜ ë²„í¼ëŠ” ë¬´ì¡°ê±´ 256ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ì •ë ¬ë˜ì–´ì•¼ í•¨
 #define CB_ALIGNMENT 255 
 
 class LinearAllocator
 {
 public:
-	// ÇÒ´ç ½Ã CPU¿¡¼­ µ¥ÀÌÅÍ¸¦ º¹»çÇÒ ÁÖ¼Ò¿Í GPU°¡ ·»´õ¸µÇÒ ¶§ ÀÐÀ» ÁÖ¼Ò¸¦ ÇÔ²² ¹ÝÈ¯
+	// í• ë‹¹ ì‹œ CPUì—ì„œ ë°ì´í„°ë¥¼ ë³µì‚¬í•  ì£¼ì†Œì™€ GPUê°€ ë Œë”ë§í•  ë•Œ ì½ì„ ì£¼ì†Œë¥¼ í•¨ê»˜ ë°˜í™˜
 	struct Allocation
 	{
 		void* cpuPtr;
@@ -17,23 +17,23 @@ public:
 	LinearAllocator(ID3D12Device* device, size_t totalSize, UINT frameCount);
 	~LinearAllocator();
 
-	// ¿äÃ»ÇÑ Å©±â¸¸Å­ ¸Þ¸ð¸®¸¦ ÇÒ´ç (256¹ÙÀÌÆ® Á¤·Ä Àû¿ë)
+	// ìš”ì²­í•œ í¬ê¸°ë§Œí¼ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ (256ë°”ì´íŠ¸ ì •ë ¬ ì ìš©)
 	Allocation allocate(size_t size);
 
-	// ¸Å ÇÁ·¹ÀÓ ½ÃÀÛ ½Ã È£ÃâÇÏ¿©, ÇöÀç ÇÁ·¹ÀÓ¿¡ ÇÒ´çµÈ ¸Þ¸ð¸® ±¸°£ÀÇ Ã³À½À¸·Î ¿ÀÇÁ¼ÂÀ» ¸®¼Â
-	void reset(UINT frameIndex); // ÇÁ·¹ÀÓ ÀÎµ¦½º¸¦ ¹Þ¾Æ¾ß ÇÔ -> ¿ì¸® °ÔÀÓÀÌ ´ÙÁß ÇÁ·¹ÀÓ ¹öÆÛ¸µÀÌ±â ¶§¹®
+	// ë§¤ í”„ë ˆìž„ ì‹œìž‘ ì‹œ í˜¸ì¶œí•˜ì—¬, í˜„ìž¬ í”„ë ˆìž„ì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ êµ¬ê°„ì˜ ì²˜ìŒìœ¼ë¡œ ì˜¤í”„ì…‹ì„ ë¦¬ì…‹
+	void reset(UINT frameIndex); // í”„ë ˆìž„ ì¸ë±ìŠ¤ë¥¼ ë°›ì•„ì•¼ í•¨ -> ìš°ë¦¬ ê²Œìž„ì´ ë‹¤ì¤‘ í”„ë ˆìž„ ë²„í¼ë§ì´ê¸° ë•Œë¬¸
 
 	size_t get_total_size() const { return _totalSize; }
 
 private:
 	ComPtr<ID3D12Resource> _resource;
 
-	void* _cpuBase = nullptr;					// CPU ¸ÅÇÎ ½ÃÀÛ ÁÖ¼Ò
-	D3D12_GPU_VIRTUAL_ADDRESS _gpuBase = 0;		// GPU °¡»ó ÁÖ¼Ò ½ÃÀÛ ÁöÁ¡
+	void* _cpuBase = nullptr;					// CPU ë§¤í•‘ ì‹œìž‘ ì£¼ì†Œ
+	D3D12_GPU_VIRTUAL_ADDRESS _gpuBase = 0;		// GPU ê°€ìƒ ì£¼ì†Œ ì‹œìž‘ ì§€ì 
 
-	size_t _totalSize = 0;			// ÀüÃ¼ ÇÒ´çµÈ ¸Þ¸ð¸® Å©±â (¿¹: 32MB)
-	size_t _frameSize = 0;			// 1ÇÁ·¹ÀÓ´ç »ç¿ë °¡´ÉÇÑ ÃÖ´ë ¸Þ¸ð¸® Å©±â (¿¹: 16MB)
+	size_t _totalSize = 0;			// ì „ì²´ í• ë‹¹ëœ ë©”ëª¨ë¦¬ í¬ê¸° (ì˜ˆ: 32MB)
+	size_t _frameSize = 0;			// 1í”„ë ˆìž„ë‹¹ ì‚¬ìš© ê°€ëŠ¥í•œ ìµœëŒ€ ë©”ëª¨ë¦¬ í¬ê¸° (ì˜ˆ: 16MB)
 
-	size_t _currentOffset = 0;		// ÇöÀç »ç¿ë ÁßÀÎ ¿ÀÇÁ¼Â
-	size_t _currentFrameIndex = 0;	// ÇöÀç ·»´õ¸µ ÁßÀÎ ÇÁ·¹ÀÓ ÀÎµ¦½º
+	size_t _currentOffset = 0;		// í˜„ìž¬ ì‚¬ìš© ì¤‘ì¸ ì˜¤í”„ì…‹
+	size_t _currentFrameIndex = 0;	// í˜„ìž¬ ë Œë”ë§ ì¤‘ì¸ í”„ë ˆìž„ ì¸ë±ìŠ¤
 };

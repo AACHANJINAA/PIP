@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Behavior.h"
 
 class GameObject;
@@ -9,8 +9,8 @@ private:
     int64_t _currentTargetId = -1;
     bool _isLockedOn = false;
 
-    float _maxDistance = 20.0f;    // Å½»ö ÃÖ´ë °Å¸®
-    float _targetingFov = 60.0f;   // Å½»ö ½Ã¾ß°¢
+    float _maxDistance = 20.0f;    // íƒìƒ‰ ìµœëŒ€ ê±°ë¦¬
+    float _targetingFov = 60.0f;   // íƒìƒ‰ ì‹œì•¼ê°
 
 public:
 	TargetingComponent() : Behavior("TargetingComponent") {} 
@@ -21,7 +21,7 @@ public:
 
     void toggle_lock_on();
 
-    // À¯È¿ÇÑ Å¸°ÙÀÎÁö Ã¼Å© (°Å¸®, »ç¸Á ¿©ºÎ µî)
+    // ìœ íš¨í•œ íƒ€ê²Ÿì¸ì§€ ì²´í¬ (ê±°ë¦¬, ì‚¬ë§ ì—¬ë¶€ ë“±)
     bool is_valid_target(int64_t id);
 
 private:

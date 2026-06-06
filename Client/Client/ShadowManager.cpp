@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
@@ -10,7 +10,7 @@
 
 void ShadowManager::initialize(ID3D12Device* device)
 {
-    // 1. Shadow Map Array ¸®¼Ò½º »ı¼º (1024x1024, ArraySize=3)
+    // 1. Shadow Map Array ë¦¬ì†ŒìŠ¤ ìƒì„± (1024x1024, ArraySize=3)
     D3D12_RESOURCE_DESC texDesc = {};
     texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     texDesc.Alignment = 0;
@@ -38,7 +38,7 @@ void ShadowManager::initialize(ID3D12Device* device)
         &optClear,
         IID_PPV_ARGS(&_shadowMapArray));
 
-    // 2. DSV Heap »ı¼º (CPU Only, 1 Descriptor)
+    // 2. DSV Heap ìƒì„± (CPU Only, 1 Descriptor)
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
     dsvHeapDesc.NumDescriptors = 3;
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -55,15 +55,15 @@ void ShadowManager::initialize(ID3D12Device* device)
         D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
         dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
         dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-        dsvDesc.Texture2DArray.FirstArraySlice = i; // ½½¶óÀÌ½º 0, 1
-    	dsvDesc.Texture2DArray.ArraySize = 1;       // ÇÑ ¹ø¿¡ ÇÏ³ª¾¿¸¸ ±×¸²
+        dsvDesc.Texture2DArray.FirstArraySlice = i; // ìŠ¬ë¼ì´ìŠ¤ 0, 1
+    	dsvDesc.Texture2DArray.ArraySize = 1;       // í•œ ë²ˆì— í•˜ë‚˜ì”©ë§Œ ê·¸ë¦¼
         dsvDesc.Texture2DArray.MipSlice = 0;
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE hDsv(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
         device->CreateDepthStencilView(_shadowMapArray.Get(), &dsvDesc, hDsv);
     }
    
-    // 3. SRV Heap »ı¼º 
+    // 3. SRV Heap ìƒì„± 
     D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
     srvHeapDesc.NumDescriptors = 3;
     srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -80,7 +80,7 @@ void ShadowManager::initialize(ID3D12Device* device)
     srvDesc.Texture2DArray.ArraySize = 3;
     device->CreateShaderResourceView(_shadowMapArray.Get(), &srvDesc, _srvHeap->GetCPUDescriptorHandleForHeapStart());
 
-    // 4. »ó¼ö ¹öÆÛ »ı¼º
+    // 4. ìƒìˆ˜ ë²„í¼ ìƒì„±
     UINT cbCascadesSize = (sizeof(CbCascades) + 255) & ~255;
     CD3DX12_HEAP_PROPERTIES uploadHeap(D3D12_HEAP_TYPE_UPLOAD);
     CD3DX12_RESOURCE_DESC cbDesc = CD3DX12_RESOURCE_DESC::Buffer(cbCascadesSize);
@@ -100,18 +100,18 @@ void ShadowManager::initialize(ID3D12Device* device)
 
 void ShadowManager::build_cascade_matrices()
 {
-    // ºûÀÇ ¹æÇâ ¼¼ÆÃ
+    // ë¹›ì˜ ë°©í–¥ ì„¸íŒ…
     XMFLOAT3 lightDir = LightManager::instance()->get_sun_direction();
     XMVECTOR dir = XMVector3Normalize(XMLoadFloat3(&lightDir));
 
-    // ¸ŞÀÎ Ä«¸Ş¶ó À§Ä¡ °¡Á®¿À±â
+    // ë©”ì¸ ì¹´ë©”ë¼ ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
     XMVECTOR camPos = XMVectorSet(0, 0, 0, 1);
     if (CameraComponent::get_main()) {
         auto pos = CameraComponent::get_main()->game_object()->transform()->position();
         camPos = XMVectorSet(pos.x, pos.y, pos.z, 1.0f);
     }
 
-    XMVECTOR lightPos = camPos - dir * 1000.0f; // ºûÀ» Àû´çÈ÷ ¸Ö¸® ¶³¾î¶ß¸²
+    XMVECTOR lightPos = camPos - dir * 1000.0f; // ë¹›ì„ ì ë‹¹íˆ ë©€ë¦¬ ë–¨ì–´ëœ¨ë¦¼
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
@@ -125,38 +125,38 @@ void ShadowManager::build_cascade_matrices()
     {
         XMMATRIX proj = XMMatrixOrthographicLH(radii[c] * 2, radii[c] * 2, 1.0f, 2000.0f);
 
-        // ÅØ¼¿ ½º³»ÇÎ (Texel Snapping) - Áö±Û°Å¸² Á¦°Å
+        // í…ì…€ ìŠ¤ë‚´í•‘ (Texel Snapping) - ì§€ê¸€ê±°ë¦¼ ì œê±°
         const float shadowMapResolution = (float)_shadowmapSize;
         XMMATRIX lightViewProj = lightView * proj;
 
-        // 1. ¿ùµå ¿øÁ¡À» ¼¨µµ¿ì ¸Ê ÇÈ¼¿ °ø°£À¸·Î Åõ¿µ
+        // 1. ì›”ë“œ ì›ì ì„ ì„€ë„ìš° ë§µ í”½ì…€ ê³µê°„ìœ¼ë¡œ íˆ¬ì˜
         XMVECTOR shadowOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
         shadowOrigin = XMVector4Transform(shadowOrigin, lightViewProj);
 
-        // 2. NDC °ø°£À» ÇÈ¼¿ ´ÜÀ§·Î ½ºÄÉÀÏ ¾÷
+        // 2. NDC ê³µê°„ì„ í”½ì…€ ë‹¨ìœ„ë¡œ ìŠ¤ì¼€ì¼ ì—…
         shadowOrigin = XMVectorScale(shadowOrigin, shadowMapResolution / 2.0f);
 
-        // 3. ÅØ¼¿ ½º³»ÇÎ (¹İ¿Ã¸²)
+        // 3. í…ì…€ ìŠ¤ë‚´í•‘ (ë°˜ì˜¬ë¦¼)
         XMVECTOR roundedOrigin = XMVectorRound(shadowOrigin);
 
-        // 4. ¿ÀÂ÷ °è»ê
+        // 4. ì˜¤ì°¨ ê³„ì‚°
         XMVECTOR roundOffset = XMVectorSubtract(roundedOrigin, shadowOrigin);
 
-        // 5. ¿ÀÂ÷¸¦ NDC ½ºÄÉÀÏ·Î Ãà¼Ò
+        // 5. ì˜¤ì°¨ë¥¼ NDC ìŠ¤ì¼€ì¼ë¡œ ì¶•ì†Œ
         roundOffset = XMVectorScale(roundOffset, 2.0f / shadowMapResolution);
 
-        // 6. Z¿Í WÃàÀº 0À¸·Î ÃÊ±âÈ­ (X, Y¸¸ º¸Á¤)
+        // 6. Zì™€ Wì¶•ì€ 0ìœ¼ë¡œ ì´ˆê¸°í™” (X, Yë§Œ ë³´ì •)
         roundOffset = XMVectorSetZ(roundOffset, 0.0f);
         roundOffset = XMVectorSetW(roundOffset, 0.0f);
 
-        // 7. Åõ¿µ Çà·Ä¿¡ ¿ÀÇÁ¼Â Àû¿ë
+        // 7. íˆ¬ì˜ í–‰ë ¬ì— ì˜¤í”„ì…‹ ì ìš©
         XMMATRIX shadowProjOffset = XMMatrixTranslationFromVector(roundOffset);
         proj = XMMatrixMultiply(proj, shadowProjOffset);
 
-        // 8. ÃÖÁ¾ VP Çà·Ä
+        // 8. ìµœì¢… VP í–‰ë ¬
         XMMATRIX vp = lightView * proj;
 
-        // ¼ÎÀÌ´õ¿ë GPU¿¡ ¸Â°Ô TransposeÇÏ¿© ÀúÀå
+        // ì…°ì´ë”ìš© GPUì— ë§ê²Œ Transposeí•˜ì—¬ ì €ì¥
         XMStoreFloat4x4(&_cascadeData.cascades[c].lightVP, XMMatrixTranspose(vp));
         XMStoreFloat4x4(&_shadowData.lightVP[c], XMMatrixTranspose(vp));
     }
@@ -170,12 +170,12 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 {
     _currentFrameIndex = frame_index;
 
-    // 1. Çà·Ä ºôµå ¹× º¹»ç
+    // 1. í–‰ë ¬ ë¹Œë“œ ë° ë³µì‚¬
     build_cascade_matrices();
     memcpy(_mappedCbCascades, &_cascadeData, sizeof(CbCascades));
     memcpy(_mappedCbShadow[frame_index], &_shadowData, sizeof(CbShadow));
 
-    // 2. Resource Barrier: PSR -> DEPTH_WRITE (¸ğµç ½½¶óÀÌ½º)
+    // 2. Resource Barrier: PSR -> DEPTH_WRITE (ëª¨ë“  ìŠ¬ë¼ì´ìŠ¤)
     CD3DX12_RESOURCE_BARRIER barriersW[3];
     for (int i = 0; i < 3; ++i) {
         barriersW[i] = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -186,7 +186,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     }
     cmd->ResourceBarrier(3, barriersW);
 
-    // °øÅë ºäÆ÷Æ®/½ÃÀú ¼³Á¤
+    // ê³µí†µ ë·°í¬íŠ¸/ì‹œì € ì„¤ì •
     D3D12_VIEWPORT viewport = { 0.0f, 0.0f, (float)_shadowmapSize, (float)_shadowmapSize, 0.0f, 1.0f };
     D3D12_RECT scissor = {0, 0, _shadowmapSize, _shadowmapSize };
     cmd->RSSetViewports(1, &viewport);
@@ -194,33 +194,33 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 
     auto renderer = Renderer::instance();
     const auto& renderMap = renderer->get_shadow_render_map();
-    // [Ãß°¡] ¿ÀÅ¬·çÀü Äõ¸® °á°ú ¹öÆÛ °¡Á®¿À±â
+    // [ì¶”ê°€] ì˜¤í´ë£¨ì „ ì¿¼ë¦¬ ê²°ê³¼ ë²„í¼ ê°€ì ¸ì˜¤ê¸°
     ID3D12Resource* prevBuffer = OcclusionManager::instance()->get_result_buffer_for_predication(frame_index);
     f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
 
-    // Ä³½ºÄÉÀÌµåº° °Å¸® ±âÁØ (build_cascade_matrices¿Í µ¿ÀÏÇÏ°Ô ¸ÂÃã)
+    // ìºìŠ¤ì¼€ì´ë“œë³„ ê±°ë¦¬ ê¸°ì¤€ (build_cascade_matricesì™€ ë™ì¼í•˜ê²Œ ë§ì¶¤)
     float radii[3] = {
           shadow_max_distance * 0.05f,  // Cascade 0: 15m
           shadow_max_distance * 0.3f,  // Cascade 1: 100m
           shadow_max_distance * 1.0f   // Cascade 2: 300m
     };
 
-    // Ä«¸Ş¶ó¿Í ¸Å¿ì °¡±î¿î °Å¸®´Â Äõ¸® ¾øÀÌ ¹«Á¶°Ç ±×¸²ÀÚ »ı¼º
-    const float nearShadowThreshold = 30.0f; // ¿ÀÅ¬·çÀü Å×½ºÆ® ½ºÅµ ±âÁØ
+    // ì¹´ë©”ë¼ì™€ ë§¤ìš° ê°€ê¹Œìš´ ê±°ë¦¬ëŠ” ì¿¼ë¦¬ ì—†ì´ ë¬´ì¡°ê±´ ê·¸ë¦¼ì ìƒì„±
+    const float nearShadowThreshold = 30.0f; // ì˜¤í´ë£¨ì „ í…ŒìŠ¤íŠ¸ ìŠ¤í‚µ ê¸°ì¤€
     UINT dsvSize = GameFramework::instance()->device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-    // 3´Ü°è Ä³½ºÄÉÀÌµå ·»´õ¸µ ·çÇÁ ½ÃÀÛ
+    // 3ë‹¨ê³„ ìºìŠ¤ì¼€ì´ë“œ ë Œë”ë§ ë£¨í”„ ì‹œì‘
     for (int i = 0; i < 3; ++i)
     {
-        // A. ÇöÀç Ä³½ºÄÉÀÌµå¿¡ ÇØ´çÇÏ´Â DSV ¹ÙÀÎµù ¹× Clear
+        // A. í˜„ì¬ ìºìŠ¤ì¼€ì´ë“œì— í•´ë‹¹í•˜ëŠ” DSV ë°”ì¸ë”© ë° Clear
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
         cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
         cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-        // B. ÇöÀç Ä³½ºÄÉÀÌµå Àü¿ë Constant Buffer ÁÖ¼Ò °è»ê (b1 ·¹Áö½ºÅÍ¿ë)
+        // B. í˜„ì¬ ìºìŠ¤ì¼€ì´ë“œ ì „ìš© Constant Buffer ì£¼ì†Œ ê³„ì‚° (b1 ë ˆì§€ìŠ¤í„°ìš©)
         D3D12_GPU_VIRTUAL_ADDRESS currentCbAddress = _cbCascades->GetGPUVirtualAddress() + (i * sizeof(CbCascadeSingle));
 
-        // C. ÀÏ¹İ ¸Ş½Ã ·»´õ¸µ (gltf)
+        // C. ì¼ë°˜ ë©”ì‹œ ë Œë”ë§ (gltf)
         {
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
@@ -254,7 +254,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             }
         }
 
-        // D. ½ºÅ²µå ¾Ö´Ï¸ŞÀÌ¼Ç ¸Ş½Ã ·»´õ¸µ (skinned)
+        // D. ìŠ¤í‚¨ë“œ ì• ë‹ˆë©”ì´ì…˜ ë©”ì‹œ ë Œë”ë§ (skinned)
         {
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
@@ -269,7 +269,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                     for (const auto& obj : it->second) {
                         if (!obj || obj->is_destroyed()) continue;
 
-                        // [ÃÖÀûÈ­ 1]: °Å¸® ÄÃ¸µ
+                        // [ìµœì í™” 1]: ê±°ë¦¬ ì»¬ë§
                         f3 objPos = obj->transform()->get_world_position();
                         float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
                         if (dist > radii[i]) continue;
@@ -278,11 +278,11 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                         auto animComp = obj->get_component<AnimationComponent>();
                         if (!rc || !animComp) continue;
 
-                        // º» Çà·Ä µ¥ÀÌÅÍ ¹ÙÀÎµù
+                        // ë³¸ í–‰ë ¬ ë°ì´í„° ë°”ì¸ë”©
                         D3D12_GPU_VIRTUAL_ADDRESS boneGpuAddr = animComp->get_bone_gpu_virtual_address();
                         if (boneGpuAddr != 0) cmd->SetGraphicsRootConstantBufferView(2, boneGpuAddr);
 
-                        // [ÃÖÀûÈ­ 2]: ¿ÀÅ¬·çÀü Äõ¸® ±â¹İ ·»´õ¸µ
+                        // [ìµœì í™” 2]: ì˜¤í´ë£¨ì „ ì¿¼ë¦¬ ê¸°ë°˜ ë Œë”ë§
                         if (dist < nearShadowThreshold || rc->skip_occlusion()) {
                             rc->render_CascadeShadowMap(cmd, frame_index);
                         }
@@ -297,7 +297,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         }
     }
 
-    // 3. Resource Barrier: DEPTH_WRITE -> PSR (¸ğµç ½½¶óÀÌ½º)
+    // 3. Resource Barrier: DEPTH_WRITE -> PSR (ëª¨ë“  ìŠ¬ë¼ì´ìŠ¤)
     CD3DX12_RESOURCE_BARRIER barriersR[3];
     for (int i = 0; i < 3; ++i) {
         barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -313,18 +313,18 @@ void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shado
 {
     if (!_cbShadow[0] || !_cbShadow[1] || !_srvHeap || !_shadowMapArray)
     {
-        // ÃÊ±âÈ­µÇÁö ¾Ê¾ÒÀ¸¸é ¹ÙÀÎµùÇÏÁö ¾ÊÀ½
+        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ë°”ì¸ë”©í•˜ì§€ ì•ŠìŒ
         return;
     }
 
     UINT frame_index = _currentFrameIndex;
 
-    // b5 »ó¼ö ¹öÆÛ ¹ÙÀÎµù
+    // b5 ìƒìˆ˜ ë²„í¼ ë°”ì¸ë”©
     cmd->SetGraphicsRootConstantBufferView(shadowCbParamIdx,
         _cbShadow[frame_index]->GetGPUVirtualAddress());
 
-    // t11 Descriptor Table ¹ÙÀÎµù
-    // (CPUÀÇ SRV Descriptor¸¦ RendererÀÇ GPU Descriptor Heap¿¡ º¹»ç ÈÄ ¹ÙÀÎµù)
+    // t11 Descriptor Table ë°”ì¸ë”©
+    // (CPUì˜ SRV Descriptorë¥¼ Rendererì˜ GPU Descriptor Heapì— ë³µì‚¬ í›„ ë°”ì¸ë”©)
     CD3DX12_CPU_DESCRIPTOR_HANDLE cpuSrvHandle(_srvHeap->GetCPUDescriptorHandleForHeapStart());
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpuHandles = { cpuSrvHandle };
 

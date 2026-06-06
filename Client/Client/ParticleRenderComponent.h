@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "RenderComponent.h"
 #include "ParticleSystemComponent.h"
 
@@ -10,7 +10,7 @@ public:
 
     void set_particle_system(std::shared_ptr<ParticleSystemComponent> ps) { _particleSystem = ps; }
 
-    // ¸Ş½¬ ·»´õ¸µ ´ë½Å ÀÎ½ºÅÏ½Ì ·»´õ¸µÀ» ¿À¹ö¶óÀÌµå
+    // ë©”ì‰¬ ë Œë”ë§ ëŒ€ì‹  ì¸ìŠ¤í„´ì‹± ë Œë”ë§ì„ ì˜¤ë²„ë¼ì´ë“œ
     virtual void render(ID3D12GraphicsCommandList* commandList, UINT frame_index) override;
 
 private:

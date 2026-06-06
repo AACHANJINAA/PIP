@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "GltfShader.h"
 
 class GltfSkinnedShader : public GltfShader
@@ -7,16 +7,16 @@ public:
 	GltfSkinnedShader() = default;
 	virtual ~GltfSkinnedShader() = default;
 
-	// 1. PSO ÀÌ¸§À» "skinned_gltf"·Î º¯°æÇÏ¿© Renderer¿¡¼­ ±¸ºĞ
+	// 1. PSO ì´ë¦„ì„ "skinned_gltf"ë¡œ ë³€ê²½í•˜ì—¬ Rendererì—ì„œ êµ¬ë¶„
 	const std::string& pso_name() const override;
 
-	// 2. BLENDINDICES, BLENDWEIGHT°¡ Ãß°¡µÈ Input Layout Á¤ÀÇ
+	// 2. BLENDINDICES, BLENDWEIGHTê°€ ì¶”ê°€ëœ Input Layout ì •ì˜
 	D3D12_INPUT_LAYOUT_DESC create_input_layout() override;
 
-	// 3. ½ºÅ°´× VS ÄÄÆÄÀÏ
+	// 3. ìŠ¤í‚¤ë‹ VS ì»´íŒŒì¼
 	D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
 
-	// 4. ½ºÅ°´×¿ë ·çÆ® ½Ã±×´ÏÃ³ »ç¿ë ("skinned")
+	// 4. ìŠ¤í‚¤ë‹ìš© ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ì‚¬ìš© ("skinned")
 	std::string required_root_signature() const override;
 
 	void update_per_object(ID3D12GraphicsCommandList* command_list, class Renderer* renderer, GameObject* object) override;

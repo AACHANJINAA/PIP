@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "GltfShader.h"
 
 #include "ShadowManager.h"
@@ -69,7 +69,7 @@ void GltfShader::update_per_object(ID3D12GraphicsCommandList* command_list, clas
 
     //LightManager::instance()->bind(command_list, 3);
 
-    // ±×¸²ÀÚ ¸®¼Ò½º ¹ÙÀÎµù (Gltf ·çÆ® ½Ã±×´ÏÃ³: Param 10 == b5, Param 11 == t11
+    // ê·¸ë¦¼ì ë¦¬ì†ŒìŠ¤ ë°”ì¸ë”© (Gltf ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜: Param 10 == b5, Param 11 == t11
     //ShadowManager::instance()->bind_for_lighting(command_list, 10, 11, renderer);
 }
 

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ScriptComponent.h"
 #include "GameObject.h"
 #include "TransformComponent.h"

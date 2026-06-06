@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <vector>
 #include <memory>
 #include <functional>
@@ -6,11 +6,11 @@
 #include <string>
 #include <variant>
 
-// --- 1. Blackboard (µ¥ÀÌÅÍ °øÀ¯) ---
+// --- 1. Blackboard (ë°ì´í„° ê³µìœ ) ---
 class Blackboard {
 public:
-	// °£´ÜÇÏ°Ô Á¤¼ö, ½Ç¼ö, º¤ÅÍ, ºÒ¸®¾ğ µîÀ» ÀúÀåÇÑ´Ù°í °¡Á¤
-	using ValueType = std::variant<int, float, bool, std::string /*, Vector3 µî Ãß°¡*/>;
+	// ê°„ë‹¨í•˜ê²Œ ì •ìˆ˜, ì‹¤ìˆ˜, ë²¡í„°, ë¶ˆë¦¬ì–¸ ë“±ì„ ì €ì¥í•œë‹¤ê³  ê°€ì •
+	using ValueType = std::variant<int, float, bool, std::string /*, Vector3 ë“± ì¶”ê°€*/>;
 
 	void set(const std::string& key, ValueType value) { _data[key] = value; }
 
@@ -19,7 +19,7 @@ public:
 		if (_data.contains(key)) {
 			return std::get<T>(_data[key]);
 		}
-		return T{}; // ±âº»°ª
+		return T{}; // ê¸°ë³¸ê°’
 	}
 
 	bool has(const std::string& key) const { return _data.contains(key); }
@@ -27,7 +27,7 @@ public:
 private:
 	std::unordered_map<std::string, ValueType> _data;
 };
-// --- 2. Node ±âº» ±¸Á¶ ---
+// --- 2. Node ê¸°ë³¸ êµ¬ì¡° ---
 enum class NodeStatus { Success, Failure, Running };
 
 class BTNode {
@@ -36,7 +36,7 @@ public:
 	virtual NodeStatus tick(float dt) = 0;
 };
 
-// --- 3. Composites (Á¦¾î ³ëµå) ---
+// --- 3. Composites (ì œì–´ ë…¸ë“œ) ---
 class Selector : public BTNode { // OR
 	std::vector<std::shared_ptr<BTNode>> _children;
 public:
@@ -63,7 +63,7 @@ public:
 	}
 };
 
-// --- 4. Leaf Nodes (Çàµ¿ ³ëµå) ---
+// --- 4. Leaf Nodes (í–‰ë™ ë…¸ë“œ) ---
 class Action : public BTNode {
 	std::function<NodeStatus(float)> _fn;
 public:
@@ -71,7 +71,7 @@ public:
 	NodeStatus tick(float dt) override { return _fn(dt); }
 };
 
-class Condition : public BTNode { // ´Ü¼ø Á¶°Ç °Ë»ç (True/False)
+class Condition : public BTNode { // ë‹¨ìˆœ ì¡°ê±´ ê²€ì‚¬ (True/False)
 	std::function<bool()> _pred;
 public:
 	Condition(std::function<bool()> pred) : _pred(pred) {}
@@ -79,10 +79,10 @@ public:
 		return _pred() ? NodeStatus::Success : NodeStatus::Failure;
 	}
 };
-// --- 5. Builder (Æí¸®ÇÑ »ı¼º) ---
+// --- 5. Builder (í¸ë¦¬í•œ ìƒì„±) ---
 class BTBuilder {
 	std::shared_ptr<BTNode> _root;
-	std::vector<std::shared_ptr<BTNode>> _stack; // ºÎ¸ğ ³ëµåµéÀ» ÃßÀû
+	std::vector<std::shared_ptr<BTNode>> _stack; // ë¶€ëª¨ ë…¸ë“œë“¤ì„ ì¶”ì 
 
 public:
 	BTBuilder() = default;

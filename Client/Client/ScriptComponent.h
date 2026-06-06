@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #pragma once
 #include "Behavior.h"
 #include "TransformComponent.h"
@@ -10,11 +10,11 @@ public:
 	ScriptComponent(const std::string& name) : Behavior(name) {}
     virtual ~ScriptComponent() = default;
 
-    // --- ÆíÀÇ ±â´É ---
-    TransformComponent* transform() const; // GameObjectÀÇ TransformComponent¸¦ ½±°Ô °¡Á®¿À´Â ÇÔ¼ö
+    // --- í¸ì˜ ê¸°ëŠ¥ ---
+    TransformComponent* transform() const; // GameObjectì˜ TransformComponentë¥¼ ì‰½ê²Œ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
 
-    //// --- ¸Ş½ÃÁö/ÀÌº¥Æ® ½Ã½ºÅÛ ---
-    //// ÀÌ ÇÔ¼öµéÀº Æ¯Á¤ ÀÌº¥Æ® ¹ß»ı ½Ã ¿£Áø ½Ã½ºÅÛ(¹°¸®, ¸Ş½ÃÂ¡ µî)¿¡ ÀÇÇØ È£ÃâµË´Ï´Ù.
+    //// --- ë©”ì‹œì§€/ì´ë²¤íŠ¸ ì‹œìŠ¤í…œ ---
+    //// ì´ í•¨ìˆ˜ë“¤ì€ íŠ¹ì • ì´ë²¤íŠ¸ ë°œìƒ ì‹œ ì—”ì§„ ì‹œìŠ¤í…œ(ë¬¼ë¦¬, ë©”ì‹œì§• ë“±)ì— ì˜í•´ í˜¸ì¶œë©ë‹ˆë‹¤.
     virtual void on_message(const std::string& message, void* payload = nullptr) {}
     virtual void on_collision_enter(std::shared_ptr<GameObject> other) {}
     virtual void on_collision_stay(std::shared_ptr<GameObject> other) {}

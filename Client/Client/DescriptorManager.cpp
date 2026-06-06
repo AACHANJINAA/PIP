@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "DescriptorManager.h"
 
 void DescriptorManager::initialize(ID3D12Device* device, UINT descriptor_count)
@@ -6,7 +6,7 @@ void DescriptorManager::initialize(ID3D12Device* device, UINT descriptor_count)
 	_capacity = descriptor_count;
 
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = _capacity; // ÃæºĞÇÑ Å©±â·Î ÇÒ´ç
+	srvHeapDesc.NumDescriptors = _capacity; // ì¶©ë¶„í•œ í¬ê¸°ë¡œ í• ë‹¹
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = _isShaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
@@ -24,15 +24,15 @@ bool DescriptorManager::allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& out_cpu
 	if (_currentIndex >= _capacity)
 	{
 	    CERROR("Descriptor Heap is full!");
-	    return false; // ´õ ÀÌ»ó ÇÒ´çÇÒ ¼ö ¾øÀ½
+	    return false; // ë” ì´ìƒ í• ë‹¹í•  ìˆ˜ ì—†ìŒ
 	}
 
-	// CPU handle °è»ê
+	// CPU handle ê³„ì‚°
 	out_cpu_handle = _descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	out_cpu_handle.ptr += (_descriptorSize * _currentIndex);
 
-	// GPU handle °è»ê
-	// GPU handleÀº ÈüÀÌ shader-visibleÀÏ ¶§¸¸ À¯È¿ÇÏ°Ô °è»ê, ¾Æ´Ï¸é 0À¸·Î µÒ
+	// GPU handle ê³„ì‚°
+	// GPU handleì€ í™ì´ shader-visibleì¼ ë•Œë§Œ ìœ íš¨í•˜ê²Œ ê³„ì‚°, ì•„ë‹ˆë©´ 0ìœ¼ë¡œ ë‘ 
 	if (_isShaderVisible)
 	{
 		out_gpu_handle = _descriptorHeap->GetGPUDescriptorHandleForHeapStart();
@@ -40,7 +40,7 @@ bool DescriptorManager::allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& out_cpu
 	}
 	else
 	{
-		out_gpu_handle.ptr = 0; // ¸í½ÃÀûÀ¸·Î ¹«È¿È­ (½Ç¼ö »ç¿ë ¹æÁö)
+		out_gpu_handle.ptr = 0; // ëª…ì‹œì ìœ¼ë¡œ ë¬´íš¨í™” (ì‹¤ìˆ˜ ì‚¬ìš© ë°©ì§€)
 	}
 
 	_currentIndex++;

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "AnimationComponent.h"
 #include "ReadGLTFMesh.h"
 #include "GameObject.h"
@@ -21,11 +21,11 @@ void AnimationComponent::late_update(float deltaTime)
 		return;
 	}
 
-	// ÇöÀç ¾Ö´Ï¸ŞÀÌ¼Ç ½Ã°£ °»½Å
+	// í˜„ì¬ ì• ë‹ˆë©”ì´ì…˜ ì‹œê°„ ê°±ì‹ 
 	_nowAnimationTime += deltaTime * _animationSpeed;
 	float timeBeforeUpdate = _nowAnimationTime;
 
-	// ¾Ö´Ï¸ŞÀÌ¼Ç ¸®¼Ò½º Ã£±â
+	// ì• ë‹ˆë©”ì´ì…˜ ë¦¬ì†ŒìŠ¤ ì°¾ê¸°
 	auto it = _animResources.find(_currentName);
 	if (it == _animResources.end())
 	{
@@ -40,22 +40,22 @@ void AnimationComponent::late_update(float deltaTime)
 	}
 
 
-	// ¾Ö´Ï¸ŞÀÌ¼Ç ¾÷µ¥ÀÌÆ® ¹× º» Çà·Ä °è»ê
-	// [¼öÁ¤] ¾Ö´Ï¸ŞÀÌ¼Ç ¾÷µ¥ÀÌÆ® ¹× º» Çà·Ä °è»ê
+	// ì• ë‹ˆë©”ì´ì…˜ ì—…ë°ì´íŠ¸ ë° ë³¸ í–‰ë ¬ ê³„ì‚°
+	// [ìˆ˜ì •] ì• ë‹ˆë©”ì´ì…˜ ì—…ë°ì´íŠ¸ ë° ë³¸ í–‰ë ¬ ê³„ì‚°
 	if (_bonePaletteSize > 0)
 	{
-		// 1. CPU ¸Ş¸ğ¸®(_boneTransforms º¤ÅÍ)¿¡ »À´ë ¾Ö´Ï¸ŞÀÌ¼Ç °á°ú¸¦ ¸ÕÀú °è»êÇÕ´Ï´Ù. -> _boneTransforms ÀÌ°Ç ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ®¸¶´Ù ÇÏ³ª¾¿ µû·Î µé°íÀÖÀ½
+		// 1. CPU ë©”ëª¨ë¦¬(_boneTransforms ë²¡í„°)ì— ë¼ˆëŒ€ ì• ë‹ˆë©”ì´ì…˜ ê²°ê³¼ë¥¼ ë¨¼ì € ê³„ì‚°í•©ë‹ˆë‹¤. -> _boneTransforms ì´ê±´ ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ë§ˆë‹¤ í•˜ë‚˜ì”© ë”°ë¡œ ë“¤ê³ ìˆìŒ
 		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
 
-		// 2. ¼±Çü ÇÒ´ç±â Ã¢±¸¿¡ °¡¼­ "³ª ÀÌ¸¸Å­ ¸Ş¸ğ¸® ÇÊ¿äÇØ!" ÇÏ°í Áï½Ã ºô·Á¿À±â (¿À¹öÇìµå 0) -> GPU¿¡ ¿Ã¸± »À´ë Çà·Ä µ¥ÀÌÅÍ Å©±â¸¸Å­ ºô·Á¿À±â
+		// 2. ì„ í˜• í• ë‹¹ê¸° ì°½êµ¬ì— ê°€ì„œ "ë‚˜ ì´ë§Œí¼ ë©”ëª¨ë¦¬ í•„ìš”í•´!" í•˜ê³  ì¦‰ì‹œ ë¹Œë ¤ì˜¤ê¸° (ì˜¤ë²„í—¤ë“œ 0) -> GPUì— ì˜¬ë¦´ ë¼ˆëŒ€ í–‰ë ¬ ë°ì´í„° í¬ê¸°ë§Œí¼ ë¹Œë ¤ì˜¤ê¸°
 		auto alloc = GameFramework::instance()->linear_allocator()->allocate(_bonePaletteSize);
 
 		if (alloc.cpuPtr != nullptr)
 		{
-			// 3. ºô·Á¿Â CPU Æ÷ÀÎÅÍ À§Ä¡¿¡ °è»êÇØµĞ »À´ë º¤ÅÍ µ¥ÀÌÅÍ¸¦ ÂÓ º¹»çÇØ ³Ö½À´Ï´Ù. -> CPU ¸Ş¸ğ¸®¿¡ »À´ë Çà·Ä µ¥ÀÌÅÍ¸¦ º¹»ç
+			// 3. ë¹Œë ¤ì˜¨ CPU í¬ì¸í„° ìœ„ì¹˜ì— ê³„ì‚°í•´ë‘” ë¼ˆëŒ€ ë²¡í„° ë°ì´í„°ë¥¼ ì«™ ë³µì‚¬í•´ ë„£ìŠµë‹ˆë‹¤. -> CPU ë©”ëª¨ë¦¬ì— ë¼ˆëŒ€ í–‰ë ¬ ë°ì´í„°ë¥¼ ë³µì‚¬
 			memcpy(alloc.cpuPtr, _boneTransforms.data(), _bonePaletteSize);
 
-			// 4. ·»´õ·¯°¡ ¾µ ¼ö ÀÖ°Ô ¹æ±İ ÇÒ´ç¹ŞÀº GPU °¡»ó ÁÖ¼ÒÇ¥¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù. -> GPU °¡»ó ÁÖ¼Ò ¾÷µ¥ÀÌÆ®
+			// 4. ë Œë”ëŸ¬ê°€ ì“¸ ìˆ˜ ìˆê²Œ ë°©ê¸ˆ í• ë‹¹ë°›ì€ GPU ê°€ìƒ ì£¼ì†Œí‘œë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤. -> GPU ê°€ìƒ ì£¼ì†Œ ì—…ë°ì´íŠ¸
 			_currentBoneGPUAddr = alloc.gpuAddr;
 		}
 	}
@@ -65,11 +65,11 @@ void AnimationComponent::late_update(float deltaTime)
 	//	glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _mapped_bone_data, _isLoop);
 	//}
 
-	// DW¼³¸í : ÀÌÁ¦ ¾Ö´Ï¸ŞÀÌ¼Ç ¾÷µ¥ÀÌÆ®¿¡ Áö±İ µé°íÀÖ´Â »À´ë Çà·Ä º¤ÅÍ¸¦ ³Ñ°Ü¼­ °»½ÅÇÏµµ·Ï ÇÔ -> ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ®°¡ »À´ë Çà·ÄÀ» °ü¸®ÇÏ´Â ÇüÅÂ·Î º¯°æ
+	// DWì„¤ëª… : ì´ì œ ì• ë‹ˆë©”ì´ì…˜ ì—…ë°ì´íŠ¸ì— ì§€ê¸ˆ ë“¤ê³ ìˆëŠ” ë¼ˆëŒ€ í–‰ë ¬ ë²¡í„°ë¥¼ ë„˜ê²¨ì„œ ê°±ì‹ í•˜ë„ë¡ í•¨ -> ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ê°€ ë¼ˆëŒ€ í–‰ë ¬ì„ ê´€ë¦¬í•˜ëŠ” í˜•íƒœë¡œ ë³€ê²½
 	//glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
 
 
-	// Á¾·á ÆÇÁ¤
+	// ì¢…ë£Œ íŒì •
 	if (!_isLoop && _nowAnimationTime < timeBeforeUpdate) {
 		_isFinished = true;
 	}
@@ -84,10 +84,10 @@ void AnimationComponent::add_animation(const std::string& want_name, const std::
 		return;
 	}
 
-	// 1. ½ÇÁ¦ ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌ¸§ °áÁ¤
+	// 1. ì‹¤ì œ ì• ë‹ˆë©”ì´ì…˜ ì´ë¦„ ê²°ì •
 	std::string targetName = actualAnimName.empty() ? want_name : actualAnimName;
 
-	// [°ËÁõ] ½ÇÁ¦ ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌ¸§ÀÌ ÀÖ´ÂÁö È®ÀÎ
+	// [ê²€ì¦] ì‹¤ì œ ì• ë‹ˆë©”ì´ì…˜ ì´ë¦„ì´ ìˆëŠ”ì§€ í™•ì¸
 	if (!gltf_mesh->has_animation(targetName)) {
 		auto names = gltf_mesh->get_animation_names();
 		if (!names.empty()) {
@@ -96,19 +96,19 @@ void AnimationComponent::add_animation(const std::string& want_name, const std::
 		}
 	}
 
-	// 3. ÃÖÁ¾ ¸ÅÇÎ ÀúÀå
+	// 3. ìµœì¢… ë§¤í•‘ ì €ì¥
 	_animResources[want_name] = { mesh, targetName };
 }
 
 void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
 {
-	// ¾Ö´Ï¸ŞÀÌ¼Ç ¹«½ÃÇÒ °´Ã¼¶ó¸é? ±×³É ³ª°¡±â
+	// ì• ë‹ˆë©”ì´ì…˜ ë¬´ì‹œí•  ê°ì²´ë¼ë©´? ê·¸ëƒ¥ ë‚˜ê°€ê¸°
 	if (_animResources.empty())
 	{
 		return;
 	}
 
-	// ÀÌ¹Ì Àç»ı ÁßÀÎ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ¸é ¼³Á¤°ª¸¸ ¾÷µ¥ÀÌÆ®ÇÏ°í ¸®ÅÏ
+	// ì´ë¯¸ ì¬ìƒ ì¤‘ì¸ ì• ë‹ˆë©”ì´ì…˜ì´ë©´ ì„¤ì •ê°’ë§Œ ì—…ë°ì´íŠ¸í•˜ê³  ë¦¬í„´
 	if (_currentName == name) 
 	{
 		_isLoop = isLoop;
@@ -130,7 +130,7 @@ void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
 	_nowAnimationTime = 0.f;
 	_isFinished = false;
 
-	// ¸Ş½¬°¡ ´Ù¸£¸é ±³Ã¼
+	// ë©”ì‰¬ê°€ ë‹¤ë¥´ë©´ êµì²´
 	if (it->second.mesh != _bufferedMesh) 
 	{
 		change_mesh(it->second.mesh);
@@ -145,13 +145,13 @@ void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
 //	_nowAnimationTime = 0.f;
 //	_isLoop = isLoop;
 //
-//	// 1. ¸Ş½¬ ±³Ã¼ (µî·ÏµÈ ¸Ş½¬°¡ ÀÖÀ» °æ¿ì¸¸)
+//	// 1. ë©”ì‰¬ êµì²´ (ë“±ë¡ëœ ë©”ì‰¬ê°€ ìˆì„ ê²½ìš°ë§Œ)
 //	auto mIt = _stateMeshMap.find(state);
 //	if (mIt != _stateMeshMap.end() && mIt->second) {
 //		change_mesh(mIt->second);
 //	}
 //
-//	// 2. ¾Ö´Ï¸ŞÀÌ¼Ç ±³Ã¼
+//	// 2. ì• ë‹ˆë©”ì´ì…˜ êµì²´
 //	auto aIt = _stateAnimMap.find(state);
 //	if (aIt != _stateAnimMap.end()) {
 //		change_animation(aIt->second);
@@ -193,20 +193,20 @@ void AnimationComponent::change_mesh(const std::shared_ptr<Mesh>& want_mesh)
 	}
 	_nowAnimationTime = 0.f;
 
-	// DW¼³¸í : ¿©±â¼­ ¾Ö´Ï¸ŞÀÌ¼ÇÀ» ¸Ş½¬ÀÇ »ÀÀÇ °³¼ö¿¡ ¸Â°Ô ÃÊ±âÈ­ ÇØÁÜ
+	// DWì„¤ëª… : ì—¬ê¸°ì„œ ì• ë‹ˆë©”ì´ì…˜ì„ ë©”ì‰¬ì˜ ë¼ˆì˜ ê°œìˆ˜ì— ë§ê²Œ ì´ˆê¸°í™” í•´ì¤Œ
 	create_bone_palette_buffer(want_mesh);
 
 
-	// »õ·Î¿î ¸Ş½¬¿¡ ¸Â°Ô »À´ë Çà·ÄÀ» ¸¸µé±â
+	// ìƒˆë¡œìš´ ë©”ì‰¬ì— ë§ê²Œ ë¼ˆëŒ€ í–‰ë ¬ì„ ë§Œë“¤ê¸°
 	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(want_mesh);
 	DirectX::XMFLOAT4X4 identity_matrix;
 	DirectX::XMStoreFloat4x4(&identity_matrix, DirectX::XMMatrixIdentity());
 	_boneTransforms.assign(gltf_mesh->get_joint_count(), identity_matrix);	 // assign -> clear + resize
 
-	// ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ®¿¡¼­ ¾Ö´Ï¸ŞÀÌ¼Ç ÇÏ±â À§ÇÑ ÃÊ±âÈ­ ÀÛ¾÷
+	// ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ì—ì„œ ì• ë‹ˆë©”ì´ì…˜ í•˜ê¸° ìœ„í•œ ì´ˆê¸°í™” ì‘ì—…
 	gltf_mesh->nodes_inout_set(_nodes);
 
-	// ÇöÀç ¹öÆÛ°¡ ÀÌ ¸Ş½¬¿ëÀÓÀ» ±â·Ï
+	// í˜„ì¬ ë²„í¼ê°€ ì´ ë©”ì‰¬ìš©ì„ì„ ê¸°ë¡
 	_bufferedMesh = want_mesh;
 }
 
@@ -215,14 +215,14 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(want_mesh);
 	if (gltf_mesh == nullptr)
 	{
-		// »À°¡ ¾ø´Â ÀÏ¹İ ¸Ş½¬ÀÌ°Å³ª Ä³½ºÆÃ ½ÇÆĞ -> ¹öÆÛ ¸¸µé ÇÊ¿ä ¾øÀ½
+		// ë¼ˆê°€ ì—†ëŠ” ì¼ë°˜ ë©”ì‰¬ì´ê±°ë‚˜ ìºìŠ¤íŒ… ì‹¤íŒ¨ -> ë²„í¼ ë§Œë“¤ í•„ìš” ì—†ìŒ
 		return;
 	}
 
 	size_t joint_size = gltf_mesh->get_joint_count();
 	UINT element_size = sizeof(DirectX::XMFLOAT4X4);
 
-	// DW¼³¸í : ´Ü¼øÈ÷ »À´ë Çà·ÄÀÇ °³¼ö * Çà·Ä Å©±â·Î ¹öÆÛ Å©±â¸¦ °è»êÇÔ
+	// DWì„¤ëª… : ë‹¨ìˆœíˆ ë¼ˆëŒ€ í–‰ë ¬ì˜ ê°œìˆ˜ * í–‰ë ¬ í¬ê¸°ë¡œ ë²„í¼ í¬ê¸°ë¥¼ ê³„ì‚°í•¨
 	_bonePaletteSize = joint_size * element_size;
 
 
@@ -233,38 +233,38 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 	//	if (_bone_palette_buffer->GetDesc().Width >= buffer_size) {
 	//		return;
 	//	}
-	//	//_bone_palette_buffer.Reset(); // ´õ Å« °ø°£ÀÌ ÇÊ¿äÇÒ ¶§¸¸ ÀçÇÒ´ç <- CJ ¼öÁ¤ : ÀÌ ÄÚµå·Î ÀÎÇØ scene ÀüÈ¯½Ã GPU°¡ ¾ÆÁ÷ ÀÌÀü ¹öÆÛ¸¦ ÀĞ´Â ÁßÀÎµ¥µµ CPU°¡ refcount¸¦ 0À¸·Î ¸¸µé¾î ¹ö¸± ¼ö ÀÖ´Â ±¸Á¶¶ó ÁÖ¼®
+	//	//_bone_palette_buffer.Reset(); // ë” í° ê³µê°„ì´ í•„ìš”í•  ë•Œë§Œ ì¬í• ë‹¹ <- CJ ìˆ˜ì • : ì´ ì½”ë“œë¡œ ì¸í•´ scene ì „í™˜ì‹œ GPUê°€ ì•„ì§ ì´ì „ ë²„í¼ë¥¼ ì½ëŠ” ì¤‘ì¸ë°ë„ CPUê°€ refcountë¥¼ 0ìœ¼ë¡œ ë§Œë“¤ì–´ ë²„ë¦´ ìˆ˜ ìˆëŠ” êµ¬ì¡°ë¼ ì£¼ì„
 	//}
 
-	// DWº­¸£±â : »À Çà·ÄÀ» ÁøÂ¥ ¹Ù²ã¾ß ÇÏ´Â °æ¿ì¿¡´Â ±â´Ù¸®°í »ı¼ºÇÏ´Â °ÍÀÌ ¾ÈÀüÇÏÁö¸¸
-	// ¸¸¾à ¹Ù²ã¾ß ÇÏ´Â »óÈ²ÀÌ ¸¹¾Æ ¹®Á¦°¡ ¹ß»ıÇÑ´Ù¸é? -> ÀÌ ³ğÀ» ¸ÕÀú Á¶Á®º¼ ¿¹Á¤
+	// DWë²¼ë¥´ê¸° : ë¼ˆ í–‰ë ¬ì„ ì§„ì§œ ë°”ê¿”ì•¼ í•˜ëŠ” ê²½ìš°ì—ëŠ” ê¸°ë‹¤ë¦¬ê³  ìƒì„±í•˜ëŠ” ê²ƒì´ ì•ˆì „í•˜ì§€ë§Œ
+	// ë§Œì•½ ë°”ê¿”ì•¼ í•˜ëŠ” ìƒí™©ì´ ë§ì•„ ë¬¸ì œê°€ ë°œìƒí•œë‹¤ë©´? -> ì´ ë†ˆì„ ë¨¼ì € ì¡°ì ¸ë³¼ ì˜ˆì •
 	//GameFramework::instance()->WaitForGpuComplete();
 
 	//if (joint_size && !_bone_palette_buffer)
 	//{
-	//	// ÀÓ½Ã °´Ã¼ÀÇ ÁÖ¼Ò¸¦ ¹Ù·Î µş ¼ö ¾øÀ¸¹Ç·Î, º¯¼ö·Î ¸ÕÀú ¸¸µé¾îµÎ±â
+	//	// ì„ì‹œ ê°ì²´ì˜ ì£¼ì†Œë¥¼ ë°”ë¡œ ë”¸ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, ë³€ìˆ˜ë¡œ ë¨¼ì € ë§Œë“¤ì–´ë‘ê¸°
 	//	CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
 	//	CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(buffer_size);
 
 	//	HRESULT hr = GameFramework::instance()->device()->CreateCommittedResource(
-	//		&heapProps,         // ÀÌÁ¦ º¯¼öÀÇ ÁÖ¼Ò¸¦ ³Ñ±â¹Ç·Î ¾ÈÀü
+	//		&heapProps,         // ì´ì œ ë³€ìˆ˜ì˜ ì£¼ì†Œë¥¼ ë„˜ê¸°ë¯€ë¡œ ì•ˆì „
 	//		D3D12_HEAP_FLAG_NONE,
-	//		&bufferDesc,        // º¯¼öÀÇ ÁÖ¼Ò
+	//		&bufferDesc,        // ë³€ìˆ˜ì˜ ì£¼ì†Œ
 	//		D3D12_RESOURCE_STATE_GENERIC_READ,
 	//		nullptr,
-	//		IID_PPV_ARGS(&_bone_palette_buffer) // ÀÌ°Å comptr¿¡ &¿¬»êÀÚ ¿À¹ö·ÎµùÀÌ µÇ¾îÀÖ¾î µ¿ÀÛÇÔ
+	//		IID_PPV_ARGS(&_bone_palette_buffer) // ì´ê±° comptrì— &ì—°ì‚°ì ì˜¤ë²„ë¡œë”©ì´ ë˜ì–´ìˆì–´ ë™ì‘í•¨
 	//	);
 
 	//	if (FAILED(hr))
 	//	{
-	//		// ¿¡·¯ Ã³¸®
+	//		// ì—ëŸ¬ ì²˜ë¦¬
 	//		return;
 	//	}
 
 	//	_bone_palette_buffer->SetName(L"BonePaletteBuffer");
 	//}
 
-	// ±âÁ¸ ¹öÆÛ´Â Áï½Ã Reset ±İÁö: GPU°¡ ¾ÆÁ÷ ÂüÁ¶ ÁßÀÏ ¼ö ÀÖÀ½
+	// ê¸°ì¡´ ë²„í¼ëŠ” ì¦‰ì‹œ Reset ê¸ˆì§€: GPUê°€ ì•„ì§ ì°¸ì¡° ì¤‘ì¼ ìˆ˜ ìˆìŒ
 	//ComPtr<ID3D12Resource> old_buffer = _bone_palette_buffer;
 
 	//CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
@@ -291,7 +291,7 @@ void AnimationComponent::create_bone_palette_buffer(const std::shared_ptr<Mesh>&
 
 	//_bone_palette_buffer = new_buffer;
 
-	//// ÀÌÀü ¹öÆÛ´Â fence ÀÌÈÄ ÇØÁ¦
+	//// ì´ì „ ë²„í¼ëŠ” fence ì´í›„ í•´ì œ
 	//if (old_buffer)
 	//{
 	//	const UINT64 fenceValue = GameFramework::instance()->next_fence_value();

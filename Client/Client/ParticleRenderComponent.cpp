@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ParticleRenderComponent.h"
 
 void ParticleRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
@@ -6,15 +6,15 @@ void ParticleRenderComponent::render(ID3D12GraphicsCommandList* commandList, UIN
     auto ps = _particleSystem;
     if (!ps || ps->get_particle_count() == 0) return;
 
-    // DX12 ·»´õ¸µ ¹«½Ã(Drop) ¿¡·¯¸¦ ¸·±â À§ÇØ ºó µ¥ÀÌÅÍ¶óµµ b0¿¡ ¹ÙÀÎµù
+    // DX12 ë Œë”ë§ ë¬´ì‹œ(Drop) ì—ëŸ¬ë¥¼ ë§‰ê¸° ìœ„í•´ ë¹ˆ ë°ì´í„°ë¼ë„ b0ì— ë°”ì¸ë”©
     if (_cbGameObjectInfo[frame_index]) {
         commandList->SetGraphicsRootConstantBufferView(0, _cbGameObjectInfo[frame_index]->GetGPUVirtualAddress());
     }
 
-    // 1. ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ ¿¬»êÇÑ CurrentBuffer¸¦ SRV(t0)·Î ¹ÙÀÎµù (Root Parameter Index 3¹ø)
+    // 1. ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ì—°ì‚°í•œ CurrentBufferë¥¼ SRV(t0)ë¡œ ë°”ì¸ë”© (Root Parameter Index 3ë²ˆ)
     commandList->SetGraphicsRootShaderResourceView(3, ps->get_current_buffer_address());
 
-    // 2. ¹öÅØ½º ¹öÆÛ ¾øÀÌ 4°³ÀÇ Á¡(Triangle Strip)À» ÆÄÆ¼Å¬ °³¼ö¸¸Å­ º¹»çÇÏ¿© ±×¸²
+    // 2. ë²„í…ìŠ¤ ë²„í¼ ì—†ì´ 4ê°œì˜ ì (Triangle Strip)ì„ íŒŒí‹°í´ ê°œìˆ˜ë§Œí¼ ë³µì‚¬í•˜ì—¬ ê·¸ë¦¼
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     commandList->DrawInstanced(4, ps->get_particle_count(), 0, 0);
 }

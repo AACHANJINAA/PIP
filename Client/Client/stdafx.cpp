@@ -1,8 +1,8 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "DDSTextureLoader12.h"
 
-/*¹öÆÛ ¸®¼Ò½º¸¦ »ı¼ºÇÏ´Â ÇÔ¼öÀÌ´Ù. ¹öÆÛÀÇ Èü À¯Çü¿¡ µû¶ó ¹öÆÛ ¸®¼Ò½º¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­ µ¥ÀÌÅÍ°¡ ÀÖÀ¸¸é ÃÊ±âÈ­
-ÇÑ´Ù.*/
+/*ë²„í¼ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤. ë²„í¼ì˜ í™ ìœ í˜•ì— ë”°ë¼ ë²„í¼ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™” ë°ì´í„°ê°€ ìˆìœ¼ë©´ ì´ˆê¸°í™”
+í•œë‹¤.*/
 ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
 	* pd3dCommandList, void* pData, UINT nBytes, D3D12_HEAP_TYPE d3dHeapType,
 	D3D12_RESOURCE_STATES d3dResourceStates, ID3D12Resource** ppd3dUploadBuffer)
@@ -27,7 +27,7 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	d3dResourceDesc.SampleDesc.Quality = 0;
 	d3dResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	d3dResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-	D3D12_RESOURCE_STATES d3dResourceInitialStates = D3D12_RESOURCE_STATE_COMMON; // DW¼³¸í : ÃÊ±â »óÅÂ ¼³Á¤ COMMONÀ¸·Î ÇÏÁö ¾ÊÀ¸¸é WARRING ¹ß»ı
+	D3D12_RESOURCE_STATES d3dResourceInitialStates = D3D12_RESOURCE_STATE_COMMON; // DWì„¤ëª… : ì´ˆê¸° ìƒíƒœ ì„¤ì • COMMONìœ¼ë¡œ í•˜ì§€ ì•Šìœ¼ë©´ WARRING ë°œìƒ
 	if (d3dHeapType == D3D12_HEAP_TYPE_UPLOAD) d3dResourceInitialStates =
 		D3D12_RESOURCE_STATE_GENERIC_READ;
 	else if (d3dHeapType == D3D12_HEAP_TYPE_READBACK) d3dResourceInitialStates =
@@ -43,20 +43,20 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 		{
 			if (ppd3dUploadBuffer)
 			{
-				//¾÷·Îµå ¹öÆÛ¸¦ »ı¼ºÇÑ´Ù. 
+				//ì—…ë¡œë“œ ë²„í¼ë¥¼ ìƒì„±í•œë‹¤. 
 				d3dHeapPropertiesDesc.Type = D3D12_HEAP_TYPE_UPLOAD;
 				pd3dDevice->CreateCommittedResource(&d3dHeapPropertiesDesc,
 					D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL,
 					__uuidof(ID3D12Resource), (void**)ppd3dUploadBuffer);
 
-				//¾÷·Îµå ¹öÆÛ¸¦ ¸ÅÇÎÇÏ¿© ÃÊ±âÈ­ µ¥ÀÌÅÍ¸¦ ¾÷·Îµå ¹öÆÛ¿¡ º¹»çÇÑ´Ù. 
+				//ì—…ë¡œë“œ ë²„í¼ë¥¼ ë§¤í•‘í•˜ì—¬ ì´ˆê¸°í™” ë°ì´í„°ë¥¼ ì—…ë¡œë“œ ë²„í¼ì— ë³µì‚¬í•œë‹¤. 
 				D3D12_RANGE d3dReadRange = { 0, 0 };
 				UINT8* pBufferDataBegin = NULL;
 				(*ppd3dUploadBuffer)->Map(0, &d3dReadRange, (void**)&pBufferDataBegin);
 				memcpy(pBufferDataBegin, pData, nBytes);
 				(*ppd3dUploadBuffer)->Unmap(0, NULL);
 
-				//¾÷·Îµå ¹öÆÛÀÇ ³»¿ëÀ» µğÆúÆ® ¹öÆÛ¿¡ º¹»çÇÑ´Ù.
+				//ì—…ë¡œë“œ ë²„í¼ì˜ ë‚´ìš©ì„ ë””í´íŠ¸ ë²„í¼ì— ë³µì‚¬í•œë‹¤.
 				pd3dCommandList->CopyResource(pd3dBuffer, *ppd3dUploadBuffer);
 
 				auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -110,7 +110,7 @@ ID3D12Resource* CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D1
 
 	D3D12_RESOURCE_DESC d3dResourceDesc;
 	::ZeroMemory(&d3dResourceDesc, sizeof(D3D12_RESOURCE_DESC));
-	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; //Upload Heap¿¡´Â ÅØ½ºÃÄ¸¦ »ı¼ºÇÒ ¼ö ¾øÀ½
+	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; //Upload Heapì—ëŠ” í…ìŠ¤ì³ë¥¼ ìƒì„±í•  ìˆ˜ ì—†ìŒ
 	d3dResourceDesc.Alignment = 0;
 	d3dResourceDesc.Width = nBytes;
 	d3dResourceDesc.Height = 1;

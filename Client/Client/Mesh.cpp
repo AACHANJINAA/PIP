@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include <algorithm>
@@ -35,19 +35,19 @@ Mesh::~Mesh()
 
 void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue)
 {
-	// ÀÌ¹Ì ¾÷·ÎµåµÇ¾ú´Ù¸é Áßº¹ ½ÇÇà ¹æÁö
+	// ì´ë¯¸ ì—…ë¡œë“œë˜ì—ˆë‹¤ë©´ ì¤‘ë³µ ì‹¤í–‰ ë°©ì§€
 	/*if (_isUploaded || _verticesDataBuffer.empty() ) return;
 	if ( 0 == _vertexStride)
 	{
-		CERROR("stride ¼³Á¤ ¾ÈµÊ")
+		CERROR("stride ì„¤ì • ì•ˆë¨")
 	}*/
-	// --- ±âÁ¸ »ı¼ºÀÚ¿¡ ÀÖ´ø GPU ¹öÆÛ »ı¼º ·ÎÁ÷ÀÌ ¿©±â·Î ÀÌÀü ---
+	// --- ê¸°ì¡´ ìƒì„±ìì— ìˆë˜ GPU ë²„í¼ ìƒì„± ë¡œì§ì´ ì—¬ê¸°ë¡œ ì´ì „ ---
 
-	// Á¤Á¡ ¹öÆÛ »ı¼º
+	// ì •ì  ë²„í¼ ìƒì„±
 	_vertexBuffer = ::CreateBufferResource(device, commandList, _vertexDataBuffer.data(), static_cast<UINT>(_vertexDataBuffer.size()),
 		D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &_vertexUploadBuffer);
 
-	// ÀÎµ¦½º ¹öÆÛ »ı¼º (ÀÎµ¦½º°¡ ÀÖ´Â °æ¿ì)
+	// ì¸ë±ìŠ¤ ë²„í¼ ìƒì„± (ì¸ë±ìŠ¤ê°€ ìˆëŠ” ê²½ìš°)
 	if (!_indices.empty())
 	{
 		_indexBuffer = ::CreateBufferResource(device, commandList, _indices.data(), 
@@ -55,7 +55,7 @@ void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandLis
 			D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, &_indexUploadBuffer);
 	}
 
-	// ¹öÆÛ ºä ¼³Á¤
+	// ë²„í¼ ë·° ì„¤ì •
 	_vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
 	_vertexBufferView.StrideInBytes = _vertexStride;
 	_vertexBufferView.SizeInBytes = static_cast<UINT>(_vertexDataBuffer.size());
@@ -67,13 +67,13 @@ void Mesh::upload_to_gpu_internal(ID3D12Device* device, ID3D12GraphicsCommandLis
 		_indexBufferView.SizeInBytes = sizeof(UINT) * static_cast<UINT>(_indices.size());
 	}
 
-	// ÀÌ°Å Áß¿ä!
+	// ì´ê±° ì¤‘ìš”!
 	/*_isUploaded = true;*/
 }
 
 std::shared_ptr<Mesh> Mesh::create_unit_cube()
 {
-	// 1. Å¥ºê Á¤Á¡ µ¥ÀÌÅÍ (8°³) - »ı¼ºÀÚ È£Ãâ ¹æ½ÄÀ¸·Î ¿À·ù ¹æÁö
+	// 1. íë¸Œ ì •ì  ë°ì´í„° (8ê°œ) - ìƒì„±ì í˜¸ì¶œ ë°©ì‹ìœ¼ë¡œ ì˜¤ë¥˜ ë°©ì§€
 	std::vector<Vertex> temp_vertices;
 	temp_vertices.emplace_back(Vertex(XMFLOAT3(-0.5f, -0.5f, -0.5f)));
 	temp_vertices.emplace_back(Vertex(XMFLOAT3(0.5f, -0.5f, -0.5f)));
@@ -84,38 +84,38 @@ std::shared_ptr<Mesh> Mesh::create_unit_cube()
 	temp_vertices.emplace_back(Vertex(XMFLOAT3(0.5f, 0.5f, 0.5f)));
 	temp_vertices.emplace_back(Vertex(XMFLOAT3(-0.5f, 0.5f, 0.5f)));
 
-	// 2. Å¥ºê ÀÎµ¦½º µ¥ÀÌÅÍ (36°³)
+	// 2. íë¸Œ ì¸ë±ìŠ¤ ë°ì´í„° (36ê°œ)
 	std::vector<UINT> temp_indices = {
-		0, 2, 1, 0, 3, 2, // ¾Õ
-		1, 2, 6, 1, 6, 5, // ¿ì
-		4, 5, 6, 4, 6, 7, // µÚ
-		0, 4, 7, 0, 7, 3, // ÁÂ
-		3, 7, 6, 3, 6, 2, // »ó
-		0, 1, 5, 0, 5, 4  // ÇÏ
+		0, 2, 1, 0, 3, 2, // ì•
+		1, 2, 6, 1, 6, 5, // ìš°
+		4, 5, 6, 4, 6, 7, // ë’¤
+		0, 4, 7, 0, 7, 3, // ì¢Œ
+		3, 7, 6, 3, 6, 2, // ìƒ
+		0, 1, 5, 0, 5, 4  // í•˜
 	};
 
 	auto mesh = std::make_shared<Mesh>();
 
-	// 3. ±âÁ¸ Mesh ½Ã½ºÅÛÀÇ µ¥ÀÌÅÍ ¹öÆÛ¿¡ ÀûÀç
+	// 3. ê¸°ì¡´ Mesh ì‹œìŠ¤í…œì˜ ë°ì´í„° ë²„í¼ì— ì ì¬
 	mesh->set_vertex_data_buffer(temp_vertices);
 	mesh->_indices = temp_indices;
 	mesh->_vertexStride = sizeof(Vertex);
 	mesh->_vertexCount = static_cast<UINT>(temp_vertices.size());
-	mesh->_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; // Å¥ºê´Â »ï°¢ÇüÀ¸·Î!
+	mesh->_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST; // íë¸ŒëŠ” ì‚¼ê°í˜•ìœ¼ë¡œ!
 
 	return mesh;
 }
 
 void Mesh::	upload_to_gpu(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT64 targetFenceValue)
 {
-	// 1. ±âÁ¸ ³»ºÎ ·ÎÁ÷(¹öÆÛ »ı¼º ¹× º¹»ç ¸í·É ±â·Ï) ½ÇÇà
+	// 1. ê¸°ì¡´ ë‚´ë¶€ ë¡œì§(ë²„í¼ ìƒì„± ë° ë³µì‚¬ ëª…ë ¹ ê¸°ë¡) ì‹¤í–‰
 	upload_to_gpu_internal(device, commandList, targetFenceValue);
 
-	// 2. [ÇÙ½É] ¸í·É ±â·Ï Á÷ÈÄ, ¸®¼Ò½º ¸Å´ÏÀúÀÇ »èÁ¦ ´ë±â¿­¿¡ µî·Ï!
+	// 2. [í•µì‹¬] ëª…ë ¹ ê¸°ë¡ ì§í›„, ë¦¬ì†ŒìŠ¤ ë§¤ë‹ˆì €ì˜ ì‚­ì œ ëŒ€ê¸°ì—´ì— ë“±ë¡!
 	auto rm = ResourceManager::instance();
 	if (_vertexUploadBuffer) {
 		rm->register_upload_buffer(_vertexUploadBuffer, targetFenceValue);
-		_vertexUploadBuffer.Reset(); // Mesh´Â ÀÌÁ¦ ¼ÒÀ¯±ÇÀ» Æ÷±âÇÔ (Å¥°¡ °ü¸®)
+		_vertexUploadBuffer.Reset(); // MeshëŠ” ì´ì œ ì†Œìœ ê¶Œì„ í¬ê¸°í•¨ (íê°€ ê´€ë¦¬)
 	}
 	if (_indexUploadBuffer) {
 		rm->register_upload_buffer(_indexUploadBuffer, targetFenceValue);
@@ -146,7 +146,7 @@ void Mesh::render(ID3D12GraphicsCommandList* commandList)
 	}
 	else
 	{
-		// [¼öÁ¤] ¹ÙÀÌÆ® Å©±â°¡ ¾Æ´Ñ, Á¤Á¡ °³¼ö¸¦ »ç¿ëÇÕ´Ï´Ù.
+		// [ìˆ˜ì •] ë°”ì´íŠ¸ í¬ê¸°ê°€ ì•„ë‹Œ, ì •ì  ê°œìˆ˜ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 		commandList->DrawInstanced(_vertexCount, 1, 0, 0);
 	}
 }
@@ -161,7 +161,7 @@ void Mesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList)
 	if (!_indices.empty())
 	{
 		commandList->IASetIndexBuffer(&_indexBufferView);
-		// 3°³ÀÇ Cascade¸¦ ÇÑ ¹ø¿¡ ±×¸®±â À§ÇØ ÀÎ½ºÅÏ½º °³¼ö¸¦ 3À¸·Î ¼³Á¤
+		// 3ê°œì˜ Cascadeë¥¼ í•œ ë²ˆì— ê·¸ë¦¬ê¸° ìœ„í•´ ì¸ìŠ¤í„´ìŠ¤ ê°œìˆ˜ë¥¼ 3ìœ¼ë¡œ ì„¤ì •
 		commandList->DrawIndexedInstanced((UINT)_indices.size(), 1, 0, 0, 0);
 	}
 	else
@@ -172,31 +172,31 @@ void Mesh::render_CascadeShadowMap(ID3D12GraphicsCommandList* commandList)
 
 BoundingOrientedBox Mesh::CreateOOBB(XMFLOAT3 min, XMFLOAT3 max)
 {
-	// Áß½ÉÁ¡ °è»ê (min°ú maxÀÇ Áß°£°ª)
+	// ì¤‘ì‹¬ì  ê³„ì‚° (minê³¼ maxì˜ ì¤‘ê°„ê°’)
 	XMFLOAT3 center(
 		(min.x + max.x) * 0.5f,
 		(min.y + max.y) * 0.5f,
 		(min.z + max.z) * 0.5f
 	);
 
-	// Å©±â °è»ê (max - min °ªÀÇ Àı¹İ)
+	// í¬ê¸° ê³„ì‚° (max - min ê°’ì˜ ì ˆë°˜)
 	XMFLOAT3 extents(
 		(max.x - min.x) * 0.5f,
 		(max.y - min.y) * 0.5f,
 		(max.z - min.z) * 0.5f
 	);
 
-	// ±âº» ¹æÇâ (È¸Àü ¾øÀ½)
+	// ê¸°ë³¸ ë°©í–¥ (íšŒì „ ì—†ìŒ)
 	XMFLOAT4 orientation(0.0f, 0.0f, 0.0f, 1.0f);
 
-	// OOBB »ı¼º
+	// OOBB ìƒì„±
 	BoundingOrientedBox oobb(center, extents, orientation);
 	return oobb;
 }
 
 DebugCollisionBox::DebugCollisionBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4 color)
 {
-	// Á¤Á¡ 8°³ÀÇ À§Ä¡¸¦ ¼³Á¤, µğ¹ö±×¿ëÀ¸·Î ÀÏ¹İ ³ë¸Ö/ÅºÁ¨Æ®/ÅØ½ºÃ³ ÁÂÇ¥¸¦ »ç¿ëÇÕ´Ï´Ù.
+	// ì •ì  8ê°œì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •, ë””ë²„ê·¸ìš©ìœ¼ë¡œ ì¼ë°˜ ë…¸ë©€/íƒ„ì  íŠ¸/í…ìŠ¤ì²˜ ì¢Œí‘œë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 	std::vector<IlluminatedVertex> temp_vertices;
 	// For a debug box, we use placeholder normals, texCoords, and tangents.
 	XMFLOAT3 default_normal = XMFLOAT3(0.0f, 1.0f, 0.0f); // Up direction
@@ -214,7 +214,7 @@ DebugCollisionBox::DebugCollisionBox(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 
 	set_vertex_data_buffer(temp_vertices);
 
-	// ÀÎµ¦½º µ¥ÀÌÅÍ »ı¼º
+	// ì¸ë±ìŠ¤ ë°ì´í„° ìƒì„±
 	_indices.resize(24);
 	_indices[0] = 0; _indices[1] = 1; _indices[2] = 1; _indices[3] = 2;
 	_indices[4] = 2; _indices[5] = 3; _indices[6] = 3; _indices[7] = 0;
@@ -232,7 +232,7 @@ DebugCollisionBox::~DebugCollisionBox()
 
 DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, XMFLOAT4 color)
 {
-	// 1. ÀÔ·Â¹ŞÀº Vertex µ¥ÀÌÅÍ¸¦ IlluminatedVertex µ¥ÀÌÅÍ·Î º¯È¯ÇÏ¿© ÀÓ½Ã ÀúÀå
+	// 1. ì…ë ¥ë°›ì€ Vertex ë°ì´í„°ë¥¼ IlluminatedVertex ë°ì´í„°ë¡œ ë³€í™˜í•˜ì—¬ ì„ì‹œ ì €ì¥
 	std::vector<IlluminatedVertex> temp_vertices;
 	temp_vertices.reserve(vertices.size());
 	XMFLOAT3 default_normal = XMFLOAT3(0.0f, 1.0f, 0.0f); // Default normal
@@ -246,7 +246,7 @@ DebugWireframeMesh::DebugWireframeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsC
 
 	set_vertex_data_buffer(temp_vertices);
 
-	// ÀÎµ¦½º µ¥ÀÌÅÍ º¯È¯ (»ï°¢Çü -> ¶óÀÎ ¸®½ºÆ®)
+	// ì¸ë±ìŠ¤ ë°ì´í„° ë³€í™˜ (ì‚¼ê°í˜• -> ë¼ì¸ ë¦¬ìŠ¤íŠ¸)
 	_indices.reserve(indices.size() * 2);
 	for (size_t i = 0; i < indices.size(); i += 3)
 	{

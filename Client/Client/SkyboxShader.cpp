@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "SkyboxShader.h"
 
 const std::string& SkyboxShader::pso_name() const
@@ -7,7 +7,7 @@ const std::string& SkyboxShader::pso_name() const
 	return name;
 }
 
-// skybox´Â À§Ä¡¸¸ ÇÊ¿ä
+// skyboxëŠ” ìœ„ì¹˜ë§Œ í•„ìš”
 D3D12_INPUT_LAYOUT_DESC SkyboxShader::create_input_layout()
 {
 	static const D3D12_INPUT_ELEMENT_DESC d3d_input_element_descs[] =
@@ -32,9 +32,9 @@ D3D12_DEPTH_STENCIL_DESC SkyboxShader::create_depth_stencil_state()
 {
 	D3D12_DEPTH_STENCIL_DESC depth_stencil_desc = Shader::create_depth_stencil_state();
 
-	// ½ºÄ«ÀÌ¹Ú½º´Â ±íÀÌ Å×½ºÆ®´Â ÇÏµÇ, ¾²±â´Â ÇÏÁö ¾ÊÀ½
+	// ìŠ¤ì¹´ì´ë°•ìŠ¤ëŠ” ê¹Šì´ í…ŒìŠ¤íŠ¸ëŠ” í•˜ë˜, ì“°ê¸°ëŠ” í•˜ì§€ ì•ŠìŒ
 	depth_stencil_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	// ÀÌ¹Ì ±×·ÁÁø ÇÈ¼¿°ú ±íÀÌ°¡ °°°Å³ª ´õ °¡±î¿ï ¶§¸¸ ±×¸²
+	// ì´ë¯¸ ê·¸ë ¤ì§„ í”½ì…€ê³¼ ê¹Šì´ê°€ ê°™ê±°ë‚˜ ë” ê°€ê¹Œìš¸ ë•Œë§Œ ê·¸ë¦¼
 	depth_stencil_desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	return depth_stencil_desc;
@@ -43,7 +43,7 @@ D3D12_DEPTH_STENCIL_DESC SkyboxShader::create_depth_stencil_state()
 D3D12_RASTERIZER_DESC SkyboxShader::create_rasterizer_state()
 {
 	D3D12_RASTERIZER_DESC rasterizer_desc = Shader::create_rasterizer_state();
-	// ½ºÄ«ÀÌ¹Ú½º´Â NoneÀ¸·Î ¼³Á¤
+	// ìŠ¤ì¹´ì´ë°•ìŠ¤ëŠ” Noneìœ¼ë¡œ ì„¤ì •
 	rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE;
 	return rasterizer_desc;
 }

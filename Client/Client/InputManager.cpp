@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "InputManager.h"
 
 #include "GameFramework.h"
@@ -21,17 +21,17 @@ void InputManager::initialize(HWND hWnd)
 
 void InputManager::Update()
 {
-    // ÀÌ È®ÀÎ ·ÎÁ÷À» Ãß°¡ÇÕ´Ï´Ù.
+    // ì´ í™•ì¸ ë¡œì§ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
     if (!GameFramework::instance()->m_bIsWindowActive)
     {
-        // ¼±ÅÃÀûÀ¸·Î, Æ÷Ä¿½º¸¦ ´Ù½Ã ¾òÀ» ¶§ Å°°¡ "°íÁ¤"µÇ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇØ Å° »óÅÂ Àç¼³Á¤ ÇÕ´Ï´Ù.
+        // ì„ íƒì ìœ¼ë¡œ, í¬ì»¤ìŠ¤ë¥¼ ë‹¤ì‹œ ì–»ì„ ë•Œ í‚¤ê°€ "ê³ ì •"ë˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ í‚¤ ìƒíƒœ ì¬ì„¤ì • í•©ë‹ˆë‹¤.
         for (auto& i : m_eKeyState)
 		{
 			i = KEY_STATE::NONE;
         }
-        return; // Ã¢ÀÌ È°¼ºÈ­µÇÁö ¾ÊÀº °æ¿ì ÀÔ·Â Ã³¸®¸¦ °Ç³Ê¶İ´Ï´Ù.
+        return; // ì°½ì´ í™œì„±í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì…ë ¥ ì²˜ë¦¬ë¥¼ ê±´ë„ˆëœë‹ˆë‹¤.
     }
-    if (!_isShowCusor) // ¾Èº¸ÀÏ ¶§
+    if (!_isShowCusor) // ì•ˆë³´ì¼ ë•Œ
     {
 
     }
@@ -73,46 +73,46 @@ POINT InputManager::GetMouseDelta()
 
 void InputManager::ChangeShowCusor()
 {
-    // »óÅÂ ¹Ù²Ù°í Àû¿ë
+    // ìƒíƒœ ë°”ê¾¸ê³  ì ìš©
     _isShowCusor = !_isShowCusor;
     ShowCursor(_isShowCusor);
 
-    // »óÅÂ ¹Ù²Ü ¶§ ¸¶¿ì½º ÆÅ! Æ¢´Â °Í ¹æÁö
+    // ìƒíƒœ ë°”ê¿€ ë•Œ ë§ˆìš°ìŠ¤ íŒ! íŠ€ëŠ” ê²ƒ ë°©ì§€
     RECT rect;
     ::GetWindowRect(m_hWnd, &rect);
 
-    // ÇöÀç È­¸éÀÇ Áß¾Ó°ª ±¸ÇÏ±â
+    // í˜„ì¬ í™”ë©´ì˜ ì¤‘ì•™ê°’ êµ¬í•˜ê¸°
     int centerX = (rect.left + rect.right) / 2;
     int centerY = (rect.top + rect.bottom) / 2;
 
-    // ¸¶¿ì½º Áß¾ÓÀ¸·Î ÀÌµ¿
+    // ë§ˆìš°ìŠ¤ ì¤‘ì•™ìœ¼ë¡œ ì´ë™
     SetCursorPos(centerX, centerY);
 }
 
 void InputManager::MouseFixCenter()
 {
-    if (!_isShowCusor) // ¸¶¿ì½º ¾Èº¸ÀÏ ¶§´Â È­¸é Áß¾ÓÀ¸·Î °íÁ¤½ÃÅ°±â
+    if (!_isShowCusor) // ë§ˆìš°ìŠ¤ ì•ˆë³´ì¼ ë•ŒëŠ” í™”ë©´ ì¤‘ì•™ìœ¼ë¡œ ê³ ì •ì‹œí‚¤ê¸°
     {
         RECT rect;
         ::GetWindowRect(m_hWnd, &rect);
 
-        // ÇöÀç È­¸éÀÇ Áß¾Ó°ª ±¸ÇÏ±â
+        // í˜„ì¬ í™”ë©´ì˜ ì¤‘ì•™ê°’ êµ¬í•˜ê¸°
         int centerX = (rect.left + rect.right) / 2;
         int centerY = (rect.top + rect.bottom) / 2;
 
-        // ÇöÀç ¸¶¿ì½º À§Ä¡
+        // í˜„ì¬ ë§ˆìš°ìŠ¤ ìœ„ì¹˜
         POINT currentPos;
         GetCursorPos(&currentPos);
 
-        // ÇöÀç ¸¶¿ì½º À§Ä¡
+        // í˜„ì¬ ë§ˆìš°ìŠ¤ ìœ„ì¹˜
         m_ptMousePos.x = currentPos.x;
         m_ptMousePos.y = currentPos.y;
 
-        // È­¸é Áß¾Ó À§Ä¡
+        // í™”ë©´ ì¤‘ì•™ ìœ„ì¹˜
         m_ptOldMousePos.x = centerX;
         m_ptOldMousePos.y = centerY;
 
-        // ¸¶¿ì½º Áß¾ÓÀ¸·Î ÀÌµ¿
+        // ë§ˆìš°ìŠ¤ ì¤‘ì•™ìœ¼ë¡œ ì´ë™
         SetCursorPos(centerX, centerY);
     }
 }

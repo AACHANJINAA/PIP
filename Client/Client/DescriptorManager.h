@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 class DescriptorManager : public Singleton<DescriptorManager>
 {
@@ -9,10 +9,10 @@ class DescriptorManager : public Singleton<DescriptorManager>
 public:
 	void initialize(ID3D12Device* device, UINT descriptor_count=2048);
 
-	// »ç¿ë °¡´ÉÇÑ µğ½ºÅ©¸³ÅÍ ÇÚµé(CPU / GPU ½Ö)À» ÇÒ´ç
+	// ì‚¬ìš© ê°€ëŠ¥í•œ ë””ìŠ¤í¬ë¦½í„° í•¸ë“¤(CPU / GPU ìŒ)ì„ í• ë‹¹
 	bool allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE & out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE & out_gpu_handle);
 
-	// µğ½ºÅ©¸³ÅÍ Èü ¹İÈ¯
+	// ë””ìŠ¤í¬ë¦½í„° í™ ë°˜í™˜
 	ID3D12DescriptorHeap* get_descriptor_heap() const { return _descriptorHeap.Get(); }
 	UINT get_descriptor_size() const { return _descriptorSize; }
 
@@ -23,5 +23,5 @@ private:
 	UINT _currentIndex = 0;
 	bool _isShaderVisible = false;
 
-	// TODO: ÃßÈÄ free_descriptor ±¸ÇöÀ» À§ÇØ free list µîÀ» Ãß°¡ °¡´É
+	// TODO: ì¶”í›„ free_descriptor êµ¬í˜„ì„ ìœ„í•´ free list ë“±ì„ ì¶”ê°€ ê°€ëŠ¥
 };

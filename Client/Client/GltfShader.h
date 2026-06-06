@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Shader.h"
 class GltfShader : public Shader
 {
@@ -6,7 +6,7 @@ public:
 	GltfShader() = default;
 	virtual ~GltfShader() = default;
 
-	// ShaderÀ»(¸¦) ÅëÇØ »ó¼ÓµÊ
+	// Shaderì„(ë¥¼) í†µí•´ ìƒì†ë¨
 	const std::string& pso_name() const override;
 	D3D12_INPUT_LAYOUT_DESC create_input_layout() override;
 	D3D12_RASTERIZER_DESC create_rasterizer_state();

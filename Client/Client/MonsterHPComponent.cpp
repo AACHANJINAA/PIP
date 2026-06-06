@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "MonsterHPComponent.h"
 #include "GameObject.h"
 #include "TransformComponent.h"
@@ -15,8 +15,8 @@ MonsterHPComponent::~MonsterHPComponent()
 
 void MonsterHPComponent::late_update(float deltaTime)
 {
-	// ÀÌ ºÎºĞÀÇ ÁÖ¼®À» Ç®¸é HP º¯È­ ÈÄ ÀÏÁ¤ ½Ã°£ µ¿¾È¸¸ º¸¿©ÁÖ´Â ·ÎÁ÷ÀÌ È°¼ºÈ­ µÊ
-    // º¸¿©ÁÖ±â À§ÇØ¼­ ÁÖ¼® °É¾îµÒ
+	// ì´ ë¶€ë¶„ì˜ ì£¼ì„ì„ í’€ë©´ HP ë³€í™” í›„ ì¼ì • ì‹œê°„ ë™ì•ˆë§Œ ë³´ì—¬ì£¼ëŠ” ë¡œì§ì´ í™œì„±í™” ë¨
+    // ë³´ì—¬ì£¼ê¸° ìœ„í•´ì„œ ì£¼ì„ ê±¸ì–´ë‘ 
     if (_isHpChanged)
     {
         if (_nowHpTimer < _chageHpTimer)

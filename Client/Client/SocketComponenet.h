@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Behavior.h"
 class Mesh;
 class GameObject;
@@ -19,8 +19,8 @@ public:
 public:
 	void late_update(float deltaTime) override;
 
-	// ¿¬°áÇÏ±â (¿¬°áÇÒ »À ÀÌ¸§, ¿¬°áÇÒ ¸Ş½¬(ex : °Ë), ·ÎÄÃ º¯È¯) , ¼ÒÄÏ ÀÌ¸§À» ¹İÈ¯ÇØÁÜ
-	// ¸Ş½¬¸¦ ¿¬°áÇÏ¸é ÇØ´ç ¸Ş½¬¸¦ °¡Áø °ÔÀÓ¿ÀºêÁ§Æ®°¡ »õ·Î »ı¼ºµÇ¾î ¿ÀºêÁ§Æ® ¸Å´ÏÀú¿¡ µî·Ï ¹× ¼ÒÄÏ¿¡ ¿¬°áµÊ
+	// ì—°ê²°í•˜ê¸° (ì—°ê²°í•  ë¼ˆ ì´ë¦„, ì—°ê²°í•  ë©”ì‰¬(ex : ê²€), ë¡œì»¬ ë³€í™˜) , ì†Œì¼“ ì´ë¦„ì„ ë°˜í™˜í•´ì¤Œ
+	// ë©”ì‰¬ë¥¼ ì—°ê²°í•˜ë©´ í•´ë‹¹ ë©”ì‰¬ë¥¼ ê°€ì§„ ê²Œì„ì˜¤ë¸Œì íŠ¸ê°€ ìƒˆë¡œ ìƒì„±ë˜ì–´ ì˜¤ë¸Œì íŠ¸ ë§¤ë‹ˆì €ì— ë“±ë¡ ë° ì†Œì¼“ì— ì—°ê²°ë¨
 	void add_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,
 		XMFLOAT3 loacl_pos = {0.f,0.f,0.f}, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
 
@@ -30,24 +30,24 @@ public:
 	                                                           XMFLOAT3 local_rotation = {0.f, 0.f, 0.f},
 	                                                           XMFLOAT3 local_scale = {1.f, 1.f, 1.f});
 
-	// ¿¬°áµÈ °Íµé ¼öÁ¤
+	// ì—°ê²°ëœ ê²ƒë“¤ ìˆ˜ì •
 	void fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh,
 		XMFLOAT3 loacl_pos = { 0.f,0.f,0.f }, XMFLOAT3 loacl_rotation = { 0.f,0.f,0.f }, XMFLOAT3 loacl_scale = { 1.f,1.f,1.f });
 
-	// ¿¬°áµÈ °Íµé »èÁ¦
+	// ì—°ê²°ëœ ê²ƒë“¤ ì‚­ì œ
 	void delete_connecting(std::string socket_name);
 
-	void set_isFollowAnimation(bool isFollow) { _isFollowAnimation = isFollow; } // ¾Ö´Ï¸ŞÀÌ¼Ç µû¶ó¼­ ¿òÁ÷ÀÏ·¡ ¸»·¡
+	void set_isFollowAnimation(bool isFollow) { _isFollowAnimation = isFollow; } // ì• ë‹ˆë©”ì´ì…˜ ë”°ë¼ì„œ ì›€ì§ì¼ë˜ ë§ë˜
 
 
 private:
-	// °´Ã¼ Ãß°¡ ÇÔ¼ö
+	// ê°ì²´ ì¶”ê°€ í•¨ìˆ˜
 	void create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale);
 
 private:
 
-	// ¿¬°áµÈ °´Ã¼µé (¼³Á¤ÇÑ ÀÌ¸§, °´Ã¼)
-	// °ü¸®ÇØÁÖ´Â °ÍÀº (¼³Á¤ÇÑ ¼ÒÄÏ ÀÌ¸§, ¿¬°áÇÒ »À, °´Ã¼)
+	// ì—°ê²°ëœ ê°ì²´ë“¤ (ì„¤ì •í•œ ì´ë¦„, ê°ì²´)
+	// ê´€ë¦¬í•´ì£¼ëŠ” ê²ƒì€ (ì„¤ì •í•œ ì†Œì¼“ ì´ë¦„, ì—°ê²°í•  ë¼ˆ, ê°ì²´)
 	std::vector<std::pair<std::string, ConnectingSocketInfo>> _connectedObjects;
 
 	bool _isFollowAnimation = true;

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include "Camera.h"
 //#include "Shader.h"
 //#include <iostream>
@@ -34,14 +34,14 @@
 //
 //void Camera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 //{
-//	// ºä Çà·Ä°ú ÇÁ·ÎÁ§¼Ç Çà·ÄÀ» TransposeÇÏ¿© ¸ÊÇÎµÈ ¹öÆÛ¿¡ º¹»ç
+//	// ë·° í–‰ë ¬ê³¼ í”„ë¡œì ì…˜ í–‰ë ¬ì„ Transposeí•˜ì—¬ ë§µí•‘ëœ ë²„í¼ì— ë³µì‚¬
 //	XMStoreFloat4x4(&m_pcbMappedCamera->m_xmf4x4View, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4View)));
 //	XMStoreFloat4x4(&m_pcbMappedCamera->m_xmf4x4Projection, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4Projection)));
 //	m_pcbMappedCamera->m_f4Position = XMFLOAT4(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z, 1.0f);
 //
-//	// [Áß¿ä] ½ÇÁ¦ ¹ÙÀÎµùÀº ÀÌ ÇÔ¼ö ¶Ç´Â º°µµÀÇ Set... ÇÔ¼ö¿¡¼­!
+//	// [ì¤‘ìš”] ì‹¤ì œ ë°”ì¸ë”©ì€ ì´ í•¨ìˆ˜ ë˜ëŠ” ë³„ë„ì˜ Set... í•¨ìˆ˜ì—ì„œ!
 //	D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbCamera->GetGPUVirtualAddress();
-//	pd3dCommandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress); // b1¿¡ ¹ÙÀÎµù
+//	pd3dCommandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress); // b1ì— ë°”ì¸ë”©
 //}
 //
 //void Camera::ReleaseShaderVariables()
@@ -152,19 +152,19 @@
 //{
 //	Rotate();
 //
-//	// ·è¾÷¶óÀÌÆ® º¤ÅÍ¸¦ Á¤±ÔÁ÷±³ÇÏ°Ô ¸¸µé±â
+//	// ë£©ì—…ë¼ì´íŠ¸ ë²¡í„°ë¥¼ ì •ê·œì§êµí•˜ê²Œ ë§Œë“¤ê¸°
 //	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
 //	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
 //	m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
 //
-//	// Ä«¸Ş¶ó ·è¾÷¶óÀÌÆ®ÀÇ ÀüÄ¡ Æ÷Áö¼ÇÀº ¸¶ÀÌ³Ê½º
-//	// Ä«¸Ş¶ó º¯È¯ Çà·Ä
+//	// ì¹´ë©”ë¼ ë£©ì—…ë¼ì´íŠ¸ì˜ ì „ì¹˜ í¬ì§€ì…˜ì€ ë§ˆì´ë„ˆìŠ¤
+//	// ì¹´ë©”ë¼ ë³€í™˜ í–‰ë ¬
 //
 //	m_xmf4x4View._11 = m_xmf3Right.x; m_xmf4x4View._21 = m_xmf3Right.y; m_xmf4x4View._31 = m_xmf3Right.z;
 //	m_xmf4x4View._12 = m_xmf3Up.x; m_xmf4x4View._22 = m_xmf3Up.y; m_xmf4x4View._32 = m_xmf3Up.z;
 //	m_xmf4x4View._13 = m_xmf3Look.x; m_xmf4x4View._23 = m_xmf3Look.y; m_xmf4x4View._33 = m_xmf3Look.z;
 //	m_xmf4x4View._41 = -Vector3::DotProduct(m_xmf3Position, m_xmf3Right); m_xmf4x4View._42 = -Vector3::DotProduct(m_xmf3Position, m_xmf3Up); m_xmf4x4View._43 = -Vector3::DotProduct(m_xmf3Position, m_xmf3Look);
-//	// Åõ¿µÇà·Äµé
+//	// íˆ¬ì˜í–‰ë ¬ë“¤
 //	m_xmf4x4Projection = m_xmf4x4Projection;
 //
 //	_4x4World._11 = m_xmf3Right.x; _4x4World._12 = m_xmf3Right.y; _4x4World._13 = m_xmf3Right.z;

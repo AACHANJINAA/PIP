@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "MonsterHPUIRenderComponent.h"
 #include "MonsterHPComponent.h"
 #include "GameFramework.h"
@@ -14,7 +14,7 @@ MonsterHPUIRenderComponent::MonsterHPUIRenderComponent()
     initialize_constant_buffer();
     initialize_vertex_buffer();
 
-    // ¿ì¸® ÇÁ·¹ÀÓ¿öÅ©¿¡¼­ µ¿ÀÛÇÏ±â À§ÇØ ºó ±øÅë ¸Ş½¬ µîÀå!
+    // ìš°ë¦¬ í”„ë ˆì„ì›Œí¬ì—ì„œ ë™ì‘í•˜ê¸° ìœ„í•´ ë¹ˆ ê¹¡í†µ ë©”ì‰¬ ë“±ì¥!
     auto mesh = std::make_shared<Mesh>();
 
     set_mesh(mesh);
@@ -34,10 +34,10 @@ MonsterHPUIRenderComponent::~MonsterHPUIRenderComponent()
 
 void MonsterHPUIRenderComponent::initialize_constant_buffer()
 {
-    // 1. »ó¼ö ¹öÆÛ Å©±â °è»ê (256¹ÙÀÌÆ® ¹è¼ö Á¤·Ä ÇÊ¼ö!)
+    // 1. ìƒìˆ˜ ë²„í¼ í¬ê¸° ê³„ì‚° (256ë°”ì´íŠ¸ ë°°ìˆ˜ ì •ë ¬ í•„ìˆ˜!)
     uint32_t cbSize = (sizeof(HPBarCB) + 255) & ~255;
 
-    // 2. ¸®¼Ò½º ¼Ó¼º ¼³Á¤ (Upload Heap)
+    // 2. ë¦¬ì†ŒìŠ¤ ì†ì„± ì„¤ì • (Upload Heap)
     D3D12_HEAP_PROPERTIES heapProps = {};
     heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
 
@@ -51,17 +51,17 @@ void MonsterHPUIRenderComponent::initialize_constant_buffer()
     resDesc.SampleDesc.Count = 1;
     resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-    // 3. ¸®¼Ò½º »ı¼º
+    // 3. ë¦¬ì†ŒìŠ¤ ìƒì„±
     GameFramework::instance()->device().Get()->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &resDesc,
         D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
         IID_PPV_ARGS(&_cbResource)
     );
 
-    // ÃÖÃÊ 1È¸ Map (CPU ÁÖ¼Ò È¹µæ)
-    // ¾÷·Îµå ÈüÀº UnmapÀ» ÇÏÁö ¾Ê°í °è¼Ó ¿­¾îµÎ°í ½áµµ ¹«¹æ
+    // ìµœì´ˆ 1íšŒ Map (CPU ì£¼ì†Œ íšë“)
+    // ì—…ë¡œë“œ í™ì€ Unmapì„ í•˜ì§€ ì•Šê³  ê³„ì† ì—´ì–´ë‘ê³  ì¨ë„ ë¬´ë°©
     _cbResource->Map(0, nullptr, reinterpret_cast<void**>(&_cbMappedData));
 
-    // ±âº»°ªÀ¸·Î ÃÊ±â µ¥ÀÌÅÍ Ã¤¿ì±â
+    // ê¸°ë³¸ê°’ìœ¼ë¡œ ì´ˆê¸° ë°ì´í„° ì±„ìš°ê¸°
     HPBarCB initData;
     initData.size = _size;
     initData.padding[0] = 0.0f;
@@ -75,7 +75,7 @@ void MonsterHPUIRenderComponent::initialize_vertex_buffer()
 
     uint32_t vbSize = sizeof(HPBarVertex) * _maxMonsterCount;
 
-    // ¸®¼Ò½º ¼³Á¤
+    // ë¦¬ì†ŒìŠ¤ ì„¤ì •
     CD3DX12_HEAP_PROPERTIES uploadHeap(D3D12_HEAP_TYPE_UPLOAD);
     auto vbDesc = CD3DX12_RESOURCE_DESC::Buffer(vbSize);
 
@@ -95,43 +95,43 @@ void MonsterHPUIRenderComponent::upload_shader()
     cbData.padding[0] = 0.0f;
     cbData.padding[1] = 0.0f;
 
-    // ¸â¹ö º¯¼öÀÎ _mappedData¿¡ Á÷Á¢ º¹»ç
+    // ë©¤ë²„ ë³€ìˆ˜ì¸ _mappedDataì— ì§ì ‘ ë³µì‚¬
     ::memcpy(_cbMappedData, &cbData, sizeof(HPBarCB));
 }
 
 
 void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT frame_index)
 {
-    upload_shader(); // °øÅëÀûÀÎ ui Å©±â ¼³Á¤ ¾÷·Îµå
+    upload_shader(); // ê³µí†µì ì¸ ui í¬ê¸° ì„¤ì • ì—…ë¡œë“œ
 
     auto allMonsters = ObjectManager::instance()->find_by_layer(LayerManager::instance()->get_layer_value("Enemy"));
 
     std::vector<HPBarVertex> vtxBuffer;
-    vtxBuffer.reserve(allMonsters.size()); // ÀÏ´Ü ÀüÃ¼ Å©±â ¸¸Å­ ¿¹¾à
+    vtxBuffer.reserve(allMonsters.size()); // ì¼ë‹¨ ì „ì²´ í¬ê¸° ë§Œí¼ ì˜ˆì•½
 
-    UINT activeCount = 0; // ±×¸®´Â °³¼ö
+    UINT activeCount = 0; // ê·¸ë¦¬ëŠ” ê°œìˆ˜
 
     for (const auto& monsterObj : allMonsters)
     {
         auto hpComponent = monsterObj->get_component<MonsterHPComponent>();
-        if (hpComponent && hpComponent.get()->get_is_changed_hp()) // hp°¡ ¹Ù²î¾úÀ¸´Ï Ç¥½ÃÇØ¾ß ÇÏ´Â °æ¿ìÀÓ
+        if (hpComponent && hpComponent.get()->get_is_changed_hp()) // hpê°€ ë°”ë€Œì—ˆìœ¼ë‹ˆ í‘œì‹œí•´ì•¼ í•˜ëŠ” ê²½ìš°ì„
         {
             if (activeCount >= _maxMonsterCount)
             {
-                // 1000¸¶¸® ÀÌ»óÀº ¾È±×¸²
-                CLOG("HP Bar ¹öÆÛ ÃÖ´ëÄ¡ ÃÊ°ú!"); // ÇÊ¿ä ½Ã °æ°í ·Î±×
+                // 1000ë§ˆë¦¬ ì´ìƒì€ ì•ˆê·¸ë¦¼
+                CLOG("HP Bar ë²„í¼ ìµœëŒ€ì¹˜ ì´ˆê³¼!"); // í•„ìš” ì‹œ ê²½ê³  ë¡œê·¸
                 break;
             }
 
             if (hpComponent.get()->is_dead()) 
             {
-                continue; // Á×¾úÀ¸¸é ·»´õ¸µ ¾ÈÇÔ
+                continue; // ì£½ì—ˆìœ¼ë©´ ë Œë”ë§ ì•ˆí•¨
             }
-            // »ó¼ö ¹öÆÛ ¾÷µ¥ÀÌÆ®
+            // ìƒìˆ˜ ë²„í¼ ì—…ë°ì´íŠ¸
             HPBarVertex v;
-            // ¸ó½ºÅÍ ¸Ó¸® À§·Î ¶ç¿ì±â À§ÇØ YÃà¿¡ ¿ÀÇÁ¼Â(¿¹: 2.0f) Ãß°¡
+            // ëª¬ìŠ¤í„° ë¨¸ë¦¬ ìœ„ë¡œ ë„ìš°ê¸° ìœ„í•´ Yì¶•ì— ì˜¤í”„ì…‹(ì˜ˆ: 2.0f) ì¶”ê°€
             DirectX::XMFLOAT3 pos = hpComponent.get()->game_object().get()->transform().get()->get_world_position();
-			float yOffset = monsterObj->transform()->get_world_scale().y; // ÇÊ¿ä¿¡ µû¶ó Á¶Àı
+			float yOffset = monsterObj->transform()->get_world_scale().y; // í•„ìš”ì— ë”°ë¼ ì¡°ì ˆ
             v.pos = { pos.x, pos.y + yOffset, pos.z };
             v.hpRatio = hpComponent.get()->get_hp_ratio();
             vtxBuffer.push_back(v);
@@ -140,34 +140,34 @@ void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, 
         }
 	}
 
-    // ±×¸± °Ô ¾øÀ¸¸é ¸®ÅÏ
+    // ê·¸ë¦´ ê²Œ ì—†ìœ¼ë©´ ë¦¬í„´
     if (vtxBuffer.empty()) return;
 
     ::memcpy(_vbMappedData, vtxBuffer.data(), sizeof(HPBarVertex) * activeCount);
 
-    // 4. ·çÆ® ½Ã±×´ÏÃ³ ¸Å°³º¯¼ö ¹ÙÀÎµù
-    // [½½·Ô 1] HP¹Ù °øÅë »ó¼ö Á¤º¸ (b2)
+    // 4. ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ë§¤ê°œë³€ìˆ˜ ë°”ì¸ë”©
+    // [ìŠ¬ë¡¯ 1] HPë°” ê³µí†µ ìƒìˆ˜ ì •ë³´ (b2)
     commandList->SetGraphicsRootConstantBufferView(0, _cbResource->GetGPUVirtualAddress());
 
-    // [½½·Ô 2] ÅØ½ºÃ³ µğ½ºÅ©¸³ÅÍ Å×ÀÌºí (t0: ¾Ë¸ÍÀÌ, t1: Å×µÎ¸®) ¹ÙÀÎµù
-    // ÅØ½ºÃ³¸¦ µé°í ÀÖ´Â ResourceManager³ª º°µµÀÇ ÇÚµé °ü¸®ÀÚ¸¦ ÅëÇØ ¹ÙÀÎµùÇÏ¼¼¿ä.
+    // [ìŠ¬ë¡¯ 2] í…ìŠ¤ì²˜ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸” (t0: ì•Œë§¹ì´, t1: í…Œë‘ë¦¬) ë°”ì¸ë”©
+    // í…ìŠ¤ì²˜ë¥¼ ë“¤ê³  ìˆëŠ” ResourceManagerë‚˜ ë³„ë„ì˜ í•¸ë“¤ ê´€ë¦¬ìë¥¼ í†µí•´ ë°”ì¸ë”©í•˜ì„¸ìš”.
     // auto handle = _textureTable->get_gpu_handle(); 
     // commandList->SetGraphicsRootDescriptorTable(2, handle);
 
-    // 5. IA(Input Assembler) ´Ü°è ¼³Á¤
+    // 5. IA(Input Assembler) ë‹¨ê³„ ì„¤ì •
     D3D12_VERTEX_BUFFER_VIEW vbView = {};
     vbView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
     vbView.StrideInBytes = sizeof(HPBarVertex);
-    vbView.SizeInBytes = sizeof(HPBarVertex) * activeCount; // ½ÇÁ¦ Ã¤¿öÁø °³¼ö¸¸Å­¸¸ Àü¼Û
+    vbView.SizeInBytes = sizeof(HPBarVertex) * activeCount; // ì‹¤ì œ ì±„ì›Œì§„ ê°œìˆ˜ë§Œí¼ë§Œ ì „ì†¡
 
-    // [·çÆ® ÆÄ¶ó¹ÌÅÍ ½½·Ô 2] t0: HP ¹Ù ¾Ë¸ÍÀÌ
+    // [ë£¨íŠ¸ íŒŒë¼ë¯¸í„° ìŠ¬ë¡¯ 2] t0: HP ë°” ì•Œë§¹ì´
     if (_texture_HP_Bar)
     {
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles = { _texture_HP_Bar->cpu_handle };
         Renderer::instance()->bind_texture_table(commandList, 2, handles);
     }
 
-    // [·çÆ® ÆÄ¶ó¹ÌÅÍ ½½·Ô 3] t1: HP ¹Ù ¹è°æ(Å×µÎ¸®)
+    // [ë£¨íŠ¸ íŒŒë¼ë¯¸í„° ìŠ¬ë¡¯ 3] t1: HP ë°” ë°°ê²½(í…Œë‘ë¦¬)
     if (_texture_HP_back)
     {
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles = { _texture_HP_back->cpu_handle };
@@ -177,7 +177,7 @@ void MonsterHPUIRenderComponent::render(ID3D12GraphicsCommandList* commandList, 
     commandList->IASetVertexBuffers(0, 1, &vbView);
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-    // 6. µå·Î¿ì Äİ! (instanceCount´Â 1·Î °íÁ¤, Á¡ÀÇ °³¼ö¸¸ ³Ñ±è)
+    // 6. ë“œë¡œìš° ì½œ! (instanceCountëŠ” 1ë¡œ ê³ ì •, ì ì˜ ê°œìˆ˜ë§Œ ë„˜ê¹€)
     commandList->DrawInstanced(activeCount, 1, 0, 0);
 }
 

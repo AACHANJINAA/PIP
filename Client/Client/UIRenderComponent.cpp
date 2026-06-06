@@ -1,11 +1,11 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "UIRenderComponent.h"
 #include "GameFramework.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "Mesh.h"
 
-// static ¸â¹ö ÃÊ±âÈ­
+// static ë©¤ë²„ ì´ˆê¸°í™”
 ComPtr<ID3D12Resource> UIRenderComponent::_cb_screen_info = nullptr;
 CbScreenInfo* UIRenderComponent::_mapped_screen_info = nullptr;
 bool UIRenderComponent::_screen_info_initialized = false;
@@ -14,7 +14,7 @@ UIRenderComponent::UIRenderComponent()
 {
     set_name("UIRenderComponent");
     set_pso_name("ui");
-    set_frustum_culling_enabled(false);  // UI´Â frustum culling ²û
+    set_frustum_culling_enabled(false);  // UIëŠ” frustum culling ë”
 
     initialize_constant_buffers();
     initialize_quad_mesh();
@@ -39,7 +39,7 @@ void UIRenderComponent::initialize_constant_buffers()
     auto device = GameFramework::instance()->device();
     if (!device) return;
 
-    // UI ¿ä¼Ò »ó¼ö ¹öÆÛ »ı¼º
+    // UI ìš”ì†Œ ìƒìˆ˜ ë²„í¼ ìƒì„±
     D3D12_HEAP_PROPERTIES heap_props = {};
     heap_props.Type = D3D12_HEAP_TYPE_UPLOAD;
     heap_props.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -117,8 +117,8 @@ void UIRenderComponent::initialize_screen_info()
     {
         _cb_screen_info->Map(0, nullptr, reinterpret_cast<void**>(&_mapped_screen_info));
 
-        // È­¸é Å©±â ¼³Á¤ (GameFramework¿¡¼­ °¡Á®¿Ã ¼ö ÀÖÀ¸¸é °¡Á®¿À±â)
-        _mapped_screen_info->screen_width = FRAME_BUFFER_WIDTH;  // TODO: ½ÇÁ¦ È­¸é Å©±â·Î ¼öÁ¤
+        // í™”ë©´ í¬ê¸° ì„¤ì • (GameFrameworkì—ì„œ ê°€ì ¸ì˜¬ ìˆ˜ ìˆìœ¼ë©´ ê°€ì ¸ì˜¤ê¸°)
+        _mapped_screen_info->screen_width = FRAME_BUFFER_WIDTH;  // TODO: ì‹¤ì œ í™”ë©´ í¬ê¸°ë¡œ ìˆ˜ì •
         _mapped_screen_info->screen_height = FRAME_BUFFER_HEIGHT;
         _mapped_screen_info->padding[0] = 0.0f;
         _mapped_screen_info->padding[1] = 0.0f;
@@ -129,10 +129,10 @@ void UIRenderComponent::initialize_screen_info()
 
 void UIRenderComponent::initialize_quad_mesh()
 {
-    // UIQuadMesh »ı¼º
+    // UIQuadMesh ìƒì„±
     auto mesh = std::make_shared<UIQuadMesh>();
 
-    // Áï½Ã GPU ¾÷·Îµå
+    // ì¦‰ì‹œ GPU ì—…ë¡œë“œ
     auto device = GameFramework::instance()->device();
     auto commandList = GameFramework::instance()->command_list();
     if (device && commandList)
@@ -155,26 +155,26 @@ void UIRenderComponent::render(ID3D12GraphicsCommandList* commandList, UINT fram
 {
     if (!_mesh || !_mapped_ui_element) return;
 
-    // UI ¿ä¼Ò µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ®
+    // UI ìš”ì†Œ ë°ì´í„° ì—…ë°ì´íŠ¸
     _mapped_ui_element->screen_position = _screen_position;
     _mapped_ui_element->size = _size;
     _mapped_ui_element->color = _color;
     _mapped_ui_element->uv_offset = _uv_offset;
     _mapped_ui_element->uv_scale = _uv_scale;
-    _mapped_ui_element->use_texture = (_texture_info != nullptr) ? 1 : 0;  // ¡ç Ãß°¡
-    _mapped_ui_element->padding = 0.0f;  // ¡ç Ãß°¡
+    _mapped_ui_element->use_texture = (_texture_info != nullptr) ? 1 : 0;  // â† ì¶”ê°€
+    _mapped_ui_element->padding = 0.0f;  // â† ì¶”ê°€
 
-    // »ó¼ö ¹öÆÛ ¹ÙÀÎµù
+    // ìƒìˆ˜ ë²„í¼ ë°”ì¸ë”©
     commandList->SetGraphicsRootConstantBufferView(0, _cb_screen_info->GetGPUVirtualAddress());
     commandList->SetGraphicsRootConstantBufferView(1, _cb_ui_element->GetGPUVirtualAddress());
 
-    // ÅØ½ºÃ³ ¹ÙÀÎµù (ÀÖÀ» ¶§¸¸)
+    // í…ìŠ¤ì²˜ ë°”ì¸ë”© (ìˆì„ ë•Œë§Œ)
     if (_texture_info)
     {
         std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> handles = { _texture_info->cpu_handle };
         Renderer::instance()->bind_texture_table(commandList, 2, handles);
     }
 
-    // ¸Ş½Ã ·»´õ¸µ
+    // ë©”ì‹œ ë Œë”ë§
     _mesh->render(commandList);
 }

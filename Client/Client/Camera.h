@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 //struct CB_CAMERA_INFO
 //{
@@ -36,9 +36,9 @@
 //	float						m_ElapseTime{};
 //
 //public:
-//	XMFLOAT4X4					_4x4World = Matrix4x4::Identity(); // Ä«¸Ş¶ó ¿ùµåÇà·Ä
-//	XMFLOAT4X4					m_xmf4x4View = Matrix4x4::Identity(); // Ä«¸Ş¶ó º¯È¯ Çà·Ä
-//	XMFLOAT4X4					m_xmf4x4Projection = Matrix4x4::Identity(); // ¿ø±ÙÅõ¿µ Çà·Ä
+//	XMFLOAT4X4					_4x4World = Matrix4x4::Identity(); // ì¹´ë©”ë¼ ì›”ë“œí–‰ë ¬
+//	XMFLOAT4X4					m_xmf4x4View = Matrix4x4::Identity(); // ì¹´ë©”ë¼ ë³€í™˜ í–‰ë ¬
+//	XMFLOAT4X4					m_xmf4x4Projection = Matrix4x4::Identity(); // ì›ê·¼íˆ¬ì˜ í–‰ë ¬
 //	D3D12_VIEWPORT				m_d3dViewport;
 //	D3D12_RECT					m_d3dScissorRect;
 //
@@ -47,7 +47,7 @@
 //	CB_CAMERA_INFO* m_pcbMappedCamera = nullptr;
 //
 //public:
-//	//Ä«¸Ş¶óÀÇ Á¤º¸¸¦ ¼ÎÀÌ´õ ÇÁ·Î±×·¥¿¡°Ô Àü´ŞÇÏ±â À§ÇÑ »ó¼ö ¹öÆÛ¸¦ »ı¼ºÇÏ°í °»½ÅÇÑ´Ù. 
+//	//ì¹´ë©”ë¼ì˜ ì •ë³´ë¥¼ ì…°ì´ë” í”„ë¡œê·¸ë¨ì—ê²Œ ì „ë‹¬í•˜ê¸° ìœ„í•œ ìƒìˆ˜ ë²„í¼ë¥¼ ìƒì„±í•˜ê³  ê°±ì‹ í•œë‹¤. 
 //	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 //	virtual void ReleaseShaderVariables();
 //	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);

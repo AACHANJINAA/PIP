@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "TimerManager.h"
 #include "Scene.h"
 #include "LinearAllocator.h"
@@ -6,17 +6,17 @@
 class ReplicationSystem;
 class GameFramework : public Singleton<GameFramework>
 {
-	friend Singleton<GameFramework>; // ½Ì±ÛÅæ Á¢±Ù Çã¿ë
+	friend Singleton<GameFramework>; // ì‹±ê¸€í†¤ ì ‘ê·¼ í—ˆìš©
 private:
 
-	bool _isFullscreenToggle = false; // ÀüÃ¼È­¸é ÀüÈ¯
+	bool _isFullscreenToggle = false; // ì „ì²´í™”ë©´ ì „í™˜
 
-	bool _isBorderless = false;   // Å×µÎ¸® ¾ø´Â Ã¢ ¸ğµåÀÎÁö ¿©ºÎ
-	RECT _windowRect = {};        // ¿ø·¡ Ã¢ ¸ğµåÀÏ ¶§ÀÇ Ã¢ Å©±â¿Í À§Ä¡ ÀúÀå¿ë
+	bool _isBorderless = false;   // í…Œë‘ë¦¬ ì—†ëŠ” ì°½ ëª¨ë“œì¸ì§€ ì—¬ë¶€
+	RECT _windowRect = {};        // ì›ë˜ ì°½ ëª¨ë“œì¼ ë•Œì˜ ì°½ í¬ê¸°ì™€ ìœ„ì¹˜ ì €ì¥ìš©
 
 	bool _isRendering = false;
 
-	bool _isCheckCameraPos = false; // Ä«¸Ş¶ó À§Ä¡ Ã¼Å© ¿©ºÎ
+	bool _isCheckCameraPos = false; // ì¹´ë©”ë¼ ìœ„ì¹˜ ì²´í¬ ì—¬ë¶€
 	
 	HINSTANCE _hInstance = nullptr;
 	HWND _hWnd = nullptr;
@@ -47,14 +47,14 @@ private:
 	ComPtr<ID3D12CommandQueue> _commandQueue;
 	std::array<ComPtr<ID3D12CommandAllocator>, SWAP_CHAIN_BUFFERS> _commandAllocators;
 	ComPtr<ID3D12GraphicsCommandList> _commandList;
-	// [Ãß°¡] ¸®¼Ò½º ¾÷·Îµå Àü¿ë ÇÒ´ç±â
-	// (¸¸¾à ´õºí ¹öÆÛ¸µ ÁßÀÌ¶ó¸é ¹è¿­·Î ¼±¾ğ: _uploadAllocators[SWAP_CHAIN_BUFFERS])
+	// [ì¶”ê°€] ë¦¬ì†ŒìŠ¤ ì—…ë¡œë“œ ì „ìš© í• ë‹¹ê¸°
+	// (ë§Œì•½ ë”ë¸” ë²„í¼ë§ ì¤‘ì´ë¼ë©´ ë°°ì—´ë¡œ ì„ ì–¸: _uploadAllocators[SWAP_CHAIN_BUFFERS])
 	std::array<ComPtr<ID3D12CommandAllocator>, SWAP_CHAIN_BUFFERS> _uploadAllocators;
 
 
-	ComPtr<ID3D12PipelineState> _pipelineState; // ±âÁ¸ PSO
+	ComPtr<ID3D12PipelineState> _pipelineState; // ê¸°ì¡´ PSO
 
-	ComPtr<ID3D12PipelineState> _glbPipelineState; // GLB ½ºÅ°´×/ÅØ½ºÃÄ¿ë PSO
+	ComPtr<ID3D12PipelineState> _glbPipelineState; // GLB ìŠ¤í‚¤ë‹/í…ìŠ¤ì³ìš© PSO
 
 	ComPtr<ID3D12Fence> _fence;
 	std::array<UINT64, SWAP_CHAIN_BUFFERS> _fenceValues;
@@ -66,22 +66,22 @@ private:
 
 	std::unique_ptr<Scene> _scene;
 
-	float _physicsTimeAccumulator = 0.0f; // ¹°¸® ¾÷µ¥ÀÌÆ® ½Ã°£ ´©Àû º¯¼ö
+	float _physicsTimeAccumulator = 0.0f; // ë¬¼ë¦¬ ì—…ë°ì´íŠ¸ ì‹œê°„ ëˆ„ì  ë³€ìˆ˜
 
-	UINT64 _currentFenceValue = 0; // Ææ½º °ªÀ» ÀüÃ¼ÀûÀ¸·Î °ü¸®ÇÒ Ä«¿îÅÍ º¯¼ö
+	UINT64 _currentFenceValue = 0; // íœìŠ¤ ê°’ì„ ì „ì²´ì ìœ¼ë¡œ ê´€ë¦¬í•  ì¹´ìš´í„° ë³€ìˆ˜
 
 	UINT64 _totalFrameCount = 0;
 
-	// [Ãß°¡] ¸®ÇÃ¸®ÄÉÀÌ¼Ç ½Ã½ºÅÛ ¼ÒÀ¯ (unique_ptr·Î »ı¸íÁÖ±â °ü¸®)
+	// [ì¶”ê°€] ë¦¬í”Œë¦¬ì¼€ì´ì…˜ ì‹œìŠ¤í…œ ì†Œìœ  (unique_ptrë¡œ ìƒëª…ì£¼ê¸° ê´€ë¦¬)
 	std::unique_ptr<ReplicationSystem> _replicationSystem;
 
-	// [Ãß°¡] ÇÁ·¹ÀÓ´ç »ó¼ö ¹öÆÛ ÇÒ´çÀ» À§ÇÑ ¼±Çü ÇÒ´ç±â
+	// [ì¶”ê°€] í”„ë ˆì„ë‹¹ ìƒìˆ˜ ë²„í¼ í• ë‹¹ì„ ìœ„í•œ ì„ í˜• í• ë‹¹ê¸°
 	std::unique_ptr<LinearAllocator> _linearAllocator;
 
 	void update_game_logic(float deltaTime);
 	void update_physics(float elapsedTime);
 
-	// DW¼³¸í & ÀÛ¸í : À©µµ¿ì Å¸ÀÌÆ²¿¡ ÇÁ·¹ÀÓ ·¹ÀÌÆ®, Ä«¸Ş¶ó Á¤º¸, ÇÃ·¹ÀÌ¾î À§Ä¡ Ç¥½ÃÇÏ´Â ÇÔ¼ö
+	// DWì„¤ëª… & ì‘ëª… : ìœˆë„ìš° íƒ€ì´í‹€ì— í”„ë ˆì„ ë ˆì´íŠ¸, ì¹´ë©”ë¼ ì •ë³´, í”Œë ˆì´ì–´ ìœ„ì¹˜ í‘œì‹œí•˜ëŠ” í•¨ìˆ˜
 	void view_window_title_bar_with_frame_rate_and_camera_info_and_main_player_pos();
 
 	GameFramework();
@@ -89,7 +89,7 @@ private:
 public:
 
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);
-	// ÇÁ·¹ÀÓ¿öÅ©¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö(ÁÖ À©µµ¿ì°¡ »ı¼ºµÇ¸é È£ÃâµÊ)
+	// í”„ë ˆì„ì›Œí¬ë¥¼ ì´ˆê¸°í™”í•˜ëŠ” í•¨ìˆ˜(ì£¼ ìœˆë„ìš°ê°€ ìƒì„±ë˜ë©´ í˜¸ì¶œë¨)
 
 	void OnDestroy();
 
@@ -100,26 +100,26 @@ public:
 	void CreateRtvAndDsvDescriptorHeaps();
 	void CreateDirect3DDevice();
 	void CreateCommandQueueAndList();
-	// ½º¿Ò Ã¼ÀÎ, µğ¹ÙÀÌ½º, ¼­¼úÀÚ Èü, ¸í·É Å¥/ÇÒ´çÀÚ/¸®½ºÆ®¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+	// ìŠ¤ì™‘ ì²´ì¸, ë””ë°”ì´ìŠ¤, ì„œìˆ ì í™, ëª…ë ¹ í/í• ë‹¹ì/ë¦¬ìŠ¤íŠ¸ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
 
-	void ChangeSwapChainState(); // µû¶óÇÏ±â 5, ÀüÃ¼È­¸é <-> Ã¢ ¸ğµå ÀüÈ¯ ½Ã È£Ãâ
+	void ChangeSwapChainState(); // ë”°ë¼í•˜ê¸° 5, ì „ì²´í™”ë©´ <-> ì°½ ëª¨ë“œ ì „í™˜ ì‹œ í˜¸ì¶œ
 
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
-	// ·»´õ Å¸°Ù ºä¿Í ±íÀÌ-½ºÅÙ½Ç ºä¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+	// ë Œë” íƒ€ê²Ÿ ë·°ì™€ ê¹Šì´-ìŠ¤í…ì‹¤ ë·°ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
 
 	void BuildObjects();
 	void ReleaseObjects();
-	// ·»´õ¸µÇÒ ¸Ş½¬¿Í °ÔÀÓ °´Ã¼¸¦ »ı¼ºÇÏ°í ¼Ò¸êÇÏ´Â ÇÔ¼ö
+	// ë Œë”ë§í•  ë©”ì‰¬ì™€ ê²Œì„ ê°ì²´ë¥¼ ìƒì„±í•˜ê³  ì†Œë©¸í•˜ëŠ” í•¨ìˆ˜
 
-	//ÇÁ·¹ÀÓ¿öÅ©ÀÇ ÇÙ½É(»ç¿ëÀÚ ÀÔ·Â, ¾Ö´Ï¸ŞÀÌ¼Ç, ·»´õ¸µ)À» ±¸¼ºÇÏ´Â ÇÔ¼ö
+	//í”„ë ˆì„ì›Œí¬ì˜ í•µì‹¬(ì‚¬ìš©ì ì…ë ¥, ì• ë‹ˆë©”ì´ì…˜, ë Œë”ë§)ì„ êµ¬ì„±í•˜ëŠ” í•¨ìˆ˜
 	void ProcessNetwork();
 	void ProcessInput();
 	/*void AnimateObjects();*/
 	void FrameAdvance();
 
 	void WaitForGpuComplete();
-	//CPU¿Í GPU¸¦ µ¿±âÈ­ÇÏ´Â ÇÔ¼ö
+	//CPUì™€ GPUë¥¼ ë™ê¸°í™”í•˜ëŠ” í•¨ìˆ˜
 
 	ComPtr<ID3D12GraphicsCommandList>& command_list() { return _commandList; }
 	ComPtr<ID3D12Device>& device() { return _device; }
@@ -129,10 +129,10 @@ public:
 	ComPtr<ID3D12CommandQueue>& command_queue() { return _commandQueue; }
 	HWND hWnd() const { return _hWnd; }
 
-	// [Ãß°¡] ¸®ÇÃ¸®ÄÉÀÌ¼Ç ½Ã½ºÅÛ Á¢±ÙÀÚ
+	// [ì¶”ê°€] ë¦¬í”Œë¦¬ì¼€ì´ì…˜ ì‹œìŠ¤í…œ ì ‘ê·¼ì
 	ReplicationSystem* get_replication_system() const { return _replicationSystem.get(); }
 
-	// [Ãß°¡] ¼±Çü ÇÒ´ç±â Á¢±ÙÀÚ
+	// [ì¶”ê°€] ì„ í˜• í• ë‹¹ê¸° ì ‘ê·¼ì
 	LinearAllocator* linear_allocator() const { return _linearAllocator.get(); }
 
 	UINT64 next_fence_value() const;
@@ -142,14 +142,14 @@ public:
 	UINT64 get_total_frame_count() const { return _totalFrameCount; }
 
 public:
-	bool m_bIsWindowActive = true; // Ã¢ È°¼ºÈ­ »óÅÂ¸¦ ÀúÀåÇÒ ÇÃ·¡±×
+	bool m_bIsWindowActive = true; // ì°½ í™œì„±í™” ìƒíƒœë¥¼ ì €ì¥í•  í”Œë˜ê·¸
 
-	enum class ClientState // Å¬¶óÀÌ¾ğÆ®ÀÇ »óÅÂ¸¦ ³ªÅ¸³»´Â ¿­°ÅÇü
+	enum class ClientState // í´ë¼ì´ì–¸íŠ¸ì˜ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚´ëŠ” ì—´ê±°í˜•
 	{
 		Lobby,
 		InGame
 	};
-	ClientState m_eClientState = ClientState::Lobby; // ±âº» »óÅÂ´Â ·Îºñ
+	ClientState m_eClientState = ClientState::Lobby; // ê¸°ë³¸ ìƒíƒœëŠ” ë¡œë¹„
 public:
 	void MoveToNextFrame();
 

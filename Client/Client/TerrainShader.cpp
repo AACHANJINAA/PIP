@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "TerrainShader.h"
 
 #include "ShadowManager.h"
@@ -52,12 +52,12 @@ std::string TerrainShader::required_root_signature() const
 
 void TerrainShader::update_per_object(ID3D12GraphicsCommandList* commandList, Renderer* renderer, GameObject* gameObject)
 {
-    // ±âº» ¿ÀºêÁ§Æ®º° ¾÷µ¥ÀÌÆ® (Transform, Material µî)
+    // ê¸°ë³¸ ì˜¤ë¸Œì íŠ¸ë³„ ì—…ë°ì´íŠ¸ (Transform, Material ë“±)
     Shader::update_per_object(commandList, renderer, gameObject);
 
-    // [Á¶¸í ¹ÙÀÎµù Ãß°¡] - RootParameter[3]¿¡ b3·Î ¹ÙÀÎµù
+    // [ì¡°ëª… ë°”ì¸ë”© ì¶”ê°€] - RootParameter[3]ì— b3ë¡œ ë°”ì¸ë”©
     LightManager::instance()->bind(commandList, 3);
 
-    // ±×¸²ÀÚ ¸®¼Ò½º ¹ÙÀÎµù (Terrain ·çÆ® ½Ã±×´ÏÃ³: Param 6 == b5, Param 7 == t11)
+    // ê·¸ë¦¼ìž ë¦¬ì†ŒìŠ¤ ë°”ì¸ë”© (Terrain ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜: Param 6 == b5, Param 7 == t11)
     ShadowManager::instance()->bind_for_lighting(commandList, 6, 7, renderer);
 }

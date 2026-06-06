@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -13,19 +13,19 @@ private:
     ~ImGuiManager() override = default;
 
 public:
-    // GameFramework::OnCreate¿¡¼­ È£ÃâµÉ ÃÊ±âÈ­ ÇÔ¼ö
+    // GameFramework::OnCreateì—ì„œ í˜¸ì¶œë  ì´ˆê¸°í™” í•¨ìˆ˜
     bool initialize(HWND hWnd, ID3D12Device* device, ID3D12CommandQueue* commandQueue, int numFramesInFlight, DXGI_FORMAT rtvFormat);
 
-    // GameFramework::OnDestroy¿¡¼­ È£ÃâµÉ ÇØÁ¦ ÇÔ¼ö
+    // GameFramework::OnDestroyì—ì„œ í˜¸ì¶œë  í•´ì œ í•¨ìˆ˜
     void release();
 
-    // ¸Å ÇÁ·¹ÀÓ UI ±×¸®±â ÁØºñ (FrameAdvance ½ÃÀÛ ºÎºĞ)
+    // ë§¤ í”„ë ˆì„ UI ê·¸ë¦¬ê¸° ì¤€ë¹„ (FrameAdvance ì‹œì‘ ë¶€ë¶„)
     void new_frame();
 
-    // ·»´õ¸µ ÆÄÀÌÇÁ¶óÀÎ¿¡ ImGui ±×¸®±â ¸í·É Ãß°¡ (FrameAdvance ³¡ ºÎºĞ)
+    // ë Œë”ë§ íŒŒì´í”„ë¼ì¸ì— ImGui ê·¸ë¦¬ê¸° ëª…ë ¹ ì¶”ê°€ (FrameAdvance ë ë¶€ë¶„)
     void render(ID3D12GraphicsCommandList* commandList);
 
 private:
-    // ImGui Àü¿ë ÆùÆ® ¹× ÅØ½ºÃ³¸¦ ´ã¾ÆµÑ SRV µğ½ºÅ©¸³ÅÍ Èü
+    // ImGui ì „ìš© í°íŠ¸ ë° í…ìŠ¤ì²˜ë¥¼ ë‹´ì•„ë‘˜ SRV ë””ìŠ¤í¬ë¦½í„° í™
     ComPtr<ID3D12DescriptorHeap> _srvDescHeap;
 };

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 
 enum class TITLE_SCENE_STATE
@@ -15,7 +15,7 @@ enum class TITLE_SCENE_STATE
 class Title_Scene : public Scene
 {
 private:
-    // DW¼³¸í : Å¸ÀÌÆ² ¾À º¼°ÇÁö? -> ÀÌ°Å true ÇÏ¸é ½ÇÁ¦ Å¸ÀÌÆ² ¾À ¿¬ÃâÀ» º¼ ¼ö ÀÖ´Ù. -> µğ¹ö±ë »¡¸® ÇÏ·Á¸é false µÎ±â
+    // DWì„¤ëª… : íƒ€ì´í‹€ ì”¬ ë³¼ê±´ì§€? -> ì´ê±° true í•˜ë©´ ì‹¤ì œ íƒ€ì´í‹€ ì”¬ ì—°ì¶œì„ ë³¼ ìˆ˜ ìˆë‹¤. -> ë””ë²„ê¹… ë¹¨ë¦¬ í•˜ë ¤ë©´ false ë‘ê¸°
 	bool _isYouWantSeeTitleScene = false;
 
 public:
@@ -23,7 +23,7 @@ public:
     Title_Scene() = default;
     virtual ~Title_Scene() = default;
 
-    // --- SceneÀÇ ¼ø¼ö °¡»ó ÇÔ¼ö ¿À¹ö¶óÀÌµå ---
+    // --- Sceneì˜ ìˆœìˆ˜ ê°€ìƒ í•¨ìˆ˜ ì˜¤ë²„ë¼ì´ë“œ ---
     virtual void build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList) override;
     virtual void release_upload_buffers() override;
     virtual void scene_process(float deltaTime) override;
@@ -37,26 +37,26 @@ private:
     static INT_PTR CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
-	bool _isOpeningEnd = false; // ¿ÀÇÁ´× ¿¬ÃâÀÌ ³¡³µ´ÂÁö ¿©ºÎ¸¦ ÃßÀûÇÏ´Â ¸â¹ö º¯¼ö
-	bool _isConnectedToServer = false; // ¼­¹ö ¿¬°á ¿©ºÎ¸¦ ÃßÀûÇÏ´Â ¸â¹ö º¯¼ö
+	bool _isOpeningEnd = false; // ì˜¤í”„ë‹ ì—°ì¶œì´ ëë‚¬ëŠ”ì§€ ì—¬ë¶€ë¥¼ ì¶”ì í•˜ëŠ” ë©¤ë²„ ë³€ìˆ˜
+	bool _isConnectedToServer = false; // ì„œë²„ ì—°ê²° ì—¬ë¶€ë¥¼ ì¶”ì í•˜ëŠ” ë©¤ë²„ ë³€ìˆ˜
 
 private:
 
-	TITLE_SCENE_STATE _currentOpeningState = TITLE_SCENE_STATE::RESOURCE_LOADING; // ÇöÀç Å¸ÀÌÆ² ¾ÀÀÇ »óÅÂ¸¦ ³ªÅ¸³»´Â ¸â¹ö º¯¼ö
+	TITLE_SCENE_STATE _currentOpeningState = TITLE_SCENE_STATE::RESOURCE_LOADING; // í˜„ì¬ íƒ€ì´í‹€ ì”¬ì˜ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë©¤ë²„ ë³€ìˆ˜
 
-    bool _isOpeningUIEnd = false; // ¸Ç Ã³À½ ¿ÀÇÁ´× UI ¿¬Ãâ ³¡³µ´ÂÁö?
+    bool _isOpeningUIEnd = false; // ë§¨ ì²˜ìŒ ì˜¤í”„ë‹ UI ì—°ì¶œ ëë‚¬ëŠ”ì§€?
 
-	void Resource_Loading_Sequence(float deltaTime); // ¸®¼Ò½º ·Îµù ¿¬Ãâ
+	void Resource_Loading_Sequence(float deltaTime); // ë¦¬ì†ŒìŠ¤ ë¡œë”© ì—°ì¶œ
 
-    void Opening_UI_Sequence(float deltaTime); // ¿ÀÇÁ´× UI ¿¬Ãâ -> ¸ŞÀÎÈ­¸é ¼±ÅÃ UI ¾Æ´Ô
-	void Opening_Sequence(float deltaTime); // ¿ÀÇÁ´× ¿¬Ãâ
+    void Opening_UI_Sequence(float deltaTime); // ì˜¤í”„ë‹ UI ì—°ì¶œ -> ë©”ì¸í™”ë©´ ì„ íƒ UI ì•„ë‹˜
+	void Opening_Sequence(float deltaTime); // ì˜¤í”„ë‹ ì—°ì¶œ
 	
 
 
 private:
-    // °ü¸®ÇÒ ui °´Ã¼µé
-	std::shared_ptr<GameObject> _title_ui_obj = {}; // Å¸ÀÌÆ² È­¸é UI
-	std::shared_ptr<GameObject> _blackBackground_ui_obj = {}; // Å¸ÀÌÆ² È­¸é UI
+    // ê´€ë¦¬í•  ui ê°ì²´ë“¤
+	std::shared_ptr<GameObject> _title_ui_obj = {}; // íƒ€ì´í‹€ í™”ë©´ UI
+	std::shared_ptr<GameObject> _blackBackground_ui_obj = {}; // íƒ€ì´í‹€ í™”ë©´ UI
 	std::shared_ptr<GameObject> _logo_ui_background_obj = {}; // slay the lord UI
 
     //void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);

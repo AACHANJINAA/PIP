@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Title_Scene.h"
 #include "SceneManager.h"
 
@@ -29,29 +29,29 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 {
     ShadowManager::instance()->set_shadow_max_distance(500.0f);
 
-    // ÀÏ´Ü °ËÀº Ã¢À» ¶ç¿ì°í ·ÎµåÇÏµµ·Ï ¼öÁ¤
+    // ì¼ë‹¨ ê²€ì€ ì°½ì„ ë„ìš°ê³  ë¡œë“œí•˜ë„ë¡ ìˆ˜ì •
     
-    // ¿ÀÇÁ´× ¿¬Ãâ¿¡ ÇÊ¿äÇÑ ¸®¼Ò½º ·Îµå ¹× Ä³¸¯ÅÍ »ı¼º
+    // ì˜¤í”„ë‹ ì—°ì¶œì— í•„ìš”í•œ ë¦¬ì†ŒìŠ¤ ë¡œë“œ ë° ìºë¦­í„° ìƒì„±
     //Spawn_Resource(device, commandList);
 
-    // UI »ı¼º
+    // UI ìƒì„±
     Spawn_UI(device, commandList);
 
-    // Ä«¸Ş¶ó »ı¼º
+    // ì¹´ë©”ë¼ ìƒì„±
     auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
     auto cameraComp = cameraObject->add_component<CameraComponent>(45.f);
     cameraObject->add_component<FreeCameraScript>();
 	cameraObject->transform()->set_local_position({ 239.44f, 138.1f, 112.19f });
-	// Ã³À½¿¡´Â 45µµ À§ÂÊÀ» ¹Ù¶óº¸µµ·Ï ¼³Á¤ -> ³ªÁß¿¡ ¿ÀÇÁ´× ¿¬Ãâ¿¡¼­ Ä«¸Ş¶ó ÀÌµ¿ ½ÃÄÑ¾ßÇÒµí
+	// ì²˜ìŒì—ëŠ” 45ë„ ìœ„ìª½ì„ ë°”ë¼ë³´ë„ë¡ ì„¤ì • -> ë‚˜ì¤‘ì— ì˜¤í”„ë‹ ì—°ì¶œì—ì„œ ì¹´ë©”ë¼ ì´ë™ ì‹œì¼œì•¼í• ë“¯
 	cameraObject->transform()->set_local_rotation(-45.0f, 195.0f, 0.0f);
     cameraObject->set_layer("Camera");
     cameraComp->set_main_camera();
 
-    // ¿Àµğ¿À Àç»ı -> ¸®¼Ò½º ·Îµå ÀÌÈÄ¿¡ ³ë·¡ Àç»ı
+    // ì˜¤ë””ì˜¤ ì¬ìƒ -> ë¦¬ì†ŒìŠ¤ ë¡œë“œ ì´í›„ì— ë…¸ë˜ ì¬ìƒ
     //SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
    // SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
 
-	_currentOpeningState = TITLE_SCENE_STATE::RESOURCE_LOADING; // ¸®¼Ò½º ·ÎµùÀÌ ³¡³µÀ¸´Ï ´ÙÀ½ »óÅÂ·Î ³Ñ¾î°¨
+	_currentOpeningState = TITLE_SCENE_STATE::RESOURCE_LOADING; // ë¦¬ì†ŒìŠ¤ ë¡œë”©ì´ ëë‚¬ìœ¼ë‹ˆ ë‹¤ìŒ ìƒíƒœë¡œ ë„˜ì–´ê°
 }
 
 void Title_Scene::release_upload_buffers()
@@ -61,7 +61,7 @@ void Title_Scene::release_upload_buffers()
 
 void Title_Scene::scene_process(float deltaTime)
 {
-    // ¾À ¾÷µ¥ÀÌÆ® ·ÎÁ÷ (ÇÊ¿ä½Ã)
+    // ì”¬ ì—…ë°ì´íŠ¸ ë¡œì§ (í•„ìš”ì‹œ)
 
     switch (_currentOpeningState)
     {
@@ -95,9 +95,9 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         _blackBackground_ui_obj = ObjectManager::instance()->create_game_object("black_background");
         auto black_background = _blackBackground_ui_obj->add_component<UIRenderComponent>();
 
-        black_background->set_screen_position(0.0f, 0.0f);        // Frameº¸´Ù ¾ÈÂÊ
-        black_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frameº¸´Ù ÀÛ°Ô
-        black_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // ¿øº» »ö»ó
+        black_background->set_screen_position(0.0f, 0.0f);        // Frameë³´ë‹¤ ì•ˆìª½
+        black_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frameë³´ë‹¤ ì‘ê²Œ
+        black_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // ì›ë³¸ ìƒ‰ìƒ
         black_background->set_texture("Resource/UI/just_black_background.dds");
         UIManager::instance()->add_ui(UILayer::BACKGROUND, "Black_Background_UI", _blackBackground_ui_obj);
     }
@@ -107,21 +107,21 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         _title_ui_obj = ObjectManager::instance()->create_game_object("title_ui");
         auto title_ui_background = _title_ui_obj->add_component<UIRenderComponent>();
 
-        title_ui_background->set_screen_position(0.0f, 0.0f);        // Frameº¸´Ù ¾ÈÂÊ
-        title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frameº¸´Ù ÀÛ°Ô
-        title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // Èò»ö
+        title_ui_background->set_screen_position(0.0f, 0.0f);        // Frameë³´ë‹¤ ì•ˆìª½
+        title_ui_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frameë³´ë‹¤ ì‘ê²Œ
+        title_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // í°ìƒ‰
         title_ui_background->set_texture("Resource/UI/PIP_GAMES_LOGO.dds");
         UIManager::instance()->add_ui(UILayer::MIDDLE, "Title_UI", _title_ui_obj);
     }
 
     {
-        // ¿ìÃø »ó´ç logo
+        // ìš°ì¸¡ ìƒë‹¹ logo
         _logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
         auto logo_ui_background = _logo_ui_background_obj->add_component<UIRenderComponent>();
 
-        logo_ui_background->set_screen_position(100.0f, 50.0f);        // Frameº¸´Ù ¾ÈÂÊ
-        logo_ui_background->set_size(412.5f * 2, 250.0f * 2);// Frameº¸´Ù ÀÛ°Ô
-        logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // Èò»ö
+        logo_ui_background->set_screen_position(100.0f, 50.0f);        // Frameë³´ë‹¤ ì•ˆìª½
+        logo_ui_background->set_size(412.5f * 2, 250.0f * 2);// Frameë³´ë‹¤ ì‘ê²Œ
+        logo_ui_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // í°ìƒ‰
         logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
         UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", _logo_ui_background_obj);
     }
@@ -131,34 +131,34 @@ bool Title_Scene::InterRoom()
 {
     if (DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc, 0) != IDOK)
     {
-        // Áö±İÀº Ãë¼Ò¸¦ ´©¸¥ °æ¿ì ÇÁ·Î±×·¥ Á¾·áÇÏµµ·Ï ÇØµÒ
-        // ÃßÈÄ¿¡ ´Ù½Ã ¿ÀÇÁ´× Àå¸éÀ» Àç»ıÇÏµµ·Ï ¼öÁ¤ÇÒ ¼ö ÀÖ´Ù.
-        ::PostQuitMessage(0); // »ç¿ëÀÚ°¡ Ãë¼Ò¸¦ ´©¸£¸é ÇÁ·Î±×·¥ Á¾·á
+        // ì§€ê¸ˆì€ ì·¨ì†Œë¥¼ ëˆ„ë¥¸ ê²½ìš° í”„ë¡œê·¸ë¨ ì¢…ë£Œí•˜ë„ë¡ í•´ë‘ 
+        // ì¶”í›„ì— ë‹¤ì‹œ ì˜¤í”„ë‹ ì¥ë©´ì„ ì¬ìƒí•˜ë„ë¡ ìˆ˜ì •í•  ìˆ˜ ìˆë‹¤.
+        ::PostQuitMessage(0); // ì‚¬ìš©ìê°€ ì·¨ì†Œë¥¼ ëˆ„ë¥´ë©´ í”„ë¡œê·¸ë¨ ì¢…ë£Œ
         return false; 
     }
 
     //NetworkManager::instance()->cleanup_network();
 
-    // ÁÖ¼Ò±¸Á¶Ã¼ ¼³Á¤ ¹× ¼­¹ö ¿¬°á
+    // ì£¼ì†Œêµ¬ì¡°ì²´ ì„¤ì • ë° ì„œë²„ ì—°ê²°
     if (!NetworkManager::instance()->connect_to_server())
     {
         //NetworkManager::instance()->cleanup_network();
-		::PostQuitMessage(0); // ¼­¹ö ¿¬°á¿¡ ½ÇÆĞÇÏ¸é ÇÁ·Î±×·¥ Á¾·á
+		::PostQuitMessage(0); // ì„œë²„ ì—°ê²°ì— ì‹¤íŒ¨í•˜ë©´ í”„ë¡œê·¸ë¨ ì¢…ë£Œ
         return false;
     }
-    // ÃÖÃÊ ·Î±×ÀÎ ÆĞÅ¶ Àü¼Û (ÇÃ·¹ÀÌ¾î ÀÌ¸§ »ç¿ë)
+    // ìµœì´ˆ ë¡œê·¸ì¸ íŒ¨í‚· ì „ì†¡ (í”Œë ˆì´ì–´ ì´ë¦„ ì‚¬ìš©)
     NetworkManager::instance()->SendLoginPacket();
 
-	// ¹æ ¸ñ·Ï ¿äÃ»
+	// ë°© ëª©ë¡ ìš”ì²­
     int room_to_enter = 0;
     NetworkManager::instance()->SendEnterRoomPacket(room_to_enter);
-	_currentOpeningState = TITLE_SCENE_STATE::CONNECTED; // ¼­¹ö ¿¬°á ÈÄ »óÅÂ º¯°æ -> ¿Ï·á
+	_currentOpeningState = TITLE_SCENE_STATE::CONNECTED; // ì„œë²„ ì—°ê²° í›„ ìƒíƒœ ë³€ê²½ -> ì™„ë£Œ
     return true;
 }
 
 void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    // 1. Skybox ·Îµå (¸ğµç Scene °øÅë)
+    // 1. Skybox ë¡œë“œ (ëª¨ë“  Scene ê³µí†µ)
     SceneManager::instance()->build_skybox(device, commandList,
         "Resource/SkyBox/",
         "cloudy/cloudy_skybox.dds",
@@ -166,28 +166,28 @@ void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList
         "diffuse.txt",
         "BRDF.dds");
 
-    // 2. MainScene Àü¿ë Landscape ·Îµå
+    // 2. MainScene ì „ìš© Landscape ë¡œë“œ
     SceneManager::instance()->build_main_landscapes(device, commandList);
 
-    // 3. ¹Ì´Ï¸Ê È°¼ºÈ­ -> ÁöÇü ÀÌÈÄ¿¡ È£ÃâÇØ¾ßÇÔ
+    // 3. ë¯¸ë‹ˆë§µ í™œì„±í™” -> ì§€í˜• ì´í›„ì— í˜¸ì¶œí•´ì•¼í•¨
     //SceneManager::instance()->build_minimap(device, commandList);
 
 
 
-    // =========================ÇÊ¿äÇÑ ¸Ş½Ã ·Îµå==================================
+    // =========================í•„ìš”í•œ ë©”ì‹œ ë¡œë“œ==================================
     auto knight_mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf", true);
     // =========================================================================
 
     spawn_opening_sequence_object();
 
-    // ¼º
+    // ì„±
    load_scene_from_file("Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json", device, commandList, true);
    load_foliage_from_file("Resource/Foliage/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json", device, commandList);
 }
 
 void Title_Scene::spawn_opening_sequence_object()
 {
-    // ¾É¾ÆÀÖ´Â ±â»ç ¸ğµ¨ ¼ÒÈ¯
+    // ì•‰ì•„ìˆëŠ” ê¸°ì‚¬ ëª¨ë¸ ì†Œí™˜
     {
         auto T1 = ObjectManager::instance()->create_game_object("KnightMesh");
 
@@ -195,16 +195,16 @@ void Title_Scene::spawn_opening_sequence_object()
         auto renderer = T1->add_component<RenderComponent>();
         auto animation = T1->add_component<AnimationComponent>();
 
-		// ¸Ş½Ã ¼³Á¤ (¾Ö´Ï¸ŞÀÌ¼Ç Æ÷ÇÔ)
+		// ë©”ì‹œ ì„¤ì • (ì• ë‹ˆë©”ì´ì…˜ í¬í•¨)
         auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf", true);
         dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnightNoneSword/animations/Sit_idle.gltf", "idle");
         renderer->set_mesh(T1_Mesh);
 
-		// ¾Ö´Ï¸ŞÀÌ¼Ç ¼³Á¤
+		// ì• ë‹ˆë©”ì´ì…˜ ì„¤ì •
 		animation->add_animation("idle", T1_Mesh, "idle");
 		animation->play("idle", true);
 
-        // ÀçÁú ¹× ½¦ÀÌ´õ ¼³Á¤
+        // ì¬ì§ˆ ë° ì‰ì´ë” ì„¤ì •
         std::string material = "Knight_Material";
 
         ResourceManager::instance()->create_material(material);
@@ -213,7 +213,7 @@ void Title_Scene::spawn_opening_sequence_object()
         // gltf
         renderer->set_pso_name("skinned");
 
-        // À§Ä¡, È¸Àü Á¤º¸
+        // ìœ„ì¹˜, íšŒì „ ì •ë³´
         T1->transform()->set_local_rotation(0.f, 20.f, 0.f);
         T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
 
@@ -262,7 +262,7 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
     static int frameWait = 0;
     frameWait++;
 
-    // Ã¢ÀÌ »ı¼ºµÇ°í ÃÖ¼Ò 5ÇÁ·¹ÀÓÀº Present µÇ¾î¾ß °ËÀº È­¸éÀÌ ¸ğ´ÏÅÍ¿¡ ³ª¿È
+    // ì°½ì´ ìƒì„±ë˜ê³  ìµœì†Œ 5í”„ë ˆì„ì€ Present ë˜ì–´ì•¼ ê²€ì€ í™”ë©´ì´ ëª¨ë‹ˆí„°ì— ë‚˜ì˜´
     if (_isYouWantSeeTitleScene && frameWait == 1)
     {
         GameFramework::instance()->set_fullscreen_toggle(true);
@@ -279,7 +279,7 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
         cmdAlloc->Reset();
         cmdList->Reset(cmdAlloc, nullptr);
 
-        // [1] ¹«°Å¿î ¸®¼Ò½º ·Îµù ½ÃÀÛ (ÀÌ¶§ ¸ğ´ÏÅÍ´Â ¿Ïº®ÇÑ °ËÀº È­¸é À¯ÁöµÊ)
+        // [1] ë¬´ê±°ìš´ ë¦¬ì†ŒìŠ¤ ë¡œë”© ì‹œì‘ (ì´ë•Œ ëª¨ë‹ˆí„°ëŠ” ì™„ë²½í•œ ê²€ì€ í™”ë©´ ìœ ì§€ë¨)
         spawn_resource(device, cmdList);
 
         cmdList->Close();
@@ -287,7 +287,7 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
         cmdQueue->ExecuteCommandLists(1, ppCommandLists);
         GameFramework::instance()->WaitForGpuComplete();
 
-        // [2] ·ÎµùÀÌ ³¡³­ Á÷ÈÄ À½¾Ç Àç»ı!
+        // [2] ë¡œë”©ì´ ëë‚œ ì§í›„ ìŒì•… ì¬ìƒ!
         if(_isYouWantSeeTitleScene)
         {
             SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/Monster Hunter Wilds Main Theme.mp3", false);
@@ -297,10 +297,10 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
 			SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
         }
         SoundManager::instance()->play("TitleBgm", SoundType::BGM, 1.0f, true);
-        // »ç¿îµå°¡ Àç»ıµÇ±â ½ÃÀÛÇÏ¸é ¿ÀÇÁ´× UI ¿¬Ãâ ½ÃÀÛ (°ËÀº È­¸é¿¡¼­ ·Î°í ÆäÀÌµå ÀÎ)
+        // ì‚¬ìš´ë“œê°€ ì¬ìƒë˜ê¸° ì‹œì‘í•˜ë©´ ì˜¤í”„ë‹ UI ì—°ì¶œ ì‹œì‘ (ê²€ì€ í™”ë©´ì—ì„œ ë¡œê³  í˜ì´ë“œ ì¸)
 
         frameWait = 0;
-        // [3] ·Îµù ¿Ï·á ÈÄ ´ÙÀ½ »óÅÂ(·Î°í ÆäÀÌµå ÀÎ)·Î ÀüÈ¯
+        // [3] ë¡œë”© ì™„ë£Œ í›„ ë‹¤ìŒ ìƒíƒœ(ë¡œê³  í˜ì´ë“œ ì¸)ë¡œ ì „í™˜
         _currentOpeningState = TITLE_SCENE_STATE::OPENING_UI_SEQUENCE;
     }
 }
@@ -315,14 +315,14 @@ void Title_Scene::Opening_UI_Sequence(float deltaTime)
 		return;
     }
 
-    // 1. ³ë·¡°¡ ½ÇÁ¦·Î Àç»ı ÁßÀÎÁö È®ÀÎ
+    // 1. ë…¸ë˜ê°€ ì‹¤ì œë¡œ ì¬ìƒ ì¤‘ì¸ì§€ í™•ì¸
     if (!SoundManager::instance()->is_playing("TitleBgm"))
     {
         return;
     }
 
-    // deltaTimeÀ» ´õÇÏÁö ¾Ê°í, FMODÀÇ ÇöÀç Àç»ı ½Ã°£(ÃÊ)À» Á÷Á¢ °¡Á®¿À±â
-    // À½¾ÇÀÌ ·ºÀ¸·Î ²÷±â¸é UIµµ °°ÀÌ ¸ØÃß°í, À½¾ÇÀÌ ÁøÇàµÇ¸é UIµµ Á¤È®È÷ ±× ½Ã°£¿¡ ¸ÂÃß±â
+    // deltaTimeì„ ë”í•˜ì§€ ì•Šê³ , FMODì˜ í˜„ì¬ ì¬ìƒ ì‹œê°„(ì´ˆ)ì„ ì§ì ‘ ê°€ì ¸ì˜¤ê¸°
+    // ìŒì•…ì´ ë ‰ìœ¼ë¡œ ëŠê¸°ë©´ UIë„ ê°™ì´ ë©ˆì¶”ê³ , ìŒì•…ì´ ì§„í–‰ë˜ë©´ UIë„ ì •í™•íˆ ê·¸ ì‹œê°„ì— ë§ì¶”ê¸°
     float ui_timer = SoundManager::instance()->get_playback_position("TitleBgm");
 
     //static float ui_timer = 0.0f;
@@ -331,48 +331,48 @@ void Title_Scene::Opening_UI_Sequence(float deltaTime)
     static int uiNum = 1;
     static float alpha = 0.0f;
 
-    if (uiNum == 1) // Ã¹ ¹øÂ° UI ¿¬Ãâ (PIP Games ·Î°í)
+    if (uiNum == 1) // ì²« ë²ˆì§¸ UI ì—°ì¶œ (PIP Games ë¡œê³ )
     {
-        // 1. ´ë±â: 0.0ÃÊ ~ 4.2ÃÊ
+        // 1. ëŒ€ê¸°: 0.0ì´ˆ ~ 4.2ì´ˆ
         if (ui_timer <= 4.2f)
         {
             alpha = 0.0f;
         }
-        // 2. ÆäÀÌµå ÀÎ (0.3ÃÊ ¼Ò¿ä): 4.2ÃÊ ~ 4.5ÃÊ
+        // 2. í˜ì´ë“œ ì¸ (0.3ì´ˆ ì†Œìš”): 4.2ì´ˆ ~ 4.5ì´ˆ
         else if (ui_timer <= 4.5f)
         {
             float duration = 0.3f;
-            float progress = (ui_timer - 4.2f) / duration; // 0.0 ~ 1.0 ºñÀ²
+            float progress = (ui_timer - 4.2f) / duration; // 0.0 ~ 1.0 ë¹„ìœ¨
             alpha = progress;
         }
-        // 3. À¯Áö: 4.5ÃÊ ~ 6.5ÃÊ
+        // 3. ìœ ì§€: 4.5ì´ˆ ~ 6.5ì´ˆ
         else if (ui_timer <= 6.5f)
         {
             alpha = 1.0f;
         }
-        // 4. ÆäÀÌµå ¾Æ¿ô (2.0ÃÊ ¼Ò¿ä): 6.5ÃÊ ~ 8.5ÃÊ
+        // 4. í˜ì´ë“œ ì•„ì›ƒ (2.0ì´ˆ ì†Œìš”): 6.5ì´ˆ ~ 8.5ì´ˆ
         else if (ui_timer <= 8.5f)
         {
             float duration = 2.0f;
-            float progress = (ui_timer - 6.5f) / duration; // 0.0 ~ 1.0 ºñÀ²
-            alpha = 1.0f - progress; // 1.0¿¡¼­ 0.0À¸·Î °¨¼Ò
+            float progress = (ui_timer - 6.5f) / duration; // 0.0 ~ 1.0 ë¹„ìœ¨
+            alpha = 1.0f - progress; // 1.0ì—ì„œ 0.0ìœ¼ë¡œ ê°ì†Œ
         }
-        // 5. ¿¬Ãâ Á¾·á ¹× »óÅÂ ÀüÈ¯: 8.5ÃÊ ÀÌÈÄ
+        // 5. ì—°ì¶œ ì¢…ë£Œ ë° ìƒíƒœ ì „í™˜: 8.5ì´ˆ ì´í›„
         else
         {
             alpha = 0.0f;
-            uiNum = 2;       // µÎ ¹øÂ° ¿¬Ãâ·Î ³Ñ¾î°¨
+            uiNum = 2;       // ë‘ ë²ˆì§¸ ì—°ì¶œë¡œ ë„˜ì–´ê°
         }
 
-        // ·Î°í Åõ¸íµµ Àû¿ë
+        // ë¡œê³  íˆ¬ëª…ë„ ì ìš©
         _title_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
     }
-    else if (uiNum == 2) // ¿ÀÇÁ´× ½ÃÄö½º Á¾·á
+    else if (uiNum == 2) // ì˜¤í”„ë‹ ì‹œí€€ìŠ¤ ì¢…ë£Œ
     {
         _isOpeningUIEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE;
 
-        // ¾ÀÀÌ ´Ù½Ã È£ÃâµÉ °æ¿ì¸¦ ´ëºñÇØ ÃÊ±âÈ­
+        // ì”¬ì´ ë‹¤ì‹œ í˜¸ì¶œë  ê²½ìš°ë¥¼ ëŒ€ë¹„í•´ ì´ˆê¸°í™”
         ui_timer = 0.0f;
         uiNum = 1;
         alpha = 0.0f;
@@ -394,9 +394,9 @@ void Title_Scene::Opening_Sequence(float deltaTime)
    
 
 
-	// ¿ÀÇÁ´× ¿¬Ãâ ·ÎÁ÷ ±¸Çö
+	// ì˜¤í”„ë‹ ì—°ì¶œ ë¡œì§ êµ¬í˜„
     
-    // Ä«¸Ş¶ó°¡ ÇÏ´ÃÀ» º¸´Ù°¡ ÃµÃµÈ÷ ³»·Á¿À¸é¼­ ¼º º¸ÀÌ°Ô ÇÏ±â
+    // ì¹´ë©”ë¼ê°€ í•˜ëŠ˜ì„ ë³´ë‹¤ê°€ ì²œì²œíˆ ë‚´ë ¤ì˜¤ë©´ì„œ ì„± ë³´ì´ê²Œ í•˜ê¸°
 
     if (!_isYouWantSeeTitleScene)
     {
@@ -410,7 +410,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
     if (!cameraObject || !cameraObject->transform()) return;
 
-	cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(true); // ¿ÀÇÁ´× ½ÃÄö½º µ¿¾È ½Ã³×¸¶Æ½ Ä«¸Ş¶ó ¸ğµå È°¼ºÈ­
+	cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(true); // ì˜¤í”„ë‹ ì‹œí€€ìŠ¤ ë™ì•ˆ ì‹œë„¤ë§ˆí‹± ì¹´ë©”ë¼ ëª¨ë“œ í™œì„±í™”
 
 
     if (InputManager::instance()->IsKeyDown(VK_F8))
@@ -419,28 +419,28 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     }
 
 
-    // --- Ä«¸Ş¶ó Å¸ÀÓ¶óÀÎ ¼³Á¤ ---
-    //const float startFadeOutTime = 8.5f; // ÆäÀÌµå ¾Æ¿ô
-	const float startTime = 8.5f; // UI ¿¬Ãâ Á¾·á -> Ä«¸Ş¶ó È¸Àü ½ÃÀÛÇÏ´Â ½Ã°£
-	const float move_start_time = 16.5f; // ¿òÁ÷ÀÓ ½ÃÀÛÇÏ´Â ½Ã°£ -> UI ¿¬ÃâÀÌ ³¡³ª°í 3ÃÊ Á¤µµ´Â Ä«¸Ş¶ó È¸Àü¸¸ ÇÏ´Ù°¡, 16.5ÃÊºÎÅÍ ¿òÁ÷ÀÓ ½ÃÀÛ -> ÀÌ¶§°¡ ¼ºÀÌ º¸ÀÌ´Â ½ÃÁ¡
-    const float midTime = 23.4f; // ¼º ÁøÀÔ
-    const float endTime = 32.0f; // ÁÖÀÎ°ø ¿· µµÂø
-	const float spawnUIENDTime = 33.0f; // ui ÆäÀÌÆ®ÀÎ ³¡³ª´Â ½Ã°£ -> ÃÊ¿¡ uiµµ ´Ù ³¡³ª¾ßÇÔ
+    // --- ì¹´ë©”ë¼ íƒ€ì„ë¼ì¸ ì„¤ì • ---
+    //const float startFadeOutTime = 8.5f; // í˜ì´ë“œ ì•„ì›ƒ
+	const float startTime = 8.5f; // UI ì—°ì¶œ ì¢…ë£Œ -> ì¹´ë©”ë¼ íšŒì „ ì‹œì‘í•˜ëŠ” ì‹œê°„
+	const float move_start_time = 16.5f; // ì›€ì§ì„ ì‹œì‘í•˜ëŠ” ì‹œê°„ -> UI ì—°ì¶œì´ ëë‚˜ê³  3ì´ˆ ì •ë„ëŠ” ì¹´ë©”ë¼ íšŒì „ë§Œ í•˜ë‹¤ê°€, 16.5ì´ˆë¶€í„° ì›€ì§ì„ ì‹œì‘ -> ì´ë•Œê°€ ì„±ì´ ë³´ì´ëŠ” ì‹œì 
+    const float midTime = 23.4f; // ì„± ì§„ì…
+    const float endTime = 32.0f; // ì£¼ì¸ê³µ ì˜† ë„ì°©
+	const float spawnUIENDTime = 33.0f; // ui í˜ì´íŠ¸ì¸ ëë‚˜ëŠ” ì‹œê°„ -> ì´ˆì— uië„ ë‹¤ ëë‚˜ì•¼í•¨
 
-    // À§Ä¡ µ¥ÀÌÅÍ
+    // ìœ„ì¹˜ ë°ì´í„°
     XMFLOAT3 P0 = { 239.44f, 138.1f, 112.19f };
     XMFLOAT3 P1 = { 241.69f, 139.67f, 115.28f };
     XMFLOAT3 P2 = { 239.94f, 141.16f, 116.98f };
 
-	// °¢µµ µ¥ÀÌÅÍ (ZÃàÀº ¸ğµÎ 0.0f·Î ÅëÀÏ)
+	// ê°ë„ ë°ì´í„° (Zì¶•ì€ ëª¨ë‘ 0.0fë¡œ í†µì¼)
     XMFLOAT3 R_Base = { -45.0f, 195.0f, 0.0f };
 
-    // °¢µµ µ¥ÀÌÅÍ (ZÃàÀº ¸ğµÎ 0.0f·Î ÅëÀÏ)
-   // ±âÁ¸ R0(140, 18, 180) -> Á¤»ó R0
+    // ê°ë„ ë°ì´í„° (Zì¶•ì€ ëª¨ë‘ 0.0fë¡œ í†µì¼)
+   // ê¸°ì¡´ R0(140, 18, 180) -> ì •ìƒ R0
     XMFLOAT3 R0 = { 30.0f, 195.0f, 0.0f };
-    // ±âÁ¸ R1(150, 5, 180) -> Á¤»ó R1
+    // ê¸°ì¡´ R1(150, 5, 180) -> ì •ìƒ R1
     XMFLOAT3 R1 = { 32.5f, 175.4f, 0.0f };
-    // ±âÁ¸ R2(-149.7, 19.3, 180) -> Á¤»ó R2
+    // ê¸°ì¡´ R2(-149.7, 19.3, 180) -> ì •ìƒ R2
     XMFLOAT3 R2 = { 29.2f, 172.2f, 0.0f };
 
     XMFLOAT3 targetPos;
@@ -450,35 +450,35 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
     float black_alpha{0.f};
   
-	// [±¸°£ 0] Ä«¸Ş¶ó °¢µµ È¸Àü (8.5f ~ 16.5f) ¹× ¹è°æ ÆäÀÌµå ¾Æ¿ô (8.5f ~ 13.5f)
+	// [êµ¬ê°„ 0] ì¹´ë©”ë¼ ê°ë„ íšŒì „ (8.5f ~ 16.5f) ë° ë°°ê²½ í˜ì´ë“œ ì•„ì›ƒ (8.5f ~ 13.5f)
     if (bgm_time >= startTime && bgm_time < move_start_time)
     {
-        const float targetDuration = 5.0f;   // 5ÃÊ µ¿¾È ¾ÆÁÖ ÃµÃµÈ÷ (8.5ÃÊ ~ 13.5ÃÊ ±¸°£)
+        const float targetDuration = 5.0f;   // 5ì´ˆ ë™ì•ˆ ì•„ì£¼ ì²œì²œíˆ (8.5ì´ˆ ~ 13.5ì´ˆ êµ¬ê°„)
 
-        // ÁøÇà·ü °è»ê (ÇöÀç ¿Àµğ¿À ½Ã°£ - 8.5ÃÊ) / 5.0ÃÊ
+        // ì§„í–‰ë¥  ê³„ì‚° (í˜„ì¬ ì˜¤ë””ì˜¤ ì‹œê°„ - 8.5ì´ˆ) / 5.0ì´ˆ
         float progress = (bgm_time - startTime) / targetDuration;
 
-        // Å»Ãâ Á¶°Ç: ÁøÇà·üÀÌ 100% (1.0)¿¡ µµ´ŞÇÏ°Å³ª ³Ñ¾úÀ» ¶§ (Áï, 13.5ÃÊ°¡ µÇ¾úÀ» ¶§)
+        // íƒˆì¶œ ì¡°ê±´: ì§„í–‰ë¥ ì´ 100% (1.0)ì— ë„ë‹¬í•˜ê±°ë‚˜ ë„˜ì—ˆì„ ë•Œ (ì¦‰, 13.5ì´ˆê°€ ë˜ì—ˆì„ ë•Œ)
         if (progress >= 1.0f)
         {
-            black_alpha = 0.0f; // ¾ÈÀüÇÏ°Ô 0À¸·Î °íÁ¤
+            black_alpha = 0.0f; // ì•ˆì „í•˜ê²Œ 0ìœ¼ë¡œ ê³ ì •
         }
         else
         {
-            // ¾ËÆÄ°ª °è»ê (1.0¿¡¼­ 0.0À¸·Î)
+            // ì•ŒíŒŒê°’ ê³„ì‚° (1.0ì—ì„œ 0.0ìœ¼ë¡œ)
             black_alpha = 1.0f - progress;
         }
 
-        // ¹è°æ Åõ¸íµµ Àû¿ë
+        // ë°°ê²½ íˆ¬ëª…ë„ ì ìš©
         _blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, black_alpha));
         float t = (bgm_time - startTime) / (move_start_time - startTime);
         float smoothT = t * t * (3.0f - 2.0f * t);
-        targetPos = P0; // À§Ä¡´Â °íÁ¤
+        targetPos = P0; // ìœ„ì¹˜ëŠ” ê³ ì •
         targetRot.x = R_Base.x + (R0.x - R_Base.x) * smoothT;
         targetRot.y = R_Base.y + (R0.y - R_Base.y) * smoothT;
-        targetRot.z = 0.f; // ZÃà È¸Àü ¹«½Ã (0À¸·Î °íÁ¤)
+        targetRot.z = 0.f; // Zì¶• íšŒì „ ë¬´ì‹œ (0ìœ¼ë¡œ ê³ ì •)
     }
-    // [±¸°£ 1] ½ÃÀÛÁ¡ -> Áß°£ ÁöÁ¡ (16.5s ~ 23.7s)
+    // [êµ¬ê°„ 1] ì‹œì‘ì  -> ì¤‘ê°„ ì§€ì  (16.5s ~ 23.7s)
     else if (bgm_time >= move_start_time && bgm_time < midTime)
     {
         float t = (bgm_time - move_start_time) / (midTime - move_start_time);
@@ -490,9 +490,9 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
         targetRot.x = R0.x + (R1.x - R0.x) * smoothT;
         targetRot.y = R0.y + (R1.y - R0.y) * smoothT;
-        targetRot.z = 0.f; // ZÃà È¸Àü ¹«½Ã (0À¸·Î °íÁ¤)
+        targetRot.z = 0.f; // Zì¶• íšŒì „ ë¬´ì‹œ (0ìœ¼ë¡œ ê³ ì •)
     }
-    // [±¸°£ 2] Áß°£ ÁöÁ¡ -> ÃÖÁ¾ ÁöÁ¡ (23.7s ~ 31.0s)
+    // [êµ¬ê°„ 2] ì¤‘ê°„ ì§€ì  -> ìµœì¢… ì§€ì  (23.7s ~ 31.0s)
     else if (bgm_time >= midTime && bgm_time <= endTime)
     {
         float t = (bgm_time - midTime) / (endTime - midTime);
@@ -511,9 +511,9 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
         targetRot.x = InterpolateAngle(R1.x, R2.x, smoothT);
         targetRot.y = InterpolateAngle(R1.y, R2.y, smoothT);
-        targetRot.z = 0.f; // ZÃà È¸Àü ¹«½Ã (0À¸·Î °íÁ¤)
+        targetRot.z = 0.f; // Zì¶• íšŒì „ ë¬´ì‹œ (0ìœ¼ë¡œ ê³ ì •)
     }
-    // [±¸°£ 3] UI ÆäÀÌµå ÀÎÀÌ ³¡³ª´Â ½ÃÁ¡±îÁö (31.0s ~ 33.0s) -> Ä«¸Ş¶ó´Â ÃÖÁ¾ ÁöÁ¡¿¡ °íÁ¤µÈ »óÅÂ·Î, UI ÆäÀÌµå ÀÎÀÌ ³¡³ª´Â ½ÃÁ¡±îÁö À¯Áö
+    // [êµ¬ê°„ 3] UI í˜ì´ë“œ ì¸ì´ ëë‚˜ëŠ” ì‹œì ê¹Œì§€ (31.0s ~ 33.0s) -> ì¹´ë©”ë¼ëŠ” ìµœì¢… ì§€ì ì— ê³ ì •ëœ ìƒíƒœë¡œ, UI í˜ì´ë“œ ì¸ì´ ëë‚˜ëŠ” ì‹œì ê¹Œì§€ ìœ ì§€
     else if (bgm_time > endTime && bgm_time <= spawnUIENDTime)
     {
         targetPos = P2;
@@ -525,12 +525,12 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     {
         targetPos = P2;
         targetRot = R2;
-		alpha = 1.0f; // UIµµ ¿ÏÀüÈ÷ ³ªÅ¸³­ »óÅÂ·Î °íÁ¤
+		alpha = 1.0f; // UIë„ ì™„ì „íˆ ë‚˜íƒ€ë‚œ ìƒíƒœë¡œ ê³ ì •
         _isOpeningEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
-        cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // ¿ÀÇÁ´× ½ÃÄö½º µ¿¾È ½Ã³×¸¶Æ½ Ä«¸Ş¶ó ¸ğµå È°¼ºÈ­
+        cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // ì˜¤í”„ë‹ ì‹œí€€ìŠ¤ ë™ì•ˆ ì‹œë„¤ë§ˆí‹± ì¹´ë©”ë¼ ëª¨ë“œ í™œì„±í™”
     }
-    else // ¿¬Ãâ ½ÃÀÛ Àü ´ë±â (13.5ÃÊ ÀÌÀü)
+    else // ì—°ì¶œ ì‹œì‘ ì „ ëŒ€ê¸° (13.5ì´ˆ ì´ì „)
     {
         targetPos = P0;
         targetRot = R0;
@@ -544,7 +544,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
     _logo_ui_background_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
 
-    // ´Ù ³¡³ª°í ³Ñ±â±â
+    // ë‹¤ ëë‚˜ê³  ë„˜ê¸°ê¸°
     {
         //_isOpeningEnd = true;
         //_currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;

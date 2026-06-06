@@ -1,36 +1,36 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "ImGuiManager.h"
 
 bool ImGuiManager::initialize(HWND hWnd, ID3D12Device* device, ID3D12CommandQueue* commandQueue, int numFramesInFlight, DXGI_FORMAT rtvFormat)
 {
-    // 1. ImGui Àü¿ë SRV µğ½ºÅ©¸³ÅÍ Èü »ı¼º (¸Å¿ì Áß¿ä)
-    // ImGui´Â ÆùÆ® ÅØ½ºÃ³¸¦ GPU¿¡ ¿Ã¸®±â À§ÇØ ÃÖ¼Ò 1°³ÀÇ SRV°¡ ÇÊ¿äÇÕ´Ï´Ù.
+    // 1. ImGui ì „ìš© SRV ë””ìŠ¤í¬ë¦½í„° í™ ìƒì„± (ë§¤ìš° ì¤‘ìš”)
+    // ImGuiëŠ” í°íŠ¸ í…ìŠ¤ì²˜ë¥¼ GPUì— ì˜¬ë¦¬ê¸° ìœ„í•´ ìµœì†Œ 1ê°œì˜ SRVê°€ í•„ìš”í•©ë‹ˆë‹¤.
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    desc.NumDescriptors = 1; // ÆùÆ® ÇÏ³ª¸¸ ¾µ °Å¸é 1°³¸é ÃæºĞÇÕ´Ï´Ù.
-    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // ¼ÎÀÌ´õ¿¡¼­ º¼ ¼ö ÀÖ¾î¾ß ÇÔ
+    desc.NumDescriptors = 1; // í°íŠ¸ í•˜ë‚˜ë§Œ ì“¸ ê±°ë©´ 1ê°œë©´ ì¶©ë¶„í•©ë‹ˆë‹¤.
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // ì…°ì´ë”ì—ì„œ ë³¼ ìˆ˜ ìˆì–´ì•¼ í•¨
 
     if (FAILED(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&_srvDescHeap))))
     {
-        CERROR("ImGui SRV Descriptor Heap »ı¼º ½ÇÆĞ!");
+        CERROR("ImGui SRV Descriptor Heap ìƒì„± ì‹¤íŒ¨!");
         return false;
     }
 
-    // 2. ImGui ÄÁÅØ½ºÆ® »ı¼º ¹× ¼¼ÆÃ
+    // 2. ImGui ì»¨í…ìŠ¤íŠ¸ ìƒì„± ë° ì„¸íŒ…
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Å°º¸µå ÄÁÆ®·Ñ Çã¿ë
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // í‚¤ë³´ë“œ ì»¨íŠ¸ë¡¤ í—ˆìš©
 
-    // Å×¸¶ ¼³Á¤ (´ÙÅ© ¸ğµå)
+    // í…Œë§ˆ ì„¤ì • (ë‹¤í¬ ëª¨ë“œ)
     ImGui::StyleColorsDark();
 
-    // 3. Win32 ¹× DX12 ¹é¿£µå ÃÊ±âÈ­
+    // 3. Win32 ë° DX12 ë°±ì—”ë“œ ì´ˆê¸°í™”
     ImGui_ImplWin32_Init(hWnd);
 
     ImGui_ImplDX12_InitInfo init_info = {};
     init_info.Device = device;
-    init_info.CommandQueue = commandQueue; // ÆùÆ® ÀÚµ¿ ¾÷·Îµå¸¦ À§ÇØ Ä¿¸Çµå Å¥ Àü´Ş
+    init_info.CommandQueue = commandQueue; // í°íŠ¸ ìë™ ì—…ë¡œë“œë¥¼ ìœ„í•´ ì»¤ë§¨ë“œ í ì „ë‹¬
     init_info.NumFramesInFlight = numFramesInFlight;
     init_info.RTVFormat = rtvFormat;
     init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
@@ -47,7 +47,7 @@ bool ImGuiManager::initialize(HWND hWnd, ID3D12Device* device, ID3D12CommandQueu
 
 void ImGuiManager::release()
 {
-    // ÇÒ´çÇß´ø ÀÚ¿øµéÀ» ¿ª¼øÀ¸·Î ÇØÁ¦
+    // í• ë‹¹í–ˆë˜ ìì›ë“¤ì„ ì—­ìˆœìœ¼ë¡œ í•´ì œ
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -58,7 +58,7 @@ void ImGuiManager::release()
 
 void ImGuiManager::new_frame()
 {
-    // ImGui¿¡°Ô "»õ ÇÁ·¹ÀÓÀÌ ½ÃÀÛµÇ¾ú¾î!" ¶ó°í ¾Ë·ÁÁÜ
+    // ImGuiì—ê²Œ "ìƒˆ í”„ë ˆì„ì´ ì‹œì‘ë˜ì—ˆì–´!" ë¼ê³  ì•Œë ¤ì¤Œ
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -66,13 +66,13 @@ void ImGuiManager::new_frame()
 
 void ImGuiManager::render(ID3D12GraphicsCommandList* commandList)
 {
-    // Tool_Scene µî¿¡¼­ ImGui::Begin() ~ ImGui::End()·Î ÀÛ¼ºÇÑ µ¥ÀÌÅÍ¸¦ ÃÖÁ¾ÀûÀ¸·Î ·»´õ¸µ ÁØºñ
+    // Tool_Scene ë“±ì—ì„œ ImGui::Begin() ~ ImGui::End()ë¡œ ì‘ì„±í•œ ë°ì´í„°ë¥¼ ìµœì¢…ì ìœ¼ë¡œ ë Œë”ë§ ì¤€ë¹„
     ImGui::Render();
 
-    // ·»´õ¸µÇÏ±â Àü¿¡ ¹İµå½Ã ImGui Àü¿ë µğ½ºÅ©¸³ÅÍ ÈüÀ» Ä¿¸Çµå ¸®½ºÆ®¿¡ ¹ÙÀÎµùÇØ¾ß ÇÕ´Ï´Ù.
+    // ë Œë”ë§í•˜ê¸° ì „ì— ë°˜ë“œì‹œ ImGui ì „ìš© ë””ìŠ¤í¬ë¦½í„° í™ì„ ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ì— ë°”ì¸ë”©í•´ì•¼ í•©ë‹ˆë‹¤.
     ID3D12DescriptorHeap* ppHeaps[] = { _srvDescHeap.Get() };
     commandList->SetDescriptorHeaps(1, ppHeaps);
 
-    // ½ÇÁ¦ GPU¿¡ ±×¸®±â ¸í·É Àü´Ş
+    // ì‹¤ì œ GPUì— ê·¸ë¦¬ê¸° ëª…ë ¹ ì „ë‹¬
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 }

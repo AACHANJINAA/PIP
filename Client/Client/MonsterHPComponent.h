@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "Behavior.h"
 
@@ -39,10 +39,10 @@ private:
 	int _currentHP{ 00 };
 	bool _isDead{ false };
 	
-	bool _isHpChanged{ false }; // false·Î ÃÊ±âÈ­ÀÎ »óÅÂ¿©¾ß ÇÔ true¸é ¼öÁ¤ÇÒ°Í
-	float _chageHpTimer{ 3.0f }; // HP º¯È­ ÈÄ Àá½Ã ´ë±â Å¸ÀÌ¸Ó
-	float _nowHpTimer{ 0.0f }; // ÇöÀç Å¸ÀÌ¸Ó
+	bool _isHpChanged{ false }; // falseë¡œ ì´ˆê¸°í™”ì¸ ìƒíƒœì—¬ì•¼ í•¨ trueë©´ ìˆ˜ì •í• ê²ƒ
+	float _chageHpTimer{ 3.0f }; // HP ë³€í™” í›„ ì ì‹œ ëŒ€ê¸° íƒ€ì´ë¨¸
+	float _nowHpTimer{ 0.0f }; // í˜„ì¬ íƒ€ì´ë¨¸
 
-	float _hpRatio{ 1.f }; // 0.0 ~ 1.0 ÇöÀç HP ºñÀ²
+	float _hpRatio{ 1.f }; // 0.0 ~ 1.0 í˜„ì¬ HP ë¹„ìœ¨
 };
 

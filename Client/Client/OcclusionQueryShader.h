@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 #include "Shader.h"
 
 class OcclusionQueryShader : public Shader {
@@ -7,7 +7,7 @@ public:
     virtual std::string required_root_signature() const override { return "occlusion_sig"; }
 
 protected:
-    virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override; // POSITION∏∏ ∆˜«‘
+    virtual D3D12_INPUT_LAYOUT_DESC create_input_layout() override; // POSITIONÎßå Ìè¨Ìï®
 	virtual D3D12_SHADER_BYTECODE create_vertex_shader(ComPtr<ID3DBlob>& shader_blob) override;
 	virtual D3D12_SHADER_BYTECODE create_pixel_shader(ComPtr<ID3DBlob>& shader_blob) override;
     virtual ComPtr<ID3D12PipelineState> create_pso(ID3D12Device* device, ID3D12RootSignature* root_sig) override;

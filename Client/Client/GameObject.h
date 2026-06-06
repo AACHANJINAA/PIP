@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Object.h"
 
 class Component;
 class Behavior;
-class TransformComponent; // TransformComponent¿¡ ´ëÇÑ Àü¹æ ¼±¾ğ Ãß°¡
+class TransformComponent; // TransformComponentì— ëŒ€í•œ ì „ë°© ì„ ì–¸ ì¶”ê°€
 class GameObject : public Object, public std::enable_shared_from_this<GameObject>
 {
 public:
@@ -28,26 +28,26 @@ public:
 	void set_enabled(bool enabled) { _enabled = enabled; }
 	bool is_enable() const { return _enabled; }
 	
-	// [º¯°æ] ·¹ÀÌ¾î Å¸ÀÔÀ» uint32_t·Î º¯°æ
+	// [ë³€ê²½] ë ˆì´ì–´ íƒ€ì…ì„ uint32_të¡œ ë³€ê²½
 	uint32_t layer_mask() const { return _layerMask; }
 
-	// [º¯°æ] ÀÌ¸§À¸·Î ·¹ÀÌ¾î¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// [ë³€ê²½] ì´ë¦„ìœ¼ë¡œ ë ˆì´ì–´ë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
 	void set_layer(const std::string& name);
 
-	// [Ãß°¡] Æ¯Á¤ ·¹ÀÌ¾î¿¡ ¼ÓÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+	// [ì¶”ê°€] íŠ¹ì • ë ˆì´ì–´ì— ì†í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
 	bool is_in_layer(const std::string& name) const;
-	// --- ÆíÀÇ Getter ---
-	// [º¯°æ] ¹İÈ¯ Å¸ÀÔÀ» shared_ptr·Î º¯°æ
+	// --- í¸ì˜ Getter ---
+	// [ë³€ê²½] ë°˜í™˜ íƒ€ì…ì„ shared_ptrë¡œ ë³€ê²½
 	std::shared_ptr<TransformComponent> transform() const { return _transform; }
 
-	// DW¼³¸í : glTF °ü·Ã ÄÄÆ÷³ÍÆ® ÆÑ Ãß°¡ ÇÔ¼ö
+	// DWì„¤ëª… : glTF ê´€ë ¨ ì»´í¬ë„ŒíŠ¸ íŒ© ì¶”ê°€ í•¨ìˆ˜
 	void add_glTF_conponent_pack();
 
 	// --- Component Management ---
 	template<typename T, typename... Args>
 	std::shared_ptr<T> add_component(Args&&... args)
 	{
-		// [Ãß°¡] ¼øÈ¸ Áß ÄÄÆ÷³ÍÆ® Ãß°¡ ½Ãµµ ½Ã ¿¡·¯ ¹ß»ı
+		// [ì¶”ê°€] ìˆœíšŒ ì¤‘ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€ ì‹œë„ ì‹œ ì—ëŸ¬ ë°œìƒ
 		if (_isIterating) {
 			std::string typeName = typeid(T).name();
 			std::string msg = "CRITICAL: Adding [" + typeName + "] during Awake/Update/FixedUpdate is NOT allowed.\n"
@@ -56,15 +56,15 @@ public:
 			assert(false && "Iterator Invalidation Risk: Use required_components tuple instead.");
 		}
 
-		// ÀÌ¹Ì ÇØ´ç Å¸ÀÔÀÇ ÄÄÆ÷³ÍÆ®°¡ ÀÖÀ¸¸é Ãß°¡ÇÏÁö ¾Ê°í ±âÁ¸ °ÍÀ» ¹İÈ¯
+		// ì´ë¯¸ í•´ë‹¹ íƒ€ì…ì˜ ì»´í¬ë„ŒíŠ¸ê°€ ìˆìœ¼ë©´ ì¶”ê°€í•˜ì§€ ì•Šê³  ê¸°ì¡´ ê²ƒì„ ë°˜í™˜
 		auto existing = get_component<T>();
 		if (existing)
 			return existing;
 
-		// ¸ÕÀú, ÀÌ ÄÄÆ÷³ÍÆ®°¡ ¿ä±¸ÇÏ´Â ´Ù¸¥ ÄÄÆ÷³ÍÆ®µéÀ» Àç±ÍÀûÀ¸·Î Ãß°¡ÇÕ´Ï´Ù.
+		// ë¨¼ì €, ì´ ì»´í¬ë„ŒíŠ¸ê°€ ìš”êµ¬í•˜ëŠ” ë‹¤ë¥¸ ì»´í¬ë„ŒíŠ¸ë“¤ì„ ì¬ê·€ì ìœ¼ë¡œ ì¶”ê°€í•©ë‹ˆë‹¤.
 		add_required_components(static_cast<typename T::required_components*>(nullptr));
 
-		// ±× ´ÙÀ½, ¿ø·¡ ¿äÃ»µÈ ÄÄÆ÷³ÍÆ®¸¦ Ãß°¡ÇÏ°í ¹İÈ¯ÇÕ´Ï´Ù.
+		// ê·¸ ë‹¤ìŒ, ì›ë˜ ìš”ì²­ëœ ì»´í¬ë„ŒíŠ¸ë¥¼ ì¶”ê°€í•˜ê³  ë°˜í™˜í•©ë‹ˆë‹¤.
 		auto new_component = std::make_shared<T>(std::forward<Args>(args)...);
 		new_component->set_game_object(shared_from_this());
 		_components.push_back(new_component);
@@ -87,64 +87,64 @@ public:
 	void remove_component(const std::shared_ptr<Component>& component);
 	const std::vector<std::shared_ptr<Component>>& components() const { return _components; }
 private:
-	// ÀÇÁ¸¼ºÀ» Àç±ÍÀûÀ¸·Î Ãß°¡ÇÏ±â À§ÇÑ ÅÛÇÃ¸´ µµ¿ì¹Ì ÇÔ¼ö
+	// ì˜ì¡´ì„±ì„ ì¬ê·€ì ìœ¼ë¡œ ì¶”ê°€í•˜ê¸° ìœ„í•œ í…œí”Œë¦¿ ë„ìš°ë¯¸ í•¨ìˆ˜
 	template <typename... T>
 	void add_required_components(std::tuple<T...>*)
 	{
-		// Æ©ÇÃÀÇ 0¹øÂ° ÀÎµ¦½ººÎÅÍ ÀÇÁ¸¼º Ãß°¡¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+		// íŠœí”Œì˜ 0ë²ˆì§¸ ì¸ë±ìŠ¤ë¶€í„° ì˜ì¡´ì„± ì¶”ê°€ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
 		add_required_component_at<0, T...>();
 	}
 
-	// 2. Àç±ÍÀûÀ¸·Î È£ÃâµÇ¸ç ½ÇÁ¦ ÀÛ¾÷À» ¼öÇàÇÏ´Â ÇÔ¼ö
+	// 2. ì¬ê·€ì ìœ¼ë¡œ í˜¸ì¶œë˜ë©° ì‹¤ì œ ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
 	template <size_t I, typename... T>
-	// ÅÛÇÃ¸´ ÀÎÀÚ I°¡ Æ©ÇÃÀÇ Å©±âº¸´Ù ÀÛÀ» ¶§¸¸ ÀÌ ÇÔ¼ö°¡ ¼±ÅÃµÇµµ·Ï ÇÕ´Ï´Ù. (SFINAE)
+	// í…œí”Œë¦¿ ì¸ì Iê°€ íŠœí”Œì˜ í¬ê¸°ë³´ë‹¤ ì‘ì„ ë•Œë§Œ ì´ í•¨ìˆ˜ê°€ ì„ íƒë˜ë„ë¡ í•©ë‹ˆë‹¤. (SFINAE)
 	typename std::enable_if<(I < sizeof...(T))>::type add_required_component_at()
 	{
-		// ÇöÀç ÀÎµ¦½º(I)¿¡ ÇØ´çÇÏ´Â ÄÄÆ÷³ÍÆ®ÀÇ Å¸ÀÔÀ» °¡Á®¿É´Ï´Ù.
+		// í˜„ì¬ ì¸ë±ìŠ¤(I)ì— í•´ë‹¹í•˜ëŠ” ì»´í¬ë„ŒíŠ¸ì˜ íƒ€ì…ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
 		using ComponentType = typename std::tuple_element<I, std::tuple<T...>>::type;
 
-		// ÇØ´ç Å¸ÀÔÀÇ ÄÄÆ÷³ÍÆ®°¡ ÀÌ °ÔÀÓ¿ÀºêÁ§Æ®¿¡ ¾ÆÁ÷ ¾øÀ¸¸é, Ãß°¡ÇÕ´Ï´Ù.
+		// í•´ë‹¹ íƒ€ì…ì˜ ì»´í¬ë„ŒíŠ¸ê°€ ì´ ê²Œì„ì˜¤ë¸Œì íŠ¸ì— ì•„ì§ ì—†ìœ¼ë©´, ì¶”ê°€í•©ë‹ˆë‹¤.
 		if (!get_component<ComponentType>())
 		{
 			add_component<ComponentType>();
 		}
 
-		// ´ÙÀ½ ÀÎµ¦½º(I + 1)ÀÇ ÄÄÆ÷³ÍÆ®¸¦ Ã³¸®ÇÏ±â À§ÇØ Àç±Í È£ÃâÇÕ´Ï´Ù.
+		// ë‹¤ìŒ ì¸ë±ìŠ¤(I + 1)ì˜ ì»´í¬ë„ŒíŠ¸ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ì¬ê·€ í˜¸ì¶œí•©ë‹ˆë‹¤.
 		add_required_component_at<I + 1, T...>();
 	}
 
-	// 3. Àç±Í È£ÃâÀ» Á¾·áÇÏ´Â ÇÔ¼ö
+	// 3. ì¬ê·€ í˜¸ì¶œì„ ì¢…ë£Œí•˜ëŠ” í•¨ìˆ˜
 	template <size_t I, typename... T>
-	// ÅÛÇÃ¸´ ÀÎÀÚ I°¡ Æ©ÇÃÀÇ Å©±â¿Í °°¾ÆÁö¸é ÀÌ ÇÔ¼ö°¡ ¼±ÅÃµÇ¾î Àç±Í°¡ ¸ØÃä´Ï´Ù.
+	// í…œí”Œë¦¿ ì¸ì Iê°€ íŠœí”Œì˜ í¬ê¸°ì™€ ê°™ì•„ì§€ë©´ ì´ í•¨ìˆ˜ê°€ ì„ íƒë˜ì–´ ì¬ê·€ê°€ ë©ˆì¶¥ë‹ˆë‹¤.
 	typename std::enable_if<(I == sizeof...(T))>::type add_required_component_at()
 	{
-		// ¸ğµç ÀÇÁ¸¼ºÀ» È®ÀÎÇßÀ¸¹Ç·Î ¾Æ¹«°Íµµ ÇÏÁö ¾Ê°í Àç±Í¸¦ Á¾·áÇÕ´Ï´Ù.
+		// ëª¨ë“  ì˜ì¡´ì„±ì„ í™•ì¸í–ˆìœ¼ë¯€ë¡œ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šê³  ì¬ê·€ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
 	}
 
-	// 4. ÀÇÁ¸¼ºÀÌ ¾Æ¿¹ ¾ø´Â °æ¿ì¸¦ À§ÇÑ ÇÔ¼ö
+	// 4. ì˜ì¡´ì„±ì´ ì•„ì˜ˆ ì—†ëŠ” ê²½ìš°ë¥¼ ìœ„í•œ í•¨ìˆ˜
 	void add_required_components(std::tuple<>*)
 	{
-		// ÇÒ ÀÏ ¾øÀ½
+		// í•  ì¼ ì—†ìŒ
 	}
 private:
 	std::vector<std::shared_ptr<Component>> _components;
-	std::shared_ptr<TransformComponent>     _transform; // ÇÊ¼ö ÄÄÆ÷³ÍÆ®ÀÎ Transform¿¡ ´ëÇÑ ºü¸¥ Á¢±Ù Æ÷ÀÎÅÍ
+	std::shared_ptr<TransformComponent>     _transform; // í•„ìˆ˜ ì»´í¬ë„ŒíŠ¸ì¸ Transformì— ëŒ€í•œ ë¹ ë¥¸ ì ‘ê·¼ í¬ì¸í„°
 	uint32_t                                _layerMask = 0;
 	bool _enabled = true;
-	mutable bool _isIterating = false; // [Ãß°¡] ¼øÈ¸ Áß »óÅÂ¸¦ ³ªÅ¸³»´Â ÇÃ·¡±×
+	mutable bool _isIterating = false; // [ì¶”ê°€] ìˆœíšŒ ì¤‘ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚´ëŠ” í”Œë˜ê·¸
 };
 //public:
-//	MeshType _meshType{}; // ¸Ş½¬ ¾î¶²°É ¿øÇÏ´ÂÁö?
+//	MeshType _meshType{}; // ë©”ì‰¬ ì–´ë–¤ê±¸ ì›í•˜ëŠ”ì§€?
 //
 //	BoundingOrientedBox _orientedBoundingBox = BoundingOrientedBox();
-//	bool _shouldDelete{}; // °´Ã¼¸¦ »èÁ¦ÇØ¾ß ÇÏ´ÂÁö?
-//	bool _isCollided{}; // Ãæµ¹ÇÏ¿´´ÂÁö?
+//	bool _shouldDelete{}; // ê°ì²´ë¥¼ ì‚­ì œí•´ì•¼ í•˜ëŠ”ì§€?
+//	bool _isCollided{}; // ì¶©ëŒí•˜ì˜€ëŠ”ì§€?
 //
-//	std::shared_ptr<GameObject> _collidedObject; // ´©±¸¶û ¹ÚÀº°ÇÁö?
+//	std::shared_ptr<GameObject> _collidedObject; // ëˆ„êµ¬ë‘ ë°•ì€ê±´ì§€?
 //	XMFLOAT4	_color = { 0.f,0.f,0.f,0.f };
 //
-//	XMFLOAT3 _gravityVector; // Áß·Â
-//	float _gravityValue = -2.0f; // Áß·Â°ª
+//	XMFLOAT3 _gravityVector; // ì¤‘ë ¥
+//	float _gravityValue = -2.0f; // ì¤‘ë ¥ê°’
 //	bool _hasGravity = true;
 //
 //	int _posX{};
@@ -159,15 +159,15 @@ private:
 //	virtual void collision(float elapsed_time) = 0;
 //	virtual void process_input(float elapsed_time) = 0;
 //
-//	//°ÔÀÓ °´Ã¼ÀÇ Áß·ÂÀ» ³ªÅ¸³½´Ù.
+//	//ê²Œì„ ê°ì²´ì˜ ì¤‘ë ¥ì„ ë‚˜íƒ€ë‚¸ë‹¤.
 //	void SetGravity(const XMFLOAT3& xmf3Gravity) { _gravityVector = xmf3Gravity; }
 //
-//	//TODO: ÇÇÅ·µµ ÄÄÆ÷³ÍÆ®·Î »¬°Í or ½ºÅ©¸³Æ® ÄÄÆ÷³ÍÆ®·Î »¬°Í
+//	//TODO: í”¼í‚¹ë„ ì»´í¬ë„ŒíŠ¸ë¡œ ëº„ê²ƒ or ìŠ¤í¬ë¦½íŠ¸ ì»´í¬ë„ŒíŠ¸ë¡œ ëº„ê²ƒ
 //	void generate_ray_for_picking(XMVECTOR& pick_position, XMMATRIX& view_matrix, XMVECTOR& pick_ray_origin, XMVECTOR& pick_ray_direction);
 //	int pick_object_by_ray_intersection(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance);
-//	bool pick_model_obb(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance);// ¸ğµ¨ÁÂÇ¥°èÀÇ OBB¿Í Ãæµ¹Çß´ÂÁö ¾Ë·ÁÁÖ´Â ÇÔ¼ö »ï°¢Çü °Ë»ç´Â ¾ÈÇÔ
+//	bool pick_model_obb(XMVECTOR& pick_position, XMMATRIX& view_matrix, float* hit_distance);// ëª¨ë¸ì¢Œí‘œê³„ì˜ OBBì™€ ì¶©ëŒí–ˆëŠ”ì§€ ì•Œë ¤ì£¼ëŠ” í•¨ìˆ˜ ì‚¼ê°í˜• ê²€ì‚¬ëŠ” ì•ˆí•¨
 //
-//	void update_bounding_box(); // DW¼³¸í : OOBB¹Ù¿îµù ¹Ú½º¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù. Áï È¸Àü°°Àº °ÍµéÀ» ¾÷µ¥ÀÌÆ®ÇÔ
+//	void update_bounding_box(); // DWì„¤ëª… : OOBBë°”ìš´ë”© ë°•ìŠ¤ë¥¼ ì—…ë°ì´íŠ¸ í•œë‹¤. ì¦‰ íšŒì „ê°™ì€ ê²ƒë“¤ì„ ì—…ë°ì´íŠ¸í•¨
 //
 //	void update(float DeltaTime);
 //
