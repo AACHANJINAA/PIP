@@ -19,6 +19,7 @@
 #include "TainerScript.h"
 #include "UIFrameRenderComponent.h"
 #include "QuestNPCScript.h"
+#include "UIManager.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -364,6 +365,20 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			// 다른 플레이어 (적) 생성 또는 업데이트
 			auto other_player = ObjectManager::instance()->create_game_object(name);
 			auto other_player_logic = other_player->add_component<OtherPlayerScript>();
+
+			// 1. 비어있는 파티 슬롯 할당
+			int slotIdx = UIManager::instance()->assign_party_slot(spawn_data._id);
+
+			// 2. 해당 슬롯 UI를 화면에 보이게 설정
+			if (slotIdx != -1) {
+				other_player_logic->set_party_slot_index(slotIdx);
+
+				std::string idxStr = std::to_string(slotIdx);
+				UIManager::instance()->set_visible(UILayer::BACKGROUND, "PartyHPFrame_" + idxStr, true); // 배경도 켜줌
+				UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyHP_" + idxStr, true);
+				UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyMP_" + idxStr, true);
+			}
+
 			other_player->transform()->set_local_position(spawn_data._position);
 			other_player->transform()->set_local_rotation(spawn_data._rotation);
 			other_player->set_layer("OtherPlayer");
@@ -444,6 +459,8 @@ void NetworkManager::HANDLE_S2C_LEAVE(common::packet::PacketStream& stream)
 	});
 	if (it != other_players.end())
 	{
+		UIManager::instance()->free_party_slot(leave_packet._id);
+
 		(*it)->destroy();
 	}
 }

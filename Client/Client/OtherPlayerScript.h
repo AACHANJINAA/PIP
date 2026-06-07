@@ -26,6 +26,9 @@ public:
     void on_sync_mp(int mp) { _mp = mp; } // [추가]
     void reset_state(); // [추가] 리스폰 시 상태 초기화
 
+	void set_party_slot_index(int index) { _partySlotIndex = index; }
+	int get_party_slot_index() const { return _partySlotIndex; }
+
     void set_hp(int hp) { _hp = hp; }    int hp() const { return _hp; }
     void set_id(int64_t id) { _playerId = id; }
     int64_t id() const { return _playerId; }
@@ -60,6 +63,8 @@ public:
     bool _isSwordGathered = false;              // 다 모였는지 플래그
     float _skillGatherTimer = 0.0f;             // 파티클 타이머
     float _skillEndingAnimationSpeed = 1.0f;    // 마무리 애니메이션 속도
+
+	int _partySlotIndex = -1; // UI 매니저의 파티 슬롯 인덱스
 
 
     std::shared_ptr<GameObject> _SkillObject = nullptr;
