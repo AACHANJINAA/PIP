@@ -44,17 +44,26 @@ void MainPlayerScript::set_hp(int hp)
 
 void MainPlayerScript::set_mp(int mp)
 {
-	if (_mp != mp)
-	{
-		CLOG("[Player MP] " << mp << " / " << _maxMp);
-	}
 	_mp = std::clamp(mp, 0, _maxMp);
+
+	if (!_mpBar_ui)
+	{
+		auto mp_bar_obj = ObjectManager::instance()->find_by_name("MP_Bar");
+		if (mp_bar_obj)
+		{
+			_mpBar_ui = mp_bar_obj->get_component<UIRenderComponent>();
+			if (_mpBar_ui) {
+				_mpBar_maxWidth = _mpBar_ui->get_size_x(); 
+			}
+		}
+	}
 }
 
 void MainPlayerScript::update(float deltaTime)
 {
 	die_ui_update(deltaTime);
 	update_hp_bar(deltaTime);
+	update_mp_bar(deltaTime);
 	
 	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
 	if (_particleEffectObject && _particleEffectObject->is_enable())
@@ -384,6 +393,25 @@ void MainPlayerScript::update_hp_bar(float deltaTime)
 		float ratio = _displayHp / static_cast<float>(_maxHp);
 		_hpBar_ui->set_size_x(_hpBar_maxWidth * ratio);
 		_hpBar_ui->set_uv_scale(ratio, 1.0f);
+	}
+}
+
+void MainPlayerScript::update_mp_bar(float deltaTime)
+{
+	if (_mpBar_ui)
+	{
+		// 10.0f는 속도
+		float lerp = std::min(1.0f, deltaTime * 10.0f);
+
+		// 현재 마나 수치로 부드럽게 이동
+		_displayMp += (static_cast<float>(_mp) - _displayMp) * lerp;
+
+		// 비율 계산 (0.0 ~ 1.0)
+		float ratio = _displayMp / static_cast<float>(_maxMp);
+
+		// UI 크기 및 텍스처 좌표(UV) 조절
+		_mpBar_ui->set_size_x(_mpBar_maxWidth * ratio);
+		_mpBar_ui->set_uv_scale(ratio, 1.0f);
 	}
 }
 
