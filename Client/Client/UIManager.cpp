@@ -114,11 +114,14 @@ std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::C
 }
 
 
-void UIManager::init_party_slots(int index, std::shared_ptr<UIRenderComponent> hp, std::shared_ptr<UIRenderComponent> mp) {
+void UIManager::init_party_slots(int index, std::shared_ptr<UIRenderComponent> hp,
+	std::shared_ptr<UIRenderComponent> mp,
+	std::shared_ptr<UIRenderComponent> id_icon) {
 	_partySlots[index].hp_bar = hp;
 	_partySlots[index].mp_bar = mp;
+	_partySlots[index].id_icon = id_icon; // <-- 저장
 	_partySlots[index].max_width = hp->get_size_x();
-	_partySlots[index].is_active = (index == 0); // 0번(메인)은 항상 활성
+	_partySlots[index].is_active = (index == 0);
 }
 
 int UIManager::assign_party_slot(int64_t player_id) {
@@ -138,8 +141,12 @@ void UIManager::free_party_slot(int64_t player_id) {
 			_partySlots[i].is_active = false;
 			_partySlots[i].player_id = -1;
 			// UI 숨기기
-			set_visible(UILayer::MIDDLE, "PartyHP_" + std::to_string(i), false);
-			set_visible(UILayer::MIDDLE, "PartyMP_" + std::to_string(i), false);
+			std::string idxStr = std::to_string(i);
+            set_visible(UILayer::MIDDLE, "PartyIDIcon_" + idxStr, false);
+			set_visible(UILayer::BACKGROUND, "PartyHPFrame_" + idxStr, false);
+			set_visible(UILayer::MIDDLE, "PartyHP_" + idxStr, false);
+			set_visible(UILayer::BACKGROUND, "PartyMPFrame_" + idxStr, false);
+			set_visible(UILayer::MIDDLE, "PartyMP_" + idxStr, false);
 			break;
 		}
 	}

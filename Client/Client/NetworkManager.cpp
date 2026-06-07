@@ -372,11 +372,20 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			// 2. 해당 슬롯 UI를 화면에 보이게 설정
 			if (slotIdx != -1) {
 				other_player_logic->set_party_slot_index(slotIdx);
-
 				std::string idxStr = std::to_string(slotIdx);
-				UIManager::instance()->set_visible(UILayer::BACKGROUND, "PartyHPFrame_" + idxStr, true); // 배경도 켜줌
+
+				// 5개 세트 활성화 (레이어 이름 주의: BACKGROUND, MIDDLE 등)
+				UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyIDIcon_" + idxStr, true);
+				UIManager::instance()->set_visible(UILayer::BACKGROUND, "PartyHPFrame_" + idxStr, true);
 				UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyHP_" + idxStr, true);
+				UIManager::instance()->set_visible(UILayer::BACKGROUND, "PartyMPFrame_" + idxStr, true);
 				UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyMP_" + idxStr, true);
+
+				auto slot = UIManager::instance()->get_party_slot(slotIdx);
+				if (slot && slot->id_icon) {
+					std::string res_name = "Resource/UI/ID/Player_" + std::to_string(spawn_data._id % 4 + 1) + ".dds";
+					slot->id_icon->set_texture(res_name);
+				}
 			}
 
 			other_player->transform()->set_local_position(spawn_data._position);
