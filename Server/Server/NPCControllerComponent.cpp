@@ -98,14 +98,33 @@ namespace PIP::GAME
 			return;
 		}
 
-		common::Vec3 vel = _aiVelocity;
-		vel.y = 0;
+		// --- [추가] 1. 외부 임팩트(넉백) 감쇄 처리 (PhysicsUpdate와 동일 로직) ---
+		float impactSpeed = common::Length(_impactVelocity);
+		if (impactSpeed > 50.0f) _impactVelocity = common::Normalize(_impactVelocity) * 50.0f; // 최대 넉백 속도 제한
+
+		if (impactSpeed > 0.1f) {
+			_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction * deltaTime);
+		}
+		else {
+			_impactVelocity = common::Vec3Zero;
+		}
+
+		// --- [추가] 2. 최종 수평 속도 합성 (AI 이동 + 넉백) ---
+		common::Vec3 horizontalVel;
+		// 강한 넉백 상태일 때는 AI 이동을 무시하고 밀려나게 함
+		if (common::Length(_impactVelocity) > 10.0f) {
+			horizontalVel = _impactVelocity;
+		}
+		else {
+			horizontalVel = _aiVelocity + _impactVelocity;
+		}
+		horizontalVel.y = 0; // 수평 속도 고정
 
 		// 수직 속도 누적
 		_verticalVelocity += _physicsSystem->GetGravity().GetY() * deltaTime;
 
-		// 1. 예상 위치 계산
-		common::Vec3 nextPos = currentPos + (_aiVelocity + common::Vec3(0, _verticalVelocity, 0)) * deltaTime;
+		// 3. 예상 위치 계산 (horizontalVel 반영)
+		common::Vec3 nextPos = currentPos + (horizontalVel + common::Vec3(0, _verticalVelocity, 0)) * deltaTime;
 
 		// [최적화 2] CastShape(65%) -> CastRay(가벼움)로 교체
 		// 지형 체크용으로 Ray만 쏴도 충분함 (NPC가 아주 크지 않은 이상)
