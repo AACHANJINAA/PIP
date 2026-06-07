@@ -22,7 +22,7 @@ NPC_Routes = {
 	},
 	["Basic"] = { -- 일반 몬스터용
 		{
-			spawn = { x = -215.27, y = 6.59, z = -366.41 },
+			spawn = { x = -215.27, y = 10.59, z = -366.41 },
 			max_hp = 100,
 			patrols = {},
 		},
@@ -34,7 +34,7 @@ NPC_Routes = {
 	},
 	["QuestNPC"] = { -- 퀘스트 제공 NPC
 		{
-			spawn = { x = -215.27, y = 6.59, z = -366.41 },
+			spawn = { x = -214.0, y = 6.6, z = -366.42 },
 			max_hp = 1000,
 			patrols = {}
 		}

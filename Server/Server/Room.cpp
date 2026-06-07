@@ -328,11 +328,11 @@ namespace PIP::SERVER
 		cc->Initialize(_physicsSystem, height, radius);
 
 		// 4. [핵심] 안전한 위치 찾기 (지형 레이캐스트 + 건물 끼임 체크)
-		JPH::Shape* npc_shape = (JPH::Shape*)cc->GetShape();
-		common::Vec3 safe_pos = find_safe_spawn_position(data->pos, npc_shape);
+		common::Vec3 safe_pos = find_safe_spawn_position(data->pos, cc);
 
 		// 5. 확정된 위치로 물리 및 트랜스폼 설정
 		new_npc->SetPosition(safe_pos);
+		new_npc->SetSpawnPosition(safe_pos); // [추가] 리스폰 시 공중에서 스폰되지 않도록 안전한 위치를 기본 스폰 지점으로 갱신
 		new_npc->SetLastUpdateTime(std::chrono::steady_clock::now());
 
 		GAME::NPC* ptr = new_npc.get();
@@ -340,54 +340,51 @@ namespace PIP::SERVER
 
 		return ptr;
 	}
-	common::Vec3 Room::find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape)
+	common::Vec3 Room::find_safe_spawn_position(const common::Vec3& pos, GAME::CharacterControllerComponent* cc)
 	{
 		common::Vec3 current_pos = pos;
-		bool is_stuck = true;
-		int attempts = 0;
+		
+		if (!cc) return current_pos;
 
+		float halfHeight = cc->GetHalfHeight();
+		
+		// 1. [Raycast] 약간 위에서 레이를 쏴서 현재 층의 바닥(지형) 높이 찾기 (지붕에 스폰되는 현상 방지)
+		// 원래 pos.y가 6.6이라면, 6.6 + 2.0 = 8.6에서 시작해서 아래로 10m만 쏨
+		JPH::RRayCast ray{ Utils::ToJolt(current_pos + common::Vec3(0, 2.0f, 0)), JPH::Vec3(0, -10.0f, 0) };
+		JPH::RayCastResult ray_res;
+
+		if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_res,
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+			_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
+		{
+			current_pos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_res.mFraction;
+		}
+
+		// 2. [CollideShape] 겹침 체크
 		// 지형은 무시하고 건물/오브젝트만 체크하기 위한 필터 설정
 		JPH::IgnoreMultipleBodiesFilter terrain_filter;
 		for (auto id : _terrainBodyIDs) {
 			terrain_filter.IgnoreBody(id);
 		}
 
-		while (is_stuck && attempts < 5)
-		{
-			// 1. [Raycast] 하늘에서 레이를 쏴서 바닥(지형) 높이 찾기
-			JPH::RRayCast ray{ Utils::ToJolt(current_pos + common::Vec3(0, 50, 0)), JPH::Vec3(0, -100, 0) };
-			JPH::RayCastResult ray_res;
+		JPH::CollideShapeSettings settings;
+		JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
 
-			if (_physicsSystem->GetNarrowPhaseQuery().CastRay(ray, ray_res,
-				_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
-				_physicsSystem->GetDefaultLayerFilter(Layers::NPC)))
-			{
-				current_pos.y = ray.mOrigin.GetY() + ray.mDirection.GetY() * ray_res.mFraction;
-			}
+		// 정확한 캡슐의 허리 높이(halfHeight) + 여유공간(0.1f)에서 체크하여 바닥과 닿아서 끼임 판정 나는 것을 방지
+		_physicsSystem->GetNarrowPhaseQuery().CollideShape(
+			cc->GetShape(), JPH::Vec3::sReplicate(1.0f),
+			JPH::RMat44::sTranslation(Utils::ToJolt(current_pos) + JPH::Vec3(0, halfHeight + 0.1f, 0)),
+			settings, JPH::RVec3::sZero(), collector,
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
+			_physicsSystem->GetDefaultLayerFilter(Layers::NPC),
+			terrain_filter
+		);
 
-			// 2. [CollideShape] 찾은 바닥 위치에서 건물과 겹치는지 체크
-			JPH::CollideShapeSettings settings;
-			JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
-
-			// 약간 위(0.9m)에서 체크 (발밑이 지형에 살짝 걸리는 것 방지)
-			_physicsSystem->GetNarrowPhaseQuery().CollideShape(
-				npc_shape, JPH::Vec3::sReplicate(1.0f),
-				JPH::RMat44::sTranslation(Utils::ToJolt(current_pos) + JPH::Vec3(0, 0.9f, 0)),
-				settings, JPH::RVec3::sZero(), collector,
-				_physicsSystem->GetDefaultBroadPhaseLayerFilter(Layers::NPC),
-				_physicsSystem->GetDefaultLayerFilter(Layers::NPC),
-				terrain_filter
-			);
-
-			if (!collector.HadHit()) {
-				is_stuck = false; // 안 끼었음!
-			}
-			else {
-				// 끼었다면 근처로 무작위 이동 후 재시도
-				current_pos.x += (rand() % 2 == 0 ? 3.0f : -3.0f);
-				current_pos.z += (rand() % 2 == 0 ? 3.0f : -3.0f);
-				attempts++;
-			}
+		if (collector.HadHit()) {
+			// 끼었다면 근처로 아주 살짝만 밀어줌 (과도한 무작위 이동으로 원래 의도한 스폰 위치를 크게 벗어나는 것 방지)
+			// CharacterVirtual이 Update 되면서 자연스럽게 밖으로 밀려남
+			current_pos.x += 0.5f;
+			current_pos.z += 0.5f;
 		}
 
 		return current_pos;
@@ -2214,6 +2211,12 @@ namespace PIP::SERVER
 		if (auto cc = npc->GetComponent<GAME::CharacterControllerComponent>()) {
 			cc->SetPhysicsActive(true);
 			cc->SetPosition(npc->GetSpawnPosition());
+			// [추가] 리스폰 직후 LightPhysicsUpdate의 조기 리턴 방지
+			// _verticalVelocity가 0이면 isMovingXZ=false 조건과 합쳐져 중력 계산을 통째로 스킵하여 공중에 뜸
+			if (auto nc = dynamic_cast<GAME::NPCControllerComponent*>(cc)) {
+				nc->SetVelocity({ 0, 0, 0 });        // AI 이동 속도 초기화
+				nc->ResetVerticalVelocity();           // 수직 속도를 -1.0f로 설정하여 중력 로직 강제 진입
+			}
 		}
 
 		// 5. 마지막에 Active 활성화 (이 시점부터 UpdateLogics 루프에 진입)

@@ -330,7 +330,7 @@ void GameFramework::ProcessNetwork()
 void GameFramework::ProcessInput()
 {
 	InputManager::instance()->Update();
-	if (InputManager::instance()->IsKeyDown(VK_F9))
+	if (InputManager::instance()->IsKeyDown(VK_F11))
 	{
 		_isFullscreenToggle = true;
 	}

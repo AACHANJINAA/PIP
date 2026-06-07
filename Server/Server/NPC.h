@@ -27,6 +27,7 @@ namespace PIP::GAME
 
 		// Getters
 		common::Vec3 GetSpawnPosition() const { return _spawnPosition; }
+		void SetSpawnPosition(const common::Vec3& pos) { _spawnPosition = pos; } // [추가] 안전한 위치로 스폰 지점 업데이트
 		int32_t GetMaxHP() const { return _maxHp; }
 		int64_t GetNpcId()          const { return GetId(); }
 		NPCType GetNpcType()            const { return _npc_type; }

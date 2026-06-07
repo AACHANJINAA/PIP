@@ -135,7 +135,7 @@ namespace PIP::SERVER
 		void RespawnPlayer(const std::shared_ptr<SESSION>& session);
 		
 		void SendNpcMovePacket(GAME::NPC* npc);
-		common::Vec3 find_safe_spawn_position(const common::Vec3& pos, JPH::Shape* npc_shape);
+		common::Vec3 find_safe_spawn_position(const common::Vec3& pos, GAME::CharacterControllerComponent* cc);
 
 
 	private:
