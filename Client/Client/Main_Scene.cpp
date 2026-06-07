@@ -276,19 +276,21 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	// 10. 파티 UI
 	// --- 파티 UI 설정 ---
 	float party_ui_scale = 0.7f;                    // 기존 0.5f에서 0.7f로 상향 (전체적인 크기 증가)
-	float icon_base_size = 120.0f;                  // 아이콘 기본 크기 상향
-	float icon_size = icon_base_size * party_ui_scale; // 실제 적용 크기 (약 84px)
+	float icon_base_size = 150.0f;                  // 아이콘 기본 크기 상향
+	float icon_size = icon_base_size * party_ui_scale; // 실제 적용 크기 
 
 	float party_screen_startX = 20.0f;               // 좌측 여백 살짝 줄임
-	float party_screen_startY = 180.0f;              // 시작 높이 살짝 위로
+	float party_screen_startY = 120.0f;              // 시작 높이 살짝 위로
 	float party_slot_total_gap = 80.0f;              // 슬롯 간 간격 (크기가 커졌으니 간격도 넓힘)
 
 	// 바의 시작 위치 (아이콘 오른쪽)
 	float bar_startX = party_screen_startX + icon_size + 15.0f;
+	float bar_startY = 0;
 
 	for (int i = 1; i < 4; ++i) {
 		std::string idx_str = std::to_string(i);
 		float current_y = party_screen_startY + (i * party_slot_total_gap);
+		bar_startY = current_y + 20.0f;
 
 		// 1. ID 아이콘 (크기 체감 확 되도록 조정)
 		auto icon_obj = ObjectManager::instance()->create_game_object("PartyIDIcon_" + idx_str);
@@ -296,11 +298,6 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		icon_comp->set_screen_position(party_screen_startX, current_y);
 		icon_comp->set_size(icon_size, icon_size);
 		icon_comp->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-
-		//long long my_party_id = NetworkManager::instance()->get_my_session_id();
-		//if (my_party_id < 0) my_party_id = 0; // -1이면 0으로 보정 -> Player_1.dds
-		//std::string party_resource_name = "Resource/UI/ID/Player_" + std::to_string(my_party_id % 4 + 1) + ".dds";
-		//icon_comp->set_texture(party_resource_name);
 		icon_comp->set_texture("Resource/UI/ID/Player_1.dds");
 		icon_comp->set_texture("Resource/UI/ID/Player_2.dds");
 		icon_comp->set_texture("Resource/UI/ID/Player_3.dds");
@@ -313,7 +310,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 		auto party_hp_frame_obj = ObjectManager::instance()->create_game_object("PartyHPFrame_" + idx_str);
 		auto party_hp_frame_comp = party_hp_frame_obj->add_component<UIRenderComponent>();
-		party_hp_frame_comp->set_screen_position(bar_startX, current_y);
+		party_hp_frame_comp->set_screen_position(bar_startX, bar_startY);
 		party_hp_frame_comp->set_size(party_hp_w, party_hp_h);
 		party_hp_frame_comp->set_texture("Resource/UI/HP_Bar_Frame.dds");
 		UIManager::instance()->add_ui(UILayer::BACKGROUND, "PartyHPFrame_" + idx_str, party_hp_frame_obj);
@@ -321,14 +318,14 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		auto party_hp_bar_obj = ObjectManager::instance()->create_game_object("PartyHP_" + idx_str);
 		auto party_hp_bar_comp = party_hp_bar_obj->add_component<UIRenderComponent>();
 		// 여백도 스케일에 맞게 조정 (기존 11, 4의 0.7배)
-		party_hp_bar_comp->set_screen_position(bar_startX + (11.0f * party_ui_scale), current_y + (4.0f * party_ui_scale));
+		party_hp_bar_comp->set_screen_position(bar_startX + (11.0f * party_ui_scale), bar_startY + (4.0f * party_ui_scale));
 		party_hp_bar_comp->set_size((410.0f - 24.0f) * party_ui_scale, (26.0f - 9.0f) * party_ui_scale);
 		party_hp_bar_comp->set_texture("Resource/UI/HP_Bar.dds");
 		UIManager::instance()->add_ui(UILayer::MIDDLE, "PartyHP_" + idx_str, party_hp_bar_obj);
 
 		// 3. MP 프레임 & 바 (HP 바로 아래 배치)
 		float party_mp_y_offset = party_hp_h + 5.0f; // HP바 바로 아래 5px 여백
-		float party_mp_current_y = current_y + party_mp_y_offset;
+		float party_mp_current_y = bar_startY + party_mp_y_offset;
 
 		auto party_mp_frame_obj = ObjectManager::instance()->create_game_object("PartyMPFrame_" + idx_str);
 		auto party_mp_frame_comp = party_mp_frame_obj->add_component<UIRenderComponent>();
