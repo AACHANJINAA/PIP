@@ -72,11 +72,14 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	name_renderer->set_size(200.f, 200.f);         
 	name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
+	
 	long long my_id = NetworkManager::instance()->get_my_session_id();
-	std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";  
-	name_renderer->set_texture(resource_name);
-	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
-
+	if (my_id >= 0)
+	{
+		std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";
+		name_renderer->set_texture(resource_name);
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
+	}
 	// 1. HP Frame (뒤에 렌더링될 프레임) & HP Bar (앞에 렌더링될 체력바)
 	auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
 	auto hp_frame = hp_frame_obj->add_component<UIRenderComponent>();

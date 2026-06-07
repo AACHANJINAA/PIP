@@ -191,7 +191,7 @@ void TerrainLoader::generate_grass_chunks(
 
 			// 해당 구역 내 랜덤 배치
 			for (int i = 0; i < instances_per_chunk; ++i) {
-				float rand_x = static_cast<float>(rand()) / RAND_MAX;
+				float rand_x = static_cast<float>(rand())	/ RAND_MAX;
 				float rand_z = static_cast<float>(rand()) / RAND_MAX;
 				float px = x + rand_x * chunk_size;
 				float pz = z + rand_z * chunk_size;

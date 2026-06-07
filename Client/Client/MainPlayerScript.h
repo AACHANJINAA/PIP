@@ -52,6 +52,7 @@ public:
 private:
 	// --- update 기능 분리용 private 함수 ---
 	void update_hp_bar(float deltaTime);
+	void update_mp_bar(float deltaTime);
 	void handle_state(float deltaTime);
 	void handle_input(float deltaTime);
 	void update_physics_and_visuals(float deltaTime);
@@ -75,6 +76,10 @@ private:
 	float _displayHp{ 100.0f };          // <- 추가 (lerp용 표시 HP)
 	float _hpBar_maxWidth{ 100.0f };
 	std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
+
+	float _displayMp{ 100.0f };          // lerp용 (부드러운 이동)
+	float _mpBar_maxWidth{ 100.0f };      // 바의 최대 길이를 저장할 변수
+	std::shared_ptr<UIRenderComponent> _mpBar_ui{ nullptr }; // 실제 UI 컴포넌트
 
 	int32_t _mp{ 100 };                  // [추가]
 	int32_t _maxMp{ 100 };               // [추가]
