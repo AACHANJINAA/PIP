@@ -84,7 +84,6 @@ namespace PIP::SERVER
         for (int i = 0; i < 1; ++i) {
             room->spawn_npc(GAME::NPCType::MagicGuard);
         }
-		room->spawn_npc(GAME::NPCType::Basic);
         room->spawn_npc(GAME::NPCType::QuestNPC);
         // 2. 보스 테이너 배치
         //room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");

@@ -14,6 +14,7 @@ namespace PIP::GAME
         void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
         void LightPhysicsUpdate(float deltaTime); // LOD용 경량 물리
         void SetVelocity(const common::Vec3& velocity) { _aiVelocity = velocity; }
+        void ResetVerticalVelocity() { _verticalVelocity = -1.0f; } // [추가] 리스폰 시 중력 로직 강제 진입용
 
 	private:
         common::Vec3 _aiVelocity = { 0,0,0 };

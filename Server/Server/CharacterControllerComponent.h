@@ -16,6 +16,8 @@ namespace PIP::GAME
         }
         virtual ~CharacterControllerComponent() override;
 
+        float GetHalfHeight() const { return _halfHeight; }
+
         void Initialize() override {}
         virtual void Initialize(JPH::PhysicsSystem* physicsSystem, float height = 1.8f, float radius = 0.3f);
 
