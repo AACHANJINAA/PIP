@@ -18,6 +18,7 @@ struct PartySlot {
 	int64_t player_id = -1;
 	std::shared_ptr<UIRenderComponent> hp_bar;
 	std::shared_ptr<UIRenderComponent> mp_bar;
+    std::shared_ptr<UIRenderComponent> id_icon;
 	float max_width = 150.0f; // 파티원용 작은 바 크기
 };
 
@@ -50,7 +51,7 @@ public:
     std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)>& ui_render_vector();
 
 	// 파티 슬롯 초기화 (Scene에서 호출)
-	void init_party_slots(int index, std::shared_ptr<UIRenderComponent> hp, std::shared_ptr<UIRenderComponent> mp);
+	void init_party_slots(int index, std::shared_ptr<UIRenderComponent> hp, std::shared_ptr<UIRenderComponent> mp, std::shared_ptr<UIRenderComponent> id_icon);
 
 	// 슬롯 할당 및 해제
 	int assign_party_slot(int64_t player_id);
