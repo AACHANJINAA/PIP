@@ -272,6 +272,74 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
         UIManager::instance()->add_ui(UILayer::MIDDLE, name, num_obj);
         UIManager::instance()->set_visible(UILayer::MIDDLE, name, false);
     }
+
+	// 10. 파티 UI
+	// 메인 플레이어(나)를 0번 슬롯으로 등록
+	// 기존에 생성된 hp_bar와 mp_bar 변수를 사용합니다.
+	UIManager::instance()->init_party_slots(0, hp_bar, mp_bar);
+
+	// --- 파티 UI 풀링 설정 (0번 메인 ~ 3번 타인 총 4명) ---
+	float party_ui_scale = 0.5f;                    // 메인 UI 대비 0.5배 축소
+	float party_frame_w = 410.0f * party_ui_scale;    // 205.0f
+	float party_frame_h = 26.0f * party_ui_scale;     // 13.0f
+
+	// 프레임 대비 바의 내부 여백 (원본 11, 4의 절반)
+	float party_bar_offX = 11.0f * party_ui_scale;   // 5.5f
+	float party_bar_offY = 4.0f * party_ui_scale;    // 2.0f
+	// 바의 크기 (원본 386x17의 절반)
+	float party_bar_w = (410.0f - 24.0f) * party_ui_scale; // 193.0f
+	float party_bar_h = (26.0f - 9.0f) * party_ui_scale;   // 8.5f
+
+	float party_screen_startX = 30.0f;               // 화면 좌측 여백
+	float party_screen_startY = 300.0f;              // 시작 높이 (위에서 아래로 나열됨)
+	float party_hp_mp_inner_gap = 15.0f;             // 슬롯 내부 HP바와 MP바 사이 간격
+	float party_slot_total_gap = 50.0f;              // 각 유저(슬롯) 간의 수직 간격
+
+	for (int i = 0; i < 4; ++i) {
+		std::string party_idx_str = std::to_string(i);
+		float party_current_y = party_screen_startY + (i * party_slot_total_gap);
+
+		// 1. Party HP Bar Frame
+		auto party_hp_frame_obj = ObjectManager::instance()->create_game_object("PartyHPFrame_" + party_idx_str);
+		auto party_hp_frame_comp = party_hp_frame_obj->add_component<UIRenderComponent>();
+		party_hp_frame_comp->set_screen_position(party_screen_startX, party_current_y);
+		party_hp_frame_comp->set_size(party_frame_w, party_frame_h);
+		party_hp_frame_comp->set_texture("Resource/UI/HP_Bar_Frame.dds");
+		UIManager::instance()->add_ui(UILayer::BACKGROUND, "PartyHPFrame_" + party_idx_str, party_hp_frame_obj);
+
+		// 2. Party HP Bar
+		auto party_hp_bar_obj = ObjectManager::instance()->create_game_object("PartyHP_" + party_idx_str);
+		auto party_hp_bar_comp = party_hp_bar_obj->add_component<UIRenderComponent>();
+		party_hp_bar_comp->set_screen_position(party_screen_startX + party_bar_offX, party_current_y + party_bar_offY);
+		party_hp_bar_comp->set_size(party_bar_w, party_bar_h);
+		party_hp_bar_comp->set_texture("Resource/UI/HP_Bar.dds");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "PartyHP_" + party_idx_str, party_hp_bar_obj);
+
+		// 3. Party MP Bar Frame
+		auto party_mp_frame_obj = ObjectManager::instance()->create_game_object("PartyMPFrame_" + party_idx_str);
+		auto party_mp_frame_comp = party_mp_frame_obj->add_component<UIRenderComponent>();
+		party_mp_frame_comp->set_screen_position(party_screen_startX, party_current_y + party_hp_mp_inner_gap);
+		party_mp_frame_comp->set_size(party_frame_w, party_frame_h);
+		party_mp_frame_comp->set_texture("Resource/UI/HP_Bar_Frame.dds");
+		UIManager::instance()->add_ui(UILayer::BACKGROUND, "PartyMPFrame_" + party_idx_str, party_mp_frame_obj);
+
+		// 4. Party MP Bar
+		auto party_mp_bar_obj = ObjectManager::instance()->create_game_object("PartyMP_" + party_idx_str);
+		auto party_mp_bar_comp = party_mp_bar_obj->add_component<UIRenderComponent>();
+		party_mp_bar_comp->set_screen_position(party_screen_startX + party_bar_offX, party_current_y + party_hp_mp_inner_gap + party_bar_offY);
+		party_mp_bar_comp->set_size(party_bar_w, party_bar_h);
+		party_mp_bar_comp->set_texture("Resource/UI/MP_Bar.dds");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "PartyMP_" + party_idx_str, party_mp_bar_obj);
+
+		// 0번(메인 플레이어)은 항상 보이고, 1~3번은 접속 전까지 숨김
+		UIManager::instance()->set_visible(UILayer::BACKGROUND, "PartyHPFrame_" + party_idx_str, false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyHP_" + party_idx_str, false);
+		UIManager::instance()->set_visible(UILayer::BACKGROUND, "PartyMPFrame_" + party_idx_str, false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "PartyMP_" + party_idx_str, false);
+
+		// 5. [중요] UIManager 슬롯 초기화 (PartySlot 구조체에 저장)
+		UIManager::instance()->init_party_slots(i, party_hp_bar_comp, party_mp_bar_comp);
+	}
 }
 
 void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

@@ -12,6 +12,7 @@
 #include "SocketComponenet.h"
 #include "ParticleSystemComponent.h"
 #include "ParticleRenderComponent.h"
+#include "UIManager.h"
 
 void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
 {
@@ -94,6 +95,21 @@ void OtherPlayerScript::init_skill_variables()
 
 void OtherPlayerScript::update(float deltaTime)
 {
+	if (_partySlotIndex != -1) {
+		auto slot = UIManager::instance()->get_party_slot(_partySlotIndex);
+		if (slot && slot->hp_bar) {
+			// HP 업데이트 로직
+			float ratio = (float)_hp / 100.0f; // _maxHp가 있다면 활용
+			slot->hp_bar->set_size_x(slot->max_width * ratio);
+			slot->hp_bar->set_uv_scale(ratio, 1.0f);
+
+			// MP 업데이트 로직
+			float mp_ratio = (float)_mp / 100.0f;
+			slot->mp_bar->set_size_x(slot->max_width * mp_ratio);
+			slot->mp_bar->set_uv_scale(mp_ratio, 1.0f);
+		}
+	}
+
     // [추가] _playerId가 -1 이면 Scene Editor에서 배치한 더미 비주얼이므로 삭제 (혹은 비활성화)
     if (_playerId == -1) {
         ObjectManager::instance()->remove_game_object(game_object());

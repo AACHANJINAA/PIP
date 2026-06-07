@@ -13,6 +13,14 @@ enum class UILayer
     COUNT
 };
 
+struct PartySlot {
+	bool is_active = false;
+	int64_t player_id = -1;
+	std::shared_ptr<UIRenderComponent> hp_bar;
+	std::shared_ptr<UIRenderComponent> mp_bar;
+	float max_width = 150.0f; // 파티원용 작은 바 크기
+};
+
 class UIManager : public Singleton<UIManager>
 {
     friend Singleton<UIManager>;
@@ -41,7 +49,18 @@ public:
     // 렌더링 할 ui vector 가져오기
     std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)>& ui_render_vector();
 
+	// 파티 슬롯 초기화 (Scene에서 호출)
+	void init_party_slots(int index, std::shared_ptr<UIRenderComponent> hp, std::shared_ptr<UIRenderComponent> mp);
+
+	// 슬롯 할당 및 해제
+	int assign_party_slot(int64_t player_id);
+	void free_party_slot(int64_t player_id);
+
+	PartySlot* get_party_slot(int index) { return &_partySlots[index]; }
+
 private:
+    PartySlot _partySlots[4]; // 0번: 메인, 1~3번: 타인
+
     std::array<std::unordered_map<std::string, std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)> _uiLayers;
 
     std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::COUNT)> _uiRanderVector;

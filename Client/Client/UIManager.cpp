@@ -113,3 +113,34 @@ std::array<std::vector<std::shared_ptr<GameObject>>, static_cast<int>(UILayer::C
     return _uiRanderVector;
 }
 
+
+void UIManager::init_party_slots(int index, std::shared_ptr<UIRenderComponent> hp, std::shared_ptr<UIRenderComponent> mp) {
+	_partySlots[index].hp_bar = hp;
+	_partySlots[index].mp_bar = mp;
+	_partySlots[index].max_width = hp->get_size_x();
+	_partySlots[index].is_active = (index == 0); // 0번(메인)은 항상 활성
+}
+
+int UIManager::assign_party_slot(int64_t player_id) {
+	for (int i = 1; i < 4; ++i) { // 1번 슬롯부터 탐색
+		if (!_partySlots[i].is_active) {
+			_partySlots[i].is_active = true;
+			_partySlots[i].player_id = player_id;
+			return i;
+		}
+	}
+	return -1;
+}
+
+void UIManager::free_party_slot(int64_t player_id) {
+	for (int i = 1; i < 4; ++i) {
+		if (_partySlots[i].player_id == player_id) {
+			_partySlots[i].is_active = false;
+			_partySlots[i].player_id = -1;
+			// UI 숨기기
+			set_visible(UILayer::MIDDLE, "PartyHP_" + std::to_string(i), false);
+			set_visible(UILayer::MIDDLE, "PartyMP_" + std::to_string(i), false);
+			break;
+		}
+	}
+}
