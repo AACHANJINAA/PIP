@@ -46,6 +46,7 @@ namespace PIP
 		void LoadDataFile();
 
 		const NPCSpawnData* GetNPCSpawnData(common::packet::NPCType type, int index) const;
+		size_t GetNPCSpawnCount(common::packet::NPCType type) const; // [추가] 타입별 스폰 데이터 개수 반환
 		const QuestData* GetQuestData(int32_t id) const; // [추가]
 		
 	private:

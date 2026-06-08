@@ -270,75 +270,80 @@ namespace PIP::SERVER
 
 		MYLOG("[Room] NPC " << npcId << " has been removed and cleaned up.");
 	}
-	GAME::NPC* Room::spawn_npc(GAME::NPCType type, const std::string& name)
+	void Room::spawn_npc(GAME::NPCType type, const std::string& name)
 	{
-		// 1. NPC 고유 ID 생성 (방 번호 기반으로 충돌 방지)
-		int64_t npc_id = _next_npc_id + (_room_id * 10000LL) + _npcs.size();
+		size_t count = LuaManager::Instance()->GetNPCSpawnCount(type);
+		if (count == 0) count = 1; // Lua 데이터가 아예 없을 경우 (수동 스폰)를 위해 최소 1번은 실행
 
-		// 2. 타입별 객체 생성 (확장 포인트)
-		std::unique_ptr<GAME::NPC> new_npc;
-		float radius = 0.5f;
-		float height = 1.8f;
-
-		const NPCSpawnData* data = LuaManager::Instance()->GetNPCSpawnData(type, 0);
-
-		switch (type)
+		for (size_t i = 0; i < count; ++i)
 		{
-		case GAME::NPCType::Tainer:
+			// 1. NPC 고유 ID 생성 (방 번호 기반으로 충돌 방지)
+			int64_t npc_id = _next_npc_id + (_room_id * 10000LL) + _npcs.size();
+
+			// 2. 타입별 객체 생성 (확장 포인트)
+			std::unique_ptr<GAME::NPC> new_npc;
+			float radius = 0.5f;
+			float height = 1.8f;
+
+			const NPCSpawnData* data = LuaManager::Instance()->GetNPCSpawnData(type, static_cast<int>(i));
+			common::Vec3 spawnPos = data ? data->pos : common::Vec3{0, 0, 0};
+			int32_t spawnHp = data ? data->max_hp : 100;
+
+			switch (type)
 			{
-				new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, data->pos);
-				radius = 1.0f; height = 2.5f; // 보스 규격
-				break;
+			case GAME::NPCType::Tainer:
+				{
+					new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, spawnPos);
+					radius = 1.0f; height = 2.5f; // 보스 규격
+					break;
+				}
+			case GAME::NPCType::Basic:
+				{
+					new_npc = std::make_unique<GAME::NPC>(npc_id, type, _room_id, spawnPos, spawnHp);
+					break;
+				}
+			case GAME::NPCType::MagicGuard:
+				{
+					new_npc = std::make_unique<GAME::MagicGuard>(npc_id, _room_id, spawnPos, spawnHp);
+					break;
+				}
+			case GAME::NPCType::QuestNPC:
+				{
+					new_npc = std::make_unique<GAME::QuestNPC>(npc_id, type, _room_id, spawnPos, spawnHp);
+					break;
+				}
+			default:
+				MYERROR("[Room] Attempted to spawn unknown NPC type: " << static_cast<int>(type));
+				continue;
 			}
-		case GAME::NPCType::Basic:
+
+			// [추가] LuaManager에서 해당 위치의 데이터를 찾아와서 적용
+			if (data)
 			{
-				new_npc = std::make_unique<GAME::NPC>(npc_id, type, _room_id, data->pos, data->max_hp);
-				break;
+				new_npc->ApplySpawnData(*data);
 			}
-		case GAME::NPCType::MagicGuard:
+			else
 			{
-				new_npc = std::make_unique<GAME::MagicGuard>(npc_id, _room_id, data->pos, data->max_hp);
-				break;
+				// Lua에 데이터가 없는 경우(예: 수동 스폰) 기본값 설정
+				new_npc->SetHP(100);
 			}
-		case GAME::NPCType::QuestNPC:
-			{
-				new_npc = std::make_unique<GAME::QuestNPC>(npc_id, type, _room_id, data->pos, data->max_hp);
-				break;
-			}
-		default:
-			MYERROR("[Room] Attempted to spawn unknown NPC type: " << static_cast<int>(type));
-			break;
+
+			if (!name.empty()) new_npc->SetName(name);
+
+			// 3. 물리 컨트롤러 초기화
+			auto cc = new_npc->GetComponent<GAME::CharacterControllerComponent>();
+			cc->Initialize(_physicsSystem, height, radius);
+
+			// 4. [핵심] 안전한 위치 찾기 (지형 레이캐스트 + 건물 끼임 체크)
+			common::Vec3 safe_pos = find_safe_spawn_position(spawnPos, cc);
+
+			// 5. 확정된 위치로 물리 및 트랜스폼 설정
+			new_npc->SetPosition(safe_pos);
+			new_npc->SetSpawnPosition(safe_pos); // [추가] 리스폰 시 공중에서 스폰되지 않도록 안전한 위치를 기본 스폰 지점으로 갱신
+			new_npc->SetLastUpdateTime(std::chrono::steady_clock::now());
+
+			AddNPC(std::move(new_npc));
 		}
-
-		// [추가] LuaManager에서 해당 위치의 데이터를 찾아와서 적용
-		if (data)
-		{
-			new_npc->ApplySpawnData(*data);
-		}
-		else
-		{
-			// Lua에 데이터가 없는 경우(예: 수동 스폰) 기본값 설정
-			new_npc->SetHP(100);
-		}
-
-		if (!name.empty()) new_npc->SetName(name);
-
-		// 3. 물리 컨트롤러 초기화
-		auto cc = new_npc->GetComponent<GAME::CharacterControllerComponent>();
-		cc->Initialize(_physicsSystem, height, radius);
-
-		// 4. [핵심] 안전한 위치 찾기 (지형 레이캐스트 + 건물 끼임 체크)
-		common::Vec3 safe_pos = find_safe_spawn_position(data->pos, cc);
-
-		// 5. 확정된 위치로 물리 및 트랜스폼 설정
-		new_npc->SetPosition(safe_pos);
-		new_npc->SetSpawnPosition(safe_pos); // [추가] 리스폰 시 공중에서 스폰되지 않도록 안전한 위치를 기본 스폰 지점으로 갱신
-		new_npc->SetLastUpdateTime(std::chrono::steady_clock::now());
-
-		GAME::NPC* ptr = new_npc.get();
-		AddNPC(std::move(new_npc));
-
-		return ptr;
 	}
 	common::Vec3 Room::find_safe_spawn_position(const common::Vec3& pos, GAME::CharacterControllerComponent* cc)
 	{
@@ -2143,7 +2148,8 @@ namespace PIP::SERVER
 						if (quest_info._state == common::packet::QuestState::IN_PROGRESS) {
 							const QuestData* qData = LuaManager::Instance()->GetQuestData(quest_id);
 							if (qData && qData->type == common::packet::QuestType::KILL_MONSTER && qData->target_name == npcTypeName) {
-								session->_player->UpdateQuestProgress(quest_id, quest_info._current_count + 1);
+								auto updated_info = session->_player->UpdateQuestProgress(quest_id, quest_info._current_count + 1);
+								SendQuestUpdate(session, updated_info);
 							}
 						}
 					}

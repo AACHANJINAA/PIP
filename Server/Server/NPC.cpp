@@ -88,8 +88,10 @@ namespace PIP::GAME
 		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // 전방 1.5m 지점
 		normalAtk.damage = 10;
 		normalAtk.cooldown = 1.2f;
+		normalAtk.animationDuration = 0.8f; // [추가] 일반 공격 애니메이션 길이
+		normalAtk.attackTiming = 0.4f;
 		normalAtk.entityState = common::packet::EntityState::ACTION; // 공격 애니메이션 상태로
-		normalAtk.actionId = 1; // 일반 공격 행동 ID (임시)
+		normalAtk.actionId = 1; // 일반 공격 행동 ID
 
 		// 강력한 공격: 전방 4m 범위의 박스 형태 (강한 일격)
 		AttackConfig heavyAtk;
@@ -97,8 +99,10 @@ namespace PIP::GAME
 		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
 		heavyAtk.damage = 20;
 		heavyAtk.cooldown = 4.0f;
+		heavyAtk.animationDuration = 1.2f; // [추가] 강공격 애니메이션 길이
+		heavyAtk.attackTiming = 0.6f;
 		heavyAtk.entityState = common::packet::EntityState::ACTION; // 공격 애니메이션 상태로
-		heavyAtk.actionId = 1; // 일반 공격 행동 ID (임시)
+		heavyAtk.actionId = 1; // [수정] 강공격 행동 ID 분리
 
 		BTBuilder builder;
 		auto root = builder
@@ -109,6 +113,7 @@ namespace PIP::GAME
 				// --- [우선순위 1] 전투 로직 ---
 				.sequence()
 					.leaf<Condition_HasEnemy>() // 타겟(적군)이 있는가?
+					.leaf<Condition_IsWithinTetherRange>(10.0f) // 10m 멀어지면 타겟 상실 (테더 조건 추가)
 					.selector()
 					// 1-1. 강력한 공격 시도 (사거리 4.5m)
 						.sequence()
@@ -120,17 +125,22 @@ namespace PIP::GAME
 						.leaf<Condition_IsEnemyInRange>(2.5f)
 						.leaf<Action_AttackEnemy>(normalAtk)
 					.end()
-					// 1-3. 타겟 사거리 밖이면 추격
-					.leaf<Action_ChaseEnemy>(6.0f, 1.5f) // 추격 속도 6.0
+					// 1-3. 타겟 사거리 밖이면 네비메쉬 추격
+					.sequence()
+						.leaf<Action_UpdateEnemyPosToTarget>()
+						.leaf<Action_FindPath>("MainStage_NavMesh")
+						.leaf<Action_FollowPath>(6.0f) // 추격 속도 6.0
+					.end()
 				.end()
 			.end()
 			// --- [우선순위 2] 배회/이동 로직 (전투 중이 아닐 때) ---
 			.sequence()
-				.leaf<Condition_HasTarget>() // 이동 목적지가 있는가?
-				.leaf<Action_MoveToTarget>(3.0f) // 배회 속도 3.0
-			.end()
-			// --- [우선순위 3] 맵 내 새로운 무작위 목적지 찾기 ---
-			.leaf<Action_FindRandomTarget>(30.0f)
+				.selector()
+					.leaf<Condition_HasTarget>() // 이미 배회 목적지가 있는가?
+					.leaf<Action_SetRandomTargetAroundSpawn>(10.0f) // 없다면 스폰 위치 기준 10m 이내 랜덤 세팅
+				.end()
+				.leaf<Action_FindPath>("MainStage_NavMesh") // 목적지로 가는 네비메쉬 길찾기
+				.leaf<Action_FollowPath>(3.0f) // 배회 속도 3.0으로 이동
 			.end()
 		.end()
 		.build();
@@ -207,6 +217,9 @@ namespace PIP::GAME
 					auto bb = ai->GetBlackboard();
 					if (attacker) {
 						bb->set("target_enemy", attacker->GetId());
+						// [수정] 피격 시 즉각 추격을 위해 기존 경로 및 길찾기 쿨타임 초기화
+						bb->set("path_search_cooldown", 0.0f);
+						bb->set("path", std::vector<common::Vec3>{});
 					}
 				}
 
@@ -226,6 +239,19 @@ namespace PIP::GAME
 		_lastSentRot = { 0.f, 0.f, 0.f, -1.f };
 		_lastSentState = common::packet::EntityState::DEAD;
 		_lastSentActionId = -1;
+
+		// [수정] 부활 시 AI 블랙보드 초기화 (이전 타겟이나 경로가 남아있어 배회를 안하는 버그 수정)
+		if (_aiComponent) {
+			auto bb = _aiComponent->GetBlackboard();
+			if (bb) {
+				bb->set("target_enemy", std::any());
+				bb->set("target_pos", std::any());
+				bb->set("path", std::vector<common::Vec3>{});
+				bb->set("path_search_cooldown", 0.0f);
+				bb->set("heal_timer", 0.0f);
+				// actual_spawn_pos는 유지 (스폰 위치 기준 방황을 위해)
+			}
+		}
 	}
 
 	void NPC::ApplySpawnData(const NPCSpawnData& data)
@@ -259,8 +285,31 @@ namespace PIP::GAME
 			SetState(common::packet::EntityState::IDLE);
 		}
 
-		// 3. [최적화] 컴포넌트 루프 회피 (Actor::Update 대신 직접 업데이트)
+		// 3. 비전투 시 체력 회복 및 글로벌 공격 쿨타임 로직
 		if (_aiComponent) {
+			auto bb = _aiComponent->GetBlackboard();
+			if (bb) {
+				// 글로벌 공격 쿨타임 감소 (항상 진행)
+				float atkCD = bb->has("global_attack_cooldown") ? bb->get<float>("global_attack_cooldown") : 0.0f;
+				if (atkCD > 0.0f) {
+					bb->set("global_attack_cooldown", atkCD - deltaTime);
+				}
+
+				if (!bb->has("target_enemy")) {
+					float healTimer = bb->has("heal_timer") ? bb->get<float>("heal_timer") : 0.0f;
+					healTimer += deltaTime;
+					if (healTimer >= 5.0f) {
+						healTimer -= 5.0f;
+						if (_hp < _maxHp) {
+							_hp = std::min(_hp + static_cast<int32_t>(_maxHp * 0.1f), _maxHp);
+						}
+					}
+					bb->set("heal_timer", healTimer);
+				} else {
+					bb->set("heal_timer", 0.0f);
+				}
+			}
+
 			_aiComponent->Update(deltaTime, allocator);
 		}
 		

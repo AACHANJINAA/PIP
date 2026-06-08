@@ -27,7 +27,62 @@ NPC_Routes = {
 			patrols = {},
 		},
 		{
-			spawn = { x = 18.0, y = 5.3, z = 180.0 },
+			spawn = { x = -232.0, y = 5.0, z = -324.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -206.0, y = 6.5, z = -330.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -175.0, y = 6.5, z = -341.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -155.0, y = 10.0, z = -354.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -232.0, y = 5.0, z = -324.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -186.0, y = 8.0, z = -380.59 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -232.0, y = 5.0, z = -324.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -222.0, y = 7.0, z = -384.17 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -234.0, y = 9.0, z = -409.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -263.0, y = 6.0, z = -354.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -263.0, y = 6.0, z = -359.0 },
+			max_hp = 100,
+			patrols = {},
+		},
+		{
+			spawn = { x = -270.0, y = 6.0, z = -359.0 },
 			max_hp = 100,
 			patrols = {},
 		}
