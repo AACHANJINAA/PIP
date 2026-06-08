@@ -73,46 +73,60 @@ POINT InputManager::GetMouseDelta()
 
 void InputManager::ChangeShowCusor()
 {
-    // 상태 바꾸고 적용
+    // 커서 표시 토글
     _isShowCusor = !_isShowCusor;
     ShowCursor(_isShowCusor);
 
-    // 상태 바꿀 때 마우스 팍! 튀는 것 방지
     RECT rect;
-    ::GetWindowRect(m_hWnd, &rect);
+    ::GetClientRect(m_hWnd, &rect);
 
-    // 현재 화면의 중앙값 구하기
-    int centerX = (rect.left + rect.right) / 2;
-    int centerY = (rect.top + rect.bottom) / 2;
+    POINT centerPt = { (rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2 };
+    ::ClientToScreen(m_hWnd, &centerPt);
 
-    // 마우스 중앙으로 이동
+    int centerX = centerPt.x;
+    int centerY = centerPt.y;
+
+    // 마우스 중앙 이동
     SetCursorPos(centerX, centerY);
+
+    // 상태 변경 시 m_ptOldMousePos와 m_ptMousePos를 현재 중앙으로 강제 갱신
+    m_ptOldMousePos.x = centerX;
+    m_ptOldMousePos.y = centerY;
+    m_ptMousePos.x = centerX;
+    m_ptMousePos.y = centerY;
 }
 
 void InputManager::MouseFixCenter()
 {
-    if (!_isShowCusor) // 마우스 안보일 때는 화면 중앙으로 고정시키기
+    if (!_isShowCusor) // 커서가 숨겨진 상태일 때만
     {
-        RECT rect;
-        ::GetWindowRect(m_hWnd, &rect);
-
-        // 현재 화면의 중앙값 구하기
-        int centerX = (rect.left + rect.right) / 2;
-        int centerY = (rect.top + rect.bottom) / 2;
-
-        // 현재 마우스 위치
+        // 1. 현재 마우스 위치 얻기
         POINT currentPos;
         GetCursorPos(&currentPos);
 
-        // 현재 마우스 위치
-        m_ptMousePos.x = currentPos.x;
-        m_ptMousePos.y = currentPos.y;
+        // 2. 실제 마우스 이동량 계산 (마지막 스냅 위치 대비)
+        int deltaX = currentPos.x - m_ptOldMousePos.x;
+        int deltaY = currentPos.y - m_ptOldMousePos.y;
 
-        // 화면 중앙 위치
+        // 3. 새로운 클라이언트 영역 중앙 계산
+        RECT rect;
+        ::GetClientRect(m_hWnd, &rect);
+        POINT centerPt = { (rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2 };
+        ::ClientToScreen(m_hWnd, &centerPt);
+
+        int centerX = centerPt.x;
+        int centerY = centerPt.y;
+
+        // 4. 새로운 중앙으로 마우스 스냅
+        SetCursorPos(centerX, centerY);
+
+        // 5. 다음 프레임 비교를 위해 m_ptOldMousePos를 방금 스냅한 위치로 업데이트
         m_ptOldMousePos.x = centerX;
         m_ptOldMousePos.y = centerY;
 
-        // 마우스 중앙으로 이동
-        SetCursorPos(centerX, centerY);
+        // 6. GetMouseDelta()가 정상적인 delta를 반환하도록 m_ptMousePos 조작
+        // GetMouseDelta() return 값이 (m_ptMousePos - m_ptOldMousePos) 이므로
+        m_ptMousePos.x = centerX + deltaX;
+        m_ptMousePos.y = centerY + deltaY;
     }
 }
