@@ -255,7 +255,7 @@ namespace PIP::SERVER
 		mdm->AddTerrainGroup("VillageStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "VillageCollisions" });
 		mdm->AddTerrainGroup("BossStage", { "BossStageCollisions" });
 
-		mdm->LoadNavMesh("MainStage_NavMesh", "Resource/NavMesh.obj");
+		mdm->LoadNavMesh("MainStage_NavMesh", "Resource/NavMesh2.obj");
 		mdm->TestNavMesh();
 
 		MYLOG("lua manager initializing...");

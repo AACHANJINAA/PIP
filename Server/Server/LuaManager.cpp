@@ -51,6 +51,15 @@ namespace PIP
         return nullptr;
     }
 
+	size_t LuaManager::GetNPCSpawnCount(common::packet::NPCType type) const 
+	{
+		if (_npcSpawnData.contains(type))
+		{
+			return _npcSpawnData.at(type).size();
+		}
+		return 0;
+	}
+
 	const QuestData* LuaManager::GetQuestData(int32_t id) const
 	{
 		auto it = _questData.find(id);

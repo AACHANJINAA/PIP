@@ -10,287 +10,304 @@
 
 namespace PIP::GAME
 {
-    class Condition_IsHitted : public Condition
-    {
-    public:
+	class Condition_IsHitted : public Condition
+	{
+	public:
 		bool check() override;
-    };
-    class Condition_IsNotHitted : public Condition
-    {
-    public:
+	};
+	class Condition_IsNotHitted : public Condition
+	{
+	public:
 		bool check() override;
-    };
-    class Condition_IsAlive : public Condition
-    {
-    public:
+	};
+	class Condition_IsAlive : public Condition
+	{
+	public:
 		bool check() override;
-    };
+	};
 
 	class Condition_HasTarget : public Condition
 	{
 	public:
-        bool check() override;
+		bool check() override;
 	};
 
-    // [행동] 랜덤 타겟 찾기
-    class Action_FindRandomTarget : public Action {
-		float _range;
-    public:
-        Action_FindRandomTarget(float range = 500.0f) : _range{range}{}
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-
-    // [행동] 목표로 이동 (끼임 감지 포함)
-    class Action_MoveToTarget : public Action {
-        float _speed;
-    public:
-        Action_MoveToTarget(float speed) : _speed(speed) {}
-
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-
-    // [조건] 타겟 적이 있는가?
-    class Condition_HasEnemy : public Condition {
-    public:
-        bool check() override;
-    };
-
-    // [조건] 타겟이 공격 사거리 내에 있는가?
-    class Condition_IsEnemyInRange : public Condition {
-        float _range;
-    public:
-        Condition_IsEnemyInRange(float range) : _range(range) { }
-        bool check() override;
-    };
-
-    // [행동] 적 추격
-    class Action_ChaseEnemy : public Action {
-        float _speed;
-        float _stopRange;
-    public:
-        Action_ChaseEnemy(float speed, float stopRange) : _speed(speed), _stopRange{ stopRange } {}
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-
-    // [행동] 적 공격
-    class Action_AttackEnemy : public Action {
-        float _hitTimer = 0.0f;
-        float _timer = 0.0f;
-        float _attackDurationTimer = 0.0f;
-        bool  _hasAttacked = false; // 중복 판정 방지 플래그
-        AttackConfig _config;
-    public:
-        Action_AttackEnemy(const AttackConfig& config) : _config(config) {}
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-
-    class Condition_CheckFlagFalse : public Condition {
-        std::string _flagName;
-    public:
-        Condition_CheckFlagFalse(std::string name) : _flagName(std::move(name)) { set_name("Condition_CheckFlagFalse"); }
-        bool check() override;
-    };
-
-    class Action_SetFlagTrue : public Action {
-        std::string _flagName;
-    public:
-        Action_SetFlagTrue(std::string name) : _flagName(std::move(name)) { set_name("Action_SetFlagTrue"); }
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-
-    class Condition_IsPhase : public Condition
-    {
-    public:
-        Condition_IsPhase(TainerPhase targetPhase) : _targetPhase(targetPhase) { set_name("Condition_IsPhase"); }
-
-        bool check() override;
-
-    private:
-        TainerPhase _targetPhase;
-    };
-
-    class Condition_IsHPBelow : public Condition
-    {
-    public:
-        Condition_IsHPBelow(float ratio) : _ratio(ratio) {}
-
-        bool check() override;
-
-    private:
-        float _ratio;
-    };
-
-    class Condition_IsEnemyInDistanceRange : public Condition
-    {
-    public:
-        Condition_IsEnemyInDistanceRange(float min, float max) : _min(min), _max(max) { set_name("Condition_IsEnemyInDistanceRange"); }
-
-        bool check() override;
-
-    private:
-        float _min, _max;
-    };
-
-    class Action_PlayBossAnimation : public Action
-    {
-    public:
-        Action_PlayBossAnimation(const std::string& animKey) : _animKey(animKey) {}
-
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-
-    private:
-        std::string _animKey;
-    };
-
-    class Action_RotateToEnemy : public Action
-    {
-    public:
-		Action_RotateToEnemy() { set_name("Action_RotateToEnemy"); }
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-
-    class Action_SetPhase : public Action
-    {
-    public:
-        Action_SetPhase(TainerPhase nextPhase) : _nextPhase(nextPhase) {}
-
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-
-    private:
-        TainerPhase _nextPhase;
-    };
-
-    class Action_Turn : public Action
-	{
-        float _timer = 0.0f;
-        float _duration = 1.0f;
-    public:
-        Action_Turn(float duration = 1.0f) : _duration(duration) { set_name("Action_Turn"); }
+	// [행동] 랜덤 타겟 찾기
+	class Action_SetRandomTargetAroundSpawn : public Action {
+	public:
+		Action_SetRandomTargetAroundSpawn(float range) : _range(range) { set_name("Action_SetRandomTargetAroundSpawn"); }
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-    class Action_SettingChargeTargetPos : public Action 
+	private:
+		float _range;
+	};
+
+	class Condition_IsWithinTetherRange : public Condition {
+	public:
+		Condition_IsWithinTetherRange(float range) : _range(range) { set_name("Condition_IsWithinTetherRange"); }
+		bool check() override;
+	private:
+		float _range;
+	};
+	class Action_FindRandomTarget : public Action {
+		float _range;
+	public:
+		Action_FindRandomTarget(float range = 500.0f) : _range{range}{}
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+
+	// [행동] 목표로 이동 (끼임 감지 포함)
+	class Action_MoveToTarget : public Action {
+		float _speed;
+	public:
+		Action_MoveToTarget(float speed) : _speed(speed) {}
+
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+
+	// [조건] 타겟 적이 있는가?
+	class Condition_HasEnemy : public Condition {
+	public:
+		bool check() override;
+	};
+
+	// [조건] 타겟이 공격 사거리 내에 있는가?
+	class Condition_IsEnemyInRange : public Condition {
+		float _range;
+	public:
+		Condition_IsEnemyInRange(float range) : _range(range) { }
+		bool check() override;
+	};
+
+	// [행동] 적 추격
+	class Action_ChaseEnemy : public Action {
+		float _speed;
+		float _stopRange;
+	public:
+		Action_ChaseEnemy(float speed, float stopRange) : _speed(speed), _stopRange{ stopRange } {}
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+
+	// [행동] 적 공격
+	class Action_AttackEnemy : public Action {
+		float _hitTimer = 0.0f;
+		float _attackDurationTimer = 0.0f;
+		bool  _hasAttacked = false; // 중복 판정 방지 플래그
+		AttackConfig _config;
+		std::chrono::steady_clock::time_point _lastAttackTime; // [추가] 절대 시간으로 쿨타임 계산
+	public:
+		Action_AttackEnemy(const AttackConfig& config) : _config(config) {
+			_lastAttackTime = std::chrono::steady_clock::now() - std::chrono::seconds(100); // 처음엔 쿨타임 없이
+		}
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+
+	class Condition_CheckFlagFalse : public Condition {
+		std::string _flagName;
+	public:
+		Condition_CheckFlagFalse(std::string name) : _flagName(std::move(name)) { set_name("Condition_CheckFlagFalse"); }
+		bool check() override;
+	};
+
+	class Action_SetFlagTrue : public Action {
+		std::string _flagName;
+	public:
+		Action_SetFlagTrue(std::string name) : _flagName(std::move(name)) { set_name("Action_SetFlagTrue"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+
+	class Condition_IsPhase : public Condition
 	{
-    public:
+	public:
+		Condition_IsPhase(TainerPhase targetPhase) : _targetPhase(targetPhase) { set_name("Condition_IsPhase"); }
+
+		bool check() override;
+
+	private:
+		TainerPhase _targetPhase;
+	};
+
+	class Condition_IsHPBelow : public Condition
+	{
+	public:
+		Condition_IsHPBelow(float ratio) : _ratio(ratio) {}
+
+		bool check() override;
+
+	private:
+		float _ratio;
+	};
+
+	class Condition_IsEnemyInDistanceRange : public Condition
+	{
+	public:
+		Condition_IsEnemyInDistanceRange(float min, float max) : _min(min), _max(max) { set_name("Condition_IsEnemyInDistanceRange"); }
+
+		bool check() override;
+
+	private:
+		float _min, _max;
+	};
+
+	class Action_PlayBossAnimation : public Action
+	{
+	public:
+		Action_PlayBossAnimation(const std::string& animKey) : _animKey(animKey) {}
+
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+
+	private:
+		std::string _animKey;
+	};
+
+	class Action_RotateToEnemy : public Action
+	{
+	public:
+		Action_RotateToEnemy() { set_name("Action_RotateToEnemy"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+
+	class Action_SetPhase : public Action
+	{
+	public:
+		Action_SetPhase(TainerPhase nextPhase) : _nextPhase(nextPhase) {}
+
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+
+	private:
+		TainerPhase _nextPhase;
+	};
+
+	class Action_Turn : public Action
+	{
+		float _timer = 0.0f;
+		float _duration = 1.0f;
+	public:
+		Action_Turn(float duration = 1.0f) : _duration(duration) { set_name("Action_Turn"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
+	class Action_SettingChargeTargetPos : public Action 
+	{
+	public:
 		Action_SettingChargeTargetPos() { set_name("Action_SettingChargeTargetPos"); }
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
-    class Action_ChargeToPosition : public Action 
+	};
+	class Action_ChargeToPosition : public Action 
 	{
-        float _speed;
-        AttackConfig _config;
-    public:
-        Action_ChargeToPosition(float speed, const AttackConfig& config) : _speed(speed), _config(config) { set_name("Action_ChargeToPosition"); }
+		float _speed;
+		AttackConfig _config;
+	public:
+		Action_ChargeToPosition(float speed, const AttackConfig& config) : _speed(speed), _config(config) { set_name("Action_ChargeToPosition"); }
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	};
 
-    class Action_TargetingNearestPlayer : public Action
-    {
-    public:
+	class Action_TargetingNearestPlayer : public Action
+	{
+	public:
 		Action_TargetingNearestPlayer() { set_name("Action_TargetingNearestPlayer"); }
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	};
 
-    class Action_Roar : public Action
-    {   
-        float _timer{ 0.0f };
+	class Action_Roar : public Action
+	{   
+		float _timer{ 0.0f };
 		float _duration{ 1.0f };
 	public:
-        Action_Roar(float duration = 1.0f) : _duration(duration) { set_name("Action_Roar"); }
+		Action_Roar(float duration = 1.0f) : _duration(duration) { set_name("Action_Roar"); }
 		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	};
 
-    // [신규] 다음 순찰 지점을 목표(target_pos)로 설정
-    class Action_SetNextPatrolPos : public Action {
-    public:
-        Action_SetNextPatrolPos() { set_name("Action_SetNextPatrolPos"); }
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	// [신규] 다음 순찰 지점을 목표(target_pos)로 설정
+	class Action_SetNextPatrolPos : public Action {
+	public:
+		Action_SetNextPatrolPos() { set_name("Action_SetNextPatrolPos"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
 
-    // [신규] 반경 내에 플레이어가 있는지 체크 (있으면 target_enemy 세팅)
-    class Condition_DetectPlayer : public Condition {
-        float _radius;
-    public:
-        Condition_DetectPlayer(float radius) : _radius(radius) { set_name("Condition_DetectPlayer"); }
-        bool check() override;
-    };
+	// [신규] 반경 내에 플레이어가 있는지 체크 (있으면 target_enemy 세팅)
+	class Condition_DetectPlayer : public Condition {
+		float _radius;
+	public:
+		Condition_DetectPlayer(float radius) : _radius(radius) { set_name("Condition_DetectPlayer"); }
+		bool check() override;
+	};
 
-    // [신규] target_enemy의 현재 위치를 target_pos로 실시간 업데이트
-    class Action_UpdateEnemyPosToTarget : public Action {
-    public:
-        Action_UpdateEnemyPosToTarget() { set_name("Action_UpdateEnemyPosToTarget"); }
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	// [신규] target_enemy의 현재 위치를 target_pos로 실시간 업데이트
+	class Action_UpdateEnemyPosToTarget : public Action {
+	public:
+		Action_UpdateEnemyPosToTarget() { set_name("Action_UpdateEnemyPosToTarget"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
 
-    // [신규] 타겟이 추격 포기 거리(leash) 밖이면 target_enemy를 클리어하고 순찰 복귀
-    class Condition_IsTargetInLeashRange : public Condition {
-        float _leashRange;
-    public:
-        Condition_IsTargetInLeashRange(float leashRange) : _leashRange(leashRange) {
-            set_name("Condition_IsTargetInLeashRange");
-        }
-        bool check() override;
-    };
+	// [신규] 타겟이 추격 포기 거리(leash) 밖이면 target_enemy를 클리어하고 순찰 복귀
+	class Condition_IsTargetInLeashRange : public Condition {
+		float _leashRange;
+	public:
+		Condition_IsTargetInLeashRange(float leashRange) : _leashRange(leashRange) {
+			set_name("Condition_IsTargetInLeashRange");
+		}
+		bool check() override;
+	};
 
-    // [행동] NavMesh 길찾기 수행
-    class Action_FindPath : public Action {
-        std::string _navName;
-    public:
-        Action_FindPath(std::string_view navName) : _navName(navName) { set_name("Action_FindPath"); }
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	// [행동] NavMesh 길찾기 수행
+	class Action_FindPath : public Action {
+		std::string _navName;
+	public:
+		Action_FindPath(std::string_view navName) : _navName(navName) { set_name("Action_FindPath"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
 
-    // [행동] 경로 따라가기
-    class Action_FollowPath : public Action {
-        float _speed;
-    public:
-        Action_FollowPath(float speed) : _speed(speed) { set_name("Action_FollowPath"); }
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    };
+	// [행동] 경로 따라가기
+	class Action_FollowPath : public Action {
+		float _speed;
+	public:
+		Action_FollowPath(float speed) : _speed(speed) { set_name("Action_FollowPath"); }
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	};
 
-    class Action_ChargeAttack : public Action 
+	class Action_ChargeAttack : public Action 
 	{
-    public:
-        // 돌진의 세부 단계 정의
-        enum class Phase { READY, ROAR, TURN, DASHING };
+	public:
+		// 돌진의 세부 단계 정의
+		enum class Phase { READY, ROAR, TURN, DASHING };
 
-        Action_ChargeAttack(float speed, const AttackConfig& config)
-            : _speed(speed), _config(config)
-        {}
+		Action_ChargeAttack(float speed, const AttackConfig& config)
+			: _speed(speed), _config(config)
+		{}
 
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
-    private:
-        float _speed;
-        AttackConfig _config;
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+	private:
+		float _speed;
+		AttackConfig _config;
 
-        Phase _currentPhase = Phase::READY; // 현재 단계
-        float _internalTimer = 0.0f;        // 단계별 대기 시간용
-        bool  _isTargetLocked = false;      // 10m 지점 박제 여부
+		Phase _currentPhase = Phase::READY; // 현재 단계
+		float _internalTimer = 0.0f;        // 단계별 대기 시간용
+		bool  _isTargetLocked = false;      // 10m 지점 박제 여부
 		float _cooldownTimer = 0.0f;        // 재사용 대기시간 타이머
-        common::Vec3 _dashDir = { 0, 0, 0 }; // [추가] 고정된 돌진 방향 저장용
-    };
+		common::Vec3 _dashDir = { 0, 0, 0 }; // [추가] 고정된 돌진 방향 저장용
+	};
 
-    // [신규] 돌진 후 잡고 다니는 패턴 
-    class Action_GrabCharge : public Action
-    {
-    public:
-        enum class Phase { READY, ROAR, TURN, DASHING, CARRYING, SLAM };
+	// [신규] 돌진 후 잡고 다니는 패턴 
+	class Action_GrabCharge : public Action
+	{
+	public:
+		enum class Phase { READY, ROAR, TURN, DASHING, CARRYING, SLAM };
 
-        Action_GrabCharge(float speed, const AttackConfig& config)
-            : _speed(speed), _config(config)
-        {}
+		Action_GrabCharge(float speed, const AttackConfig& config)
+			: _speed(speed), _config(config)
+		{}
 
-        NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
+		NodeStatus tick(float dt, JPH::TempAllocator* allocator) override;
 
-    private:
-        float _speed;
-        AttackConfig _config;
+	private:
+		float _speed;
+		AttackConfig _config;
 
-        Phase _currentPhase = Phase::READY;
-        float _internalTimer = 0.0f;
-        bool  _isTargetLocked = false;
-        float _cooldownTimer = 0.0f;
-        common::Vec3 _dashDir = { 0, 0, 0 };
-        std::vector<int64_t> _grabbedPlayerIds; // [수정] 최대 2명
-        float _damageTimer = 0.0f; // [추가] DoT 타이머
-    };
+		Phase _currentPhase = Phase::READY;
+		float _internalTimer = 0.0f;
+		bool  _isTargetLocked = false;
+		float _cooldownTimer = 0.0f;
+		common::Vec3 _dashDir = { 0, 0, 0 };
+		std::vector<int64_t> _grabbedPlayerIds; // [수정] 최대 2명
+		float _damageTimer = 0.0f; // [추가] DoT 타이머
+	};
 }
