@@ -843,7 +843,7 @@ namespace PIP
 		if (status & DT_PARTIAL_RESULT) {
 			MYLOG("[NavMesh Warning] 목적지가 단절되어 부분 경로만 생성됨!");
 			// 만약 완벽한 경로가 아니면 실패 처리하고 싶다면 여기서 return false;를 하시면 됩니다.
-			// return false; 
+			return false; 
 		}
 
 		// 3. 직선 경로 추출 (String Pulling / Funnel Algorithm)

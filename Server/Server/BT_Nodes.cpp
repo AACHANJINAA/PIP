@@ -34,6 +34,53 @@ namespace PIP::GAME
 		return true;
 	}
 
+	NodeStatus Action_SetRandomTargetAroundSpawn::tick(float dt, JPH::TempAllocator* allocator)
+	{
+		GameObject* owner = _blackboard->get<GameObject*>("owner");
+		if (!owner) return NodeStatus::FAILURE;
+
+		auto tc = owner->GetComponent<TransformComponent>();
+		if (!tc) return NodeStatus::FAILURE;
+
+		// 1. 실제 스폰 위치 캡처 (처음 한 번만)
+		if (!_blackboard->has("actual_spawn_pos")) {
+			_blackboard->set("actual_spawn_pos", tc->GetPosition());
+		}
+
+		common::Vec3 spawnPos = _blackboard->get<common::Vec3>("actual_spawn_pos");
+
+		// 2. 스폰 위치 기준 반경 _range 내의 랜덤 목표점 계산
+		float offsetX = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * _range;
+		float offsetZ = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * _range;
+
+		float tx = spawnPos.x + offsetX;
+		float tz = spawnPos.z + offsetZ;
+
+		// 3. 지형 높이 보정
+		common::Vec3 targetPos = MapDataManager::Instance()->AdjustPositionToGround({ tx, 50, tz });
+
+		_blackboard->set("target_pos", targetPos);
+		_blackboard->set("stuck_timer", 0.0f);
+
+		return NodeStatus::SUCCESS;
+	}
+
+	bool Condition_IsWithinTetherRange::check()
+	{
+		auto owner = _blackboard->get<GameObject*>("owner");
+		if (!owner || !_blackboard->has("actual_spawn_pos")) return true; // 아직 스폰 안잡혔으면 무한
+
+		common::Vec3 spawnPos = _blackboard->get<common::Vec3>("actual_spawn_pos");
+		float distSq = common::DistanceSq(owner->GetComponent<TransformComponent>()->GetPosition(), spawnPos);
+
+		if (distSq > _range * _range) {
+			_blackboard->set("target_enemy", std::any());
+			_blackboard->set("target_pos", std::any());
+			return false;
+		}
+		return true;
+	}
+
 	NodeStatus Action_FindRandomTarget::tick(float dt, JPH::TempAllocator* allocator)
 	{
 		GameObject* owner = _blackboard->get<GameObject*>("owner");
@@ -286,8 +333,12 @@ namespace PIP::GAME
 
 		// 1. 공격 시작 (최초 프레임)
 		if (_attackDurationTimer <= 0.0f) {
-			if (_timer > 0.0f) {
-				_timer -= dt;
+			auto now = std::chrono::steady_clock::now();
+			float elapsed = std::chrono::duration<float>(now - _lastAttackTime).count();
+			float globalCD = _blackboard->has("global_attack_cooldown") ? _blackboard->get<float>("global_attack_cooldown") : 0.0f;
+
+			// 스킬 개별 쿨타임이 안 돌았거나, 글로벌 공격 딜레이에 걸려있으면 공격 불가 (상위 Selector로 넘김)
+			if (elapsed < _config.cooldown || globalCD > 0.0f) {
 				return NodeStatus::FAILURE;
 			}
 
@@ -297,7 +348,8 @@ namespace PIP::GAME
 
 			npc->SetState(_config.entityState);
 			npc->SetActionId(_config.actionId);
-			_timer = _config.cooldown;
+			_lastAttackTime = now; // 쿨타임 리셋
+			_blackboard->set("global_attack_cooldown", 1.5f); // 공격 시 무조건 1.5초의 공통 공격 유예 시간 부여
 
 			auto nc = npc->GetNPCController();
 			if (nc) nc->SetVelocity({ 0, 0, 0 });
@@ -1149,18 +1201,18 @@ namespace PIP::GAME
 		// 3. 실제 탐색 호출
 		std::vector<common::Vec3> newPath;
 		if (MapDataManager::Instance()->FindPath(_navName, start, end, newPath)) {
-			/*MYLOG("[Path Debug] Start: (" << start.x << ", " << start.y << ", " << start.z << ") -> End: (" << end.x << ", " << end.y << ", " << end.z << ")");
-			MYLOG("[Path Debug] Total Waypoints: " << newPath.size());
-			for (size_t i = 0; i < newPath.size(); ++i) {
-				MYLOG("   Waypoint[" << i << "]: (" << newPath[i].x << ", " << newPath[i].y << ", " << newPath[i].z << ")");
-			}*/
-
 			_blackboard->set("path", std::move(newPath));
 			_blackboard->set("last_search_pos", end); // [수정] 검색 완료된 타겟 위치 저장
 			nextSearchTimer = 1.0f + (rand() % 500) * 0.001f; // 1.0~1.5초 무작위 쿨타임 (부하 분산)
 			_blackboard->set("path_search_cooldown", nextSearchTimer);
 			return NodeStatus::SUCCESS;
 		}
+
+		// [추가] 경로 탐색 실패 시 (도달할 수 없는 곳 등)
+		// 무한정 막혀있는 것을 방지하기 위해 목적지를 지우고 잠시 후 새로 찾게 유도
+		_blackboard->set("target_pos", std::any());
+		_blackboard->set("path_search_cooldown", 0.5f); // 0.5초 대기 후 새 위치 물색
+
 		return NodeStatus::FAILURE;
 	}
 
@@ -1184,7 +1236,7 @@ namespace PIP::GAME
 		common::Vec3 diff = nextTarget - currentPos;
 		diff.y = 0;
 
-		if (common::Distance(currentPos, nextTarget) < 0.3f) {
+		if (common::Length(diff) < 0.3f) {
 			path.erase(path.begin());
 			_blackboard->set("path", path);
 			if (path.empty()) {
