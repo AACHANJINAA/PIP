@@ -145,8 +145,8 @@ void QuestNPCScript::update_F_interaction_UI(float deltaTime)
         auto viewMat = DirectX::XMLoadFloat4x4(&camera->view_matrix());
         auto worldMat = DirectX::XMMatrixIdentity();
 
-        float screenWidth = static_cast<float>(GameFramework::instance()->get_window_width());
-        float screenHeight = static_cast<float>(GameFramework::instance()->get_window_height());
+        float screenWidth = static_cast<float>(FRAME_BUFFER_WIDTH);
+        float screenHeight = static_cast<float>(FRAME_BUFFER_HEIGHT);
 
         DirectX::XMFLOAT3 uiWorldPos = npcPos;
 		// UI가 NPC 중앙에 뜨도록 y축으로 약간 올려줌 (필요시 조절)
