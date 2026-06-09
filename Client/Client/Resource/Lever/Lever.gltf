@@ -1,0 +1,310 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 16,
+			"type": "MAT4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 1,
+			"count": 31134,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 2,
+			"count": 8052,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1.00000024, -0.291624516, -1.09377193 ],
+			"max": [ 1.00000024, 0.852009356, 1.00000012 ]
+		},
+		{
+			"bufferView": 3,
+			"count": 8052,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 8052,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 8052,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 8052,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 7,
+			"count": 8052,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 8,
+			"count": 8052,
+			"type": "VEC4",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 9,
+			"count": 8052,
+			"type": "VEC4",
+			"componentType": 5121,
+			"normalized": true
+		}
+	],
+	"buffers": [
+		{
+			"uri": "Lever.bin",
+			"byteLength": 643036
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 1024
+		},
+		{
+			"buffer": 0,
+			"byteLength": 62268,
+			"byteOffset": 1024,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96624,
+			"byteOffset": 63292,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 96624,
+			"byteOffset": 159916,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 128832,
+			"byteOffset": 256540,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64416,
+			"byteOffset": 385372,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64416,
+			"byteOffset": 449788,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 64416,
+			"byteOffset": 514204,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 32208,
+			"byteOffset": 578620,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 32208,
+			"byteOffset": 610828,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "Material_001_baseColor.png"
+		},
+		{
+			"uri": "Material_001_metallicRoughness.png"
+		},
+		{
+			"uri": "Material_001_normal.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "Material_001_scene",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "scene",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 2,
+						"NORMAL": 3,
+						"TANGENT": 4,
+						"TEXCOORD_0": 5,
+						"TEXCOORD_1": 6,
+						"TEXCOORD_2": 7,
+						"JOINTS_0": 8,
+						"WEIGHTS_0": 9
+					},
+					"indices": 1,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"skin": 0,
+			"mesh": 0,
+			"children": [ 1 ]
+		},
+		{
+			"name": "Sketchfab_Scene",
+			"children": [ 2 ]
+		},
+		{
+			"name": "Sketchfab_model",
+			"rotation": [ -0.707106829, 0, 0, 0.707106829 ],
+			"children": [ 3 ]
+		},
+		{
+			"name": "5713918ec94e40c9b444b86ed65916c6_fbx",
+			"rotation": [ 0.707106829, 0, 0, 0.707106829 ],
+			"scale": [ 0.00999999978, 0.00999999978, 0.00999999978 ],
+			"children": [ 4 ]
+		},
+		{
+			"name": "Object_2",
+			"children": [ 5 ]
+		},
+		{
+			"name": "RootNode",
+			"children": [ 6 ]
+		},
+		{
+			"name": "Bones",
+			"translation": [ -63.2739143, 4.10894775, 7.62755299 ],
+			"rotation": [ -0.707106829, 0, 0, 0.707106709 ],
+			"scale": [ 100, 100, 100 ],
+			"children": [ 7 ]
+		},
+		{
+			"name": "Object_5",
+			"children": [ 8 ]
+		},
+		{
+			"name": "_rootJoint",
+			"children": [ 9, 13 ]
+		},
+		{
+			"name": "Bone_00",
+			"rotation": [ 0.50000006, 0.49999994, -0.49999997, 0.50000006 ],
+			"children": [ 10, 11 ]
+		},
+		{
+			"name": "Bone_end_02",
+			"translation": [ 0, 0.374253899, 0 ]
+		},
+		{
+			"name": "Plane_001",
+			"translation": [ -0.0652766526, 0.632739305, -0.0762755424 ],
+			"rotation": [ 0.50000006, 0.50000006, -0.499999911, -0.5 ],
+			"children": [ 12 ]
+		},
+		{
+			"name": "Plane_001_Material_001_0"
+		},
+		{
+			"name": "Bone_001_01",
+			"rotation": [ 0.200085282, 0.678207934, 0.200085282, 0.678207755 ],
+			"children": [ 14, 15 ]
+		},
+		{
+			"name": "Bone_001_end_03",
+			"translation": [ -2.77555756e-17, 1.01751733, 0 ]
+		},
+		{
+			"name": "Cylinder_001",
+			"rotation": [ -0.200085297, -0.678207755, -0.200085253, 0.678207934 ],
+			"scale": [ 0.999521554, 0.999521554, 0.999521613 ],
+			"children": [ 16 ]
+		},
+		{
+			"name": "Cylinder_001_Material_001_0"
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"skins": [
+		{
+			"name": "scene",
+			"inverseBindMatrices": 0,
+			"skeleton": 0,
+			"joints": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "Material_001_baseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "Material_001_metallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "Material_001_normal",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}
