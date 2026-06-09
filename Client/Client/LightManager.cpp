@@ -63,7 +63,7 @@ void LightManager::initialize(ID3D12Device* device)
     sun.m_nType = DIRECTIONAL_LIGHT;
     sun.m_cDiffuse = { 0.8f, 0.8f, 0.8f, 1.0f };
 	sun.m_cSpecular = { 0.1f, 0.5f, 0.5f, 1.0f };
-		sun.m_vDirection = { +0.17f, -0.8f, +0.47f };
+		sun.m_vDirection = { -0.3f, -0.8f, +0.4f };
     add_light(std::move(sun));
 
     update();
