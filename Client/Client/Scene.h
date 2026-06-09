@@ -80,8 +80,8 @@ public:
     // [역할 유지] 씬 데이터를 파일에서 로드하는 기능은 유용하므로 남겨둡니다.
     // 단, 내부 구현은 새로운 아키텍처에 맞게 변경되어야 합니다. (Chess_Scene에서 재정의)
     virtual void load_scene_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList, bool IsTitle = false);
-    void load_foliage_from_file(const std::string& filename, ID3D12Device* device,
-                                ID3D12GraphicsCommandList* commandList);
+    void load_foliage_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+	void load_from_file_with_light(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 
     virtual void render_post_process(ID3D12GraphicsCommandList* commandList, UINT frame_index) {}
 
