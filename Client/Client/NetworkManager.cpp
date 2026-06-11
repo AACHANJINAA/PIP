@@ -275,6 +275,18 @@ void NetworkManager::RegisterHandler(common::packet::PacketType packet_type, Pac
 	_handlers[packet_type] = packet_handler;
 }
 
+void NetworkManager::HANDLE_S2C_INTERACT_ACK(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_INTERACT_ACK ack_packet;
+	stream >> ack_packet;
+
+	if (ack_packet._object_id == _my_session_id)
+	{
+		CLOG("[S->C] 레버 상호작용 검증 완료! (나중에 여기에 레버 애니메이션 로직 추가 가능)");
+		// TODO: MainPlayerScript 등에 알려서 레버 내리기 애니메이션 재생
+	}
+}
+
 void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_LOGIN_ACK ack_packet;
@@ -880,9 +892,8 @@ void NetworkManager::HANDLE_S2C_PLAY_CUTSCENE(common::packet::PacketStream& stre
 	CLOG("[S2C_PLAY_CUTSCENE] Cutscene triggered! ID: " << cutscene_packet._cutscene_id);
 	
 	// TODO: 실제 컷씬 연출 (카메라 워크, 비디오 UI, 애니메이션 등) 호출
-	// 일단 지금은 로그만 남기고 일정 시간 후 완료 패킷을 보내는 방식으로 시뮬레이션 할 수 있지만,
-	// 디버깅 목적으로 MainPlayerScript의 F9 키로 C2S_P_CUTSCENE_DONE을 보내도록 하겠음.
-	//UIManager::instance()->set_main_ui_active(false); // UI 가리기 (임시)
+	// 임시 조치: 컷씬 연출이 아직 없으므로, 즉시 컷씬 시청 완료(스킵) 패킷을 서버로 보냅니다.
+	SendCutsceneDonePacket();
 }
 
 void NetworkManager::Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream)
@@ -1077,9 +1088,11 @@ bool NetworkManager::init_network()
 		std::bind(&NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO, this, std::placeholders::_1));
 
 	RegisterHandler(common::packet::PacketType::S2C_P_QUEST_UPDATE,
-		std::bind(&NetworkManager::HANDLE_S2C_QUEST_UPDATE, this, std::placeholders::_1));
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_QUEST_UPDATE(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_QUEST_INFO,
-		std::bind(&NetworkManager::HANDLE_S2C_QUEST_INFO, this, std::placeholders::_1));
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_QUEST_INFO(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_INTERACT_ACK,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_INTERACT_ACK(stream); });
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);

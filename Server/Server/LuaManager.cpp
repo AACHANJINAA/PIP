@@ -70,12 +70,18 @@ namespace PIP
 		return nullptr;
 	}
 
+	const std::vector<common::Vec3>& LuaManager::GetLeverPositions() const
+	{
+		return _leverPositions;
+	}
+
 	void LuaManager::LoadDataFile()
 	{
         if (L)
         {
             LuaManager::Instance()->LoadNPCData();
-            LuaManager::Instance()->LoadQuestData(); // [추가]
+            LuaManager::Instance()->LoadQuestData();
+            LuaManager::Instance()->LoadLeverData(); // 레버 데이터 로드
         }
 	}
 
@@ -138,6 +144,39 @@ namespace PIP
 				else
 				{
 					MYLOG("Quest Data Loaded from Lua successfully.");
+				}
+			}
+			else
+			{
+				lua_pop(L, 1);
+			}
+		}
+	}
+
+	void LuaManager::LoadLeverData()
+	{
+		lua_register(L, "API_LoadLeverData", Lua_LoadLeverData);
+		int ret = luaL_dofile(L, "LeverData.lua");
+		if (ret != LUA_OK)
+		{
+			const char* err = lua_tostring(L, -1);
+			MYERROR("Failed to load LeverData.lua: " << err);
+			lua_pop(L, 1);
+		}
+		else
+		{
+			lua_getglobal(L, "LoadLeverData");
+			if (lua_isfunction(L, -1))
+			{
+				if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+				{
+					const char* err = lua_tostring(L, -1);
+					MYERROR("Failed to call LoadLeverData in Lua: " << err);
+					lua_pop(L, 1);
+				}
+				else
+				{
+					MYLOG("Lever Data Loaded from Lua successfully.");
 				}
 			}
 			else
@@ -322,6 +361,16 @@ namespace PIP
 
 		LuaManager::Instance()->_questData[id] = data;
 
+		return 0;
+	}
+
+	int LuaManager::Lua_LoadLeverData(lua_State* L)
+	{
+		float x = static_cast<float>(lua_tonumber(L, 1));
+		float y = static_cast<float>(lua_tonumber(L, 2));
+		float z = static_cast<float>(lua_tonumber(L, 3));
+
+		LuaManager::Instance()->_leverPositions.push_back({ x, y, z });
 		return 0;
 	}
 }
