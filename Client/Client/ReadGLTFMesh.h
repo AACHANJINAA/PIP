@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "stdafx.h"
 #include "Mesh.h"
 
@@ -243,15 +243,33 @@ private:
 		const json& bufferView = gltfJson["bufferViews"][accessor["bufferView"].get<size_t>()];
 
 		size_t count = accessor["count"];
+		
+		std::string type = accessor.value("type", "SCALAR");
+		size_t type_count = 1;
+		if (type == "VEC2") type_count = 2;
+		else if (type == "VEC3") type_count = 3;
+		else if (type == "VEC4") type_count = 4;
+		else if (type == "MAT4") type_count = 16;
+
+		size_t component_size = 4; // float or uint32
+		if (accessor.contains("componentType")) {
+			int ctype = accessor["componentType"];
+			if (ctype == 5120 || ctype == 5121) component_size = 1;
+			else if (ctype == 5122 || ctype == 5123) component_size = 2;
+		}
+
+		size_t elementSize = type_count * component_size;
 		size_t byteOffset = bufferView.value("byteOffset", 0) + accessor.value("byteOffset", 0);
-		size_t elementSize = sizeof(T);
 		size_t byteStride = bufferView.value("byteStride", elementSize);
 
-		std::vector<T> data(count);
+		size_t items_per_element = elementSize / sizeof(T);
+		if (items_per_element == 0) items_per_element = 1;
+
+		std::vector<T> data(count * items_per_element);
 		const char* bufferStart = binaryBuffer.data() + byteOffset;
 
 		for (size_t i = 0; i < count; ++i) {
-			memcpy(&data[i], bufferStart + i * byteStride, elementSize);
+			memcpy(&data[i * items_per_element], bufferStart + i * byteStride, elementSize);
 		}
 
 		return data;

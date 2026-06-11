@@ -1754,8 +1754,6 @@ void ReadGLTFMesh::load_nodes(const json& gltf_json)
 		NodeInfo& node_info = _nodes[i];
 
 		// 1. 초기 TRS 설정
-		// glTF(Right-Handed) -> DX12(Left-Handed) 좌표계 변환 적용
-
 		// Translation: Z 반전
 		if (node_json.contains("translation")) {
 			node_info._translation = {
@@ -1763,6 +1761,9 @@ void ReadGLTFMesh::load_nodes(const json& gltf_json)
 				node_json["translation"][1].get<float>(),
 				-node_json["translation"][2].get<float>()
 			};
+		}
+		else {
+			node_info._translation = { 0.0f, 0.0f, 0.0f }; // 누락 시 기본값
 		}
 
 		// Rotation: X, Y 반전 (Quaternion)
@@ -1774,6 +1775,9 @@ void ReadGLTFMesh::load_nodes(const json& gltf_json)
 				node_json["rotation"][3].get<float>()
 			};
 		}
+		else {
+			node_info._rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // 누락 시 기본값 (단위 쿼터니언)
+		}
 
 		// Scale: 변환 없음
 		if (node_json.contains("scale")) {
@@ -1782,6 +1786,9 @@ void ReadGLTFMesh::load_nodes(const json& gltf_json)
 				node_json["scale"][1].get<float>(),
 				node_json["scale"][2].get<float>()
 			};
+		}
+		else {
+			node_info._scale = { 1.0f, 1.0f, 1.0f }; // 누락 시 기본값
 		}
 
 		// 2. 계층 구조 설정 (자식 -> 부모 연결)
@@ -1795,7 +1802,7 @@ void ReadGLTFMesh::load_nodes(const json& gltf_json)
 			}
 		}
 
-		// 초기 전역 행렬은 단위 행렬로 설정 (나중에 update_animation에서 계산됨)
+		// 초기 전역 행렬은 단위 행렬로 설정
 		XMStoreFloat4x4(&node_info._global_transform, XMMatrixIdentity());
 	}
 }
