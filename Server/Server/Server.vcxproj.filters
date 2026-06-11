@@ -84,7 +84,7 @@
     <Filter Include="소스 파일\External\Raycast">
       <UniqueIdentifier>{cb76e6ba-f70c-4a6b-b823-4df18a812bd9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Game\Quest">
+    <Filter Include="소스 파일\Game\NPC\LuaScript\Quest">
       <UniqueIdentifier>{e207cffc-eef5-4808-9468-f54946dd312f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -433,7 +433,10 @@
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
     <None Include="QuestData.lua">
-      <Filter>소스 파일\Game\Quest</Filter>
+      <Filter>소스 파일\Game\NPC\LuaScript\Quest</Filter>
+    </None>
+    <None Include="LeverData.lua">
+      <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -56,6 +56,7 @@ private:
     void RegisterHandler(common::packet::PacketType packet_type, PacketHandler packet_handler);
 
     // 개별 패킷 처리 함수들 (private)
+    void HANDLE_S2C_INTERACT_ACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream);
     void HANDLE_S2C_LEAVE(common::packet::PacketStream& stream);
 
