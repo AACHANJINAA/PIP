@@ -63,6 +63,12 @@ namespace PIP::GAME
 		void SetState(const common::packet::EntityState& state) override { _state = state; }
 		common::packet::EntityState GetState() const override { return _state; }
 
+		void SetHitCooldown(float time) { _hitCooldown = time; }
+		float GetHitCooldown() const { return _hitCooldown; }
+
+		void SetDashCooldown(float time) { _dashCooldownTimer = time; }
+		float GetDashCooldown() const { return _dashCooldownTimer; }
+
 		void SetActionId(int32_t action_id) { _actionId = action_id; }
 		int32_t GetActionId() const { return _actionId; }
 
@@ -119,6 +125,7 @@ namespace PIP::GAME
 
 	private:
 		float _hitCooldown = 0.0f;
+		float _dashCooldownTimer = 0.0f;
 		int64_t _owner_id; // 이 플레이어를 소유한 세션 ID	
 		int32_t	_hp;
 		uint32_t _lastClientTick = 0;

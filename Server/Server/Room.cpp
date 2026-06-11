@@ -1451,6 +1451,104 @@ namespace PIP::SERVER
 				ExecuteActorAction(session->_player.get(), config);
 			}
 			break;
+		case packet::ActionID::Common::INTERACT:
+			{
+				const auto& levers = LuaManager::Instance()->GetLeverPositions();
+				bool is_near_lever = false;
+				int lever_index = -1;
+				common::Vec3 player_pos = session->_player->GetPosition(); // 플레이어 위치
+				for (size_t i = 0; i < levers.size(); ++i)
+				{
+					if (common::Length(player_pos - levers[i]) < 5.0f) // 5미터 이내
+					{
+						is_near_lever = true;
+						lever_index = static_cast<int>(i);
+						break;
+					}
+				}
+
+				if (is_near_lever)
+				{
+					MYLOG("[INTERACT] 레버 상호작용 성공! (Index: " << lever_index << ")");
+					
+					// 클라이언트에게 상호작용 성공(레버 애니메이션 재생용) 패킷 전송
+					packet::SC_PACKET_INTERACT_ACK ack_packet;
+					ack_packet._type = packet::PacketType::S2C_P_INTERACT_ACK;
+					ack_packet._size = sizeof(ack_packet);
+					ack_packet._object_id = session->_id; // 임시로 내 플레이어 아이디 보냄
+					ack_packet._interact_type = 0; // 0: 레버
+
+					session->do_send(reinterpret_cast<const char*>(&ack_packet), ack_packet._size);
+
+					// 컷씬 및 씬 전환 로직
+					if (!_activatedLevers.contains(lever_index)) {
+						_activatedLevers.insert(lever_index);
+						MYLOG("[Room " << _room_id << "] Lever activated! Total: " << _activatedLevers.size());
+						
+						if (_activatedLevers.size() >= 2) {
+							// 레버 2개 작동 완료 -> 컷씬 재생 패킷 브로드캐스트
+							MYLOG("[Room " << _room_id << "] Both levers activated. Broadcasting PLAY_CUTSCENE.");
+							packet::PacketStream stream;
+							packet::SC_PACKET_PLAY_CUTSCENE pkt;
+							pkt._type = packet::PacketType::S2C_P_PLAY_CUTSCENE;
+							pkt._size = sizeof(pkt);
+							pkt._cutscene_id = 1; // 1번 컷씬 (보스 진입 전)
+							stream << pkt;
+							Broadcast(stream.constable_data(), stream.Size());
+							
+							// 컷씬 상태로 전환
+							_room_state = RoomState::WAITING;
+							_cutsceneFinishedPlayers.clear();
+						}
+					}
+				}
+				else
+				{
+					MYLOG("[INTERACT] 주변에 상호작용할 레버가 없습니다.");
+				}
+				break;
+			}
+		case packet::ActionID::Common::DASH:
+			{
+				if (session->_player->GetDashCooldown() <= 0.0f)
+				{
+					// action_packet._direction (Quat)을 이용하여 앞으로 가는 벡터를 계산합니다.
+					DirectX::XMVECTOR forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+					DirectX::XMVECTOR q = DirectX::XMLoadFloat4(&action_packet._direction);
+					DirectX::XMVECTOR dashDirVec = DirectX::XMVector3Rotate(forward, q);
+					
+					common::Vec3 dashDir;
+					DirectX::XMStoreFloat3(&dashDir, dashDirVec);
+					
+					// Y축 이동 방지 및 정규화
+					dashDir.y = 0.0f;
+					dashDir = common::Normalize(dashDir);
+					
+					// 대쉬 속도 부여 (30.0f는 적절히 조절 가능)
+					if (auto pcc = session->_player->GetComponent<GAME::PlayerControllerComponent>()) {
+						pcc->AddImpact(dashDir * 30.0f);
+					}
+					
+					// 무적 프레임 및 쿨다운 적용
+					session->_player->SetHitCooldown(0.4f); // 0.4초 무적
+					session->_player->SetDashCooldown(1.0f); // 1초 쿨다운
+					
+					MYLOG("[DASH] Player " << session->_id << " Dodged.");
+				}
+			}
+			break;
+		case packet::ActionID::Common::JUMP:
+			{
+				if (auto pcc = session->_player->GetComponent<GAME::PlayerControllerComponent>()) {
+					if (pcc->IsGrounded()) {
+						// 엘든링 스타일의 묵직한 점프를 위해 7.0f 속도 부여
+						pcc->AddImpulse(common::Vec3(0, 7.0f, 0));
+						session->_player->SetState(common::packet::EntityState::JUMP);
+						MYLOG("[JUMP] Player " << session->_id << " Jumped.");
+					}
+				}
+			}
+			break;
 		case packet::ActionID::Common::SKILL1:
 			{
 				// (마나 차감은 이미 스킬 시작점인 C2S_MOVE에서 처리됨)
