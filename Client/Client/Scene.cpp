@@ -305,29 +305,21 @@ void Scene::load_from_file_with_light(const std::string& filename, ID3D12Device*
 				});
 		}
 
-		// 3. 해당 위치에 Point Light 추가
+		// 해당 위치에 Point Light 추가
 		Light spotLight;
 		spotLight.m_bEnable = true;
-		spotLight.m_nType = 2; // SPOT_LIGHT (LightManager.cpp의 #define SPOT_LIGHT 2)
-
-		// 1. 위치: 메쉬보다 한참 위로 올립니다. (예: 300~500 정도)
+		spotLight.m_nType = 2; // SPOT_LIGHT 
+        // y축 약간 위
 		spotLight.m_vPosition = { pos.x, pos.y + 7.0f, pos.z };
-
-		// 2. 방향: 위에서 아래로 정직하게 쏩니다.
+		// 위에서 아래
 		spotLight.m_vDirection = { 0.0f, -1.0f, 0.0f };
-
-		// 3. 색상 및 강도: 티가 확 나도록 강도를 높입니다.
 		spotLight.m_cDiffuse = { 2.0f, 4.0f, 2.0f, 1.0f };
-
-		// 4. 조명 범위 및 감쇄
 		spotLight.m_fRange = 800.0f;
 		spotLight.m_vAttenuation = { 1.0f, 0.001f, 0.0001f }; // 먼 거리까지 빛이 전달되도록 아주 낮게 설정
 
-		// 5. [중요] Spot Light 각도 설정 (cos값으로 넣어야 함)
-		// m_fTheta: 안쪽 원 (빛이 가장 센 구간)
-		// m_fPhi: 바깥쪽 원 (빛이 사라지기 시작하는 경계 구간)
-		spotLight.m_fTheta = cosf(XMConvertToRadians(15.0f)); // 15도 안쪽은 풀 파워
-		spotLight.m_fPhi = cosf(XMConvertToRadians(30.0f));   // 30도 밖은 빛 없음
+		//
+		spotLight.m_fTheta = cosf(XMConvertToRadians(15.0f)); // 15도 안쪽은 풀 파워 (중앙)
+		spotLight.m_fPhi = cosf(XMConvertToRadians(30.0f));   // 30도 밖은 빛 없음 (경계부분)
 		spotLight.m_fFalloff = 1.0f; // 중심에서 경계로 갈수록 흐려지는 정도
 
 		LightManager::instance()->add_light(std::move(spotLight));
