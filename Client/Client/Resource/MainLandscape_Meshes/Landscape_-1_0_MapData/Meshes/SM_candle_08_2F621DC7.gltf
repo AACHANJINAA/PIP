@@ -217,10 +217,6 @@
 				"KHR_materials_ior":
 				{
 					"ior": 1
-				},
-				"KHR_materials_emissive_strength":
-				{
-					"emissiveStrength": 26.328125
 				}
 			}
 		}
@@ -295,7 +291,6 @@
 		}
 	],
 	"extensionsUsed": [
-		"KHR_materials_ior",
-		"KHR_materials_emissive_strength"
+		"KHR_materials_ior"
 	]
 }
