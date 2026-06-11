@@ -202,10 +202,10 @@
 	],
 	"images": [
 		{
-			"uri": "material_baseColor.png"
+			"uri": "material_SM_Tree_01_base_foliage_tree_BaseColor.png"
 		},
 		{
-			"uri": "Vegetation_Bark_Maple_1_baseColor.png"
+			"uri": "Vegetation_Bark_Maple_1_SM_Tree_01_base_foliage_tree_BaseColor.png"
 		}
 	],
 	"materials": [
@@ -213,7 +213,7 @@
 			"name": "formica_cinza_SM_Tree_01_base_foliage_tree",
 			"pbrMetallicRoughness":
 			{
-				"baseColorFactor": [ 0.400000006, 0.400000006, 0.400000006, 1 ],
+				"baseColorFactor": [ 0.401977777, 0.401977777, 0.401977777, 1 ],
 				"metallicFactor": 0,
 				"roughnessFactor": 0.600000024
 			},
@@ -225,7 +225,15 @@
 			{
 				"baseColorTexture":
 				{
-					"index": 0
+					"index": 0,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ 24.9882355, -0.909594119 ],
+							"scale": [ 0.752941191, 0.944649458 ]
+						}
+					}
 				},
 				"metallicFactor": 0,
 				"roughnessFactor": 0.600000024
@@ -238,7 +246,15 @@
 			{
 				"baseColorTexture":
 				{
-					"index": 1
+					"index": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ 0.497481823, -0.0522243716 ],
+							"scale": [ 0.143256858, 0.208490282 ]
+						}
+					}
 				},
 				"metallicFactor": 0,
 				"roughnessFactor": 0.600000024
@@ -304,14 +320,17 @@
 	],
 	"textures": [
 		{
-			"name": "material_baseColor",
+			"name": "material_SM_Tree_01_base_foliage_tree_BaseColor",
 			"sampler": 0,
 			"source": 0
 		},
 		{
-			"name": "Vegetation_Bark_Maple_1_baseColor",
+			"name": "Vegetation_Bark_Maple_1_SM_Tree_01_base_foliage_tree_BaseColor",
 			"sampler": 0,
 			"source": 1
 		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
 	]
 }
