@@ -32,6 +32,8 @@ namespace common::packet
 			constexpr int32_t Attack = 1;
 			constexpr int32_t SKILL1 = 2;
 			constexpr int32_t JUMP   = 3; // [추가] 점프 액션 ID
+			constexpr int32_t DASH   = 4; // [추가] 대쉬 액션 ID
+			constexpr int32_t INTERACT = 5; // [추가] 레버 등 환경 상호작용
 		}
 
 		namespace Tainer
@@ -139,6 +141,7 @@ namespace common::packet
 		C2S_P_NPC_INTERACT = 801, // 퀘스트 수락/완료용 (클라 -> 서버)
 		S2C_P_QUEST_UPDATE = 802, // 퀘스트 상태 변경 (서버 -> 클라)
 		S2C_P_QUEST_INFO = 803,   // 현재 퀘스트 목록 동기화 (서버 -> 클라)
+		S2C_P_INTERACT_ACK = 804, // [신규] 환경 사물(레버 등) 상호작용 성공 패킷 (서버 -> 클라)
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -444,6 +447,19 @@ namespace common::packet
 		int64_t _sender_id;
 		uint16_t _message_length;
 	};
+
+	struct SC_PACKET_QUEST_INFO : PacketHeader {
+		int32_t _quest_count;
+		// 이후에 퀘스트 배열(QuestStateData * _quest_count)이 옴
+	};
+
+	struct SC_PACKET_INTERACT_ACK : PacketHeader {
+		int64_t _object_id; // 상호작용 대상 ID
+		int32_t _interact_type; // 상호작용 종류 (0: 레버 등)
+	};
+
+
+	//--------------------------------------- 애니메이션 --------------------------------------- //--- //
 	// ------------------------------------------- 디버깅용 패킷 ------------------------------------------ //
 	struct SC_PACKET_DEBUG_DRAW : PacketHeader {
 		DebugShapeType _shape_type;
@@ -497,11 +513,6 @@ namespace common::packet
 		QuestUpdateInfo _quest_info;
 	};
 
-	// [S2C] 퀘스트 전체 목록 (로그인 시)
-	struct SC_PACKET_QUEST_INFO : PacketHeader {
-		uint16_t _quest_count;
-		// 이 뒤에 QuestUpdateInfo 구조체가 _quest_count 만큼 이어짐
-	};
 
 #pragma pack (pop)
 }

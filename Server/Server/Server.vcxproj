@@ -284,6 +284,7 @@
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="LeverData.lua" />
     <None Include="Monster.lua" />
     <None Include="NPC_Data.lua" />
     <None Include="QuestData.lua" />

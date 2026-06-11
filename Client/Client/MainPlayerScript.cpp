@@ -571,6 +571,33 @@ void MainPlayerScript::handle_input(float deltaTime)
 	}
 
 
+	// 대쉬 입력 (스페이스바)
+	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_SPACE)) {
+		common::Quat dashRotation = _logicalRotation;
+		if (common::LengthSq(_currentMoveDir) > 0.001f) {
+			// 이동 입력이 있으면 해당 방향으로 대쉬
+			float yawRad = atan2f(_currentMoveDir.x, _currentMoveDir.z);
+			XMVECTOR qDash = XMQuaternionRotationRollPitchYaw(0, yawRad, 0);
+			XMStoreFloat4(&dashRotation, qDash);
+		} else {
+			// 입력이 없으면 뒤로 대쉬 (소울라이크의 백스텝)
+			float yawRad = XMConvertToRadians(_currentyaw + 180.0f);
+			XMVECTOR qDash = XMQuaternionRotationRollPitchYaw(0, yawRad, 0);
+			XMStoreFloat4(&dashRotation, qDash);
+		}
+		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::DASH, -1, _logicalPosition, dashRotation);
+	}
+
+	// 점프 입력 (F키)
+	if (!_isAttacking && InputManager::instance()->IsKeyDown('F')) {
+		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
+	}
+
+	// 상호작용 입력 (E키)
+	if (!_isAttacking && InputManager::instance()->IsKeyDown('E')) {
+		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::INTERACT, -1, _logicalPosition, _logicalRotation);
+	}
+
 	// 공격 입력 (공격 중이 아닐 때만 새 공격 시작 가능)
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LBUTTON)) {
 		_isAttacking = true;

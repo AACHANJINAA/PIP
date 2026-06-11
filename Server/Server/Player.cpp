@@ -57,6 +57,7 @@ namespace PIP::GAME
 		_state = common::packet::EntityState::IDLE;
 		_actionId = 0;
 		_hitCooldown = 0.0f;
+		_dashCooldownTimer = 0.0f;
 
 		// 잡기 상태 초기화
 		SetGrabbedById(-1);
@@ -247,6 +248,7 @@ namespace PIP::GAME
 	void Player::Update(float deltaTime, JPH::TempAllocator* allocator)
 	{
 		if (_hitCooldown > 0.0f) _hitCooldown -= deltaTime;
+		if (_dashCooldownTimer > 0.0f) _dashCooldownTimer -= deltaTime;
 
 		// [추가] 마나 자동 회복 (1초에 8)
 		if (_mp < _max_mp) {
