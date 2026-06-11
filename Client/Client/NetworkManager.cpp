@@ -285,6 +285,9 @@ void NetworkManager::HANDLE_S2C_INTERACT_ACK(common::packet::PacketStream& strea
 		CLOG("[S->C] 레버 상호작용 검증 완료! (나중에 여기에 레버 애니메이션 로직 추가 가능)");
 		// TODO: MainPlayerScript 등에 알려서 레버 내리기 애니메이션 재생
 	}
+
+
+
 }
 
 void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)

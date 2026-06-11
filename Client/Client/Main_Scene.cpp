@@ -91,6 +91,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	Spawn_UI(device, commandList);
 	Spawn_Monster_HP_UI(device, commandList);
 	//TestMesh(device, commandList);
+	//Spawn_Lever(device, commandList);
 
 	load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
 
@@ -361,6 +362,52 @@ void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommand
 	auto monster_hp_ui_renderer = monster_hp_frame_obj->add_component<MonsterHPUIRenderComponent>();
 	monster_hp_ui_renderer->set_hp_back_texture("Resource/UI/HP_Bar_Frame.dds");
 	monster_hp_ui_renderer->set_hp_bar_texture("Resource/UI/HP_Bar.dds");
+}
+
+void Main_Scene::Spawn_Lever(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+	{
+		auto lever_obj = ObjectManager::instance()->create_game_object("Lever1");
+		auto lever_renderer = lever_obj->add_component<RenderComponent>();
+		auto lever_animation = lever_obj->add_component<AnimationComponent>();
+		auto lever_mesh = ResourceManager::instance()->load_mesh("Resource/Lever/Lever.gltf", true);
+		lever_renderer->set_mesh(lever_mesh);
+		dynamic_pointer_cast<ReadGLTFMesh>(lever_mesh)->load_animation_only("Resource/Lever/Animation/Lever_UP.gltf", "UP");
+		lever_animation->add_animation("idle", lever_mesh, "UP");
+		lever_animation->play("idle", false, 0.f);
+		// 재질 및 쉐이더 설정
+		std::string material = "Lever_Material";
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "skinned");
+		// skinned
+		lever_renderer->set_pso_name("skinned");
+		// 위치, 회전 정보
+		lever_obj->transform()->set_local_rotation(0.f, 120.f, 0.f);
+		lever_obj->transform()->set_local_scale({ 70.0f, 70.0f, 70.0f });
+		lever_obj->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
+	}
+
+
+	{
+		auto lever_obj = ObjectManager::instance()->create_game_object("Lever2");
+		auto lever_renderer = lever_obj->add_component<RenderComponent>();
+		auto lever_animation = lever_obj->add_component<AnimationComponent>();
+		auto lever_mesh = ResourceManager::instance()->load_mesh("Resource/Lever/Lever.gltf", true);
+		lever_renderer->set_mesh(lever_mesh);
+		dynamic_pointer_cast<ReadGLTFMesh>(lever_mesh)->load_animation_only("Resource/Lever/Animation/Lever_UP.gltf", "UP");
+		lever_animation->add_animation("idle", lever_mesh, "UP");
+		lever_animation->play("idle", false, 0.f);
+		// 재질 및 쉐이더 설정
+		std::string material = "Lever_Material";
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "skinned");
+		// skinned
+		lever_renderer->set_pso_name("skinned");
+		// 위치, 회전 정보
+		lever_obj->transform()->set_local_rotation(0.f, 120.f, 0.f);
+		lever_obj->transform()->set_local_scale({ 70.0f, 70.0f, 70.0f });
+		lever_obj->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
+	}
 }
 
 
