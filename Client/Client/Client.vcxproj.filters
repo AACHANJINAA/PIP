@@ -416,6 +416,9 @@
     <ClInclude Include="TimerManager.h">
       <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClInclude>
+    <ClInclude Include="DamageTextManager.h">
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClInclude>
     <ClInclude Include="ToolCameraScript.h">
       <Filter>1. Game\2. Scripts\CameraScript</Filter>
     </ClInclude>
@@ -740,6 +743,9 @@
       <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClCompile>
     <ClCompile Include="TimerManager.cpp">
+      <Filter>0. Engine\0. Core\2. Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="DamageTextManager.cpp">
       <Filter>0. Engine\0. Core\2. Manager</Filter>
     </ClCompile>
     <ClCompile Include="ToolCameraScript.cpp">

@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
 #include "LayerManager.h"
@@ -21,6 +21,11 @@
 #include "QuestNPCScript.h"
 #include "LeverScript.h"
 #include "UIManager.h"
+#include "TimerManager.h"
+#include "DamageTextManager.h"
+#include "SoundManager.h"
+#include "FreeCameraScript.h"
+#include "CameraComponent.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -340,7 +345,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	stream >> name;
 	if (name != _name)
 	{
-		CLOG(" [S->C] Updated player name from server: " << _name << " 아마 에러임");
+		CLOG(" [S->C] Updated player name from server: " << _name << " (Error)");
 		_name = name;// 서버에서 보내준 이름으로 업데이트
 	}
 	// 이제 spawn_data 구조체와 name 변수에 올바른 값이 들어있습니다.
@@ -515,10 +520,42 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 	stream >> attack_header;
 	CLOG("[S->C] Received PLAYER_ATTACK. Attacker: " << attack_header._attacker_id << " HitCount: " <<
 		(int)attack_header._hit_count);
+
+	bool isSkill = false;
+	if (attack_header._attacker_id == _my_session_id)
+	{
+		auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+		if (player) {
+			auto player_logic = player->get_component<MainPlayerScript>();
+			if (player_logic) isSkill = player_logic->is_skilling();
+		}
+	}
+
+	if (attack_header._hit_count > 0 && attack_header._attacker_id == _my_session_id)
+	{
+		TimerManager::instance()->SetHitStop(0.12f, 0.05f);
+		if (isSkill) {
+			auto mainCam = CameraComponent::get_main();
+			if (mainCam && mainCam->game_object()) {
+				auto freeCamScript = mainCam->game_object()->get_component<FreeCameraScript>();
+				if (freeCamScript) {
+					freeCamScript->add_trauma(0.5f);
+				}
+			}
+		}
+	}
+
 	for (uint8_t i = 0; i < attack_header._hit_count; ++i)
 	{
 		common::packet::PlayerHitInfo hit_info;
 		stream >> hit_info;
+
+		DamageTextManager::instance()->add_damage_text(
+			DirectX::XMFLOAT3(hit_info._target_position.x, hit_info._target_position.y, hit_info._target_position.z),
+			(float)hit_info._damage,
+			isSkill
+		);
+		SoundManager::instance()->play_3d("HitSound", DirectX::XMFLOAT3(hit_info._target_position.x, hit_info._target_position.y, hit_info._target_position.z));
 
 		// 내 플레이어인지 확인
 		if (_my_session_id == hit_info._target_id)
@@ -563,6 +600,30 @@ void NetworkManager::HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream)
 	common::packet::SC_PACKET_NPC_ATTACK attack_header;
 	stream >> attack_header;
 
+	bool isSkill = false;
+	if (attack_header._attacker_id == _my_session_id)
+	{
+		auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+		if (player) {
+			auto player_logic = player->get_component<MainPlayerScript>();
+			if (player_logic) isSkill = player_logic->is_skilling();
+		}
+	}
+
+	if (attack_header._hit_count > 0 && attack_header._attacker_id == _my_session_id)
+	{
+		TimerManager::instance()->SetHitStop(0.12f, 0.05f);
+		if (isSkill) {
+			auto mainCam = CameraComponent::get_main();
+			if (mainCam && mainCam->game_object()) {
+				auto freeCamScript = mainCam->game_object()->get_component<FreeCameraScript>();
+				if (freeCamScript) {
+					freeCamScript->add_trauma(0.5f);
+				}
+			}
+		}
+	}
+
 	for (uint8_t i = 0; i < attack_header._hit_count; ++i)
 	{
 		common::packet::NPCHitInfo hit_info;
@@ -580,6 +641,14 @@ void NetworkManager::HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream)
 		if (it != npcs.end())
 		{
 			(*it)->get_component<NPCScript>()->set_hp(hit_info._target_current_hp);
+			
+			auto npc_pos = (*it)->transform()->position();
+			DamageTextManager::instance()->add_damage_text(
+				DirectX::XMFLOAT3(npc_pos.x, npc_pos.y, npc_pos.z),
+				(float)hit_info._damage,
+				isSkill
+			);
+			SoundManager::instance()->play_3d("HitSound", DirectX::XMFLOAT3(npc_pos.x, npc_pos.y, npc_pos.z));
 		}
 	}
 }
