@@ -215,14 +215,37 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "UI_Background_UI", _logo_ui_background_obj);
 
 	// 6. 상호작용 F 키 UI
-	auto interact_ui_obj = ObjectManager::instance()->create_game_object("interact_ui");
-	auto interact_ui = interact_ui_obj->add_component<UIRenderComponent>();
-	interact_ui->set_screen_position(FRAME_BUFFER_WIDTH / 2.0f - 100.f, FRAME_BUFFER_HEIGHT - 150.f); // 위치는 나중에 지정해 줄것임
-	interact_ui->set_size(100.f, 100.f); // 크기도 나중에 조정할 것임
-	interact_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
-	interact_ui->set_texture("Resource/UI/F_interaction_UI.dds");
-	UIManager::instance()->add_ui(UILayer::MIDDLE, "F_interaction_UI", interact_ui_obj);
-	UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", false); // 처음에는 보이지 않도록 설정
+	{
+		auto interact_ui_obj = ObjectManager::instance()->create_game_object("interact_ui");
+		auto interact_ui = interact_ui_obj->add_component<UIRenderComponent>();
+		interact_ui->set_screen_position(FRAME_BUFFER_WIDTH / 2.0f - 100.f, FRAME_BUFFER_HEIGHT - 150.f); // 위치는 나중에 지정해 줄것임
+		interact_ui->set_size(100.f, 100.f); // 크기도 나중에 조정할 것임
+		interact_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+		interact_ui->set_texture("Resource/UI/F_interaction_UI.dds");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "F_interaction_UI", interact_ui_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", false); // 처음에는 보이지 않도록 설정
+	}
+	{
+		auto interact_ui_obj = ObjectManager::instance()->create_game_object("Lever_interact_ui_0");
+		auto interact_ui = interact_ui_obj->add_component<UIRenderComponent>();
+		interact_ui->set_screen_position(FRAME_BUFFER_WIDTH / 2.0f - 100.f, FRAME_BUFFER_HEIGHT - 150.f); // 위치는 나중에 지정해 줄것임
+		interact_ui->set_size(40.f, 40.f); // 크기도 나중에 조정할 것임
+		interact_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+		interact_ui->set_texture("Resource/UI/F_interaction_UI.dds");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Lever_interact_ui_0", interact_ui_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Lever_interact_ui_0", false); // 처음에는 보이지 않도록 설정
+	}
+	{
+		auto interact_ui_obj = ObjectManager::instance()->create_game_object("Lever_interact_ui_1");
+		auto interact_ui = interact_ui_obj->add_component<UIRenderComponent>();
+		interact_ui->set_screen_position(FRAME_BUFFER_WIDTH / 2.0f - 100.f, FRAME_BUFFER_HEIGHT - 150.f); // 위치는 나중에 지정해 줄것임
+		interact_ui->set_size(40.f, 40.f); // 크기도 나중에 조정할 것임
+		interact_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));  // 흰색
+		interact_ui->set_texture("Resource/UI/F_interaction_UI.dds");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Lever_interact_ui_1", interact_ui_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Lever_interact_ui_1", false); // 처음에는 보이지 않도록 설정
+	}
+
 
 	// 7. 퀘스트 마커 UI (?/!)
 	auto quest_marker_obj = ObjectManager::instance()->create_game_object("quest_marker_ui");

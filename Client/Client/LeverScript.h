@@ -20,6 +20,7 @@ private:
     void update_F_interaction_UI(float deltaTime);
 
     std::shared_ptr<class UIRenderComponent> _uiRenderer;
+    std::string _uiName;
 
     float _interactionDistance = 3.0f; // 상호작용 가능한 거리
     float _uiYOffset = 0.0f;           // UI가 뜰 높이 보정값
