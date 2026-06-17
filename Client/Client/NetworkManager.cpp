@@ -280,12 +280,9 @@ void NetworkManager::HANDLE_S2C_INTERACT_ACK(common::packet::PacketStream& strea
 	common::packet::SC_PACKET_INTERACT_ACK ack_packet;
 	stream >> ack_packet;
 
-	if (ack_packet._object_id == _my_session_id)
-	{
-		CLOG("[S->C] 레버 상호작용 검증 완료! (나중에 여기에 레버 애니메이션 로직 추가 가능)");
-		// TODO: MainPlayerScript 등에 알려서 레버 내리기 애니메이션 재생
-	}
-
+	
+	CLOG("[S->C] 레버 상호작용 검증 완료! (나중에 여기에 레버 애니메이션 로직 추가 가능) <" << ack_packet._object_id << ">");
+	// TODO: MainPlayerScript 등에 알려서 레버 내리기 애니메이션 재생
 
 
 }

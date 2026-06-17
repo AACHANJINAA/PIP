@@ -70,9 +70,9 @@ namespace PIP
 		return nullptr;
 	}
 
-	const std::vector<common::Vec3>& LuaManager::GetLeverPositions() const
+	const std::vector<LeverSpawnData>& LuaManager::GetLeverData() const
 	{
-		return _leverPositions;
+		return _leverData;
 	}
 
 	void LuaManager::LoadDataFile()
@@ -366,11 +366,12 @@ namespace PIP
 
 	int LuaManager::Lua_LoadLeverData(lua_State* L)
 	{
-		float x = static_cast<float>(lua_tonumber(L, 1));
-		float y = static_cast<float>(lua_tonumber(L, 2));
-		float z = static_cast<float>(lua_tonumber(L, 3));
+		float x  = static_cast<float>(lua_tonumber(L, 1));
+		float y  = static_cast<float>(lua_tonumber(L, 2));
+		float z  = static_cast<float>(lua_tonumber(L, 3));
+		int   id = static_cast<int>(lua_tointeger(L, 4)); // 레버 고유 ID (0, 1, ...)
 
-		LuaManager::Instance()->_leverPositions.push_back({ x, y, z });
+		LuaManager::Instance()->_leverData.push_back({ id, { x, y, z } });
 		return 0;
 	}
 }
