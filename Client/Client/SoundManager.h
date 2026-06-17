@@ -17,7 +17,7 @@ private:
 
 public:
     bool initialize();
-    void update();
+    void update(float deltaTime);
     virtual void release() override;
 
     // 사운드 관련 에러 체크용 유틸리티 함수
@@ -37,6 +37,14 @@ public:
 
 	// 사운드 정지
 	void stop(const std::string& name);
+    void stop_all();
+
+    // 문자열(hh:mm:ss:msms 또는 mm:ss:msms) 파싱 헬퍼
+    static unsigned int parse_time_to_ms(const std::string& timeStr);
+
+    // 구간 재생 (문자열 타이밍 기반)
+    void play_section(const std::string& name, const std::string& startTimeStr, const std::string& endTimeStr, SoundType type = SoundType::SFX, float volume = 1.0f);
+    void play_3d_section(const std::string& name, const XMFLOAT3& position, const std::string& startTimeStr, const std::string& endTimeStr, SoundType type = SoundType::SFX, float volume = 1.0f);
 
 	// 재생중인지 확인하는 함수 -> 사운드 이름으로 현재 재생 중인 채널이 있는지 체크
     bool is_playing(const std::string& name);
@@ -52,6 +60,9 @@ private:
 
     // 채널(현재 재생 중인 소리) 관리
     std::unordered_map<std::string, FMOD::Channel*> _channels;
+
+    // 구간 재생을 위한 채널 타이머 관리 (남은 재생 시간, 초 단위)
+    std::unordered_map<std::string, float> _stopTimers;
 
     // 볼륨 그룹 관리를 위한 채널 그룹들
     FMOD::ChannelGroup* _masterGroup = nullptr;

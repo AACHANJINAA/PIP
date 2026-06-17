@@ -16,6 +16,7 @@
 
 #include "SkyboxMesh.h"
 #include "SkyboxRenderComponent.h"
+#include "SoundManager.h"
 #include "TerrainLoader.h"
 #include "TerrainRenderComponent.h"
 #include "UIManager.h"
@@ -92,6 +93,9 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
 	if (auto rs = game_framework->get_replication_system()) {
 		rs->clear();
 	}
+
+	// [사운드] 씬 전환 시 기존 모든 사운드(BGM 등) 정지
+	SoundManager::instance()->stop_all();
 
     //if (_currentScene) {
     //    _currentScene.release();

@@ -15,6 +15,7 @@
 #include "UIManager.h"
 #include "UIRenderComponent.h"
 #include "MonsterHPUIRenderComponent.h"
+#include "SoundManager.h"
 
 void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -51,6 +52,10 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
     
     Spawn_UI(device, commandList);
     Spawn_Monster_HP_UI(device, commandList);
+
+	// [사운드] 보스 BGM 재생
+	SoundManager::instance()->load_sound("BossBGM", "Resource/Sound/BossBGM.mp3", false);
+	SoundManager::instance()->play("BossBGM", SoundType::BGM, 0.7f, true);
 }
 
 void Boss_Scene::release_upload_buffers()

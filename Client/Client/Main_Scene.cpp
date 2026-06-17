@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -99,6 +99,10 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
 	DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
+
+	// [사운드] 전역 BGM 재생
+	SoundManager::instance()->load_sound("MainBGM", "Resource/Sound/MainBGM.mp3", false);
+	SoundManager::instance()->play("MainBGM", SoundType::BGM, 0.5f, true);
 }
 
 void Main_Scene::release_upload_buffers()
