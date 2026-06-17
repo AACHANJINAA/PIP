@@ -165,6 +165,9 @@
     <Filter Include="1. Game\4. Quest">
       <UniqueIdentifier>{5469a0dd-abae-486b-81b2-cb96830ca0c8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="1. Game\2. Scripts\MainLogics\LeverScript">
+      <UniqueIdentifier>{3300addb-0ccf-4e03-87d7-b9ffeec983be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -518,6 +521,9 @@
     <ClInclude Include="FoliageRenderComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="LeverScript.h">
+      <Filter>1. Game\2. Scripts\MainLogics\LeverScript</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -837,6 +843,9 @@
     </ClCompile>
     <ClCompile Include="FoliageRenderComponent.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="LeverScript.cpp">
+      <Filter>1. Game\2. Scripts\MainLogics\LeverScript</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

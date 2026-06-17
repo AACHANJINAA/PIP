@@ -19,6 +19,7 @@
 #include "TainerScript.h"
 #include "UIFrameRenderComponent.h"
 #include "QuestNPCScript.h"
+#include "LeverScript.h"
 #include "UIManager.h"
 
 void error_display(const char* msg, int err_no)
@@ -283,7 +284,30 @@ void NetworkManager::HANDLE_S2C_INTERACT_ACK(common::packet::PacketStream& strea
 	
 	CLOG("[S->C] 레버 상호작용 검증 완료! (나중에 여기에 레버 애니메이션 로직 추가 가능) <" << ack_packet._object_id << ">");
 	// TODO: MainPlayerScript 등에 알려서 레버 내리기 애니메이션 재생
-
+	if(ack_packet._object_id == 0)
+	{
+		auto object = ObjectManager::instance()->find_by_name("Lever0");
+		if (object)
+		{
+			auto script = object->get_component<LeverScript>();
+			if (script)
+			{
+				script->interact(); // LeverScript의 interact() 호출
+			}
+		}
+	}
+	else if (ack_packet._object_id == 1)
+	{
+		auto object = ObjectManager::instance()->find_by_name("Lever1");
+		if (object)
+		{
+			auto script = object->get_component<LeverScript>();
+			if (script)
+			{
+				script->interact(); // LeverScript의 interact() 호출
+			}
+		}
+	}
 
 }
 

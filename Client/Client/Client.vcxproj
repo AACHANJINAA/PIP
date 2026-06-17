@@ -138,6 +138,7 @@
     <ClInclude Include="InstanceglTFShader.h" />
     <ClInclude Include="JoltSetup.h" />
     <ClInclude Include="LayerManager.h" />
+    <ClInclude Include="LeverScript.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="LinearAllocator.h" />
     <ClInclude Include="LongswordScript.h" />
@@ -272,6 +273,7 @@
     <ClCompile Include="INetSync.cpp" />
     <ClCompile Include="InstancedRenderComponent.cpp" />
     <ClCompile Include="LayerManager.cpp" />
+    <ClCompile Include="LeverScript.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="LinearAllocator.cpp" />
     <ClCompile Include="LongswordScript.cpp" />
