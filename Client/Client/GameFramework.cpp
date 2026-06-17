@@ -454,7 +454,7 @@ void GameFramework::FrameAdvance()
 	}
 
 	// 사운드 업데이트
-	SoundManager::instance()->update();
+	SoundManager::instance()->update(deltaTime);
 
 	// ---------------------------------------------------------
 	// 3. [비동기 리소스 업로드] (대기 없음!)

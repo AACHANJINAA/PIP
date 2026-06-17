@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "NPCScript.h"
 #include "ReplicationSystem.h"
 #include "AnimationComponent.h"
@@ -8,6 +8,7 @@
 #include "MonsterHPComponent.h"
 #include "ObjectManager.h"
 #include "ResourceManager.h"
+#include "SoundManager.h"
 
 void NPCScript::set_position(const XMFLOAT3& position)
 {
@@ -98,6 +99,9 @@ void NPCScript::init_visual()
 	auto animation_component = NPC->get_component<AnimationComponent>();
 	auto render_comp = NPC->get_component<RenderComponent>();
 
+	// [사운드] 몬스터 공격음 로드 (3D 사운드)
+	SoundManager::instance()->load_sound("MonsterAttack", "Resource/Sound/MonsterAttack.mp3", true);
+
 	if (_npcType == common::packet::NPCType::Elevator) {
 		// 엘리베이터 모델 설정 (실제 경로 적용)
 		auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Elevator/Elevator.gltf");
@@ -154,10 +158,20 @@ void NPCScript::on_destroy()
 
 void NPCScript::on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_move_packet)
 {
+	common::packet::EntityState prevState = _state;
+
 	_serverPos = npc_move_packet._position;
 	_serverVel = npc_move_packet._velocity;
 	_accumulatedTime = 0.0f; // 패킷 수신 후 시간 리셋
 	_state = npc_move_packet._state;
+
+	// 공격 시작 시 사운드 재생
+	if (prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("MonsterAttack", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+		}
+	}
+
 	_actionId = npc_move_packet._action_id;
 	_hp = npc_move_packet._hp; // [추가] HP 동기화
 	_grabbedById = -1; // 단일 이동 패킷엔 아직 그랩 정보가 없음 (일관성을 위해 리셋)
@@ -386,7 +400,17 @@ void NPCScript::apply_snapshot()
 	}
 	if(!_isNewDataArrived) return;
 
+	common::packet::EntityState prevState = _state;
+
 	_state = _pendingSnapshot.state;
+
+	// 공격 시작 시 사운드 재생
+	if (prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("MonsterAttack", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+		}
+	}
+
 	_actionId = _pendingSnapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
 	_grabbedById = _pendingSnapshot.grabbed_by_id; // [추가]
 	_grabSlot = _pendingSnapshot.grab_slot;         // [추가]

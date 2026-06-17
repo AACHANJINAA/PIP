@@ -55,10 +55,25 @@ bool SoundManager::initialize()
     return true;
 }
 
-void SoundManager::update()
+void SoundManager::update(float deltaTime)
 {
     if (_system)
     {
+        // 구간 재생용 타이머 업데이트 및 만료 시 종료 처리
+        for (auto it = _stopTimers.begin(); it != _stopTimers.end(); )
+        {
+            it->second -= deltaTime;
+            if (it->second <= 0.0f)
+            {
+                stop(it->first);
+                it = _stopTimers.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
         // FMOD 코어 엔진 업데이트 (매 프레임 호출 필수!)
         // 3D 사운드 계산, 채널 정리 등을 백그라운드에서 수행함
         
@@ -100,6 +115,7 @@ void SoundManager::release()
         }
         _sounds.clear();
         _channels.clear();
+        _stopTimers.clear();
 
         // FMOD 시스템 종료 및 해제
         _system->close();
@@ -230,13 +246,25 @@ void SoundManager::play_3d(const std::string& name, const XMFLOAT3& position, So
 
 void SoundManager::stop(const std::string& name)
 {
-    if (!_channels.contains(name)) return;
+	if (!_channels.contains(name)) return;
     FMOD::Channel* channel = _channels[name];
     if (channel)
     {
         channel->stop();
         _channels.erase(name); // 채널 목록에서 제거
+        _stopTimers.erase(name); // 타이머에서도 제거
 	}
+}
+
+void SoundManager::stop_all()
+{
+    for (auto& pair : _channels)
+    {
+        if (pair.second)
+            pair.second->stop();
+    }
+    _channels.clear();
+    _stopTimers.clear();
 }
 
 bool SoundManager::is_playing(const std::string& name)
@@ -270,4 +298,87 @@ float SoundManager::get_playback_position(const std::string& name)
         return pos / 1000.0f;
     }
     return 0.0f;
+}
+
+unsigned int SoundManager::parse_time_to_ms(const std::string& timeStr)
+{
+    // hh:mm:ss:msms 포맷 파싱
+    std::stringstream ss(timeStr);
+    std::string token;
+    std::vector<int> parts;
+
+    while (std::getline(ss, token, ':'))
+    {
+        try {
+            parts.push_back(std::stoi(token));
+        } catch (...) {
+            parts.push_back(0);
+        }
+    }
+
+    unsigned int ms = 0;
+    if (parts.size() == 4) // hh:mm:ss:msms
+    {
+        ms += parts[0] * 3600000;
+        ms += parts[1] * 60000;
+        ms += parts[2] * 1000;
+        ms += parts[3];
+    }
+    else if (parts.size() == 3) // mm:ss:msms
+    {
+        ms += parts[0] * 60000;
+        ms += parts[1] * 1000;
+        ms += parts[2];
+    }
+    else if (parts.size() == 2) // ss:msms
+    {
+        ms += parts[0] * 1000;
+        ms += parts[1];
+    }
+    else if (parts.size() == 1) // msms
+    {
+        ms += parts[0];
+    }
+
+    return ms;
+}
+
+void SoundManager::play_section(const std::string& name, const std::string& startTimeStr, const std::string& endTimeStr, SoundType type, float volume)
+{
+    unsigned int startMs = parse_time_to_ms(startTimeStr);
+    unsigned int endMs = parse_time_to_ms(endTimeStr);
+
+    play(name, type, volume, false); // 우선 재생시킴
+
+    if (_channels.contains(name) && _channels[name])
+    {
+        FMOD::Channel* channel = _channels[name];
+        channel->setPosition(startMs, FMOD_TIMEUNIT_MS);
+
+        if (endMs > startMs)
+        {
+            float durationSec = (endMs - startMs) / 1000.0f;
+            _stopTimers[name] = durationSec;
+        }
+    }
+}
+
+void SoundManager::play_3d_section(const std::string& name, const XMFLOAT3& position, const std::string& startTimeStr, const std::string& endTimeStr, SoundType type, float volume)
+{
+    unsigned int startMs = parse_time_to_ms(startTimeStr);
+    unsigned int endMs = parse_time_to_ms(endTimeStr);
+
+    play_3d(name, position, type, volume, false);
+
+    if (_channels.contains(name) && _channels[name])
+    {
+        FMOD::Channel* channel = _channels[name];
+        channel->setPosition(startMs, FMOD_TIMEUNIT_MS);
+
+        if (endMs > startMs)
+        {
+            float durationSec = (endMs - startMs) / 1000.0f;
+            _stopTimers[name] = durationSec;
+        }
+    }
 }
