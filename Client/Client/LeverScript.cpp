@@ -46,18 +46,27 @@ void LeverScript::awake()
     // 위치, 회전, 스케일 설정은 Main_Scene에서 지정한 값을 유지합니다.
     auto trans = transform();
 
-    // UI 초기화
-    _uiRenderer = UIManager::instance()->ui_component(UILayer::MIDDLE, "F_interaction_UI");
-    if (_uiRenderer)
+    // UI 초기화 (레버마다 개별 UI 객체 생성하여 깜빡임 충돌 방지)
+    if(game_object()->name() == "Lever1")
     {
-        _uiRenderer->set_size(_uiWidth, _uiHeight);
-        UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", false);
+		_uiName = "Lever_interact_ui_1";
+        _uiRenderer = UIManager::instance()->ui_component(UILayer::MIDDLE, "Lever_interact_ui_1");
     }
+    else if(game_object()->name() == "Lever0")
+    {
+		_uiName = "Lever_interact_ui_0";
+        _uiRenderer = UIManager::instance()->ui_component(UILayer::MIDDLE, "Lever_interact_ui_0");
+    }
+    else
+    {
+         CERROR("레버 이름이 예상과 다릅니다. UI 초기화 실패!");
+         return;
+	}
+    _uiRenderer->set_size(_uiWidth, _uiHeight);
+    UIManager::instance()->set_visible(UILayer::MIDDLE, _uiName, false);
 
-    // y축 보정 (레버 중앙에 UI가 뜨도록)
-    if (trans) {
-        _uiYOffset = trans->get_world_scale().y * 1.5f;
-    }
+    // y축 보정 (레버의 y축 높이와 정확히 일치하도록 0으로 설정)
+    _uiYOffset = 0.0f;
 }
 
 void LeverScript::update(float deltaTime)
@@ -125,14 +134,14 @@ void LeverScript::update_F_interaction_UI(float deltaTime)
     {
         _currentAlpha += _fadeSpeed * deltaTime;
         if (_currentAlpha > 1.0f) _currentAlpha = 1.0f;
-        UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", true);
+        UIManager::instance()->set_visible(UILayer::MIDDLE, _uiName, true);
     }
     else
     {
         _currentAlpha -= _fadeSpeed * deltaTime;
         if (_currentAlpha < 0.0f) {
             _currentAlpha = 0.0f;
-            UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", false);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, _uiName, false);
             return; 
         }
     }
@@ -140,14 +149,14 @@ void LeverScript::update_F_interaction_UI(float deltaTime)
     if (_isInteracted)
     {
         // 상호작용 후에는 상호작용 F키 UI를 항상 보이지 않도록 설정
-        UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", false);
+        UIManager::instance()->set_visible(UILayer::MIDDLE, _uiName, false);
     }
     else
     {
-        UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", true);
+        UIManager::instance()->set_visible(UILayer::MIDDLE, _uiName, true);
     }
 
-    if (UIManager::instance()->is_visible(UILayer::MIDDLE, "F_interaction_UI"))
+    if (UIManager::instance()->is_visible(UILayer::MIDDLE, _uiName))
     {
         auto projMat = DirectX::XMLoadFloat4x4(&camera->projection_matrix());
         auto viewMat = DirectX::XMLoadFloat4x4(&camera->view_matrix());
