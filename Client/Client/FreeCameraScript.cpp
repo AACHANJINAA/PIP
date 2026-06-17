@@ -59,10 +59,39 @@ void FreeCameraScript::late_update(float delta_time)
         player_camera_update(delta_time);
     }
 
-    // ESC 키를 누르면 커서를 보이거나 숨깁니다.
+    // ESC 키가 눌리면 커서를 보이거나 숨깁니다.
     if (InputManager::instance()->IsKeyDown(VK_ESCAPE))
     {
         InputManager::instance()->ChangeShowCusor();
+    }
+
+    // [추가] 카메라 쉐이크(Trauma) 처리
+    if (_trauma > 0.0f)
+    {
+        // Trauma 값에 따라 흔들림 정도(Shake) 계산 (제곱 또는 세제곱으로 자연스럽게)
+        float shake = _trauma * _trauma;
+        
+        // Perlin Noise 대신 난수를 사용하여 방향 무작위화
+        float offsetX = _maxShakeOffset * shake * (((rand() % 100) / 100.0f) * 2.0f - 1.0f);
+        float offsetY = _maxShakeOffset * shake * (((rand() % 100) / 100.0f) * 2.0f - 1.0f);
+
+        auto cam = game_object()->get_component<CameraComponent>();
+        if (cam)
+        {
+            cam->set_shake_offset({ offsetX, offsetY, 0.0f });
+        }
+
+        // Trauma 자연 감소 (선형 감소)
+        _trauma -= delta_time * 1.5f; // 초당 1.5씩 감소
+        if (_trauma < 0.0f) _trauma = 0.0f;
+    }
+    else
+    {
+        auto cam = game_object()->get_component<CameraComponent>();
+        if (cam)
+        {
+            cam->set_shake_offset({ 0.0f, 0.0f, 0.0f });
+        }
     }
 }
 

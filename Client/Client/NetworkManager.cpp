@@ -21,6 +21,11 @@
 #include "QuestNPCScript.h"
 #include "LeverScript.h"
 #include "UIManager.h"
+#include "TimerManager.h"
+#include "DamageTextManager.h"
+#include "SoundManager.h"
+#include "FreeCameraScript.h"
+#include "CameraComponent.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -340,7 +345,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 	stream >> name;
 	if (name != _name)
 	{
-		CLOG(" [S->C] Updated player name from server: " << _name << " 아마 에러임");
+		CLOG(" [S->C] Updated player name from server: " << _name << " (Error)");
 		_name = name;// 서버에서 보내준 이름으로 업데이트
 	}
 	// 이제 spawn_data 구조체와 name 변수에 올바른 값이 들어있습니다.
