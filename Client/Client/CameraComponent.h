@@ -43,6 +43,9 @@ public:
     const XMFLOAT4X4& projection_matrix() const { return _projectionMatrix; }
     const BoundingFrustum& frustum() const { return _frustum; }
 
+    // [추가] 카메라 쉐이크를 위한 오프셋 설정
+    void set_shake_offset(const DirectX::XMFLOAT3& offset) { _shakeOffset = offset; }
+
     // --- Main Camera Management ---
 	void set_main_camera() { _mainCamera = this; }
     static CameraComponent* get_main() { return _mainCamera; }
@@ -54,6 +57,8 @@ private:
     XMFLOAT4X4 _viewMatrix;
     XMFLOAT4X4 _projectionMatrix;
     BoundingFrustum _frustum;
+
+    DirectX::XMFLOAT3 _shakeOffset = { 0.0f, 0.0f, 0.0f };
     // 역할 이전 (from CCamera):
     // 뷰포트와 시저렉트 정보입니다.
     D3D12_VIEWPORT  _viewport;

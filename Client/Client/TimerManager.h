@@ -17,9 +17,17 @@ public:
 	unsigned long GetFrameRate(LPTSTR lpszString = NULL, int nCharacters = 0); // 프레임 레이트를 반환한다.
 	float GetTimeElapsed(); // 프레임의 평균 경과 시간을 반환한다.
 
+	// [추가] 역경직(Hit Stop) 및 게임 시간 배속 제어
+	void SetHitStop(float duration, float timeScale);
+	float GetGameTimeScale() const { return _gameTimeScale; }
+
 private:
 	bool _hasHardwareHasPerformanceCounter;	// 컴퓨터가 Performance Counter를 갖고 있는지?
 	float _timeScale;						// Scale Counter의 양
+	
+	float _gameTimeScale = 1.0f;			// 게임 내 전역 시간 배속 (기본 1.0)
+	float _hitStopTimer = 0.0f;				// 역경직 지속 시간 타이머
+
 	float m_fTimeElapsed;					// 마지막 프레임 이후 지나간 시간
 	__int64 m_nCurrentTime;					// 현재의 시간
 	__int64 m_nLastTime;					// 마지막 프레임의 시간

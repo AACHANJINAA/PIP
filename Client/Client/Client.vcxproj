@@ -197,6 +197,7 @@
     <ClInclude Include="SocketComponenet.h" />
     <ClInclude Include="SoundManager.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="DamageTextManager.h" />
     <ClInclude Include="TainerScript.h" />
     <ClInclude Include="TargetingComponent.h" />
     <ClInclude Include="targetver.h" />
@@ -343,6 +344,7 @@
     <ClCompile Include="TerrainRenderComponent.cpp" />
     <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TimerManager.cpp" />
+    <ClCompile Include="DamageTextManager.cpp" />
     <ClCompile Include="Title_Scene.cpp" />
     <ClCompile Include="ToolCameraScript.cpp" />
     <ClCompile Include="Tool_Scene.cpp" />

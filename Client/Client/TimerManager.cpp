@@ -82,6 +82,16 @@ void TimerManager::Tick(float fLockFPS)
 	for (ULONG i = 0; i < m_nSampleCount; i++) m_fTimeElapsed += m_fFrameTime[i];
 	if (m_nSampleCount > 0) m_fTimeElapsed /= m_nSampleCount;
 
+	// [추가] 역경직(Hit Stop) 처리
+	if (_hitStopTimer > 0.0f)
+	{
+		_hitStopTimer -= m_fTimeElapsed; // 현실 시간(스케일 안 된 시간)으로 감소
+		if (_hitStopTimer <= 0.0f)
+		{
+			_hitStopTimer = 0.0f;
+			_gameTimeScale = 1.0f; // 역경직 종료 시 원래 배속 복귀
+		}
+	}
 }
 
 unsigned long TimerManager::GetFrameRate(LPTSTR lpszString, int nCharacters)
@@ -99,7 +109,13 @@ unsigned long TimerManager::GetFrameRate(LPTSTR lpszString, int nCharacters)
 
 float TimerManager::GetTimeElapsed()
 {
-	return(m_fTimeElapsed);
+	return(m_fTimeElapsed * _gameTimeScale); // 스케일 적용된 델타타임 반환
+}
+
+void TimerManager::SetHitStop(float duration, float timeScale)
+{
+	_hitStopTimer = duration;
+	_gameTimeScale = timeScale;
 }
 
 void TimerManager::Reset()
