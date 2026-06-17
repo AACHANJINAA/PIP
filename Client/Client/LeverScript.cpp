@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "gameobject.h"
 #include "LeverScript.h"
 #include "ObjectManager.h"
