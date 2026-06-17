@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 
@@ -2190,13 +2190,50 @@ bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayD
 		BoundingOrientedBox worldPrimOBB;
 		primitive->_orientedBoundingBox.Transform(worldPrimOBB, worldMatrix);
 
-		float hitDist = 0.0f;
-		if (worldPrimOBB.Intersects(rayStart, rayDir, hitDist))
+		float primHitDist = 0.0f;
+		if (worldPrimOBB.Intersects(rayStart, rayDir, primHitDist))
 		{
-			if (hitDist >= 0.0f && hitDist < closestDist)
+			// OBB에 맞았거나 내부에 있다면, 실제 삼각형(Triangle)들과 정밀 교차 판정 수행
+			size_t indexCount = primitive->_indices.size();
+			if (indexCount % 3 != 0) continue; // 정상적인 삼각형 데이터가 아님
+
+			bool isSkinned = !primitive->_skinned_vertices.empty();
+			
+			for (size_t i = 0; i < indexCount; i += 3)
 			{
-				closestDist = hitDist;
-				hitAnything = true;
+				UINT i0 = primitive->_indices[i];
+				UINT i1 = primitive->_indices[i + 1];
+				UINT i2 = primitive->_indices[i + 2];
+
+				XMVECTOR v0, v1, v2;
+				if (isSkinned)
+				{
+					v0 = XMLoadFloat3(&primitive->_skinned_vertices[i0]._position);
+					v1 = XMLoadFloat3(&primitive->_skinned_vertices[i1]._position);
+					v2 = XMLoadFloat3(&primitive->_skinned_vertices[i2]._position);
+				}
+				else
+				{
+					v0 = XMLoadFloat3(&primitive->_vertices[i0]._position);
+					v1 = XMLoadFloat3(&primitive->_vertices[i1]._position);
+					v2 = XMLoadFloat3(&primitive->_vertices[i2]._position);
+				}
+
+				// 정점들을 월드 좌표계로 변환
+				v0 = XMVector3TransformCoord(v0, worldMatrix);
+				v1 = XMVector3TransformCoord(v1, worldMatrix);
+				v2 = XMVector3TransformCoord(v2, worldMatrix);
+
+				float triHitDist = 0.0f;
+				// 실제 삼각형 폴리곤과 광선의 교차 판정
+				if (DirectX::TriangleTests::Intersects(rayStart, rayDir, v0, v1, v2, triHitDist))
+				{
+					if (triHitDist >= 0.0f && triHitDist < closestDist)
+					{
+						closestDist = triHitDist;
+						hitAnything = true;
+					}
+				}
 			}
 		}
 	}
