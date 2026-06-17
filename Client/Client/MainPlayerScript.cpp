@@ -593,10 +593,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
 	}
 
-	// 상호작용 입력 (E키)
-	if (!_isAttacking && InputManager::instance()->IsKeyDown('E')) {
-		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::INTERACT, -1, _logicalPosition, _logicalRotation);
-	}
+	// 상호작용 입력 (E키) -> 레버 스크립트에서 하도록 전환
+	//if (!_isAttacking && InputManager::instance()->IsKeyDown('E')) {
+	//	NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::INTERACT, -1, _logicalPosition, _logicalRotation);
+	//}
 
 	// 공격 입력 (공격 중이 아닐 때만 새 공격 시작 가능)
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LBUTTON)) {
