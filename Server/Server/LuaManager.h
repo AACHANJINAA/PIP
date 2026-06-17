@@ -30,6 +30,12 @@ namespace PIP
 		int32_t reward_exp;
 	};
 
+	struct LeverSpawnData
+	{
+		int id;             // 레버 고유 ID (0-based)
+		common::Vec3 pos;   // 레버 월드 좌표
+	};
+
 	class LuaManager : public Singleton<LuaManager>
 	{
 		friend class Singleton<LuaManager>;
@@ -48,7 +54,7 @@ namespace PIP
 		const NPCSpawnData* GetNPCSpawnData(common::packet::NPCType type, int index) const;
 		size_t GetNPCSpawnCount(common::packet::NPCType type) const; // [추가] 타입별 스폰 데이터 개수 반환
 		const QuestData* GetQuestData(int32_t id) const; // [추가]
-		const std::vector<common::Vec3>& GetLeverPositions() const;
+		const std::vector<LeverSpawnData>& GetLeverData() const;
 		void LoadLeverData();
 		
 	private:
@@ -72,6 +78,6 @@ namespace PIP
 		lua_State* L = nullptr; // Lua 상태를 저장하는 멤버 변수
 		std::unordered_map<common::packet::NPCType, std::vector<NPCSpawnData>> _npcSpawnData; // NPC 유형별 스폰 데이터 맵
 		std::unordered_map<int32_t, QuestData> _questData; // [추가] 퀘스트 원본 데이터
-		std::vector<common::Vec3> _leverPositions;
+		std::vector<LeverSpawnData> _leverData;
 	};
 }
