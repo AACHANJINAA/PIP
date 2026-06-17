@@ -27,11 +27,20 @@ public:
 
 	void set_sinamatic_camera_mode(bool enable) { _isSinamaticCameraMode = enable; }
 
+	// [추가] 카메라 쉐이크를 위한 Trauma 추가 함수
+	void add_trauma(float amount) {
+		_trauma += amount;
+		if (_trauma > 1.0f) _trauma = 1.0f;
+	}
+
 private:
 
 	void free_camera_update(float delta_time);
 	void player_camera_update(float delta_time);
 	void player_camera_conflict_update(float delta_time); // 플레이어 카메라 모드일 때 충돌처리 및 최종 카메라 위치 계산하는 함수
+
+	float _trauma = 0.0f; // 카메라 흔들림 정도 (0.0 ~ 1.0)
+	float _maxShakeOffset = 0.5f; // 최대 흔들림 폭
 
     // 역할 이전 (from FreeCamera):
     // 마우스 입력을 처리하여 카메라를 회전시킵니다.

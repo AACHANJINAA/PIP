@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
 #include "AnimationComponent.h"
@@ -20,9 +20,10 @@ public:
 	void awake() override;
 
 	void set_hp(int hp);
+	void set_mp(int mp);
 	int hp() const { return _hp; }
+	bool is_skilling() const { return _isSkilling; }
 	
-	void set_mp(int mp); // [추가]
 	int mp() const { return _mp; } // [추가]
 	void set_position(const f3& pos) const
 	{

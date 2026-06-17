@@ -9,6 +9,7 @@
 #include "Renderer.h"
 #include "UIManager.h"
 #include "SoundManager.h"
+#include "DamageTextManager.h"
 
 #include "DescriptorManager.h"
 #include "InputManager.h"
@@ -534,6 +535,9 @@ void GameFramework::FrameAdvance()
 	//MinimapManager::instance()->update_player_position({0, 0, 0});
 	
 	//MinimapManager::instance()->render(_commandList.Get(), _swapChainBufferIndex);
+
+	// 데미지 텍스트 렌더링 (ImGui 기반)
+	DamageTextManager::instance()->update_and_render(deltaTime);
 
 	// 화면 맨 위에 ImGui 그리기 명령 전달
 	ImGuiManager::instance()->render(_commandList.Get());

@@ -129,6 +129,16 @@ void CameraComponent::recalculate_view_matrix()
 	XMVECTOR look = XMLoadFloat3(&f3look);
 	XMVECTOR up = XMLoadFloat3(&f3up);
 
+	// [추가] 카메라 쉐이크 오프셋 적용
+	XMVECTOR shake = XMLoadFloat3(&_shakeOffset);
+	XMVECTOR right = XMVector3Cross(up, look);
+	right = XMVector3Normalize(right);
+	up = XMVector3Normalize(up);
+
+	// 카메라의 로컬 축(Right, Up)을 기준으로 흔들림(shake.x, shake.y) 적용
+	XMVECTOR offset = XMVectorScale(right, _shakeOffset.x) + XMVectorScale(up, _shakeOffset.y);
+	pos = XMVectorAdd(pos, offset);
+
 	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookToLH(pos, look, up));
 	// 스카이박스용 뷰 행렬 (이동 성분 제거) 계산 및 상수 버퍼에 복사
 
