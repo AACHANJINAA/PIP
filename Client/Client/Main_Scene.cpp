@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -20,6 +20,7 @@
 #include "NetworkManager.h"
 #include "QuestNPCScript.h"
 #include "ShadowManager.h"
+#include "LeverScript.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -54,6 +55,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	ResourceManager::instance()->load_mesh("Resource/Character/BoneGolem/BoneGolemRd.gltf", true);
 	ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
 	ResourceManager::instance()->load_mesh("Resource/Character/Bandit_Rd_NPC/Bandit_Rd_NPC.gltf",true);
+	ResourceManager::instance()->load_mesh("Resource/Lever/Lever.gltf", true);
 	auto idle_brute_mesh = ResourceManager::instance()->load_mesh("Resource/Character/Brute_idle/Brute_idle.gltf", true, "idle");
 	dynamic_pointer_cast<ReadGLTFMesh>(idle_brute_mesh)->load_animation_only("Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf", "attack");
 	// =========================================================================
@@ -91,7 +93,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	Spawn_UI(device, commandList);
 	Spawn_Monster_HP_UI(device, commandList);
 	//TestMesh(device, commandList);
-	//Spawn_Lever(device, commandList);
+	Spawn_Lever(device, commandList);
 
 	load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
 
@@ -367,46 +369,23 @@ void Main_Scene::Spawn_Monster_HP_UI(ID3D12Device* device, ID3D12GraphicsCommand
 void Main_Scene::Spawn_Lever(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 	{
-		auto lever_obj = ObjectManager::instance()->create_game_object("Lever1");
-		auto lever_renderer = lever_obj->add_component<RenderComponent>();
-		auto lever_animation = lever_obj->add_component<AnimationComponent>();
-		auto lever_mesh = ResourceManager::instance()->load_mesh("Resource/Lever/Lever.gltf", true);
-		lever_renderer->set_mesh(lever_mesh);
-		dynamic_pointer_cast<ReadGLTFMesh>(lever_mesh)->load_animation_only("Resource/Lever/Animation/Lever_UP.gltf", "UP");
-		lever_animation->add_animation("idle", lever_mesh, "UP");
-		lever_animation->play("idle", false, 0.f);
-		// 재질 및 쉐이더 설정
-		std::string material = "Lever_Material";
-		ResourceManager::instance()->create_material(material);
-		ResourceManager::instance()->set_shader_for_material(material, "skinned");
-		// skinned
-		lever_renderer->set_pso_name("skinned");
+		auto lever_obj = ObjectManager::instance()->create_game_object("Lever0"); // 건물 뒷 편
+		lever_obj->add_component<LeverScript>();
+
 		// 위치, 회전 정보
-		lever_obj->transform()->set_local_rotation(0.f, 120.f, 0.f);
-		lever_obj->transform()->set_local_scale({ 70.0f, 70.0f, 70.0f });
-		lever_obj->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
+		lever_obj->transform()->set_local_rotation(-90.f, 0.f, -90.f);
+		lever_obj->transform()->set_local_scale({ 0.5f, 0.5f, 0.5f });
+		lever_obj->transform()->set_local_position(XMFLOAT3(124.9f, 7.2f, -170.5f));
 	}
 
-
 	{
-		auto lever_obj = ObjectManager::instance()->create_game_object("Lever2");
-		auto lever_renderer = lever_obj->add_component<RenderComponent>();
-		auto lever_animation = lever_obj->add_component<AnimationComponent>();
-		auto lever_mesh = ResourceManager::instance()->load_mesh("Resource/Lever/Lever.gltf", true);
-		lever_renderer->set_mesh(lever_mesh);
-		dynamic_pointer_cast<ReadGLTFMesh>(lever_mesh)->load_animation_only("Resource/Lever/Animation/Lever_UP.gltf", "UP");
-		lever_animation->add_animation("idle", lever_mesh, "UP");
-		lever_animation->play("idle", false, 0.f);
-		// 재질 및 쉐이더 설정
-		std::string material = "Lever_Material";
-		ResourceManager::instance()->create_material(material);
-		ResourceManager::instance()->set_shader_for_material(material, "skinned");
-		// skinned
-		lever_renderer->set_pso_name("skinned");
+		auto lever_obj = ObjectManager::instance()->create_game_object("Lever1"); // 나무 있는 곳
+		lever_obj->add_component<LeverScript>();
+
 		// 위치, 회전 정보
-		lever_obj->transform()->set_local_rotation(0.f, 120.f, 0.f);
-		lever_obj->transform()->set_local_scale({ 70.0f, 70.0f, 70.0f });
-		lever_obj->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
+		lever_obj->transform()->set_local_rotation(-90.f, -90.f, -90.f);
+		lever_obj->transform()->set_local_scale({ 0.5f, 0.5f, 0.5f });
+		lever_obj->transform()->set_local_position(XMFLOAT3(148.5f, 7.0f, -35.6f));
 	}
 }
 
