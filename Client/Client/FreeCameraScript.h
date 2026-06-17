@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ScriptComponent.h"
 
 // Forward declaration
@@ -33,6 +33,10 @@ public:
 		if (_trauma > 1.0f) _trauma = 1.0f;
 	}
 
+	// [추가] 줌 오프셋 제어 함수 (스킬 사용 시 줌아웃 효과)
+	void set_dynamic_zoom_offset(float offset) { _dynamicZoomOffset = offset; }
+	float get_dynamic_zoom_offset() const { return _dynamicZoomOffset; }
+
 private:
 
 	void free_camera_update(float delta_time);
@@ -64,4 +68,6 @@ private:
     bool _isFreeCameraMode = false;
 
 	bool _isSinamaticCameraMode = false; // 시네마틱 카메라 모드 여부
+
+	float _dynamicZoomOffset = 0.0f; // 스킬 사용 시의 추가 줌 오프셋
 };

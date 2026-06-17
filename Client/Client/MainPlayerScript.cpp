@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -25,6 +25,7 @@
 #include "ParticleSystemComponent.h"
 #include "ParticleRenderComponent.h"
 #include "GameFramework.h"
+#include "FreeCameraScript.h"
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -483,7 +484,9 @@ void MainPlayerScript::handle_input(float deltaTime)
 
 	bool is_foward = false;
 
-	if (false == _isAttacking) // 공격 중이 아닐 때만 이동 입력 처리
+	bool is_gathering = _isSkilling && !_isSwordGathered;
+
+	if (false == _isAttacking || is_gathering) // 공격 중이 아닐 때만 이동 입력 처리 (스킬 모으는 중이면 방향 입력만 허용)
 	{
 		// 이동 입력 처리
 		if (InputManager::instance()->IsKeyPress('W')) {
@@ -517,6 +520,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 		{
 			_speed = common::move_speed::player_walk_speed; // 걷기 속도 -> 서버와 동일하게 해주어야 함
 		}
+
+		if (is_gathering) {
+			_speed = 0.0f; // 스킬 모으기 중에는 이동 불가, 방향 회전만 가능
+		}
 	}
 
 	if (is_lock_on) {
@@ -536,7 +543,8 @@ void MainPlayerScript::handle_input(float deltaTime)
 			while (yawDiff > 180.f) yawDiff -= 360.f;
 			while (yawDiff < -180.f) yawDiff += 360.f;
 
-			_currentyaw += yawDiff * std::min(1.0f, deltaTime * 15.0f); // 캐릭터 회전은 카메라보다 빠르게
+			float rotSpeed = is_gathering ? 2.0f : 15.0f; // 스킬 모으기 중에는 느리게 회전
+			_currentyaw += yawDiff * std::min(1.0f, deltaTime * rotSpeed); // 캐릭터 회전은 카메라보다 빠르게
 			transform()->set_local_rotation(0.0f, _currentyaw + 180.0f, 0.0f);
 
 			// 이동 벡터는 카메라 기준 유지 (이동 시 옆걸음/뒷걸음질이 됨)
@@ -555,7 +563,8 @@ void MainPlayerScript::handle_input(float deltaTime)
 		while (yawDiff > 180.f) yawDiff -= 360.f;
 		while (yawDiff < -180.f) yawDiff += 360.f;
 
-		float lerpFactor = std::min(1.0f, deltaTime * 10.0f); // 회전 속도 조절
+		float rotSpeed = is_gathering ? 2.0f : 10.0f; // 회전 속도 조절
+		float lerpFactor = std::min(1.0f, deltaTime * rotSpeed); 
 		_currentyaw += yawDiff * lerpFactor;
 
 		if (_currentyaw > 360.f) _currentyaw -= 360.f;
@@ -752,6 +761,32 @@ void MainPlayerScript::update_physics_and_visuals(float deltaTime)
 		common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{ 0, 0.0f, 0 };
 		transform()->set_local_position(visualPosition);
 	}
+
+	// [카메라 다이나믹 줌 자동 원상복구]
+	// 스킬 연출 도중(기가 모이는 중)이 아니라면, 카메라 줌을 서서히 0.0f로 복구합니다.
+	bool is_gathering = _isSkilling && !_isSwordGathered;
+	if (!is_gathering) {
+		auto mainCam = CameraComponent::get_main();
+		if (mainCam && mainCam->game_object()) {
+			auto freeCamScript = mainCam->game_object()->get_component<FreeCameraScript>();
+			if (freeCamScript) {
+				float currentZoom = freeCamScript->get_dynamic_zoom_offset();
+				if (currentZoom != 0.0f) {
+					// 거리가 멀면 더 빨리, 가까우면 부드럽게 복구
+					float speed = 20.0f; // 타격 시 줌인 속도
+					float newZoom = currentZoom;
+					if (currentZoom > 0.0f) {
+						newZoom = currentZoom - (deltaTime * speed);
+						if (newZoom < 0.0f) newZoom = 0.0f;
+					} else {
+						newZoom = currentZoom + (deltaTime * speed);
+						if (newZoom > 0.0f) newZoom = 0.0f;
+					}
+					freeCamScript->set_dynamic_zoom_offset(newZoom);
+				}
+			}
+		}
+	}
 }
 void MainPlayerScript::send_network_sync(float deltaTime)
 {
@@ -851,6 +886,17 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 				psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), progress);
 			}
 
+			// [카메라 다이나믹 줌 아웃]
+			auto mainCam = CameraComponent::get_main();
+			if (mainCam && mainCam->game_object()) {
+				auto freeCamScript = mainCam->game_object()->get_component<FreeCameraScript>();
+				if (freeCamScript) {
+					// 줌 아웃 (최대 4.0f 까지 멀어짐)
+					float targetZoom = progress * 4.0f;
+					freeCamScript->set_dynamic_zoom_offset(targetZoom);
+				}
+			}
+
 			if (progress >= 1.0f)
 			{
 				_isSwordGathered = true;
@@ -862,6 +908,7 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 			if (psComp) {
 				psComp->set_compute_data(_SkillObject->transform()->world_matrix(), transform()->local_position(), 1.0f);
 			}
+			// 카메라 줌 복구는 이제 late_update에서 자동으로 처리됩니다.
 		}
 	}
 }
@@ -972,5 +1019,12 @@ void MainPlayerScript::reset_state()
 	auto anim = game_object()->get_component<AnimationComponent>();
 	if (anim) {
 		anim->play("idle", true);
+	}
+
+	// 카메라 줌 오프셋 초기화
+	auto mainCam = CameraComponent::get_main();
+	if (mainCam && mainCam->game_object()) {
+		auto freeCamScript = mainCam->game_object()->get_component<FreeCameraScript>();
+		if (freeCamScript) freeCamScript->set_dynamic_zoom_offset(0.0f);
 	}
 }

@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "FreeCameraScript.h"
 
 #include <algorithm>
@@ -150,7 +150,7 @@ void FreeCameraScript::player_camera_conflict_update(float delta_time)
         XMVECTOR vCamForward = XMLoadFloat3(&camForward);
         XMVECTOR vCamUp = XMLoadFloat3(&camUp);
 
-        XMVECTOR vIdealPos = vRayStart + (vCamForward * _thirdPersonOffsetDistance_back) + (vCamUp * _thirdPersonOffsetDistance_top);
+        XMVECTOR vIdealPos = vRayStart + (vCamForward * (_thirdPersonOffsetDistance_back - _dynamicZoomOffset)) + (vCamUp * _thirdPersonOffsetDistance_top);
 
         // 3. 레이 방향 및 최대 길이 계산
         XMVECTOR vRayDir = XMVector3Normalize(vIdealPos - vRayStart);
