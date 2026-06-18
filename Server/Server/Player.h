@@ -110,6 +110,8 @@ namespace PIP::GAME
 
 		// [추가] 위치 보정 관련
 		float						_mpRegenTimer = 0.0f; // [추가] 마나 회복 타이머
+		float						_timeSinceLastHit = 0.0f; // [추가] 마지막 피격 이후 경과 시간
+		float						_hpRegenTimer = 0.0f; // [추가] 체력 회복 타이머
 		common::Vec3 _lastClientTargetPos = { 0.0f, 0.0f, 0.0f }; // 클라이언트가 마지막으로 보냈다고 우기는 좌표
 		common::Vec3 _lastSentPos = { 0.0f, 0.0f, 0.0f };         // 서버에서 클라이언트에게 마지막으로 확정해서 보낸 좌표
 		common::packet::EntityState _lastSentState = common::packet::EntityState::IDLE; // 서버에서 클라이언트에게 마지막으로 보낸 상태

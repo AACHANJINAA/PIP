@@ -33,8 +33,8 @@ namespace PIP::GAME
 		// MagicGuard 전용 근접 공격 설정
 		// ----------------------------------------------------------------
 		AttackConfig normalAtk;
-		normalAtk.shape             = new JPH::SphereShape(1.2f);   // 반경 1.2m 구체
-		normalAtk.posOffset         = { 0.0f, 1.0f, 1.2f };        // 전방 1.2m 지점
+		normalAtk.shape             = new JPH::SphereShape(0.8f);   // 반경 0.8m 구체
+		normalAtk.posOffset         = { 0.0f, 1.0f, 1.0f };        // 전방 1.0m 지점
 		normalAtk.damage            = 15.0f;
 		normalAtk.cooldown          = 1.5f;
 		normalAtk.animationDuration = 0.8f;
@@ -52,8 +52,8 @@ namespace PIP::GAME
 		//     │   ├── Condition_HasEnemy
 		//     │   ├── Condition_IsTargetInLeashRange(20)
 		//     │   └── Selector
-		//     │       ├── Sequence (2m 이내 → 공격)
-		//     │       │   ├── Condition_IsEnemyInRange(2.0f)
+		//     │       ├── Sequence (1.5m 이내 → 공격)
+		//     │       │   ├── Condition_IsEnemyInRange(1.5f)
 		//     │       │   └── Action_AttackEnemy(normalAtk)
 		//     │       └── Sequence (A* 추격)
 		//     │           ├── Action_UpdateEnemyPosToTarget
@@ -78,9 +78,9 @@ namespace PIP::GAME
 						.leaf<Condition_HasEnemy>()                         // target_enemy 존재?
 						.leaf<Condition_IsTargetInLeashRange>(20.0f)        // 20m 내 추격 유지
 						.selector()                                         // 공격 vs 추격
-							// 1-a. 2m 이내 → 공격
+							// 1-a. 1.5m 이내 → 공격
 							.sequence()
-								.leaf<Condition_IsEnemyInRange>(2.0f)
+								.leaf<Condition_IsEnemyInRange>(1.5f)
 								.leaf<Action_AttackEnemy>(normalAtk)
 							.end()
 							// 1-b. 공격 사거리 밖 → A* 추격

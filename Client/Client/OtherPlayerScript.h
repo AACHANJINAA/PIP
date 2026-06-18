@@ -32,11 +32,13 @@ public:
     void set_hp(int hp) { _hp = hp; }    int hp() const { return _hp; }
     void set_id(int64_t id) { _playerId = id; }
     int64_t id() const { return _playerId; }
-    private:
+    bool  is_skilling() const { return _isSkilling; }
+private:
     int _hp;
     int _mp; // [추가]
     int64_t _playerId = -1; // [수정] Session ID(0) 와의 충돌 방지를 위해 -1 로 초기화
     common::packet::EntityState _state;
+    common::packet::EntityState _prevState = common::packet::EntityState::IDLE; // [추가] 이전 상태 추적용
     int32_t _action_id = 0;
     int64_t _grabbedById = -1; // [추가]
     int8_t  _grabSlot = -1;    // [추가]

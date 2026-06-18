@@ -250,10 +250,14 @@ void SoundManager::stop(const std::string& name)
     FMOD::Channel* channel = _channels[name];
     if (channel)
     {
-        channel->stop();
-        _channels.erase(name); // 채널 목록에서 제거
-        _stopTimers.erase(name); // 타이머에서도 제거
-	}
+        bool isPlaying = false;
+        // FMOD_OK 확인 후 재생 중일 때만 stop 호출하여 댕글링 포인터로 인한 크래시 방지
+        if (channel->isPlaying(&isPlaying) == FMOD_OK && isPlaying)
+        {
+            channel->stop();
+        }
+    }
+    _channels.erase(name); // 채널 목록에서 제거
 }
 
 void SoundManager::stop_all()
@@ -348,12 +352,17 @@ void SoundManager::play_section(const std::string& name, const std::string& star
     unsigned int startMs = parse_time_to_ms(startTimeStr);
     unsigned int endMs = parse_time_to_ms(endTimeStr);
 
+    _channels[name] = nullptr; // 기존 댕글링 포인터 방지
     play(name, type, volume, false); // 우선 재생시킴
 
     if (_channels.contains(name) && _channels[name])
     {
         FMOD::Channel* channel = _channels[name];
-        channel->setPosition(startMs, FMOD_TIMEUNIT_MS);
+        bool isPlaying = false;
+        if (channel->isPlaying(&isPlaying) == FMOD_OK)
+        {
+            channel->setPosition(startMs, FMOD_TIMEUNIT_MS);
+        }
 
         if (endMs > startMs)
         {
@@ -368,12 +377,17 @@ void SoundManager::play_3d_section(const std::string& name, const XMFLOAT3& posi
     unsigned int startMs = parse_time_to_ms(startTimeStr);
     unsigned int endMs = parse_time_to_ms(endTimeStr);
 
+    _channels[name] = nullptr; // 기존 댕글링 포인터 방지
     play_3d(name, position, type, volume, false);
 
     if (_channels.contains(name) && _channels[name])
     {
         FMOD::Channel* channel = _channels[name];
-        channel->setPosition(startMs, FMOD_TIMEUNIT_MS);
+        bool isPlaying = false;
+        if (channel->isPlaying(&isPlaying) == FMOD_OK)
+        {
+            channel->setPosition(startMs, FMOD_TIMEUNIT_MS);
+        }
 
         if (endMs > startMs)
         {

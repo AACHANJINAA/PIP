@@ -82,10 +82,10 @@ namespace PIP::GAME
 		bb->set("room_id", _room_id);
 
 		// 1. 공격 설정 정의 (Shape, Offset, Damage, Cooldown)
-		// 일반 공격: 앞 2m 반경의 구체 형태
+		// 일반 공격: 앞 1.5m 반경의 구체 형태
 		AttackConfig normalAtk;
-		normalAtk.shape = new JPH::SphereShape(1.5f);
-		normalAtk.posOffset = { 0.0f, 1.0f, 1.5f }; // 전방 1.5m 지점
+		normalAtk.shape = new JPH::SphereShape(0.8f);
+		normalAtk.posOffset = { 0.0f, 1.0f, 1.0f }; // 전방 1.0m 지점
 		normalAtk.damage = 10;
 		normalAtk.cooldown = 1.2f;
 		normalAtk.animationDuration = 0.8f; // [추가] 일반 공격 애니메이션 길이
@@ -93,10 +93,10 @@ namespace PIP::GAME
 		normalAtk.entityState = common::packet::EntityState::ACTION; // 공격 애니메이션 상태로
 		normalAtk.actionId = 1; // 일반 공격 행동 ID
 
-		// 강력한 공격: 전방 4m 범위의 박스 형태 (강한 일격)
+		// 강력한 공격: 전방 3m 범위의 박스 형태 (강한 일격)
 		AttackConfig heavyAtk;
-		heavyAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.0f)); // 가로 3m, 높이 2m, 깊이 4m
-		heavyAtk.posOffset = { 0.0f, 1.0f, 2.5f };
+		heavyAtk.shape = new JPH::BoxShape(JPH::Vec3(1.0f, 1.0f, 0.8f));
+		heavyAtk.posOffset = { 0.0f, 1.0f, 1.0f };
 		heavyAtk.damage = 20;
 		heavyAtk.cooldown = 4.0f;
 		heavyAtk.animationDuration = 1.2f; // [추가] 강공격 애니메이션 길이
@@ -113,16 +113,16 @@ namespace PIP::GAME
 				// --- [우선순위 1] 전투 로직 ---
 				.sequence()
 					.leaf<Condition_HasEnemy>() // 타겟(적군)이 있는가?
-					.leaf<Condition_IsWithinTetherRange>(10.0f) // 10m 멀어지면 타겟 상실 (테더 조건 추가)
+					.leaf<Condition_IsTargetInLeashRange>(25.0f) // 25m 내에 있으면 추격 유지
 					.selector()
-					// 1-1. 강력한 공격 시도 (사거리 4.5m)
+					// 1-1. 강력한 공격 시도 (사거리 2.5m)
 						.sequence()
-							.leaf<Condition_IsEnemyInRange>(4.5f)
+							.leaf<Condition_IsEnemyInRange>(1.5f)
 							.leaf<Action_AttackEnemy>(heavyAtk)
 						.end()
-					// 1-2. 일반 공격 시도 (사거리 2.5m)
+					// 1-2. 일반 공격 시도 (사거리 1.5m)
 					.sequence()
-						.leaf<Condition_IsEnemyInRange>(2.5f)
+						.leaf<Condition_IsEnemyInRange>(1.5f)
 						.leaf<Action_AttackEnemy>(normalAtk)
 					.end()
 					// 1-3. 타겟 사거리 밖이면 네비메쉬 추격
