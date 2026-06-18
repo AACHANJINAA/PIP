@@ -491,7 +491,7 @@ void Main_Scene::Spawn_Lever(ID3D12Device* device, ID3D12GraphicsCommandList* co
 		auto lever_obj = ObjectManager::instance()->create_game_object("Lever0"); // 건물 뒷 편
 		lever_obj->add_component<LeverScript>();
 
-		XMFLOAT3 pos_lever1 = {124.9f, 8.2f, -170.5f};
+		XMFLOAT3 pos_lever1 = {124.9f, 7.7f, -170.5f};
 
 		// 위치, 회전 정보
 		lever_obj->transform()->set_local_rotation(-90.f, 0.f, -90.f);
@@ -517,7 +517,7 @@ void Main_Scene::Spawn_Lever(ID3D12Device* device, ID3D12GraphicsCommandList* co
 		auto lever_obj = ObjectManager::instance()->create_game_object("Lever1"); // 나무 있는 곳
 		lever_obj->add_component<LeverScript>();
 
-		XMFLOAT3 pos_lever2 = { 148.5f, 8.0f, -35.6f };
+		XMFLOAT3 pos_lever2 = { 148.5f, 7.5f, -35.6f };
 
 		// 위치, 회전 정보
 		lever_obj->transform()->set_local_rotation(-90.f, -90.f, -90.f);
