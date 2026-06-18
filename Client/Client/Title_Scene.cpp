@@ -92,7 +92,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 {
     {
 		// black_background
-        _blackBackground_ui_obj = ObjectManager::instance()->create_game_object("black_background");
+        _blackBackground_ui_obj = ObjectManager::instance()->create_game_object("Cinematic_black_background");
         auto black_background = _blackBackground_ui_obj->add_component<UIRenderComponent>();
 
         black_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
@@ -104,7 +104,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
     {
         // titel scene
-        _title_ui_obj = ObjectManager::instance()->create_game_object("title_ui");
+        _title_ui_obj = ObjectManager::instance()->create_game_object("Cinematic_title_ui");
         auto title_ui_background = _title_ui_obj->add_component<UIRenderComponent>();
 
         title_ui_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
@@ -116,7 +116,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
     {
         // 우측 상당 logo
-        _logo_ui_background_obj = ObjectManager::instance()->create_game_object("logo_ui");
+        _logo_ui_background_obj = ObjectManager::instance()->create_game_object("Cinematic_logo_ui");
         auto logo_ui_background = _logo_ui_background_obj->add_component<UIRenderComponent>();
 
         logo_ui_background->set_screen_position(100.0f, 50.0f);        // Frame보다 안쪽

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ScriptComponent.h"
 
 // Forward declaration
@@ -25,7 +25,10 @@ public:
     virtual void late_update(float delta_time) override;
 
 
+	// 시네마틱 카메라 모드 설정 및 확인 함수
+    // 시네마틱 모드로 넘어가면 카메라 조작 및 플레이어, UI 렌더를 제한
 	void set_sinamatic_camera_mode(bool enable) { _isSinamaticCameraMode = enable; }
+	bool is_sinamatic_camera_mode() const { return _isSinamaticCameraMode; }
 
 	// [추가] 카메라 쉐이크를 위한 Trauma 추가 함수
 	void add_trauma(float amount) {
