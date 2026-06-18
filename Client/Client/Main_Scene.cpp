@@ -92,6 +92,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	cameraComp->set_main_camera();
 
 	Spawn_UI(device, commandList);
+	spawn_ui_and_object(device, commandList);
 	Spawn_Monster_HP_UI(device, commandList);
 	//TestMesh(device, commandList);
 	Spawn_Lever(device, commandList);
@@ -114,21 +115,24 @@ void Main_Scene::release_upload_buffers()
 void Main_Scene::scene_process(float deltaTime)
 {
 	// 씬 업데이트 로직 (필요시)
-	if (InputManager::instance()->IsKeyDown(VK_F10))
+	/*if (InputManager::instance()->IsKeyDown(VK_F10))
 	{
 		common::packet::CS_PACKET_DEBUG_COMMAND debug_pkt;
 		debug_pkt._type = common::packet::PacketType::C2S_P_DEBUG_COMMAND;
 		debug_pkt._size = sizeof(debug_pkt);
 		debug_pkt._command = common::packet::DebugCommandType::CHANGE_SCENE_BOSS;
 		NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&debug_pkt), sizeof(debug_pkt));
+	}*/
+
+	if (InputManager::instance()->IsKeyDown(VK_F9)) // 디버깅
+	{
+		set_cinematic_mode(true);
 	}
 
-	//if (InputManager::instance()->IsKeyDown(VK_F10)) // 디버깅
-	//{
-	//	auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
-	//	auto camescript = cameraObject->get_component<FreeCameraScript>();
-	//	camescript->set_sinamatic_camera_mode(true);
-	//}
+	if (true == _isCinematicMode)
+	{
+		cinematic_sequence(deltaTime);
+	}
 }
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -489,5 +493,54 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 
 		T1->transform()->set_local_position(XMFLOAT3(0.f, 100.f, -0.f));
+	}
+}
+
+void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+{
+	// 1. 페이드 아웃 UI 생성
+	{
+		// black_background
+		_blackBackground_ui_obj = ObjectManager::instance()->create_game_object("Cinematic_black_background");
+		auto black_background = _blackBackground_ui_obj->add_component<UIRenderComponent>();
+
+		black_background->set_screen_position(0.0f, 0.0f);        // Frame보다 안쪽
+		black_background->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);// Frame보다 작게
+		black_background->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // 원본 색상
+		black_background->set_texture("Resource/UI/just_black_background.dds");
+		UIManager::instance()->add_ui(UILayer::FRONT, "Black_Background_UI", _blackBackground_ui_obj);
+		_blackBackground_ui_obj->set_enabled(false);
+	}
+}
+
+void Main_Scene::cinematic_sequence(float deltaTime)
+{
+	_blackBackground_ui_obj->set_enabled(true); // 페이드 아웃 UI 활성화
+
+	// 0~3초동안 페이드 아웃 및 소리 서서히 끄기 및 페이드 아웃	이후 모든 사운드 끄기
+	_cinematicTimer += deltaTime;
+	if (_cinematicTimer <= 3.0f)
+	{
+		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, _cinematicTimer / 3.0f));
+		SoundManager::instance()->set_master_volume(1.0f - (_cinematicTimer / 3.0f));
+	}
+	if (_cinematicTimer >= 3.0f)
+	{
+		// 현재 재생중인 모든 사운드 끄기
+		SoundManager::instance()->stop_all();
+
+		// 볼륨 원래대로 복구
+		SoundManager::instance()->set_master_volume(1.0f);
+
+		// 최종 종료 후 서버에 패킷 전송
+		NetworkManager::instance()->SendCutsceneDonePacket();
+
+		// 카메라 시네마틱 모드 활성화
+		auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
+		auto camescript = cameraObject->get_component<FreeCameraScript>();
+		if (cameraObject && camescript)
+		{
+			camescript->set_sinamatic_camera_mode(true);
+		}
 	}
 }

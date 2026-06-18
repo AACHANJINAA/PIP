@@ -456,11 +456,11 @@ void MainPlayerScript::handle_input(float deltaTime)
 	{
 		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::PHYSICS_SNAPSHOT);
 	}
-	if (InputManager::instance()->IsKeyDown(VK_F10))
-	{
-		// 임시 컷씬 종료 패킷 전송 (클라이언트 컷씬 연출이 끝나면 보내는 패킷을 디버깅용으로 F9에 연결)
-		NetworkManager::instance()->SendCutsceneDonePacket();
-	}
+	//if (InputManager::instance()->IsKeyDown(VK_F10))
+	//{
+	//	// 임시 컷씬 종료 패킷 전송 (클라이언트 컷씬 연출이 끝나면 보내는 패킷을 디버깅용으로 F9에 연결)
+	//	NetworkManager::instance()->SendCutsceneDonePacket();
+	//}
 
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp() || _state == common::packet::EntityState::GRABBED)
