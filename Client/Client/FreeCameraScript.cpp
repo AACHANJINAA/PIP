@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "FreeCameraScript.h"
 
 #include <algorithm>
@@ -173,6 +173,14 @@ void FreeCameraScript::player_camera_conflict_update(float delta_time)
             // 지형(Landscape, Floor)은 OBB 검사에서 제외
             if (obj->name().find("Landscape") != std::string::npos ||
                 obj->name().find("Floor") != std::string::npos)
+            {
+                continue;
+            }
+
+            // 무기, 파티클, 이펙트 등은 카메라 충돌 대상에서 제외 (안전장치)
+            if (obj->name().find("Weapon") != std::string::npos ||
+                obj->name().find("Particle") != std::string::npos ||
+                obj->name().find("Effect") != std::string::npos)
             {
                 continue;
             }

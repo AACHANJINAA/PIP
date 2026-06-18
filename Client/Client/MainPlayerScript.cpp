@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -179,6 +179,7 @@ void MainPlayerScript::awake()
 	//
 	//// 무기 렌더링 끄기
 	_currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
+	_currentWeaponObject->set_layer("Player");
 
 	_SkillObject = _currentWeaponObject;
 
@@ -202,6 +203,7 @@ void MainPlayerScript::awake()
 
 		// 2. 파티클 시스템 전용 오브젝트 생성 (ObjectManager 팩토리 사용)
 		_particleEffectObject = ObjectManager::instance()->create_game_object("CarianParticleEffect");
+		_particleEffectObject->set_layer("Player");
 
 		// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
 		auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
