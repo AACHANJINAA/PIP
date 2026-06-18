@@ -58,6 +58,8 @@ namespace PIP::GAME
 		_actionId = 0;
 		_hitCooldown = 0.0f;
 		_dashCooldownTimer = 0.0f;
+		_timeSinceLastHit = 0.0f;
+		_hpRegenTimer = 0.0f;
 
 		// 잡기 상태 초기화
 		SetGrabbedById(-1);
@@ -239,6 +241,8 @@ namespace PIP::GAME
 				
 				cc->AddImpact(dir * 20.0f);
 			}
+			_timeSinceLastHit = 0.0f; // 피격 시 타이머 리셋
+			_hpRegenTimer = 0.0f;
 			_hitCooldown = 0.5; 
 			return true;
 		}
@@ -256,6 +260,16 @@ namespace PIP::GAME
 			if (_mpRegenTimer >= 1.0f) {
 				_mpRegenTimer -= 1.0f;
 				_mp = std::min(_mp + 8, _max_mp);
+			}
+		}
+
+		// [추가] 체력 자동 회복 (3초 동안 피격 안 당하면 1초에 5 회복)
+		_timeSinceLastHit += deltaTime;
+		if (_timeSinceLastHit >= 3.0f && _hp > 0 && _hp < _max_hp) {
+			_hpRegenTimer += deltaTime;
+			if (_hpRegenTimer >= 1.0f) {
+				_hpRegenTimer -= 1.0f;
+				_hp = std::min(_hp + 5, _max_hp);
 			}
 		}
 

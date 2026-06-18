@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "NPCScript.h"
 #include "ReplicationSystem.h"
 #include "AnimationComponent.h"

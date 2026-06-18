@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -26,6 +26,7 @@
 #include "ParticleRenderComponent.h"
 #include "GameFramework.h"
 #include "FreeCameraScript.h"
+#include "SoundManager.h" // [사운드]
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -136,6 +137,10 @@ void MainPlayerScript::awake()
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->play("idle");
+
+	// [사운드] 플레이어 무기 공격음 로드
+	SoundManager::instance()->load_sound("SwordSwing", "Resource/Sound/SwordSwing.mp3", false);
+	SoundManager::instance()->load_sound("DustSound", "Resource/Sound/Dust.wav", true);
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -612,6 +617,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_isAttacking = true;
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::Attack;
+
+		// [사운드] 공격음 재생 (단순 효과음이므로 2D 재생 혹은 필요 시 play_3d 적용 가능)
+		SoundManager::instance()->play("SwordSwing");
+
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
 	}
 
@@ -934,6 +943,11 @@ void MainPlayerScript::process_attack_and_packet()
 			game_object()->get_component<SocketComponenet>()->set_isFollowAnimation(false);
 
 			anim_comp->play("skill_end", false, _skillEndingAnimationSpeed);
+
+			// [추가] 스킬 내려찍는 순간 사운드 재생
+			SoundManager::instance()->play_3d_section("DustSound", transform()->get_world_position(),
+				"00:00","01:500", SoundType::SFX, 0.8f );
+			//SoundManager::instance()->play_3d("DustSound", transform()->get_world_position(), SoundType::SFX, 0.7f);
 
 			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
 			if (psComp) psComp->set_particle_dying(true);

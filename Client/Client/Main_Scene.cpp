@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -26,8 +26,9 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 {
     ShadowManager::instance()->set_shadow_max_distance(250.0f);
     // 효과음 테스트
-	SoundManager::instance()->load_sound("Swing", "Resource/Sound/Dust.wav", true);
-	SoundManager::instance()->play_3d("Swing", {-360,10,-212},SoundType::SFX,1.0f,true);
+	// 테스트용 Dust 사운드 끄기 요청
+	// SoundManager::instance()->load_sound("Swing", "Resource/Sound/Dust.wav", true);
+	// SoundManager::instance()->play_3d("Swing", {-360,10,-212},SoundType::SFX,1.0f,true);
 
 
 	// 1. Skybox 로드 (모든 Scene 공통)

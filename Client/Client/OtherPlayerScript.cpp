@@ -6,7 +6,8 @@
 #include "gameobject.h"
 #include "ObjectManager.h"
 #include "ReadGLTFMesh.h"
-#include "RenderComponent.h"
+#include "NetworkManager.h"
+#include "SoundManager.h" // [사운드]
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "SocketComponenet.h"
@@ -44,11 +45,22 @@ void OtherPlayerScript::on_sync_rotation(const XMFLOAT4& newRotation)
 
 void OtherPlayerScript::on_sync_state(common::packet::EntityState state)
 {
+    _prevState = _state;
 	_state = state;
 }
 void OtherPlayerScript::on_sync_action_id(int32_t action_id)
 {
 	_action_id = action_id;
+
+    // 상태 변화(IDLE 등 -> ACTION) 감지 후 즉시 공격 사운드 재생
+    if (_prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
+        if (_action_id == common::packet::ActionID::Common::Attack) {
+            if (transform()) {
+                // 3D 사운드 재생 (다른 플레이어 위치 기반)
+                SoundManager::instance()->play_3d("SwordSwing", transform()->get_world_position());
+            }
+        }
+    }
 }
 
 void OtherPlayerScript::on_sync_grab(int64_t grabbed_by_id, int8_t grab_slot)
@@ -204,6 +216,7 @@ void OtherPlayerScript::update(float deltaTime)
             if (!_isSkillAnimationStarted)
             {
                 _isSkillAnimationStarted = true;
+                _isSkilling = true; // [추가]
                 _isSkillEndAnimationStart = false;
                 _isSwordGathered = false;
                 _skillGatherTimer = 0.0f;
@@ -268,6 +281,9 @@ void OtherPlayerScript::update(float deltaTime)
                     }
 
                     anim_comp->play("skill_end", false, _skillEndingAnimationSpeed);
+
+                    // [추가] 타격 순간 먼지 사운드 재생 (메인 플레이어와 동일하게 구간 재생)
+                    SoundManager::instance()->play_3d_section("DustSound", transform()->get_world_position(), "00:00", "01:500", SoundType::SFX, 0.7f);
 
                     if (_particleEffectObject) {
                         if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
