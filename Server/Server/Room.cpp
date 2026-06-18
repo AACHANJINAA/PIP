@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -1485,8 +1485,9 @@ namespace PIP::SERVER
 					ack_packet._object_id = lever_index; // 레버 고유 ID(0 또는 1)를 전송
 					ack_packet._interact_type = 0; // 0: 레버
 
-					session->do_send(reinterpret_cast<const char*>(&ack_packet), ack_packet._size);
-
+					packet::PacketStream ack_stream;
+					ack_stream << ack_packet;
+					Broadcast(ack_stream.constable_data(), ack_stream.Size());
 					// 컷씬 및 씬 전환 로직
 					_activatedLevers.insert(lever_index);
 					MYLOG("[Room " << _room_id << "] Lever " << lever_index << " activated! Total: " << _activatedLevers.size());
