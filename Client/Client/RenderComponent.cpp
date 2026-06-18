@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "RenderComponent.h"
 
 #include "GameFramework.h"
@@ -254,7 +254,10 @@ void RenderComponent::update_world_matrix_cb(UINT frame_index)
 	XMStoreFloat4x4(&_mappedCbGameObjectInfo[frame_index]->_worldInverseTranspose, worldInverse);
 
 	// 4. 기타 상태값 설정 (기존 render() 함수에 있던 로직들)
-	if (auto op_script = game_object()->get_component<OtherPlayerScript>()) {
+	if (_forcePlayerColorId != -1) {
+		_mappedCbGameObjectInfo[frame_index]->otherplayer_id = _forcePlayerColorId;
+	}
+	else if (auto op_script = game_object()->get_component<OtherPlayerScript>()) {
 		_mappedCbGameObjectInfo[frame_index]->otherplayer_id = static_cast<int>(op_script->id());
 	}
 	else if (auto mp_script = game_object()->get_component<MainPlayerScript>()) {

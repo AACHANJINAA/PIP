@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -21,6 +21,8 @@
 #include "QuestNPCScript.h"
 #include "ShadowManager.h"
 #include "LeverScript.h"
+#include "MainPlayerScript.h"
+#include "OtherPlayerScript.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -133,6 +135,84 @@ void Main_Scene::scene_process(float deltaTime)
 	{
 		cinematic_sequence(deltaTime);
 	}
+}
+
+void Main_Scene::set_cinematic_mode(bool isCinematic)
+{
+	if (_isCinematicMode == isCinematic) return;
+
+	_isCinematicMode = isCinematic;
+
+	//if (_isCinematicMode)
+	//{
+	//	_cinematicTimer = 0.0f;
+	//	_isCutsceneDoneSent = false;
+
+	//	// 1. 카메라 시네마틱 모드 활성화 (기존에는 시퀀스 끝에서 했으나 시작할 때 적용)
+	//	auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
+	//	if (cameraObject)
+	//	{
+	//		if (auto camescript = cameraObject->get_component<FreeCameraScript>())
+	//			camescript->set_sinamatic_camera_mode(true);
+	//	}
+
+	//	// 2. 접속 중인 플레이어들을 기반으로 더미 캐릭터 소환
+	//	auto all_objects = ObjectManager::instance()->get_all_game_objects();
+	//	int dummyIndex = 0;
+	//	for (auto& obj : all_objects)
+	//	{
+	//		bool isPlayer = false;
+	//		int colorId = -1;
+
+	//		if (auto mainScript = obj->get_component<MainPlayerScript>())
+	//		{
+	//			isPlayer = true;
+	//			colorId = -2;
+	//		}
+	//		else if (auto otherScript = obj->get_component<OtherPlayerScript>())
+	//		{
+	//			isPlayer = true;
+	//			colorId = static_cast<int>(otherScript->id());
+	//		}
+
+	//		if (isPlayer)
+	//		{
+	//			auto dummy = ObjectManager::instance()->create_game_object("CinematicDummy_" + std::to_string(dummyIndex++));
+	//			auto render_comp = dummy->add_component<RenderComponent>();
+	//			auto anim_comp = dummy->add_component<AnimationComponent>();
+
+	//			auto mesh = ResourceManager::instance()->load_mesh("Resource/Character/Player/Player.gltf");
+	//			render_comp->set_mesh(mesh);
+	//			render_comp->set_pso_name("skinned");
+	//			render_comp->set_force_player_color_id(colorId);
+
+	//			// 더미 애니메이션
+	//			anim_comp->play("idle", true);
+
+	//			// 위치 임시 복사 (향후 보스 진입문 앞 등으로 고정 가능)
+	//			dummy->transform()->set_local_position(obj->transform()->local_position());
+	//			dummy->transform()->set_local_rotation(obj->transform()->local_rotation());
+	//			
+	//			_dummyPlayers.push_back(dummy);
+	//		}
+	//	}
+	//}
+	//else
+	//{
+	//	// 시네마틱 종료
+	//	for (auto& dummy : _dummyPlayers)
+	//	{
+	//		ObjectManager::instance()->remove_game_object(dummy);
+	//	}
+	//	_dummyPlayers.clear();
+
+	//	auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
+	//	if (cameraObject)
+	//	{
+	//		if (auto camescript = cameraObject->get_component<FreeCameraScript>())
+	//			camescript->set_sinamatic_camera_mode(false);
+	//	}
+	//}
 }
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -517,30 +597,36 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 {
 	_blackBackground_ui_obj->set_enabled(true); // 페이드 아웃 UI 활성화
 
-	// 0~3초동안 페이드 아웃 및 소리 서서히 끄기 및 페이드 아웃	이후 모든 사운드 끄기
+	// 0~3초동안 페이드 아웃 및 소리 서서히 끄기
 	_cinematicTimer += deltaTime;
 	if (_cinematicTimer <= 3.0f)
 	{
 		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, _cinematicTimer / 3.0f));
 		SoundManager::instance()->set_master_volume(1.0f - (_cinematicTimer / 3.0f));
 	}
-	if (_cinematicTimer >= 3.0f)
+	
+	if (_cinematicTimer >= 3.0f && !_isCutsceneDoneSent)
 	{
-		// 현재 재생중인 모든 사운드 끄기
-		SoundManager::instance()->stop_all();
+		_isCutsceneDoneSent = true;
 
-		// 볼륨 원래대로 복구
+	
+	}
+
+	if (_isCutsceneDoneSent)
+	{
+		// 모든 사운드 끄기 및 볼륨 원복
+		SoundManager::instance()->stop_all();
 		SoundManager::instance()->set_master_volume(1.0f);
 
-		// 최종 종료 후 서버에 패킷 전송
-		NetworkManager::instance()->SendCutsceneDonePacket();
-
-		// 카메라 시네마틱 모드 활성화
 		auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
-		auto camescript = cameraObject->get_component<FreeCameraScript>();
-		if (cameraObject && camescript)
+		if (cameraObject)
 		{
-			camescript->set_sinamatic_camera_mode(true);
+			if (auto camescript = cameraObject->get_component<FreeCameraScript>())
+				camescript->set_sinamatic_camera_mode(true);
 		}
+
+		// 컷씬 종료 패킷 전송 (단 한 번만)
+		NetworkManager::instance()->SendCutsceneDonePacket();
 	}
+
 }

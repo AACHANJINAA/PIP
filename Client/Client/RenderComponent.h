@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "stdafx.h"
 
 #include "Behavior.h"
@@ -109,6 +109,10 @@ protected:
 	bool _skipOcclusion = false;
 
 	UINT64 _lastUpdatedFrame = 0xFFFFFFFFFFFFFFFF;
+	int _forcePlayerColorId = -1; // -1 means default behavior, -2 means MainPlayer, >= 0 means OtherPlayer ID
+public:
+	void set_force_player_color_id(int id) { _forcePlayerColorId = id; }
+	int get_force_player_color_id() const { return _forcePlayerColorId; }
 
 private:
 	float _culling_distance = -1.0f;  // 기본값
