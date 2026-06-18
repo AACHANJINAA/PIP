@@ -491,20 +491,51 @@ void Main_Scene::Spawn_Lever(ID3D12Device* device, ID3D12GraphicsCommandList* co
 		auto lever_obj = ObjectManager::instance()->create_game_object("Lever0"); // 건물 뒷 편
 		lever_obj->add_component<LeverScript>();
 
+		XMFLOAT3 pos_lever1 = {124.9f, 8.2f, -170.5f};
+
 		// 위치, 회전 정보
 		lever_obj->transform()->set_local_rotation(-90.f, 0.f, -90.f);
 		lever_obj->transform()->set_local_scale({ 0.5f, 0.5f, 0.5f });
-		lever_obj->transform()->set_local_position(XMFLOAT3(124.9f, 7.2f, -170.5f));
+		lever_obj->transform()->set_local_position(pos_lever1);
+
+		Light spotLight;
+		spotLight.m_bEnable = true;
+		spotLight.m_nType = 2; // SPOT_LIGHT 
+		spotLight.m_vPosition = { pos_lever1.x, pos_lever1.y + 7.0f, pos_lever1.z };
+		spotLight.m_vDirection = { 0.0f, -1.0f, 0.0f };
+		spotLight.m_cDiffuse = { 2.0f, 4.0f, 2.0f, 1.0f };
+		spotLight.m_fRange = 800.0f;
+		spotLight.m_vAttenuation = { 1.0f, 0.001f, 0.0001f };
+		spotLight.m_fTheta = cosf(XMConvertToRadians(15.0f));
+		spotLight.m_fPhi = cosf(XMConvertToRadians(30.0f));
+		spotLight.m_fFalloff = 1.0f;
+
+		LightManager::instance()->add_light(std::move(spotLight));
 	}
 
 	{
 		auto lever_obj = ObjectManager::instance()->create_game_object("Lever1"); // 나무 있는 곳
 		lever_obj->add_component<LeverScript>();
 
+		XMFLOAT3 pos_lever2 = { 148.5f, 8.0f, -35.6f };
+
 		// 위치, 회전 정보
 		lever_obj->transform()->set_local_rotation(-90.f, -90.f, -90.f);
 		lever_obj->transform()->set_local_scale({ 0.5f, 0.5f, 0.5f });
-		lever_obj->transform()->set_local_position(XMFLOAT3(148.5f, 7.0f, -35.6f));
+		lever_obj->transform()->set_local_position(pos_lever2);
+
+		Light spotLight;
+		spotLight.m_bEnable = true;
+		spotLight.m_nType = 2; // SPOT_LIGHT 
+		spotLight.m_vPosition = { pos_lever2.x, pos_lever2.y + 7.0f, pos_lever2.z };
+		spotLight.m_vDirection = { 0.0f, -1.0f, 0.0f };
+		spotLight.m_cDiffuse = { 2.0f, 4.0f, 2.0f, 1.0f };
+		spotLight.m_fRange = 800.0f;
+		spotLight.m_vAttenuation = { 1.0f, 0.001f, 0.0001f };
+		spotLight.m_fTheta = cosf(XMConvertToRadians(15.0f));
+		spotLight.m_fPhi = cosf(XMConvertToRadians(30.0f));
+
+		LightManager::instance()->add_light(std::move(spotLight));
 	}
 }
 
