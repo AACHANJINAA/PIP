@@ -271,8 +271,11 @@ void FreeCameraScript::process_mouse_input(float delta_time)
 
     if (mouse_delta.x != 0 || mouse_delta.y != 0)
     {
-        float yaw = static_cast<float>(mouse_delta.x) * delta_time * _rotationSpeed;
-        float pitch = static_cast<float>(mouse_delta.y) * delta_time * _rotationSpeed;
+        // 마우스 이동량(delta)은 이미 프레임 간 변화량이므로 delta_time을 곱하면 프레임 속도에 따라 감도가 달라집니다.
+        // 프레임과 무관하게 일정한 감도를 유지하기 위해 고정된 민감도 상수(0.016f)를 적용합니다. (60프레임 기준과 유사한 느낌 유지)
+        float sensitivity = 0.016f;
+        float yaw = static_cast<float>(mouse_delta.x) * sensitivity * _rotationSpeed;
+        float pitch = static_cast<float>(mouse_delta.y) * sensitivity * _rotationSpeed;
 
         transform()->camera_rotate(pitch, yaw, 0.0f);
     }
