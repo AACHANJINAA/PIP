@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Scene.h"
 
 class Main_Scene : public Scene
@@ -28,14 +28,16 @@ public:
 	// 시네마틱 연출 함수
 	void cinematic_sequence(float deltaTime);
 
-	void set_cinematic_mode(bool isCinematic) { _isCinematicMode = isCinematic; }
+	void set_cinematic_mode(bool isCinematic);
 	bool get_cinematic_mode() const { return _isCinematicMode; }
 
 private:
 	bool _isCinematicMode = false;
+	bool _isCutsceneDoneSent = false;
 	float _cinematicTimer = 0.0f;
 
 	std::shared_ptr<GameObject> _blackBackground_ui_obj = {}; // 검정 페이드 아웃 UI
+	std::vector<std::shared_ptr<GameObject>> _dummyPlayers; // 컷씬용 더미 플레이어들
 
 	//void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 	//void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);

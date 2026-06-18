@@ -26,6 +26,7 @@
 #include "SoundManager.h"
 #include "FreeCameraScript.h"
 #include "CameraComponent.h"
+#include "Main_Scene.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -984,9 +985,17 @@ void NetworkManager::HANDLE_S2C_PLAY_CUTSCENE(common::packet::PacketStream& stre
 
 	CLOG("[S2C_PLAY_CUTSCENE] Cutscene triggered! ID: " << cutscene_packet._cutscene_id);
 	
-	// TODO: 실제 컷씬 연출 (카메라 워크, 비디오 UI, 애니메이션 등) 호출
-	// 임시 조치: 컷씬 연출이 아직 없으므로, 즉시 컷씬 시청 완료(스킵) 패킷을 서버로 보냅니다.
-	SendCutsceneDonePacket();
+	// Main_Scene의 시네마틱 모드 시작
+	auto mainScene = dynamic_cast<Main_Scene*>(SceneManager::instance()->current_scene());
+	if (mainScene)
+	{
+		mainScene->set_cinematic_mode(true);
+	}
+	else
+	{
+		// Main_Scene이 아니면 즉시 스킵
+		SendCutsceneDonePacket();
+	}
 }
 
 void NetworkManager::Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream)

@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "main.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
@@ -251,6 +251,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message)
     {
+    case WM_SYSCOMMAND:
+    {
+        // F10이나 Alt 키를 눌렀을 때 윈도우가 메뉴 대기 상태로 들어가서 메인 루프가 멈추는 것을 방지
+        if ((wParam & 0xfff0) == SC_KEYMENU)
+            return 0;
+        break; // 다른 시스템 커맨드는 기본 처리
+    }
     case WM_ACTIVATE:
     {
         // wParam의 하위 워드를 확인하여 활성화 상태를 판단합니다.
