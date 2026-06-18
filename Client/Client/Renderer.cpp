@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 
 #include "Renderer.h"
 
@@ -22,6 +22,7 @@
 #include "GameObject.h"
 #include "ObjectManager.h"
 #include "AnimationComponent.h"
+#include "FreeCameraScript.h"
 
 #include "Camera.h"
 #include "CameraComponent.h"
@@ -246,13 +247,39 @@ void Renderer::build_render_list(const CameraComponent* camera)
 	f3 camPos = camera->game_object()->transform()->get_world_position();
 	f3 camForward = camera->game_object()->transform()->forward();
 
+	bool isCinematic = false;
+	if (camera && camera->game_object()) {
+		auto freeCam = camera->game_object()->get_component<FreeCameraScript>();
+		if (freeCam) {
+			isCinematic = freeCam->is_sinamatic_camera_mode();
+		}
+	}
+
 	auto process_object = [&](const std::shared_ptr<GameObject>& gameObject, const std::shared_ptr<RenderComponent>& renderComp) {
 		const std::string& psoName = renderComp->pso_name();
+
+		// 시네마틱 모드 필터링: 플레이어, 다른 플레이어, 몬스터/NPC 제외
+		if (isCinematic) {
+			if (gameObject->is_in_layer("Player") || 
+				gameObject->is_in_layer("OtherPlayer") || 
+				gameObject->is_in_layer("Enemy")) 
+			{
+				return;
+			}
+		}
 
 		// UI, Skybox 등 특수 객체 처리
 		if (psoName == "ui" || psoName == "Monster_HP_UI" || psoName == "ui_frame" ||
 			psoName == "skybox" || psoName == "particle_draw" || psoName == "billboard_ui")
 		{
+			// 시네마틱 모드일 경우 일반 UI 객체 제외 (단, 이름에 "Cinematic" 포함 시 허용)
+			if (isCinematic && (psoName == "ui" || psoName == "Monster_HP_UI" || psoName == "ui_frame" || psoName == "billboard_ui")) {
+				std::string objName = gameObject->name();
+				if (objName.find("Cinematic") == std::string::npos && objName.find("Cutscene") == std::string::npos) {
+					return;
+				}
+			}
+
 			if (psoName != "ui") _renderMap[psoName].push_back(gameObject);
 			return;
 		}
@@ -349,7 +376,19 @@ void Renderer::build_render_list(const CameraComponent* camera)
 		{
 			if (!gameObject || !gameObject->is_enable() || gameObject->is_destroyed()) continue;
 			auto rc = gameObject->get_component<RenderComponent>();
-			if (rc) _renderMap[rc->pso_name()].push_back(gameObject);
+			if (rc) {
+				// 시네마틱 모드 UI 필터링 (ui 레이어 객체들도 필터링)
+				if (isCinematic) {
+					std::string psoName = rc->pso_name();
+					if (psoName == "ui" || psoName == "ui_frame" || psoName == "Monster_HP_UI" || psoName == "billboard_ui") {
+						std::string objName = gameObject->name();
+						if (objName.find("Cinematic") == std::string::npos && objName.find("Cutscene") == std::string::npos) {
+							continue;
+						}
+					}
+				}
+				_renderMap[rc->pso_name()].push_back(gameObject);
+			}
 		}
 	}
 }

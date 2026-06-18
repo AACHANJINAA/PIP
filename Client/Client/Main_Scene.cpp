@@ -122,6 +122,13 @@ void Main_Scene::scene_process(float deltaTime)
 		debug_pkt._command = common::packet::DebugCommandType::CHANGE_SCENE_BOSS;
 		NetworkManager::instance()->send_packet(reinterpret_cast<const char*>(&debug_pkt), sizeof(debug_pkt));
 	}
+
+	//if (InputManager::instance()->IsKeyDown(VK_F10)) // 디버깅
+	//{
+	//	auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
+	//	auto camescript = cameraObject->get_component<FreeCameraScript>();
+	//	camescript->set_sinamatic_camera_mode(true);
+	//}
 }
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
