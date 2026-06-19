@@ -70,6 +70,7 @@ void TainerScript::init_visual()
         animComp->add_animation("death", mainMesh);
 
         CLOG("[TainerScript] BoneGolem Boss Visuals Settings Completed.");
+        animComp->play("idle", true); // [추가] 초기 로딩 시 뼈대 붕괴 방지를 위해 대기 애니메이션 실행
     }
 
     // 4. 재질 및 쉐이더 설정 (Skinned Shader)

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Actor.h"
 #include "PhysicsComponent.h"
 #include "TransformComponent.h"
@@ -23,6 +23,8 @@ namespace PIP::GAME
 
 		common::Vec3 GetPosition() const override;
 		common::Vec3 GetVelocity() const override;
+
+		bool IsAtTop() const { return _elevatorInternalState == ElevatorInternalState::IDLE_AT_END; }
 
 	private:
 		common::Vec3 _startPos;

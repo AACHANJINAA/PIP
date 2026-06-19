@@ -1031,6 +1031,19 @@ namespace PIP::SERVER
 			if (!skipAI) {
 				// [카운트다운] 카운트다운 중에는 보스 AI 행동 차단
 				if (_isCountdownActive && npc->is_boss()) continue;
+
+				// [엘리베이터 대기] 보스전 시작 시 엘리베이터가 다 올라올 때까지 AI 차단
+				if (npc->is_boss()) {
+					bool elevatorNotReady = false;
+					for (auto& elevator : _elevators) {
+						if (elevator->GetName() == "BossElevator" && !elevator->IsAtTop()) {
+							elevatorNotReady = true;
+							break;
+						}
+					}
+					if (elevatorNotReady) continue;
+				}
+
 				npc->Update(deltaTime, tempAllocator);
 			}
 
