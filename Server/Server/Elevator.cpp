@@ -60,6 +60,12 @@ namespace PIP::GAME
 			break;
 
 		case ElevatorInternalState::IDLE_AT_END:
+			// [수정] BossElevator는 위로 한 번 올라오면 다시 내려가지 않도록 고정
+			if (GetName() == "BossElevator") {
+				velocity = common::Vec3(0, 0, 0);
+				break;
+			}
+
 			_currentWaitTime += deltaTime;
 			if (_currentWaitTime >= _waitTime)
 			{

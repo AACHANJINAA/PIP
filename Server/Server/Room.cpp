@@ -169,7 +169,8 @@ namespace PIP::SERVER
 
 		auto boss = std::make_unique<GAME::Tainer>(bossId, _room_id, bossSpawnPos);
 		auto controller = boss->GetComponent<GAME::CharacterControllerComponent>();
-		controller->Initialize(_physicsSystem, 1.5f, 1.0f); // 보스는 더 크게 설정
+		// 보스는 거대한 몬스터이므로 더 큰 캡슐 크기를 가집니다.
+		controller->Initialize(_physicsSystem, 4.0f, 4.0f); // 기존: 1.5f, 1.0f -> 변경: 반경 4.0, 절반높이 4.0
 
 		boss->SetPosition(bossSpawnPos);
 		boss->SetLastUpdateTime(std::chrono::steady_clock::now());
@@ -989,9 +990,6 @@ namespace PIP::SERVER
 
 		// [추가] 엘리베이터 업데이트 및 동기화
 		for (auto& elevator : _elevators) {
-			// [카운트다운] 대기 중에는 엘리베이터 이동 차단
-			if (_isCountdownActive) continue;
-
 			elevator->Update(deltaTime, tempAllocator);
 
 			// 엘리베이터 이동 패킷 전송 (NPC 패킷 재사용)

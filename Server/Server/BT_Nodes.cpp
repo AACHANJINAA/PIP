@@ -351,6 +351,20 @@ namespace PIP::GAME
 			_lastAttackTime = now; // 쿨타임 리셋
 			_blackboard->set("global_attack_cooldown", 1.5f); // 공격 시 무조건 1.5초의 공통 공격 유예 시간 부여
 
+			// [추가] 공격을 시작하는 순간, 타겟을 향해 즉시 방향을 틀도록 보정 (뒤에 있는 적 무시 방지)
+			int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+			auto target = room->GetActor(targetId);
+			if (target) {
+				common::Vec3 targetPos = target->GetPosition();
+				common::Vec3 ownerPos = npc->GetPosition();
+				common::Vec3 dir = common::Normalize(targetPos - ownerPos);
+				dir.y = 0;
+				// 즉시 해당 방향을 바라보게 설정
+				if (auto tc = npc->GetComponent<TransformComponent>()) {
+					tc->SmoothRotateTo(dir, 100.0f); // 높은 보간값으로 즉시 회전
+				}
+			}
+
 			auto nc = npc->GetNPCController();
 			if (nc) nc->SetVelocity({ 0, 0, 0 });
 
@@ -362,6 +376,19 @@ namespace PIP::GAME
 		npc->SetState(_config.entityState);
 		npc->SetActionId(_config.actionId);
 		float elapsed = _config.animationDuration - _attackDurationTimer;
+
+		// [추가] 공격 진행 중에도 (타격 판정 시점 전까지) 타겟을 향해 방향을 지속 보정
+		int64_t targetId = _blackboard->get<int64_t>("target_enemy");
+		auto target = room->GetActor(targetId);
+		if (target && elapsed < _config.attackTiming) {
+			common::Vec3 targetPos = target->GetPosition();
+			common::Vec3 ownerPos = npc->GetPosition();
+			common::Vec3 dir = common::Normalize(targetPos - ownerPos);
+			dir.y = 0;
+			if (auto tc = npc->GetComponent<TransformComponent>()) {
+				tc->SmoothRotateTo(dir, dt * 10.0f); // 부드럽게 타겟을 향해 회전
+			}
+		}
 
 		// --- 타격 판정 ---
 		if (_config.isContinuous) {
@@ -389,6 +416,8 @@ namespace PIP::GAME
 		// 3. 종료 판정
 		if (_attackDurationTimer <= 0.0f) {
 			_attackDurationTimer = 0.0f;
+			npc->SetState(common::packet::EntityState::IDLE);
+			npc->SetActionId(0);
 			return NodeStatus::SUCCESS;
 		}
 
@@ -876,6 +905,8 @@ namespace PIP::GAME
 				_isTargetLocked = false;
 				_dashDir = { 0, 0, 0 };
 				_blackboard->set("charge_target_pos", std::any());
+				owner->SetState(common::packet::EntityState::IDLE);
+				owner->SetActionId(0);
 				return NodeStatus::SUCCESS;
 			}
 
@@ -954,12 +985,13 @@ namespace PIP::GAME
 				dir.y = 0;
 				owner->GetComponent<TransformComponent>()->SmoothRotateTo(dir, dt * 10.0f);
 
-				// [추가] 근거리 즉시 잡기: 이미 사거리 내에 있다면 돌진 대기시간 단축 및 즉시 전환
+				// [수정] 근거리 즉시 잡기: 사거리(4.0m) 내에 있다면 돌진 대기시간 단축 및 즉시 회전 후 잡기 시도
 				float distSq = common::DistanceSq(targetPos, ownerPos);
-				if (distSq < 2.5f * 2.5f) {
+				if (distSq < 4.0f * 4.0f) {
 					_currentPhase = Phase::DASHING;
 					_internalTimer = 2.0f; // 돌진(잡기 시도) 타이머 시작
 					_dashDir = dir;
+					owner->GetComponent<TransformComponent>()->SmoothRotateTo(dir, dt * 100.0f); // 즉시 타겟 방향으로 회전 적용
 					return NodeStatus::RUNNING;
 				}
 
@@ -1163,6 +1195,8 @@ namespace PIP::GAME
 				_grabbedPlayerIds.clear();
 				_isTargetLocked = false;
 				_dashDir = { 0, 0, 0 };
+				owner->SetState(common::packet::EntityState::IDLE);
+				owner->SetActionId(0);
 				return NodeStatus::SUCCESS;
 			}
 			return NodeStatus::RUNNING;

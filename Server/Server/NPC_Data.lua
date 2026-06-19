@@ -3,7 +3,7 @@
 NPC_Routes = {
 	["Tainer"] = { -- 보스 테이너용 스폰 풀
 		{
-			spawn = { x = 0.0, y = 1.0, z = 0.0 }, -- 기본 위치
+			spawn = { x = 0.0, y = 0.0, z = 0.0 }, -- 기본 위치
 			max_hp = 500,
 			patrols = {}
 		}

@@ -147,6 +147,9 @@ void NPCScript::init_visual()
 	animation_component->add_animation("Attack", baseMesh, "attack");
 	animation_component->add_animation("Death", baseMesh, "die");
 
+	// [수정] 서버에서 애니메이션 패킷이 오기 전까지 초기 상태가 없으면 뼈(Bone)가 초기화되지 않아 부서진 것처럼 보이므로 기본 재생
+	animation_component->play("Idle");
+
 	std::string material_name = "npc_material_" + std::to_string(id());
 	ResourceManager::instance()->create_material(material_name);
 	ResourceManager::instance()->set_shader_for_material(material_name, "skinned");

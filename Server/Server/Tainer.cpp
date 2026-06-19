@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "Tainer.h"
-
+#include "HitboxComponent.h"
 #include "AIComponent.h"
 #include "BT_Nodes.h"
 
@@ -13,10 +13,19 @@ namespace PIP::GAME
 		SetName("Boss_Tainer");
 		SetFaction(Faction::FACTION_MONSTER);
 
+		if (_hitboxComponent) {
+			_hitboxComponent->ClearHitboxes();
+			float height = 8.0f;
+			float radius = 3.0f;
+			float halfCylinderHeight = 0.5f * height - radius;
+			JPH::Ref<JPH::Shape> bodyShape = new JPH::CapsuleShape(halfCylinderHeight, radius);
+			_hitboxComponent->AddHitbox("Body", bodyShape, { 0.0f, 4.0f, 0.0f });
+		}
+
 		// --- 공격 설정 초기화 ---
 		// Phase 1: Slam (내려찍기)
-		_slamAtk.shape = new JPH::SphereShape(3.0f);
-		_slamAtk.posOffset = { 0.0f, 0.0f, 3.5f };
+		_slamAtk.shape = new JPH::SphereShape(4.0f); // 3.0 -> 4.0
+		_slamAtk.posOffset = { 0.0f, 0.0f, 4.0f };
 		_slamAtk.damage = 20;
 		_slamAtk.cooldown = 1.0f;
 		_slamAtk.entityState = common::packet::EntityState::ACTION;
@@ -25,8 +34,8 @@ namespace PIP::GAME
 		_slamAtk.attackTiming = 0.5f; 
 
 		// Phase 1: Charge (일반 돌진)
-		_chargeAtk.shape = new JPH::SphereShape(3.0f);
-		_chargeAtk.posOffset = { 0.0f, 2.0f, 0.0f };
+		_chargeAtk.shape = new JPH::SphereShape(4.0f); // 3.0 -> 4.0
+		_chargeAtk.posOffset = { 0.0f, 2.0f, 0.5f };
 		_chargeAtk.damage = 25;
 		_chargeAtk.cooldown = 3.0f;
 		_chargeAtk.entityState = common::packet::EntityState::ACTION;
@@ -36,17 +45,19 @@ namespace PIP::GAME
 		_chargeAtk.hitInterval = 0.2f;
 
 		// Phase 2: Claw (난타)
-		_clawAtk.shape = new JPH::SphereShape(2.0f);
-		_clawAtk.posOffset = { 0.0f, 1.0f, 1.5f };
-		_clawAtk.damage = 15;
-		_clawAtk.cooldown = 1.5f;
+		_clawAtk.shape = new JPH::SphereShape(3.5f);
+		_clawAtk.posOffset = { 0.0f, 0.0f, 3.5f };
+		_clawAtk.damage = 10;
+		_clawAtk.cooldown = 3.5f; // [수정] 쿨타임 증가 (연속 난타 방지)
 		_clawAtk.entityState = common::packet::EntityState::ACTION;
-		_clawAtk.actionId = common::packet::ActionID::Tainer::Claw; // 14
-		_clawAtk.animationDuration = 0.5f;
+		_clawAtk.actionId = common::packet::ActionID::Tainer::Claw;
+		_clawAtk.animationDuration = 1.5f; // [수정] 난타 애니메이션 길이에 맞게 연장 (0.5 -> 1.5)
+		_clawAtk.isContinuous = true;      // [추가] 난타(다단히트) 처리
+		_clawAtk.hitInterval = 0.3f;       // [추가] 0.3초 간격으로 데미지 판정
 
 		// Phase 2: Grab (그랩 설정 통합)
-		_grabChargeAtk.shape = new JPH::BoxShape(JPH::Vec3(1.5f, 1.0f, 2.5f));
-		_grabChargeAtk.posOffset = { 0.0f, 1.0f, 1.2f };
+		_grabChargeAtk.shape = new JPH::BoxShape(JPH::Vec3(2.5f, 1.5f, 3.5f)); // (1.5, 1.0, 2.5) -> 확대
+		_grabChargeAtk.posOffset = { 0.0f, 1.0f, 2.0f };
 		_grabChargeAtk.damage = 10;
 		_grabChargeAtk.cooldown = 15.0f;
 		_grabChargeAtk.entityState = common::packet::EntityState::ACTION;
