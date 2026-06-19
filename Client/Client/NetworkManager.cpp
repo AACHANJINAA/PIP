@@ -811,6 +811,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		case common::packet::NPCType::MagicGuard: // [추가] 매직 가드도 일반 NPC 스크립트 사용
 			{
 				NPC_logic = NPC->add_component<NPCScript>().get();
+				NPC_logic->set_npc_type(common::packet::NPCType::MagicGuard);
 			}
 			break;
 		case common::packet::NPCType::Tainer:
