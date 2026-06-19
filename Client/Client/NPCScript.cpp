@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "NPCScript.h"
 #include "ReplicationSystem.h"
 #include "AnimationComponent.h"
@@ -133,27 +133,56 @@ void NPCScript::init_visual()
 		return;
 	}
 
-	// 기본 Brute 모델 설정
-	auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Character/DragonBrute/SK_DragonBrute.gltf", true);
+	if (_npcType == common::packet::NPCType::MagicGuard) {
+		auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf", true);
 
-	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Idle.gltf", "idle");
-	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Walk.gltf", "walk");
-	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Attack.gltf", "attack");
-	dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Death.gltf", "die");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Idle01.gltf", "idle");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Walk_Forward.gltf", "walk");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf", "attack");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/SK_MagicConstruct/A_MagicConstruct_Death.gltf", "die");
 
-	render_comp->set_mesh(baseMesh);
-	animation_component->add_animation("Idle", baseMesh, "idle");
-	animation_component->add_animation("Walk", baseMesh, "walk");
-	animation_component->add_animation("Attack", baseMesh, "attack");
-	animation_component->add_animation("Death", baseMesh, "die");
+		render_comp->set_mesh(baseMesh);
+		animation_component->add_animation("Idle", baseMesh, "idle");
+		animation_component->add_animation("Walk", baseMesh, "walk");
+		animation_component->add_animation("Attack", baseMesh, "attack");
+		animation_component->add_animation("Death", baseMesh, "die");
 
-	// [수정] 서버에서 애니메이션 패킷이 오기 전까지 초기 상태가 없으면 뼈(Bone)가 초기화되지 않아 부서진 것처럼 보이므로 기본 재생
-	animation_component->play("Idle");
+		// [수정] 서버에서 애니메이션 패킷이 오기 전까지 초기 상태가 없으면 뼈(Bone)가 초기화되지 않아 부서진 것처럼 보이므로 기본 재생
+		animation_component->play("Idle");
 
-	std::string material_name = "npc_material_" + std::to_string(id());
-	ResourceManager::instance()->create_material(material_name);
-	ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
-	render_comp->set_pso_name("skinned");
+		std::string material_name = "npc_material_" + std::to_string(id());
+		ResourceManager::instance()->create_material(material_name);
+		ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
+		render_comp->set_pso_name("skinned");
+
+		transform()->set_local_scale({ 1.5f,1.5f,1.5f });
+
+		return;
+	}
+
+	{
+		// 기본 Brute 모델 설정
+		auto baseMesh = ResourceManager::instance()->load_mesh("Resource/Character/DragonBrute/SK_DragonBrute.gltf", true);
+
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Idle.gltf", "idle");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Walk.gltf", "walk");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Attack.gltf", "attack");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Death.gltf", "die");
+
+		render_comp->set_mesh(baseMesh);
+		animation_component->add_animation("Idle", baseMesh, "idle");
+		animation_component->add_animation("Walk", baseMesh, "walk");
+		animation_component->add_animation("Attack", baseMesh, "attack");
+		animation_component->add_animation("Death", baseMesh, "die");
+
+		// [수정] 서버에서 애니메이션 패킷이 오기 전까지 초기 상태가 없으면 뼈(Bone)가 초기화되지 않아 부서진 것처럼 보이므로 기본 재생
+		animation_component->play("Idle");
+
+		std::string material_name = "npc_material_" + std::to_string(id());
+		ResourceManager::instance()->create_material(material_name);
+		ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
+		render_comp->set_pso_name("skinned");
+	}
 }
 
 void NPCScript::awake()
