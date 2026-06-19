@@ -99,7 +99,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	//TestMesh(device, commandList);
 	Spawn_Lever(device, commandList);
 
-	load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
+	//load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
 	ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf", false);
 
 	std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
