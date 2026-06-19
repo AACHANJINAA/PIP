@@ -3,6 +3,8 @@
 #include "Room.h"
 #include "JoltSetup.h"
 #include "MapDataManager.h"
+#include "Player.h"
+#include "CharacterControllerComponent.h"
 
 namespace PIP::SERVER
 {
@@ -64,6 +66,31 @@ namespace PIP::SERVER
         // 보스 테이너 배치
         room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
 
+        // [초기화 1] 모든 플레이어 체력 풀 회복 + 스폰 위치로 강제 텔레포트
+        common::Vec3 spawnPos = get_spawn_pos();
+        for (auto& [pid, session] : room->GetPlayers()) {
+            if (!session || !session->_player) continue;
+            auto player = session->_player;
+
+            player->SetHP(player->_max_hp);
+            player->SetPosition(spawnPos);
+            if (auto cc = player->GetComponent<GAME::CharacterControllerComponent>()) {
+                cc->SetPosition(spawnPos);
+            }
+
+            // 부활 패킷으로 HP+위치 클라에 동기화
+            common::packet::SC_PACKET_PLAYER_RESURRECT res_pkt;
+            res_pkt._type     = common::packet::PacketType::S2C_P_PLAYER_RESURRECT;
+            res_pkt._size     = sizeof(res_pkt);
+            res_pkt._id       = pid;
+            res_pkt._position = spawnPos;
+            res_pkt._hp       = player->GetHP();
+            room->Broadcast(reinterpret_cast<const char*>(&res_pkt), sizeof(res_pkt));
+        }
+
+        // [초기화 2] 5초 카운트다운 시작 (이 기간에는 이동 입력 & 보스 AI 차단)
+        room->StartCountdown(5.0f);
+
         room->StartGame();
     }
 
@@ -85,6 +112,6 @@ namespace PIP::SERVER
 
     const common::Vec3 BossStage::get_spawn_pos() const
     {
-        return { 0.f, 0.f, 0.0f }; // 보스 방 스폰 위치
+        return { 11.0f, -11.59f, 0.0f }; // 보스 방 스폰 위치
     }
 }
