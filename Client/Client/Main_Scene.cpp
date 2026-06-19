@@ -257,10 +257,10 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	// [추가] Q 가이드 UI (HP Bar 좌측에 렌더링)
 	auto q_guide_obj = ObjectManager::instance()->create_game_object("PlayerQGuide_UI");
 	auto q_guide = q_guide_obj->add_component<UIRenderComponent>();
-	q_guide->set_screen_position(150.0f, 45.0f); // HP Bar 좌측 옆
+	q_guide->set_screen_position(200.0f, 110.0f); // MP Bar 좌측 끝 아래
 	q_guide->set_size(36.0f, 36.0f);
 	q_guide->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	q_guide->set_texture("Resource/UI/Q_interaction_UI.png");
+	q_guide->set_texture("Resource/UI/Q_interaction_UI.png"); // 기본 UI 텍스처
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerQGuide_UI", q_guide_obj);
 	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", false); // 처음에는 숨김
 
