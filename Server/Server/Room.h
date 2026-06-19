@@ -113,6 +113,16 @@ namespace PIP::SERVER
 
 		std::map<int64_t, common::Vec3> GetPlayersPos() const;
 
+		// BossStage 등에서 플레이어 맵 전체 접근용
+		const std::unordered_map<int64_t, std::shared_ptr<SESSION>>& GetPlayers() const { return _players; }
+
+		// 카운트다운 시작 (보스전 진입 시 호출)
+		void StartCountdown(float seconds) {
+			_countdownTimer     = seconds;
+			_lastBroadcastCount = -1; // 즉시 첫 브로드캐스트 보내도록 초기화
+			_isCountdownActive  = true;
+		}
+
 		JPH::PhysicsSystem* GetPhysicsSystem() const { return _physicsSystem; }
 
 		void StartPhysicsRecording();
@@ -164,6 +174,12 @@ namespace PIP::SERVER
 		std::set<int64_t>      _readyPlayers;       // 로딩 완료 보고를 한 플레이어 목록
 		std::set<int64_t>      _cutsceneFinishedPlayers; // 컷씬 종료를 보고한 플레이어 목록
 		std::set<int64_t>      _activatedLevers;         // 작동된 레버들의 ID 집합
+
+		// [카운트다운] 보스전 진입 카운트다운 제어
+		float   _countdownTimer    = 0.0f; // 남은 카운트다운 시간
+		int8_t  _lastBroadcastCount = -1;  // 마지막으로 브로드캐스트한 카운트 값
+		bool    _isCountdownActive = false; // 카운트다운 진행 중 여부 (이동 잠금 플래그)
+		void BroadcastCountdown(int8_t count); // 카운트다운 패킷 브로드캐스트
 
 
 		std::unordered_map<int64_t, GAME::Actor*>				_actors;

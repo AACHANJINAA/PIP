@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 // 테스트 주석: common::packet 네임스페이스가 포함된 파일입니다.
 // [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
@@ -145,6 +145,9 @@ namespace common::packet
 
 		//------------------------------------------- 플레이어 스탯 동기화 관련 패킷 --------------------------------------- //
 		S2C_P_PLAYER_STAT_SYNC = 901, // 최대 체력, 현재 체력, 데미지 동기화
+
+		//------------------------------------------- 게임 흐름 제어 패킷 --------------------------------------- //
+		S2C_P_COUNTDOWN = 1001, // 보스전 카운트다운 패킷 (서버 -> 클라)
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -323,6 +326,11 @@ namespace common::packet
 		int32_t _hp;
 	};
 
+	// 보스전 카운트다운 패킷 (서버 -> 클라)
+	struct SC_PACKET_COUNTDOWN : PacketHeader {
+		int8_t _count; // 남은 카운트 (5, 4, 3, 2, 1, 0 == "FIGHT!")
+	};
+
 	// 스탯 동기화 패킷 (퀘스트 보상 등)
 	struct SC_PACKET_PLAYER_STAT_SYNC : PacketHeader {
 		int64_t _id;
@@ -414,6 +422,7 @@ namespace common::packet
 		NPCType _npc_type; // NPC의 타입 (예: 몬스터 종류)
 		Vec3    _position;  // NPC의 초기 위치
 		int32_t _hp;        // NPC의 초기 HP
+		int32_t _max_hp;    // [추가] NPC의 최대 HP
 		EntityState _state; // NPC의 초기 상태
 		int32_t _action_id;
 		// 뒤에 가변크기 name

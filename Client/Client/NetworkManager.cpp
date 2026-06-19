@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
 #include "LayerManager.h"
@@ -1022,6 +1022,15 @@ void NetworkManager::HANDLE_S2C_QUEST_UPDATE(common::packet::PacketStream& strea
 	CLOG("[Quest] Quest " << pkt._quest_info._quest_id << " updated! State: " << (int)pkt._quest_info._state 
 		<< ", Progress: " << pkt._quest_info._current_count << " / " << pkt._quest_info._target_count);
 
+	// [사운드] 퀘스트 처음 완료 시 QuestComplete 재생
+	if (pkt._quest_info._state == common::packet::QuestState::COMPLETED) {
+		auto it = _quests.find(pkt._quest_info._quest_id);
+		if (it == _quests.end() || it->second._state != common::packet::QuestState::COMPLETED) {
+			SoundManager::instance()->load_sound("QuestComplete", "Resource/Sound/QuestComplete.mp3", false);
+			SoundManager::instance()->play("QuestComplete", SoundType::SFX, 1.0f, false);
+		}
+	}
+
 	_quests[pkt._quest_info._quest_id] = pkt._quest_info;
 }
 
@@ -1076,6 +1085,25 @@ void NetworkManager::HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& s
 	}
 }
 
+void NetworkManager::HANDLE_S2C_COUNTDOWN(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_COUNTDOWN pkt;
+	stream >> pkt;
+
+	int8_t count = pkt._count;
+	CLOG("[Countdown] Received: " << (int)count);
+
+	// 1~5: 해당 숫자 UI 표시, 0: 모두 숨김 (FIGHT!)
+	for (int i = 1; i <= 5; ++i) {
+		std::string cd_name = "Countdown_" + std::to_string(i);
+		bool visible = (i == count && count > 0);
+		// FRONT 레이어에 등록되어 있음 (Boss_Scene에서 설정)
+		UIManager::instance()->set_visible(UILayer::FRONT, cd_name, visible);
+	}
+
+	// 입력 잠금 / 해제
+	_isInputLocked = (count > 0);
+}
 
 void NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream) 
 {
@@ -1244,6 +1272,8 @@ bool NetworkManager::init_network()
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_PLAYER_STAT_SYNC(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_INTERACT_ACK,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_INTERACT_ACK(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_COUNTDOWN,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_COUNTDOWN(stream); });
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
