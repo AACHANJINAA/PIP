@@ -1,21 +1,23 @@
 // Particle_CS.hlsl
 
-// C++¿¡¼­ ³Ñ°ÜÁÙ »ó¼ö µ¥ÀÌÅÍ (b0)
+// C++ì—ì„œ ë„˜ê²¨ì¤„ ìƒìˆ˜ ë°ì´í„° (b0)
 cbuffer cbUpdateInfo : register(b0)
 {
-    matrix g_matWorld; // ÇöÀç ¹«±â(¼ÒÄÏ)ÀÇ ¿ùµå Çà·Ä
-    float3 g_PlayerPos; // ÇÃ·¹ÀÌ¾îÀÇ ÇöÀç À§Ä¡ (ÆÄÆ¼Å¬ ½ºÆù Áß½ÉÁ¡)
-    float g_SkillProgress; // ½ºÅ³ ÁøÇàµµ (0.0: ½ºÆù À§Ä¡ -> 1.0: °Ë ¸ğ¾ç ¿Ï¼º)
-    float g_DyingProgress; // ÆÄÆ¼Å¬ »ç¶óÁö´Â ¿¬Ãâ ¿©ºÎ (0.0: »ıÁ¸, 1.0: »ç¶óÁü)
+    matrix g_matWorld; // í˜„ì¬ ë¬´ê¸°(ì†Œì¼“)ì˜ ì›”ë“œ í–‰ë ¬
+    float3 g_PlayerPos; // í”Œë ˆì´ì–´ì˜ í˜„ì¬ ìœ„ì¹˜ (íŒŒí‹°í´ ìŠ¤í° ì¤‘ì‹¬ì )
+    float g_SkillProgress; // ìŠ¤í‚¬ ì§„í–‰ë„ (0.0: ì‹œì‘ ìœ„ì¹˜ -> 1.0: ëª©í‘œ ìœ„ì¹˜ ì™„ì„±)
+    float g_DyingProgress; // íŒŒí‹°í´ ì‚¬ë¼ì§€ëŠ” ì—°ì¶œ (0.0: ìƒì¡´, 1.0: ì£½ìŒ)
+    float g_BurstRadius;   // [ì¶”ê°€] ì´ˆê¸° í™•ì‚° ìµœëŒ€ ë°˜ê²½
+    float2 g_Padding;      // 16ë°”ì´íŠ¸ ì •ë ¬ì„ ìœ„í•œ íŒ¨ë”©
 };
 
-// C++¿¡¼­ ±¸¿öµĞ Á¤´äÁö ¹öÆÛ (t0 - ÀĞ±â Àü¿ë)
+// C++ì—ì„œ êµ¬ì›Œë‘” ì •ë‹µì§€ ë²„í¼ (t0 - ì½ê¸° ì „ìš©)
 StructuredBuffer<float3> TargetBuffer : register(t0);
 
-// °è»êµÈ °á°ú¸¦ ÀúÀåÇÒ ÇöÀç ÆÄÆ¼Å¬ À§Ä¡ ¹öÆÛ (u0 - ÀĞ±â/¾²±â °¡´É)
+// ê³„ì‚°ëœ ê²°ê³¼ë¥¼ ì €ì¥í•  í˜„ì¬ íŒŒí‹°í´ ìœ„ì¹˜ ë²„í¼ (u0 - ì½ê¸°/ì“°ê¸° ê°€ëŠ¥)
 RWStructuredBuffer<float3> CurrentBuffer : register(u0);
 
-// ½º·¹µå ID ±â¹İÀÇ ¾ÆÁÖ ºü¸£°í °¡º­¿î ·£´ı ÇØ½Ã ÇÔ¼ö
+// ìŠ¤ë ˆë“œ ID ê¸°ë°˜ì˜ ì•„ì£¼ ë¹ ë¥´ê³  ê°€ë²¼ìš´ ëœë¤ í•´ì‹œ í•¨ìˆ˜
 float3 hash31(float p)
 {
     float3 p3 = frac(p * float3(0.1031, 0.1030, 0.0973));
@@ -23,43 +25,46 @@ float3 hash31(float p)
     return frac((p3.xxy + p3.yzz) * p3.zyx) * 2.0 - 1.0;
 }
 
-// Æø¹ß ÈÄ ÀÀÁı (°¡½¿¿¡¼­ »ç¹æÀ¸·Î ÆÎ ÅÍÁø ÈÄ, ´ë°ËÀ¸·Î ÀÏÁ¦È÷ »¡·Á µé¾î°¨)
+// í­ë°œ í›„ ì‘ì§‘ (ê°€ìŠ´ì—ì„œ ì‚¬ë°©ìœ¼ë¡œ íŒ¡ í„°ì§„ í›„, ëŒ€ê²€ìœ¼ë¡œ ì¼ì œíˆ ë¹¨ë ¤ ë“¤ì–´ê°)
 float3 Effect_BurstAndGather(uint idx, float3 spawnPos, float3 targetPos, float progress)
 {
-    // 1. ÄÚ¾î(°¡½¿ÆÅ) À§Ä¡ ¼³Á¤
+    // 1. ì½”ì–´(ê°€ìŠ´íŒ) ìœ„ì¹˜ ì„¤ì •
     float3 corePos = g_PlayerPos + float3(0.0f, 1.2f, 0.0f);
     
-    // 2. ±¸Çü(Sphere) ÆØÃ¢ ¸ñÇ¥ À§Ä¡ °è»ê
+    // 2. êµ¬í˜•(Sphere) íŒ½ì°½ ëª©í‘œ ìœ„ì¹˜ ê³„ì‚°
     float3 randDir = normalize(hash31((float) idx));
     float randRadius = 1.5f + frac(sin((float) idx * 12.345f) * 4567.89f) * 3.0f;
+    if (g_BurstRadius > 0.0f) {
+        randRadius = (0.2f + frac(sin((float) idx * 12.345f) * 4567.89f) * 0.8f) * g_BurstRadius; // ìµœì†Œ 20% ~ ìµœëŒ€ 100% ë°˜ê²½ ë‚´ ë°°ì¹˜
+    }
     float3 burstPos = corePos + randDir * randRadius;
 
     // -----------------------------------------------------------
-    // [Phase 1: Æø¹ß] (ÀüÃ¼ ½Ã°£ÀÇ 0% ~ 30% ±¸°£)
+    // [Phase 1: í­ë°œ] (ì „ì²´ ì‹œê°„ì˜ 0% ~ 30% êµ¬ê°„)
     // -----------------------------------------------------------
     float burstProgress = saturate(progress / 0.3f);
-    float burstT = 1.0f - pow(1.0f - burstProgress, 3.0f); // Ease-Out (ÆÅ ÅÍÁö°í ½º¹«½ºÇÏ°Ô ¸ØÃã)
+    float burstT = 1.0f - pow(1.0f - burstProgress, 3.0f); // Ease-Out (íŒ í„°ì§€ê³  ìŠ¤ë¬´ìŠ¤í•˜ê²Œ ë©ˆì¶¤)
 
     // -----------------------------------------------------------
-    // [Phase 2: ÀÀÁı] (ÀüÃ¼ ½Ã°£ÀÇ 30% ~ 100% ±¸°£)
+    // [Phase 2: ì‘ì§‘] (ì „ì²´ ì‹œê°„ì˜ 30% ~ 100% êµ¬ê°„)
     // -----------------------------------------------------------
     float gatherDelay = frac(cos((float) idx * 78.91f) * 1234.56f) * 0.2f;
     float gatherProgress = saturate((progress - 0.3f - gatherDelay) / (0.7f - gatherDelay));
-    float gatherT = pow(gatherProgress, 2.0f); // Ease-In (¼­¼­È÷ Ãâ¹ßÇØ¼­ ÆÅ ²ÈÈû)
+    float gatherT = pow(gatherProgress, 2.0f); // Ease-In (ì„œì„œíˆ ì¶œë°œí•´ì„œ íŒ ê½‚í˜)
 
     // -----------------------------------------------------------
-    // 4. À§Ä¡ ÇÕ¼º
+    // 4. ìœ„ì¹˜ í•©ì„±
     // -----------------------------------------------------------
-    // ¸ÕÀú ÄÚ¾î¿¡¼­ Æø¹ß À§Ä¡·Î ½ô
+    // ë¨¼ì € ì½”ì–´ì—ì„œ í­ë°œ ìœ„ì¹˜ë¡œ ì¨
     float3 currentPos = lerp(corePos, burstPos, burstT);
     
-    // Ã¼°ø ÁßÀÎ »óÅÂ¿¡¼­ ÃÖÁ¾ ´ë°Ë À§Ä¡·Î »¡·Á µé¾î°¨
+    // ì²´ê³µ ì¤‘ì¸ ìƒíƒœì—ì„œ ìµœì¢… ëŒ€ê²€ ìœ„ì¹˜ë¡œ ë¹¨ë ¤ ë“¤ì–´ê°
     currentPos = lerp(currentPos, targetPos, gatherT);
 
     return currentPos;
 }
 
-// 256°³ÀÇ ½º·¹µå¸¦ 1±×·ìÀ¸·Î ¹­¾î¼­ º´·Ä ¿¬»ê
+// 256ê°œì˜ ìŠ¤ë ˆë“œë¥¼ 1ê·¸ë£¹ìœ¼ë¡œ ë¬¶ì–´ì„œ ë³‘ë ¬ ì—°ì‚°
 [numthreads(256, 1, 1)]
 void CS_Main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -69,11 +74,11 @@ void CS_Main(uint3 DTid : SV_DispatchThreadID)
     if (idx >= 50000)
         return;
     
-    // 1. ¸ñÇ¥ ¿ùµå À§Ä¡ °è»ê
+    // 1. ëª©í‘œ ì›”ë“œ ìœ„ì¹˜ ê³„ì‚°
     float3 localTarget = TargetBuffer[idx];
     float3 targetWorldPos = mul(float4(localTarget, 1.0f), g_matWorld).xyz;
 
-    // 2. ±âº» ½ºÆù À§Ä¡ °è»ê (ÇÃ·¹ÀÌ¾î ÁÖº¯ÀÇ µÕ±Ù ±¸ ÇüÅÂ)
+    // 2. ê¸°ë³¸ ìŠ¤í° ìœ„ì¹˜ ê³„ì‚° (í”Œë ˆì´ì–´ ì£¼ë³€ì˜ ë‘¥ê·¼ êµ¬ í˜•íƒœ)
     float3 randomVec = hash31((float) idx);
     float randomRadius = frac(sin((float) idx * 12.345f) * 4567.89f) * 8.0f;
     float3 spawnPos = g_PlayerPos + normalize(randomVec) * randomRadius;
@@ -82,63 +87,63 @@ void CS_Main(uint3 DTid : SV_DispatchThreadID)
     float3 finalPos;
     
     // =========================================================
-    // [Å×½ºÆ® ±¸¿ª]
+    // [í…ŒìŠ¤íŠ¸ êµ¬ì—­]
     // =========================================================
-     finalPos = Effect_BurstAndGather(idx, spawnPos, targetWorldPos, g_SkillProgress); // 10¹ø ¿¬Ãâ
+     finalPos = Effect_BurstAndGather(idx, spawnPos, targetWorldPos, g_SkillProgress); // 10ë²ˆ ì—°ì¶œ
     
     // =========================================================
 
     // =========================================================
-    // ÆÄÆ¼Å¬ »êÈ­(»ç¶óÁü) ¿¬Ãâ - ¿À¸¥ÂÊ ÇÏ´Ã·Î ³¯¾Æ°¨
+    // íŒŒí‹°í´ ì‚°í™”(ì‚¬ë¼ì§) ì—°ì¶œ - ì˜¤ë¥¸ìª½ í•˜ëŠ˜ë¡œ ë‚ ì•„ê°
     // =========================================================
     float flyProgress = saturate((g_DyingProgress - 0.34f) / 0.34f);
 
     if (flyProgress > 0.0f)
     {
-        // ³¯¾Æ°¥ ±âº» ¹æÇâ (¿ì»ó´Ü) + ÆÄÆ¼Å¬¸¶´Ù ¾à°£ ´Ù¸¥ ¹æÇâÀ¸·Î ÆÛÁö°Ô ³­¼ö Ãß°¡
+        // ë‚ ì•„ê°ˆ ê¸°ë³¸ ë°©í–¥ (ìš°ìƒë‹¨) + íŒŒí‹°í´ë§ˆë‹¤ ì•½ê°„ ë‹¤ë¥¸ ë°©í–¥ìœ¼ë¡œ í¼ì§€ê²Œ ë‚œìˆ˜ ì¶”ê°€
         float3 driftDir = float3(2.0f, 4.0f, 1.0f) + (hash31((float) idx) * 1.5f);
         
-        // ³¯¾Æ°¡´Â °¡¼Óµµ
+        // ë‚ ì•„ê°€ëŠ” ê°€ì†ë„
         float moveT = pow(flyProgress, 1.5f);
         
-        // ½Ã°£(moveT)¿¡ ºñ·ÊÇØ¼­ ÆÄÆ¼Å¬ À§Ä¡¸¦ ÇÏ´Ã·Î ÀÌµ¿½ÃÅ´ (¼Óµµ 3.0f Àû¿ë)
+        // ì‹œê°„(moveT)ì— ë¹„ë¡€í•´ì„œ íŒŒí‹°í´ ìœ„ì¹˜ë¥¼ í•˜ëŠ˜ë¡œ ì´ë™ì‹œí‚´ (ì†ë„ 3.0f ì ìš©)
         finalPos += driftDir * moveT * 1.0f;
     }
     
     
-    // °á°ú ÀúÀå
+    // ê²°ê³¼ ì €ì¥
     CurrentBuffer[idx] = finalPos;
     
     
     
-   // ±âÁ¸ ÆÄÆ¼Å¬ ½ºÆù + ÈíÀÔ ¿¬Ãâ (Æø¹ß+ÀÀÁı È¿°úº¸´Ù ÈÎ¾À ´Ü¼øÇÑ ¹öÀü)
-  //{  uint idx = DTid.x; // ÆÄÆ¼Å¬ °íÀ¯ ID
+   // ê¸°ì¡´ íŒŒí‹°í´ ìŠ¤í° + í¡ì… ì—°ì¶œ (í­ë°œ+ì‘ì§‘ íš¨ê³¼ë³´ë‹¤ í›¨ì”¬ ë‹¨ìˆœí•œ ë²„ì „)
+  //{  uint idx = DTid.x; // íŒŒí‹°í´ ê³ ìœ  ID
 
   //  if (idx >= 50000)
   //      return;
     
-  //  // 1. ¸ñÇ¥ ¿ùµå À§Ä¡ °è»ê (·ÎÄÃ ÁÂÇ¥ * ¹«±â ¿ùµå Çà·Ä)
+  //  // 1. ëª©í‘œ ì›”ë“œ ìœ„ì¹˜ ê³„ì‚° (ë¡œì»¬ ì¢Œí‘œ * ë¬´ê¸° ì›”ë“œ í–‰ë ¬)
   //  float3 localTarget = TargetBuffer[idx];
   //  float3 targetWorldPos = mul(float4(localTarget, 1.0f), g_matWorld).xyz;
 
-  //  // 2. °íÀ¯ ID¸¦ ÀÌ¿ëÇØ Ä³¸¯ÅÍ ÁÖº¯ ¹İ°æ 8m ³»ÀÇ ¹«ÀÛÀ§ ½ºÆù À§Ä¡ »ı¼º
+  //  // 2. ê³ ìœ  IDë¥¼ ì´ìš©í•´ ìºë¦­í„° ì£¼ë³€ ë°˜ê²½ 8m ë‚´ì˜ ë¬´ì‘ìœ„ ìŠ¤í° ìœ„ì¹˜ ìƒì„±
   //  float3 randomOffset = hash31((float) idx) * 8.0f;
   //  float3 spawnPos = g_PlayerPos + randomOffset;
-  //  spawnPos.y += 3.0f; // ¾à°£ À§ÂÊ Çã°ø¿¡¼­ »ı¼ºµÇµµ·Ï º¸Á¤
+  //  spawnPos.y += 3.0f; // ì•½ê°„ ìœ„ìª½ í—ˆê³µì—ì„œ ìƒì„±ë˜ë„ë¡ ë³´ì •
 
-  //  // 3. ÁøÇàµµ(0~1)¿¡ µû¶ó ºÎµå·´°Ô ¸ğ¿©µéµµ·Ï º¸°£(Lerp)
-  //  // smoothstepÀ» ¾²¸é Ã³À½¿£ ÃµÃµÈ÷ ¿òÁ÷ÀÌ´Ù°¡ È® »¡·Áµé¾î°¡°í ¸¶Áö¸·¿¡ ºÎµå·´°Ô ¸ØÃä´Ï´Ù.
+  //  // 3. ì§„í–‰ë„(0~1)ì— ë”°ë¼ ë¶€ë“œëŸ½ê²Œ ëª¨ì—¬ë“¤ë„ë¡ ë³´ê°„(Lerp)
+  //  // smoothstepì„ ì“°ë©´ ì²˜ìŒì—” ì²œì²œíˆ ì›€ì§ì´ë‹¤ê°€ í™• ë¹¨ë ¤ë“¤ì–´ê°€ê³  ë§ˆì§€ë§‰ì— ë¶€ë“œëŸ½ê²Œ ë©ˆì¶¥ë‹ˆë‹¤.
   //  float t = smoothstep(0.0f, 1.0f, g_SkillProgress);
     
-  //  // ÃÖÁ¾ À§Ä¡ °è»ê
+  //  // ìµœì¢… ìœ„ì¹˜ ê³„ì‚°
   //  float3 currentPos = lerp(spawnPos, targetWorldPos, t);
 
-  //  // 4. °á°ú ¹öÆÛ¿¡ ¾²±â (ÀÌ ¹öÆÛ¸¦ ³ªÁß¿¡ ·»´õ¸µÇÒ ¶§ ¾¹´Ï´Ù)
+  //  // 4. ê²°ê³¼ ë²„í¼ì— ì“°ê¸° (ì´ ë²„í¼ë¥¼ ë‚˜ì¤‘ì— ë Œë”ë§í•  ë•Œ ì”ë‹ˆë‹¤)
   //  CurrentBuffer[idx] = currentPos;
   //}
 
     
-    // È¸¿À¸® Ä¡´Â ÆÄÆ¼Å¬
+    // íšŒì˜¤ë¦¬ ì¹˜ëŠ” íŒŒí‹°í´
     
     //uint idx = DTid.x;
     //if (idx >= 50000)
@@ -147,25 +152,25 @@ void CS_Main(uint3 DTid : SV_DispatchThreadID)
     //float3 localTarget = TargetBuffer[idx];
     //float3 targetWorldPos = mul(float4(localTarget, 1.0f), g_matWorld).xyz;
     
-    //// 1. ÃÊ±â À§Ä¡¿¡ ¾à°£ÀÇ ¼Ò¿ëµ¹ÀÌ º¤ÅÍ Ãß°¡
+    //// 1. ì´ˆê¸° ìœ„ì¹˜ì— ì•½ê°„ì˜ ì†Œìš©ëŒì´ ë²¡í„° ì¶”ê°€
     //float3 randomOffset = hash31((float) idx) * 8.0f;
     //float3 spawnPos = g_PlayerPos + randomOffset;
     //spawnPos.y += 3.0f;
 
-    //// 2. ÁøÇàµµ¿¡ µû¸¥ ³ª¼± È¿°ú (Spiral)
-    //// °ËÀÇ Áß½ÉÃà(À§ ¹æÇâ)À» ±âÁØÀ¸·Î È¸Àü½ÃÅµ´Ï´Ù.
-    //float angle = g_SkillProgress * 15.0f + (idx * 0.1f); // ÁøÇàµÉ¼ö·Ï ´õ ¸¹ÀÌ È¸Àü
-    //float radius = (1.0f - g_SkillProgress) * 5.0f; // °Ë¿¡ °¡±î¿öÁú¼ö·Ï È¸Àü ¹İ°æ °¨¼Ò
+    //// 2. ì§„í–‰ë„ì— ë”°ë¥¸ ë‚˜ì„  íš¨ê³¼ (Spiral)
+    //// ê²€ì˜ ì¤‘ì‹¬ì¶•(ìœ„ ë°©í–¥)ì„ ê¸°ì¤€ìœ¼ë¡œ íšŒì „ì‹œí‚µë‹ˆë‹¤.
+    //float angle = g_SkillProgress * 15.0f + (idx * 0.1f); // ì§„í–‰ë ìˆ˜ë¡ ë” ë§ì´ íšŒì „
+    //float radius = (1.0f - g_SkillProgress) * 5.0f; // ê²€ì— ê°€ê¹Œì›Œì§ˆìˆ˜ë¡ íšŒì „ ë°˜ê²½ ê°ì†Œ
     
     //float3 spiral;
     //spiral.x = cos(angle) * radius;
     //spiral.z = sin(angle) * radius;
-    //spiral.y = (idx % 10) * 0.2f * (1.0f - g_SkillProgress); // ³ôÀÌ¿¡µµ ¾à°£ÀÇ º¯µ¿
+    //spiral.y = (idx % 10) * 0.2f * (1.0f - g_SkillProgress); // ë†’ì´ì—ë„ ì•½ê°„ì˜ ë³€ë™
 
     //float individualProgress = clamp(g_SkillProgress * 1.2f - (idx % 100) * 0.002f, 0.0f, 1.0f);
     //float t = smoothstep(0.0f, 1.0f, individualProgress);
     
-    //// Á÷¼± º¸°£ ´ë½Å ³ª¼± ¿ÀÇÁ¼ÂÀ» ´õÇÔ
+    //// ì§ì„  ë³´ê°„ ëŒ€ì‹  ë‚˜ì„  ì˜¤í”„ì…‹ì„ ë”í•¨
     //float3 currentPos = lerp(spawnPos, targetWorldPos, t) + spiral;
     
     //CurrentBuffer[idx] = currentPos;

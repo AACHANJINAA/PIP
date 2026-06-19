@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ParticleSystemComponent.h"
 #include "GameFramework.h"
 #include "Renderer.h"
@@ -53,8 +53,10 @@ void ParticleSystemComponent::create_compute_pso()
     device->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&_computePSO));
 }
 
-void ParticleSystemComponent::init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color, float particle_size)
+void ParticleSystemComponent::init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color, float particle_size, float burst_radius)
 {
+    _particleSize = particle_size;
+    _burstRadius = burst_radius;
     if (targets.empty()) return;
     _particleCount = static_cast<UINT>(targets.size());
     auto device = GameFramework::instance()->device();
@@ -104,18 +106,21 @@ void ParticleSystemComponent::dispatch_compute(ID3D12GraphicsCommandList* comman
     command_list->SetComputeRootSignature(Renderer::instance()->get_root_signature("compute_particle"));
 
     struct ComputeConstants {
-        DirectX::XMFLOAT4X4 WorldMatrix;
-        DirectX::XMFLOAT3 PlayerPos;
-        float SkillProgress;
-        float DyingProgress; // 파티클 사라지는 연출 여부 (0 또는 1)
+        DirectX::XMFLOAT4X4 WorldMatrix; // 64 bytes
+        DirectX::XMFLOAT3 PlayerPos;     // 12 bytes
+        float SkillProgress;             // 4 bytes
+        float DyingProgress;             // 4 bytes
+        float BurstRadius;               // 4 bytes
+        DirectX::XMFLOAT2 Padding;       // 8 bytes (패딩 맞춤, 총 96바이트 = 24 * 4바이트)
     } constants;
 
     DirectX::XMStoreFloat4x4(&constants.WorldMatrix, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&_weaponWorld)));
     constants.PlayerPos = _playerPos;
     constants.SkillProgress = _skillProgress;
     constants.DyingProgress = get_dying_progress();
+    constants.BurstRadius = _burstRadius;
 
-    command_list->SetComputeRoot32BitConstants(0, 21, &constants, 0);
+    command_list->SetComputeRoot32BitConstants(0, 24, &constants, 0);
 
     command_list->SetComputeRootShaderResourceView(1, _targetBuffer->GetGPUVirtualAddress());
     command_list->SetComputeRootUnorderedAccessView(2, _currentBuffer->GetGPUVirtualAddress());
