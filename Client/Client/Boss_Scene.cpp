@@ -71,18 +71,19 @@ void Boss_Scene::scene_process(float deltaTime)
 void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
 	// 0. player id별 텍스쳐  
-	auto name_img_obj = ObjectManager::instance()->create_game_object("Player_Name_Image");
-	auto name_renderer = name_img_obj->add_component<UIRenderComponent>();
+	{
+		auto name_img_obj = ObjectManager::instance()->create_game_object("Player_Name_Image");
+		auto name_renderer = name_img_obj->add_component<UIRenderComponent>();
 
-	name_renderer->set_screen_position(5.0f, 5.0f);
-	name_renderer->set_size(200.f, 200.f);
-	name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		name_renderer->set_screen_position(5.0f, 5.0f);
+		name_renderer->set_size(200.f, 200.f);
+		name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
-	long long my_id = NetworkManager::instance()->get_my_session_id();
-	std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";
-	name_renderer->set_texture(resource_name);
-	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
-
+		long long my_id = NetworkManager::instance()->get_my_session_id();
+		std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";
+		name_renderer->set_texture(resource_name);
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
+	}
 	// 1. HP Frame (뒤에 렌더링될 프레임) & HP Bar (앞에 렌더링될 체력바)
 	auto hp_frame_obj = ObjectManager::instance()->create_game_object("HP_Frame");
 	auto hp_frame = hp_frame_obj->add_component<UIRenderComponent>();
@@ -327,6 +328,35 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 		// 슬롯 정보 등록
 		UIManager::instance()->init_party_slots(i, party_hp_bar_comp, party_mp_bar_comp, icon_comp);
+	}
+
+	// 11. boss UI
+	{
+		// 보스 HP 바 설정값 (비율 유지)
+		float boss_w = 1000.0f;
+		float boss_h = 44.0f;
+
+		// 화면 하단 중앙 계산
+		float posX = FRAME_BUFFER_WIDTH / 2.0f - boss_w / 2.0f;
+		float posY = FRAME_BUFFER_HEIGHT - 100.0f;
+
+		// 보스 HP 프레임 (하단 중앙)
+		auto boss_hp_frame_obj = ObjectManager::instance()->create_game_object("Boss_HP_Frame");
+		auto boss_hp_frame = boss_hp_frame_obj->add_component<UIRenderComponent>();
+		boss_hp_frame->set_screen_position(posX, posY);
+		boss_hp_frame->set_size(boss_w, boss_h);
+		boss_hp_frame->set_texture("Resource/UI/HP_Bar_Frame.dds");
+		UIManager::instance()->add_ui(UILayer::BACKGROUND, "Boss_HP_Frame", boss_hp_frame_obj);
+		UIManager::instance()->set_visible(UILayer::BACKGROUND, "Boss_HP_Frame", false);
+
+		// 보스 HP 바 (플레이어 바의 오프셋/사이즈 축소 비율을 1000/410으로 확장 적용)
+		auto boss_hp_bar_obj = ObjectManager::instance()->create_game_object("Boss_HP_Bar");
+		auto boss_hp_bar = boss_hp_bar_obj->add_component<UIRenderComponent>();
+		boss_hp_bar->set_screen_position(posX + 27.0f, posY + 10.0f);
+		boss_hp_bar->set_size(944.0f, boss_h - 22.0f);
+		boss_hp_bar->set_texture("Resource/UI/HP_Bar.dds");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Boss_HP_Bar", boss_hp_bar_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Bar", false);
 	}
 }
 
