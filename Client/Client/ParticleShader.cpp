@@ -84,7 +84,7 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
         pInfo.Color = particleComponent->get_particle_color();
     }
 
-    pInfo.Size = 0.05f; // 파티클 입자 하나의 크기 (수정하며 테스트)
+    pInfo.Size = particleComponent->get_particle_size(); // 파티클 입자 하나의 크기 (수정하며 테스트)
 
     pInfo.dying_progress = particleComponent->get_dying_progress();
     pInfo.progress = particleComponent->get_progress();

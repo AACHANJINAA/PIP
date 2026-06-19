@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -231,7 +231,7 @@ void MainPlayerScript::awake()
 		};
 
 		DirectX::XMFLOAT4 color = { PlayerColors[_playerId % 4].x, PlayerColors[_playerId % 4].y, PlayerColors[_playerId % 4].z, 0.5f };
-		psComp->init_particles(targets, color);
+		psComp->init_particles(targets, color,0.05f);
 
 		// 4. 렌더 컴포넌트 추가
 		auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
