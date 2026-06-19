@@ -85,6 +85,8 @@ private:
     void HANDLE_S2C_PLAY_CUTSCENE(common::packet::PacketStream& stream);
     void Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream);
 
+    void HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream); // [추가] 스탯 동기화
+
 	// Client side: 인벤토리 관련 패킷 처리 함수들
     void Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream);
     void Handle_S2C_P_ITEM_UPDATE(common::packet::PacketStream& stream);

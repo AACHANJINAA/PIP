@@ -20,8 +20,15 @@ public:
 	void awake() override;
 
 	void set_hp(int hp);
-	void set_mp(int mp);
 	int hp() const { return _hp; }
+	
+	void set_max_hp(int max_hp) { _maxHp = max_hp; }
+	int max_hp() const { return _maxHp; }
+
+	void set_attack_damage(int dmg) { _attackDamage = dmg; }
+	int attack_damage() const { return _attackDamage; }
+
+	void set_mp(int mp);
 	bool is_skilling() const { return _isSkilling; }
 	
 	int mp() const { return _mp; } // [추가]
@@ -35,6 +42,17 @@ public:
 	const f3& position() const { return this->transform()->local_position(); }
 
 	void set_id(int64_t id) { _playerId = id; }
+	void set_mp_bar_ui(std::shared_ptr<UIRenderComponent> ui) {
+		_mpBar_ui = ui;
+		if (ui) {
+			float width = ui->get_size_x();
+			if (width > 0) _mpBar_maxWidth = width;
+		}
+	}
+	
+	// 퀘스트 배너 노출
+	void show_reward_banner();
+
 	void set_hp_bar_ui(std::shared_ptr<UIRenderComponent> ui) { 
 		_hpBar_ui = ui;
 		if (ui) {
@@ -74,13 +92,17 @@ private:
 
 	int32_t _hp{ 100 };
 	int32_t _maxHp{ 100 };
+	int32_t _attackDamage{ 10 }; // 기본 데미지 임시 세팅
 	float _displayHp{ 100.0f };          // <- 추가 (lerp용 표시 HP)
 	float _hpBar_maxWidth{ 100.0f };
 	std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
-
+	
 	float _displayMp{ 100.0f };          // lerp용 (부드러운 이동)
 	float _mpBar_maxWidth{ 100.0f };      // 바의 최대 길이를 저장할 변수
 	std::shared_ptr<UIRenderComponent> _mpBar_ui{ nullptr }; // 실제 UI 컴포넌트
+
+	// 퀘스트 배너 표시 타이머
+	float _rewardBannerTimer{ 0.0f };
 
 	int32_t _mp{ 100 };                  // [추가]
 	int32_t _maxMp{ 100 };               // [추가]

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Scene.h"
 
 class Main_Scene : public Scene
@@ -38,6 +38,12 @@ private:
 
 	std::shared_ptr<GameObject> _blackBackground_ui_obj = {}; // 검정 페이드 아웃 UI
 	std::vector<std::shared_ptr<GameObject>> _dummyPlayers; // 컷씬용 더미 플레이어들
+
+	// 컷씬 플레이어 더미
+	std::shared_ptr<GameObject> _dummy_player_1 = {}; // 플레이어 1 성 입구 쪽 바라보는 애
+	std::shared_ptr<GameObject> _dummy_player_2 = {}; // 플레이어 2 1번 기준 오른쪽
+	std::shared_ptr<GameObject> _dummy_player_3 = {}; // 플레이어 3 1번 기준 앞
+	std::shared_ptr<GameObject> _dummy_player_4 = {}; // 플레이어 4 1번 기준 왼쪽
 
 	//void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 	//void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
