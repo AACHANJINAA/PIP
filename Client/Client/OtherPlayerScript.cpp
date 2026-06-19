@@ -111,7 +111,9 @@ void OtherPlayerScript::update(float deltaTime)
 		auto slot = UIManager::instance()->get_party_slot(_partySlotIndex);
 		if (slot && slot->hp_bar) {
 			// HP 업데이트 로직
-			float ratio = (float)_hp / 100.0f; // _maxHp가 있다면 활용
+			float ratio = (float)_hp / (float)_maxHp;
+			if (ratio < 0.0f) ratio = 0.0f;
+			if (ratio > 1.0f) ratio = 1.0f;
 			slot->hp_bar->set_size_x(slot->max_width * ratio);
 			slot->hp_bar->set_uv_scale(ratio, 1.0f);
 

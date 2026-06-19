@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -100,6 +100,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	Spawn_Lever(device, commandList);
 
 	load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
+	ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf", false);
 
 	std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
 	DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
@@ -378,6 +379,19 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestTitle_UI", quest_title_obj);
     UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", false);
 	ResourceManager::instance()->load_texture("Resource/UI/Quest_Title_2.png", true);
+	ResourceManager::instance()->load_texture("Resource/UI/Quest_Reward.png", true); // [추가]
+
+	// [추가] 퀘스트 보상 알림 (화면 중앙 배너)
+	auto quest_reward_obj = ObjectManager::instance()->create_game_object("quest_reward_ui");
+	auto quest_reward_ui = quest_reward_obj->add_component<UIRenderComponent>();
+	float reward_w = 1200.f;
+	float reward_h = 112.f;
+	quest_reward_ui->set_screen_position(FRAME_BUFFER_WIDTH / 2.0f - reward_w / 2.0f, FRAME_BUFFER_HEIGHT / 2.0f - 150.f);
+	quest_reward_ui->set_size(reward_w, reward_h);
+	quest_reward_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	quest_reward_ui->set_texture("Resource/UI/Quest_Reward.png");
+	UIManager::instance()->add_ui(UILayer::FRONT, "QuestRewardBanner_UI", quest_reward_obj);
+	UIManager::instance()->set_visible(UILayer::FRONT, "QuestRewardBanner_UI", false);
 
     // 9. 퀘스트 텍스트(진행도) UI (00/00 등 총 5자리)
     float num_w = 20.f;
@@ -609,6 +623,12 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+	int player_id = NetworkManager::instance()->get_my_session_id() % 4 + 1;
+
+	int other_player_id_1 = (player_id % 4) + 1; // 다른 플레이어 ID 계산
+	int other_player_id_2 = (player_id % 4) + 2; // 다른 플레이어 ID 계산
+	int other_player_id_3 = (player_id % 4) + 3; // 다른 플레이어 ID 계산
+
 	// 1. 페이드 아웃 UI 생성
 	{
 		// black_background
@@ -622,10 +642,178 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		UIManager::instance()->add_ui(UILayer::FRONT, "Black_Background_UI", _blackBackground_ui_obj);
 		_blackBackground_ui_obj->set_enabled(false);
 	}
+
+	// 기사 모델 1
+	{
+		auto T1 = ObjectManager::instance()->create_game_object("Cinematic_KnightMesh_1");
+
+		//// RenderComponent
+		auto renderer = T1->add_component<RenderComponent>();
+		auto animation = T1->add_component<AnimationComponent>();
+
+		// 메시 설정 (애니메이션 포함)
+		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
+		renderer->set_mesh(T1_Mesh);
+
+		// 애니메이션 설정
+		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->play("idle", true);
+
+		// 재질 및 쉐이더 설정
+		std::string material = "Knight_Material";
+
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+		// gltf
+		renderer->set_pso_name("skinned");
+
+		// 위치, 회전 정보
+		T1->transform()->set_local_rotation(0.f, 90.f, 0.f);
+		T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+
+
+		// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+		T1->transform()->set_local_position(XMFLOAT3(194.5f, 5.06f, -59.4f));
+
+		_dummy_player_1 = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
+		_dummy_player_1->set_enabled(false); // 처음에는 비활성화 상태로 시작
+	}
+
+	// 기사 모델 2
+	{
+		auto T1 = ObjectManager::instance()->create_game_object("Cinematic_KnightMesh_2");
+
+		//// RenderComponent
+		auto renderer = T1->add_component<RenderComponent>();
+		auto animation = T1->add_component<AnimationComponent>();
+
+		// 메시 설정 (애니메이션 포함)
+		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
+		renderer->set_mesh(T1_Mesh);
+
+		// 색상설정 (다른 플레이어 색상 적용)
+		renderer->set_force_player_color_id(other_player_id_1);
+
+		// 애니메이션 설정
+		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->play("idle", true);
+
+		// 재질 및 쉐이더 설정
+		std::string material = "Knight_Material";
+
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+		// gltf
+		renderer->set_pso_name("skinned");
+
+		// 위치, 회전 정보
+		T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
+		T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+
+
+		// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+		T1->transform()->set_local_position(XMFLOAT3(184.3f, 5.06f, -50.7f));
+
+		_dummy_player_2 = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
+		_dummy_player_2->set_enabled(false); // 처음에는 비활성화 상태로 시작
+	}
+
+	// 기사 모델 3
+	{
+		auto T1 = ObjectManager::instance()->create_game_object("Cinematic_KnightMesh_3");
+
+		//// RenderComponent
+		auto renderer = T1->add_component<RenderComponent>();
+		auto animation = T1->add_component<AnimationComponent>();
+
+		// 메시 설정 (애니메이션 포함)
+		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
+		renderer->set_mesh(T1_Mesh);
+
+		// 색상설정 (다른 플레이어 색상 적용)
+		renderer->set_force_player_color_id(other_player_id_2);
+
+		// 애니메이션 설정
+		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->play("idle", true);
+
+		// 재질 및 쉐이더 설정
+		std::string material = "Knight_Material";
+
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+		// gltf
+		renderer->set_pso_name("skinned");
+
+		// 위치, 회전 정보
+		T1->transform()->set_local_rotation(0.f, -90.f, 0.f);
+		T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+
+
+		// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+		T1->transform()->set_local_position(XMFLOAT3(176.5f, 5.06f, -59.2f));
+
+		_dummy_player_3 = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
+		_dummy_player_3->set_enabled(false); // 처음에는 비활성화 상태로 시작
+	}
+
+	// 기사 모델 4
+	{
+		auto T1 = ObjectManager::instance()->create_game_object("Cinematic_KnightMesh_4");
+
+		//// RenderComponent
+		auto renderer = T1->add_component<RenderComponent>();
+		auto animation = T1->add_component<AnimationComponent>();
+
+		// 메시 설정 (애니메이션 포함)
+		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
+		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
+		renderer->set_mesh(T1_Mesh);
+
+		// 색상설정 (다른 플레이어 색상 적용)
+		renderer->set_force_player_color_id(other_player_id_3);
+
+		// 애니메이션 설정
+		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->play("idle", true);
+
+		// 재질 및 쉐이더 설정
+		std::string material = "Knight_Material";
+
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "skinned");
+
+		// gltf
+		renderer->set_pso_name("skinned");
+
+		// 위치, 회전 정보
+		T1->transform()->set_local_rotation(0.f, 180.f, 0.f);
+		T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+
+
+		// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+		T1->transform()->set_local_position(XMFLOAT3(185.3f, 5.06f, -68.6f));
+
+		_dummy_player_4 = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
+		_dummy_player_4->set_enabled(false); // 처음에는 비활성화 상태로 시작
+	}
+
 }
 
 void Main_Scene::cinematic_sequence(float deltaTime)
 {
+	// 디버깅을 위해서 바로 넘김
+	_isCutsceneDoneSent = true;
+
+	
+	
+	// 컷씬 시작
 	_blackBackground_ui_obj->set_enabled(true); // 페이드 아웃 UI 활성화
 
 	// 0~3초동안 페이드 아웃 및 소리 서서히 끄기
@@ -635,10 +823,31 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, _cinematicTimer / 3.0f));
 		SoundManager::instance()->set_master_volume(1.0f - (_cinematicTimer / 3.0f));
 	}
-	
-	if (_cinematicTimer >= 3.0f && !_isCutsceneDoneSent)
+
+	// 3~4초동안 완전히 검은 화면 유지 및 소리 완전히 끄고 컷씬에 필요한 설정 적용
+	else if (_cinematicTimer > 3.0f && _cinematicTimer <= 4.0f)
 	{
-		_isCutsceneDoneSent = true;
+		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		SoundManager::instance()->set_master_volume(0.0f);
+		SoundManager::instance()->stop_all();
+
+		// 컷씬에 필요한 설정 적용 (예: 카메라 위치, 플레이어 위치 등)
+		_dummy_player_1->set_enabled(true);
+		_dummy_player_2->set_enabled(true);
+		_dummy_player_3->set_enabled(true);
+		_dummy_player_4->set_enabled(true);
+	}
+
+	// 4~7초동안 다시 페이드 인 및 소리 서서히 켜기
+	else if (_cinematicTimer > 3.0f && _cinematicTimer <= 6.0f)
+	{
+		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f - ((_cinematicTimer - 3.0f) / 3.0f)));
+		SoundManager::instance()->set_master_volume((_cinematicTimer - 3.0f) / 3.0f);
+	}
+	
+	if (_cinematicTimer >= 6.0f && !_isCutsceneDoneSent)
+	{
+		//_isCutsceneDoneSent = true;
 
 	
 	}

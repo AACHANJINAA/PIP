@@ -250,8 +250,8 @@ namespace PIP::SERVER
 		mdm->LoadStaticMeshShapes("BossStageCollisions", mapPath, true);
 
 		mdm->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
-		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-1-1" });
-		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" });
+		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-1-1", "VillageCollisions"});
+		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" ,"Tile-1-1","VillageCollisions" });
 		mdm->AddTerrainGroup("VillageStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "VillageCollisions" });
 		mdm->AddTerrainGroup("BossStage", { "BossStageCollisions" });
 

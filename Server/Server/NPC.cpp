@@ -22,11 +22,29 @@ namespace PIP::GAME
 		SetId(npc_id);
 		SetFaction(Faction::FACTION_MONSTER);
 		// 1. 기본 이름 설정 (GameObject 방식)
-		SetName("Monster_" + std::to_string(npc_id));
+		if (_npc_type == common::packet::NPCType::DynamicBox)
+			SetName("DynamicBox_" + std::to_string(npc_id));
+		else
+			SetName("Monster_" + std::to_string(npc_id));
 
 		// 2. TransformComponent 추가 및 초기화
 		auto transform = AddComponent<TransformComponent>();
 		transform->SetPosition(position);
+
+		if (_npc_type == common::packet::NPCType::DynamicBox)
+		{
+			// 다이나믹 박스는 단순 물리 컴포넌트만 부착
+			_physicsComponent = AddComponent<PhysicsComponent>();
+			_transform = transform;
+			
+			// 무기 타격을 받기 위해 히트박스 추가
+			_hitboxComponent = AddComponent<HitboxComponent>();
+			JPH::Ref<JPH::Shape> boxHitShape = new JPH::BoxShape(JPH::Vec3(0.5f, 0.5f, 0.5f));
+			_hitboxComponent->AddHitbox("Body", boxHitShape, { 0.0f, 0.0f, 0.0f });
+
+			_lastUpdateTime = std::chrono::steady_clock::now();
+			return; // AI, 컨트롤러 부착 생략
+		}
 
 		// 3. PhysicsComponent 추가
 		// (실제 Jolt 바디 생성은 CreateBody를 Room에서 물리 시스템을 인자로 넣어 호출해야 합니다)
@@ -44,10 +62,7 @@ namespace PIP::GAME
 		// "Body"라는 이름으로 캐릭터 중심(발바닥 위 0.9m)에 히트박스 등록
 		_hitboxComponent->AddHitbox("Body", bodyShape, { 0.0f, 0.9f, 0.0f });
 
-
 		// 4. AIComponent 추가 및 전용 Lua 스크립트 연결
-		/*auto ai = AddComponent<AIComponent>();
-		ai->SetLuaScript("Monster.lua");*/
 		AddComponent<AIComponent>();
 		
 		// 최적화를 위해 컴포넌트 포인터 캐싱
@@ -196,15 +211,23 @@ namespace PIP::GAME
 			std::string hitPart;
 			if (_hitboxComponent->CheckCollision(physics, attackShape, attackTransform, snapshot, hitPart)) {
 				// 피격 성공!
+				using namespace common::VectorHelper;
+				common::Vec3 knockbackDir = common::Normalize(GetPosition() - dynamic_cast<Actor*>(attacker)->GetPosition());
+				knockbackDir.y = 0.0f;
+
+				if (_npc_type == common::packet::NPCType::DynamicBox) {
+					// 다이나믹 박스는 체력이 닳지 않으며, 물리적 힘(속도)만 받음
+					if (auto pc = GetComponent<PhysicsComponent>()) {
+						pc->SetVelocity(knockbackDir * 20.0f + common::Vec3(0, 5.0f, 0)); // 위로 살짝 띄우며 날리기
+					}
+					return true;
+				}
+
 				_hp -= damage;
 				_hp = std::max(_hp, 0);
 
 				_hitCooldown = 0.5f; // 0.5초 피격 쿨다운
 				SetState(common::packet::EntityState::HITTED);
-
-				using namespace common::VectorHelper;
-				common::Vec3 knockbackDir = common::Normalize(GetPosition() - dynamic_cast<Actor*>(attacker)->GetPosition());
-				knockbackDir.y = 0.0f;
 
 				if (auto cc = GetComponent<CharacterControllerComponent>()) {
 					cc->AddImpact(knockbackDir * 15.0f);

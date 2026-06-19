@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -666,6 +666,14 @@ namespace PIP::SERVER
 				bosss.push_back(npc); // 보스는 따로 처리하기 위해 리스트에 저장
 				continue;
 			}// 보스는 정밀 물리(PhysicsUpdate) 대상
+
+			if (npc->GetNpcType() == common::packet::NPCType::DynamicBox) {
+				if (auto pc = npc->GetComponent<GAME::PhysicsComponent>()) {
+					pc->PhysicsUpdate(deltaTime);
+					_gridMap.UpdatePosition(npc, npc->GetPosition());
+				}
+				continue;
+			}
 
 			auto nc = npc->GetNPCController(); // 캐싱된 포인터 사용
 			if (!nc || !npc->IsActive()) continue;
@@ -1344,6 +1352,18 @@ namespace PIP::SERVER
 					}
 					SendQuestUpdate(session, info);
 					MYLOG("[Quest] Session " << session->_id << " completed quest " << quest_id);
+
+					// 스탯 동기화 패킷 전송
+					packet::PacketStream stat_stream;
+					packet::SC_PACKET_PLAYER_STAT_SYNC stat_pkt;
+					stat_pkt._type = packet::PacketType::S2C_P_PLAYER_STAT_SYNC;
+					stat_pkt._size = sizeof(stat_pkt);
+					stat_pkt._id = session->_id;
+					stat_pkt._max_hp = session->_player->_max_hp;
+					stat_pkt._hp = session->_player->GetHP();
+					stat_pkt._damage = session->_player->_damage;
+					stat_stream << stat_pkt;
+					Broadcast(stat_stream.constable_data(), stat_stream.Size());
 				}
 			}
 		} else if (npc->GetNpcType() == common::packet::NPCType::Lever) {
@@ -1390,6 +1410,18 @@ namespace PIP::SERVER
 				}
 				SendQuestUpdate(session, info);
 				MYLOG("[Quest] Session " << session->_id << " completed default quest " << default_quest_id);
+
+				// 스탯 동기화 패킷 전송
+				packet::PacketStream stat_stream;
+				packet::SC_PACKET_PLAYER_STAT_SYNC stat_pkt;
+				stat_pkt._type = packet::PacketType::S2C_P_PLAYER_STAT_SYNC;
+				stat_pkt._size = sizeof(stat_pkt);
+				stat_pkt._id = session->_id;
+				stat_pkt._max_hp = session->_player->_max_hp;
+				stat_pkt._hp = session->_player->GetHP();
+				stat_pkt._damage = session->_player->_damage;
+				stat_stream << stat_pkt;
+				Broadcast(stat_stream.constable_data(), stat_stream.Size());
 			}
 		}
 	}
