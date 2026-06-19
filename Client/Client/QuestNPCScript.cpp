@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "gameobject.h"
 #include "QuestNPCScript.h"
 #include "ObjectManager.h"
@@ -125,6 +125,7 @@ void QuestNPCScript::update_F_interaction_UI(float deltaTime)
         if (_currentAlpha < 0.0f) {
             _currentAlpha = 0.0f;
             UIManager::instance()->set_visible(UILayer::MIDDLE, "F_interaction_UI", false);
+            _isTalking = false; // 멀어지면 대화 상태 강제 종료 및 마커 활성화 보장
             return; 
         }
     }
@@ -209,7 +210,10 @@ void QuestNPCScript::update_QuestMarker_UI(float deltaTime)
     }
     
     // 거리가 멀거나 대화 중이면 알파값 조절 (서서히 사라짐/나타남)
-    if (_isTalking || state == common::packet::QuestState::REWARDED) {
+    // 대화 중이거나, 보상을 받았거나, 또는 퀘스트 진행 중일 때는 마커(?)를 숨깁니다. (10마리 완료 시점에만 보이도록)
+    if (_isTalking || 
+        state == common::packet::QuestState::REWARDED || 
+        state == common::packet::QuestState::IN_PROGRESS) {
         // 이미 UIRenderer에서 사용하는 _currentAlpha를 공유할 수도 있지만, 별도의 알파 변수를 쓰는 것이 안전할 수 있습니다. 
         // 여기서는 기존 _currentAlpha 로직 대신 바로 숨깁니다. (혹은 _markerRenderer가 별도의 알파 변수를 가져도 됩니다.)
         _markerRenderer->set_alpha(0.0f);
