@@ -2,14 +2,22 @@
 #include "TainerScript.h"
 
 #include "AnimationComponent.h"
-#include "DebugDrawManager.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 #include "MonsterHPComponent.h"
+#include "ObjectManager.h"
+#include "UIManager.h"
 
 void TainerScript::awake()
 {
+	auto hp_bar_obj = ObjectManager::instance()->find_by_name("Boss_HP_Bar");
+	if (hp_bar_obj) _hpBar_ui = hp_bar_obj->get_component<UIRenderComponent>();
+
 	NPCScript::awake();
+
+	UIManager::instance()->set_visible(UILayer::BACKGROUND, "Boss_HP_Frame", true);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Bar", true);
+
     game_object()->get_component<TransformComponent>()->set_local_scale({ 5.f,5.f ,5.f });
     auto hp = get_hp();
     game_object()->get_component<MonsterHPComponent>()->set_max_hp(get_hp());
@@ -76,7 +84,7 @@ void TainerScript::init_visual()
 
 void TainerScript::update(float deltaTime)
 {
-    
+    update_hp_bar(deltaTime);
     NPCScript::update(deltaTime);
     // 디버그 드로우 매니저를 통해 보스 머리 위에 현재 노드 이름 표시
     if (!_currentBTNodeName.empty()) {
@@ -162,3 +170,26 @@ void TainerScript::handle_animation_branching()
 	}
 }
 
+void TainerScript::update_hp_bar(float deltaTime)
+{
+	if (!_hpBar_ui) return;
+	auto hpComp = game_object()->get_component<MonsterHPComponent>();
+	if (!hpComp) return;
+
+	// 보간 로직 (MainPlayerScript 참고)
+	float lerp = std::min(1.0f, deltaTime * 10.0f);
+	_displayHp += (static_cast<float>(hpComp->get_current_hp()) - _displayHp) * lerp;
+	// 보스가 DEAD 상태가 되면 HP 프레임과 바를 숨김
+	if (_state == common::packet::EntityState::DEAD)
+	{
+		UIManager::instance()->set_visible(UILayer::BACKGROUND, "Boss_HP_Frame", false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Bar", false);
+		_hpBar_ui = nullptr;
+		return;
+	}
+
+	float ratio = _displayHp / static_cast<float>(hpComp->get_max_hp());
+	_hpBar_ui->set_size_x(946.0f * ratio); // 946.0f는 초기 size와 동일
+	_hpBar_ui->set_uv_scale(ratio, 1.0f);
+	_hpBar_ui->set_uv_scale(ratio, 1.0f);
+}
