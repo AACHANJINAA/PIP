@@ -442,7 +442,9 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 			is_q_active = true;
 		}
 	}
-	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", is_q_active);
+	// Q 가이드 UI는 퀘스트 조건이 충족되고, 스토리 UI가 닫혀있거나 닫히는 중(페이드아웃)일 때만 표시합니다.
+	bool show_guide = is_q_active && (!_isQuestStoryShowing || _isQuestStoryFadingOut);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", show_guide);
 }
 
 
