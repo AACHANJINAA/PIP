@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -94,7 +94,7 @@ void MainPlayerScript::update(float deltaTime)
 	handle_input(deltaTime);
 	handle_state(deltaTime);
 	update_physics_and_visuals(deltaTime);
-	update_quest_ui(); // 퀘스트 UI 실시간 반영
+	update_quest_ui(deltaTime); // 퀘스트 UI 실시간 반영
 	send_network_sync(deltaTime);
 }
 
@@ -304,7 +304,7 @@ void MainPlayerScript::update_mp_bar(float deltaTime)
 	}
 }
 
-void MainPlayerScript::update_quest_ui()
+void MainPlayerScript::update_quest_ui(float deltaTime)
 {
     // 현재 진행 중인 퀘스트를 찾습니다.
     const auto active_quest = NetworkManager::instance()->get_quest(1);
@@ -333,9 +333,42 @@ void MainPlayerScript::update_quest_ui()
         is_visible = false;
     }
 
+    // UIManager가 준비되지 않은 극초기 상태인 경우 안전하게 리턴하여 크래시 방지
+    auto uiManager = UIManager::instance();
+    if (!uiManager) return;
+
     // 배너 및 타이틀 켜기/끄기
-    UIManager::instance()->set_visible(UILayer::BACKGROUND, "QuestBanner_UI", is_visible);
-    UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", is_visible);
+    uiManager->set_visible(UILayer::BACKGROUND, "QuestBanner_UI", is_visible);
+    uiManager->set_visible(UILayer::MIDDLE, "QuestTitle_UI", is_visible);
+
+    // "도와줘!!" UI 인스턴스 획득
+    if (!_helpMeUI) {
+        _helpMeUI = uiManager->ui_component(UILayer::MIDDLE, "Help_Me_UI");
+    }
+
+    // 퀘스트가 처음에 활성화되는 순간 (NONE -> IN_PROGRESS) 감지하여 "도와줘!!" UI 실행
+    if (is_visible && !_wasQuestActive && quest_id == 1) {
+        if (_helpMeUI) {
+            _helpMeAlpha = 1.0f;
+            _isHelpMeShowing = true;
+            _helpMeUI->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+            uiManager->set_visible(UILayer::MIDDLE, "Help_Me_UI", true);
+        }
+    }
+    _wasQuestActive = is_visible;
+
+    // "도와줘!!" UI 페이드 아웃 갱신
+    if (_isHelpMeShowing && _helpMeUI) {
+        _helpMeAlpha -= _helpMeFadeSpeed * deltaTime;
+        if (_helpMeAlpha <= 0.0f) {
+            _helpMeAlpha = 0.0f;
+            _isHelpMeShowing = false;
+            uiManager->set_visible(UILayer::MIDDLE, "Help_Me_UI", false);
+        }
+        else {
+            _helpMeUI->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, _helpMeAlpha));
+        }
+    }
     
     // 퀘스트 ID에 맞춰 타이틀 이미지 변경
     if (is_visible) {
