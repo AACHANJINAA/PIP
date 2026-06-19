@@ -1,17 +1,17 @@
-﻿[
+[
 	{
-		"Name": "Cube_StaticMeshComponent0",
-		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
+		"Name": "SM_fountain_01_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fountain_01_1B971041.gltf",
 		"Materials": [
-			"WorldGridMaterial"
+			"MI_Fountain"
 		],
 		"Transform":
 		{
 			"Location":
 			{
-				"X": 194.5,
-				"Y": 5.5699367523193359,
-				"Z": -59.400001525878906
+				"X": 185.19999694824219,
+				"Y": 4.8617410659790039,
+				"Z": -59.599998474121094
 			},
 			"Rotation":
 			{
@@ -29,7 +29,7 @@
 		}
 	},
 	{
-		"Name": "Cube3_StaticMeshComponent0",
+		"Name": "Cube2_StaticMeshComponent0",
 		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
 		"Materials": [
 			"WorldGridMaterial"
@@ -38,9 +38,9 @@
 		{
 			"Location":
 			{
-				"X": 184.30000305175781,
+				"X": 185.30000305175781,
 				"Y": 5.5699367523193359,
-				"Z": -50.799999237060547
+				"Z": -68.699996948242188
 			},
 			"Rotation":
 			{
@@ -87,7 +87,7 @@
 		}
 	},
 	{
-		"Name": "Cube2_StaticMeshComponent0",
+		"Name": "Cube3_StaticMeshComponent0",
 		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
 		"Materials": [
 			"WorldGridMaterial"
@@ -96,9 +96,38 @@
 		{
 			"Location":
 			{
-				"X": 185.30000305175781,
+				"X": 184.30000305175781,
 				"Y": 5.5699367523193359,
-				"Z": -68.699996948242188
+				"Z": -50.799999237060547
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "Cube_StaticMeshComponent0",
+		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
+		"Materials": [
+			"WorldGridMaterial"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 194.5,
+				"Y": 5.5699367523193359,
+				"Z": -59.400001525878906
 			},
 			"Rotation":
 			{
