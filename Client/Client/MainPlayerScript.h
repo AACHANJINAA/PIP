@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
 #include "AnimationComponent.h"
@@ -66,7 +66,7 @@ public:
 	/*void apply_knockback(const common::Vec3& force) { _impactVelocity = force; }*/
 	void sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket);
 	void reset_state(); // [추가] 리스폰 시 상태 초기화
-	void update_quest_ui(); // 퀘스트 UI 업데이트
+	void update_quest_ui(float deltaTime); // 퀘스트 UI 업데이트
 
 private:
 	// --- update 기능 분리용 private 함수 ---
@@ -167,4 +167,11 @@ private:
 	int64_t _grabbedById = -1; // [추가]
 	int8_t  _grabSlot = -1;    // [추가]
 	float _timer = 0.0f;
+
+	// --- 퀘스트 "도와줘!!" 연출용 변수 ---
+	bool _wasQuestActive = false;
+	bool _isHelpMeShowing = false;
+	float _helpMeAlpha = 0.0f;
+	float _helpMeFadeSpeed = 1.0f; // 페이드 아웃 속도 (1.0f일 때 1초 동안 사라짐)
+	std::shared_ptr<UIRenderComponent> _helpMeUI{ nullptr };
 };
