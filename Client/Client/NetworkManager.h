@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "stdafx.h"
 void error_display(const char* msg, int err_no);
 class NetworkManager : public Singleton<NetworkManager>
@@ -37,6 +37,7 @@ public:
 
     void SendAttackResultPacket(int64_t target_id, float damage, float force);
     bool is_running() const { return _isRunning; }
+    bool is_input_locked() const { return _isInputLocked; }
     long long get_my_session_id() const { return _my_session_id; }
     XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
 
@@ -85,7 +86,8 @@ private:
     void HANDLE_S2C_PLAY_CUTSCENE(common::packet::PacketStream& stream);
     void Handle_S2C_ALL_PLAYERS_READY(common::packet::PacketStream& stream);
 
-    void HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream); // [추가] 스탯 동기화
+	void HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream); // [추가] 스탯 동기화
+	void HANDLE_S2C_COUNTDOWN(common::packet::PacketStream& stream);        // [추가] 카운트다운
 
 	// Client side: 인벤토리 관련 패킷 처리 함수들
     void Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream);
@@ -120,4 +122,7 @@ private:
 
 	// 플레이어의 현재 위치 (서버에서 받은 최신 위치)
 	XMFLOAT3 _my_pos{ 0.0f, 0.0f, 0.0f };
+	// 카운트다운 동안 클라이언트 입력 잠금 플래그
+	bool _isInputLocked = false;
 };
+

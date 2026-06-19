@@ -30,9 +30,13 @@
 
 void MainPlayerScript::set_hp(int hp)
 {
+	int prevHp = _hp;
 	_hp = std::clamp(hp, 0, _maxHp);
-	
-	//_displayHp = static_cast<float>(_hp);
+
+	// [사운드] 피격 시 MinecraftDamage 재생
+	if (_hp < prevHp) {
+		SoundManager::instance()->play("MinecraftDamage", SoundType::SFX, 1.0f, false);
+	}
 
 	// _hpBar_ui가 null이면 매번 재탐색
 	if (!_hpBar_ui)
@@ -148,9 +152,10 @@ void MainPlayerScript::awake()
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->play("idle");
 
-	// [사운드] 플레이어 무기 공격음 로드
-	SoundManager::instance()->load_sound("SwordSwing", "Resource/Sound/SwordSwing.mp3", false);
-	SoundManager::instance()->load_sound("DustSound", "Resource/Sound/Dust.wav", true);
+	// [사운드] 플레이어 무기 공격음 / 피격음 로드
+	SoundManager::instance()->load_sound("SwordSwing",      "Resource/Sound/SwordSwing.mp3",      false);
+	SoundManager::instance()->load_sound("DustSound",       "Resource/Sound/Dust.wav",             true);
+	SoundManager::instance()->load_sound("MinecraftDamage", "Resource/Sound/MinecraftDamage.mp3", false);
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -469,6 +474,9 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 void MainPlayerScript::handle_input(float deltaTime)
 {
+	// [카운트다운] 서버에서 대기 중이면 모든 이동/스킬 입력 무시
+	if (NetworkManager::instance()->is_input_locked()) return;
+
 	if (InputManager::instance()->IsKeyDown(VK_F8))
 	{
 		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::PHYSICS_SNAPSHOT);

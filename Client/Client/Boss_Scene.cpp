@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Boss_Scene.h"
 
 #include "CameraComponent.h"
@@ -262,6 +262,27 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		num_ui->set_uv_scale(1.0f / 11.0f, 1.0f);
 		UIManager::instance()->add_ui(UILayer::MIDDLE, name, num_obj);
 		UIManager::instance()->set_visible(UILayer::MIDDLE, name, false);
+	}
+
+	// [카운트다운] 보스전 5,4,3,2,1,FIGHT 오버레이 UI (화면 중앙 대형)
+	ResourceManager::instance()->load_texture("Resource/UI/Quest_Numbers.png", true);
+	float cd_size = 180.f;
+	float cd_cx = FRAME_BUFFER_WIDTH / 2.0f - cd_size / 2.0f;
+	float cd_cy = FRAME_BUFFER_HEIGHT / 2.0f - cd_size / 2.0f;
+	for (int count = 5; count >= 1; --count) {
+		std::string cd_name = "Countdown_" + std::to_string(count);
+		auto cd_obj = ObjectManager::instance()->create_game_object(cd_name);
+		auto cd_ui  = cd_obj->add_component<UIRenderComponent>();
+		cd_ui->set_screen_position(cd_cx, cd_cy);
+		cd_ui->set_size(cd_size, cd_size);
+		cd_ui->set_color(XMFLOAT4(1.0f, 1.0f, 0.0f, 0.9f)); // 노란색
+		cd_ui->set_texture("Resource/UI/Quest_Numbers.png");
+		// Quest_Numbers.png는 11칸 스프라이트시트: 0~9 숫자 + 알파벳 배치 가정
+		float uvOffset = (count % 10) * (1.0f / 11.0f);
+		cd_ui->set_uv_offset(uvOffset, 0.0f);
+		cd_ui->set_uv_scale(1.0f / 11.0f, 1.0f);
+		UIManager::instance()->add_ui(UILayer::FRONT, cd_name, cd_obj);
+		UIManager::instance()->set_visible(UILayer::FRONT, cd_name, false); // 처음엔 숨김
 	}
 
 	// 10. 파티 UI
