@@ -256,7 +256,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // F10이나 Alt 키를 눌렀을 때 윈도우가 메뉴 대기 상태로 들어가서 메인 루프가 멈추는 것을 방지
         if ((wParam & 0xfff0) == SC_KEYMENU)
             return 0;
-        break; // 다른 시스템 커맨드는 기본 처리
+        // 다른 시스템 커맨드(SC_CLOSE 등)는 기본 처리되도록 DefWindowProc 호출
+        return(::DefWindowProc(hWnd, message, wParam, lParam));
     }
     case WM_ACTIVATE:
     {

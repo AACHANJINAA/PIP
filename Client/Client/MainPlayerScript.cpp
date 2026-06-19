@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -67,6 +67,16 @@ void MainPlayerScript::update(float deltaTime)
 	update_hp_bar(deltaTime);
 	update_mp_bar(deltaTime);
 	
+	// [추가] 보상 배너 끄기 타이머
+	if (_rewardBannerTimer > 0.0f)
+	{
+		_rewardBannerTimer -= deltaTime;
+		if (_rewardBannerTimer <= 0.0f)
+		{
+			UIManager::instance()->set_visible(UILayer::FRONT, "QuestRewardBanner_UI", false);
+		}
+	}
+
 	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
 	if (_particleEffectObject && _particleEffectObject->is_enable())
 	{
@@ -313,6 +323,11 @@ void MainPlayerScript::update_quest_ui()
         quest_id = 1;*/
     }
     
+    // [추가] 보상 완료 상태라면 퀘스트 UI를 숨김 처리
+    if (active_quest && active_quest->_state == common::packet::QuestState::REWARDED) {
+        is_visible = false;
+    }
+
     // 배너 및 타이틀 켜기/끄기
     UIManager::instance()->set_visible(UILayer::BACKGROUND, "QuestBanner_UI", is_visible);
     UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", is_visible);
@@ -814,6 +829,12 @@ void MainPlayerScript::send_network_sync(float deltaTime)
 			_actionId, static_cast<uint32_t>(GetTickCount64())
 		);
 	}
+}
+
+void MainPlayerScript::show_reward_banner()
+{
+	_rewardBannerTimer = 3.0f; // 3초간 표시
+	UIManager::instance()->set_visible(UILayer::FRONT, "QuestRewardBanner_UI", true);
 }
 
 void MainPlayerScript::die_ui_update(float deltaTime)

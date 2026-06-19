@@ -100,6 +100,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	Spawn_Lever(device, commandList);
 
 	load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
+	ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf", false);
 
 	std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
 	DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
@@ -378,6 +379,19 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestTitle_UI", quest_title_obj);
     UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", false);
 	ResourceManager::instance()->load_texture("Resource/UI/Quest_Title_2.png", true);
+	ResourceManager::instance()->load_texture("Resource/UI/Quest_Reward.png", true); // [추가]
+
+	// [추가] 퀘스트 보상 알림 (화면 중앙 배너)
+	auto quest_reward_obj = ObjectManager::instance()->create_game_object("quest_reward_ui");
+	auto quest_reward_ui = quest_reward_obj->add_component<UIRenderComponent>();
+	float reward_w = 1200.f;
+	float reward_h = 112.f;
+	quest_reward_ui->set_screen_position(FRAME_BUFFER_WIDTH / 2.0f - reward_w / 2.0f, FRAME_BUFFER_HEIGHT / 2.0f - 150.f);
+	quest_reward_ui->set_size(reward_w, reward_h);
+	quest_reward_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	quest_reward_ui->set_texture("Resource/UI/Quest_Reward.png");
+	UIManager::instance()->add_ui(UILayer::FRONT, "QuestRewardBanner_UI", quest_reward_obj);
+	UIManager::instance()->set_visible(UILayer::FRONT, "QuestRewardBanner_UI", false);
 
     // 9. 퀘스트 텍스트(진행도) UI (00/00 등 총 5자리)
     float num_w = 20.f;

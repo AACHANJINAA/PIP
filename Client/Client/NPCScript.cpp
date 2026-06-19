@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "NPCScript.h"
 #include "ReplicationSystem.h"
 #include "AnimationComponent.h"
@@ -24,8 +24,8 @@ void NPCScript::handle_animation_branching()
 
 	using namespace common::packet;
 
-	// 엘리베이터는 애니메이션이 없으므로 분기 처리 생략
-	if (_npcType == NPCType::Elevator) return;
+	// 엘리베이터와 다이나믹 박스는 애니메이션이 없으므로 분기 처리 생략
+	if (_npcType == NPCType::Elevator || _npcType == NPCType::DynamicBox) return;
 
 	// 1. 사망/피격 최우선 처리
 	/*if (_state == EntityState::DEAD) {
@@ -109,6 +109,18 @@ void NPCScript::init_visual()
 		
 
 		std::string material_name = "elevator_material_" + std::to_string(id());
+		ResourceManager::instance()->create_material(material_name);
+		ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
+		render_comp->set_pso_name("gltf");
+		return;
+	}
+
+	if (_npcType == common::packet::NPCType::DynamicBox) {
+		// 다이나믹 물리 박스 모델 설정
+		auto baseMesh = ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf", false);
+		render_comp->set_mesh(baseMesh);
+
+		std::string material_name = "dynamicbox_material_" + std::to_string(id());
 		ResourceManager::instance()->create_material(material_name);
 		ResourceManager::instance()->set_shader_for_material(material_name, "gltf");
 		render_comp->set_pso_name("gltf");

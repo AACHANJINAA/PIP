@@ -172,10 +172,12 @@ namespace PIP::GAME
 		{
 			it->second._state = common::packet::QuestState::REWARDED;
 			
-			// 보상 지급 로직 추가 가능 (경험치 등)
+			// 보상 지급 로직: 최대 체력과 데미지 증가 및 체력 회복
 			const QuestData* qData = LuaManager::Instance()->GetQuestData(quest_id);
 			if (qData) {
-				_exp += qData->reward_exp;
+				_max_hp += 50;
+				_hp = _max_hp;
+				_damage += 10;
 			}
 
 			return it->second;

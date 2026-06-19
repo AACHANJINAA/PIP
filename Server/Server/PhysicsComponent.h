@@ -14,7 +14,7 @@ namespace PIP::GAME
 
 		// Jolt Body 생성 및 초기화
 		void CreateBody(JPH::PhysicsSystem* physicsSystem, const JPH::Shape* shape,
-		                JPH::EMotionType motionType, JPH::ObjectLayer layer, JPH::Vec3 positionOffset = JPH::Vec3::sZero());
+		                JPH::EMotionType motionType, JPH::ObjectLayer layer, JPH::Vec3 positionOffset = JPH::Vec3::sZero(), float mass = 100.0f);
 		
 
 		// 물리 세계의 위치를 TransformComponent로 복사
