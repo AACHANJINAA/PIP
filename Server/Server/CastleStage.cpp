@@ -86,6 +86,25 @@ namespace PIP::SERVER
 		// 2. 보스 테이너 배치
 		//room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
 
+		// 다이나믹 물리 박스 스폰
+		common::Vec3 startPos = get_spawn_pos();
+		for (int i = 0; i < 5; ++i)
+		{
+			int64_t npc_id = 9999000 + i + (room->GetRoomId() * 10000LL); // 임의의 큰 ID 값 사용
+			common::Vec3 boxPos = { startPos.x + (i * 2.0f), startPos.y + 8.0f, startPos.z + 5.0f }; // 8m 상공, 한줄 배치
+			auto box = std::make_unique<GAME::NPC>(npc_id, GAME::NPCType::DynamicBox, room->GetRoomId(), boxPos, 100);
+			box->SetPosition(boxPos);
+			box->SetSpawnPosition(boxPos);
+			
+			// 물리 바디 생성 (Room의 PhysicsSystem 활용)
+			auto pc = box->GetComponent<GAME::PhysicsComponent>();
+			if (pc) {
+				pc->CreateBody(room->GetPhysicsSystem(), new JPH::BoxShape(JPH::Vec3(0.5f, 0.5f, 0.5f)), JPH::EMotionType::Dynamic, Layers::MOVING, JPH::Vec3::sZero(), 10.0f);
+			}
+
+			room->AddNPC(std::move(box));
+		}
+
 		room->StartGame();
 	}
 

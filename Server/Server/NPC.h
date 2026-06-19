@@ -159,6 +159,7 @@ namespace PIP::GAME
 		TransformComponent* _transform = nullptr;
 		class AIComponent* _aiComponent = nullptr;
 		class HitboxComponent* _hitboxComponent = nullptr;
+		class PhysicsComponent* _physicsComponent = nullptr;
 	};
 
 }

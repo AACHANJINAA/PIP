@@ -142,6 +142,9 @@ namespace common::packet
 		S2C_P_QUEST_UPDATE = 802, // 퀘스트 상태 변경 (서버 -> 클라)
 		S2C_P_QUEST_INFO = 803,   // 현재 퀘스트 목록 동기화 (서버 -> 클라)
 		S2C_P_INTERACT_ACK = 804, // [신규] 환경 사물(레버 등) 상호작용 성공 패킷 (서버 -> 클라)
+
+		//------------------------------------------- 플레이어 스탯 동기화 관련 패킷 --------------------------------------- //
+		S2C_P_PLAYER_STAT_SYNC = 901, // 최대 체력, 현재 체력, 데미지 동기화
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -160,6 +163,7 @@ namespace common::packet
 		MagicGuard = 4, // [신규] 길찾기 경비병
 		QuestNPC = 5,   // [추가] 퀘스트 제공 NPC
 		Lever = 6,      // [추가] 보스방 진입 레버
+		DynamicBox = 7, // [추가] 물리 테스트용 다이나믹 박스
 		// 향후 추가될 NPC 유형들...
 	};
 	enum class InventoryUpdateType : uint8_t {
@@ -307,6 +311,7 @@ namespace common::packet
 		EntityState		_state;
 		int32_t			_action_id;
 		int32_t			_hp;
+		int32_t			_max_hp; // [추가]
 		int32_t			_mp; // [추가]
 		int32_t			_level;
 		int32_t			_exp;
@@ -316,6 +321,14 @@ namespace common::packet
 		int64_t _id;
 		Vec3    _position;
 		int32_t _hp;
+	};
+
+	// 스탯 동기화 패킷 (퀘스트 보상 등)
+	struct SC_PACKET_PLAYER_STAT_SYNC : PacketHeader {
+		int64_t _id;
+		int32_t _max_hp;
+		int32_t _hp;
+		int32_t _damage;
 	};
 	// 플레이어 이동 패킷
 	struct SC_PACKET_MOVE : PacketHeader

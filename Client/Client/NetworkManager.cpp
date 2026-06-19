@@ -363,6 +363,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			auto player_logic = existing_player->get_component<MainPlayerScript>();
 			if (player_logic) {
 				player_logic->set_name(name);
+				player_logic->set_max_hp(spawn_data._max_hp); // [추가]
 				player_logic->set_hp(spawn_data._hp);
 				player_logic->set_mp(spawn_data._mp); // [추가]
 				player_logic->set_id(_my_session_id);
@@ -376,6 +377,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 
 			auto player_logic = playerObject->add_component<MainPlayerScript>();
 			player_logic->set_name(name);
+			player_logic->set_max_hp(spawn_data._max_hp); // [추가]
 			player_logic->set_hp(spawn_data._hp);
 			player_logic->set_mp(spawn_data._mp); // [추가]
 			player_logic->set_id(_my_session_id);
@@ -400,6 +402,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			if (other_player_logic) {
 				other_player_logic->on_sync_position(spawn_data._position);
 				other_player_logic->on_sync_rotation(spawn_data._rotation);
+				other_player_logic->set_max_hp(spawn_data._max_hp); // [추가]
 				other_player_logic->set_hp(spawn_data._hp);
 				other_player_logic->on_sync_mp(spawn_data._mp); // [추가]
 			}
@@ -439,6 +442,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 			other_player_logic->on_sync_position(spawn_data._position);
 			other_player_logic->on_sync_rotation(spawn_data._rotation);
 
+			other_player_logic->set_max_hp(spawn_data._max_hp); // [추가]
 			other_player_logic->set_hp(spawn_data._hp);
 			other_player_logic->on_sync_mp(spawn_data._mp); // [추가]
 			other_player_logic->set_id(spawn_data._id);
@@ -792,11 +796,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 	}
 
 	// [핵심] 렌더링 및 애니메이션에 필요한 컴포넌트들을 먼저 추가해줘야 합니다!
-	if (npc_spawn_packet._npc_type != common::packet::NPCType::QuestNPC) {
+	if (npc_spawn_packet._npc_type != common::packet::NPCType::QuestNPC && npc_spawn_packet._npc_type != common::packet::NPCType::DynamicBox) {
 		NPC->add_component<MonsterHPComponent>();
+		NPC->add_component<AnimationComponent>();
 	}
-	NPC->add_component<AnimationComponent>();
-	NPC->add_component<RenderComponent>();
+	auto renderer = NPC->add_component<RenderComponent>();
 
 
 	NPCScript* NPC_logic = nullptr;
@@ -823,6 +827,11 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 		case common::packet::NPCType::QuestNPC:
 		{
 			NPC_logic = NPC->add_component<QuestNPCScript>().get();
+		}
+		break;
+		case common::packet::NPCType::DynamicBox:
+		{
+			NPC_logic = NPC->add_component<NPCScript>().get();
 		}
 		break;
 		default:
@@ -1030,6 +1039,44 @@ void NetworkManager::HANDLE_S2C_QUEST_INFO(common::packet::PacketStream& stream)
 	}
 }
 
+void NetworkManager::HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_PLAYER_STAT_SYNC pkt;
+	stream >> pkt;
+
+	if (pkt._id == _my_session_id) {
+		auto playerObj = ObjectManager::instance()->find_by_name("MainPlayer");
+		if (playerObj)
+		{
+			if (auto mpScript = playerObj->get_component<MainPlayerScript>())
+			{
+				mpScript->set_max_hp(pkt._max_hp);
+				mpScript->set_hp(pkt._hp);
+				mpScript->set_attack_damage(pkt._damage); 
+				mpScript->show_reward_banner();
+				CLOG("[Stat Sync] MainPlayer MaxHP: " << pkt._max_hp << " HP: " << pkt._hp << " ATK: " << pkt._damage);
+			}
+		}
+	} else {
+		auto enemy_layer = LayerManager::instance()->get_layer_value("OtherPlayer");
+		auto other_players = ObjectManager::instance()->find_by_layer(enemy_layer);
+		auto it = std::ranges::find_if(other_players, 
+			[&](const std::shared_ptr<GameObject>& other) 
+			{
+				auto other_script = other->get_component<OtherPlayerScript>();
+				return other_script && pkt._id == other_script->id();
+			});
+		if (it != other_players.end())
+		{
+			auto opScript = (*it)->get_component<OtherPlayerScript>();
+			opScript->set_max_hp(pkt._max_hp);
+			opScript->set_hp(pkt._hp);
+			CLOG("[Stat Sync] OtherPlayer MaxHP: " << pkt._max_hp << " HP: " << pkt._hp);
+		}
+	}
+}
+
+
 void NetworkManager::Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream) 
 {
 	common::packet::SC_PACKET_INVENTORY_INFO pkt;
@@ -1193,6 +1240,8 @@ bool NetworkManager::init_network()
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_QUEST_UPDATE(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_QUEST_INFO,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_QUEST_INFO(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_PLAYER_STAT_SYNC,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_PLAYER_STAT_SYNC(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_INTERACT_ACK,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_INTERACT_ACK(stream); });
 

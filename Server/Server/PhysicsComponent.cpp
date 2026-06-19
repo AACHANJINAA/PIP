@@ -15,7 +15,7 @@ namespace PIP::GAME
 	}
 
 	void PhysicsComponent::CreateBody(JPH::PhysicsSystem* physicsSystem, const JPH::Shape* shape,
-	                                  JPH::EMotionType motionType, JPH::ObjectLayer layer, JPH::Vec3 positionOffset)
+	                                  JPH::EMotionType motionType, JPH::ObjectLayer layer, JPH::Vec3 positionOffset, float mass)
 	{
 		_physicsSystem = physicsSystem;
 		if (!_physicsSystem || !shape) return;
@@ -45,7 +45,10 @@ namespace PIP::GAME
 		if (motionType == JPH::EMotionType::Dynamic)
 		{
 			settings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-			settings.mMassPropertiesOverride.mMass = 100.0f;
+			settings.mMassPropertiesOverride.mMass = mass;
+			// [추가] 마찰력이 부족해 보이지 않도록 선형 및 각속도 감쇠 적용
+			settings.mLinearDamping = 0.5f; 
+			settings.mAngularDamping = 0.5f;
 		}
 
 		JPH::BodyInterface& bodyInterface = _physicsSystem->GetBodyInterface();
