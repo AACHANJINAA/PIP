@@ -1118,8 +1118,6 @@ namespace PIP::GAME
 			owner->SetState(_config.entityState);
 			owner->SetActionId(ActionID::Tainer::GrabSlam);
 
-			auto nc = owner->GetComponent<NPCControllerComponent>();
-			if (nc) nc->SetVelocity({ 0, 0, 0 });
 
 			if (_internalTimer <= 0.0f) {
 				common::Vec3 forward = owner->GetComponent<TransformComponent>()->GetForward();
@@ -1244,11 +1242,48 @@ namespace PIP::GAME
 				// [핵심] 목적지 정보를 완전히 지워야 다음 순찰 지점으로 넘어갑니다.
 				_blackboard->set("target_pos", std::any());
 				npc->SetState(common::packet::EntityState::IDLE);
+				// 끼임 타이머도 함께 초기화
+				_blackboard->set("follow_stuck_timer", 0.0f);
 				return NodeStatus::SUCCESS;
 			}
 			nextTarget = path[0];
 			diff = nextTarget - currentPos;
 			diff.y = 0;
+		}
+
+		// [추가] 끼임(Stuck) 감지 로직
+		// 이전 프레임 위치와 현재 위치를 비교하여 실제로 이동했는지 확인
+		{
+			float followStuckTimer = 0.0f;
+			if (_blackboard->has("follow_stuck_timer"))
+				followStuckTimer = _blackboard->get<float>("follow_stuck_timer");
+
+			common::Vec3 lastPos = currentPos;
+			if (_blackboard->has("follow_last_pos"))
+				lastPos = _blackboard->get<common::Vec3>("follow_last_pos");
+
+			float movedDistSq = common::DistanceSq(currentPos, lastPos);
+			float expectedMinDist = _speed * dt * 0.15f; // 기대 이동량의 15% 이상 움직여야 정상
+
+			if (movedDistSq < (expectedMinDist * expectedMinDist)) {
+				followStuckTimer += dt;
+			} else {
+				followStuckTimer = 0.0f;
+			}
+
+			_blackboard->set("follow_stuck_timer", followStuckTimer);
+			_blackboard->set("follow_last_pos", currentPos);
+
+			// 1.5초 이상 움직이지 못하면 경로를 포기하고 새 목표 물색
+			if (followStuckTimer > 1.5f) {
+				nc->SetVelocity({ 0, 0, 0 });
+				npc->SetState(common::packet::EntityState::IDLE);
+				_blackboard->set("path", std::vector<common::Vec3>{});
+				_blackboard->set("target_pos", std::any());
+				_blackboard->set("follow_stuck_timer", 0.0f);
+				_blackboard->set("path_search_cooldown", 0.0f); // 즉시 새 길 탐색 허용
+				return NodeStatus::FAILURE;
+			}
 		}
 
 		// 이동 처리
@@ -1269,3 +1304,4 @@ namespace PIP::GAME
 		return NodeStatus::RUNNING;
 	}
 }
+

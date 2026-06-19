@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -874,6 +874,24 @@ namespace PIP::SERVER
 	{
 		if (_players.empty()) return;
 
+		// --- [카운트다운] 보스전 대기 타이머 처리 ---
+		if (_isCountdownActive) {
+			_countdownTimer -= deltaTime;
+
+			int8_t currentCount = static_cast<int8_t>(std::ceil(_countdownTimer));
+			currentCount = std::max(currentCount, (int8_t)0);
+
+			if (currentCount != _lastBroadcastCount) {
+				BroadcastCountdown(currentCount);
+				_lastBroadcastCount = currentCount;
+			}
+
+			if (_countdownTimer <= 0.0f) {
+				_isCountdownActive = false;
+				MYLOG("[Room] Countdown finished! Boss battle started.");
+			}
+		}
+
 		// --- [Step 1] 활성 셀 및 NPC 수집 (최적화: dynamic_cast 제거) ---
 		_activeNpcList.clear();
 		_activeCellIndices.clear();
@@ -971,6 +989,9 @@ namespace PIP::SERVER
 
 		// [추가] 엘리베이터 업데이트 및 동기화
 		for (auto& elevator : _elevators) {
+			// [카운트다운] 대기 중에는 엘리베이터 이동 차단
+			if (_isCountdownActive) continue;
+
 			elevator->Update(deltaTime, tempAllocator);
 
 			// 엘리베이터 이동 패킷 전송 (NPC 패킷 재사용)
@@ -1010,6 +1031,8 @@ namespace PIP::SERVER
 			}
 
 			if (!skipAI) {
+				// [카운트다운] 카운트다운 중에는 보스 AI 행동 차단
+				if (_isCountdownActive && npc->is_boss()) continue;
 				npc->Update(deltaTime, tempAllocator);
 			}
 
@@ -1180,6 +1203,16 @@ namespace PIP::SERVER
 		Broadcast(data, size);
 	}
 
+	void Room::BroadcastCountdown(int8_t count)
+	{
+		packet::SC_PACKET_COUNTDOWN pkt;
+		pkt._type  = packet::PacketType::S2C_P_COUNTDOWN;
+		pkt._size  = sizeof(pkt);
+		pkt._count = count;
+		Broadcast(reinterpret_cast<const char*>(&pkt), sizeof(pkt));
+		MYLOG("[Room] Countdown broadcast: " << (int)count);
+	}
+
 	void Room::BroadcastNpcBatch()
 	{
 		if (_npcs.empty() || _players.empty()) return;
@@ -1280,22 +1313,24 @@ namespace PIP::SERVER
 		}
 
 	}
-
 	void Room::SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc)
 	{
 		packet::SC_PACKET_NPC_SPAWN spawn_packet_data;
 		spawn_packet_data._type = common::packet::PacketType::S2C_P_NPC_SPAWN;
 		spawn_packet_data._size = 0;
 		spawn_packet_data._hp = npc->GetHP();
+		spawn_packet_data._max_hp = npc->GetMaxHP();
 		spawn_packet_data._npc_id = npc->GetNpcId();
 		spawn_packet_data._npc_type = npc->GetNpcType();
 		spawn_packet_data._position = npc->GetPosition();
 		spawn_packet_data._state = npc->GetState();
+
 		const std::string& npc_name = npc->GetName();
 
 		packet::PacketStream finalStream;
 		finalStream << spawn_packet_data;
 		finalStream << npc_name;
+
 		auto* final_header = reinterpret_cast<packet::PacketHeader*>(finalStream.mutable_data());
 		final_header->_size = static_cast<uint16_t>(finalStream.Size());
 
@@ -1665,6 +1700,9 @@ namespace PIP::SERVER
 		auto player = session->_player;
 		if (!player) return;
 
+		// [카운트다운] 대기 시간 중에는 이동 입력 전부 무시
+		if (_isCountdownActive) return;
+
 		auto pcc = player->GetComponent<GAME::PlayerControllerComponent>();
 		if (!pcc) return;
 
@@ -1899,6 +1937,7 @@ namespace PIP::SERVER
 			elevator_spawn._npc_type = common::packet::NPCType::Elevator;
 			elevator_spawn._position = elevator->GetPosition();
 			elevator_spawn._hp = elevator->GetHP();
+			elevator_spawn._max_hp = elevator->GetHP();
 			elevator_spawn._state = elevator->GetState();
 			elevator_spawn._action_id = 0;
 
@@ -2561,6 +2600,7 @@ namespace PIP::SERVER
 					elevator_spawn._npc_type = common::packet::NPCType::Elevator;
 					elevator_spawn._position = elevator->GetPosition();
 					elevator_spawn._hp = elevator->GetHP();
+					elevator_spawn._max_hp = elevator->GetHP();
 					elevator_spawn._state = elevator->GetState();
 					elevator_spawn._action_id = 0;
 

@@ -99,8 +99,9 @@ void NPCScript::init_visual()
 	auto animation_component = NPC->get_component<AnimationComponent>();
 	auto render_comp = NPC->get_component<RenderComponent>();
 
-	// [사운드] 몬스터 공격음 로드 (3D 사운드)
+	// [사운드] 몬스터/보스 공격음 로드 (3D 사운드)
 	SoundManager::instance()->load_sound("MonsterAttack", "Resource/Sound/MonsterAttack.mp3", true);
+	SoundManager::instance()->load_sound("BossDamage",   "Resource/Sound/BossDamage.mp3", false);
 
 	if (_npcType == common::packet::NPCType::Elevator) {
 		// 엘리베이터 모델 설정 (실제 경로 적용)
@@ -214,11 +215,18 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	_serverRot = { 0, 0, 0, 1 };
 	_accumulatedTime = 0.0f;
 	_isNewDataArrived = false; // 대기 중인 스냅샷 무시 (생성 시 좌표가 우선)
+
 	_state = spawnPkt._state;
 	_actionId = spawnPkt._action_id;
 	_hp = spawnPkt._hp;
 	set_id(spawnPkt._npc_id);
 	_npcType = spawnPkt._npc_type;
+
+	auto hp_component = game_object()->get_component<MonsterHPComponent>();
+	if (hp_component) {
+		hp_component->set_max_hp(spawnPkt._max_hp);
+		hp_component->set_current_hp(spawnPkt._hp);
+	}
 
 	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
 	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_serverRot);
@@ -244,10 +252,18 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 
 void NPCScript::set_hp(int hp)
 {
+	int prevHp = _hp;
 	_hp = hp;
 	auto hp_component = game_object()->get_component<MonsterHPComponent>();
 	if (hp_component) {
 		hp_component.get()->set_current_hp(hp);
+	}
+
+	// [사운드] 보스가 피격 당할 때 BossDamage 사운드 재생
+	if (hp < prevHp && _npcType == common::packet::NPCType::Tainer) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("BossDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+		}
 	}
 }
 
