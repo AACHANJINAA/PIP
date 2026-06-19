@@ -246,6 +246,33 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	UIManager::instance()->add_ui(UILayer::FRONT, "QuestRewardBanner_UI", quest_reward_obj);
 	UIManager::instance()->set_visible(UILayer::FRONT, "QuestRewardBanner_UI", false);
 
+	// [추가] 퀘스트 시작 연출용 "도와줘!!" UI와 "스토리 보드" UI 등록
+	{
+		// 1. 도와줘 UI
+		auto help_ui_obj = ObjectManager::instance()->create_game_object("Help_Me_UI");
+		auto help_ui = help_ui_obj->add_component<UIRenderComponent>();
+		float help_posX = FRAME_BUFFER_WIDTH / 2.0f - 400.0f;
+		float help_posY = FRAME_BUFFER_HEIGHT / 2.0f - 100.0f;
+		help_ui->set_screen_position(help_posX, help_posY);
+		help_ui->set_size(800.f, 200.f);
+		help_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
+		help_ui->set_texture("Resource/UI/Help_Me.png");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Help_Me_UI", help_ui_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Help_Me_UI", false);
+
+		// 2. 퀘스트 스토리 보드 UI
+		auto story_ui_obj = ObjectManager::instance()->create_game_object("Quest_Story_UI");
+		auto story_ui = story_ui_obj->add_component<UIRenderComponent>();
+		float story_posX = FRAME_BUFFER_WIDTH / 2.0f - 475.0f;
+		float story_posY = FRAME_BUFFER_HEIGHT / 2.0f - 265.0f;
+		story_ui->set_screen_position(story_posX, story_posY);
+		story_ui->set_size(950.f, 530.f);
+		story_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		story_ui->set_texture("Resource/UI/Quest_Story.png");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Quest_Story_UI", story_ui_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Quest_Story_UI", false);
+	}
+
 	// 9. 퀘스트 텍스트(진행도) UI (00/00 등 총 5자리)
 	float num_w = 20.f;
 	float num_h = 30.f;
