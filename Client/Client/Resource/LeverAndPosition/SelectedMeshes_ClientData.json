@@ -1,6 +1,6 @@
 ﻿[
 	{
-		"Name": "Cube_StaticMeshComponent0",
+		"Name": "Cube4_StaticMeshComponent0",
 		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
 		"Materials": [
 			"WorldGridMaterial"
@@ -9,9 +9,9 @@
 		{
 			"Location":
 			{
-				"X": 194.5,
+				"X": 176.5,
 				"Y": 5.5699367523193359,
-				"Z": -59.400001525878906
+				"Z": -59.200000762939453
 			},
 			"Rotation":
 			{
@@ -58,35 +58,6 @@
 		}
 	},
 	{
-		"Name": "Cube4_StaticMeshComponent0",
-		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
-		"Materials": [
-			"WorldGridMaterial"
-		],
-		"Transform":
-		{
-			"Location":
-			{
-				"X": 176.5,
-				"Y": 5.5699367523193359,
-				"Z": -59.200000762939453
-			},
-			"Rotation":
-			{
-				"X": 0,
-				"Y": -0.70710700750350952,
-				"Z": 0,
-				"W": 0.70710700750350952
-			},
-			"Scale":
-			{
-				"X": 1,
-				"Y": 1,
-				"Z": 1
-			}
-		}
-	},
-	{
 		"Name": "Cube2_StaticMeshComponent0",
 		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
 		"Materials": [
@@ -112,6 +83,905 @@
 				"X": 1,
 				"Y": 1,
 				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "Cube_StaticMeshComponent0",
+		"MeshFile": "Meshes/Cube_5E5A4B61.gltf",
+		"Materials": [
+			"WorldGridMaterial"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 194.5,
+				"Y": 5.5699367523193359,
+				"Z": -59.400001525878906
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_Fourain_LOW+UV4_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_fountain_01_1B971041.gltf",
+		"Materials": [
+			"MI_Fountain"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.19012451171875,
+				"Y": 4.5963702201843262,
+				"Z": -59.586700439453125
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainPlane_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainPlane_B76FF88D.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.21211242675781,
+				"Y": 4.7337660789489746,
+				"Z": -59.596309661865234
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.22097778320312,
+				"Y": 6.2500019073486328,
+				"Z": -60.341751098632812
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.95378100872039795,
+				"Z": 0,
+				"W": -0.30050098896026611
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainPlane2_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainPlane_B76FF88D.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.21211242675781,
+				"Y": 6.116300106048584,
+				"Z": -59.596309661865234
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 0.63119399547576904,
+				"Y": 0.63119399547576904,
+				"Z": 0.63119399547576904
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainPlane3_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainPlane_B76FF88D.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.21211242675781,
+				"Y": 7.2219572067260742,
+				"Z": -59.596309661865234
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 0.45643100142478943,
+				"Y": 0.45643100142478943,
+				"Z": 0.45643100142478943
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainPlane4_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainPlane_B76FF88D.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.21211242675781,
+				"Y": 8.169489860534668,
+				"Z": -59.596309661865234
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 0.32674801349639893,
+				"Y": 0.32674801349639893,
+				"Z": 0.32674801349639893
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainPlane5_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainPlane_B76FF88D.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.17355346679688,
+				"Y": 8.9315500259399414,
+				"Z": -59.584434509277344
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70710700750350952,
+				"Z": 0,
+				"W": 0.70710700750350952
+			},
+			"Scale":
+			{
+				"X": 0.13823099434375763,
+				"Y": 0.13823099434375763,
+				"Z": 0.13823099434375763
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall2_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.33929443359375,
+				"Y": 6.2500019073486328,
+				"Z": -60.823135375976562
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.66169297695159912,
+				"Z": 0,
+				"W": 0.7497749924659729
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall3_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 186.33580017089844,
+				"Y": 6.2500019073486328,
+				"Z": -60.091892242431641
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.20117500424385071,
+				"Z": 0,
+				"W": 0.97955501079559326
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall4_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 186.19606018066406,
+				"Y": 6.2777018547058105,
+				"Z": -58.837791442871094
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.35791099071502686,
+				"Z": 0,
+				"W": 0.93375599384307861
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall5_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.02972412109375,
+				"Y": 6.2777018547058105,
+				"Z": -58.337169647216797
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.70304101705551147,
+				"Z": 0,
+				"W": 0.71114897727966309
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall6_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.03816223144531,
+				"Y": 6.2777018547058105,
+				"Z": -59.089744567871094
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.97060596942901611,
+				"Z": 0,
+				"W": 0.2406730055809021
+			},
+			"Scale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall7_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.33546447753906,
+				"Y": 7.3079228401184082,
+				"Z": -59.676631927490234
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.9984089732170105,
+				"Z": 0,
+				"W": -0.056393001228570938
+			},
+			"Scale":
+			{
+				"X": 0.74177998304367065,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall8_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.68316650390625,
+				"Y": 7.3175601959228516,
+				"Z": -58.871639251708984
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.88897198438644409,
+				"Z": 0,
+				"W": 0.45796099305152893
+			},
+			"Scale":
+			{
+				"X": 0.74177998304367065,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall9_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.53132629394531,
+				"Y": 7.3079228401184082,
+				"Z": -58.800941467285156
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.53578197956085205,
+				"Z": 0,
+				"W": 0.8443560004234314
+			},
+			"Scale":
+			{
+				"X": 0.74177998304367065,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall10_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 186.02285766601562,
+				"Y": 7.3079228401184082,
+				"Z": -59.497024536132812
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.056214999407529831,
+				"Z": 0,
+				"W": 0.99841898679733276
+			},
+			"Scale":
+			{
+				"X": 0.74177998304367065,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall11_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.86093139648438,
+				"Y": 7.3227691650390625,
+				"Z": -60.361068725585938
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.86322802305221558,
+				"Z": 0,
+				"W": -0.50481396913528442
+			},
+			"Scale":
+			{
+				"X": 0.74177998304367065,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall12_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.69163513183594,
+				"Y": 7.3227691650390625,
+				"Z": -60.271530151367188
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.50264102220535278,
+				"Z": 0,
+				"W": 0.86449497938156128
+			},
+			"Scale":
+			{
+				"X": 0.74177998304367065,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall13_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.72245788574219,
+				"Y": 8.2267818450927734,
+				"Z": -59.806526184082031
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.12475699931383133,
+				"Z": 0,
+				"W": 0.9921870231628418
+			},
+			"Scale":
+			{
+				"X": 0.47440400719642639,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall14_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.27273559570312,
+				"Y": 8.2267818450927734,
+				"Z": -60.155178070068359
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.6088939905166626,
+				"Z": 0,
+				"W": 0.79325097799301147
+			},
+			"Scale":
+			{
+				"X": 0.47440400719642639,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall15_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.66221618652344,
+				"Y": 8.2267818450927734,
+				"Z": -59.372238159179688
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98075997829437256,
+				"Z": 0,
+				"W": 0.19521899521350861
+			},
+			"Scale":
+			{
+				"X": 0.47440400719642639,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall16_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.10906982421875,
+				"Y": 8.224390983581543,
+				"Z": -59.024017333984375
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.76712697744369507,
+				"Z": 0,
+				"W": 0.6414949893951416
+			},
+			"Scale":
+			{
+				"X": 0.47440400719642639,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall17_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.74394226074219,
+				"Y": 8.2481050491333008,
+				"Z": -59.942558288574219
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.94888699054718018,
+				"Z": 0,
+				"W": -0.31561499834060669
+			},
+			"Scale":
+			{
+				"X": 0.47440400719642639,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall18_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.66889953613281,
+				"Y": 8.1557426452636719,
+				"Z": -59.233283996582031
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.33877500891685486,
+				"Z": 0,
+				"W": 0.94086700677871704
+			},
+			"Scale":
+			{
+				"X": 0.47440400719642639,
+				"Y": 0.74177998304367065,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall19_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.02128601074219,
+				"Y": 8.939483642578125,
+				"Z": -59.422706604003906
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.91610002517700195,
+				"Z": 0,
+				"W": 0.40094998478889465
+			},
+			"Scale":
+			{
+				"X": 0.37673801183700562,
+				"Y": 0.54854899644851685,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall20_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.24644470214844,
+				"Y": 8.939483642578125,
+				"Z": -59.343128204345703
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.60497301816940308,
+				"Z": 0,
+				"W": 0.7962459921836853
+			},
+			"Scale":
+			{
+				"X": 0.47485101222991943,
+				"Y": 0.54854899644851685,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall21_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.42961120605469,
+				"Y": 8.939483642578125,
+				"Z": -59.522224426269531
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.15366199612617493,
+				"Z": 0,
+				"W": 0.98812299966812134
+			},
+			"Scale":
+			{
+				"X": 0.47485101222991943,
+				"Y": 0.54854899644851685,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall22_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.35714721679688,
+				"Y": 8.939483642578125,
+				"Z": -59.753387451171875
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": 0.3664110004901886,
+				"Z": 0,
+				"W": 0.93045300245285034
+			},
+			"Scale":
+			{
+				"X": 0.47485101222991943,
+				"Y": 0.54854899644851685,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall23_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 185.13116455078125,
+				"Y": 8.939483642578125,
+				"Z": -59.820415496826172
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.79033797979354858,
+				"Z": 0,
+				"W": -0.61267101764678955
+			},
+			"Scale":
+			{
+				"X": 0.47485101222991943,
+				"Y": 0.54854899644851685,
+				"Z": 0.74177998304367065
+			}
+		}
+	},
+	{
+		"Name": "BP_fountain_01_SM_FountainWaterfall24_StaticMeshComponent0",
+		"MeshFile": "Meshes/SM_FountainWaterfall_B1AF067A.gltf",
+		"Materials": [
+			"M_water_PLane"
+		],
+		"Transform":
+		{
+			"Location":
+			{
+				"X": 184.96319580078125,
+				"Y": 8.939483642578125,
+				"Z": -59.650508880615234
+			},
+			"Rotation":
+			{
+				"X": 0,
+				"Y": -0.98662799596786499,
+				"Z": 0,
+				"W": -0.16298699378967285
+			},
+			"Scale":
+			{
+				"X": 0.47485101222991943,
+				"Y": 0.54854899644851685,
+				"Z": 0.74177998304367065
 			}
 		}
 	}
