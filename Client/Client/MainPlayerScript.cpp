@@ -430,6 +430,19 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 			}
 		}
 	}
+
+	// 10마리 완료 조건 시점에 Q 가이드 UI 활성화
+	const auto quest1 = NetworkManager::instance()->get_quest(1);
+	bool is_q_active = false;
+	if (quest1)
+	{
+		if (quest1->_state == common::packet::QuestState::COMPLETED ||
+			quest1->_state == common::packet::QuestState::REWARDED)
+		{
+			is_q_active = true;
+		}
+	}
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", is_q_active);
 }
 
 
@@ -534,25 +547,40 @@ void MainPlayerScript::handle_input(float deltaTime)
 	// Q 키를 누르면 퀘스트 스토리 UI 토글
 	if (InputManager::instance()->IsKeyDown('Q'))
 	{
-		auto uiManager = UIManager::instance();
-		if (uiManager)
+		// 퀘스트 1 완료 조건 체크 (COMPLETED 또는 REWARDED)
+		bool is_q_active = false;
+		auto quest1 = NetworkManager::instance()->get_quest(1);
+		if (quest1)
 		{
-			auto story_ui = uiManager->ui_component(UILayer::MIDDLE, "Quest_Story_UI");
-			if (story_ui)
+			if (quest1->_state == common::packet::QuestState::COMPLETED ||
+				quest1->_state == common::packet::QuestState::REWARDED)
 			{
-				if (_isQuestStoryShowing && !_isQuestStoryFadingOut)
+				is_q_active = true;
+			}
+		}
+
+		if (is_q_active)
+		{
+			auto uiManager = UIManager::instance();
+			if (uiManager)
+			{
+				auto story_ui = uiManager->ui_component(UILayer::MIDDLE, "Quest_Story_UI");
+				if (story_ui)
 				{
-					// 이미 켜져있는 경우 -> 페이드 아웃 시작
-					_isQuestStoryFadingOut = true;
-				}
-				else
-				{
-					// 꺼져있거나 페이드 아웃 중인 경우 -> 즉시 켜기
-					_isQuestStoryShowing = true;
-					_isQuestStoryFadingOut = false;
-					_questStoryAlpha = 1.0f;
-					story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-					uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+					if (_isQuestStoryShowing && !_isQuestStoryFadingOut)
+					{
+						// 이미 켜져있는 경우 -> 페이드 아웃 시작
+						_isQuestStoryFadingOut = true;
+					}
+					else
+					{
+						// 꺼져있거나 페이드 아웃 중인 경우 -> 즉시 켜기
+						_isQuestStoryShowing = true;
+						_isQuestStoryFadingOut = false;
+						_questStoryAlpha = 1.0f;
+						story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+						uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+					}
 				}
 			}
 		}

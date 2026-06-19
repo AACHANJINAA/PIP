@@ -254,6 +254,16 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	UIManager::instance()->add_ui(UILayer::BACKGROUND, "PlayerHPFrame", hp_frame_obj);
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerHPBar", hp_bar_obj);
 
+	// [추가] Q 가이드 UI (HP Bar 좌측에 렌더링)
+	auto q_guide_obj = ObjectManager::instance()->create_game_object("PlayerQGuide_UI");
+	auto q_guide = q_guide_obj->add_component<UIRenderComponent>();
+	q_guide->set_screen_position(150.0f, 45.0f); // HP Bar 좌측 옆
+	q_guide->set_size(36.0f, 36.0f);
+	q_guide->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	q_guide->set_texture("Resource/UI/Q_interaction_UI.png");
+	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerQGuide_UI", q_guide_obj);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", false); // 처음에는 숨김
+
 	// 2. MP Frame (뒤에 렌더링될 프레임) & MP Bar (앞에 렌더링될 체력바)
 	auto mp_frame_obj = ObjectManager::instance()->create_game_object("MP_Frame");
 	auto mp_frame = mp_frame_obj->add_component<UIRenderComponent>();
