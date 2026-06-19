@@ -155,6 +155,7 @@ namespace PIP::GAME
 		std::vector<common::Vec3> _patrolPoints; // [추가] 순찰 경로 포인트들
 
 		// [최적화] 매 프레임 GetComponent(8%)를 피하기 위한 캐싱
+	protected:
 		NPCControllerComponent* _npcController = nullptr;
 		TransformComponent* _transform = nullptr;
 		class AIComponent* _aiComponent = nullptr;

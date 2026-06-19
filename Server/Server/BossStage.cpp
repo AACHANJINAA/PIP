@@ -67,7 +67,7 @@ namespace PIP::SERVER
         room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
 
         // [초기화 1] 모든 플레이어 체력 풀 회복 + 스폰 위치로 강제 텔레포트
-        common::Vec3 spawnPos = get_spawn_pos();
+        common::Vec3 spawnPos = { 15.0f, -11.59f, 0.0 };
         for (auto& [pid, session] : room->GetPlayers()) {
             if (!session || !session->_player) continue;
             auto player = session->_player;
@@ -112,6 +112,6 @@ namespace PIP::SERVER
 
     const common::Vec3 BossStage::get_spawn_pos() const
     {
-        return { 11.0f, -11.59f, 0.0f }; // 보스 방 스폰 위치
+        return { 15.0f, 0.0f, 0.0f }; // 보스 방 스폰 위치
     }
 }

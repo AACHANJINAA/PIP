@@ -1101,6 +1101,12 @@ void NetworkManager::HANDLE_S2C_COUNTDOWN(common::packet::PacketStream& stream)
 		UIManager::instance()->set_visible(UILayer::FRONT, cd_name, visible);
 	}
 
+	// [사운드] 카운트다운이 0이 되어 시작할 때 BossLanding 재생
+	if (count == 0 && _isInputLocked) {
+		SoundManager::instance()->load_sound("BossLanding", "Resource/Sound/BossLanding.mp3", false);
+		SoundManager::instance()->play("BossLanding", SoundType::SFX, 1.0f, false);
+	}
+
 	// 입력 잠금 / 해제
 	_isInputLocked = (count > 0);
 }
