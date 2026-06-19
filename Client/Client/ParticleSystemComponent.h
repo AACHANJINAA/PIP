@@ -8,7 +8,7 @@ public:
     virtual ~ParticleSystemComponent();
 
     // C++에서 구운 정답지 데이터를 GPU로 올리는 함수
-    void init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color );
+    void init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color, float particle_size );
 
     // [추가] 매 프레임 업데이트에서 데이터만 저장해두는 함수
     void set_compute_data(const DirectX::XMFLOAT4X4& weapon_world, const DirectX::XMFLOAT3& player_pos, float skill_progress);
@@ -21,6 +21,7 @@ public:
     UINT get_particle_count() const { return _particleCount; }
 
     DirectX::XMFLOAT4 get_particle_color() const { return _particleColor; }
+	float get_particle_size() const { return _particleSize; } // 파티클 크기
 
 	// 파티클 없어지는 연출 관련 함수들
 	void set_particle_dying(bool isDying)
@@ -58,6 +59,7 @@ private:
     DirectX::XMFLOAT3 _playerPos;
 	DirectX::XMFLOAT4 _particleColor{ 1,1,1,1 }; // 파티클 색상 (기본값 흰색)
     float _skillProgress = 0.0f;
+	float _particleSize = 0.05f; // 파티클 크기 (임시로 0.1f로 설정)
 
 
     // 파티클 사라지는 연출을 위한 타이머

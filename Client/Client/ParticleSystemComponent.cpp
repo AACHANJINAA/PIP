@@ -53,7 +53,7 @@ void ParticleSystemComponent::create_compute_pso()
     device->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&_computePSO));
 }
 
-void ParticleSystemComponent::init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color)
+void ParticleSystemComponent::init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color, float particle_size)
 {
     if (targets.empty()) return;
     _particleCount = static_cast<UINT>(targets.size());
@@ -80,6 +80,7 @@ void ParticleSystemComponent::init_particles(const std::vector<DirectX::XMFLOAT3
 
     // ResourceManager::instance()->load_texture("Resource/UI/particle/particle.dds", true);
 	_particleColor = _set_color;
+	_particleSize = particle_size;
 }
 
 void ParticleSystemComponent::set_compute_data(const DirectX::XMFLOAT4X4& weapon_world, const DirectX::XMFLOAT3& player_pos, float skill_progress)

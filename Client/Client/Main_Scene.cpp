@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -23,6 +23,8 @@
 #include "LeverScript.h"
 #include "MainPlayerScript.h"
 #include "OtherPlayerScript.h"
+#include "ParticleRenderComponent.h"
+#include "ParticleSystemComponent.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -144,77 +146,6 @@ void Main_Scene::set_cinematic_mode(bool isCinematic)
 	if (_isCinematicMode == isCinematic) return;
 
 	_isCinematicMode = isCinematic;
-
-	//if (_isCinematicMode)
-	//{
-	//	_cinematicTimer = 0.0f;
-	//	_isCutsceneDoneSent = false;
-
-	//	// 1. 카메라 시네마틱 모드 활성화 (기존에는 시퀀스 끝에서 했으나 시작할 때 적용)
-	//	auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
-	//	if (cameraObject)
-	//	{
-	//		if (auto camescript = cameraObject->get_component<FreeCameraScript>())
-	//			camescript->set_sinamatic_camera_mode(true);
-	//	}
-
-	//	// 2. 접속 중인 플레이어들을 기반으로 더미 캐릭터 소환
-	//	auto all_objects = ObjectManager::instance()->get_all_game_objects();
-	//	int dummyIndex = 0;
-	//	for (auto& obj : all_objects)
-	//	{
-	//		bool isPlayer = false;
-	//		int colorId = -1;
-
-	//		if (auto mainScript = obj->get_component<MainPlayerScript>())
-	//		{
-	//			isPlayer = true;
-	//			colorId = -2;
-	//		}
-	//		else if (auto otherScript = obj->get_component<OtherPlayerScript>())
-	//		{
-	//			isPlayer = true;
-	//			colorId = static_cast<int>(otherScript->id());
-	//		}
-
-	//		if (isPlayer)
-	//		{
-	//			auto dummy = ObjectManager::instance()->create_game_object("CinematicDummy_" + std::to_string(dummyIndex++));
-	//			auto render_comp = dummy->add_component<RenderComponent>();
-	//			auto anim_comp = dummy->add_component<AnimationComponent>();
-
-	//			auto mesh = ResourceManager::instance()->load_mesh("Resource/Character/Player/Player.gltf");
-	//			render_comp->set_mesh(mesh);
-	//			render_comp->set_pso_name("skinned");
-	//			render_comp->set_force_player_color_id(colorId);
-
-	//			// 더미 애니메이션
-	//			anim_comp->play("idle", true);
-
-	//			// 위치 임시 복사 (향후 보스 진입문 앞 등으로 고정 가능)
-	//			dummy->transform()->set_local_position(obj->transform()->local_position());
-	//			dummy->transform()->set_local_rotation(obj->transform()->local_rotation());
-	//			
-	//			_dummyPlayers.push_back(dummy);
-	//		}
-	//	}
-	//}
-	//else
-	//{
-	//	// 시네마틱 종료
-	//	for (auto& dummy : _dummyPlayers)
-	//	{
-	//		ObjectManager::instance()->remove_game_object(dummy);
-	//	}
-	//	_dummyPlayers.clear();
-
-	//	auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
-	//	if (cameraObject)
-	//	{
-	//		if (auto camescript = cameraObject->get_component<FreeCameraScript>())
-	//			camescript->set_sinamatic_camera_mode(false);
-	//	}
-	//}
 }
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
@@ -833,81 +764,70 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 	}
 
 	// 분수대
-	//{
-	//	auto T1 = ObjectManager::instance()->create_game_object("Cinematic_fountain");
+	{
+		auto T1 = ObjectManager::instance()->create_game_object("Cinematic_fountain");
 
-	//	//// RenderComponent
-	//	auto renderer = T1->add_component<RenderComponent>();
+		//// RenderComponent
+		auto renderer = T1->add_component<RenderComponent>();
 
-	//	// 메시 설정 (애니메이션 미포함)
-	//	auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/SM_fountain_01_1B971041.gltf");
-	//	renderer->set_mesh(T1_Mesh);
+		// 메시 설정 (애니메이션 미포함)
+		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/SM_fountain_01_1B971041.gltf");
+		renderer->set_mesh(T1_Mesh);
 
-	//	// 색상설정 (없음)
-	//	
+		// 색상설정 (없음)
+		
 
-	//	// 애니메이션 설정 (없음)
+		// 애니메이션 설정 (없음)
 
-	//	// 재질 및 쉐이더 설정
-	//	std::string material = "fountain_Material";
+		// 재질 및 쉐이더 설정
+		std::string material = "fountain_Material";
 
-	//	ResourceManager::instance()->create_material(material);
-	//	ResourceManager::instance()->set_shader_for_material(material, "gltf");
+		ResourceManager::instance()->create_material(material);
+		ResourceManager::instance()->set_shader_for_material(material, "gltf");
 
-	//	// gltf
-	//	renderer->set_pso_name("gltf");
+		// gltf
+		renderer->set_pso_name("gltf");
+		renderer->set_enabled(false); // 처음에는 분수대 메시 렌더링 끔 (파티클로만 연출할 예정)
 
-	//	// 위치, 회전 정보
-	//	T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
-	//	T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
-
-
-	//	// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
-	//	T1->transform()->set_local_position(XMFLOAT3(185.1f, 4.86f, -59.5f));
-
-	//	auto targets = T1_Mesh->extract_particle_targets(50000);
+		// 위치, 회전 정보
+		T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
+		T1->transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
 
 
-	//	_dummy_fountain = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
-	//	_dummy_fountain->set_enabled(false); // 처음에는 비활성화 상태로 시작
-	//}
+		// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+		T1->transform()->set_local_position(XMFLOAT3(185.1f, 4.86f, -59.5f));
 
-	//if (gltfMesh)
-	//{
-	//	// 5만 개의 빽빽한 점 데이터를 추출합니다.
-	//	auto targets = gltfMesh->extract_particle_targets(50000);
+		// 파티클 준비
+		_dummy_particle_fountain = ObjectManager::instance()->create_game_object("Cinematic_Particle_fountain");
 
-	//	// 2. 파티클 시스템 전용 오브젝트 생성 (ObjectManager 팩토리 사용)
-	//	_particleEffectObject = ObjectManager::instance()->create_game_object("CarianParticleEffect");
-	//	_particleEffectObject->set_layer("Player");
+		auto fountainParticleMesh = dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh);
 
-	//	// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
-	//	auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
-	//	static const DirectX::XMFLOAT3 PlayerColors[4] =
-	//	{
-	//		DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
-	//		DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
-	//		DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
-	//		DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
-	//	};
+		auto targets = fountainParticleMesh->extract_particle_targets(300000);
 
-	//	DirectX::XMFLOAT4 color = { PlayerColors[_playerId % 4].x, PlayerColors[_playerId % 4].y, PlayerColors[_playerId % 4].z, 0.5f };
-	//	psComp->init_particles(targets, color);
+		_dummy_particle_fountain->set_enabled(false); // 처음에는 비활성화 상태로 시작
 
-	//	// 4. 렌더 컴포넌트 추가
-	//	auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
-	//	prComp->set_pso_name("particle_draw");
+		auto psComp = _dummy_particle_fountain->add_component<ParticleSystemComponent>();
 
-	//	prComp->set_particle_system(psComp);
+		DirectX::XMFLOAT4 color = { 1.f,1.f,1.f,1.f };
 
-	//	// 5. 위치 동기화 (대검 오브젝트의 자식으로 설정)
-	//	_particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
-	//	_particleEffectObject->transform()->set_parent(_SkillObject->transform());
+		psComp->init_particles(targets, color, 0.10f);
 
-	//	// 초기에는 꺼둠
-	//	_particleEffectObject->set_enabled(false);
-	//}
+		// 4. 렌더 컴포넌트 추가
+		auto prComp = _dummy_particle_fountain->add_component<ParticleRenderComponent>();
+		prComp->set_pso_name("particle_draw");
 
+		prComp->set_particle_system(psComp);
+
+		// 5. 위치 동기화
+		_dummy_particle_fountain->transform()->set_local_scale({ 1.5f, 1.5f, 1.5f });
+		_dummy_particle_fountain->transform()->set_local_position({ 185.1f, 4.86f, -59.5f });
+
+		// 초기에는 꺼둠
+		_dummy_particle_fountain->set_enabled(false);
+	}
+
+	// 노래
+	SoundManager::instance()->load_sound("Cinematic_fountain_BGM", "Resource/Sound/Monster_Hunter_World_OST_Journey_to_the_Truth.mp3", false);
 }
 
 void Main_Scene::cinematic_sequence(float deltaTime)
@@ -915,8 +835,10 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	// 디버깅을 위해서 바로 넘김
 	_isCutsceneDoneSent = true;
 
-	
-	
+	// 컷씬에 필요한 변수들 준비
+	float bgm_time = SoundManager::instance()->get_playback_position("Cinematic_fountain_BGM");
+	auto psComp = _dummy_particle_fountain->get_component<ParticleSystemComponent>();
+
 	// 컷씬 시작
 	_blackBackground_ui_obj->set_enabled(true); // 페이드 아웃 UI 활성화
 
@@ -940,6 +862,16 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		_dummy_player_2->set_enabled(true);
 		_dummy_player_3->set_enabled(true);
 		_dummy_player_4->set_enabled(true);
+		// 아직 파티클 렌더링은 끈 상태로 시작 (19초부터 켤 예정)
+		fountain_particle_progress = 0.0f;
+		_dummy_particle_fountain->set_enabled(false);
+
+
+		// 음악 재생
+		if(!SoundManager::instance()->is_playing("Cinematic_fountain_BGM"))
+		{
+			SoundManager::instance()->play("Cinematic_fountain_BGM", SoundType::BGM, 1.f, false);
+		}
 
 
 		// 완성되면 카메라 시네마틱 모드 키기
@@ -951,18 +883,34 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		}*/
 	}
 
-	// 4~7초동안 다시 페이드 인 및 소리 서서히 켜기
-	else if (_cinematicTimer > 3.0f && _cinematicTimer <= 6.0f)
+	// 여기서부터 노래 시간을 기준으로 컷씬 연출 진행
+	// 0~3초동안 다시 페이드 인 및 소리 서서히 켜기
+	if (bgm_time > 0.0f && bgm_time <= 3.0f)
 	{
-		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f - ((_cinematicTimer - 3.0f) / 3.0f)));
-		SoundManager::instance()->set_master_volume((_cinematicTimer - 3.0f) / 3.0f);
-
-
-
+		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f - ((bgm_time - 0.0f) / 3.0f)));
+		SoundManager::instance()->set_master_volume((bgm_time - 0.0f) / 3.0f);
+	}
+	// 3~19초 카메라가 플레이어 주변을 쭉 돌기(지정된 점을 지나는 베지어 곡선 형태로)
+	else if (bgm_time > 3.0f && bgm_time <= 19.0f)
+	{
 
 	}
-	
-	if (_cinematicTimer >= 6.0f && !_isCutsceneDoneSent)
+	// 19~24초 원 점점 퍼지기
+	else if (bgm_time > 19.0f && bgm_time <= 24.0f)
+	{
+		_dummy_particle_fountain->set_enabled(true); // 분수대 메시 렌더링 켜기
+		// 진행도는 이 시간동안 0~0.3f까지 증가
+		fountain_particle_progress = (bgm_time - 19.0f) / 5.0f * 0.3f; // 0~0.3f
+		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
+	}
+	// 24초~31부터 분수 스폰 후 모여들기
+	else if (bgm_time > 24.0f && bgm_time <= 31.0f)
+	{
+		// 진행도는 이 시간동안 0.3f ~ 1.f까지 증가
+		fountain_particle_progress = 0.3f + ((bgm_time - 24.0f) / 7.0f * 0.7f); // 0.3f ~ 1.f
+		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
+	}
+	if (bgm_time >= 30.0f && !bgm_time)
 	{
 		//_isCutsceneDoneSent = true;
 
