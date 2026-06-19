@@ -406,6 +406,45 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
         if (n3) n3->set_uv_offset(max_tens * uv_scale_x, 0.0f);
         if (n4) n4->set_uv_offset(max_ones * uv_scale_x, 0.0f);
     }
+
+	// 퀘스트 스토리 UI 페이드 아웃 업데이트
+	if (_isQuestStoryShowing)
+	{
+		auto story_ui = UIManager::instance()->ui_component(UILayer::MIDDLE, "Quest_Story_UI");
+		if (story_ui)
+		{
+			if (_isQuestStoryFadingOut)
+			{
+				_questStoryAlpha -= _questStoryFadeSpeed * deltaTime;
+				if (_questStoryAlpha <= 0.0f)
+				{
+					_questStoryAlpha = 0.0f;
+					_isQuestStoryShowing = false;
+					_isQuestStoryFadingOut = false;
+					UIManager::instance()->set_visible(UILayer::MIDDLE, "Quest_Story_UI", false);
+				}
+				else
+				{
+					story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, _questStoryAlpha));
+				}
+			}
+		}
+	}
+
+	// 10마리 완료 조건 시점에 Q 가이드 UI 활성화
+	const auto quest1 = NetworkManager::instance()->get_quest(1);
+	bool is_q_active = false;
+	if (quest1)
+	{
+		if (quest1->_state == common::packet::QuestState::COMPLETED ||
+			quest1->_state == common::packet::QuestState::REWARDED)
+		{
+			is_q_active = true;
+		}
+	}
+	// Q 가이드 UI는 퀘스트 조건이 충족되고, 스토리 UI가 닫혀있거나 닫히는 중(페이드아웃)일 때만 표시합니다.
+	bool show_guide = is_q_active && (!_isQuestStoryShowing || _isQuestStoryFadingOut);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", show_guide);
 }
 
 
@@ -507,6 +546,48 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 void MainPlayerScript::handle_input(float deltaTime)
 {
+	// Q 키를 누르면 퀘스트 스토리 UI 토글
+	if (InputManager::instance()->IsKeyDown('Q'))
+	{
+		// 퀘스트 1 완료 조건 체크 (COMPLETED 또는 REWARDED)
+		bool is_q_active = false;
+		auto quest1 = NetworkManager::instance()->get_quest(1);
+		if (quest1)
+		{
+			if (quest1->_state == common::packet::QuestState::COMPLETED ||
+				quest1->_state == common::packet::QuestState::REWARDED)
+			{
+				is_q_active = true;
+			}
+		}
+
+		if (is_q_active)
+		{
+			auto uiManager = UIManager::instance();
+			if (uiManager)
+			{
+				auto story_ui = uiManager->ui_component(UILayer::MIDDLE, "Quest_Story_UI");
+				if (story_ui)
+				{
+					if (_isQuestStoryShowing && !_isQuestStoryFadingOut)
+					{
+						// 이미 켜져있는 경우 -> 페이드 아웃 시작
+						_isQuestStoryFadingOut = true;
+					}
+					else
+					{
+						// 꺼져있거나 페이드 아웃 중인 경우 -> 즉시 켜기
+						_isQuestStoryShowing = true;
+						_isQuestStoryFadingOut = false;
+						_questStoryAlpha = 1.0f;
+						story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+						uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+					}
+				}
+			}
+		}
+	}
+
 	// [카운트다운] 서버에서 대기 중이면 모든 이동/스킬 입력 무시
 	if (NetworkManager::instance()->is_input_locked()) return;
 
