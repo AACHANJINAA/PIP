@@ -804,6 +804,82 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		_dummy_player_4->set_enabled(false); // 처음에는 비활성화 상태로 시작
 	}
 
+	// 분수대
+	//{
+	//	auto T1 = ObjectManager::instance()->create_game_object("Cinematic_fountain");
+
+	//	//// RenderComponent
+	//	auto renderer = T1->add_component<RenderComponent>();
+
+	//	// 메시 설정 (애니메이션 미포함)
+	//	auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/SM_fountain_01_1B971041.gltf");
+	//	renderer->set_mesh(T1_Mesh);
+
+	//	// 색상설정 (없음)
+	//	
+
+	//	// 애니메이션 설정 (없음)
+
+	//	// 재질 및 쉐이더 설정
+	//	std::string material = "fountain_Material";
+
+	//	ResourceManager::instance()->create_material(material);
+	//	ResourceManager::instance()->set_shader_for_material(material, "gltf");
+
+	//	// gltf
+	//	renderer->set_pso_name("gltf");
+
+	//	// 위치, 회전 정보
+	//	T1->transform()->set_local_rotation(0.f, 0.f, 0.f);
+	//	T1->transform()->set_local_scale({ 1.f, 1.0f, 1.0f });
+
+
+	//	// T1->transform()->set_local_position(XMFLOAT3(242.4f, 138.0f, 114.5f));
+	//	T1->transform()->set_local_position(XMFLOAT3(185.1f, 4.86f, -59.5f));
+
+	//	auto targets = T1_Mesh->extract_particle_targets(50000);
+
+
+	//	_dummy_fountain = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
+	//	_dummy_fountain->set_enabled(false); // 처음에는 비활성화 상태로 시작
+	//}
+
+	//if (gltfMesh)
+	//{
+	//	// 5만 개의 빽빽한 점 데이터를 추출합니다.
+	//	auto targets = gltfMesh->extract_particle_targets(50000);
+
+	//	// 2. 파티클 시스템 전용 오브젝트 생성 (ObjectManager 팩토리 사용)
+	//	_particleEffectObject = ObjectManager::instance()->create_game_object("CarianParticleEffect");
+	//	_particleEffectObject->set_layer("Player");
+
+	//	// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
+	//	auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
+	//	static const DirectX::XMFLOAT3 PlayerColors[4] =
+	//	{
+	//		DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
+	//		DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
+	//		DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
+	//		DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
+	//	};
+
+	//	DirectX::XMFLOAT4 color = { PlayerColors[_playerId % 4].x, PlayerColors[_playerId % 4].y, PlayerColors[_playerId % 4].z, 0.5f };
+	//	psComp->init_particles(targets, color);
+
+	//	// 4. 렌더 컴포넌트 추가
+	//	auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
+	//	prComp->set_pso_name("particle_draw");
+
+	//	prComp->set_particle_system(psComp);
+
+	//	// 5. 위치 동기화 (대검 오브젝트의 자식으로 설정)
+	//	_particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
+	//	_particleEffectObject->transform()->set_parent(_SkillObject->transform());
+
+	//	// 초기에는 꺼둠
+	//	_particleEffectObject->set_enabled(false);
+	//}
+
 }
 
 void Main_Scene::cinematic_sequence(float deltaTime)
@@ -836,6 +912,15 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		_dummy_player_2->set_enabled(true);
 		_dummy_player_3->set_enabled(true);
 		_dummy_player_4->set_enabled(true);
+
+
+		// 완성되면 카메라 시네마틱 모드 키기
+		/*auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
+		if (cameraObject)
+		{
+			if (auto camescript = cameraObject->get_component<FreeCameraScript>())
+				camescript->set_sinamatic_camera_mode(true);
+		}*/
 	}
 
 	// 4~7초동안 다시 페이드 인 및 소리 서서히 켜기
@@ -843,13 +928,17 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	{
 		_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f - ((_cinematicTimer - 3.0f) / 3.0f)));
 		SoundManager::instance()->set_master_volume((_cinematicTimer - 3.0f) / 3.0f);
+
+
+
+
 	}
 	
 	if (_cinematicTimer >= 6.0f && !_isCutsceneDoneSent)
 	{
 		//_isCutsceneDoneSent = true;
 
-	
+		
 	}
 
 	if (_isCutsceneDoneSent)
@@ -857,13 +946,6 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		// 모든 사운드 끄기 및 볼륨 원복
 		SoundManager::instance()->stop_all();
 		SoundManager::instance()->set_master_volume(1.0f);
-
-		auto cameraObject = ObjectManager::instance()->find_by_name("Camera");
-		if (cameraObject)
-		{
-			if (auto camescript = cameraObject->get_component<FreeCameraScript>())
-				camescript->set_sinamatic_camera_mode(true);
-		}
 
 		// 컷씬 종료 패킷 전송 (단 한 번만)
 		NetworkManager::instance()->SendCutsceneDonePacket();
