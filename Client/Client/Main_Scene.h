@@ -45,6 +45,8 @@ private:
 	std::shared_ptr<GameObject> _dummy_player_3 = {}; // 플레이어 3 1번 기준 앞
 	std::shared_ptr<GameObject> _dummy_player_4 = {}; // 플레이어 4 1번 기준 왼쪽
 
+	std::shared_ptr<GameObject> _dummy_fountain = {}; // 분수
+
 	//void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 	//void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
 };
