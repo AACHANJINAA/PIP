@@ -820,7 +820,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 
 		DirectX::XMFLOAT4 color = { 1.f,1.f,1.f,1.f };
 
-		psComp->init_particles(targets, color, 0.10f);
+		psComp->init_particles(targets, color, 0.05f, 15.0f);
 
 		// 4. 렌더 컴포넌트 추가
 		auto prComp = _dummy_particle_fountain->add_component<ParticleRenderComponent>();
