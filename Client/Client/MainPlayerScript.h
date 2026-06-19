@@ -174,4 +174,10 @@ private:
 	float _helpMeAlpha = 0.0f;
 	float _helpMeFadeSpeed = 1.0f; // 페이드 아웃 속도 (1.0f일 때 1초 동안 사라짐)
 	std::shared_ptr<UIRenderComponent> _helpMeUI{ nullptr };
+
+	// --- 퀘스트 스토리 UI 관련 변수 ---
+	bool _isQuestStoryShowing = false;
+	bool _isQuestStoryFadingOut = false;
+	float _questStoryAlpha = 0.0f;
+	float _questStoryFadeSpeed = 2.0f; // 페이드 아웃 속도 (2.0f일 때 0.5초 동안 사라짐)
 };
