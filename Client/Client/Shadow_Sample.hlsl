@@ -2,7 +2,8 @@
  // register(b5): 그림자 관련 상수 버퍼
 cbuffer cbShadow : register(b5)
 {
-    matrix g_shadowLightVP[3]; // 각 cascade 의 LightViewProjection
+    matrix g_shadowLightVP[3]; // 동적
+    matrix g_staticShadowLightVP[3]; // 정적
     float g_shadowSplitNear; // view-space Z: cascade 0→1 경계
     float g_shadowSplitMid; // view-space Z: cascade 1→2 경계
     float g_shadowBias; // z-fighting 방지
@@ -10,6 +11,7 @@ cbuffer cbShadow : register(b5)
 };
  
 Texture2DArray g_shadowMap : register(t11);
+Texture2DArray g_staticShadowMap : register(t16);
 SamplerComparisonState g_shadowSampler : register(s1);
  
  // Poisson Disk 오프셋 상수 배열 (미리 계산된 불규칙한 원형 배치) -> 픽셀 사이 일정한 거리유지
@@ -34,11 +36,11 @@ static const float2 PoissonDisk[16] =
 };
  
  // 개선된 PCF 샘플링 함수
-float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float viewDepth)
+float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float viewDepth, bool isStatic)
 {
     float normalOffsets[3] = { 0.05f, 0.1f, 0.2f };
     float3 offsetWorldPos = worldPos + (normal * normalOffsets[cascade]);
-    float4 sp = mul(float4(offsetWorldPos, 1.0f), g_shadowLightVP[cascade]);
+    float4 sp = mul(float4(offsetWorldPos, 1.0f), isStatic ? g_staticShadowLightVP[cascade] : g_shadowLightVP[cascade]);
     sp.xyz /= sp.w;
   
     float2 uv;
@@ -68,7 +70,7 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
     float maxViewDepth = g_shadowSplitMid + 100.0f;
     float normalizedDepth = saturate(viewDepth / maxViewDepth);
       
-      // 카메라에 가까우면 선명(0.5배), 멀면 부드럽게(2.5배)
+    // 카메라에 가까우면 선명(0.5배), 멀면 부드럽게(2.5배)
     float depthScale = lerp(0.5f, 2.5f, normalizedDepth);
     float filterRadius = baseFilterRadii[cascade] * depthScale;
  
@@ -82,18 +84,20 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
         {
             float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
             float2 offset = rotatedOffset * texelSize * filterRadius;
-            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+            if (isStatic) shadow += g_staticShadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+            else shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
         }
         return shadow / 16.0f;
     }
     else if (cascade == 1)
     {
       [unroll]
-        for (int i = 0; i < 8; ++i) // 16샘플
+        for (int i = 0; i < 8; ++i) // 8샘플
         {
             float2 rotatedOffset = mul(PoissonDisk[i], rotationMat);
             float2 offset = rotatedOffset * texelSize * filterRadius;
-            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+            if (isStatic) shadow += g_staticShadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+            else shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
         }
         return shadow / 8.0f;
     }
@@ -104,14 +108,15 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
         {
             float2 rotatedOffset = mul(PoissonDisk[i * 4], rotationMat);
             float2 offset = rotatedOffset * texelSize * filterRadius;
-            shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+            if (isStatic) shadow += g_staticShadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
+            else shadow += g_shadowMap.SampleCmpLevelZero(g_shadowSampler, float3(uv + offset, (float) cascade), sp.z - g_shadowBias);
         }
         return shadow / 4.0f;
     }
 }
  
  // 메인 CSM 샘플링 함수 (3-cascade 블렌딩)
-float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
+float sample_csm_shadow_internal(float3 worldPos, float3 normal, float viewDepth, bool isStatic)
 {
     float maxShadowDistance = 300.0f;
     if (viewDepth >= maxShadowDistance)
@@ -123,30 +128,37 @@ float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
      // Cascade 결정 로직 (3-cascade)
     if (viewDepth < g_shadowSplitNear - blendThreshold)
     {
-        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth);
+        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth, isStatic);
     }
     else if (viewDepth < g_shadowSplitNear + blendThreshold)
     {
-        float shadow0 = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth);
-        float shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
+        float shadow0 = get_pcf_shadow_pcss(worldPos, normal, 0, viewDepth, isStatic);
+        float shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth, isStatic);
         float t = (viewDepth - (g_shadowSplitNear - blendThreshold)) / (blendThreshold * 2.0f);
         finalShadow = lerp(shadow0, shadow1, saturate(t));
     }
     else if (viewDepth < g_shadowSplitMid - blendThreshold)
     {
-        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
+        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth, isStatic);
     }
     else if (viewDepth < g_shadowSplitMid + blendThreshold)
     {
-        float shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth);
-        float shadow2 = get_pcf_shadow_pcss(worldPos, normal, 2, viewDepth);
+        float shadow1 = get_pcf_shadow_pcss(worldPos, normal, 1, viewDepth, isStatic);
+        float shadow2 = get_pcf_shadow_pcss(worldPos, normal, 2, viewDepth, isStatic);
         float t = (viewDepth - (g_shadowSplitMid - blendThreshold)) / (blendThreshold * 2.0f);
         finalShadow = lerp(shadow1, shadow2, saturate(t));
     }
     else
     {
-        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 2, viewDepth);
+        finalShadow = get_pcf_shadow_pcss(worldPos, normal, 2, viewDepth, isStatic);
     }
  
     return lerp(0.3f, 1.0f, finalShadow);
+}
+
+float sample_csm_shadow(float3 worldPos, float3 normal, float viewDepth)
+{
+    float dynShadow = sample_csm_shadow_internal(worldPos, normal, viewDepth, false);
+    float statShadow = sample_csm_shadow_internal(worldPos, normal, viewDepth, true);
+    return min(dynShadow, statShadow);
 }

@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
@@ -79,6 +79,32 @@ void ShadowManager::initialize(ID3D12Device* device)
     srvDesc.Texture2DArray.FirstArraySlice = 0;
     srvDesc.Texture2DArray.ArraySize = 3;
     device->CreateShaderResourceView(_shadowMapArray.Get(), &srvDesc, _srvHeap->GetCPUDescriptorHandleForHeapStart());
+
+    // --- 정적 그림자 맵 생성 ---
+    device->CreateCommittedResource(
+        &heapProp,
+        D3D12_HEAP_FLAG_NONE,
+        &texDesc,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        &optClear,
+        IID_PPV_ARGS(&_staticShadowMapArray));
+
+    device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&_dsvStaticHeap));
+    device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&_srvStaticHeap));
+
+    for (int i = 0; i < 3; ++i)
+    {
+        D3D12_DEPTH_STENCIL_VIEW_DESC staticDsvDesc = {};
+        staticDsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        staticDsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+        staticDsvDesc.Texture2DArray.FirstArraySlice = i;
+        staticDsvDesc.Texture2DArray.ArraySize = 1;
+        staticDsvDesc.Texture2DArray.MipSlice = 0;
+        CD3DX12_CPU_DESCRIPTOR_HANDLE hDsv(_dsvStaticHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
+        device->CreateDepthStencilView(_staticShadowMapArray.Get(), &staticDsvDesc, hDsv);
+    }
+    device->CreateShaderResourceView(_staticShadowMapArray.Get(), &srvDesc, _srvStaticHeap->GetCPUDescriptorHandleForHeapStart());
+    // -------------------------
 
     // 4. 상수 버퍼 생성
     UINT cbCascadesSize = (sizeof(CbCascades) + 255) & ~255;
@@ -171,8 +197,21 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     _currentFrameIndex = frame_index;
     ++_frameCount; // 프레임 카운트 누적
 
+    f3 currentCamPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{0,0,0};
+    f3 camDiff = Vector3::Subtract(_lastStaticUpdateCamPos, currentCamPos);
+    float dist = Vector3::Length(camDiff);
+    bool bUpdateStatic = _forceStaticUpdate || (dist > _staticUpdateDistanceThreshold);
+
     // 1. 행렬 빌드 및 복사
     build_cascade_matrices();
+
+    if (bUpdateStatic) {
+        _staticCascadeData = _cascadeData;
+        for(int i=0; i<3; ++i) _shadowData.staticLightVP[i] = _shadowData.lightVP[i];
+        _lastStaticUpdateCamPos = currentCamPos;
+        _forceStaticUpdate = false;
+    }
+
     memcpy(_mappedCbCascades, &_cascadeData, sizeof(CbCascades));
     memcpy(_mappedCbShadow[frame_index], &_shadowData, sizeof(CbShadow));
 
@@ -184,7 +223,16 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 
     // 2. Resource Barrier: PSR -> DEPTH_WRITE (업데이트할 슬라이스만 선별 적용)
     std::vector<D3D12_RESOURCE_BARRIER> barriersW;
-    barriersW.reserve(3);
+    barriersW.reserve(6);
+    if (bUpdateStatic) {
+        for (int i = 0; i < 3; ++i) {
+            barriersW.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
+                _staticShadowMapArray.Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                i));
+        }
+    }
     for (int i = 0; i < 3; ++i) {
         if (shouldUpdate[i]) {
             barriersW.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
@@ -225,18 +273,16 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     for (int i = 0; i < 3; ++i)
     {
         // 이번 프레임에 업데이트하지 않는 캐스케이드는 렌더링 스킵
-        if (!shouldUpdate[i]) continue;
-
-        // A. 현재 캐스케이드에 해당하는 DSV 바인딩 및 Clear
-        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
-        cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
-        cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+        if (!shouldUpdate[i] && !bUpdateStatic) continue;
 
         // B. 현재 캐스케이드 전용 Constant Buffer 주소 계산 (b1 레지스터용)
         D3D12_GPU_VIRTUAL_ADDRESS currentCbAddress = _cbCascades->GetGPUVirtualAddress() + (i * sizeof(CbCascadeSingle));
 
-        // C. 일반 메시 렌더링 (gltf)
-        {
+        // C. 일반 메시 렌더링 (gltf) - 정적 그림자 맵
+        if (bUpdateStatic) {
+            CD3DX12_CPU_DESCRIPTOR_HANDLE dsvStaticHandle(_dsvStaticHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
+            cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvStaticHandle);
+            cmd->ClearDepthStencilView(dsvStaticHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth");
 
@@ -277,10 +323,14 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                     mesh->render_instance_CascadeShadowMap(cmd, actualCount);
                 }
             }
-        }
+        } // end of bUpdateStatic
 
-        // D. 스킨드 애니메이션 메시 렌더링 (skinned)
-        {
+        // D. 스킨드 애니메이션 메시 렌더링 (skinned) - 동적 그림자 맵
+        if (shouldUpdate[i]) {
+            CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
+            cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
+            cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
 
@@ -319,12 +369,21 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                     }
                 }
             }
-        }
+        } // end of shouldUpdate[i]
     }
 
     // 4. Resource Barrier: DEPTH_WRITE -> PSR (업데이트를 수행한 슬라이스만 복원)
     std::vector<D3D12_RESOURCE_BARRIER> barriersR;
-    barriersR.reserve(3);
+    barriersR.reserve(6);
+    if (bUpdateStatic) {
+        for (int i = 0; i < 3; ++i) {
+            barriersR.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
+                _staticShadowMapArray.Get(),
+                D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                i));
+        }
+    }
     for (int i = 0; i < 3; ++i) {
         if (shouldUpdate[i]) {
             barriersR.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
@@ -356,7 +415,8 @@ void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shado
     // t11 Descriptor Table 바인딩
     // (CPU의 SRV Descriptor를 Renderer의 GPU Descriptor Heap에 복사 후 바인딩)
     CD3DX12_CPU_DESCRIPTOR_HANDLE cpuSrvHandle(_srvHeap->GetCPUDescriptorHandleForHeapStart());
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpuHandles = { cpuSrvHandle };
+    CD3DX12_CPU_DESCRIPTOR_HANDLE cpuStaticSrvHandle(_srvStaticHeap->GetCPUDescriptorHandleForHeapStart());
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpuHandles = { cpuSrvHandle, cpuStaticSrvHandle };
 
     renderer->bind_texture_table(cmd, shadowSrvParamIdx, cpuHandles);
 }
