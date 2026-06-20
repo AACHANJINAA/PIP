@@ -52,19 +52,15 @@ void NPCScript::handle_animation_branching()
 			switch (_actionId) {
 			case ActionID::Tainer::GrabCharge: 
 				anim->play("walk", true, 2.0f); 
-				SoundManager::instance()->play_3d_section("BossCharge", _serverPos, "00:00:000", "00:05:000", SoundType::SFX, 1.0f);
 				break; // 돌진 (빠른 이동)
 			case ActionID::Tainer::GrabCarry:  
 				anim->play("attack", true, 1.5f); 
-				SoundManager::instance()->play_3d_section("BossGrab", _serverPos, "00:00:000", "00:05:000", SoundType::SFX, 1.0f);
 				break; // 난타 (연타 모션)
 			case ActionID::Tainer::GrabSlam:   
 				anim->play("attack", false, 0.8f); 
-				SoundManager::instance()->play_3d_section("BossSmash", _serverPos, "00:00:000", "00:05:000", SoundType::SFX, 1.0f);
 				break; // 슬램 (강한 공격)
 			case ActionID::Tainer::Roar:       
 				anim->play("Idle", false); 
-				SoundManager::instance()->play_3d_section("BossRoar", _serverPos, "00:00:000", "00:05:000", SoundType::SFX, 1.0f);
 				break;
 			default: 
 				anim->play("Attack", false); 
@@ -531,6 +527,12 @@ void NPCScript::apply_snapshot()
 	if (prevState != common::packet::EntityState::DEAD && _state == common::packet::EntityState::DEAD) {
 		if (transform()) {
 			SoundManager::instance()->play_3d("MonsterDie", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+			if (_npcType == common::packet::NPCType::Tainer) {
+				SoundManager::instance()->stop("BossCharge");
+				SoundManager::instance()->stop("BossGrab");
+				SoundManager::instance()->stop("BossSmash");
+				SoundManager::instance()->stop("BossRoar");
+			}
 		}
 	}
 
