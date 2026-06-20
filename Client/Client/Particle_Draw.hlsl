@@ -83,11 +83,6 @@ float4 PS_Particle(VS_OUT In) : SV_TARGET
     // 각진 네모가 아니라, 외곽이 은은하게 퍼지는 아름다운 동그란 빛무리(Orb)
     float shapeAlpha = smoothstep(0.5f, 0.2f, dist);
 
-    // 외곽선이 칼같이 딱 떨어지는 선명한 동그라미
-    // if (dist > 0.5f) discard;
-    // float shapeAlpha = 1.0f;
-
-
     // -------------------------------------------------------------------
     // 2. 모이는 진행도(progress)에 따라 밝기를 쭈욱 끌어올리기
     // -------------------------------------------------------------------
@@ -96,6 +91,8 @@ float4 PS_Particle(VS_OUT In) : SV_TARGET
     // 검으로 다 모였을 땐 1.0배(빛이 폭발하듯 쨍해짐)가 됩니다.
     float brightness = lerp(0.3f, 1.0f, progress);
 
+    // 처음 생성될 때(0.0 ~ 0.1 구간) 파티클이 서서히 나타나도록 투명도 보간
+    float appearAlpha = saturate(progress / 0.1f);
 
     // -------------------------------------------------------------------
     // 3. 최종 색상 조합
@@ -105,8 +102,8 @@ float4 PS_Particle(VS_OUT In) : SV_TARGET
     // RGB 색상에는 밝기 배율을 곱해줍니다. (값이 1.0을 넘어가면 Bloom 효과가 겹쳐 빛나게 됩니다)
     finalColor.rgb = In.Color.rgb * brightness;
     
-    // Alpha(투명도)에는 원 모양으로 깎아낸 마스크(shapeAlpha)를 곱해줍니다.
-    finalColor.a = In.Color.a * shapeAlpha;
+    // Alpha(투명도)에는 원 모양 마스크(shapeAlpha)와 처음 등장 페이드인(appearAlpha)을 함께 적용합니다.
+    finalColor.a = In.Color.a * shapeAlpha * appearAlpha;
 
     return finalColor;
 }
