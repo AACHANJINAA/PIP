@@ -116,7 +116,7 @@ void MainPlayerScript::update(float deltaTime)
 	auto quest1 = NetworkManager::instance()->get_quest(1);
 	if (quest1) {
 		if (_prevQuest1State != common::packet::QuestState::REWARDED && quest1->_state == common::packet::QuestState::REWARDED) {
-			_qAutoToggleTimer = 2.0f;
+			_qAutoToggleTimer = 3.0f;
 		}
 		_prevQuest1State = quest1->_state;
 	}
@@ -423,9 +423,9 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
         auto title_ui = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestTitle_UI");
         if (title_ui) {
             if (quest_id == 2) {
-                title_ui->set_texture("Resource/UI/Quest_Title_2.png");
-                title_ui->set_size(533.f, 50.f); // 원본 이미지 비율 유지
-                title_ui->set_screen_position(-80.f, FRAME_BUFFER_HEIGHT / 2.0f - 50.f / 2.0f - 15.f); // 왼쪽으로 위치 조정
+                title_ui->set_texture("Resource/UI/Quest_Title_3.png");
+                title_ui->set_size(250.f, 50.f); // 1번 퀘스트 크기와 동일
+                title_ui->set_screen_position(20.f, FRAME_BUFFER_HEIGHT / 2.0f - 50.f / 2.0f - 15.f); // 원래 위치 복구
             } else {
                 title_ui->set_texture("Resource/UI/Quest_Title_1.png"); // 기본: 1번
                 title_ui->set_size(250.f, 50.f); // 1번 퀘스트 크기
@@ -463,10 +463,11 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
             UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_3", false);
             UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_4", false);
 
-            float start_x_2 = 250.f; // 우측으로 이동
-            if (n0) { n0->set_uv_offset(cur_ones * uv_scale_x, 0.0f); n0->set_screen_position(start_x_2, start_y); }
-            if (n1) { n1->set_uv_offset(10 * uv_scale_x, 0.0f);       n1->set_screen_position(start_x_2 + spacing, start_y); } // '/'
-            if (n2) { n2->set_uv_offset(max_ones * uv_scale_x, 0.0f); n2->set_screen_position(start_x_2 + 2 * spacing, start_y); }
+            float start_x_2 = 20.f; // 1번 퀘스트와 동일한 위치
+            float start_y_2 = FRAME_BUFFER_HEIGHT / 2.0f + 5.f; // 1번 퀘스트와 비슷한 간격이 되도록 수정 (+5.f)
+            if (n0) { n0->set_uv_offset(cur_ones * uv_scale_x, 0.0f); n0->set_screen_position(start_x_2, start_y_2); }
+            if (n1) { n1->set_uv_offset(10 * uv_scale_x, 0.0f);       n1->set_screen_position(start_x_2 + spacing, start_y_2); } // '/'
+            if (n2) { n2->set_uv_offset(max_ones * uv_scale_x, 0.0f); n2->set_screen_position(start_x_2 + 2 * spacing, start_y_2); }
         } else {
             // Quest 1: display "00 / 10" (5 slots)
             UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_0", true);
