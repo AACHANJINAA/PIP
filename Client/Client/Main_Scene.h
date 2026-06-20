@@ -50,6 +50,7 @@ private:
 
 	bool _isCinematicSkillPlayed = false; // 시네마틱 중 스킬 애니메이션 한 번만 실행
 	bool _isCinematicParticleDying = false; // 파티클 소멸 연출 한 번만 실행
+	bool _isCinematicSkillEndPlayed = false; // 플레이어 스킬 마지막 연출 한 번만 실행
 
 	std::shared_ptr<GameObject> _dummy_particle_fountain = {}; // 분수 파티클용 더미 오브젝트
 

@@ -41,6 +41,9 @@ public:
 	// 없어지는 연출이 끝났는지 여부를 확인하는 함수
 	bool is_death_timer_end() const { return _deathTimerEnd; }
 
+	// 사라지는 연출 지속 시간을 설정
+	void set_death_duration(float duration) { _deathDuration = duration; }
+
 	// Behavior의 update 오버라이드
 	void update(float deltaTime) override;
 
