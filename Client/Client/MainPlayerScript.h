@@ -178,6 +178,8 @@ private:
 	std::shared_ptr<UIRenderComponent> _helpMeUI{ nullptr };
 
 	// --- 퀘스트 스토리 UI 관련 변수 ---
+	float _qAutoToggleTimer = -1.0f;
+	common::packet::QuestState _prevQuest1State = common::packet::QuestState::NONE;
 	bool _isQuestStoryShowing = false;
 	bool _isQuestStoryFadingOut = false;
 	float _questStoryAlpha = 0.0f;

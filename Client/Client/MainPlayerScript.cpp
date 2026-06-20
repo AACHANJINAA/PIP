@@ -81,6 +81,46 @@ void MainPlayerScript::update(float deltaTime)
 		}
 	}
 
+	// [추가] 퀘스트 1 보상 수령 2초 후 Q 자동 토글 타이머
+	if (_qAutoToggleTimer > 0.0f) {
+		_qAutoToggleTimer -= deltaTime;
+		if (_qAutoToggleTimer <= 0.0f) {
+			_qAutoToggleTimer = -1.0f;
+			// Q 토글 강제 실행
+			_isQuestStoryShowing = true;
+			_isQuestStoryFadingOut = false;
+			_questStoryAlpha = 1.0f;
+			auto uiManager = UIManager::instance();
+			if (auto story_ui = uiManager->ui_component(UILayer::MIDDLE, "Quest_Story_UI")) {
+				story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+			}
+			uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+			
+			// 퀘스트 2 시작
+			auto quest2 = NetworkManager::instance()->get_quest(2);
+			if (!quest2) {
+				common::packet::QuestUpdateInfo q2;
+				q2._quest_id = 2;
+				q2._state = common::packet::QuestState::IN_PROGRESS;
+				q2._current_count = 0;
+				q2._target_count = 2;
+				NetworkManager::instance()->set_local_quest(q2);
+			}
+			
+			if (_isControlsUIShowing && !_isControlsUIFadingOut) {
+				_isControlsUIFadingOut = true;
+			}
+		}
+	}
+	
+	auto quest1 = NetworkManager::instance()->get_quest(1);
+	if (quest1) {
+		if (_prevQuest1State != common::packet::QuestState::REWARDED && quest1->_state == common::packet::QuestState::REWARDED) {
+			_qAutoToggleTimer = 2.0f;
+		}
+		_prevQuest1State = quest1->_state;
+	}
+
 	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
 	if (_particleEffectObject && _particleEffectObject->is_enable())
 	{
@@ -394,12 +434,15 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
         }
     }
 
-    for (int i = 0; i < 5; ++i) {
-        UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_" + std::to_string(i), is_visible);
-	}
-
-	if (is_visible) {
+	if (!is_visible) {
+		for (int i = 0; i < 5; ++i) {
+			UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_" + std::to_string(i), false);
+		}
+	} else {
 		float uv_scale_x = 1.0f / 11.0f; // 0~9, /
+        float num_w = 20.f;
+        float spacing = num_w * 0.8f;
+        float start_y = FRAME_BUFFER_HEIGHT / 2.0f + 10.f;
 
 		int cur_tens = (current / 10) % 10;
 		int cur_ones = current % 10;
@@ -412,11 +455,33 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 		auto n3 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_3");
 		auto n4 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_4");
         
-        if (n0) n0->set_uv_offset(cur_tens * uv_scale_x, 0.0f);
-        if (n1) n1->set_uv_offset(cur_ones * uv_scale_x, 0.0f);
-        if (n2) n2->set_uv_offset(10 * uv_scale_x, 0.0f); // '/'
-        if (n3) n3->set_uv_offset(max_tens * uv_scale_x, 0.0f);
-        if (n4) n4->set_uv_offset(max_ones * uv_scale_x, 0.0f);
+        if (quest_id == 2) {
+            // Quest 2: display "0 / 2" (3 slots)
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_0", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_1", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_2", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_3", false);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_4", false);
+
+            float start_x_2 = 250.f; // 우측으로 이동
+            if (n0) { n0->set_uv_offset(cur_ones * uv_scale_x, 0.0f); n0->set_screen_position(start_x_2, start_y); }
+            if (n1) { n1->set_uv_offset(10 * uv_scale_x, 0.0f);       n1->set_screen_position(start_x_2 + spacing, start_y); } // '/'
+            if (n2) { n2->set_uv_offset(max_ones * uv_scale_x, 0.0f); n2->set_screen_position(start_x_2 + 2 * spacing, start_y); }
+        } else {
+            // Quest 1: display "00 / 10" (5 slots)
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_0", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_1", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_2", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_3", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_4", true);
+
+            float start_x_1 = 20.f;
+            if (n0) { n0->set_uv_offset(cur_tens * uv_scale_x, 0.0f); n0->set_screen_position(start_x_1, start_y); }
+            if (n1) { n1->set_uv_offset(cur_ones * uv_scale_x, 0.0f); n1->set_screen_position(start_x_1 + spacing, start_y); }
+            if (n2) { n2->set_uv_offset(10 * uv_scale_x, 0.0f);       n2->set_screen_position(start_x_1 + 2 * spacing, start_y); } // '/'
+            if (n3) { n3->set_uv_offset(max_tens * uv_scale_x, 0.0f); n3->set_screen_position(start_x_1 + 3 * spacing, start_y); }
+            if (n4) { n4->set_uv_offset(max_ones * uv_scale_x, 0.0f); n4->set_screen_position(start_x_1 + 4 * spacing, start_y); }
+        }
     }
 
 	// 퀘스트 스토리 UI 페이드 아웃 업데이트
@@ -625,6 +690,17 @@ void MainPlayerScript::handle_input(float deltaTime)
 						_questStoryAlpha = 1.0f;
 						story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 						uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+
+						// [추가] 퀘스트 2번(레버 2개) 시작 로직
+						auto quest2 = NetworkManager::instance()->get_quest(2);
+						if (!quest2) {
+							common::packet::QuestUpdateInfo q2;
+							q2._quest_id = 2;
+							q2._state = common::packet::QuestState::IN_PROGRESS;
+							q2._current_count = 0;
+							q2._target_count = 2;
+							NetworkManager::instance()->set_local_quest(q2);
+						}
 
 						// Q를 켰을 때, 조작법 UI가 켜져 있다면 꺼지도록 처리
 						if (_isControlsUIShowing && !_isControlsUIFadingOut)

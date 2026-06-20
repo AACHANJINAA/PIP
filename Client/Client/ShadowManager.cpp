@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
@@ -142,8 +142,8 @@ void ShadowManager::build_cascade_matrices()
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
     float radii[3] = {
-         shadow_max_distance * 0.1f,
          shadow_max_distance * 0.3f,
+         shadow_max_distance * 0.6f,
          shadow_max_distance * 1.0f
     };
 
@@ -219,7 +219,7 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     bool shouldUpdate[3];
     shouldUpdate[0] = true;                          // Cascade 0: 매 프레임 갱신
     shouldUpdate[1] = (_frameCount % 2 == 0);         // Cascade 1: 2프레임에 1회 갱신
-    shouldUpdate[2] = (_frameCount % 4 == 0);         // Cascade 2: 4프레임에 1회 갱신
+    shouldUpdate[2] = (_frameCount % 5 == 0);         // Cascade 2: 4프레임에 1회 갱신
 
     // 2. Resource Barrier: PSR -> DEPTH_WRITE (업데이트할 슬라이스만 선별 적용)
     std::vector<D3D12_RESOURCE_BARRIER> barriersW;
