@@ -48,6 +48,10 @@ public:
         return nullptr;
     }
 
+    void set_local_quest(const common::packet::QuestUpdateInfo& info) {
+        _quests[info._quest_id] = info;
+    }
+
 private:
 	void network_worker(); // 네트워크 스레드 함수
 
