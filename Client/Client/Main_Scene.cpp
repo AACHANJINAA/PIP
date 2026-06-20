@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -1338,24 +1338,40 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		psComp->set_particle_dying(true);
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
-
-	// 50~51초 플레이어 idle 상태 만들기
-	else if (bgm_time > 50.0f && bgm_time <= 51.0f)
+	// 55~57초 
+	else if (bgm_time > 55.0f && bgm_time <= 57.0f)
 	{
-		// 디버깅을 위해 끄기
-		cameraObject->set_sinamatic_camera_mode(false);
-
-		std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
-		for (int i = 0; i < 4; ++i) {
-			if (dummies[i]) {
-				dummies[i]->get_component<AnimationComponent>()->play("idle", true);
-			}
-		}
+		
+	}
+	// 57~70초 천천히 뒤로 물러나면서 위를 바라보기
+	else if (bgm_time > 57.0f && bgm_time <= 70.0f)
+	{
+		// 57초 ~ 70초 카메라 이동 (Ease-In-Out Sine)
+		float totalDuration = 13.0f;
+		float rawTime = bgm_time - 57.0f;
+		float progress = rawTime / totalDuration;
+		if (progress > 1.0f) progress = 1.0f;
+		if (progress < 0.0f) progress = 0.0f;
+		// Ease-In-Out Sine 공식: 부드러운 시작과 멈춤
+		float easedProgress = -(cos(3.14159265f * progress) - 1.0f) / 2.0f;
+		// 두 점 사이를 선형 보간(Lerp)하되, 시간에 Ease-In-Out을 적용하여 부드럽게 이동
+		DirectX::XMVECTOR vPos1 = DirectX::XMVectorSet(192.44f, 11.31f, -59.76f, 0.0f);
+		DirectX::XMVECTOR vPos2 = DirectX::XMVectorSet(185.10f, 4.86f, -59.50f, 0.0f);
+		DirectX::XMVECTOR vPos = DirectX::XMVectorLerp(vPos1, vPos2, easedProgress);
+		DirectX::XMVECTOR vRot1 = DirectX::XMVectorSet(45.6f, -88.8f, 0.0f, 0.0f);
+		DirectX::XMVECTOR vRot2 = DirectX::XMVectorSet(29.8f, -120.7f, 0.0f, 0.0f);
+		DirectX::XMVECTOR vRot = DirectX::XMVectorLerp(vRot1, vRot2, easedProgress);
+		DirectX::XMFLOAT3 outPos, outRot;
+		DirectX::XMStoreFloat3(&outPos, vPos);
+		DirectX::XMStoreFloat3(&outRot, vRot);
+		cameraObject->transform()->set_local_position(outPos);
+		cameraObject->transform()->set_local_rotation(outRot.x, outRot.y, outRot.z);
 	}
 
 	// 마지막 넘어가기
-	if (bgm_time >= 30.0f && !bgm_time)
+	if (bgm_time >= 70.0f && !bgm_time)
 	{
+		cameraObject->set_sinamatic_camera_mode(false);
 		//_isCutsceneDoneSent = true;
 
 		
