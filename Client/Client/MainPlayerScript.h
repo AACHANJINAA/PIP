@@ -182,4 +182,10 @@ private:
 	bool _isQuestStoryFadingOut = false;
 	float _questStoryAlpha = 0.0f;
 	float _questStoryFadeSpeed = 2.0f; // 페이드 아웃 속도 (2.0f일 때 0.5초 동안 사라짐)
+
+	// --- 조작법 UI 관련 변수 ---
+	bool _isControlsUIShowing = false;
+	bool _isControlsUIFadingOut = false;
+	float _controlsUIAlpha = 0.0f;
+	float _controlsUIFadeSpeed = 4.0f; // 페이드 아웃 속도
 };

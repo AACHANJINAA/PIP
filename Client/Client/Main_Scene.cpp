@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -197,6 +197,26 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	q_guide->set_texture("Resource/UI/Q_interaction_UI.png"); // 기본 UI 텍스처
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerQGuide_UI", q_guide_obj);
 	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", false); // 처음에는 숨김
+
+	// [추가] E 가이드 UI (Q 가이드 우측에 렌더링)
+	auto e_guide_obj = ObjectManager::instance()->create_game_object("PlayerEGuide_UI");
+	auto e_guide = e_guide_obj->add_component<UIRenderComponent>();
+	e_guide->set_screen_position(240.0f, 110.0f);
+	e_guide->set_size(36.0f, 36.0f);
+	e_guide->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	e_guide->set_texture("Resource/UI/E_interaction_UI.png");
+	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerEGuide_UI", e_guide_obj);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerEGuide_UI", true); // 항상 보이도록
+
+	// [추가] 조작법 UI (화면 중앙)
+	auto controls_ui_obj = ObjectManager::instance()->create_game_object("Controls_UI_Main");
+	auto controls_ui = controls_ui_obj->add_component<UIRenderComponent>();
+	controls_ui->set_screen_position((FRAME_BUFFER_WIDTH - 800.0f) / 2.0f, (FRAME_BUFFER_HEIGHT - 600.0f) / 2.0f);
+	controls_ui->set_size(800.0f, 600.0f);
+	controls_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	controls_ui->set_texture("Resource/UI/Controls_UI.png");
+	UIManager::instance()->add_ui(UILayer::FRONT, "Controls_UI_Main", controls_ui_obj);
+	UIManager::instance()->set_visible(UILayer::FRONT, "Controls_UI_Main", false); // 처음에 숨김
 
 	// 2. MP Frame (뒤에 렌더링될 프레임) & MP Bar (앞에 렌더링될 체력바)
 	auto mp_frame_obj = ObjectManager::instance()->create_game_object("MP_Frame");
