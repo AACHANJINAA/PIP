@@ -96,17 +96,6 @@ void MainPlayerScript::update(float deltaTime)
 			}
 			uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
 			
-			// 퀘스트 2 시작
-			auto quest2 = NetworkManager::instance()->get_quest(2);
-			if (!quest2) {
-				common::packet::QuestUpdateInfo q2;
-				q2._quest_id = 2;
-				q2._state = common::packet::QuestState::IN_PROGRESS;
-				q2._current_count = 0;
-				q2._target_count = 2;
-				NetworkManager::instance()->set_local_quest(q2);
-			}
-			
 			if (_isControlsUIShowing && !_isControlsUIFadingOut) {
 				_isControlsUIFadingOut = true;
 			}
@@ -354,7 +343,10 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
     if (quest1 && quest1->_state != common::packet::QuestState::NONE && quest1->_state != common::packet::QuestState::REWARDED) {
         active_quest = quest1;
     } else if (quest2 && quest2->_state != common::packet::QuestState::NONE && quest2->_state != common::packet::QuestState::REWARDED) {
-        active_quest = quest2;
+        // 서버에서 Quest 2가 진행 중이라 하더라도, 타이머(3초 대기)가 끝나야만 UI에 표시
+        if (_qAutoToggleTimer <= 0.0f) {
+            active_quest = quest2;
+        }
     }
 
     bool is_visible = false;
@@ -691,17 +683,6 @@ void MainPlayerScript::handle_input(float deltaTime)
 						_questStoryAlpha = 1.0f;
 						story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 						uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
-
-						// [추가] 퀘스트 2번(레버 2개) 시작 로직
-						auto quest2 = NetworkManager::instance()->get_quest(2);
-						if (!quest2) {
-							common::packet::QuestUpdateInfo q2;
-							q2._quest_id = 2;
-							q2._state = common::packet::QuestState::IN_PROGRESS;
-							q2._current_count = 0;
-							q2._target_count = 2;
-							NetworkManager::instance()->set_local_quest(q2);
-						}
 
 						// Q를 켰을 때, 조작법 UI가 켜져 있다면 꺼지도록 처리
 						if (_isControlsUIShowing && !_isControlsUIFadingOut)

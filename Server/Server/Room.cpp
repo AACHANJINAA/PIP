@@ -1377,6 +1377,14 @@ namespace PIP::SERVER
 			MYLOG("[Quest] Interaction failed. NPC too far.");
 			return;
 		}
+		// 클라이언트가 임시로 quest_id = 0을 보내는 문제 우회 처리
+		if (quest_id == 0) {
+			auto quest1 = session->_player->GetQuest(1);
+			if (quest1 && (quest1->_state == common::packet::QuestState::COMPLETED || quest1->_state == common::packet::QuestState::IN_PROGRESS)) {
+				quest_id = 1;
+			}
+		}
+
 		common::packet::QuestUpdateInfo info;
 		if (quest_id != 0) {
 			auto quest = session->_player->GetQuest(quest_id);
@@ -1401,6 +1409,15 @@ namespace PIP::SERVER
 					}
 					SendQuestUpdate(session, info);
 					MYLOG("[Quest] Session " << session->_id << " completed quest " << quest_id);
+
+					// 퀘스트 1을 완료했다면, 자동으로 퀘스트 2를 발급
+					if (quest_id == 1) {
+						auto q2 = session->_player->AddQuest(2);
+						if (q2._state != packet::QuestState::NONE) {
+							SendQuestUpdate(session, q2);
+							MYLOG("[Quest] Session " << session->_id << " automatically accepted quest 2");
+						}
+					}
 
 					// 스탯 동기화 패킷 전송
 					packet::PacketStream stat_stream;
@@ -1550,6 +1567,13 @@ namespace PIP::SERVER
 
 				if (is_near_lever)
 				{
+					// 퀘스트 2가 진행 중인지 확인 (진행 중이 아니면 레버 조작 불가)
+					auto q2 = session->_player->GetQuest(2);
+					if (!q2 || q2->_state != packet::QuestState::IN_PROGRESS) {
+						MYLOG("[INTERACT] 퀘스트 2가 진행 중이 아니므로 레버 상호작용 무시.");
+						break;
+					}
+
 					// 이미 활성화된 레버라면 무시 (중복 상호작용 방지)
 					if (_activatedLevers.contains(lever_index))
 					{
