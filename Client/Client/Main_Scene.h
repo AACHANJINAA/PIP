@@ -45,6 +45,12 @@ private:
 	std::shared_ptr<GameObject> _dummy_player_3 = {}; // 플레이어 3 1번 기준 앞
 	std::shared_ptr<GameObject> _dummy_player_4 = {}; // 플레이어 4 1번 기준 왼쪽
 
+	std::shared_ptr<GameObject> _dummy_player_weapons[4] = {}; // 무기 오브젝트 (파티클 타겟)
+	std::shared_ptr<GameObject> _dummy_player_particles[4] = {}; // 실제 렌더링될 파티클 오브젝트
+
+	bool _isCinematicSkillPlayed = false; // 시네마틱 중 스킬 애니메이션 한 번만 실행
+	bool _isCinematicParticleDying = false; // 파티클 소멸 연출 한 번만 실행
+
 	std::shared_ptr<GameObject> _dummy_particle_fountain = {}; // 분수 파티클용 더미 오브젝트
 
 	float fountain_particle_progress = 0.f; // 컷씬 진행도 추적용 변수
