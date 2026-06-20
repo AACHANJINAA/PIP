@@ -85,10 +85,15 @@ namespace PIP::SERVER
 		// 버퍼의 남은 지점(_prev_size)부터 받도록 설정
 		_recv_over._wsabuf[0].buf = reinterpret_cast<CHAR*>(_recv_over._buffer.data() + _prev_size);
 		_recv_over._wsabuf[0].len = static_cast<ULONG>(_recv_over._buffer.size() - _prev_size);
+		
+		// [추가] WSARecv 대기 중 세션이 파괴되지 않게 참조 카운트 유지 (순환 참조)
+		_recv_over._session_ref = shared_from_this();
+
 		auto ret = WSARecv(_c_socket, _recv_over._wsabuf.data(), 1, NULL,
 			&recv_flag, &_recv_over._over, NULL);
 
 		if (ret == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
+			_recv_over._session_ref.reset(); // [추가] 비동기 I/O가 시작되지 못했으므로 참조 해제
 			disconnect();
 		}
 	}
@@ -120,6 +125,7 @@ namespace PIP::SERVER
 			if (available < sizeof(packet::PacketHeader)) break;
 			packet::PacketHeader* header = reinterpret_cast<packet::PacketHeader*>(&_recv_over._buffer[processed_bytes]);
 			if (header->_size < sizeof(packet::PacketHeader) || header->_size > 4096) {
+				MYERROR("[SESSION::on_recv] Invalid packet header size: " << header->_size << ", disconnecting session: " << _id);
 				disconnect(); // 패킷 헤더 오류 시 연결 끊기
 				return;
 			}
@@ -488,7 +494,7 @@ namespace PIP::SERVER
 			SESSION* session_ptr = reinterpret_cast<SESSION*>(key);
 
 			// 클라이언트 연결 종료 또는 에러 처리
-			if (ret == FALSE || (0 == io_size && (eo->_io_op == IO_OP::IO_RECV || eo->_io_op == IO_OP::IO_SEND)))
+			if (ret == FALSE || (0 == io_size && eo->_io_op == IO_OP::IO_RECV))
 			{
 				if (session_ptr)
 				{
@@ -501,7 +507,8 @@ namespace PIP::SERVER
 						(expected = SESSION_STATE::ST_INGAME, session->_state.compare_exchange_strong(expected,
 							SESSION_STATE::ST_CLOSE)))
 					{
-						MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id);
+						int err = WSAGetLastError();
+						MYLOG("[IO_WORKER] Client disconnected. Session ID: " << session->_id << ", Error: " << err << ", ret: " << ret << ", io_size: " << io_size << ", IO_OP: " << static_cast<int>(eo->_io_op));
 						if (session->_room_id != -1) {
 							Room* room = GetRoom(session->_room_id);
 							// [수정] 람다에 session(shared_ptr)을 캡처하여 로직 끝날 때까지 보존
@@ -521,6 +528,10 @@ namespace PIP::SERVER
 				if (eo && eo->_io_op == IO_OP::IO_SEND) {
 					delete eo;
 				}
+				else if (eo && eo->_io_op == IO_OP::IO_RECV) {
+					// [해결] RECV 중 끊어진 경우, do_recv()에서 걸어둔 순환 참조를 해제하여 Session 파괴 허용
+					eo->_session_ref.reset();
+				}
 				continue;
 			}
 
@@ -539,9 +550,21 @@ namespace PIP::SERVER
 			
 			case IO_OP::IO_RECV:
 				{
-					SESSION* session = reinterpret_cast<SESSION*>(key);
-					session->on_recv(io_size, this);
-					session->do_recv(); // 다음 수신 예약
+					SESSION* session_raw = reinterpret_cast<SESSION*>(key);
+					
+					// [안전성 패치] eo->_session_ref 에 걸어둔 참조를 지역 변수로 옮기고 해제
+					// 이를 통해 on_recv 도중 또는 끝난 직후 발생할 수 있는 메모리 해제를 방지
+					std::shared_ptr<SESSION> session_safe = eo->_session_ref;
+					eo->_session_ref.reset();
+
+					if (session_safe) {
+						session_safe->on_recv(io_size, this);
+						session_safe->do_recv(); // 다음 수신 예약 (여기서 다시 참조가 걸림)
+					} else if (session_raw) {
+						// 혹시 모를 폴백 (예기치 않게 참조가 없을 경우)
+						session_raw->on_recv(io_size, this);
+						session_raw->do_recv();
+					}
 					break;
 				}
 			default:

@@ -57,6 +57,13 @@ namespace PIP
 		const std::vector<LeverSpawnData>& GetLeverData() const;
 		void LoadLeverData();
 		
+		common::Vec3 GetCastleSpawnPoint() const { return _castleSpawnPoint; }
+		int32_t GetInitialHp() const { return _initialHp; }
+		int32_t GetInitialMp() const { return _initialMp; }
+		int32_t GetInitialDamage() const { return _initialDamage; }
+
+		void LoadPlayerData();
+		
 	private:
 		void LoadNPCData();
 		void LoadQuestData(); // [추가]
@@ -73,11 +80,16 @@ namespace PIP
 		static int Lua_LoadNPCData(lua_State* L);
 		static int Lua_LoadQuestData(lua_State* L); // [추가]
 		static int Lua_LoadLeverData(lua_State* L);
+		static int Lua_LoadPlayerData(lua_State* L);
 
 	public:
 		lua_State* L = nullptr; // Lua 상태를 저장하는 멤버 변수
 		std::unordered_map<common::packet::NPCType, std::vector<NPCSpawnData>> _npcSpawnData; // NPC 유형별 스폰 데이터 맵
 		std::unordered_map<int32_t, QuestData> _questData; // [추가] 퀘스트 원본 데이터
 		std::vector<LeverSpawnData> _leverData;
+		common::Vec3 _castleSpawnPoint = { 0.0f, 0.0f, 0.0f };
+		int32_t _initialHp = 100;
+		int32_t _initialMp = 100;
+		int32_t _initialDamage = 50;
 	};
 }

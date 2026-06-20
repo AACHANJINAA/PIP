@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "RenderComponent.h"
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
@@ -29,7 +29,8 @@ public:
 	void set_party_slot_index(int index) { _partySlotIndex = index; }
 	int get_party_slot_index() const { return _partySlotIndex; }
 
-    void set_hp(int hp) { _hp = hp; }    int hp() const { return _hp; }
+	void set_hp(int hp);
+    int hp() const { return _hp; }
     void set_max_hp(int maxHp) { _maxHp = maxHp; } // [추가]
     void set_id(int64_t id) { _playerId = id; }
     int64_t id() const { return _playerId; }

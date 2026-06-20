@@ -438,5 +438,8 @@
     <None Include="LeverData.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
+    <None Include="PlayerData.lua">
+      <Filter>소스 파일\Game\NPC\LuaScript</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -56,6 +56,12 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// [사운드] 보스 BGM 재생
 	SoundManager::instance()->load_sound("BossBGM", "Resource/Sound/BossBGM.mp3", false);
 	SoundManager::instance()->play("BossBGM", SoundType::BGM, 0.7f, true);
+
+	// 보스 스킬 사운드 로드 (3D 사운드)
+	SoundManager::instance()->load_sound("BossCharge", "Resource/Sound/BossCharge.wav", true);
+	SoundManager::instance()->load_sound("BossGrab", "Resource/Sound/BossGrab.wav", true);
+	SoundManager::instance()->load_sound("BossSmash", "Resource/Sound/BossSmash.wav", true);
+	SoundManager::instance()->load_sound("BossRoar", "Resource/Sound/BossRoar.wav", true);
 }
 
 void Boss_Scene::release_upload_buffers()
