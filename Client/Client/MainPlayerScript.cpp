@@ -467,19 +467,28 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 		}
 	}
 
-	// 10마리 완료 조건 시점에 Q 가이드 UI 활성화
 	bool is_q_active = false;
 	if (quest1)
 	{
-		if (quest1->_state == common::packet::QuestState::COMPLETED ||
-			quest1->_state == common::packet::QuestState::REWARDED)
+		if (quest1->_state == common::packet::QuestState::REWARDED)
 		{
 			is_q_active = true;
 		}
 	}
-	// Q 가이드 UI는 퀘스트 조건이 충족되고, 스토리 UI가 닫혀있거나 닫히는 중(페이드아웃)일 때만 표시합니다.
-	bool show_guide = is_q_active && (!_isQuestStoryShowing || _isQuestStoryFadingOut);
-	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", show_guide);
+	
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", is_q_active);
+
+	// ON/OFF 텍스처 업데이트
+	auto q_guide = UIManager::instance()->ui_component(UILayer::MIDDLE, "PlayerQGuide_UI");
+	if (q_guide) {
+		bool is_q_open = (_isQuestStoryShowing && !_isQuestStoryFadingOut);
+		q_guide->set_texture(is_q_open ? "Resource/UI/Q_interaction_UI_ON.png" : "Resource/UI/Q_interaction_UI_OFF.png");
+	}
+	auto e_guide = UIManager::instance()->ui_component(UILayer::MIDDLE, "PlayerEGuide_UI");
+	if (e_guide) {
+		bool is_e_open = (_isControlsUIShowing && !_isControlsUIFadingOut);
+		e_guide->set_texture(is_e_open ? "Resource/UI/E_interaction_UI_ON.png" : "Resource/UI/E_interaction_UI_OFF.png");
+	}
 }
 
 
@@ -589,8 +598,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		auto quest1 = NetworkManager::instance()->get_quest(1);
 		if (quest1)
 		{
-			if (quest1->_state == common::packet::QuestState::COMPLETED ||
-				quest1->_state == common::packet::QuestState::REWARDED)
+			if (quest1->_state == common::packet::QuestState::REWARDED)
 			{
 				is_q_active = true;
 			}
