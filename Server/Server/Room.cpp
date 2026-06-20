@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -271,8 +271,9 @@ namespace PIP::SERVER
 
 		MYLOG("[Room] NPC " << npcId << " has been removed and cleaned up.");
 	}
-	void Room::spawn_npc(GAME::NPCType type, const std::string& name)
+	std::vector<int64_t> Room::spawn_npc(GAME::NPCType type, const std::string& name)
 	{
+		std::vector<int64_t> spawned_ids;
 		size_t count = LuaManager::Instance()->GetNPCSpawnCount(type);
 		if (count == 0) count = 1; // Lua 데이터가 아예 없을 경우 (수동 스폰)를 위해 최소 1번은 실행
 
@@ -280,6 +281,7 @@ namespace PIP::SERVER
 		{
 			// 1. NPC 고유 ID 생성 (방 번호 기반으로 충돌 방지)
 			int64_t npc_id = _next_npc_id + (_room_id * 10000LL) + _npcs.size();
+			spawned_ids.push_back(npc_id);
 
 			// 2. 타입별 객체 생성 (확장 포인트)
 			std::unique_ptr<GAME::NPC> new_npc;
@@ -345,6 +347,7 @@ namespace PIP::SERVER
 
 			AddNPC(std::move(new_npc));
 		}
+		return spawned_ids;
 	}
 	common::Vec3 Room::find_safe_spawn_position(const common::Vec3& pos, GAME::CharacterControllerComponent* cc)
 	{
@@ -1570,6 +1573,33 @@ namespace PIP::SERVER
 					_activatedLevers.insert(lever_index);
 					MYLOG("[Room " << _room_id << "] Lever " << lever_index << " activated! Total: " << _activatedLevers.size());
 					
+					// Quest 2 프로그레스 업데이트
+					for (auto& pair : _players) {
+						auto sess = pair.second;
+						if (sess && sess->_player) {
+							auto q = sess->_player->GetQuest(2);
+							if (q && q->_state == packet::QuestState::IN_PROGRESS) {
+								auto info = sess->_player->UpdateQuestProgress(2, static_cast<int32_t>(_activatedLevers.size()));
+								SendQuestUpdate(sess, info);
+								if (info._state == packet::QuestState::COMPLETED) {
+									sess->_player->CompleteQuest(2);
+									auto final_info = *sess->_player->GetQuest(2);
+									SendQuestUpdate(sess, final_info);
+
+									// 보상 알림 배너를 띄우기 위해 Stat Sync 패킷 전송
+									packet::SC_PACKET_PLAYER_STAT_SYNC stat_packet;
+									stat_packet._type = packet::PacketType::S2C_P_PLAYER_STAT_SYNC;
+									stat_packet._size = sizeof(stat_packet);
+									stat_packet._id = sess->_id;
+									stat_packet._hp = sess->_player->GetHP();
+									stat_packet._max_hp = sess->_player->GetMaxHP();
+									stat_packet._damage = sess->_player->GetAttackDamage();
+									Broadcast(reinterpret_cast<char*>(&stat_packet), sizeof(stat_packet), -1, true);
+								}
+							}
+						}
+					}
+
 					if (_activatedLevers.size() >= 2) {
 						// 레버 2개 작동 완료 -> 컷씬 재생 패킷 브로드캐스트
 						MYLOG("[Room " << _room_id << "] Both levers activated. Broadcasting PLAY_CUTSCENE.");
@@ -2353,33 +2383,105 @@ namespace PIP::SERVER
 		// 3. 타이머 잡 등록 (Server::AddTimerJob 사용)
 		int workerIdx = _logic_thread_idx;
 
-		// 1초뒤 실제 죽음 발생
-		Server::Instance()->AddTimerJob(workerIdx, npc->GetDeathAnimationTime(), [this, npcId]() {
-			this->PushJob([this, npcId]() {
-				if (auto* npc = this->GetNPC(npcId)) {
-					npc->SetActive(false);
+		// 1초뒤 실제 죽음 발생 (일반 몬스터)
+		if (!npc->is_boss()) {
+			Server::Instance()->AddTimerJob(workerIdx, npc->GetDeathAnimationTime(), [this, npcId]() {
+				this->PushJob([this, npcId]() {
+					if (auto* npc = this->GetNPC(npcId)) {
+						npc->SetActive(false);
 
-					for (auto& [pid, session] : _players)
-					{
-						if (session->_viewedNpcs.contains(npcId))
+						for (auto& [pid, session] : _players)
 						{
-							SendNpcLeaveToPlayer(session, npcId);
-							session->_viewedNpcs.erase(npcId);
+							if (session->_viewedNpcs.contains(npcId))
+							{
+								SendNpcLeaveToPlayer(session, npcId);
+								session->_viewedNpcs.erase(npcId);
+							}
+						}
+						_gridMap.Remove(npc);
+					}
+					});
+				});
+
+			// 10초(10000ms) 뒤 부활 예약
+			Server::Instance()->AddTimerJob(workerIdx, npc->GetRespawnDelay() + npc->GetDeathAnimationTime(), [this, npcId]() {
+				// 타이머 스레드에서 바로 부활시키면 레이스 컨디션 발생하므로 다시 PushJob으로 던짐
+				this->PushJob([this, npcId]() {
+					if (auto* npc = this->GetNPC(npcId)) {
+						this->RespawnNPC(npc);
+					}
+					});
+				});
+		} else {
+			// 보스 사망 시
+			// 5초 대기 (클라이언트의 엔딩 컷씬 연출 시간)
+			Server::Instance()->AddTimerJob(workerIdx, std::chrono::milliseconds(5000), [this]() {
+				this->PushJob([this]() {
+					// 룸 초기화 및 캐슬 씬으로 복귀
+					_activatedLevers.clear();
+					
+					// 퀘스트 및 플레이어 스탯 완전 초기화
+					for (auto& [pid, session] : _players) {
+						if (session && session->_player) {
+							// 1. 서버 측 플레이어 상태 완전 초기화 (HP, 데미지 등)
+							session->_player->init(session->_player->GetId());
+							session->_player->_quests.clear(); // init에서 퀘스트는 안 지우므로 명시적 삭제
+							
+							// 초기 퀘스트(1번) 지급
+							session->_player->AddQuest(1);
+
+							// 2. 클라이언트에 전체 퀘스트 정보(초기화된 상태) 전송하여 클라도 동기화
+							packet::PacketStream quest_stream;
+							packet::SC_PACKET_QUEST_INFO quest_pkt;
+							quest_pkt._type = packet::PacketType::S2C_P_QUEST_INFO;
+							quest_pkt._quest_count = static_cast<uint8_t>(session->_player->_quests.size());
+							
+							quest_stream << quest_pkt;
+							for (const auto& [qid, q] : session->_player->_quests) {
+								quest_stream << q;
+							}
+							auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(quest_stream.mutable_data());
+							h_ptr->_size = (uint16_t)quest_stream.Size();
+							session->do_send(quest_stream.constable_data(), quest_stream.Size());
+
+							// 3. 퀘스트로 올랐던 체력/데미지도 초기값으로 롤백되었음을 클라이언트에 동기화
+							packet::PacketStream stat_stream;
+							packet::SC_PACKET_PLAYER_STAT_SYNC stat_pkt;
+							stat_pkt._type = packet::PacketType::S2C_P_PLAYER_STAT_SYNC;
+							stat_pkt._size = sizeof(stat_pkt);
+							stat_pkt._id = session->_id;
+							stat_pkt._max_hp = session->_player->GetMaxHP();
+							stat_pkt._hp = session->_player->GetHP();
+							stat_pkt._damage = session->_player->GetAttackDamage();
+							
+							// [버그 수정] stat_pkt를 stream에 직렬화하지 않아서 0바이트 패킷이 전송되던 문제 해결!
+							stat_stream << stat_pkt;
+							session->do_send(stat_stream.constable_data(), stat_stream.Size());
 						}
 					}
-					_gridMap.Remove(npc);
-				}
+
+					// 캐슬 스테이지로 로드
+					ChangeScene("CastleStage");
+
+					// 모든 플레이어에게 CHANGE_SCENE("CastleStage") 전송
+					for (auto& [pid, session] : _players) {
+						if (session) {
+							packet::PacketStream stream;
+							packet::SC_PACKET_CHANGE_SCENE change_packet;
+							change_packet._type = packet::PacketType::S2C_P_CHANGE_SCENE;
+							stream << change_packet;
+							stream << std::string("CastleStage");
+
+							auto* h_ptr = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+							h_ptr->_size = (uint16_t)stream.Size();
+
+							session->do_send(reinterpret_cast<const char*>(stream.constable_data()), stream.Size());
+							MYLOG("[Room " << _room_id << "] Sent CHANGE_SCENE(CastleStage) to Session " << session->_id);
+						}
+					}
 				});
 			});
-		// 10초(10000ms) 뒤 부활 예약
-		Server::Instance()->AddTimerJob(workerIdx, npc->GetRespawnDelay() + npc->GetDeathAnimationTime(), [this, npcId]() {
-			// 타이머 스레드에서 바로 부활시키면 레이스 컨디션 발생하므로 다시 PushJob으로 던짐
-			this->PushJob([this, npcId]() {
-				if (auto* npc = this->GetNPC(npcId)) {
-					this->RespawnNPC(npc);
-				}
-				});
-			});
+		}
 
 	}
 
@@ -2461,6 +2563,12 @@ namespace PIP::SERVER
 		auto player = session->_player;
 		common::Vec3 spawnPos = _currentStage->get_spawn_pos();
 
+		// 퀘스트 2를 진행 중일 경우 스폰 지점을 성(Castle)으로 덮어씀
+		auto quest2 = player->GetQuest(2);
+		if (quest2 && quest2->_state == common::packet::QuestState::IN_PROGRESS) {
+			spawnPos = LuaManager::Instance()->GetCastleSpawnPoint();
+		}
+
 		player->SetHP(player->_max_hp);
 		player->SetPosition(spawnPos);
 		player->ResetState(); // [핵심 수정] 전투 상태 및 잡기 정보 강제 초기화
@@ -2475,6 +2583,7 @@ namespace PIP::SERVER
 		res_pkt._size = sizeof(res_pkt);
 		res_pkt._id = session->_id;
 		res_pkt._position = spawnPos;
+		res_pkt._rotation = { 0.0f, 0.0f, 0.0f, 1.0f }; // Identity quaternion
 		res_pkt._hp = player->GetHP();
 
 		Broadcast(reinterpret_cast<char*>(&res_pkt), sizeof(res_pkt), -1, true);
