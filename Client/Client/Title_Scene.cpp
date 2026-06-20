@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Title_Scene.h"
 #include "SceneManager.h"
 
@@ -27,7 +27,7 @@ extern HINSTANCE hInst;
 
 void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-    ShadowManager::instance()->set_shadow_max_distance(500.0f);
+    ShadowManager::instance()->set_shadow_max_distance(700.0f);
 
     // 일단 검은 창을 띄우고 로드하도록 수정
     
