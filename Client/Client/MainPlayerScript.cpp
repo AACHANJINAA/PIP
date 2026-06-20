@@ -33,9 +33,9 @@ void MainPlayerScript::set_hp(int hp)
 	int prevHp = _hp;
 	_hp = std::clamp(hp, 0, _maxHp);
 
-	// [사운드] 피격 시 MinecraftDamage 재생
+	// [사운드] 피격 시 PlayerDamage 재생
 	if (_hp < prevHp) {
-		SoundManager::instance()->play("MinecraftDamage", SoundType::SFX, 1.0f, false);
+		SoundManager::instance()->play("PlayerDamage", SoundType::SFX, 1.0f, false);
 	}
 
 	// _hpBar_ui가 null이면 매번 재탐색
@@ -155,7 +155,7 @@ void MainPlayerScript::awake()
 	// [사운드] 플레이어 무기 공격음 / 피격음 로드
 	SoundManager::instance()->load_sound("SwordSwing",      "Resource/Sound/SwordSwing.mp3",      false);
 	SoundManager::instance()->load_sound("DustSound",       "Resource/Sound/Dust.wav",             true);
-	SoundManager::instance()->load_sound("MinecraftDamage", "Resource/Sound/MinecraftDamage.mp3", false);
+	SoundManager::instance()->load_sound("PlayerDamage",    "Resource/Sound/PlayerDamage.wav",     false);
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -307,7 +307,15 @@ void MainPlayerScript::update_mp_bar(float deltaTime)
 void MainPlayerScript::update_quest_ui(float deltaTime)
 {
     // 현재 진행 중인 퀘스트를 찾습니다.
-    const auto active_quest = NetworkManager::instance()->get_quest(1);
+    const auto quest1 = NetworkManager::instance()->get_quest(1);
+    const auto quest2 = NetworkManager::instance()->get_quest(2);
+
+    const common::packet::QuestUpdateInfo* active_quest = nullptr;
+    if (quest1 && quest1->_state != common::packet::QuestState::NONE && quest1->_state != common::packet::QuestState::REWARDED) {
+        active_quest = quest1;
+    } else if (quest2 && quest2->_state != common::packet::QuestState::NONE && quest2->_state != common::packet::QuestState::REWARDED) {
+        active_quest = quest2;
+    }
 
     bool is_visible = false;
     int current = 0;
@@ -376,8 +384,12 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
         if (title_ui) {
             if (quest_id == 2) {
                 title_ui->set_texture("Resource/UI/Quest_Title_2.png");
+                title_ui->set_size(533.f, 50.f); // 원본 이미지 비율 유지
+                title_ui->set_screen_position(-80.f, FRAME_BUFFER_HEIGHT / 2.0f - 50.f / 2.0f - 15.f); // 왼쪽으로 위치 조정
             } else {
                 title_ui->set_texture("Resource/UI/Quest_Title_1.png"); // 기본: 1번
+                title_ui->set_size(250.f, 50.f); // 1번 퀘스트 크기
+                title_ui->set_screen_position(20.f, FRAME_BUFFER_HEIGHT / 2.0f - 50.f / 2.0f - 15.f); // 원래 위치 복구
             }
         }
     }
@@ -432,7 +444,6 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 	}
 
 	// 10마리 완료 조건 시점에 Q 가이드 UI 활성화
-	const auto quest1 = NetworkManager::instance()->get_quest(1);
 	bool is_q_active = false;
 	if (quest1)
 	{

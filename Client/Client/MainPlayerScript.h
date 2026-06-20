@@ -41,6 +41,8 @@ public:
 	}
 	const f3& position() const { return this->transform()->local_position(); }
 
+	void set_yaw(float yaw) { _currentyaw = yaw; }
+
 	void set_id(int64_t id) { _playerId = id; }
 	void set_mp_bar_ui(std::shared_ptr<UIRenderComponent> ui) {
 		_mpBar_ui = ui;

@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
 #include "LayerManager.h"
@@ -672,7 +672,19 @@ void NetworkManager::HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& s
 			{
 				player_logic->set_hp(resurrect_packet._hp);
 				player_logic->set_position(resurrect_packet._position);
-				player_logic->transform()->set_local_rotation({ 0,0,0,1 });
+				
+				// [회전 변경] 보스 씬일 때 원하는 회전값으로 스폰 (예: 0도)
+				if (SceneManager::instance()->current_scene()->scene_name() == "BossScene") {
+					float playerSpawnYawDegrees = -90.0f; // 필요 시 이 값을 수정하세요
+					DirectX::XMVECTOR qVec = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, DirectX::XMConvertToRadians(playerSpawnYawDegrees), 0.0f);
+					DirectX::XMFLOAT4 q;
+					DirectX::XMStoreFloat4(&q, qVec);
+					player_logic->transform()->set_local_rotation(q);
+					player_logic->set_yaw(playerSpawnYawDegrees);
+				} else {
+					player_logic->transform()->set_local_rotation({ 0,0,0,1 });
+				}
+
 				player_logic->reset_state(); // [추가] 리스폰 시 상태 초기화
 				player_logic->set_mp(100); // 부활 시 마나 100
 			}
@@ -1039,6 +1051,8 @@ void NetworkManager::HANDLE_S2C_QUEST_INFO(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_QUEST_INFO header;
 	stream >> header;
+
+	_quests.clear(); // [추가] 서버에서 전체 퀘스트 정보가 올 때 기존 퀘스트 완전 초기화
 
 	for (uint8_t i = 0; i < header._quest_count; ++i)
 	{

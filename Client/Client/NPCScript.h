@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "INetSync.h"
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
