@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "AnimationComponent.h"
 #include "ReadGLTFMesh.h"
 #include "GameObject.h"
@@ -37,6 +37,22 @@ void AnimationComponent::late_update(float deltaTime)
 	if (!glTF_mesh) 
 	{
 		return;
+	}
+
+	// 목표 진행도 도달 체크 및 정지
+	if (_isPauseTargetSet)
+	{
+		float animDuration = glTF_mesh->get_animation_duration(_nowAnimationName);
+		float targetTime = animDuration * _pauseTargetProgress;
+
+		// 타겟 타임을 넘어섰다면 타겟 타임에 고정하고 속도를 0으로 만듦
+		if ((_animationSpeed > 0.0f && _nowAnimationTime >= targetTime) ||
+			(_animationSpeed < 0.0f && _nowAnimationTime <= targetTime))
+		{
+			_nowAnimationTime = targetTime;
+			_animationSpeed = 0.0f;
+			_isPauseTargetSet = false; // 한 번 멈추면 목표 달성으로 간주
+		}
 	}
 
 
@@ -129,12 +145,28 @@ void AnimationComponent::play(const std::string& name, bool isLoop, float speed)
 	_animationSpeed = speed;
 	_nowAnimationTime = 0.f;
 	_isFinished = false;
+	_isPauseTargetSet = false;
 
 	// 메쉬가 다르면 교체
 	if (it->second.mesh != _bufferedMesh) 
 	{
 		change_mesh(it->second.mesh);
 	}
+}
+
+void AnimationComponent::play_until_progress(const std::string& name, float targetProgress, float speed)
+{
+	// 먼저 애니메이션을 재생 (무조건 루프 끔)
+	play(name, false, speed);
+	
+	// 재생 시작 후 멈출 목표 지점 설정
+	set_pause_at_progress(targetProgress);
+}
+
+void AnimationComponent::set_pause_at_progress(float targetProgress)
+{
+	_isPauseTargetSet = true;
+	_pauseTargetProgress = std::clamp(targetProgress, 0.0f, 1.0f);
 }
 
 //void AnimationComponent::set_state(common::packet::OBJECT_STATE state, bool isLoop)

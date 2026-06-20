@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "RootSignature.h"
 
 const std::string& DefaultRootSignatureGenerator::name() const
@@ -73,7 +73,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     //// 1. 텍스처(SRV)를 위한 디스크립터 테이블 설정
-    CD3DX12_DESCRIPTOR_RANGE ranges[7]; // 6 -> 7로 확장 (그림자용 SRV)
+    CD3DX12_DESCRIPTOR_RANGE ranges[8]; // 6 -> 8로 확장 (그림자용 SRV)
 
     for (int i = 0; i < 4; ++i){
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t3
@@ -84,6 +84,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
         D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);     // t4 (Occlusion)
 
     ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t11: shadow map
+    ranges[7].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 16, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t16: static shadow map
 
 	CD3DX12_ROOT_PARAMETER params[13]; // CBV 4개 + PBR 텍스처 테이블 4개 + IBL 텍스처 테이블 1개 + Occlusion 텍스처 테이블 1개 + shadow 월드 행렬 CBV + Shadow 텍스처 테이블 1개 + instance data SRV
 
@@ -106,10 +107,10 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     params[8].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
     params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
 
-    // b5 : shadow CBV
+	// b5 : shadow CBV
 	params[10].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL); // b5: shadow world matrix
-	// t11 : shadow descriptor table -> srv
-	params[11].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL); // t11: shadow map
+	// t11, t16 : shadow descriptor table -> srv
+	params[11].InitAsDescriptorTable(2, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL); // t11, t16: shadow maps
 	params[12].InitAsShaderResourceView(12, 0, D3D12_SHADER_VISIBILITY_VERTEX); // t12 : instance data (vertex shader용 SRV)
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
@@ -166,8 +167,8 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     ::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    // 1. 텍스처(SRV)를 위한 디스크립터 범위 설정 (t0 ~ t3)
-    CD3DX12_DESCRIPTOR_RANGE ranges[7];
+    // 1. 텍스처(SRV)를 위한 디스크립터 범위 지정 (t0 ~ t3)
+    CD3DX12_DESCRIPTOR_RANGE ranges[8];
     for (int i = 0; i < 4; ++i)
     {
         ranges[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
@@ -176,8 +177,9 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     // IBL 텍스처 추가 (t8~t10)
     ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
     ranges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
-	// Shadow map, SRV 추가 (t11)
+	// Shadow map, SRV 추가 (t11, t16)
     ranges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
+    ranges[7].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 16, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
 
     CD3DX12_ROOT_PARAMETER params[13];
 
@@ -202,9 +204,9 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
     params[9].InitAsDescriptorTable(1, &ranges[5], D3D12_SHADER_VISIBILITY_PIXEL); // t4 Occlusion
     // b5: 그림자 상수 버퍼
     params[10].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
-    // t11: 그림자 맵 디스크립터 테이블
-    params[11].InitAsDescriptorTable(1, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL);
-    // b4: 스키닝 뼈대 행렬 (맨 뒤로 이동)
+    // t11, t16: 그림자 맵 디스크립터 테이블
+    params[11].InitAsDescriptorTable(2, &ranges[6], D3D12_SHADER_VISIBILITY_PIXEL);
+    // b4: 스키닝 뼈대 행렬 (뒤로 이동)
     params[12].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_VERTEX);     // bone b4
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
@@ -347,12 +349,12 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     // Descriptor Range for Textures
-    CD3DX12_DESCRIPTOR_RANGE ranges[4]; 
-
+    CD3DX12_DESCRIPTOR_RANGE ranges[8]; // 6 -> 8로 확장 (그림자용 SRV)
     ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 0, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t0~t4
-    ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t9~t10(IBL)← 추가
+    ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 8, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t9~t10(IBL)
     ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t11 (shadow) 
-    ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 12, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t12~t15 (terrain layers)
+    ranges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 16, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t16 (static shadow) 
+    ranges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 12, 0, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND); // t12~t15 (terrain layers)
 
     // Root Parameters
     CD3DX12_ROOT_PARAMETER params[10];
@@ -368,14 +370,14 @@ ComPtr<ID3D12RootSignature> TerrainRootSignatureGenerator::create(ID3D12Device* 
     params[4].InitAsDescriptorTable(1, &ranges[0]);
     // [5] t8~t10: IBL Texture Descriptor Table 
     params[5].InitAsDescriptorTable(1, &ranges[1]);
-	// [6] b5: Shadow CBV (cbShadow)
-    params[6].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
-	// [7] t11: Shadow Texture Descriptor Table
-    params[7].InitAsDescriptorTable(1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
-	// [8] b6: Terrain Layer Info (cbTerrainLayer)
-	params[8].InitAsConstantBufferView(6, 0, D3D12_SHADER_VISIBILITY_ALL); 
+	// [6] b5: Shadow Constants
+    params[6].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL); 
+	// [7] t11, t16: Shadow Texture Descriptor Table
+    params[7].InitAsDescriptorTable(2, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
+	// [8] b6: Terrain Light Constants
+	params[8].InitAsConstantBufferView(6, 0, D3D12_SHADER_VISIBILITY_ALL);
 	// [9] t12~t15: Terrain Layer Textures Descriptor Table
-	params[9].InitAsDescriptorTable(1, &ranges[3], D3D12_SHADER_VISIBILITY_PIXEL);
+    params[9].InitAsDescriptorTable(1, &ranges[4], D3D12_SHADER_VISIBILITY_PIXEL);
 
     d3dRootSignatureDesc.NumParameters = _countof(params);
     d3dRootSignatureDesc.pParameters = params;
