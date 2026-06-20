@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
@@ -212,8 +212,8 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
 
     // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
     float radii[3] = {
-          shadow_max_distance * 0.05f,  // Cascade 0: 15m
-          shadow_max_distance * 0.3f,  // Cascade 1: 100m
+          shadow_max_distance * 0.3f,  // Cascade 0: 15m
+          shadow_max_distance * 0.6f,  // Cascade 1: 100m
           shadow_max_distance * 1.0f   // Cascade 2: 300m
     };
 
@@ -256,15 +256,25 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
                     std::vector<XMMATRIX> matrices;
                     matrices.reserve(count);
                     for (auto& obj : instances) {
+                        if (!obj || obj->is_destroyed()) continue;
+
+                        // [최적화 1]: 캐스케이드별 거리 컬링
+                        f3 objPos = obj->transform()->get_world_position();
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                        if (dist > radii[i]) continue;
+
                         matrices.push_back(XMMatrixTranspose(XMLoadFloat4x4(&obj->transform()->world_matrix())));
                     }
 
-                    auto alloc = GameFramework::instance()->linear_allocator()->allocate(sizeof(XMMATRIX) * count);
-                    memcpy(alloc.cpuPtr, matrices.data(), sizeof(XMMATRIX) * count);
+                    UINT actualCount = (UINT)matrices.size();
+                    if (actualCount == 0) continue;
+
+                    auto alloc = GameFramework::instance()->linear_allocator()->allocate(sizeof(XMMATRIX) * actualCount);
+                    memcpy(alloc.cpuPtr, matrices.data(), sizeof(XMMATRIX) * actualCount);
 
                     cmd->SetGraphicsRootShaderResourceView(2, alloc.gpuAddr);
 
-                    mesh->render_instance_CascadeShadowMap(cmd, count);
+                    mesh->render_instance_CascadeShadowMap(cmd, actualCount);
                 }
             }
         }
