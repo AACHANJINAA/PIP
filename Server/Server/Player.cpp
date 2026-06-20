@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Player.h"
 #include "HitboxComponent.h"
 #include "InventoryComponent.h"
@@ -12,11 +12,11 @@ namespace PIP::GAME
 {
 	Player::Player(int64_t owner_id)
 		:
-		_hp { 100 },
-		_max_hp{ 100 },
+		_hp { LuaManager::Instance()->GetInitialHp() },
+		_max_hp{ LuaManager::Instance()->GetInitialHp() },
 		_level { 0 },
 		_exp { 0 },
-		_damage{ 50 },
+		_damage{ LuaManager::Instance()->GetInitialDamage() },
 		_owner_id{ owner_id },
 		_actionId{0}
 	{
@@ -38,13 +38,13 @@ namespace PIP::GAME
 	void Player::init(int64_t id)
 	{
 		_owner_id = id;
-		_hp = 100;
-		_max_hp = 100;
-		_mp = 100; // [추가]
-		_max_mp = 100; // [추가]
+		_hp = LuaManager::Instance()->GetInitialHp();
+		_max_hp = LuaManager::Instance()->GetInitialHp();
+		_mp = LuaManager::Instance()->GetInitialMp();
+		_max_mp = LuaManager::Instance()->GetInitialMp();
 		_level = 0;
 		_exp = 0;
-		_damage = 50;
+		_damage = LuaManager::Instance()->GetInitialDamage();
 		_history.clear();
 		
 		ResetState(); // [추가] 공통 초기화 로직 호출

@@ -64,7 +64,23 @@ namespace PIP::SERVER
         );
 
         // 보스 테이너 배치
-        room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
+        auto spawned_ids = room->spawn_npc(GAME::NPCType::Tainer, "Tainer the Gatekeeper");
+        
+        // 보스 회전값 설정 (원하는 각도로 수정 가능, 현재는 180도)
+        float bossSpawnYawDegrees = 90.0f;
+        for (int64_t npc_id : spawned_ids) {
+            auto npcs = room->GetNPC(npc_id);
+            if (!npcs) continue;
+            if (npcs->is_boss()) {
+                if (auto tc = npcs->GetComponent<GAME::TransformComponent>()) {
+                    DirectX::XMVECTOR qVec = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, DirectX::XMConvertToRadians(bossSpawnYawDegrees), 0.0f);
+                    common::Quat q;
+                    DirectX::XMStoreFloat4(&q, qVec);
+                    tc->SetRotation(q);
+                }
+            }
+        }
+        
 
         // [초기화 1] 모든 플레이어 체력 풀 회복 + 스폰 위치로 강제 텔레포트
         common::Vec3 spawnPos = { 15.0f, -11.59f, 0.0 };
@@ -84,6 +100,13 @@ namespace PIP::SERVER
             res_pkt._size     = sizeof(res_pkt);
             res_pkt._id       = pid;
             res_pkt._position = spawnPos;
+
+            // 플레이어가 보스를 바라보도록 회전 (-90도)
+            DirectX::XMVECTOR qVec = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, DirectX::XMConvertToRadians(-90.0f), 0.0f);
+            common::Quat q;
+            DirectX::XMStoreFloat4(&q, qVec);
+            res_pkt._rotation = q;
+
             res_pkt._hp       = player->GetHP();
             room->Broadcast(reinterpret_cast<const char*>(&res_pkt), sizeof(res_pkt));
         }

@@ -41,6 +41,8 @@ public:
 	}
 	const f3& position() const { return this->transform()->local_position(); }
 
+	void set_yaw(float yaw) { _currentyaw = yaw; }
+
 	void set_id(int64_t id) { _playerId = id; }
 	void set_mp_bar_ui(std::shared_ptr<UIRenderComponent> ui) {
 		_mpBar_ui = ui;
@@ -176,8 +178,16 @@ private:
 	std::shared_ptr<UIRenderComponent> _helpMeUI{ nullptr };
 
 	// --- 퀘스트 스토리 UI 관련 변수 ---
+	float _qAutoToggleTimer = -1.0f;
+	common::packet::QuestState _prevQuest1State = common::packet::QuestState::NONE;
 	bool _isQuestStoryShowing = false;
 	bool _isQuestStoryFadingOut = false;
 	float _questStoryAlpha = 0.0f;
 	float _questStoryFadeSpeed = 2.0f; // 페이드 아웃 속도 (2.0f일 때 0.5초 동안 사라짐)
+
+	// --- 조작법 UI 관련 변수 ---
+	bool _isControlsUIShowing = false;
+	bool _isControlsUIFadingOut = false;
+	float _controlsUIAlpha = 0.0f;
+	float _controlsUIFadeSpeed = 4.0f; // 페이드 아웃 속도
 };

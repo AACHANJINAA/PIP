@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "NPCScript.h"
 #include "ReplicationSystem.h"
 #include "AnimationComponent.h"
@@ -50,11 +50,21 @@ void NPCScript::handle_animation_branching()
 		if (_npcType == NPCType::Tainer) {
 			using namespace common::packet;
 			switch (_actionId) {
-			case ActionID::Tainer::GrabCharge: anim->play("walk", true, 2.0f); break; // 돌진 (빠른 이동)
-			case ActionID::Tainer::GrabCarry:  anim->play("attack", true, 1.5f); break; // 난타 (연타 모션)
-			case ActionID::Tainer::GrabSlam:   anim->play("attack", false, 0.8f); break; // 슬램 (강한 공격)
-			case ActionID::Tainer::Roar:       anim->play("Idle", false); break;
-			default: anim->play("Attack", false); break;
+			case ActionID::Tainer::GrabCharge: 
+				anim->play("walk", true, 2.0f); 
+				break; // 돌진 (빠른 이동)
+			case ActionID::Tainer::GrabCarry:  
+				anim->play("attack", true, 1.5f); 
+				break; // 난타 (연타 모션)
+			case ActionID::Tainer::GrabSlam:   
+				anim->play("attack", false, 0.8f); 
+				break; // 슬램 (강한 공격)
+			case ActionID::Tainer::Roar:       
+				anim->play("Idle", false); 
+				break;
+			default: 
+				anim->play("Attack", false); 
+				break;
 			}
 		}
 		else {
@@ -102,6 +112,14 @@ void NPCScript::init_visual()
 	// [사운드] 몬스터/보스 공격음 로드 (3D 사운드)
 	SoundManager::instance()->load_sound("MonsterAttack", "Resource/Sound/MonsterAttack.mp3", true);
 	SoundManager::instance()->load_sound("BossDamage",   "Resource/Sound/BossDamage.mp3", false);
+	SoundManager::instance()->load_sound("MagicGuardDamage", "Resource/Sound/MagicGuardDamage.wav", false);
+	SoundManager::instance()->load_sound("MonsterDie",   "Resource/Sound/MonsterDie.mp3", false);
+
+	// 보스 특수 액션 사운드 로드
+	SoundManager::instance()->load_sound("BossCharge", "Resource/Sound/BossCharge.wav", true);
+	SoundManager::instance()->load_sound("BossGrab",   "Resource/Sound/BossGrab.wav", true);
+	SoundManager::instance()->load_sound("BossSmash",  "Resource/Sound/BossSmash.wav", true);
+	SoundManager::instance()->load_sound("BossRoar",   "Resource/Sound/BossRoar.wav", true);
 
 	if (_npcType == common::packet::NPCType::Elevator) {
 		// 엘리베이터 모델 설정 (실제 경로 적용)
@@ -216,8 +234,30 @@ void NPCScript::on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_m
 			SoundManager::instance()->play_3d("MonsterAttack", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
 		}
 	}
+	
+	// 사망 시 사운드 재생
+	if (prevState != common::packet::EntityState::DEAD && _state == common::packet::EntityState::DEAD) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("MonsterDie", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+		}
+	}
 
-	_actionId = npc_move_packet._action_id;
+	if (_actionId != npc_move_packet._action_id) {
+		_actionId = npc_move_packet._action_id;
+		
+		// 보스 액션별 사운드 구간 재생 (원하는 시작/종료 시간 문자열로 지정)
+		if (_npcType == common::packet::NPCType::Tainer) {
+			if (_actionId == common::packet::ActionID::Tainer::Charge || _actionId == common::packet::ActionID::Tainer::GrabCharge) {
+				SoundManager::instance()->play_3d_section("BossCharge", transform()->get_world_position(), "00:03:00", "00:04:00"); 
+			} else if (_actionId == common::packet::ActionID::Tainer::Grab) {
+				SoundManager::instance()->play_3d_section("BossGrab", transform()->get_world_position(), "00:00:00", "00:00:500"); 
+			} else if (_actionId == common::packet::ActionID::Tainer::Slam || _actionId == common::packet::ActionID::Tainer::GrabSlam) {
+				SoundManager::instance()->play_3d_section("BossSmash", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f);
+			} else if (_actionId == common::packet::ActionID::Tainer::Roar) {
+				SoundManager::instance()->play_3d_section("BossRoar", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f); 
+			}
+		}
+	}
 	_hp = npc_move_packet._hp; // [추가] HP 동기화
 	_grabbedById = -1; // 단일 이동 패킷엔 아직 그랩 정보가 없음 (일관성을 위해 리셋)
 	_grabSlot = -1;
@@ -244,7 +284,7 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 {
 	_serverPos = spawnPkt._position;
 	_serverVel = { 0, 0, 0 };
-	_serverRot = { 0, 0, 0, 1 };
+	_serverRot = spawnPkt._rotation; // [수정] 서버에서 받은 회전값 사용
 	_accumulatedTime = 0.0f;
 	_isNewDataArrived = false; // 대기 중인 스냅샷 무시 (생성 시 좌표가 우선)
 
@@ -253,6 +293,11 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	_hp = spawnPkt._hp;
 	set_id(spawnPkt._npc_id);
 	_npcType = spawnPkt._npc_type;
+
+	if (transform()) {
+		transform()->set_local_position(_serverPos);
+		transform()->set_local_rotation(_serverRot);
+	}
 
 	auto hp_component = game_object()->get_component<MonsterHPComponent>();
 	if (hp_component) {
@@ -295,6 +340,13 @@ void NPCScript::set_hp(int hp)
 	if (hp < prevHp && _npcType == common::packet::NPCType::Tainer) {
 		if (transform()) {
 			SoundManager::instance()->play_3d("BossDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+		}
+	}
+	
+	// [사운드] 매직가드 피격 사운드 재생
+	if (hp < prevHp && _npcType == common::packet::NPCType::MagicGuard) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("MagicGuardDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
 		}
 	}
 }
@@ -471,7 +523,39 @@ void NPCScript::apply_snapshot()
 		}
 	}
 
-	_actionId = _pendingSnapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
+	// 사망 시 사운드 재생
+	if (prevState != common::packet::EntityState::DEAD && _state == common::packet::EntityState::DEAD) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("MonsterDie", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+			if (_npcType == common::packet::NPCType::Tainer) {
+				SoundManager::instance()->stop("BossCharge");
+				SoundManager::instance()->stop("BossGrab");
+				SoundManager::instance()->stop("BossSmash");
+				SoundManager::instance()->stop("BossRoar");
+			}
+		}
+	}
+
+	if (_actionId != _pendingSnapshot.action_id) {
+		_actionId = _pendingSnapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
+		
+		// 보스 액션별 사운드 구간 재생 (원하는 시작/종료 시간 문자열로 지정)
+		if (_npcType == common::packet::NPCType::Tainer) {
+			if (_actionId == common::packet::ActionID::Tainer::Charge || _actionId == common::packet::ActionID::Tainer::GrabCharge) {
+				SoundManager::instance()->play_3d_section("BossCharge", transform()->get_world_position(), "00:03:00", "00:04:00");
+			}
+			else if (_actionId == common::packet::ActionID::Tainer::Grab) {
+				SoundManager::instance()->play_3d_section("BossGrab", transform()->get_world_position(), "00:00:00", "00:00:500");
+			}
+			else if (_actionId == common::packet::ActionID::Tainer::Slam || _actionId == common::packet::ActionID::Tainer::GrabSlam) {
+				SoundManager::instance()->play_3d_section("BossSmash", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f);
+			}
+			else if (_actionId == common::packet::ActionID::Tainer::Roar) {
+				SoundManager::instance()->play_3d_section("BossRoar", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f);
+			}
+		}
+	}
+
 	_grabbedById = _pendingSnapshot.grabbed_by_id; // [추가]
 	_grabSlot = _pendingSnapshot.grab_slot;         // [추가]
 	set_hp(_pendingSnapshot.hp);                   // [추가] HP 동기화

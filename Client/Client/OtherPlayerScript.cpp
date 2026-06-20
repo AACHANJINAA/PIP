@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "OtherPlayerScript.h"
 
 #include "AnimationComponent.h"
@@ -14,6 +14,17 @@
 #include "ParticleSystemComponent.h"
 #include "ParticleRenderComponent.h"
 #include "UIManager.h"
+
+void OtherPlayerScript::set_hp(int hp)
+{
+	int prevHp = _hp;
+	_hp = hp;
+	if (_hp < prevHp) {
+		if (transform()) {
+			SoundManager::instance()->play_3d("PlayerDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+		}
+	}
+}
 
 void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
 {

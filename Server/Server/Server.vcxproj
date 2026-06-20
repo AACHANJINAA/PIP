@@ -287,6 +287,7 @@
     <None Include="LeverData.lua" />
     <None Include="Monster.lua" />
     <None Include="NPC_Data.lua" />
+    <None Include="PlayerData.lua" />
     <None Include="QuestData.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
