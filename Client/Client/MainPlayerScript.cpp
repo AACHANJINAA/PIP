@@ -275,6 +275,12 @@ void MainPlayerScript::awake()
 		// 초기에는 꺼둠
 		_particleEffectObject->set_enabled(false);
 	}
+
+	// [추가] 초기 퀘스트 상태 동기화 (씬 로드 시 타이머 오작동 방지)
+	auto quest1 = NetworkManager::instance()->get_quest(1);
+	if (quest1) {
+		_prevQuest1State = quest1->_state;
+	}
 }
 
 void MainPlayerScript::sync_with_server(const common::packet::SC_PACKET_MOVE& movePacket)
