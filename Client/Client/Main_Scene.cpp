@@ -843,7 +843,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 void Main_Scene::cinematic_sequence(float deltaTime)
 {
 	// 디버깅을 위해서 바로 넘김
-	_isCutsceneDoneSent = true;
+	 _isCutsceneDoneSent = true;
 
 	// 컷씬에 필요한 변수들 준비
 	float bgm_time = SoundManager::instance()->get_playback_position("Cinematic_fountain_BGM");
@@ -905,21 +905,44 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	{
 
 	}
-	// 19~24초 원 점점 퍼지기
-	else if (bgm_time > 19.0f && bgm_time <= 24.0f)
+	// 16~21초 원 점점 퍼지기
+	else if (bgm_time > 16.0f && bgm_time <= 21.0f)
 	{
 		_dummy_particle_fountain->set_enabled(true); // 분수대 메시 렌더링 켜기
 		// 진행도는 이 시간동안 0~0.3f까지 증가
-		fountain_particle_progress = (bgm_time - 19.0f) / 5.0f * 0.3f; // 0~0.3f
+		fountain_particle_progress = (bgm_time - 16.0f) / 5.0f * 0.3f; // 0~0.3f
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
-	// 24초~31부터 분수 스폰 후 모여들기
-	else if (bgm_time > 24.0f && bgm_time <= 31.0f)
+	// 21초~28초부터 분수 스폰 후 모여들기
+	else if (bgm_time > 21.0f && bgm_time <= 28.0f)
 	{
 		// 진행도는 이 시간동안 0.3f ~ 1.f까지 증가
-		fountain_particle_progress = 0.3f + ((bgm_time - 24.0f) / 7.0f * 0.7f); // 0.3f ~ 1.f
+		fountain_particle_progress = 0.3f + ((bgm_time - 21.0f) / 7.0f * 0.7f); // 0.3f ~ 1.f
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
+	// 28~31초 분수 유지 및 플레이어에게 라이팅 집중
+	else if (bgm_time > 28.0f && bgm_time <= 31.0f)
+	{
+
+	}
+	// 31~35초 분수 사라지기
+	else if (bgm_time > 31.0f && bgm_time <= 35.0f)
+	{
+		fountain_particle_progress = 1.0f - ((bgm_time - 31.0f) / 4.0f); // 1.f ~ 0.f
+		psComp->set_particle_dying(true);
+		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
+	}
+	// 35~45초 플레이어 스킬 사용
+	else if (bgm_time > 35.0f && bgm_time <= 45.0f)
+	{
+		// 플레이어 스킬 사용 연출
+
+
+	}
+
+
+
+	// 마지막 넘어가기
 	if (bgm_time >= 30.0f && !bgm_time)
 	{
 		//_isCutsceneDoneSent = true;
