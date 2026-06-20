@@ -322,6 +322,18 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		UIManager::instance()->set_visible(UILayer::FRONT, cd_name, false); // 처음엔 숨김
 	}
 
+	// [엔딩 연출] 전체화면 엔딩 UI 생성
+	{
+		auto ending_obj = ObjectManager::instance()->create_game_object("Ending_UI");
+		auto ending_ui = ending_obj->add_component<UIRenderComponent>();
+		ending_ui->set_screen_position(0.0f, 0.0f);
+		ending_ui->set_size(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
+		ending_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f)); // 알파 0
+		ending_ui->set_texture("Resource/UI/Ending_Scene.png");
+		UIManager::instance()->add_ui(UILayer::FRONT, "Ending_UI", ending_obj);
+		UIManager::instance()->set_visible(UILayer::FRONT, "Ending_UI", false);
+	}
+
 	// 10. 파티 UI
 	// --- 파티 UI 설정 ---
 	float party_ui_scale = 0.7f;                    // 기존 0.5f에서 0.7f로 상향 (전체적인 크기 증가)
@@ -428,6 +440,47 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		boss_hp_bar->set_texture("Resource/UI/HP_Bar.dds");
 		UIManager::instance()->add_ui(UILayer::MIDDLE, "Boss_HP_Bar", boss_hp_bar_obj);
 		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Bar", false);
+
+		// [추가] 1) 보스 이름 UI (좌측 상단 배치)
+		float name_w = 300.0f;
+		float name_h = 75.0f; // 텍스처 종횡비(4:1)를 맞추어 글자 찌그러짐 방지 (300 / 4 = 75)
+		auto boss_name_obj = ObjectManager::instance()->create_game_object("Boss_Name_UI");
+		auto boss_name_ui = boss_name_obj->add_component<UIRenderComponent>();
+		boss_name_ui->set_screen_position(posX + 10.0f, posY - 70.0f); // HP바 좌측 위 배치 (늘어난 세로 크기만큼 Y 오프셋 보정)
+		boss_name_ui->set_size(name_w, name_h);
+		boss_name_ui->set_texture("Resource/UI/Boss_Name_Tainer.png");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Boss_Name_UI", boss_name_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_Name_UI", false);
+
+		// [추가] 2) 보스 HP % 기호 UI (우측 상단 배치)
+		float num_endX = posX + boss_w - 45.0f; // 우상단 끝 정렬 기준 좌표
+		float num_posY = posY - 42.0f;          // HP바 위로 42px 오프셋 (숫자가 커진 만큼 Y 보정)
+		float num_size = 45.0f;                 // [수정] 숫자 및 % 기호 크기를 이름 비율에 맞춰 45.0f로 키움
+
+		auto boss_perc_obj = ObjectManager::instance()->create_game_object("Boss_HP_Percent");
+		auto boss_perc_ui = boss_perc_obj->add_component<UIRenderComponent>();
+		boss_perc_ui->set_screen_position(num_endX, num_posY);
+		boss_perc_ui->set_size(num_size, num_size);
+		boss_perc_ui->set_texture("Resource/UI/Percent_Sign.png");
+		UIManager::instance()->add_ui(UILayer::MIDDLE, "Boss_HP_Percent", boss_perc_obj);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Percent", false);
+
+		// [추가] 3) 보스 HP 백분율 숫자 UI (최대 3자리: 백의 자리, 십의 자리, 일의 자리)
+		// Quest_Numbers.png 텍스처를 11칸 시트로 잘라서 사용
+		for (int i = 0; i < 3; ++i)
+		{
+			std::string obj_name = "Boss_HP_Num_" + std::to_string(i);
+			auto num_obj = ObjectManager::instance()->create_game_object(obj_name);
+			auto num_ui = num_obj->add_component<UIRenderComponent>();
+			// % 기호에서 좌측 방향으로 배치 (i=0: 백의 자리, i=1: 십의 자리, i=2: 일의 자리 순으로 정렬)
+			// 크기가 45.0f로 커졌으므로 겹치지 않게 간격을 32.0f로 넓히고 시작 위치 오프셋 조정
+			num_ui->set_screen_position(num_endX - 34.0f - ((2 - i) * 32.0f), num_posY);
+			num_ui->set_size(num_size, num_size);
+			num_ui->set_texture("Resource/UI/Quest_Numbers.png");
+			num_ui->set_uv_scale(1.0f / 11.0f, 1.0f); // 11칸 중 1칸
+			UIManager::instance()->add_ui(UILayer::MIDDLE, obj_name, num_obj);
+			UIManager::instance()->set_visible(UILayer::MIDDLE, obj_name, false);
+		}
 	}
 }
 

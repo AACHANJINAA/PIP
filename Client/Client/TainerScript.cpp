@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "TainerScript.h"
 
 #include "AnimationComponent.h"
@@ -13,10 +13,15 @@ void TainerScript::awake()
 	auto hp_bar_obj = ObjectManager::instance()->find_by_name("Boss_HP_Bar");
 	if (hp_bar_obj) _hpBar_ui = hp_bar_obj->get_component<UIRenderComponent>();
 
+	auto ending_obj = ObjectManager::instance()->find_by_name("Ending_UI");
+	if (ending_obj) _endingUI = ending_obj->get_component<UIRenderComponent>();
+
 	NPCScript::awake();
 
 	UIManager::instance()->set_visible(UILayer::BACKGROUND, "Boss_HP_Frame", true);
 	UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Bar", true);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_Name_UI", true);
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Percent", true);
 
     game_object()->get_component<TransformComponent>()->set_local_scale({ 5.f,5.f ,5.f });
     auto hp = get_hp();
@@ -86,6 +91,41 @@ void TainerScript::update(float deltaTime)
 {
     update_hp_bar(deltaTime);
     NPCScript::update(deltaTime);
+
+    // [엔딩 연출] 보스가 죽었을 때 연출 타이머 작동 시작 (사망 모션 개시 시점)
+    if (_state == common::packet::EntityState::DEAD && !_isEndingTriggered)
+    {
+        _isEndingTriggered = true;
+        _endingTimer = 0.0f;
+    }
+
+    if (_isEndingTriggered)
+    {
+        _endingTimer += deltaTime;
+
+		float boss_animation_time = 2.0;
+		float fadein_time = 3.0;
+
+        if (_endingTimer >= boss_animation_time)
+        {
+            if (_endingTimer - deltaTime < boss_animation_time)
+            {
+                UIManager::instance()->set_visible(UILayer::FRONT, "Ending_UI", true);
+            }
+
+            if (_endingUI)
+            {
+                float alpha = std::min(1.0f, (_endingTimer - boss_animation_time) / fadein_time);
+                _endingUI->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+            }
+        }
+
+        if (_endingTimer >= boss_animation_time + fadein_time)
+        {
+            PostQuitMessage(0);
+        }
+    }
+
     // 디버그 드로우 매니저를 통해 보스 머리 위에 현재 노드 이름 표시
     if (!_currentBTNodeName.empty()) {
         common::Vec3 headPos = position();
@@ -179,11 +219,17 @@ void TainerScript::update_hp_bar(float deltaTime)
 	// 보간 로직 (MainPlayerScript 참고)
 	float lerp = std::min(1.0f, deltaTime * 10.0f);
 	_displayHp += (static_cast<float>(hpComp->get_current_hp()) - _displayHp) * lerp;
-	// 보스가 DEAD 상태가 되면 HP 프레임과 바를 숨김
+	
+	// 보스가 DEAD 상태가 되면 보스 관련 모든 UI 숨김 처리
 	if (_state == common::packet::EntityState::DEAD)
 	{
 		UIManager::instance()->set_visible(UILayer::BACKGROUND, "Boss_HP_Frame", false);
 		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Bar", false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_Name_UI", false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Percent", false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_0", false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_1", false);
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_2", false);
 		_hpBar_ui = nullptr;
 		return;
 	}
@@ -191,5 +237,58 @@ void TainerScript::update_hp_bar(float deltaTime)
 	float ratio = _displayHp / static_cast<float>(hpComp->get_max_hp());
 	_hpBar_ui->set_size_x(946.0f * ratio); // 946.0f는 초기 size와 동일
 	_hpBar_ui->set_uv_scale(ratio, 1.0f);
-	_hpBar_ui->set_uv_scale(ratio, 1.0f);
+
+	// --- [추가] 실시간 HP 백분율 연출 로직 ---
+	int percent = static_cast<int>(ratio * 100.0f + 0.5f); // 반올림 정수 백분율
+	if (percent < 0) percent = 0;
+	if (percent > 100) percent = 100;
+
+	// 자릿수 분석 (백의 자리, 십의 자리, 일의 자리)
+	int h_digit = percent / 100;         // 백의 자리
+	int t_digit = (percent % 100) / 10;   // 십의 자리
+	int o_digit = percent % 10;          // 일의 자리
+
+	// 11칸 시트 기준 UV 오프셋 맵핑용 변수 (Quest_Numbers.png의 칸 인덱스)
+	float step = 1.0f / 11.0f;
+
+	// 일의 자리는 무조건 표시
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_2", true);
+	auto num2_obj = ObjectManager::instance()->find_by_name("Boss_HP_Num_2");
+	if (num2_obj) {
+		if (auto comp = num2_obj->get_component<UIRenderComponent>()) {
+			comp->set_uv_offset(o_digit * step, 0.0f);
+		}
+	}
+
+	// 십의 자리 표시 여부 (10% 이상일 때만 노출)
+	if (percent >= 10)
+	{
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_1", true);
+		auto num1_obj = ObjectManager::instance()->find_by_name("Boss_HP_Num_1");
+		if (num1_obj) {
+			if (auto comp = num1_obj->get_component<UIRenderComponent>()) {
+				comp->set_uv_offset(t_digit * step, 0.0f);
+			}
+		}
+	}
+	else
+	{
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_1", false);
+	}
+
+	// 백의 자리 표시 여부 (100% 일 때만 노출)
+	if (percent >= 100)
+	{
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_0", true);
+		auto num0_obj = ObjectManager::instance()->find_by_name("Boss_HP_Num_0");
+		if (num0_obj) {
+			if (auto comp = num0_obj->get_component<UIRenderComponent>()) {
+				comp->set_uv_offset(h_digit * step, 0.0f);
+			}
+		}
+	}
+	else
+	{
+		UIManager::instance()->set_visible(UILayer::MIDDLE, "Boss_HP_Num_0", false);
+	}
 }

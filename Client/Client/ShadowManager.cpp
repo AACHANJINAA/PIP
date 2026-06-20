@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
@@ -169,22 +169,34 @@ void ShadowManager::build_cascade_matrices()
 void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index)
 {
     _currentFrameIndex = frame_index;
+    ++_frameCount; // 프레임 카운트 누적
 
     // 1. 행렬 빌드 및 복사
     build_cascade_matrices();
     memcpy(_mappedCbCascades, &_cascadeData, sizeof(CbCascades));
     memcpy(_mappedCbShadow[frame_index], &_shadowData, sizeof(CbShadow));
 
-    // 2. Resource Barrier: PSR -> DEPTH_WRITE (모든 슬라이스)
-    CD3DX12_RESOURCE_BARRIER barriersW[3];
+    // 각 캐스케이드별 업데이트 여부 판단
+    bool shouldUpdate[3];
+    shouldUpdate[0] = true;                          // Cascade 0: 매 프레임 갱신
+    shouldUpdate[1] = (_frameCount % 2 == 0);         // Cascade 1: 2프레임에 1회 갱신
+    shouldUpdate[2] = (_frameCount % 4 == 0);         // Cascade 2: 4프레임에 1회 갱신
+
+    // 2. Resource Barrier: PSR -> DEPTH_WRITE (업데이트할 슬라이스만 선별 적용)
+    std::vector<D3D12_RESOURCE_BARRIER> barriersW;
+    barriersW.reserve(3);
     for (int i = 0; i < 3; ++i) {
-        barriersW[i] = CD3DX12_RESOURCE_BARRIER::Transition(
-            _shadowMapArray.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            i);
+        if (shouldUpdate[i]) {
+            barriersW.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
+                _shadowMapArray.Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                i));
+        }
     }
-    cmd->ResourceBarrier(3, barriersW);
+    if (!barriersW.empty()) {
+        cmd->ResourceBarrier(static_cast<UINT>(barriersW.size()), barriersW.data());
+    }
 
     // 공통 뷰포트/시저 설정
     D3D12_VIEWPORT viewport = { 0.0f, 0.0f, (float)_shadowmapSize, (float)_shadowmapSize, 0.0f, 1.0f };
@@ -212,6 +224,9 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     // 3단계 캐스케이드 렌더링 루프 시작
     for (int i = 0; i < 3; ++i)
     {
+        // 이번 프레임에 업데이트하지 않는 캐스케이드는 렌더링 스킵
+        if (!shouldUpdate[i]) continue;
+
         // A. 현재 캐스케이드에 해당하는 DSV 바인딩 및 Clear
         CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(_dsvHeap->GetCPUDescriptorHandleForHeapStart(), i, dsvSize);
         cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
@@ -297,16 +312,21 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         }
     }
 
-    // 3. Resource Barrier: DEPTH_WRITE -> PSR (모든 슬라이스)
-    CD3DX12_RESOURCE_BARRIER barriersR[3];
+    // 4. Resource Barrier: DEPTH_WRITE -> PSR (업데이트를 수행한 슬라이스만 복원)
+    std::vector<D3D12_RESOURCE_BARRIER> barriersR;
+    barriersR.reserve(3);
     for (int i = 0; i < 3; ++i) {
-        barriersR[i] = CD3DX12_RESOURCE_BARRIER::Transition(
-            _shadowMapArray.Get(),
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            i);
+        if (shouldUpdate[i]) {
+            barriersR.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
+                _shadowMapArray.Get(),
+                D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                i));
+        }
     }
-    cmd->ResourceBarrier(3, barriersR);
+    if (!barriersR.empty()) {
+        cmd->ResourceBarrier(static_cast<UINT>(barriersR.size()), barriersR.data());
+    }
 }
 
 void ShadowManager::bind_for_lighting(ID3D12GraphicsCommandList* cmd, UINT shadowCbParamIdx, UINT shadowSrvParamIdx, Renderer* renderer)

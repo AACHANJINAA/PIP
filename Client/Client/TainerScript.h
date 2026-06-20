@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "NPCScript.h"
 #include "UIRenderComponent.h"
 
@@ -21,4 +21,8 @@ private:
 	std::shared_ptr<UIRenderComponent> _hpBar_ui{ nullptr };
 	float _displayHp{ 0.0f };
 	void update_hp_bar(float deltaTime);
+
+	bool _isEndingTriggered{ false };
+	float _endingTimer{ 0.0f };
+	std::shared_ptr<UIRenderComponent> _endingUI{ nullptr };
 };
