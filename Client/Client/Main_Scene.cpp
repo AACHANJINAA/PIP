@@ -345,7 +345,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
     quest_title_ui->set_texture("Resource/UI/Quest_Title_1.png");
     UIManager::instance()->add_ui(UILayer::MIDDLE, "QuestTitle_UI", quest_title_obj);
     UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestTitle_UI", false);
-	ResourceManager::instance()->load_texture("Resource/UI/Quest_Title_2.png", true);
+	ResourceManager::instance()->load_texture("Resource/UI/Quest_Title_3.png", true);
 	ResourceManager::instance()->load_texture("Resource/UI/Quest_Reward.png", true); // [추가]
 
 	// [추가] 퀘스트 보상 알림 (화면 중앙 배너)
