@@ -194,7 +194,8 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	q_guide->set_screen_position(200.0f, 110.0f); // MP Bar 좌측 끝 아래
 	q_guide->set_size(36.0f, 36.0f);
 	q_guide->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	q_guide->set_texture("Resource/UI/Q_interaction_UI.png"); // 기본 UI 텍스처
+	q_guide->set_texture("Resource/UI/Q_interaction_UI_OFF.png"); // 기본 UI 텍스처
+	ResourceManager::instance()->load_texture("Resource/UI/Q_interaction_UI_ON.png", true); // ON 텍스처 미리 로드
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerQGuide_UI", q_guide_obj);
 	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", false); // 처음에는 숨김
 
@@ -204,7 +205,8 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	e_guide->set_screen_position(240.0f, 110.0f);
 	e_guide->set_size(36.0f, 36.0f);
 	e_guide->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	e_guide->set_texture("Resource/UI/E_interaction_UI.png");
+	e_guide->set_texture("Resource/UI/E_interaction_UI_OFF.png");
+	ResourceManager::instance()->load_texture("Resource/UI/E_interaction_UI_ON.png", true); // ON 텍스처 미리 로드
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerEGuide_UI", e_guide_obj);
 	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerEGuide_UI", true); // 항상 보이도록
 
