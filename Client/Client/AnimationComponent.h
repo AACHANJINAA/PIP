@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "stdafx.h"
 #include "Behavior.h"
 #include "RenderComponent.h"
@@ -21,6 +21,15 @@ public:
 
 	// 애니메이션 재생 (이름이 같으면 무시, 다르면 교체)
 	void play(const std::string& name, bool isLoop = true, float speed = 1.0f);
+
+	// 특정 진행도(0.0 ~ 1.0)까지만 재생하고 해당 프레임에서 멈춤(속도 0)
+	void play_until_progress(const std::string& name, float targetProgress, float speed = 1.0f);
+
+	// 멈춘 시점부터 다시 재생 (속도를 복구)
+	void resume(float speed = 1.0f) { _animationSpeed = speed; }
+
+	// 현재 재생 중인 애니메이션이 특정 진행도에 도달하면 멈추도록 설정
+	void set_pause_at_progress(float targetProgress);
 
 	// 현재 재생 중인 애니메이션 별칭 반환
 	const std::string& get_current_name() const { return _currentName; }
@@ -56,6 +65,9 @@ private:
 	bool _isFinished = false; // 애니메이션이 끝났는지 설정!
 	float _nowAnimationTime{ 0.f };
 	float _animationSpeed{ 1.f }; // 애니메이션 속도 추가 1.0이 기본임
+
+	bool _isPauseTargetSet = false; // 특정 진행도에서 멈출지 여부
+	float _pauseTargetProgress = 0.0f; // 멈출 목표 진행도 (0.0 ~ 1.0)
 
 	std::shared_ptr<Mesh> _currentMesh{};
 	std::shared_ptr<Mesh> _bufferedMesh = nullptr; // 현재 버퍼가 어떤 메쉬를 기준으로 생성된 뼈 팔레트 행렬 상수 버퍼인지 확인용

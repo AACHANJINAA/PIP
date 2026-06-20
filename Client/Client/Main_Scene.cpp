@@ -23,8 +23,11 @@
 #include "LeverScript.h"
 #include "MainPlayerScript.h"
 #include "OtherPlayerScript.h"
-#include "ParticleRenderComponent.h"
 #include "ParticleSystemComponent.h"
+#include "ParticleRenderComponent.h"
+#include "SocketComponenet.h"
+#include "ReadGLTFMesh.h"
+#include "NetworkManager.h"
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
@@ -592,7 +595,8 @@ void Main_Scene::TestMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
-	int player_id = NetworkManager::instance()->get_my_session_id() % 4 + 1;
+	
+	int player_id = NetworkManager::instance()->get_my_session_id() % 4;
 
 	int other_player_id_1 = (player_id % 4) + 1; // 다른 플레이어 ID 계산
 	int other_player_id_2 = (player_id % 4) + 2; // 다른 플레이어 ID 계산
@@ -620,13 +624,29 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
+
+		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
-		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill01_end");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
+		
 		renderer->set_mesh(T1_Mesh);
 
 		// 애니메이션 설정
 		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->add_animation("walk", T1_Mesh, "walk");
+		animation->add_animation("run", T1_Mesh, "run");
+		animation->add_animation("attack", T1_Mesh, "attack01");
+		animation->add_animation("skill", T1_Mesh, "skill01");
+		animation->add_animation("skill_end", T1_Mesh, "skill01_end");
+		animation->add_animation("die", T1_Mesh, "death");
+
 		animation->play("idle", true);
 
 		// 재질 및 쉐이더 설정
@@ -658,17 +678,32 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
+		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
-		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
-		renderer->set_mesh(T1_Mesh);
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill01_end");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
-		// 색상설정 (다른 플레이어 색상 적용)
-		renderer->set_force_player_color_id(other_player_id_1);
+		renderer->set_mesh(T1_Mesh);
 
 		// 애니메이션 설정
 		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->add_animation("walk", T1_Mesh, "walk");
+		animation->add_animation("run", T1_Mesh, "run");
+		animation->add_animation("attack", T1_Mesh, "attack01");
+		animation->add_animation("skill", T1_Mesh, "skill01");
+		animation->add_animation("skill_end", T1_Mesh, "skill01_end");
+		animation->add_animation("die", T1_Mesh, "death");
+
 		animation->play("idle", true);
+
+		// 색상설정 (다른 플레이어 색상 적용)
+		renderer->set_force_player_color_id(other_player_id_1);
 
 		// 재질 및 쉐이더 설정
 		std::string material = "Knight_Material";
@@ -699,17 +734,32 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
+		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
-		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
-		renderer->set_mesh(T1_Mesh);
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill01_end");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
-		// 색상설정 (다른 플레이어 색상 적용)
-		renderer->set_force_player_color_id(other_player_id_2);
+		renderer->set_mesh(T1_Mesh);
 
 		// 애니메이션 설정
 		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->add_animation("walk", T1_Mesh, "walk");
+		animation->add_animation("run", T1_Mesh, "run");
+		animation->add_animation("attack", T1_Mesh, "attack01");
+		animation->add_animation("skill", T1_Mesh, "skill01");
+		animation->add_animation("skill_end", T1_Mesh, "skill01_end");
+		animation->add_animation("die", T1_Mesh, "death");
+
 		animation->play("idle", true);
+
+		// 색상설정 (다른 플레이어 색상 적용)
+		renderer->set_force_player_color_id(other_player_id_2);
 
 		// 재질 및 쉐이더 설정
 		std::string material = "Knight_Material";
@@ -740,17 +790,32 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
+		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
-		dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only("Resource/Character/DarkKnight/DKF_animations/Anim_DKF_Idle_Alert.gltf", "idle");
-		renderer->set_mesh(T1_Mesh);
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Walk_Alert_Fwd.gltf", "walk");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Run_Alert_Fwd.gltf", "run");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Attack_01.gltf", "attack01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill01_end");
+		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
-		// 색상설정 (다른 플레이어 색상 적용)
-		renderer->set_force_player_color_id(other_player_id_3);
+		renderer->set_mesh(T1_Mesh);
 
 		// 애니메이션 설정
 		animation->add_animation("idle", T1_Mesh, "idle");
+		animation->add_animation("walk", T1_Mesh, "walk");
+		animation->add_animation("run", T1_Mesh, "run");
+		animation->add_animation("attack", T1_Mesh, "attack01");
+		animation->add_animation("skill", T1_Mesh, "skill01");
+		animation->add_animation("skill_end", T1_Mesh, "skill01_end");
+		animation->add_animation("die", T1_Mesh, "death");
+
 		animation->play("idle", true);
+
+		// 색상설정 (다른 플레이어 색상 적용)
+		renderer->set_force_player_color_id(other_player_id_3);
 
 		// 재질 및 쉐이더 설정
 		std::string material = "Knight_Material";
@@ -771,6 +836,52 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 
 		_dummy_player_4 = T1; // 나중에 플레이어 위치로 이동할 때 사용할 더미 플레이어 오브젝트
 		_dummy_player_4->set_enabled(false); // 처음에는 비활성화 상태로 시작
+	}
+
+	// 더미 플레이어 무기 및 파티클 세팅
+	std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+	int colors_idx[4] = { player_id, other_player_id_1, other_player_id_2, other_player_id_3 };
+	static const DirectX::XMFLOAT3 PlayerColors[4] = {
+		DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
+		DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
+		DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
+		DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
+	};
+
+	for (int i = 0; i < 4; ++i) {
+		if (!dummies[i]) continue;
+
+		auto socket = dummies[i]->add_component<SocketComponenet>();
+		auto currentWeaponObject = socket->add_connecting(
+			"Cinematic_Weapon_" + std::to_string(i),
+			"hand_r", 
+			"Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf",
+			{ 0.f,0.f,0.f },   
+			{ -10.f, -80.f, -9.0f },       
+			{ 10.f, 10.f, 10.f }
+		);
+		currentWeaponObject->get_component<RenderComponent>()->set_enabled(false);
+
+		auto skillRender = currentWeaponObject->get_component<RenderComponent>();
+		auto gltfMesh = std::dynamic_pointer_cast<ReadGLTFMesh>(skillRender->mesh());
+		auto targets = gltfMesh->extract_particle_targets(50000);
+
+		auto particleEffectObject = ObjectManager::instance()->create_game_object("Cinematic_Particle_" + std::to_string(i));
+		auto psComp = particleEffectObject->add_component<ParticleSystemComponent>();
+		
+		DirectX::XMFLOAT4 color = { PlayerColors[colors_idx[i] % 4].x, PlayerColors[colors_idx[i] % 4].y, PlayerColors[colors_idx[i] % 4].z, 0.5f };
+		psComp->init_particles(targets, color, 0.05f); // burst_radius는 기본값(-1.0f) 유지
+
+		auto prComp = particleEffectObject->add_component<ParticleRenderComponent>();
+		prComp->set_pso_name("particle_draw");
+		prComp->set_particle_system(psComp);
+
+		particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
+		particleEffectObject->transform()->set_parent(currentWeaponObject->transform());
+		particleEffectObject->set_enabled(false); 
+
+		_dummy_player_weapons[i] = currentWeaponObject;
+		_dummy_player_particles[i] = particleEffectObject;
 	}
 
 	// 분수대
@@ -843,7 +954,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 void Main_Scene::cinematic_sequence(float deltaTime)
 {
 	// 디버깅을 위해서 바로 넘김
-	 _isCutsceneDoneSent = true;
+	_isCutsceneDoneSent = true;
 
 	// 컷씬에 필요한 변수들 준비
 	float bgm_time = SoundManager::instance()->get_playback_position("Cinematic_fountain_BGM");
@@ -932,15 +1043,96 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		psComp->set_particle_dying(true);
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
-	// 35~45초 플레이어 스킬 사용
-	else if (bgm_time > 35.0f && bgm_time <= 45.0f)
+	// 35~50초 플레이어 스킬 사용
+	else if (bgm_time > 35.0f && bgm_time <= 50.0f)
 	{
-		// 플레이어 스킬 사용 연출
+		float skill_progress = 1.0f;
 
+		// 35초 진입 시점: 한 번만 애니메이션 실행
+		if (bgm_time > 35.0f && !_isCinematicSkillPlayed) 
+		{
+			_isCinematicSkillPlayed = true;
+			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					dummies[i]->get_component<AnimationComponent>()->play("skill", false, 0.5f);
+					dummies[i]->get_component<AnimationComponent>()->set_pause_at_progress(6.f / 27.f);
+				}
+			}
+		}
 
+		// 1. 35~40초: 스킬 파티클 모으기
+		if (bgm_time <= 40.0f) {
+			skill_progress = (bgm_time - 35.0f) / 5.0f; // 0.0 ~ 1.0
+		}
+		// 42~46초: 검 휘두르기
+		else if (bgm_time > 42.0f && bgm_time <= 46.0f) {
+			skill_progress = 1.0f;
+		}
+		// 46~50초: 파티클 소멸 (분수처럼 1.0 -> 0.0으로 진행도를 줄임)
+		else if (bgm_time > 46.0f) {
+			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					// 소멸할 때는 따라가지 않도록 설정
+					dummies[i]->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+				}
+			}
+			skill_progress = 1.0f - ((bgm_time - 46.0f) / 4.0f); // 1.0 ~ 0.0
+		}
+
+		// 40초 진입 시점: 일시정지 해제
+		if (bgm_time > 40.0f && !_isCinematicParticleDying) { // 재사용 변수 대체 로직 (추후 수정)
+			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					// 40초를 넘긴 경우 resume이 반복 호출되지 않게 조치 필요 (여기선 단순 유지)
+					dummies[i]->get_component<AnimationComponent>()->resume(0.8f);
+				}
+			}
+		}
+
+		// 46초 진입 시점: 파티클 소멸 시작 및 애니메이션 변경
+		if (bgm_time > 46.0f && !_isCinematicParticleDying) {
+			_isCinematicParticleDying = true;
+			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					dummies[i]->get_component<AnimationComponent>()->play("skill_end", false, 0.8f);
+				}
+				if (_dummy_player_particles[i]) {
+					auto ps = _dummy_player_particles[i]->get_component<ParticleSystemComponent>();
+					ps->set_particle_dying(true);
+				}
+			}
+		}
+
+		// 매 프레임 업데이트: 파티클 활성화 및 무기 위치 추적
+		std::shared_ptr<GameObject> dummies_pos[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+		for (int i = 0; i < 4; ++i) {
+			if (_dummy_player_particles[i] && _dummy_player_weapons[i] && dummies_pos[i]) {
+				_dummy_player_particles[i]->set_enabled(true);
+				auto ps = _dummy_player_particles[i]->get_component<ParticleSystemComponent>();
+				
+				DirectX::XMFLOAT4X4 weapon_world = _dummy_player_weapons[i]->transform()->world_matrix();
+				
+				DirectX::XMFLOAT3 player_pos = dummies_pos[i]->transform()->local_position();
+
+				ps->set_compute_data(weapon_world, player_pos, skill_progress);
+				ps->set_particle_dying(_isCinematicParticleDying);
+			}
+		}
 	}
-
-
+	// 50~51초 플레이어 idle 상태 만들기
+	else if (bgm_time > 50.0f && bgm_time <= 51.0f)
+	{
+		std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+		for (int i = 0; i < 4; ++i) {
+			if (dummies[i]) {
+				dummies[i]->get_component<AnimationComponent>()->play("idle", false);
+			}
+		}
+	}
 
 	// 마지막 넘어가기
 	if (bgm_time >= 30.0f && !bgm_time)
