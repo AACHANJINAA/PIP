@@ -829,7 +829,21 @@ void MainPlayerScript::handle_input(float deltaTime)
 
 	// 점프 입력 (F키)
 	if (!_isAttacking && InputManager::instance()->IsKeyDown('F')) {
-		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
+		bool can_jump = true;
+		// 상호작용 UI가 떠 있다면 점프 무시
+		auto uiManager = UIManager::instance();
+		if (uiManager) {
+			if (uiManager->is_visible(UILayer::MIDDLE, "F_interaction_UI") ||
+				uiManager->is_visible(UILayer::MIDDLE, "Lever_interact_ui_0") ||
+				uiManager->is_visible(UILayer::MIDDLE, "Lever_interact_ui_1"))
+			{
+				can_jump = false;
+			}
+		}
+
+		if (can_jump) {
+			NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
+		}
 	}
 
 	// 상호작용 입력 (E키) -> 레버 스크립트에서 하도록 전환
