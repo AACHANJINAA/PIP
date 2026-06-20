@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -443,6 +443,30 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 		}
 	}
 
+	// 조작법 UI 페이드 아웃 업데이트
+	if (_isControlsUIShowing)
+	{
+		auto controls_ui = UIManager::instance()->ui_component(UILayer::FRONT, "Controls_UI_Main");
+		if (controls_ui)
+		{
+			if (_isControlsUIFadingOut)
+			{
+				_controlsUIAlpha -= _controlsUIFadeSpeed * deltaTime;
+				if (_controlsUIAlpha <= 0.0f)
+				{
+					_controlsUIAlpha = 0.0f;
+					_isControlsUIShowing = false;
+					_isControlsUIFadingOut = false;
+					UIManager::instance()->set_visible(UILayer::FRONT, "Controls_UI_Main", false);
+				}
+				else
+				{
+					controls_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, _controlsUIAlpha));
+				}
+			}
+		}
+	}
+
 	// 10마리 완료 조건 시점에 Q 가이드 UI 활성화
 	bool is_q_active = false;
 	if (quest1)
@@ -593,6 +617,45 @@ void MainPlayerScript::handle_input(float deltaTime)
 						_questStoryAlpha = 1.0f;
 						story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 						uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+
+						// Q를 켰을 때, 조작법 UI가 켜져 있다면 꺼지도록 처리
+						if (_isControlsUIShowing && !_isControlsUIFadingOut)
+						{
+							_isControlsUIFadingOut = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// E 키 토글 (조작법 UI)
+	if (InputManager::instance()->IsKeyDown('E'))
+	{
+		auto uiManager = UIManager::instance();
+		if (uiManager)
+		{
+			auto controls_ui = uiManager->ui_component(UILayer::FRONT, "Controls_UI_Main");
+			if (controls_ui)
+			{
+				if (_isControlsUIShowing && !_isControlsUIFadingOut)
+				{
+					// 이미 켜져있는 경우 -> 페이드 아웃 시작
+					_isControlsUIFadingOut = true;
+				}
+				else
+				{
+					// 꺼져있거나 페이드 아웃 중인 경우 -> 즉시 켜기
+					_isControlsUIShowing = true;
+					_isControlsUIFadingOut = false;
+					_controlsUIAlpha = 1.0f;
+					controls_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+					uiManager->set_visible(UILayer::FRONT, "Controls_UI_Main", true);
+
+					// E를 켰을 때, 퀘스트 스토리 UI가 켜져 있다면 꺼지도록 처리
+					if (_isQuestStoryShowing && !_isQuestStoryFadingOut)
+					{
+						_isQuestStoryFadingOut = true;
 					}
 				}
 			}
