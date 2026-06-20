@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 // 테스트 주석: common::packet 네임스페이스가 포함된 파일입니다.
 // [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
@@ -269,6 +269,7 @@ namespace common::packet
 		PHYSICS_SNAPSHOT = 1, // 물리 녹화 시작
 		PHYSICS_STOP = 2,     // 물리 녹화 중지
 		CHANGE_SCENE_BOSS = 3, // 보스 씬으로 강제 전환
+		KILL_MONSTERS_NEARBY = 4, // [추가] 300m 이내 모든 몬스터 즉사
 	};
 
 	struct CS_PACKET_DEBUG_COMMAND : PacketHeader {

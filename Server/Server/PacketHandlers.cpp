@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "PacketHandlers.h"
 #include "DBManager.h"
 #include "InventoryComponent.h"
@@ -533,12 +533,15 @@ namespace PIP::packet
 
 		SERVER::Room* room = SERVER::Server::Instance()->GetRoom(session->_room_id);
 		if (room) {
-			room->PushJob([room, debug_packet]() {
+			room->PushJob([room, debug_packet, session]() {
 				if (debug_packet._command == packet::DebugCommandType::PHYSICS_SNAPSHOT) {
 					room->StartPhysicsRecording();
 				}
 				else if (debug_packet._command == packet::DebugCommandType::CHANGE_SCENE_BOSS) {
 					room->ChangeScene("BossStage");
+				}
+				else if (debug_packet._command == packet::DebugCommandType::KILL_MONSTERS_NEARBY) {
+					room->KillMonstersNearby(session->_id);
 				}
 			});
 		}
