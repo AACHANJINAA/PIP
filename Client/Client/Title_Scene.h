@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Scene.h"
 
 enum class TITLE_SCENE_STATE
@@ -16,7 +16,7 @@ class Title_Scene : public Scene
 {
 private:
     // DW설명 : 타이틀 씬 볼건지? -> 이거 true 하면 실제 타이틀 씬 연출을 볼 수 있다. -> 디버깅 빨리 하려면 false 두기
-	bool _isYouWantSeeTitleScene = false;
+	bool _isYouWantSeeTitleScene = true;
 
 public:
     using Scene::Scene;
@@ -58,6 +58,7 @@ private:
 	std::shared_ptr<GameObject> _title_ui_obj = {}; // 타이틀 화면 UI
 	std::shared_ptr<GameObject> _blackBackground_ui_obj = {}; // 타이틀 화면 UI
 	std::shared_ptr<GameObject> _logo_ui_background_obj = {}; // slay the lord UI
+	std::shared_ptr<GameObject> _controls_ui_obj = {}; // 조작법 UI
 
     //void Spawn_Player(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
     //void Spawn_Test_NPCs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
