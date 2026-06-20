@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -2643,5 +2643,64 @@ namespace PIP::SERVER
 
 			StartGame(); // 이제 방 상태를 PLAYING으로 변경하여 게임 루프가 본격적으로 돌아가게 함
 		}
+	}
+
+	void Room::KillMonstersNearby(int64_t player_id, float range)
+	{
+		// 1. 플레이어 객체 조회 (GetPlayer)
+		GAME::Player* player = GetPlayer(player_id);
+		if (!player)
+		{
+			//MYLOG("[CHEAT] KillMonstersNearby failed: Player not found (ID: " << player_id << ")");
+			return;
+		}
+
+		common::Vec3 player_pos = player->GetPosition();
+		int kill_count = 0;
+
+		// 2. 룸 내 모든 NPC 순회
+		for (auto& [npc_id, npc] : _npcs)
+		{
+			if (!npc) continue;
+			
+			// 활성화 상태이고 체력이 있으며, 몬스터 진영인 경우만 처리
+			if (npc->IsActive() && npc->GetHP() > 0 && npc->GetFaction() == GAME::Faction::FACTION_MONSTER)
+			{
+				float dist = common::Distance(player_pos, npc->GetPosition());
+				if (dist <= range)
+				{
+					int32_t original_hp = npc->GetHP();
+					npc->SetHP(0); // 체력 0으로 설정
+					
+					// 클라이언트에 피격 및 사망 상태를 전송하기 위한 패킷 구성
+					packet::PacketStream stream;
+					packet::SC_PACKET_NPC_ATTACK hit_packet;
+					hit_packet._type = packet::PacketType::S2C_P_NPC_ATTACK;
+					hit_packet._attacker_id = player_id;
+					hit_packet._hit_count = 1;
+
+					packet::NPCHitInfo hit;
+					hit._target_id = npc->GetId();
+					hit._damage = original_hp;
+					hit._target_current_hp = 0;
+
+					stream << hit_packet;
+					stream << hit;
+
+					auto* h = reinterpret_cast<packet::PacketHeader*>(stream.mutable_data());
+					h->_size = static_cast<uint16_t>(stream.Size());
+
+					// 이 NPC를 시청 중인 모든 플레이어에게 브로드캐스트
+					BroadcastToNPCViewers(npc->GetId(), stream.constable_data(), stream.Size());
+
+					// 룸 사망 처리 (물리 컴포넌트 비활성화, 퀘스트 반영, 디스폰 타이머 예약 등)
+					OnNPCDead(npc.get());
+					
+					kill_count++;
+				}
+			}
+		}
+
+		//MYLOG("[CHEAT] KillMonstersNearby executed by player " << player_id << ". Killed " << kill_count << " monsters.");
 	}
 }

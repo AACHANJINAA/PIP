@@ -601,6 +601,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 	//	NetworkManager::instance()->SendCutsceneDonePacket();
 	//}
 
+	if (InputManager::instance()->IsKeyDown('K'))
+	{
+		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::KILL_MONSTERS_NEARBY);
+	}
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp() || _state == common::packet::EntityState::GRABBED)
 	{

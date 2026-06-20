@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "CombatDef.h"
 #include "GridMap.h"
 #include "JoltSetup.h"
@@ -127,6 +127,7 @@ namespace PIP::SERVER
 
 		void StartPhysicsRecording();
 		void StopPhysicsRecording();
+		void KillMonstersNearby(int64_t player_id, float range = 300.0f);
 
 	private:
 		void SpawnBoss();
