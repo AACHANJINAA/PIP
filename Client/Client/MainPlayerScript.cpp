@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainPlayerScript.h"
 
 
@@ -33,9 +33,9 @@ void MainPlayerScript::set_hp(int hp)
 	int prevHp = _hp;
 	_hp = std::clamp(hp, 0, _maxHp);
 
-	// [사운드] 피격 시 MinecraftDamage 재생
+	// [사운드] 피격 시 PlayerDamage 재생
 	if (_hp < prevHp) {
-		SoundManager::instance()->play("MinecraftDamage", SoundType::SFX, 1.0f, false);
+		SoundManager::instance()->play("PlayerDamage", SoundType::SFX, 1.0f, false);
 	}
 
 	// _hpBar_ui가 null이면 매번 재탐색
@@ -79,6 +79,46 @@ void MainPlayerScript::update(float deltaTime)
 		{
 			UIManager::instance()->set_visible(UILayer::FRONT, "QuestRewardBanner_UI", false);
 		}
+	}
+
+	// [추가] 퀘스트 1 보상 수령 2초 후 Q 자동 토글 타이머
+	if (_qAutoToggleTimer > 0.0f) {
+		_qAutoToggleTimer -= deltaTime;
+		if (_qAutoToggleTimer <= 0.0f) {
+			_qAutoToggleTimer = -1.0f;
+			// Q 토글 강제 실행
+			_isQuestStoryShowing = true;
+			_isQuestStoryFadingOut = false;
+			_questStoryAlpha = 1.0f;
+			auto uiManager = UIManager::instance();
+			if (auto story_ui = uiManager->ui_component(UILayer::MIDDLE, "Quest_Story_UI")) {
+				story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+			}
+			uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+			
+			// 퀘스트 2 시작
+			auto quest2 = NetworkManager::instance()->get_quest(2);
+			if (!quest2) {
+				common::packet::QuestUpdateInfo q2;
+				q2._quest_id = 2;
+				q2._state = common::packet::QuestState::IN_PROGRESS;
+				q2._current_count = 0;
+				q2._target_count = 2;
+				NetworkManager::instance()->set_local_quest(q2);
+			}
+			
+			if (_isControlsUIShowing && !_isControlsUIFadingOut) {
+				_isControlsUIFadingOut = true;
+			}
+		}
+	}
+	
+	auto quest1 = NetworkManager::instance()->get_quest(1);
+	if (quest1) {
+		if (_prevQuest1State != common::packet::QuestState::REWARDED && quest1->_state == common::packet::QuestState::REWARDED) {
+			_qAutoToggleTimer = 2.0f;
+		}
+		_prevQuest1State = quest1->_state;
 	}
 
 	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
@@ -155,7 +195,7 @@ void MainPlayerScript::awake()
 	// [사운드] 플레이어 무기 공격음 / 피격음 로드
 	SoundManager::instance()->load_sound("SwordSwing",      "Resource/Sound/SwordSwing.mp3",      false);
 	SoundManager::instance()->load_sound("DustSound",       "Resource/Sound/Dust.wav",             true);
-	SoundManager::instance()->load_sound("MinecraftDamage", "Resource/Sound/MinecraftDamage.mp3", false);
+	SoundManager::instance()->load_sound("PlayerDamage",    "Resource/Sound/PlayerDamage.wav",     false);
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -307,7 +347,15 @@ void MainPlayerScript::update_mp_bar(float deltaTime)
 void MainPlayerScript::update_quest_ui(float deltaTime)
 {
     // 현재 진행 중인 퀘스트를 찾습니다.
-    const auto active_quest = NetworkManager::instance()->get_quest(1);
+    const auto quest1 = NetworkManager::instance()->get_quest(1);
+    const auto quest2 = NetworkManager::instance()->get_quest(2);
+
+    const common::packet::QuestUpdateInfo* active_quest = nullptr;
+    if (quest1 && quest1->_state != common::packet::QuestState::NONE && quest1->_state != common::packet::QuestState::REWARDED) {
+        active_quest = quest1;
+    } else if (quest2 && quest2->_state != common::packet::QuestState::NONE && quest2->_state != common::packet::QuestState::REWARDED) {
+        active_quest = quest2;
+    }
 
     bool is_visible = false;
     int current = 0;
@@ -376,18 +424,25 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
         if (title_ui) {
             if (quest_id == 2) {
                 title_ui->set_texture("Resource/UI/Quest_Title_2.png");
+                title_ui->set_size(533.f, 50.f); // 원본 이미지 비율 유지
+                title_ui->set_screen_position(-80.f, FRAME_BUFFER_HEIGHT / 2.0f - 50.f / 2.0f - 15.f); // 왼쪽으로 위치 조정
             } else {
                 title_ui->set_texture("Resource/UI/Quest_Title_1.png"); // 기본: 1번
+                title_ui->set_size(250.f, 50.f); // 1번 퀘스트 크기
+                title_ui->set_screen_position(20.f, FRAME_BUFFER_HEIGHT / 2.0f - 50.f / 2.0f - 15.f); // 원래 위치 복구
             }
         }
     }
 
-    for (int i = 0; i < 5; ++i) {
-        UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_" + std::to_string(i), is_visible);
-	}
-
-	if (is_visible) {
+	if (!is_visible) {
+		for (int i = 0; i < 5; ++i) {
+			UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_" + std::to_string(i), false);
+		}
+	} else {
 		float uv_scale_x = 1.0f / 11.0f; // 0~9, /
+        float num_w = 20.f;
+        float spacing = num_w * 0.8f;
+        float start_y = FRAME_BUFFER_HEIGHT / 2.0f + 10.f;
 
 		int cur_tens = (current / 10) % 10;
 		int cur_ones = current % 10;
@@ -400,11 +455,33 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 		auto n3 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_3");
 		auto n4 = UIManager::instance()->ui_component(UILayer::MIDDLE, "QuestNumber_4");
         
-        if (n0) n0->set_uv_offset(cur_tens * uv_scale_x, 0.0f);
-        if (n1) n1->set_uv_offset(cur_ones * uv_scale_x, 0.0f);
-        if (n2) n2->set_uv_offset(10 * uv_scale_x, 0.0f); // '/'
-        if (n3) n3->set_uv_offset(max_tens * uv_scale_x, 0.0f);
-        if (n4) n4->set_uv_offset(max_ones * uv_scale_x, 0.0f);
+        if (quest_id == 2) {
+            // Quest 2: display "0 / 2" (3 slots)
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_0", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_1", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_2", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_3", false);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_4", false);
+
+            float start_x_2 = 250.f; // 우측으로 이동
+            if (n0) { n0->set_uv_offset(cur_ones * uv_scale_x, 0.0f); n0->set_screen_position(start_x_2, start_y); }
+            if (n1) { n1->set_uv_offset(10 * uv_scale_x, 0.0f);       n1->set_screen_position(start_x_2 + spacing, start_y); } // '/'
+            if (n2) { n2->set_uv_offset(max_ones * uv_scale_x, 0.0f); n2->set_screen_position(start_x_2 + 2 * spacing, start_y); }
+        } else {
+            // Quest 1: display "00 / 10" (5 slots)
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_0", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_1", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_2", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_3", true);
+            UIManager::instance()->set_visible(UILayer::MIDDLE, "QuestNumber_4", true);
+
+            float start_x_1 = 20.f;
+            if (n0) { n0->set_uv_offset(cur_tens * uv_scale_x, 0.0f); n0->set_screen_position(start_x_1, start_y); }
+            if (n1) { n1->set_uv_offset(cur_ones * uv_scale_x, 0.0f); n1->set_screen_position(start_x_1 + spacing, start_y); }
+            if (n2) { n2->set_uv_offset(10 * uv_scale_x, 0.0f);       n2->set_screen_position(start_x_1 + 2 * spacing, start_y); } // '/'
+            if (n3) { n3->set_uv_offset(max_tens * uv_scale_x, 0.0f); n3->set_screen_position(start_x_1 + 3 * spacing, start_y); }
+            if (n4) { n4->set_uv_offset(max_ones * uv_scale_x, 0.0f); n4->set_screen_position(start_x_1 + 4 * spacing, start_y); }
+        }
     }
 
 	// 퀘스트 스토리 UI 페이드 아웃 업데이트
@@ -431,20 +508,52 @@ void MainPlayerScript::update_quest_ui(float deltaTime)
 		}
 	}
 
-	// 10마리 완료 조건 시점에 Q 가이드 UI 활성화
-	const auto quest1 = NetworkManager::instance()->get_quest(1);
+	// 조작법 UI 페이드 아웃 업데이트
+	if (_isControlsUIShowing)
+	{
+		auto controls_ui = UIManager::instance()->ui_component(UILayer::FRONT, "Controls_UI_Main");
+		if (controls_ui)
+		{
+			if (_isControlsUIFadingOut)
+			{
+				_controlsUIAlpha -= _controlsUIFadeSpeed * deltaTime;
+				if (_controlsUIAlpha <= 0.0f)
+				{
+					_controlsUIAlpha = 0.0f;
+					_isControlsUIShowing = false;
+					_isControlsUIFadingOut = false;
+					UIManager::instance()->set_visible(UILayer::FRONT, "Controls_UI_Main", false);
+				}
+				else
+				{
+					controls_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, _controlsUIAlpha));
+				}
+			}
+		}
+	}
+
 	bool is_q_active = false;
 	if (quest1)
 	{
-		if (quest1->_state == common::packet::QuestState::COMPLETED ||
-			quest1->_state == common::packet::QuestState::REWARDED)
+		if (quest1->_state == common::packet::QuestState::REWARDED)
 		{
 			is_q_active = true;
 		}
 	}
-	// Q 가이드 UI는 퀘스트 조건이 충족되고, 스토리 UI가 닫혀있거나 닫히는 중(페이드아웃)일 때만 표시합니다.
-	bool show_guide = is_q_active && (!_isQuestStoryShowing || _isQuestStoryFadingOut);
-	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", show_guide);
+	
+	UIManager::instance()->set_visible(UILayer::MIDDLE, "PlayerQGuide_UI", is_q_active);
+
+	// ON/OFF 텍스처 업데이트
+	auto q_guide = UIManager::instance()->ui_component(UILayer::MIDDLE, "PlayerQGuide_UI");
+	if (q_guide) {
+		bool is_q_open = (_isQuestStoryShowing && !_isQuestStoryFadingOut);
+		q_guide->set_texture(is_q_open ? "Resource/UI/Q_interaction_UI_ON.png" : "Resource/UI/Q_interaction_UI_OFF.png");
+	}
+	auto e_guide = UIManager::instance()->ui_component(UILayer::MIDDLE, "PlayerEGuide_UI");
+	if (e_guide) {
+		bool is_e_open = (_isControlsUIShowing && !_isControlsUIFadingOut);
+		e_guide->set_texture(is_e_open ? "Resource/UI/E_interaction_UI_ON.png" : "Resource/UI/E_interaction_UI_OFF.png");
+	}
 }
 
 
@@ -554,8 +663,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		auto quest1 = NetworkManager::instance()->get_quest(1);
 		if (quest1)
 		{
-			if (quest1->_state == common::packet::QuestState::COMPLETED ||
-				quest1->_state == common::packet::QuestState::REWARDED)
+			if (quest1->_state == common::packet::QuestState::REWARDED)
 			{
 				is_q_active = true;
 			}
@@ -582,6 +690,56 @@ void MainPlayerScript::handle_input(float deltaTime)
 						_questStoryAlpha = 1.0f;
 						story_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 						uiManager->set_visible(UILayer::MIDDLE, "Quest_Story_UI", true);
+
+						// [추가] 퀘스트 2번(레버 2개) 시작 로직
+						auto quest2 = NetworkManager::instance()->get_quest(2);
+						if (!quest2) {
+							common::packet::QuestUpdateInfo q2;
+							q2._quest_id = 2;
+							q2._state = common::packet::QuestState::IN_PROGRESS;
+							q2._current_count = 0;
+							q2._target_count = 2;
+							NetworkManager::instance()->set_local_quest(q2);
+						}
+
+						// Q를 켰을 때, 조작법 UI가 켜져 있다면 꺼지도록 처리
+						if (_isControlsUIShowing && !_isControlsUIFadingOut)
+						{
+							_isControlsUIFadingOut = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// E 키 토글 (조작법 UI)
+	if (InputManager::instance()->IsKeyDown('E'))
+	{
+		auto uiManager = UIManager::instance();
+		if (uiManager)
+		{
+			auto controls_ui = uiManager->ui_component(UILayer::FRONT, "Controls_UI_Main");
+			if (controls_ui)
+			{
+				if (_isControlsUIShowing && !_isControlsUIFadingOut)
+				{
+					// 이미 켜져있는 경우 -> 페이드 아웃 시작
+					_isControlsUIFadingOut = true;
+				}
+				else
+				{
+					// 꺼져있거나 페이드 아웃 중인 경우 -> 즉시 켜기
+					_isControlsUIShowing = true;
+					_isControlsUIFadingOut = false;
+					_controlsUIAlpha = 1.0f;
+					controls_ui->set_color(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+					uiManager->set_visible(UILayer::FRONT, "Controls_UI_Main", true);
+
+					// E를 켰을 때, 퀘스트 스토리 UI가 켜져 있다면 꺼지도록 처리
+					if (_isQuestStoryShowing && !_isQuestStoryFadingOut)
+					{
+						_isQuestStoryFadingOut = true;
 					}
 				}
 			}
@@ -747,7 +905,21 @@ void MainPlayerScript::handle_input(float deltaTime)
 
 	// 점프 입력 (F키)
 	if (!_isAttacking && InputManager::instance()->IsKeyDown('F')) {
-		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
+		bool can_jump = true;
+		// 상호작용 UI가 떠 있다면 점프 무시
+		auto uiManager = UIManager::instance();
+		if (uiManager) {
+			if (uiManager->is_visible(UILayer::MIDDLE, "F_interaction_UI") ||
+				uiManager->is_visible(UILayer::MIDDLE, "Lever_interact_ui_0") ||
+				uiManager->is_visible(UILayer::MIDDLE, "Lever_interact_ui_1"))
+			{
+				can_jump = false;
+			}
+		}
+
+		if (can_jump) {
+			NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
+		}
 	}
 
 	// 상호작용 입력 (E키) -> 레버 스크립트에서 하도록 전환

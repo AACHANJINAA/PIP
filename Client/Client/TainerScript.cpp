@@ -122,7 +122,7 @@ void TainerScript::update(float deltaTime)
 
         if (_endingTimer >= boss_animation_time + fadein_time)
         {
-            PostQuitMessage(0);
+            // PostQuitMessage(0); // 서버에서 CHANGE_SCENE으로 넘어가도록 제거
         }
     }
 

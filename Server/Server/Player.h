@@ -53,9 +53,11 @@ namespace PIP::GAME
 		common::packet::EntityState GetLastSentState() const { return _lastSentState; }
 
 
+		int32_t GetAttackDamage() const { return _damage; }
 
 		void SetHP(int hp) override { _hp = hp; }
 		int32_t GetHP() const override { return _hp; }
+		int32_t GetMaxHP() const { return _max_hp; }
 
 		void SetMP(int mp) { _mp = std::clamp(mp, 0, _max_mp); } // [추가]
 		int32_t GetMP() const { return _mp; } // [추가]

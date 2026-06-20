@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CombatDef.h"
 #include "GridMap.h"
 #include "JoltSetup.h"
@@ -40,7 +40,7 @@ namespace PIP::SERVER
 		void RemoveNPC(int64_t npcId);
 		void AddNPC(std::unique_ptr<GAME::NPC> npc);
 		GAME::NPC* GetNPC(int64_t npc_id);
-		void spawn_npc(GAME::NPCType type, const std::string& name = "");
+		std::vector<int64_t> spawn_npc(GAME::NPCType type, const std::string& name = "");
 		
 		// [추가] 엘리베이터 생성
 		GAME::Elevator* spawn_elevator(const common::Vec3& start, const common::Vec3& end, float speed, float waitTime, const std::string& name = "Elevator");

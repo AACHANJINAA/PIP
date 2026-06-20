@@ -125,6 +125,18 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         logo_ui_background->set_texture("Resource/UI/game_title_alpha.dds");
         UIManager::instance()->add_ui(UILayer::MIDDLE, "Logo_UI", _logo_ui_background_obj);
     }
+
+    {
+        // 조작법 UI
+        _controls_ui_obj = ObjectManager::instance()->create_game_object("Controls_UI");
+        auto controls_ui = _controls_ui_obj->add_component<UIRenderComponent>();
+
+        controls_ui->set_screen_position(FRAME_BUFFER_WIDTH - 820.0f, FRAME_BUFFER_HEIGHT - 620.0f);
+        controls_ui->set_size(800.0f, 600.0f);
+        controls_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // 초기 투명도 0
+        controls_ui->set_texture("Resource/UI/Controls_UI.png");
+        UIManager::instance()->add_ui(UILayer::MIDDLE, "Controls_UI", _controls_ui_obj);
+    }
 }
 
 bool Title_Scene::InterRoom()
@@ -426,6 +438,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     const float midTime = 23.4f; // 성 진입
     const float endTime = 32.0f; // 주인공 옆 도착
 	const float spawnUIENDTime = 33.0f; // ui 페이트인 끝나는 시간 -> 초에 ui도 다 끝나야함
+    const float spawnControlsUIENDTime = 34.0f; // 조작법 UI 페이드인 끝나는 시간 (로고 뒤 1초)
 
     // 위치 데이터
     XMFLOAT3 P0 = { 239.44f, 138.1f, 112.19f };
@@ -449,6 +462,8 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     float alpha{0.f};
 
     float black_alpha{0.f};
+
+    float controls_alpha{0.f};
   
 	// [구간 0] 카메라 각도 회전 (8.5f ~ 16.5f) 및 배경 페이드 아웃 (8.5f ~ 13.5f)
     if (bgm_time >= startTime && bgm_time < move_start_time)
@@ -521,11 +536,22 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
 		alpha = (bgm_time - endTime) / (spawnUIENDTime - endTime); // 0.0 ~ 1.0
     }
-    else if (bgm_time > spawnUIENDTime && bgm_time <= spawnUIENDTime + 8.0f)
+    // [구간 4] 로고 렌더링 후 1초 동안 조작법 UI 페이드 인 (33.0s ~ 34.0s)
+    else if (bgm_time > spawnUIENDTime && bgm_time <= spawnControlsUIENDTime)
     {
         targetPos = P2;
         targetRot = R2;
-		alpha = 1.0f; // UI도 완전히 나타난 상태로 고정
+		alpha = 1.0f; // 로고는 완전히 나타난 상태로 고정
+        controls_alpha = (bgm_time - spawnUIENDTime) / (spawnControlsUIENDTime - spawnUIENDTime); // 0.0 ~ 1.0
+    }
+    // [구간 5] 연출 종료 및 서버 접속 다이얼로그 (34.0s 이후)
+    else if (bgm_time > spawnControlsUIENDTime && bgm_time <= spawnControlsUIENDTime + 8.0f)
+    {
+        targetPos = P2;
+        targetRot = R2;
+		alpha = 1.0f; 
+        controls_alpha = 1.0f;
+        
         _isOpeningEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
         cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
@@ -543,6 +569,10 @@ void Title_Scene::Opening_Sequence(float deltaTime)
     }
 
     _logo_ui_background_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+
+    if (_controls_ui_obj) {
+        _controls_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, controls_alpha));
+    }
 
     // 다 끝나고 넘기기
     {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 // 테스트 주석: common::packet 네임스페이스가 포함된 파일입니다.
 // [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
@@ -59,7 +59,8 @@ namespace common::packet
 	enum class QuestType : uint8_t {
 		KILL_MONSTER = 1,
 		GATHER_ITEM = 2,
-		TALK_TO_NPC = 3
+		TALK_TO_NPC = 3,
+		INTERACT_LEVER = 4
 	};
 
 	//enum class OBJECT_STATE : uint16_t { // 애니메이션용 상태값
@@ -324,6 +325,7 @@ namespace common::packet
 	struct SC_PACKET_PLAYER_RESURRECT : PacketHeader {
 		int64_t _id;
 		Vec3    _position;
+		common::Quat _rotation; // [추가] 회전값 동기화
 		int32_t _hp;
 	};
 
@@ -419,9 +421,10 @@ namespace common::packet
 
 	struct SC_PACKET_NPC_SPAWN : PacketHeader
 	{
-		int64_t _npc_id; // NPC의 고유 ID
-		NPCType _npc_type; // NPC의 타입 (예: 몬스터 종류)
+		int64_t _npc_id;	// NPC의 고유 ID
+		NPCType _npc_type;	// NPC의 타입 (예: 몬스터 종류)
 		Vec3    _position;  // NPC의 초기 위치
+		Quat	_rotation;	// [추가] NPC의 초기 회전 (쿼터니언)
 		int32_t _hp;        // NPC의 초기 HP
 		int32_t _max_hp;    // [추가] NPC의 최대 HP
 		EntityState _state; // NPC의 초기 상태

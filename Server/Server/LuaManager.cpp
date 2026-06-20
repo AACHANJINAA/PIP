@@ -82,6 +82,7 @@ namespace PIP
             LuaManager::Instance()->LoadNPCData();
             LuaManager::Instance()->LoadQuestData();
             LuaManager::Instance()->LoadLeverData(); // 레버 데이터 로드
+            LuaManager::Instance()->LoadPlayerData();
         }
 	}
 
@@ -351,6 +352,7 @@ namespace PIP
 		if (sType == "KILL_MONSTER") type = common::packet::QuestType::KILL_MONSTER;
 		else if (sType == "GATHER_ITEM") type = common::packet::QuestType::GATHER_ITEM;
 		else if (sType == "TALK_TO_NPC") type = common::packet::QuestType::TALK_TO_NPC;
+		else if (sType == "INTERACT_LEVER") type = common::packet::QuestType::INTERACT_LEVER;
 
 		QuestData data;
 		data.id = id;
@@ -372,6 +374,62 @@ namespace PIP
 		int   id = static_cast<int>(lua_tointeger(L, 4)); // 레버 고유 ID (0, 1, ...)
 
 		LuaManager::Instance()->_leverData.push_back({ id, { x, y, z } });
+		return 0;
+	}
+
+	void LuaManager::LoadPlayerData()
+	{
+		int ret = luaL_dofile(L, "PlayerData.lua");
+		if (ret != LUA_OK)
+		{
+			const char* err = lua_tostring(L, -1);
+			MYERROR("Failed to load PlayerData.lua: " << err);
+			lua_pop(L, 1);
+		}
+		else
+		{
+			lua_getglobal(L, "PlayerData");
+			if (lua_istable(L, -1))
+			{
+				lua_getfield(L, -1, "quest2_spawn_point");
+				if (lua_istable(L, -1))
+				{
+					lua_getfield(L, -1, "x");
+					_castleSpawnPoint.x = static_cast<float>(lua_tonumber(L, -1));
+					lua_pop(L, 1);
+					
+					lua_getfield(L, -1, "y");
+					_castleSpawnPoint.y = static_cast<float>(lua_tonumber(L, -1));
+					lua_pop(L, 1);
+					
+					lua_getfield(L, -1, "z");
+					_castleSpawnPoint.z = static_cast<float>(lua_tonumber(L, -1));
+					lua_pop(L, 1);
+				}
+				lua_pop(L, 1); // pop quest2_spawn_point
+
+				// 플레이어 초기 스탯 읽기
+				lua_getfield(L, -1, "initial_hp");
+				if (lua_isnumber(L, -1)) _initialHp = static_cast<int32_t>(lua_tonumber(L, -1));
+				lua_pop(L, 1);
+
+				lua_getfield(L, -1, "initial_mp");
+				if (lua_isnumber(L, -1)) _initialMp = static_cast<int32_t>(lua_tonumber(L, -1));
+				lua_pop(L, 1);
+
+				lua_getfield(L, -1, "initial_damage");
+				if (lua_isnumber(L, -1)) _initialDamage = static_cast<int32_t>(lua_tonumber(L, -1));
+				lua_pop(L, 1);
+			}
+			lua_pop(L, 1); // pop PlayerData
+
+			MYLOG("PlayerData Loaded successfully. CastleSpawnPoint: " << _castleSpawnPoint.x << ", " << _castleSpawnPoint.y << ", " << _castleSpawnPoint.z);
+		}
+	}
+
+	int LuaManager::Lua_LoadPlayerData(lua_State* L)
+	{
+		// 안 씀 (직접 읽음)
 		return 0;
 	}
 }
