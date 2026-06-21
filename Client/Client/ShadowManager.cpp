@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ShadowManager.h"
 #include "CameraComponent.h"
 #include "AnimationComponent.h"
@@ -190,6 +190,7 @@ void ShadowManager::build_cascade_matrices()
     _shadowData.splitNear = radii[0];
     _shadowData.splitMid = radii[1];
     _shadowData.bias = 0.00f;
+    _shadowData.maxDistance = shadow_max_distance;
 }
 
 void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT frame_index)
