@@ -141,11 +141,16 @@ void ShadowManager::build_cascade_matrices()
     XMVECTOR up = XMVectorSet(0, 1, 0, 0);
     XMMATRIX lightView = XMMatrixLookToLH(lightPos, dir, up);
 
-    float radii[3] = {
-         shadow_max_distance * 0.3f,
-         shadow_max_distance * 0.6f,
-         shadow_max_distance * 1.0f
-    };
+    float radii[3];
+    if (_isCinematicMode) {
+        radii[0] = shadow_max_distance * 1.0f;
+        radii[1] = shadow_max_distance * 1.0f;
+        radii[2] = shadow_max_distance * 1.0f;
+    } else {
+        radii[0] = shadow_max_distance * 0.3f;
+        radii[1] = shadow_max_distance * 0.6f;
+        radii[2] = shadow_max_distance * 1.0f;
+    }
 
     for (int c = 0; c < 3; c++)
     {
@@ -278,11 +283,16 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
     f3 camPos = (CameraComponent::get_main()) ? CameraComponent::get_main()->game_object()->transform()->get_world_position() : f3{ 0,0,0 };
 
     // 캐스케이드별 거리 기준 (build_cascade_matrices와 동일하게 맞춤)
-    float radii[3] = {
-          shadow_max_distance * 0.3f,  // Cascade 0: 15m
-          shadow_max_distance * 0.6f,  // Cascade 1: 100m
-          shadow_max_distance * 1.0f   // Cascade 2: 300m
-    };
+    float radii[3];
+    if (_isCinematicMode) {
+        radii[0] = shadow_max_distance * 1.0f;
+        radii[1] = shadow_max_distance * 1.0f;
+        radii[2] = shadow_max_distance * 1.0f;
+    } else {
+        radii[0] = shadow_max_distance * 0.3f;  // Cascade 0: 15m
+        radii[1] = shadow_max_distance * 0.6f;  // Cascade 1: 100m
+        radii[2] = shadow_max_distance * 1.0f;  // Cascade 2: 300m
+    }
 
     // 카메라와 매우 가까운 거리는 쿼리 없이 무조건 그림자 생성
     const float nearShadowThreshold = 30.0f; // 오클루전 테스트 스킵 기준
