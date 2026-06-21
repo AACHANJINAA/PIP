@@ -185,6 +185,8 @@ namespace PIP::SERVER
 		int64_t id = new_player->_id;
 		bool wasEmpty = _players.empty(); 
 		if (new_player->_player) {
+			// [수정] 이미 GridMap에 등록되어 있는 경우 과거 셀에서 확실히 제거하여 유령 포인터 누적 방지
+			_gridMap.Remove(new_player->_player.get());
 			_gridMap.Add(new_player->_player.get());
 		}
 		if (new_player->_player) {
@@ -528,6 +530,19 @@ namespace PIP::SERVER
 		std::vector<packet::NPCHitInfo> npc_hits;
 
 		for (auto* obj : nearby) {
+			if (!obj) continue;
+
+			// [안전장치] obj 포인터가 현재 Room의 _actors 맵에 실제로 존재하는 유효한 포인터인지 검증
+			// (여러 번 씬 전환 시 GridMap에 남은 가비지 포인터 접근으로 인한 서버 크래시 방지)
+			bool isValid = false;
+			for (const auto& pair : _actors) {
+				if (pair.second == obj) {
+					isValid = true;
+					break;
+				}
+			}
+			if (!isValid) continue;
+
 			if (obj->GetId() == attacker->GetId()) continue; // 자가 공격 방지
 
 			if (auto target = dynamic_cast<GAME::Actor*>(obj)) {
