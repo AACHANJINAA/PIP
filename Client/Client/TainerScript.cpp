@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "TainerScript.h"
 
 #include "AnimationComponent.h"
@@ -103,8 +103,8 @@ void TainerScript::update(float deltaTime)
     {
         _endingTimer += deltaTime;
 
-		float boss_animation_time = 2.0;
-		float fadein_time = 3.0;
+		float boss_animation_time = 3.0f; // 기존 2.0에서 1초 늘림
+		float fadein_time = 3.0f;
 
         if (_endingTimer >= boss_animation_time)
         {
