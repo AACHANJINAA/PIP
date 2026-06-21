@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ResourceManager.h"
 #include "LightManager.h"
 #include "Mesh.h" // ReadObjMesh, ReadGlbMesh 등을 포함해야 함
@@ -257,6 +257,18 @@ void ResourceManager::unload_unused_meshes()
     }
 }
 
+void ResourceManager::unload_texture(const std::string& name)
+{
+    auto it = _textures.find(name);
+    if (it != _textures.end())
+    {
+        if (it->second.cpu_handle.ptr != 0)
+        {
+            DescriptorManager::instance()->free_descriptor(it->second.cpu_handle, it->second.gpu_handle);
+        }
+        _textures.erase(it);
+    }
+}
 
 // 내부 헬퍼 함수: 텍스처를 로드하고 GPU에 업로드합니다.
 ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path, bool is_srgb, D3D12_SRV_DIMENSION view_dimension)
@@ -450,11 +462,14 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
     }
     
     if (gltf_json.contains("materials")) {
+        int mat_index = 0;
         for (const auto& mat_json : gltf_json["materials"]) {
-            std::string mat_name = mat_json.value("name", "UnnamedMaterial_" + std::to_string(_materials.size()));
+            std::string default_name = "UnnamedMaterial_" + std::filesystem::path(file_path).stem().string() + "_" + std::to_string(mat_index);
+            std::string mat_name = mat_json.value("name", default_name);
     
             create_material(mat_name);
             MaterialInfo & new_mat_info = _materials[mat_name];
+            mat_index++;
     
             const auto& pbr = mat_json.value("pbrMetallicRoughness", json::object());
     
