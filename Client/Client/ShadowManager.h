@@ -39,7 +39,12 @@ public:
 	void set_static_update_distance_threshold(float distance) { _staticUpdateDistanceThreshold = distance; }
 	float static_update_distance_threshold() const { return _staticUpdateDistanceThreshold; }
 
+	void set_cinematic_mode(bool val) { _isCinematicMode = val; }
+	bool is_cinematic_mode() const { return _isCinematicMode; }
+
 private:
+    bool _isCinematicMode = false;
+
     ShadowManager() = default;
     ~ShadowManager() = default;
 
