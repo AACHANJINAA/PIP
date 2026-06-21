@@ -1,0 +1,326 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 432,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 1,
+			"count": 176,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -1, -0.0902938843, -1.02153695 ],
+			"max": [ 1.00015152, 0.0209515374, 1 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 176,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 176,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 176,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 176,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 786,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 263,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.999068677, 0.015158386, -1.02153695 ],
+			"max": [ 1.00015152, 0.0902938843, 0.999832451 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 263,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 263,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 263,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 263,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_ladder_module_01_6A70B4D5.bin",
+			"byteLength": 26588
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 432,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2112,
+			"byteOffset": 432,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2112,
+			"byteOffset": 2544,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2816,
+			"byteOffset": 4656,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1408,
+			"byteOffset": 7472,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1408,
+			"byteOffset": 8880,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1572,
+			"byteOffset": 10288,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3156,
+			"byteOffset": 11860,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3156,
+			"byteOffset": 15016,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 4208,
+			"byteOffset": 18172,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2104,
+			"byteOffset": 22380,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 2104,
+			"byteOffset": 24484,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "MI_Furniture_01_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		},
+		{
+			"uri": "T_Furniture_01_C.png"
+		},
+		{
+			"uri": "T_Furniture_01_N.png"
+		},
+		{
+			"uri": "T_Furniture_01_M.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Furniture_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6
+			},
+			"occlusionTexture":
+			{
+				"index": 7
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_ladder_module_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Furniture_01_C",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Furniture_01_MetallicRoughness",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "T_Furniture_01_N",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "T_Furniture_01_M",
+			"sampler": 0,
+			"source": 7
+		}
+	]
+}

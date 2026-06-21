@@ -1,0 +1,532 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 15420,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 9548,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -9.56732845, -0.413020551, -9.56732845 ],
+			"max": [ 9.56732845, 27.0183582, 9.56732845 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 9548,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 9548,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 9548,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 9548,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 57390,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 7,
+			"count": 23982,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -8.96915913, -0.0254974831, -8.96907043 ],
+			"max": [ 8.96916294, 26.8323708, 8.96915722 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 23982,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 23982,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 23982,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 23982,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 12,
+			"count": 180,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 13,
+			"count": 120,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -7.69527197, 0.0835514739, -7.80189371 ],
+			"max": [ 7.74385643, 12.5758896, 7.63723564 ]
+		},
+		{
+			"bufferView": 14,
+			"count": 120,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 15,
+			"count": 120,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 16,
+			"count": 120,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 17,
+			"count": 120,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 18,
+			"count": 60,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 19,
+			"count": 37,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -8.67748356, 0.167357787, -8.7519474 ],
+			"max": [ 8.72606754, 12.6231251, 8.58728886 ]
+		},
+		{
+			"bufferView": 20,
+			"count": 37,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 21,
+			"count": 37,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 22,
+			"count": 37,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 23,
+			"count": 37,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_palace_roof_01_DC0E64B5.bin",
+			"byteLength": 2032332
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 30840,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 114576,
+			"byteOffset": 30840,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 114576,
+			"byteOffset": 145416,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 152768,
+			"byteOffset": 259992,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 76384,
+			"byteOffset": 412760,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 76384,
+			"byteOffset": 489144,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 114780,
+			"byteOffset": 565528,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 287784,
+			"byteOffset": 680308,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 287784,
+			"byteOffset": 968092,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 383712,
+			"byteOffset": 1255876,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 191856,
+			"byteOffset": 1639588,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 191856,
+			"byteOffset": 1831444,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 180,
+			"byteOffset": 2023300,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1440,
+			"byteOffset": 2023480,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1440,
+			"byteOffset": 2024920,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1920,
+			"byteOffset": 2026360,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 960,
+			"byteOffset": 2028280,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 960,
+			"byteOffset": 2029240,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 60,
+			"byteOffset": 2030200,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 444,
+			"byteOffset": 2030260,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 444,
+			"byteOffset": 2030704,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 592,
+			"byteOffset": 2031148,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 296,
+			"byteOffset": 2031740,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 296,
+			"byteOffset": 2032036,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Roof_01_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_BaseColor.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Wood_Trim_Occlusion.png"
+		},
+		{
+			"uri": "MI_Styl_Wood_Planks_BaseColor.png"
+		},
+		{
+			"uri": "MI_Styl_Wood_Planks_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Styl_Wood_Planks_Occlusion.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_OcclusionRoughnessMetallic.png"
+		},
+		{
+			"uri": "T_roof_texture_lambert1_Normal.png"
+		},
+		{
+			"uri": "T_Wood_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Roof_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		},
+		{
+			"name": "MI_Wood_Trim",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
+			},
+			"occlusionTexture":
+			{
+				"index": 6
+			}
+		},
+		{
+			"name": "MI_Styl_Wood_Planks",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 7
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 8
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 9
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_palace_roof_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 13,
+						"NORMAL": 14,
+						"TANGENT": 15,
+						"TEXCOORD_0": 16,
+						"TEXCOORD_1": 17
+					},
+					"indices": 12,
+					"material": 1
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 19,
+						"NORMAL": 20,
+						"TANGENT": 21,
+						"TEXCOORD_0": 22,
+						"TEXCOORD_1": 23
+					},
+					"indices": 18,
+					"material": 2
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Roof_01_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "T_roof_texture_lambert1_OcclusionRoughnessMetallic",
+			"sampler": 0,
+			"source": 7
+		},
+		{
+			"name": "T_roof_texture_lambert1_Normal",
+			"sampler": 0,
+			"source": 8
+		},
+		{
+			"name": "MI_Wood_Trim_BaseColor",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Wood_Trim_MetallicRoughness",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "T_Wood_Trim_N",
+			"sampler": 0,
+			"source": 9
+		},
+		{
+			"name": "MI_Wood_Trim_Occlusion",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Styl_Wood_Planks_BaseColor",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Styl_Wood_Planks_MetallicRoughness",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Styl_Wood_Planks_Occlusion",
+			"sampler": 0,
+			"source": 6
+		}
+	]
+}
