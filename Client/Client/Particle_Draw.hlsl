@@ -46,8 +46,12 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
     float3 right = normalize(cross(float3(0, 1, 0), look));
     float3 up = cross(look, right);
 
-    // 0~3번 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줍니다.
-    float2 qpos = QuadPos[vI] * g_Size;
+    // 0~3의 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줍니다.
+    float current_size = g_Size;
+    if (dying_progress > 0.0f) {
+        current_size *= 1.5f; // 분수 파티클(퍼질 때)은 크기를 1.5배 키움
+    }
+    float2 qpos = QuadPos[vI] * current_size;
     worldPos += right * qpos.x + up * qpos.y;
 
     // 투영 변환
@@ -92,8 +96,8 @@ float4 PS_Particle(VS_OUT In) : SV_TARGET
     float3 startColor = float3(1.0f, 1.0f, 1.0f);
     float3 timeBlendedColor = lerp(startColor, In.Color.rgb, progress);
     
-    // 밝기: 처음엔 0.3배로 흐릿하다가, 마지막에 에너지가 응집되며 1.5배로 밝게 빛남
-    float brightness = lerp(0.3f, 1.5f, progress);
+    // 밝기: 처음엔 1.2배로 쨍한 순백색, 마지막에 에너지가 응집되며 1.5배로 빛남 (회색으로 칙칙하게 보이지 않게)
+    float brightness = lerp(1.2f, 1.5f, progress);
 
     // [추가] 퍼질 때(죽어갈 때) 투명해지면서 회색/탁하게 변하는 것을 방지
     if (dying_progress > 0.0f) {

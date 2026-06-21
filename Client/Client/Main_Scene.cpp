@@ -31,6 +31,10 @@
 
 void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    // 메인 씬 시작 시 그림자 시네마틱 모드를 끄고 일반 최적화 모드로 복구
+    ShadowManager::instance()->set_cinematic_mode(false);
+    _isCinematicMode = false;
+    
     ShadowManager::instance()->set_shadow_max_distance(250.0f);
     // 효과음 테스트
 	// 테스트용 Dust 사운드 끄기 요청
