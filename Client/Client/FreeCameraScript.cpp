@@ -195,25 +195,12 @@ void FreeCameraScript::player_camera_conflict_update(float delta_time)
                 if (gltfMesh)
                 {
                     // 프리미티브 단위 정밀 검사
-                    if (gltfMesh->intersects_ray(vRayStart, vRayDir, worldMatrix, hitDist))
+                    float primHitDist = 0.0f;
+                    if (gltfMesh->intersects_ray(vRayStart, vRayDir, worldMatrix, primHitDist, minHitDistance))
                     {
-                        if (hitDist < minHitDistance)
+                        if (primHitDist < minHitDistance)
                         {
-                            minHitDistance = (hitDist <= 0.0f) ? 0.01f : hitDist;
-                            bHit = true;
-                        }
-                    }
-                }
-                else
-                {
-                    // 일반 단일 박스 검사
-                    BoundingOrientedBox worldOBB;
-                    renderComp->mesh()->bounding_box().Transform(worldOBB, worldMatrix);
-                    if (worldOBB.Intersects(vRayStart, vRayDir, hitDist))
-                    {
-                        if (hitDist >= 0.0f && hitDist < minHitDistance)
-                        {
-                            minHitDistance = (hitDist == 0.0f) ? 0.01f : hitDist;
+                            minHitDistance = (primHitDist <= 0.0f) ? 0.01f : primHitDist;
                             bHit = true;
                         }
                     }
