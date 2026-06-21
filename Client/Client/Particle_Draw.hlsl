@@ -46,8 +46,12 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
     float3 right = normalize(cross(float3(0, 1, 0), look));
     float3 up = cross(look, right);
 
-    // 0~3번 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줍니다.
-    float2 qpos = QuadPos[vI] * g_Size;
+    // 0~3의 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줍니다.
+    float current_size = g_Size;
+    if (dying_progress > 0.0f) {
+        current_size *= 1.5f; // 분수 파티클(퍼질 때)은 크기를 1.5배 키움
+    }
+    float2 qpos = QuadPos[vI] * current_size;
     worldPos += right * qpos.x + up * qpos.y;
 
     // 투영 변환
@@ -79,35 +83,37 @@ float4 PS_Particle(VS_OUT In) : SV_TARGET
     // -------------------------------------------------------------------
     float dist = distance(In.UV, float2(0.5f, 0.5f));
 
-    // 거리가 0.5(외곽)에 가까울수록 투명(0.0)해지고, 0.2(중심)로 갈수록 불투명(1.0)
-    // 각진 네모가 아니라, 외곽이 은은하게 퍼지는 아름다운 동그란 빛무리(Orb)
-    float shapeAlpha = smoothstep(0.5f, 0.2f, dist);
+    // -------------------------------------------------------------------
+    // 3. 날치알(단단한 알갱이) 느낌 제거 -> 아주 부드러운 안개/빛무리(Glow) 연출
+    // -------------------------------------------------------------------
+    // 중심(dist=0)에서 외곽(dist=0.5)으로 갈수록 아주 부드럽게 사라지는 감쇠 공식 적용
+    float shapeAlpha = pow(1.0f - saturate(dist * 2.0f), 1.8f);
 
     // -------------------------------------------------------------------
-    // 2. 모이는 진행도(progress)에 따라 밝기를 쭈욱 끌어올리기
+    // 4. 색상 및 밝기: 흰색 -> 고유 색상(Player Color) 변화
     // -------------------------------------------------------------------
-    // progress(0.0 ~ 1.0)에 따라 밝기 배율을 정합니다.
-    // 처음 사방으로 퍼져있을 땐 원래 색상의 0.3배(어두움), 
-    // 검으로 다 모였을 땐 1.0배(빛이 폭발하듯 쨍해짐)가 됩니다.
-    float brightness = lerp(0.3f, 1.0f, progress);
+    // progress(0.0 ~ 1.0)에 따라 처음에는 순백색, 끝으로 갈수록 플레이어 고유 색상으로 변화
+    float3 startColor = float3(1.0f, 1.0f, 1.0f);
+    float3 timeBlendedColor = lerp(startColor, In.Color.rgb, progress);
+    
+    // 밝기: 처음엔 1.2배로 쨍한 순백색, 마지막에 에너지가 응집되며 1.5배로 빛남 (회색으로 칙칙하게 보이지 않게)
+    float brightness = lerp(1.2f, 1.5f, progress);
 
-    // 처음 생성될 때(0.0 ~ 0.1 구간) 파티클이 서서히 나타나도록 투명도 보간
-    float appearAlpha = saturate(progress / 0.1f);
+    // [추가] 퍼질 때(죽어갈 때) 투명해지면서 회색/탁하게 변하는 것을 방지
+    if (dying_progress > 0.0f) {
+        // 흩어질 때는 온전한 본연의 색(고유 색상)을 100% 유지
+        timeBlendedColor = In.Color.rgb;
+        // 흩어지면서 사라질 때 색이 죽지 않도록 스스로 강렬하게 빛나게 부스트(Bloom)
+        brightness *= lerp(1.0f, 3.0f, dying_progress);
+    }
 
-    // -------------------------------------------------------------------
-    // 3. 최종 색상 결정 (중심부는 흰색, 외곽은 설정된 색상으로 스무스하게 혼합)
-    // -------------------------------------------------------------------
     float4 finalColor;
+    finalColor.rgb = timeBlendedColor * brightness;
     
-    // 파티클 중심부(dist=0)는 흰색, 외곽(dist=0.2 이상)은 원래 색상이 되도록 부드럽게 보간
-    float3 coreColor = float3(1.0f, 1.0f, 1.0f);
-    float colorBlend = smoothstep(0.0f, 0.2f, dist);
-    float3 blendedColor = lerp(coreColor, In.Color.rgb, colorBlend);
+    // 처음 나타날 때 부드럽게 페이드인
+    float appearAlpha = saturate(progress / 0.1f);
     
-    // RGB 색상에 밝기를 곱해줌
-    finalColor.rgb = blendedColor * brightness;
-    
-    // Alpha(투명도)에는 원 모양 마스크(shapeAlpha)와 처음 등장 페이드인(appearAlpha)을 함께 적용합니다.
+    // 알파 렌더링
     finalColor.a = In.Color.a * shapeAlpha * appearAlpha;
 
     return finalColor;

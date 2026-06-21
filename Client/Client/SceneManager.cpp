@@ -142,7 +142,7 @@ void SceneManager::process_scene_change_if_requested(ID3D12Device* device ,ID3D1
                 _terrainObject.reset();
             }
         }
-    }
+	    }
 
     auto it = _scene_creators.find(scene_to_load);
     if (it == _scene_creators.end()) {
