@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
@@ -17,6 +17,7 @@ namespace PIP::GAME
 		~GridMap() = default;
 
 		void Initialize(float minX, float maxX, float minZ, float maxZ, int cellSize);
+		void Clear(); // 씬 전환 등에서 모든 오브젝트 제거
 
 		void Add(GameObject* obj);
 		void Remove(GameObject* obj);
