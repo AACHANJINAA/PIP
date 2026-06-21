@@ -1393,7 +1393,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		}
 
 		// 이동 속도 m단위 : 초당 0.1f
-		float speed = 0.15f;
+		float speed = 0.12f;
 
 		// 2번째 지점(192.44, 11.31, -59.76) 도착 또는 통과 시 이벤트 발생
 		if (!_isCinematicMoveInCastle && splineTime >= 1.f) 
