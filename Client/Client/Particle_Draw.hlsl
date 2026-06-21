@@ -48,9 +48,9 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 
     // 0~3의 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줍니다.
     float current_size = g_Size;
-    if (dying_progress > 0.0f) {
-        current_size *= 1.5f; // 분수 파티클(퍼질 때)은 크기를 1.5배 키움
-    }
+    //if (dying_progress > 0.0f) {
+    //    current_size *= 1.5f; // 분수 파티클(퍼질 때)은 크기를 1.5배 키움
+    //}
     float2 qpos = QuadPos[vI] * current_size;
     worldPos += right * qpos.x + up * qpos.y;
 
