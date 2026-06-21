@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "CombatDef.h"
 #include "GridMap.h"
 #include "JoltSetup.h"
@@ -101,6 +101,7 @@ namespace PIP::SERVER
 		int GetLogicThreadIndex() const { return _logic_thread_idx; }
 		RoomState GetRoomState() const { return _room_state; }
 		bool IsFull() const { return static_cast<uint8_t>(_players.size()) >= _max_players; }
+		int64_t GetNextNpcId() { return _next_npc_id++; }
 
 		GAME::Player* GetPlayer(int64_t player_id);
 		void GetNPCTypeName(common::packet::NPCType type, std::string& npcTypeName);
@@ -176,6 +177,7 @@ namespace PIP::SERVER
 		std::set<int64_t>      _cutsceneFinishedPlayers; // 컷씬 종료를 보고한 플레이어 목록
 		std::set<int64_t>      _activatedLevers;         // 작동된 레버들의 ID 집합
 		bool                   _isSkillUnlocked = false; // [추가] 방 기준 스킬 잠금 해제 상태
+		int32_t                _bossKillCount = 0;       // [추가] 보스 킬 카운트 (스케일링 용도)
 
 		// [카운트다운] 보스전 진입 카운트다운 제어
 		float   _countdownTimer    = 0.0f; // 남은 카운트다운 시간

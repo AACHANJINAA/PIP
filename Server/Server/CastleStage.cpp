@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "CastleStage.h"
 #include "Room.h"
 #include "JoltSetup.h"
@@ -90,7 +90,7 @@ namespace PIP::SERVER
 		common::Vec3 startPos = get_spawn_pos();
 		for (int i = 0; i < 5; ++i)
 		{
-			int64_t npc_id = 9999000 + i + (room->GetRoomId() * 10000LL); // 임의의 큰 ID 값 사용
+			int64_t npc_id = room->GetNextNpcId(); 
 			common::Vec3 boxPos = { startPos.x + (i * 2.0f), startPos.y + 8.0f, startPos.z + 5.0f }; // 8m 상공, 한줄 배치
 			auto box = std::make_unique<GAME::NPC>(npc_id, GAME::NPCType::DynamicBox, room->GetRoomId(), boxPos, 100);
 			box->SetPosition(boxPos);
