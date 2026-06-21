@@ -48,6 +48,7 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
     cameraComp->set_main_camera();
 
     cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(true);
+    ShadowManager::instance()->set_cinematic_mode(true); // 타이틀 씬에서도 그림자 시네마틱 모드 활성화
 
     // 오디오 재생 -> 리소스 로드 이후에 노래 재생
     //SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);

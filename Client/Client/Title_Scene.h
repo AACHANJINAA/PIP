@@ -16,7 +16,7 @@ class Title_Scene : public Scene
 {
 private:
     // DW설명 : 타이틀 씬 볼건지? -> 이거 true 하면 실제 타이틀 씬 연출을 볼 수 있다. -> 디버깅 빨리 하려면 false 두기
-	bool _isYouWantSeeTitleScene = true;
+	bool _isYouWantSeeTitleScene = false;
 
 public:
     using Scene::Scene;
