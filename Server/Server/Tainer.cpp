@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Tainer.h"
 #include "HitboxComponent.h"
 #include "AIComponent.h"
@@ -6,10 +6,10 @@
 
 namespace PIP::GAME
 {
-	Tainer::Tainer(int64_t npc_id, int room_id, common::Vec3 position)
-		: NPC(npc_id, NPCType::Tainer, room_id, position, 500)
+	Tainer::Tainer(int64_t npc_id, int room_id, common::Vec3 position, int32_t maxHp)
+		: NPC(npc_id, NPCType::Tainer, room_id, position, maxHp)
 	{
-		_maxHp = 500;
+		_maxHp = maxHp;
 		SetName("Boss_Tainer");
 		SetFaction(Faction::FACTION_MONSTER);
 
