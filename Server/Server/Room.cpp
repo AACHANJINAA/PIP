@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -230,7 +230,7 @@ namespace PIP::SERVER
 		}
 
 		// [추가] 컷씬 도중 누군가 나가서 남은 인원들이 모두 컷씬 시청을 완료한 상태가 되었는지 체크
-		if (!_players.empty() && _cutsceneFinishedPlayers.size() >= _players.size() && _requestedSceneName.empty()) {
+		if (!_players.empty() && _cutsceneFinishedPlayers.size() >= _players.size()) {
 			MYLOG("[Room " << _room_id << "] Remaining players finished cutscene! Transitioning to BossStage.");
 			_activatedLevers.clear();
 			ChangeScene("BossStage");
@@ -649,6 +649,7 @@ namespace PIP::SERVER
 		if (_room_state == RoomState::PLAYING) return; // [추가] 이미 시작된 경우 중복 처리 방지
 
 		_room_state = RoomState::PLAYING;
+		_readyPlayers.clear(); // [추가] 게임 시작 시 레디 목록 초기화 (컷씬 중 이탈로 인한 재시작 방지)
 		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
 	}
 
