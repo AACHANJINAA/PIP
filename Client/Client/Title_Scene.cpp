@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Title_Scene.h"
 #include "SceneManager.h"
 
@@ -46,6 +46,8 @@ void Title_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList*
 	cameraObject->transform()->set_local_rotation(-45.0f, 195.0f, 0.0f);
     cameraObject->set_layer("Camera");
     cameraComp->set_main_camera();
+
+    cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(true);
 
     // 오디오 재생 -> 리소스 로드 이후에 노래 재생
     //SoundManager::instance()->load_sound("TitleBgm", "Resource/Sound/monster_hunter_ost.mp3", false);
@@ -128,7 +130,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
     {
         // 조작법 UI
-        _controls_ui_obj = ObjectManager::instance()->create_game_object("Controls_UI");
+        _controls_ui_obj = ObjectManager::instance()->create_game_object("Cinematic_Controls_UI");
         auto controls_ui = _controls_ui_obj->add_component<UIRenderComponent>();
 
         controls_ui->set_screen_position(FRAME_BUFFER_WIDTH - 820.0f, FRAME_BUFFER_HEIGHT - 620.0f);
@@ -427,7 +429,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
 
     if (InputManager::instance()->IsKeyDown(VK_F8))
     {
-        cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false);
+        //cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false);
     }
 
 
@@ -554,7 +556,7 @@ void Title_Scene::Opening_Sequence(float deltaTime)
         
         _isOpeningEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::CONNECTING_SERVER;
-        cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
+        //cameraObject->get_component<FreeCameraScript>()->set_sinamatic_camera_mode(false); // 오프닝 시퀀스 동안 시네마틱 카메라 모드 활성화
     }
     else // 연출 시작 전 대기 (13.5초 이전)
     {
