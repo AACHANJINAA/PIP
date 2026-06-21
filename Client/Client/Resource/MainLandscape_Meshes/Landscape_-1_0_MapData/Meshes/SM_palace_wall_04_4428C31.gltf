@@ -1,0 +1,365 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1317,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 483,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 2.48644829, -7.24748247e-07, -1.5613668 ],
+			"max": [ 7.51355314, 6.8872056, 0.56151861 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 483,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 483,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 483,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 483,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 132,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 68,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ 0, -6.1232336e-17, -1 ],
+			"max": [ 10.0002918, 11.003027, 0.000516090367 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 68,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 68,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 68,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 68,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_palace_wall_04_4428C31.bin",
+			"byteLength": 33624
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2634,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5796,
+			"byteOffset": 2636,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5796,
+			"byteOffset": 8432,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7728,
+			"byteOffset": 14228,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3864,
+			"byteOffset": 21956,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 3864,
+			"byteOffset": 25820,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 132,
+			"byteOffset": 29684,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 816,
+			"byteOffset": 29816,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 816,
+			"byteOffset": 30632,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 1088,
+			"byteOffset": 31448,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 544,
+			"byteOffset": 32536,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 544,
+			"byteOffset": 33080,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Brick_02_BaseColor.png"
+		},
+		{
+			"uri": "MI_Brick_02_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Brick_02_Normal.png"
+		},
+		{
+			"uri": "MI_Brick_02_Occlusion.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_BaseColor.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_Normal.png"
+		},
+		{
+			"uri": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_Occlusion.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Brick_02",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 3
+			}
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_04",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 4,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00909976941, -0.00812195428 ],
+							"scale": [ 1.13054502, 1.02361619 ]
+						}
+					}
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 5,
+					"texCoord": 1,
+					"extensions":
+					{
+						"KHR_texture_transform":
+						{
+							"offset": [ -0.00909976941, -0.00812195428 ],
+							"scale": [ 1.13054502, 1.02361619 ]
+						}
+					}
+				}
+			},
+			"normalTexture":
+			{
+				"index": 6,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00909976941, -0.00812195428 ],
+						"scale": [ 1.13054502, 1.02361619 ]
+					}
+				}
+			},
+			"occlusionTexture":
+			{
+				"index": 7,
+				"texCoord": 1,
+				"extensions":
+				{
+					"KHR_texture_transform":
+					{
+						"offset": [ -0.00909976941, -0.00812195428 ],
+						"scale": [ 1.13054502, 1.02361619 ]
+					}
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_palace_wall_04",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Brick_02_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Brick_02_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Brick_02_Normal",
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"name": "MI_Brick_02_Occlusion",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_BaseColor",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_MetallicRoughness",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_Normal",
+			"sampler": 0,
+			"source": 6
+		},
+		{
+			"name": "MI_Styl_Wall_Brick_02_SM_palace_wall_04_Occlusion",
+			"sampler": 0,
+			"source": 7
+		}
+	],
+	"extensionsUsed": [
+		"KHR_texture_transform"
+	]
+}

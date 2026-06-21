@@ -1,0 +1,307 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 5982,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 1884,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.983460188, -0.881956398, -0.00210514874 ],
+			"max": [ 0.983460844, 0.106016546, 1.00370586 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 1884,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 1884,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 1884,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 1884,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 6,
+			"count": 108,
+			"type": "SCALAR",
+			"componentType": 5121
+		},
+		{
+			"bufferView": 7,
+			"count": 46,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.945805788, -17.2973671, 0.473553598 ],
+			"max": [ 0.945806324, -0.620182574, 0.732275248 ]
+		},
+		{
+			"bufferView": 8,
+			"count": 46,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 9,
+			"count": 46,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 10,
+			"count": 46,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 11,
+			"count": 46,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_flag_01_4C75FCD.bin",
+			"byteLength": 120152
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 11964,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 22608,
+			"byteOffset": 11964,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 22608,
+			"byteOffset": 34572,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 30144,
+			"byteOffset": 57180,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15072,
+			"byteOffset": 87324,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 15072,
+			"byteOffset": 102396,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 108,
+			"byteOffset": 117468,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 552,
+			"byteOffset": 117576,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 552,
+			"byteOffset": 118128,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 736,
+			"byteOffset": 118680,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 368,
+			"byteOffset": 119416,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 368,
+			"byteOffset": 119784,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Flag_BaseColor.png"
+		},
+		{
+			"uri": "MI_Flag_MetallicRoughness.png"
+		},
+		{
+			"uri": "MI_Flag_Normal.png"
+		},
+		{
+			"uri": "T_Metal_Trim_C.png"
+		},
+		{
+			"uri": "T_Metal_Trim_M.png"
+		},
+		{
+			"uri": "T_Metal_Trim_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Metall_Trim_01",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			},
+			"occlusionTexture":
+			{
+				"index": 1
+			}
+		},
+		{
+			"name": "MI_Flag",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 3
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 4
+				}
+			},
+			"normalTexture":
+			{
+				"index": 5
+			},
+			"doubleSided": true
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_flag_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				},
+				{
+					"attributes":
+					{
+						"POSITION": 7,
+						"NORMAL": 8,
+						"TANGENT": 9,
+						"TEXCOORD_0": 10,
+						"TEXCOORD_1": 11
+					},
+					"indices": 6,
+					"material": 1
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "T_Metal_Trim_C",
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"name": "T_Metal_Trim_M",
+			"sampler": 0,
+			"source": 4
+		},
+		{
+			"name": "T_Metal_Trim_N",
+			"sampler": 0,
+			"source": 5
+		},
+		{
+			"name": "MI_Flag_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Flag_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "MI_Flag_Normal",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}
