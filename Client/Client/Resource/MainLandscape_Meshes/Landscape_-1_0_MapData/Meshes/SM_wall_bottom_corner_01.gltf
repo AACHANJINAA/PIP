@@ -1,0 +1,174 @@
+{
+	"asset":
+	{
+		"version": "2.0",
+		"generator": "Unreal Engine 5.6.1"
+	},
+	"scene": 0,
+	"accessors": [
+		{
+			"bufferView": 0,
+			"count": 1974,
+			"type": "SCALAR",
+			"componentType": 5123
+		},
+		{
+			"bufferView": 1,
+			"count": 629,
+			"type": "VEC3",
+			"componentType": 5126,
+			"min": [ -0.44950062, -1.93197195e-07, -1.87006485 ],
+			"max": [ 1.73586071, 4.99999905, 0.255906761 ]
+		},
+		{
+			"bufferView": 2,
+			"count": 629,
+			"type": "VEC3",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 3,
+			"count": 629,
+			"type": "VEC4",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 4,
+			"count": 629,
+			"type": "VEC2",
+			"componentType": 5126
+		},
+		{
+			"bufferView": 5,
+			"count": 629,
+			"type": "VEC2",
+			"componentType": 5126
+		}
+	],
+	"buffers": [
+		{
+			"uri": "SM_wall_bottom_corner_01.bin",
+			"byteLength": 39172
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 3948,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7548,
+			"byteOffset": 3948,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 7548,
+			"byteOffset": 11496,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 10064,
+			"byteOffset": 19044,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5032,
+			"byteOffset": 29108,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 5032,
+			"byteOffset": 34140,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "MI_Stones_Dark_BaseColor.png"
+		},
+		{
+			"uri": "MI_Stones_Dark_MetallicRoughness.png"
+		},
+		{
+			"uri": "T_Stone_N.png"
+		}
+	],
+	"materials": [
+		{
+			"name": "MI_Stones_Dark",
+			"pbrMetallicRoughness":
+			{
+				"baseColorTexture":
+				{
+					"index": 0
+				},
+				"metallicRoughnessTexture":
+				{
+					"index": 1
+				}
+			},
+			"normalTexture":
+			{
+				"index": 2
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "SM_wall_bottom_corner_01",
+			"primitives": [
+				{
+					"attributes":
+					{
+						"POSITION": 1,
+						"NORMAL": 2,
+						"TANGENT": 3,
+						"TEXCOORD_0": 4,
+						"TEXCOORD_1": 5
+					},
+					"indices": 0,
+					"material": 0
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"minFilter": 9987,
+			"magFilter": 9729
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [ 0 ]
+		}
+	],
+	"textures": [
+		{
+			"name": "MI_Stones_Dark_BaseColor",
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"name": "MI_Stones_Dark_MetallicRoughness",
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"name": "T_Stone_N",
+			"sampler": 0,
+			"source": 2
+		}
+	]
+}
