@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -149,6 +149,7 @@ void Main_Scene::set_cinematic_mode(bool isCinematic)
 	if (_isCinematicMode == isCinematic) return;
 
 	_isCinematicMode = isCinematic;
+	ShadowManager::instance()->set_cinematic_mode(isCinematic);
 }
 
 void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
