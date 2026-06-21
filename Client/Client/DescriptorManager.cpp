@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "DescriptorManager.h"
 
 void DescriptorManager::initialize(ID3D12Device* device, UINT descriptor_count)
@@ -21,6 +21,17 @@ void DescriptorManager::initialize(ID3D12Device* device, UINT descriptor_count)
 
 bool DescriptorManager::allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE& out_gpu_handle)
 {
+	if (!_freeList.empty())
+	{
+		UINT index = _freeList.front();
+		_freeList.pop();
+
+		out_cpu_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(_descriptorHeap->GetCPUDescriptorHandleForHeapStart(), index, _descriptorSize);
+		if (_isShaderVisible) out_gpu_handle = CD3DX12_GPU_DESCRIPTOR_HANDLE(_descriptorHeap->GetGPUDescriptorHandleForHeapStart(), index, _descriptorSize);
+		else out_gpu_handle.ptr = 0;
+		return true;
+	}
+
 	if (_currentIndex >= _capacity)
 	{
 	    CERROR("Descriptor Heap is full!");
@@ -47,3 +58,13 @@ bool DescriptorManager::allocate_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE& out_cpu
 
 	return true;
 }
+
+void DescriptorManager::free_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)
+{
+	SIZE_T start_ptr = _descriptorHeap->GetCPUDescriptorHandleForHeapStart().ptr;
+	if (cpu_handle.ptr >= start_ptr) {
+		UINT index = static_cast<UINT>((cpu_handle.ptr - start_ptr) / _descriptorSize);
+		_freeList.push(index);
+	}
+}
+
