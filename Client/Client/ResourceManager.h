@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Shader.h"
 
 class Mesh;
@@ -60,6 +60,7 @@ public:
 
 	// [추가] 사용되지 않는 메시들을 메모리에서 해제하는 함수
     void unload_unused_meshes();
+    void unload_texture(const std::string& name);
 
     // 1. glTF 파일에서 모든 재질과 텍스처를 로드하고 내부적으로 저장합니다.
     //    성공적으로 로드된 재질들의 이름을 반환합니다.

@@ -75,6 +75,14 @@ TerrainLoader::~TerrainLoader()
 	if (it != _all_terrain_loaders.end()) {
 		_all_terrain_loaders.erase(it);
 	}
+
+	if (!_heightmapTextureKey.empty()) {
+		ResourceManager::instance()->unload_texture(_heightmapTextureKey);
+	}
+	if (_hasLayers) {
+		std::string array_name = "WeightmapArray_" + std::to_string(reinterpret_cast<uintptr_t>(this));
+		ResourceManager::instance()->unload_texture(array_name);
+	}
 }
 
 float TerrainLoader::get_height_anywhere(float world_x, float world_z)

@@ -1,4 +1,6 @@
-﻿#pragma once
+#pragma once
+#include <queue>
+
 
 class DescriptorManager : public Singleton<DescriptorManager>
 {
@@ -22,6 +24,10 @@ private:
 	UINT _capacity = 0;
 	UINT _currentIndex = 0;
 	bool _isShaderVisible = false;
+
+	std::queue<UINT> _freeList;
+public:
+	void free_descriptor(D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle);
 
 	// TODO: 추후 free_descriptor 구현을 위해 free list 등을 추가 가능
 };
