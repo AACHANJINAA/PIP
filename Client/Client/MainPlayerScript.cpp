@@ -807,13 +807,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 			is_foward = false;
 		}
 
-		if (InputManager::instance()->IsKeyPress(VK_LSHIFT)) {
-			_speed = common::move_speed::player_run_speed ; // 달리기 속도 -> 서버와 동일하게 해주어야 함
-		}
-		else
-		{
-			_speed = common::move_speed::player_walk_speed; // 걷기 속도 -> 서버와 동일하게 해주어야 함
-		}
+		_speed = common::move_speed::player_walk_speed; // 걷기 속도 -> 서버와 동일하게 해주어야 함
 
 		if (is_gathering) {
 			_speed = 0.0f; // 스킬 모으기 중에는 이동 불가, 방향 회전만 가능
@@ -874,8 +868,8 @@ void MainPlayerScript::handle_input(float deltaTime)
 	}
 
 
-	// 대쉬 입력 (스페이스바)
-	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_SPACE)) {
+	// 대쉬 입력 (LSHIFT키)
+	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LSHIFT)) {
 		common::Quat dashRotation = _logicalRotation;
 		if (common::LengthSq(_currentMoveDir) > 0.001f) {
 			// 이동 입력이 있으면 해당 방향으로 대쉬
@@ -891,23 +885,9 @@ void MainPlayerScript::handle_input(float deltaTime)
 		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::DASH, -1, _logicalPosition, dashRotation);
 	}
 
-	// 점프 입력 (F키)
-	if (!_isAttacking && InputManager::instance()->IsKeyDown('F')) {
-		bool can_jump = true;
-		// 상호작용 UI가 떠 있다면 점프 무시
-		auto uiManager = UIManager::instance();
-		if (uiManager) {
-			if (uiManager->is_visible(UILayer::MIDDLE, "F_interaction_UI") ||
-				uiManager->is_visible(UILayer::MIDDLE, "Lever_interact_ui_0") ||
-				uiManager->is_visible(UILayer::MIDDLE, "Lever_interact_ui_1"))
-			{
-				can_jump = false;
-			}
-		}
-
-		if (can_jump) {
-			NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
-		}
+	// 점프 입력 (스페이스바)
+	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_SPACE)) {
+		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::JUMP, -1, _logicalPosition, _logicalRotation);
 	}
 
 	// 상호작용 입력 (E키) -> 레버 스크립트에서 하도록 전환
@@ -928,8 +908,10 @@ void MainPlayerScript::handle_input(float deltaTime)
 	}
 
 	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_RBUTTON)) {
-
-		if (_mp >= 80) // 스킬 사용 시 마나 80 소모 (서버에서 차감하므로 여기서는 체크만)
+		if (!NetworkManager::instance()->is_skill_unlocked()) {
+			// 스킬이 해금되지 않았으면 무시
+		}
+		else if (_mp >= 80) // 스킬 사용 시 마나 80 소모 (서버에서 차감하므로 여기서는 체크만)
 		{
 			CLOG("[Skill] 스킬 사용! 예상 마나 잔량: " << _mp - 80);
 			set_mp(_mp - 80); // [추가] 서버 응답 전 클라이언트 선 차감 (스팸 방지)

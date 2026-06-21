@@ -103,6 +103,7 @@ namespace common::packet
 		S2C_P_PLAYER_ATTACK = 103, // 플레이어 다중 피격 정보
 		S2C_P_NPC_ATTACK = 104,    // NPC 다중 피격 정보
 		S2C_P_PLAYER_RESURRECT = 106, // [신규] 플레이어 부활 패킷 (죽은 플레이어가 부활할 때 브로드캐스트)
+		S2C_P_SKILL_UNLOCKED = 107, // [신규] 스킬 잠금 해제 알림
 
 		//------------------------------------------ 방 관련 패킷 ------------------------------------------ //
 		C2S_P_ENTER_ROOM = 201,
@@ -381,6 +382,10 @@ namespace common::packet
 		uint8_t _hit_count;
 		// 이 헤더 뒤에 _hit_count 만큼의 PlayerHitInfo 구조체가 이어집니다.
 	};
+
+	struct SC_PACKET_SKILL_UNLOCKED : PacketHeader {
+	};
+
 	// 접속 종료 패킷
 	struct SC_PACKET_LEAVE : PacketHeader
 	{
@@ -553,6 +558,6 @@ namespace common::move_speed // 실제 이동속도 이므로 더 빨라저야 �
 {
 	constexpr float one_frame_max_speed = 50.f; // 한 프레임에 최대 갈 수 있는 거리
 
-	constexpr float player_walk_speed = 2.0f;
+	constexpr float player_walk_speed = 8.0f;
 	constexpr float player_run_speed = 50.f;
 }

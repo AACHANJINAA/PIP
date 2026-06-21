@@ -1027,8 +1027,8 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		// 완성되면 카메라 시네마틱 모드 키기
 		cameraObject->set_sinamatic_camera_mode(true);
 
-		cameraObject->transform()->set_local_position({ 274.07, 70.04, -2.11 });
-		cameraObject->transform()->set_local_rotation(29.8, -120.7, 0.0);
+		cameraObject->transform()->set_local_position({ 274.07f, 70.04f, -2.11f });
+		cameraObject->transform()->set_local_rotation(29.8f, -120.7f, 0.0f);
 	}
 
 	// 여기서부터 노래 시간을 기준으로 컷씬 연출 진행
@@ -1155,11 +1155,11 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		float easedProgress = -(cos(3.14159265f * progress) - 1.0f) / 2.0f;
 
 		// 두 점 사이를 선형 보간(Lerp)하되, 시간에 Ease-In-Out을 적용하여 부드럽게 이동
-		DirectX::XMVECTOR vPos1 = DirectX::XMVectorSet(196.38, 5.90, -58.28, 0.0f);
+		DirectX::XMVECTOR vPos1 = DirectX::XMVectorSet(196.38f, 5.90f, -58.28f, 0.0f);
 		DirectX::XMVECTOR vPos2 = DirectX::XMVectorSet(195.99f, 6.41f, -58.53f, 0.0f);
 		DirectX::XMVECTOR vPos = DirectX::XMVectorLerp(vPos1, vPos2, easedProgress);
 
-		DirectX::XMVECTOR vRot1 = DirectX::XMVectorSet(-8.1, -99.8, 0.0, 0.0f);
+		DirectX::XMVECTOR vRot1 = DirectX::XMVectorSet(-8.1f, -99.8f, 0.0f, 0.0f);
 		DirectX::XMVECTOR vRot2 = DirectX::XMVectorSet(-4.8f, -98.9f, 0.0f, 0.0f);
 		DirectX::XMVECTOR vRot = DirectX::XMVectorLerp(vRot1, vRot2, easedProgress);
 
@@ -1328,11 +1328,11 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		float easedProgress = -(cos(3.14159265f * progress) - 1.0f) / 2.0f;
 
 		// 두 점 사이를 선형 보간(Lerp)하되, 시간에 Ease-In-Out을 적용하여 부드럽게 이동
-		DirectX::XMVECTOR vPos1 = DirectX::XMVectorSet(196.41, 14.88, -46.93, 0.0f);
+		DirectX::XMVECTOR vPos1 = DirectX::XMVectorSet(196.41f, 14.88f, -46.93f, 0.0f);
 		DirectX::XMVECTOR vPos2 = DirectX::XMVectorSet(209.34f, 22.02f, -59.20f, 0.0f);
 		DirectX::XMVECTOR vPos = DirectX::XMVectorLerp(vPos1, vPos2, easedProgress);
 
-		DirectX::XMVECTOR vRot1 = DirectX::XMVectorSet(28.5, -137.5, 0.0f, 0.0f);
+		DirectX::XMVECTOR vRot1 = DirectX::XMVectorSet(28.5f, -137.5f, 0.0f, 0.0f);
 		DirectX::XMVECTOR vRot2 = DirectX::XMVectorSet(35.0f, -89.8f, 0.0f, 0.0f);
 		DirectX::XMVECTOR vRot = DirectX::XMVectorLerp(vRot1, vRot2, easedProgress);
 
@@ -1364,8 +1364,8 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 			{ { 192.44f, 11.31f, -59.76f }, { 45.6f, -88.8f, 0.0f } },   // 2번 점 (이벤트 지점)
 			{ { 180.16f,  6.00f, -59.16f }, { -10.1f, -91.2f, 0.0f } },  // 3번 점
 			{ { 169.92f,  6.21f, -59.80f }, { -10.8f, -90.2f, 0.0f } },  // 4번 점
-			{ { 158.72, 5.87, -60.15 }, { -10.1, -90.5, 0.0 } },  // 5번 점 (최종 도착)
-			{ { 158.72, 5.87, -60.15 }, { -10.1, -90.5, 0.0 } }   // 제어점 (도착 지점 중복)
+			{ { 158.72f, 5.87f, -60.15f }, { -10.1f, -90.5f, 0.0f } },  // 5번 점 (최종 도착)
+			{ { 158.72f, 5.87f, -60.15f }, { -10.1f, -90.5f, 0.0f } }   // 제어점 (도착 지점 중복)
 		};
 
 		float totalDuration = 8.0f; // 55~63초 = 8초
@@ -1373,8 +1373,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 
 		// 1. 전체 시간에 대한 진행도 (0.0 ~ 1.0)
 		float progress = rawTime / totalDuration;
-		if (progress > 1.0f) progress = 1.0f;
-		if (progress < 0.0f) progress = 0.0f;
+		progress = std::clamp(progress, 0.0f, 1.0f); // 0.0 ~ 1.0 범위로 제한
 
 		// 2. Ease-In-Out Sine 적용
 		float easedProgress = -(cos(3.14159265f * progress) - 1.0f) / 2.0f;
@@ -1383,8 +1382,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		float splineTime = easedProgress * 4.0f; 
 		
 		int segment = static_cast<int>(splineTime);
-		if (segment > 3) segment = 3; // 최대 4구간(0, 1, 2, 3)
-		if (segment < 0) segment = 0;
+		segment = std::clamp(segment, 0, 3); // 최대 4구간(0, 1, 2, 3)
 		
 		float t = splineTime - static_cast<float>(segment);
 		if (splineTime >= 4.0f) {
@@ -1413,17 +1411,16 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 					animComp->set_progress(startOffsets[i]);
 				}
 			}
-			_dummy_player_1->transform()->set_local_position({ 159.09, 5.3, -60.95	});
-			_dummy_player_1->transform()->set_local_rotation(0.0, 92.7, 0.0);
+			_dummy_player_1->transform()->set_local_position({ 159.09f, 5.3f, -60.95f });
+			_dummy_player_1->transform()->set_local_rotation(0.0f, 92.7f, 0.0f);
 
-			_dummy_player_2->transform()->set_local_position({ 160.15, 5.3, -61.56 });
-			_dummy_player_2->transform()->set_local_rotation(0.0, 98.2, 0.0);
+			_dummy_player_2->transform()->set_local_position({ 160.15f, 5.3f, -61.56f });
+			_dummy_player_2->transform()->set_local_rotation(0.0f, 98.2f, 0.0f);
+			_dummy_player_3->transform()->set_local_position({ 159.12f, 5.3f, -59.35f });
+			_dummy_player_3->transform()->set_local_rotation(0.0f, 84.0f, 0.0f);
 
-			_dummy_player_3->transform()->set_local_position({ 159.12, 5.3, -59.35 });
-			_dummy_player_3->transform()->set_local_rotation(0.0, 84.0, 0.0);
-
-			_dummy_player_4->transform()->set_local_position({ 158.09, 5.3, -58.70 });
-			_dummy_player_4->transform()->set_local_rotation(0.0, 81.4, 0.0);
+			_dummy_player_4->transform()->set_local_position({ 158.09f, 5.3f, -58.70f });
+			_dummy_player_4->transform()->set_local_rotation(0.0f, 81.4f, 0.0f);
 		}
 
 		// 현재 구간의 4개 점(p0, p1, p2, p3) 인덱스 계산
@@ -1458,8 +1455,8 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		if (splineTime >= 1.f)
 		{
 			// 최종 이동 각도 및 위치
-			DirectX::XMFLOAT3 finalPos = { 146.73, 5.30, -60.31 };
-			DirectX::XMFLOAT3 finalRot = { 0.0, 80.9, 0.0 };
+			DirectX::XMFLOAT3 finalPos = { 146.73f, 5.30f, -60.31f };
+			DirectX::XMFLOAT3 finalRot = { 0.0f, 80.9f, 0.0f };
 
 			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
 			for (int i = 0; i < 4; ++i) {

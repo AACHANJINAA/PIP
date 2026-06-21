@@ -175,6 +175,7 @@ namespace PIP::SERVER
 		std::set<int64_t>      _readyPlayers;       // 로딩 완료 보고를 한 플레이어 목록
 		std::set<int64_t>      _cutsceneFinishedPlayers; // 컷씬 종료를 보고한 플레이어 목록
 		std::set<int64_t>      _activatedLevers;         // 작동된 레버들의 ID 집합
+		bool                   _isSkillUnlocked = false; // [추가] 방 기준 스킬 잠금 해제 상태
 
 		// [카운트다운] 보스전 진입 카운트다운 제어
 		float   _countdownTimer    = 0.0f; // 남은 카운트다운 시간
