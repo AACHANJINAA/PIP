@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -670,6 +670,9 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		animation->add_animation("die", T1_Mesh, "death");
 
 		animation->play("idle", true);
+
+		// 색상설정 (플레이어)
+		renderer->set_force_player_color_id(player_id);
 
 		// 재질 및 쉐이더 설정
 		std::string material = "Knight_Material";
