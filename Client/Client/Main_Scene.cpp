@@ -216,7 +216,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	controls_ui->set_screen_position((FRAME_BUFFER_WIDTH - 800.0f) / 2.0f, (FRAME_BUFFER_HEIGHT - 600.0f) / 2.0f);
 	controls_ui->set_size(800.0f, 600.0f);
 	controls_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	controls_ui->set_texture("Resource/UI/Controls_UI.png");
+	controls_ui->set_texture("Resource/UI/Controls_UI_New.png");
 	UIManager::instance()->add_ui(UILayer::FRONT, "Controls_UI_Main", controls_ui_obj);
 	UIManager::instance()->set_visible(UILayer::FRONT, "Controls_UI_Main", false); // 처음에 숨김
 
