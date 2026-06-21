@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Title_Scene.h"
 #include "SceneManager.h"
 
@@ -134,7 +134,7 @@ void Title_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comm
         controls_ui->set_screen_position(FRAME_BUFFER_WIDTH - 820.0f, FRAME_BUFFER_HEIGHT - 620.0f);
         controls_ui->set_size(800.0f, 600.0f);
         controls_ui->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));  // 초기 투명도 0
-        controls_ui->set_texture("Resource/UI/Controls_UI.png");
+        controls_ui->set_texture("Resource/UI/Controls_UI_New.png");
         UIManager::instance()->add_ui(UILayer::MIDDLE, "Controls_UI", _controls_ui_obj);
     }
 }
