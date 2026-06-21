@@ -70,7 +70,7 @@ namespace PIP::SERVER
 	{
 		for (int i = 0; i < 500; ++i)
 		{
-			int64_t npcId = _next_npc_id + (_room_id * 1000LL) + i;
+			int64_t npcId = GetNextNpcId();
 
 			// 1. 무작위 XZ 위치 결정 (Y는 충분히 높은 곳에서 시작)
 			common::Vec3 spawnPos = _currentStage->get_spawn_pos();
@@ -153,7 +153,7 @@ namespace PIP::SERVER
 
 	void Room::SpawnBoss()
 	{
-		int64_t bossId = _next_npc_id + (_room_id * 1000) + 999;
+		int64_t bossId = GetNextNpcId();
 		common::Vec3 bossSpawnPos = { 10.0f, 500.0f, 20.0f };
 
 		JPH::RRayCast ray{ Utils::ToJolt(bossSpawnPos), JPH::Vec3(0, -1000.0f, 0) };
@@ -289,7 +289,7 @@ namespace PIP::SERVER
 		for (size_t i = 0; i < count; ++i)
 		{
 			// 1. NPC 고유 ID 생성 (방 번호 기반으로 충돌 방지)
-			int64_t npc_id = _next_npc_id + (_room_id * 10000LL) + _npcs.size();
+			int64_t npc_id = GetNextNpcId();
 			spawned_ids.push_back(npc_id);
 
 			// 2. 타입별 객체 생성 (확장 포인트)
@@ -305,7 +305,14 @@ namespace PIP::SERVER
 			{
 			case GAME::NPCType::Tainer:
 				{
-					new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, spawnPos);
+					int32_t baseHp = data ? data->max_hp : 500;
+					int32_t playerCount = std::max<int32_t>(1, static_cast<int32_t>(_players.size()));
+					
+					// [수정] 1인당 0.5배씩 증가하며, 최대 2.5배까지만 증가하도록 제한
+					float finalMultiplier = std::min(2.5f, 1.0f + (playerCount - 1) * 0.5f);
+					int32_t finalHp = static_cast<int32_t>((baseHp + (_bossKillCount * 500)) * finalMultiplier);
+
+					new_npc = std::make_unique<GAME::Tainer>(npc_id, _room_id, spawnPos, finalHp);
 					radius = 1.0f; height = 2.5f; // 보스 규격
 					break;
 				}
@@ -410,9 +417,14 @@ namespace PIP::SERVER
 	void Room::AddNPC(std::unique_ptr<GAME::NPC> npc)
 	{
 		int64_t id = npc->GetNpcId();
+		if (_npcs.contains(id)) {
+			MYLOG("[Room] ERROR: NPC ID " << id << " already exists! Dropping NPC to prevent dangling pointer.");
+			return;
+		}
+
 		_actors[id] = npc.get(); // [추가] 통합 맵에 등록
 		_gridMap.Add(npc.get());
-		_npcs.emplace(npc->GetNpcId(), std::move(npc));
+		_npcs.emplace(id, std::move(npc));
 	}
 
 	GAME::NPC* Room::GetNPC(int64_t npc_id)
@@ -2073,9 +2085,9 @@ namespace PIP::SERVER
 		npc_count_packet._type = packet::PacketType::S2C_P_NPC_COUNT;
 		npc_count_packet._size = sizeof(npc_count_packet);
 		npc_count_packet._boss_count = bossCount; // 보스 마리 수
-		npc_count_packet._boss_start_id = _next_npc_id + (_room_id * 1000) + 999; // 보스 ID
+		npc_count_packet._boss_start_id = _next_npc_id; // (더 이상 사용되지 않지만 안전을 위해)
 		npc_count_packet._npc_count = static_cast<uint16_t>(_npcs.size()) - npc_count_packet._boss_count;
-		npc_count_packet._npc_start_id = _next_npc_id + (_room_id * 1000); // 일반 NPC ID 시작 인덱스 번호
+		npc_count_packet._npc_start_id = _next_npc_id - _npcs.size(); // 실제 부여된 가장 작은 ID로 설정
 		session->do_send(reinterpret_cast<char*>(&npc_count_packet), sizeof(npc_count_packet));
 
 		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
@@ -2447,6 +2459,11 @@ namespace PIP::SERVER
 					}
 				}
 			}
+		}
+
+		if (npc->is_boss()) {
+			_bossKillCount++;
+			MYLOG("[Room] Boss defeated! _bossKillCount is now " << _bossKillCount);
 		}
 
 		npc->SetState(packet::EntityState::DEAD);
