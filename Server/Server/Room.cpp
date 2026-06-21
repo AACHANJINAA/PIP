@@ -451,6 +451,9 @@ namespace PIP::SERVER
 			_currentStage->on_exit(this);
 		}
 
+		// [안전장치] 이전 씬에 남아있던 모든 그리드맵 데이터 완전 초기화
+		_gridMap.Clear();
+
 		WaitGame(); // [추가] 상태를 WAITING으로 변경하여 READY 체크가 정상 작동하게 함
 		_readyPlayers.clear();
 		_cutsceneFinishedPlayers.clear(); // [추가] 컷씬 완료자 목록 초기화
@@ -1006,6 +1009,18 @@ namespace PIP::SERVER
 
 			for (int cellIdx : _playerNearbyCells) {
 				for (auto* npc : _gridMap.GetNpcsInCell(cellIdx)) {
+					if (!npc) continue;
+
+					// [안전장치] 가비지 포인터 검증 (서버 크래시 방지)
+					bool isValid = false;
+					for (const auto& [id, valid_npc] : _npcs) {
+						if (valid_npc.get() == npc) {
+							isValid = true;
+							break;
+						}
+					}
+					if (!isValid) continue;
+
 					if (!npc->IsActive()) continue;
 					
 					int64_t nid = npc->GetId();

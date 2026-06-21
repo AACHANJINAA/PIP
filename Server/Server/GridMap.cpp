@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GridMap.h"
 #include "GameObject.h"
 #include "NPC.h"
@@ -29,6 +29,17 @@ namespace PIP::GAME
 		MYLOG("[GridMap] Optimized Initialized: " << _cols << "x" << _rows << " cells (Typed Storage)");
 	}
 
+	void GridMap::Clear()
+	{
+		for (auto& cell : _cells) {
+			cell.objects.clear();
+			cell.npcs.clear();
+			cell.players.clear();
+		}
+		_objectCellIndex.clear();
+		MYLOG("[GridMap] Completely cleared all objects from GridMap.");
+	}
+
 	int GridMap::GetIndex(common::Vec3 pos) const
 	{
 		int x = static_cast<int>((pos.x - _minX) / _cellSize);
@@ -51,6 +62,11 @@ namespace PIP::GAME
 		if (!obj) return;
 		auto tc = obj->GetComponent<TransformComponent>();
 		if (!tc) return;
+
+		// [안전장치] 만약 이미 그리드맵에 등록된 객체라면, 기존 셀에서 제거하여 중복 등록 방지
+		if (_objectCellIndex.contains(obj)) {
+			Remove(obj);
+		}
 
 		int idx = GetIndex(tc->GetPosition());
 		auto& cell = _cells[idx];
