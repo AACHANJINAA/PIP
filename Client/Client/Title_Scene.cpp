@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Title_Scene.h"
 #include "SceneManager.h"
 
@@ -322,10 +322,18 @@ void Title_Scene::Resource_Loading_Sequence(float deltaTime)
 
 void Title_Scene::Opening_UI_Sequence(float deltaTime)
 {
+    static bool hasForcedShadowUpdate = false;
+    if (!hasForcedShadowUpdate)
+    {
+        ShadowManager::instance()->force_static_shadow_update();
+        hasForcedShadowUpdate = true;
+    }
+
     if (!_isYouWantSeeTitleScene)
     {
         _isOpeningUIEnd = true;
         _currentOpeningState = TITLE_SCENE_STATE::OPENING_SEQUENCE;
+        hasForcedShadowUpdate = false; // 씬이 다시 호출될 경우를 대비해 초기화
 		return;
     }
 
@@ -390,6 +398,7 @@ void Title_Scene::Opening_UI_Sequence(float deltaTime)
         ui_timer = 0.0f;
         uiNum = 1;
         alpha = 0.0f;
+        hasForcedShadowUpdate = false;
     }
 }
 

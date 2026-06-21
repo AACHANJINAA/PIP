@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "stdafx.h"
 
 // 256바이트 정렬을 위한 헬퍼 구조체
@@ -33,6 +33,8 @@ public:
 
 	void set_shadow_max_distance(float distance) { shadow_max_distance = distance; }
 	float get_shadow_max_distance() const { return shadow_max_distance; }
+
+	void force_static_shadow_update() { _forceStaticUpdate = true; }
 
 	void set_static_update_distance_threshold(float distance) { _staticUpdateDistanceThreshold = distance; }
 	float static_update_distance_threshold() const { return _staticUpdateDistanceThreshold; }
