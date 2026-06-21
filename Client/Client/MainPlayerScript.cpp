@@ -199,6 +199,7 @@ void MainPlayerScript::awake()
 	SoundManager::instance()->load_sound("SwordSwing",      "Resource/Sound/SwordSwing.mp3",      false);
 	SoundManager::instance()->load_sound("DustSound",       "Resource/Sound/Dust.wav",             true);
 	SoundManager::instance()->load_sound("PlayerDamage",    "Resource/Sound/PlayerDamage.wav",     false);
+	SoundManager::instance()->load_sound("PlayerDash",      "Resource/Sound/PlayerDash.ogg",       false);
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -963,6 +964,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_state = common::packet::EntityState::ACTION;
 		_dashCooldownTimer = 1.0f; // 서버와 동일한 1초 쿨다운 적용
 
+		SoundManager::instance()->play("PlayerDash", SoundType::SFX, 1.0f, false);
 		NetworkManager::instance()->SendActionPacket(dashType, -1, _logicalPosition, dashRotation);
 	}
 
