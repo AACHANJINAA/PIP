@@ -210,7 +210,25 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
         _staticCascadeData = _cascadeData;
         for(int i=0; i<3; ++i) _shadowData.staticLightVP[i] = _shadowData.lightVP[i];
         _lastStaticUpdateCamPos = currentCamPos;
-        _forceStaticUpdate = false;
+
+        auto renderer = Renderer::instance();
+        const auto& shadowGroups = renderer->get_gltf_shadow_instance_groups();
+        
+        bool allUploaded = true;
+        for (auto& pair : shadowGroups) {
+            if (pair.first && !pair.first->is_uploaded()) {
+                allUploaded = false;
+                break;
+            }
+        }
+
+        // 만약 정적 그림자 강제 갱신 중인데, 등록된 메시 중 아직 GPU 업로드가 안 된 것이 있다면
+        // 이번 프레임에 일부 그림자가 누락되므로 강제 갱신 플래그를 해제하지 않고 다음 프레임에 또 갱신하게 함
+        if (_forceStaticUpdate && !shadowGroups.empty() && !allUploaded) {
+            // _forceStaticUpdate 유지 (다음 프레임에 다시 시도)
+        } else {
+            _forceStaticUpdate = false;
+        }
     }
 
     memcpy(_mappedCbCascades, &_cascadeData, sizeof(CbCascades));
