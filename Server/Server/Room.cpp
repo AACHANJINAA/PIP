@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -2482,7 +2482,7 @@ namespace PIP::SERVER
 		} else {
 			// 보스 사망 시
 			// 5초 대기 (클라이언트의 엔딩 컷씬 연출 시간)
-			Server::Instance()->AddTimerJob(workerIdx, std::chrono::milliseconds(5000), [this]() {
+			Server::Instance()->AddTimerJob(workerIdx, std::chrono::milliseconds(7000), [this]() {
 				this->PushJob([this]() {
 					// 룸 초기화 및 캐슬 씬으로 복귀
 					_activatedLevers.clear();
