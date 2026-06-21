@@ -52,6 +52,8 @@ private:
 	bool _isCinematicParticleDying = false; // 파티클 소멸 연출 한 번만 실행
 	bool _isCinematicSkillEndPlayed = false; // 플레이어 스킬 마지막 연출 한 번만 실행
 
+	bool _isCinematicMoveInCastle = false; // 플레이어 이동 연출 한 번만 실행
+
 	std::shared_ptr<GameObject> _dummy_particle_fountain = {}; // 분수 파티클용 더미 오브젝트
 
 	float fountain_particle_progress = 0.f; // 컷씬 진행도 추적용 변수
