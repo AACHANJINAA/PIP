@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -2029,7 +2029,7 @@ namespace PIP::SERVER
 		// --- [Step 4] 이제 _character가 생성되었으므로 안전하게 위치 설정 ---
 		common::Vec3 spawnPos{ tx, finalY, tz };
 		session->_player->SetPosition(spawnPos);
-		session->_player->SetHP(100);
+		session->_player->SetHP(session->_player->_max_hp);
 
 		SendRoomInfoToNewPlayer(session);
 
@@ -2743,7 +2743,7 @@ namespace PIP::SERVER
 
 				common::Vec3 spawnPos{ tx, finalY, tz };
 				player_session->_player->SetPosition(spawnPos);
-				player_session->_player->SetHP(100);
+				player_session->_player->SetHP(player_session->_player->_max_hp);
 			}
 
 			// 3. 현재 소환된 NPC 정보 집계 (동적 계산)
