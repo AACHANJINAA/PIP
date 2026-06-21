@@ -98,6 +98,10 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	}
 
 	cameraComp->set_main_camera();
+	
+	// 카메라 초기 위치 설정
+	freeCameraScript->transform()->set_local_position({ -213.75f, 9.98f, -372.88f });
+	freeCameraScript->transform()->set_local_rotation(21.8f, -1.9f, 0.0f);
 
 	Spawn_UI(device, commandList);
 	spawn_ui_and_object(device, commandList);
