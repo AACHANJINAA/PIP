@@ -1018,7 +1018,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 
 
 		// 음악 재생
-		if(!SoundManager::instance()->is_playing("Cinematic_fountain_BGM"))
+		if (!SoundManager::instance()->is_playing("Cinematic_fountain_BGM"))
 		{
 			SoundManager::instance()->play("Cinematic_fountain_BGM", SoundType::BGM, 1.f, false);
 		}
@@ -1069,11 +1069,11 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		float localTime = easedProgress * totalDuration;
 
 		float segmentDuration = totalDuration / 5.0f; // 6개의 점이므로 총 5구간
-		
+
 		int segment = static_cast<int>(localTime / segmentDuration);
 		if (segment > 4) segment = 4;
 		if (segment < 0) segment = 0;
-		
+
 		float t = fmod(localTime, segmentDuration) / segmentDuration;
 		if (localTime >= totalDuration) {
 			segment = 4;
@@ -1107,11 +1107,11 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		cameraObject->transform()->set_local_position(outPos);
 		cameraObject->transform()->set_local_rotation(outRot.x, outRot.y, outRot.z);
 	}
-	// 16~21초 원 점점 퍼지기
-	else if (bgm_time > 16.0f && bgm_time <= 21.0f)
+	// 16~19초 원 점점 퍼지기
+	else if (bgm_time > 16.0f && bgm_time <= 19.0f)
 	{
-		// 16초 ~ 21초 카메라 이동 (Ease-In-Out Sine)
-		float totalDuration = 5.0f;
+		// 16초 ~ 19초 카메라 이동 (Ease-In-Out Sine)
+		float totalDuration = 3.0f;
 		float rawTime = bgm_time - 16.0f;
 		float progress = rawTime / totalDuration;
 		if (progress > 1.0f) progress = 1.0f;
@@ -1138,15 +1138,15 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 
 		_dummy_particle_fountain->set_enabled(true); // 분수대 메시 렌더링 켜기
 		// 진행도는 이 시간동안 0~0.3f까지 증가
-		fountain_particle_progress = (bgm_time - 16.0f) / 5.0f * 0.3f; // 0~0.3f
+		fountain_particle_progress = (bgm_time - 16.0f) / 3.0f * 0.3f; // 0~0.3f
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
-	// 21초~28초부터 분수 스폰 후 모여들기
-	else if (bgm_time > 21.0f && bgm_time <= 28.0f)
+	// 19초~28초부터 분수 스폰 후 모여들기
+	else if (bgm_time > 19.0f && bgm_time <= 28.0f)
 	{
-		// 21초 ~ 28초 카메라 이동 (Ease-In-Out Sine)
-		float totalDuration = 7.0f;
-		float rawTime = bgm_time - 21.0f;
+		// 19초 ~ 28초 카메라 이동 (Ease-In-Out Sine)
+		float totalDuration = 9.0f;
+		float rawTime = bgm_time - 19.0f;
 		float progress = rawTime / totalDuration;
 		if (progress > 1.0f) progress = 1.0f;
 		if (progress < 0.0f) progress = 0.0f;
@@ -1170,15 +1170,15 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		cameraObject->transform()->set_local_position(outPos);
 		cameraObject->transform()->set_local_rotation(outRot.x, outRot.y, outRot.z);
 
-		// 진행도는 이 시간동안 0.3f ~ 1.f까지 증가
-		fountain_particle_progress = 0.3f + ((bgm_time - 21.0f) / 7.0f * 0.7f); // 0.3f ~ 1.f
+		// 진행도(0.3f ~ 1.0f)도 카메라 이동과 동일하게 Ease-In-Out Sine 방식을 적용하여 부드럽게 모여들게 함
+		fountain_particle_progress = 0.3f + (easedProgress * 0.7f); // 0.3f ~ 1.0f
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
-	// 28~31초 분수 유지 및 플레이어에게 라이팅 집중
-	else if (bgm_time > 28.0f && bgm_time <= 31.0f)
+	// 28~32초 분수 유지 및 플레이어에게 라이팅 집중
+	else if (bgm_time > 28.0f && bgm_time <= 32.0f)
 	{
-		// 28초 ~ 31초 카메라 이동 (Ease-In-Out Sine)
-		float totalDuration = 3.0f;
+		// 28초 ~ 32초 카메라 이동 (Ease-In-Out Sine)
+		float totalDuration = 4.0f;
 		float rawTime = bgm_time - 28.0f;
 		float progress = rawTime / totalDuration;
 		if (progress > 1.0f) progress = 1.0f;
@@ -1203,12 +1203,12 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		cameraObject->transform()->set_local_position(outPos);
 		cameraObject->transform()->set_local_rotation(outRot.x, outRot.y, outRot.z);
 	}
-	// 31~45초 플레이어 스킬 사용
-	else if (bgm_time > 31.0f && bgm_time <= 45.0f)
+	// 32~45초 플레이어 스킬 사용
+	else if (bgm_time > 32.0f && bgm_time <= 45.0f)
 	{
-		// 31초 ~ 45초 카메라 이동 (Ease-In-Out Sine)
-		float totalDuration = 14.0f;
-		float rawTime = bgm_time - 31.0f;
+		// 32초 ~ 45초 카메라 이동 (Ease-In-Out Sine)
+		float totalDuration = 13.0f;
+		float rawTime = bgm_time - 32.0f;
 		float progress = rawTime / totalDuration;
 		if (progress > 1.0f) progress = 1.0f;
 		if (progress < 0.0f) progress = 0.0f;
@@ -1234,8 +1234,8 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 
 		float skill_progress = 1.0f;
 
-		// 31초 진입 시점: 한 번만 애니메이션 실행
-		if (bgm_time > 31.0f && !_isCinematicSkillPlayed)
+		// 32초 진입 시점: 한 번만 애니메이션 실행
+		if (bgm_time > 32.0f && !_isCinematicSkillPlayed)
 		{
 			_isCinematicSkillPlayed = true;
 			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
@@ -1247,9 +1247,9 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 			}
 		}
 
-		// 1. 31~36초: 스킬 파티클 모으기
+		// 32~36초: 스킬 파티클 모으기
 		if (bgm_time <= 36.0f) {
-			skill_progress = (bgm_time - 31.0f) / 5.0f; // 0.0 ~ 1.0
+			skill_progress = (bgm_time - 32.0f) / 4.0f; // 0.0 ~ 1.0
 		}
 		// 36~40초: 검 휘두르기
 		else if (bgm_time > 36.0f && bgm_time <= 40.0f) {
@@ -1266,16 +1266,22 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		// 40~45초: 파티클 소멸 (분수처럼 1.0 -> 0.0으로 진행도를 줄임)
 		else if (bgm_time > 40.0f && bgm_time <= 45.0f) {
 			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
-			for (int i = 0; i < 4; ++i) {
-				if (dummies[i]) {
-					// 소멸할 때는 따라가지 않도록 설정
-					dummies[i]->get_component<SocketComponenet>()->set_isFollowAnimation(false);
-					if(!_isCinematicSkillEndPlayed)
-					{
+			if (!_isCinematicSkillEndPlayed)
+			{
+				for (int i = 0; i < 4; ++i) {
+					if (dummies[i]) {
+						// 소멸할 때는 따라가지 않도록 설정
+						dummies[i]->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+
 						dummies[i]->get_component<AnimationComponent>()->play("skill_end", false, 1.0f);
 						_isCinematicSkillEndPlayed = true;
 					}
-					if(dummies[i]->get_component<AnimationComponent>()->is_anim_finished())
+				}
+			}
+
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					if (dummies[i]->get_component<AnimationComponent>()->is_anim_finished())
 					{
 						dummies[i]->get_component<AnimationComponent>()->play("idle", true);
 					}
@@ -1290,9 +1296,9 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 			if (_dummy_player_particles[i] && _dummy_player_weapons[i] && dummies_pos[i]) {
 				_dummy_player_particles[i]->set_enabled(true);
 				auto ps = _dummy_player_particles[i]->get_component<ParticleSystemComponent>();
-				
+
 				DirectX::XMFLOAT4X4 weapon_world = _dummy_player_weapons[i]->transform()->world_matrix();
-				
+
 				DirectX::XMFLOAT3 player_pos = dummies_pos[i]->transform()->local_position();
 
 				ps->set_compute_data(weapon_world, player_pos, skill_progress);
@@ -1303,8 +1309,13 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	// 46~55초 분수 사라지기
 	else if (bgm_time > 46.0f && bgm_time <= 55.0f)
 	{
-		// 디버깅을 위해 끄기
-		cameraObject->set_sinamatic_camera_mode(false);
+		// 플레이어 파티클 다 모였으므로 끄기
+		std::shared_ptr<GameObject> dummies_pos[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+		for (int i = 0; i < 4; ++i) {
+			if (_dummy_player_particles[i] && _dummy_player_weapons[i] && dummies_pos[i]) {
+				_dummy_player_particles[i]->set_enabled(false);
+			}
+		}
 
 		// 46초 ~ 55초 카메라 이동 (Ease-In-Out Sine)
 		float totalDuration = 9.0f;
@@ -1338,43 +1349,187 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		psComp->set_particle_dying(true);
 		psComp->set_compute_data(_dummy_particle_fountain->transform()->world_matrix(), _dummy_particle_fountain->transform()->local_position(), fountain_particle_progress);
 	}
-	// 55~57초 
-	else if (bgm_time > 55.0f && bgm_time <= 57.0f)
+	// 55~63초 플레이어 입장 바라보기, 63~67 페이드 아웃 및 컷씬 종료
+	else if (bgm_time > 55.0f && bgm_time <= 67.0f)
 	{
-		
-	}
-	// 57~70초 천천히 뒤로 물러나면서 위를 바라보기
-	else if (bgm_time > 57.0f && bgm_time <= 70.0f)
-	{
-		// 57초 ~ 70초 카메라 이동 (Ease-In-Out Sine)
-		float totalDuration = 13.0f;
-		float rawTime = bgm_time - 57.0f;
+		struct CamTransform {
+			DirectX::XMFLOAT3 pos;
+			DirectX::XMFLOAT3 rot;
+		};
+
+		// 5개의 점을 지나는 곡선 생성 (양 끝은 곡선 계산용 숨겨진 제어점 추가)
+		CamTransform pts[7] = {
+			{ { 209.34f, 22.02f, -59.20f }, { 35.0f, -89.8f, 0.0f } },   // 제어점 (출발점 중복)
+			{ { 209.34f, 22.02f, -59.20f }, { 35.0f, -89.8f, 0.0f } },   // 1번 점 (출발)
+			{ { 192.44f, 11.31f, -59.76f }, { 45.6f, -88.8f, 0.0f } },   // 2번 점 (이벤트 지점)
+			{ { 180.16f,  6.00f, -59.16f }, { -10.1f, -91.2f, 0.0f } },  // 3번 점
+			{ { 169.92f,  6.21f, -59.80f }, { -10.8f, -90.2f, 0.0f } },  // 4번 점
+			{ { 158.72, 5.87, -60.15 }, { -10.1, -90.5, 0.0 } },  // 5번 점 (최종 도착)
+			{ { 158.72, 5.87, -60.15 }, { -10.1, -90.5, 0.0 } }   // 제어점 (도착 지점 중복)
+		};
+
+		float totalDuration = 8.0f; // 55~63초 = 8초
+		float rawTime = bgm_time - 55.0f;
+
+		// 1. 전체 시간에 대한 진행도 (0.0 ~ 1.0)
 		float progress = rawTime / totalDuration;
 		if (progress > 1.0f) progress = 1.0f;
 		if (progress < 0.0f) progress = 0.0f;
-		// Ease-In-Out Sine 공식: 부드러운 시작과 멈춤
+
+		// 2. Ease-In-Out Sine 적용
 		float easedProgress = -(cos(3.14159265f * progress) - 1.0f) / 2.0f;
-		// 두 점 사이를 선형 보간(Lerp)하되, 시간에 Ease-In-Out을 적용하여 부드럽게 이동
-		DirectX::XMVECTOR vPos1 = DirectX::XMVectorSet(192.44f, 11.31f, -59.76f, 0.0f);
-		DirectX::XMVECTOR vPos2 = DirectX::XMVectorSet(185.10f, 4.86f, -59.50f, 0.0f);
-		DirectX::XMVECTOR vPos = DirectX::XMVectorLerp(vPos1, vPos2, easedProgress);
-		DirectX::XMVECTOR vRot1 = DirectX::XMVectorSet(45.6f, -88.8f, 0.0f, 0.0f);
-		DirectX::XMVECTOR vRot2 = DirectX::XMVectorSet(29.8f, -120.7f, 0.0f, 0.0f);
-		DirectX::XMVECTOR vRot = DirectX::XMVectorLerp(vRot1, vRot2, easedProgress);
+
+		// 3. 총 4구간 (실제 점 5개 사이의 4개 구간)에 맞춰 splineTime 변환
+		float splineTime = easedProgress * 4.0f; 
+		
+		int segment = static_cast<int>(splineTime);
+		if (segment > 3) segment = 3; // 최대 4구간(0, 1, 2, 3)
+		if (segment < 0) segment = 0;
+		
+		float t = splineTime - static_cast<float>(segment);
+		if (splineTime >= 4.0f) {
+			segment = 3;
+			t = 1.0f;
+		}
+
+		// 이동 속도 m단위 : 초당 0.1f
+		float speed = 0.1f;
+
+		// 2번째 지점(192.44, 11.31, -59.76) 도착 또는 통과 시 이벤트 발생
+		if (!_isCinematicMoveInCastle && splineTime >= 1.f) 
+		{
+			_isCinematicMoveInCastle = true;
+			// 여기에 작업을 추가하세요!
+			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+			float startOffsets[4] = { 0.0f, 0.23f, 0.57f, 0.75f };
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					auto animComp = dummies[i]->get_component<AnimationComponent>();
+
+					// 1. 먼저 재생을 시킴
+					animComp->play("walk", true, 0.2f);
+
+					// 2. 그 직후에 재생 시작 위치를 덮어씌움
+					animComp->set_progress(startOffsets[i]);
+				}
+			}
+			_dummy_player_1->transform()->set_local_position({ 159.09, 5.3, -60.95	});
+			_dummy_player_1->transform()->set_local_rotation(0.0, 92.7, 0.0);
+
+			_dummy_player_2->transform()->set_local_position({ 160.15, 5.3, -61.56 });
+			_dummy_player_2->transform()->set_local_rotation(0.0, 98.2, 0.0);
+
+			_dummy_player_3->transform()->set_local_position({ 159.12, 5.3, -59.35 });
+			_dummy_player_3->transform()->set_local_rotation(0.0, 84.0, 0.0);
+
+			_dummy_player_4->transform()->set_local_position({ 158.09, 5.3, -58.70 });
+			_dummy_player_4->transform()->set_local_rotation(0.0, 81.4, 0.0);
+		}
+
+		// 현재 구간의 4개 점(p0, p1, p2, p3) 인덱스 계산
+		int p0 = segment;
+		int p1 = segment + 1;
+		int p2 = segment + 2;
+		int p3 = std::min(6, segment + 3);
+
+		DirectX::XMVECTOR vPos0 = DirectX::XMLoadFloat3(&pts[p0].pos);
+		DirectX::XMVECTOR vPos1 = DirectX::XMLoadFloat3(&pts[p1].pos);
+		DirectX::XMVECTOR vPos2 = DirectX::XMLoadFloat3(&pts[p2].pos);
+		DirectX::XMVECTOR vPos3 = DirectX::XMLoadFloat3(&pts[p3].pos);
+
+		DirectX::XMVECTOR vRot0 = DirectX::XMLoadFloat3(&pts[p0].rot);
+		DirectX::XMVECTOR vRot1 = DirectX::XMLoadFloat3(&pts[p1].rot);
+		DirectX::XMVECTOR vRot2 = DirectX::XMLoadFloat3(&pts[p2].rot);
+		DirectX::XMVECTOR vRot3 = DirectX::XMLoadFloat3(&pts[p3].rot);
+
+		// 보간
+		DirectX::XMVECTOR vPos = DirectX::XMVectorCatmullRom(vPos0, vPos1, vPos2, vPos3, t);
+		DirectX::XMVECTOR vRot = DirectX::XMVectorCatmullRom(vRot0, vRot1, vRot2, vRot3, t);
+
 		DirectX::XMFLOAT3 outPos, outRot;
 		DirectX::XMStoreFloat3(&outPos, vPos);
 		DirectX::XMStoreFloat3(&outRot, vRot);
+
 		cameraObject->transform()->set_local_position(outPos);
 		cameraObject->transform()->set_local_rotation(outRot.x, outRot.y, outRot.z);
+
+
+		// 플레이어 이동과 각도
+		if (splineTime >= 1.f)
+		{
+			// 최종 이동 각도 및 위치
+			DirectX::XMFLOAT3 finalPos = { 146.73, 5.30, -60.31 };
+			DirectX::XMFLOAT3 finalRot = { 0.0, 80.9, 0.0 };
+
+			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
+			for (int i = 0; i < 4; ++i) {
+				if (dummies[i]) {
+					// 각 플레이어가 최종 위치와 각도로 일정한 속도로 이동하도록 설정
+					// 방향벡터 설정 (플레이어마다 약간씩 다르게)
+					DirectX::XMFLOAT3 playerPos = dummies[i]->transform()->local_position();
+					DirectX::XMFLOAT3 direction = {
+						finalPos.x - playerPos.x,
+						finalPos.y - playerPos.y,
+						finalPos.z - playerPos.z
+					};
+					
+					// 이동 벡터 계산
+					DirectX::XMFLOAT3 velocity = {
+						direction.x * speed,
+						direction.y * speed,
+						direction.z * speed
+					};
+					// 각도 보간 속도 (초당 30도)
+					float rotationSpeed = 30.0f;
+					// 현재 각도와 최종 각도 사이의 차이 계산
+					DirectX::XMFLOAT3 currentRot = { dummies[i]->transform()->local_rotation_euler() };
+					DirectX::XMFLOAT3 rotDifference = {
+						finalRot.x - currentRot.x,
+						finalRot.y - currentRot.y,
+						finalRot.z - currentRot.z
+					};
+					// 각도 보간 벡터 계산
+					DirectX::XMFLOAT3 rotVelocity = {
+						(rotDifference.x / std::abs(rotDifference.y)) * rotationSpeed,
+						(rotDifference.y / std::abs(rotDifference.y)) * rotationSpeed,
+						(rotDifference.z / std::abs(rotDifference.y)) * rotationSpeed
+					};
+
+					// 매 프레임마다 위치와 각도를 업데이트하도록 설정
+					dummies[i]->transform()->set_local_position({
+						playerPos.x + velocity.x * deltaTime,
+						playerPos.y + velocity.y * deltaTime,
+						playerPos.z + velocity.z * deltaTime
+						});
+					/*dummies[i]->transform()->set_local_rotation(
+						currentRot.x + rotVelocity.x * deltaTime,
+						currentRot.y + rotVelocity.y * deltaTime,
+						currentRot.z + rotVelocity.z * deltaTime
+						);*/
+				}
+			}
+		}
+		// 63~67 페이드 아웃 및 컷씬 종료
+		if (bgm_time > 63.0f && bgm_time <= 67.0f)
+		{
+			// 페이드 아웃 시작
+			_blackBackground_ui_obj->set_enabled(true); // 페이드 아웃 UI 활성화
+
+			// 63~67초동안 페이드 아웃 및 소리 서서히 끄기
+			if (bgm_time <= 67.0f)
+			{
+				_blackBackground_ui_obj->get_component<UIRenderComponent>()->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, (bgm_time - 63.0f) / 4.0f));
+				SoundManager::instance()->set_master_volume(1.0f - ((bgm_time - 63.0f) / 4.0f));
+			}
+		}
 	}
+	
 
 	// 마지막 넘어가기
-	if (bgm_time >= 70.0f && !bgm_time)
+	if (bgm_time > 67.0f && !_isCutsceneDoneSent)
 	{
 		cameraObject->set_sinamatic_camera_mode(false);
 		//_isCutsceneDoneSent = true;
-
-		
 	}
 
 	if (_isCutsceneDoneSent)

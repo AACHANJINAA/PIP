@@ -37,6 +37,7 @@ public:
 
 	float get_anim_time() const { return _nowAnimationTime; }
 	float get_anim_duration() const;
+	void set_progress(float progress) { _nowAnimationTime = get_anim_duration() * std::clamp(progress, 0.0f, 1.0f); }
 	bool is_anim_finished() const { return _isFinished; }
 	void set_anim_speed(float wantSpeed) { _animationSpeed = std::max(wantSpeed, 0.0f); }
 
