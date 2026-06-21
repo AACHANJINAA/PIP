@@ -310,6 +310,7 @@ void OtherPlayerScript::update(float deltaTime)
             if (!_isDashAnimationStarted)
             {
                 _isDashAnimationStarted = true;
+                SoundManager::instance()->play_3d("PlayerDash", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
                 std::string animName = "dash_fwd";
                 if (_action_id == common::packet::ActionID::Common::DASH_BWD) animName = "dash_bwd";
                 else if (_action_id == common::packet::ActionID::Common::DASH_LEFT) animName = "dash_left";
