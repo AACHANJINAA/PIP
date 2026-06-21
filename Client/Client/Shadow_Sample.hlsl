@@ -7,7 +7,7 @@ cbuffer cbShadow : register(b5)
     float g_shadowSplitNear; // view-space Z: cascade 0→1 경계
     float g_shadowSplitMid; // view-space Z: cascade 1→2 경계
     float g_shadowBias; // z-fighting 방지
-    float g_shadowPad; // 16byte 패딩
+    float g_shadowMaxDistance;
 };
  
 Texture2DArray g_shadowMap : register(t11);
@@ -118,8 +118,7 @@ float get_pcf_shadow_pcss(float3 worldPos, float3 normal, int cascade, float vie
  // 메인 CSM 샘플링 함수 (3-cascade 블렌딩)
 float sample_csm_shadow_internal(float3 worldPos, float3 normal, float viewDepth, bool isStatic)
 {
-    float maxShadowDistance = 300.0f;
-    if (viewDepth >= maxShadowDistance)
+    if (viewDepth >= g_shadowMaxDistance)
         return 1.0f;
  
     float blendThreshold = 15.0f;
