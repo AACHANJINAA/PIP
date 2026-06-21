@@ -324,8 +324,9 @@ void Renderer::build_render_list(const CameraComponent* camera)
 			// dot이 -1.0(후방)이면 t = 0.0
 			float t = (dot + 1.0f) * 0.5f;
 
-			// 2. 최소 거리(100)와 최대 거리(250) 사이를 부드럽게 보간
-			float shadowLimit = 100.0f + (t * (400.0f - 100.0f));
+			// 2. 최소 거리(100)와 최대 거리 사이를 부드럽게 보간
+			float maxShadowDist = ShadowManager::instance()->get_shadow_max_distance();
+			float shadowLimit = 100.0f + (t * (maxShadowDist - 100.0f));
 
 			// 3. 평면 거리(XZ) 계산
 			float distXZ = sqrtf(toObj.x * toObj.x + toObj.z * toObj.z);
