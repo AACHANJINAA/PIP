@@ -55,6 +55,7 @@ namespace PIP::SERVER
 		PhysicsInitialize();
 		_gridMap.Initialize(-1000, 1000, -1000, 1000, 40);
 
+		_requestedSceneName = "CastleStage"; // [추가] 초기 스테이지 이름 설정 (CheckAndStartGame 진입용)
 
 		// [수정] MainStage에서 시작하여 10초 후 BossScene으로 이동하도록 설정
 		_currentStage = StageManager::Instance()->create_stage("CastleStage");
@@ -230,7 +231,7 @@ namespace PIP::SERVER
 		}
 
 		// [추가] 컷씬 도중 누군가 나가서 남은 인원들이 모두 컷씬 시청을 완료한 상태가 되었는지 체크
-		if (!_players.empty() && _cutsceneFinishedPlayers.size() >= _players.size()) {
+		if (!_players.empty() && _cutsceneFinishedPlayers.size() >= _players.size() && _requestedSceneName.empty()) {
 			MYLOG("[Room " << _room_id << "] Remaining players finished cutscene! Transitioning to BossStage.");
 			_activatedLevers.clear();
 			ChangeScene("BossStage");
@@ -649,7 +650,6 @@ namespace PIP::SERVER
 		if (_room_state == RoomState::PLAYING) return; // [추가] 이미 시작된 경우 중복 처리 방지
 
 		_room_state = RoomState::PLAYING;
-		_readyPlayers.clear(); // [추가] 게임 시작 시 레디 목록 초기화 (컷씬 중 이탈로 인한 재시작 방지)
 		MYLOG("Room " << _room_id << " is now in PLAYING state with " << GetPlayerCount() << " players.");
 	}
 
@@ -2081,6 +2081,14 @@ namespace PIP::SERVER
 		// 4. 방에 있는 다른 사람들에게 나의 등장을 알림 (브로드캐스트)
 		// 주의: EnterPlayer() 호출 전이므로, Broadcast는 수동으로 session->_id를 제외하거나 포함하여 처리
 		Broadcast(self_spawn.constable_data(), self_spawn.Size(), session->_id);
+
+		// [추가] 늦게 참여한 플레이어(Late Joiner)에게 이미 방에 있던 플레이어들의 스폰 정보를 전송
+		for (auto& [existing_id, existing_session] : _players) {
+			if (existing_id != session->_id) {
+				packet::PacketStream existing_spawn = packet::MakeSpawnPlayerPacket(existing_session);
+				session->do_send(existing_spawn.constable_data(), existing_spawn.Size());
+			}
+		}
 #ifdef _DEBUG
 		// 5. 기타 환경 정보(디버그 드로 등) 전송
 		//SendMapDebugDraw(session);
@@ -2712,6 +2720,8 @@ namespace PIP::SERVER
 
 	void Room::CheckAndStartGame()
 	{
+		if (_requestedSceneName.empty()) return; // [추가] 이미 스테이지 진입이 완료된 상태면 중복 실행 방지
+
 		// 모든 플레이어가 로딩을 마쳤는가? (혹은 로딩 중 누군가 나가서 남은 인원이 모두 준비되었는가?)
 		if (_readyPlayers.size() == _players.size() && !_players.empty()) {
 			MYLOG("[Room " << _room_id << "] All players READY! Starting Stage: " << _requestedSceneName);
@@ -2820,6 +2830,7 @@ namespace PIP::SERVER
 			}
 
 			StartGame(); // 이제 방 상태를 PLAYING으로 변경하여 게임 루프가 본격적으로 돌아가게 함
+			_requestedSceneName.clear(); // [추가] 스테이지 진입 처리가 끝났음을 마킹
 		}
 	}
 
