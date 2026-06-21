@@ -1411,17 +1411,16 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 					animComp->set_progress(startOffsets[i]);
 				}
 			}
-			_dummy_player_1->transform()->set_local_position({ 169.09, 5.3, -60.95	});
-			_dummy_player_1->transform()->set_local_rotation(0.0, 92.7, 0.0);
+			_dummy_player_1->transform()->set_local_position({ 169.09f, 5.3f, -60.95f	});
+			_dummy_player_1->transform()->set_local_rotation(0.0f, 92.7f, 0.0f);
 
-			_dummy_player_2->transform()->set_local_position({ 170.15, 5.3, -61.56 });
-			_dummy_player_2->transform()->set_local_rotation(0.0, 98.2, 0.0);
+			_dummy_player_2->transform()->set_local_position({ 170.15f, 5.3f, -61.56f });
+			_dummy_player_2->transform()->set_local_rotation(0.0f, 98.2f, 0.0f);
+			_dummy_player_3->transform()->set_local_position({ 169.12f, 5.3f, -59.35f });
+			_dummy_player_3->transform()->set_local_rotation(0.0f, 84.0f, 0.0f);
 
-			_dummy_player_3->transform()->set_local_position({ 169.12, 5.3, -59.35 });
-			_dummy_player_3->transform()->set_local_rotation(0.0, 84.0, 0.0);
-
-			_dummy_player_4->transform()->set_local_position({ 168.09, 5.3, -58.70 });
-			_dummy_player_4->transform()->set_local_rotation(0.0, 81.4, 0.0);
+			_dummy_player_4->transform()->set_local_position({ 168.09f, 5.3f, -58.70f });
+			_dummy_player_4->transform()->set_local_rotation(0.0f, 81.4f, 0.0f);
 		}
 
 		// 현재 구간의 4개 점(p0, p1, p2, p3) 인덱스 계산
@@ -1456,8 +1455,8 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		if (splineTime >= 1.f)
 		{
 			// 최종 이동 각도 및 위치
-			DirectX::XMFLOAT3 finalPos = { 136.73, 5.30, -60.31 };
-			DirectX::XMFLOAT3 finalRot = { 0.0, 80.9, 0.0 };
+			DirectX::XMFLOAT3 finalPos = { 136.73f, 5.30f, -60.31f };
+			DirectX::XMFLOAT3 finalRot = { 0.0f, 80.9f, 0.0f };
 
 			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
 			for (int i = 0; i < 4; ++i) {
