@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ParticleShader.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
@@ -69,13 +69,7 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
 		float dying_progress; // 0~1 사이의 값으로, 파티클이 사라지는 중인지?
     } pInfo;
 
-    static const DirectX::XMFLOAT3 PlayerColors[4] =
-    {
-        DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
-        DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
-        DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
-        DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
-    };
+
 
     pInfo.Color = { 0.1f, 0.5f, 1.0f, 0.5f }; // 카리아 대검 파티클 색상
 

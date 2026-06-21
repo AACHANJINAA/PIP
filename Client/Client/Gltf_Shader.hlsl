@@ -12,20 +12,20 @@ cbuffer cbMaterial : register(b2)
 #define EmissiveFactor (EmissiveAndMetallicFactor.rgb)
 #define MetallicFactor (EmissiveAndMetallicFactor.a)
 
-    float RoughnessFactor; // ´ÙÀ½ 16¹ÙÀÌÆ® ·¹Áö½ºÅÍ ½ÃÀÛ (Offset 32)
+    float RoughnessFactor; // ë‹¤ìŒ 16ë°”ì´íŠ¸ ë ˆì§€ìŠ¤í„° ì‹œì‘ (Offset 32)
     float NormalTextureScale;
     float AlphaCutoff;
     int AlphaMode;
 
-    int DoubleSided; // ´ÙÀ½ 16¹ÙÀÌÆ® (Offset 48)
+    int DoubleSided; // ë‹¤ìŒ 16ë°”ì´íŠ¸ (Offset 48)
     int HasBaseColorTexture;
     int HasMetallicRoughnessTexture;
     int HasNormalTexture;
 
-    int HasEmissiveTexture; // ´ÙÀ½ 16¹ÙÀÌÆ® (Offset 64)
+    int HasEmissiveTexture; // ë‹¤ìŒ 16ë°”ì´íŠ¸ (Offset 64)
     int HasOcclusionTexture;
     float SpecularFactor;
-    float _pad0; // 16¹ÙÀÌÆ® Á¤·ÄÀ» À§ÇÑ ÆĞµù
+    float _pad0; // 16ë°”ì´íŠ¸ ì •ë ¬ì„ ìœ„í•œ íŒ¨ë”©
 
 // --- UV Channels ---
     int BaseColorUVChannel;
@@ -33,7 +33,7 @@ cbuffer cbMaterial : register(b2)
     int MetallicRoughnessUVChannel;
     int EmissiveUVChannel;
 
-    // --- C++¿¡´Â ÀÖÁö¸¸ HLSL¿¡´Â ºüÁ®ÀÖ´ø UV Transform º¯¼öµé Ãß°¡ ---
+    // --- C++ì—ëŠ” ìˆì§€ë§Œ HLSLì—ëŠ” ë¹ ì ¸ìˆë˜ UV Transform ë³€ìˆ˜ë“¤ ì¶”ê°€ ---
     float2 BaseColorUVOffset;
     float2 BaseColorUVScale;
     float BaseColorUVRotation;
@@ -57,17 +57,17 @@ Texture2D g_txEmissive : register(t3);
 Texture2D g_txOcclusion : register(t4);
 SamplerState g_samLinear : register(s0);
 
-// °´Ã¼º° ¿ùµå Çà·Ä
+// ê°ì²´ë³„ ì›”ë“œ í–‰ë ¬
 cbuffer cbWorldMatrix : register(b0)
 {
     matrix g_matWorld;
     matrix g_matWorldInverseTranspose;
-    int g_bReceiveShadow; // [Ãß°¡] 0ÀÌ¸é ±×¸²ÀÚ ¾È ¹ŞÀ½, 1ÀÌ¸é ¹ŞÀ½
+    int g_bReceiveShadow; // [ì¶”ê°€] 0ì´ë©´ ê·¸ë¦¼ì ì•ˆ ë°›ìŒ, 1ì´ë©´ ë°›ìŒ
     int g_otherplayerid;
-    float2 g_worldPad; // 16¹ÙÀÌÆ® Á¤·ÄÀ» À§ÇÑ ÆĞµù
+    float2 g_worldPad; // 16ë°”ì´íŠ¸ ì •ë ¬ì„ ìœ„í•œ íŒ¨ë”©
 };
 
-// Ä«¸Ş¶ó Á¤º¸
+// ì¹´ë©”ë¼ ì •ë³´
 cbuffer cbCamera : register(b1)
 {
     matrix g_matView;
@@ -75,7 +75,7 @@ cbuffer cbCamera : register(b1)
     float4 gvCameraPosition;
 };
 
- // Light.hlsl¿¡¼­ »ç¿ëÇÏ´Â ±¸Á¶Ã¼¿Í µ¿ÀÏÇÏ°Ô ¸ÂÃã
+ // Light.hlslì—ì„œ ì‚¬ìš©í•˜ëŠ” êµ¬ì¡°ì²´ì™€ ë™ì¼í•˜ê²Œ ë§ì¶¤
 struct MATERIAL
 {
     float4 m_cAmbient;
@@ -84,7 +84,7 @@ struct MATERIAL
     float4 m_cEmissive;
 };
 
- // ÀÓ½Ã·Î ¸ÓÆ¼¸®¾ó Á¤ÀÇ (PBR¿¡¼­´Â »ç¿ë ¾ÈÇÏÁö¸¸ Light.hlsl ÇÔ¼ö¿¡ ÇÊ¿ä)
+ // ì„ì‹œë¡œ ë¨¸í‹°ë¦¬ì–¼ ì •ì˜ (PBRì—ì„œëŠ” ì‚¬ìš© ì•ˆí•˜ì§€ë§Œ Light.hlsl í•¨ìˆ˜ì— í•„ìš”)
 static MATERIAL gMaterial =
 {
     float4(0.2, 0.2, 0.2, 1.0), // Ambient
@@ -103,7 +103,7 @@ struct VS_INPUT
 {
     float3 Position : POSITION;
     float3 Normal : NORMAL;
-    float2 TexCoord0 : TEXCOORD; // ÅØ½ºÃÄ ÁÂÇ¥ (Ãß°¡µÈ ºÎºĞ)
+    float2 TexCoord0 : TEXCOORD; // í…ìŠ¤ì³ ì¢Œí‘œ (ì¶”ê°€ëœ ë¶€ë¶„)
     float4 Tangent : TANGENT;
     uint instanceID : SV_InstanceID;
 };
@@ -139,34 +139,42 @@ VS_OUTPUT VS_GLTF(VS_INPUT input)
     return Out;
 }
 
-float3 lerp_op(float3 final_color)
+float3 ApplyPhantomAura(float3 final_color, float3 N, float3 V)
 {
-    const float3 playercolors[4] =
+    // ë‹¤í¬ íŒíƒ€ì§€ ì†Œìš¸ë¥˜ íŒ¬í…€(Phantom) ëŠë‚Œì˜ ìƒ‰ìƒ ì˜¤ë¼
+    const float3 phantomColors[4] =
     {
-        float3(0.863f, 0.078f, 0.235f), // crimson red
-		float3(0.0f, 1.0f, 0.498f), // spring green
-		float3(1.0f, 0.843f, 0.0f), // gold
-		float3(0.541f, 0.169f, 0.886f), // violet
+        float3(0.8f, 0.1f, 0.05f),  // [0] ì ë ¹ (Blood Red)
+        float3(0.2f, 0.5f, 0.9f),   // [1] ì²­ë ¹ (Moonlight Blue)
+        float3(0.9f, 0.6f, 0.1f),   // [2] íƒœì–‘ë ¹ (Sunlight Gold)
+        float3(0.5f, 0.1f, 0.8f),   // [3] ì•”ë ¹/ê´‘ë ¹ (Abyssal Purple)
     };
 
     int colorIndex = g_otherplayerid % 4;
+    float3 auraColor = phantomColors[colorIndex];
 
-    float lerp_figure = 0.2;
-    return lerp(final_color, playercolors[colorIndex], lerp_figure);
+    // 1. ë² ì´ìŠ¤ í‹´íŠ¸ (ì›ë˜ ìƒ‰ìƒì˜ ëª…ì•”ì„ ë³´ì¡´í•˜ë©´ì„œ ì•„ì£¼ ì‚´ì§ë§Œ ë¬¼ë“¤ì„)
+    float3 tintedColor = final_color * lerp(float3(1, 1, 1), auraColor * 2.0f, 0.15f);
+
+    // 2. ë¦¼ ë¼ì´íŠ¸ (Fresnel) ì˜¤ë¼ íš¨ê³¼ (ì™¸ê³½ì„ ì„ ë”°ë¼ ì€ì€í•˜ê²Œ ë¹›ë‚¨)
+    float fresnel = pow(1.0 - saturate(dot(N, V)), 2.5);
+    float3 glow = auraColor * fresnel * 1.5f;
+
+    return tintedColor + glow;
 }
 
 float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 {
-    // 1. Albedo (BaseColor) °ª ¼³Á¤
+    // 1. Albedo (BaseColor) ê°’ ì„¤ì •
     float4 diffuseSample = g_txDiffuse.Sample(g_samLinear, In.TexCoord);
     float3 albedo = diffuseSample.rgb * BaseColorFactor.rgb;
 
-    // 2. ORM (Occlusion, Roughness, Metallic) °ª ¼³Á¤
+    // 2. ORM (Occlusion, Roughness, Metallic) ê°’ ì„¤ì •
     float3 orm = g_txORM.Sample(g_samLinear, In.TexCoord).rgb;
 	
     float hasOccTex = step(0.5f, (float) HasOcclusionTexture);
     float hasMetTex = step(0.5f, (float) HasMetallicRoughnessTexture);
-	// AO °è»ê (±âº» 1.0 -> ORM ÅØ½ºÃ³ -> Occlusion ÅØ½ºÃ³ ¼øÀ¸·Î µ¤¾î¾º¿ò)
+	// AO ê³„ì‚° (ê¸°ë³¸ 1.0 -> ORM í…ìŠ¤ì²˜ -> Occlusion í…ìŠ¤ì²˜ ìˆœìœ¼ë¡œ ë®ì–´ì”Œì›€)
     float ao = lerp(1.0f, orm.r, hasMetTex);
     ao = lerp(ao, g_txOcclusion.Sample(g_samLinear, In.TexCoord).r, hasOccTex);
     
@@ -175,7 +183,7 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
 
      // 3. Normal Map
     float3 N = normalize(In.Normal);
-    float3 N_geom = normalize(In.Normal); // ±âÇÏÇĞÀû Normal ÀúÀå
+    float3 N_geom = normalize(In.Normal); // ê¸°í•˜í•™ì  Normal ì €ì¥
 
     float3 normalMapSample = g_txNormal.Sample(g_samLinear, In.TexCoord).rgb;
 
@@ -185,10 +193,10 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     float3x3 TBN = float3x3(T, B, N_geom);
     float3 N_mapped = normalize(mul(N_map, TBN));
 
-	// ³ë¸Ö¸Ê µ¥ÀÌÅÍ°¡ À¯È¿ÇÑÁö(±æÀÌ°¡ 0.1 ÃÊ°úÀÎÁö) ÆÇº°
+	// ë…¸ë©€ë§µ ë°ì´í„°ê°€ ìœ íš¨í•œì§€(ê¸¸ì´ê°€ 0.1 ì´ˆê³¼ì¸ì§€) íŒë³„
     float hasNormal = step(0.1f, length(normalMapSample));
 
-	// Á¶°Ç¿¡ µû¶ó ¿ø·¡ Áö¿À¸ŞÆ®¸® ³ë¸Ö°ú ¸ÊÀÌ Àû¿ëµÈ ³ë¸Ö »çÀÌ¸¦ º¸°£
+	// ì¡°ê±´ì— ë”°ë¼ ì›ë˜ ì§€ì˜¤ë©”íŠ¸ë¦¬ ë…¸ë©€ê³¼ ë§µì´ ì ìš©ëœ ë…¸ë©€ ì‚¬ì´ë¥¼ ë³´ê°„
     N = lerp(N_geom, N_mapped, hasNormal);
 
     // 4. Emissive
@@ -198,38 +206,36 @@ float4 PS_GLTF(VS_OUTPUT In) : SV_TARGET
     // 5. View vector
     float3 V = normalize(gvCameraPosition.xyz - In.WorldPosition);
 
-	// faceforward ÇÔ¼ö´Â ¼¼ ¹øÂ° ÀÎÀÚ(Normal)¸¦ ±âÁØÀ¸·Î Ã¹ ¹øÂ° ÀÎÀÚ(Normal)ÀÇ ¹æÇâÀ» °áÁ¤.
-	// µÎ ¹øÂ° ÀÎÀÚ(-V)´Â ½ÃÁ¡¿¡¼­ Ç¥¸éÀ¸·Î ÇâÇÏ´Â º¤ÅÍÀÇ ¹İ´ë ¹æÇâ(Áï, Ç¥¸é¿¡¼­ ½ÃÁ¡À¸·Î ÇâÇÏ´Â º¤ÅÍ)ÀÔ´Ï´Ù.
-	// µû¶ó¼­, ¸¸¾à NormalÀÌ ½ÃÁ¡¿¡¼­ Ç¥¸éÀ¸·Î ÇâÇÏ´Â º¤ÅÍ¿Í °°Àº ¹æÇâÀ» °¡¸®Å°°í ÀÖ´Ù¸é, faceforward´Â NormalÀÇ ¹æÇâÀ» µÚÁı¾î¼­ ½ÃÁ¡¿¡¼­ Ç¥¸éÀ¸·Î ÇâÇÏµµ·Ï ÇÕ´Ï´Ù.
+	// faceforward í•¨ìˆ˜ëŠ” ì„¸ ë²ˆì§¸ ì¸ì(Normal)ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì²« ë²ˆì§¸ ì¸ì(Normal)ì˜ ë°©í–¥ì„ ê²°ì •.
+	// ë‘ ë²ˆì§¸ ì¸ì(-V)ëŠ” ì‹œì ì—ì„œ í‘œë©´ìœ¼ë¡œ í–¥í•˜ëŠ” ë²¡í„°ì˜ ë°˜ëŒ€ ë°©í–¥(ì¦‰, í‘œë©´ì—ì„œ ì‹œì ìœ¼ë¡œ í–¥í•˜ëŠ” ë²¡í„°)ì…ë‹ˆë‹¤.
+	// ë”°ë¼ì„œ, ë§Œì•½ Normalì´ ì‹œì ì—ì„œ í‘œë©´ìœ¼ë¡œ í–¥í•˜ëŠ” ë²¡í„°ì™€ ê°™ì€ ë°©í–¥ì„ ê°€ë¦¬í‚¤ê³  ìˆë‹¤ë©´, faceforwardëŠ” Normalì˜ ë°©í–¥ì„ ë’¤ì§‘ì–´ì„œ ì‹œì ì—ì„œ í‘œë©´ìœ¼ë¡œ í–¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
     N = faceforward(N, -V, N);
 
-    // 1. Á÷Á¢±¤ °è»ê (Light.hlslÀÇ Lighting ÇÔ¼ö)
+    // 1. ì§ì ‘ê´‘ ê³„ì‚° (Light.hlslì˜ Lighting í•¨ìˆ˜)
     float4 litColor = Lighting(In.WorldPosition, N, V, albedo, metallic, roughness, ao, SpecularFactor);
 
-   // 2. È¯°æ±¤ °è»ê (IBL.hlslÀÇ CalculateIBL ÇÔ¼ö)
+   // 2. í™˜ê²½ê´‘ ê³„ì‚° (IBL.hlslì˜ CalculateIBL í•¨ìˆ˜)
     float3 iblColor = CalculateIBL(N, V, albedo, metallic, roughness, ao);
     
-    // View °ø°£¿¡¼­ÀÇ ±íÀÌ(Z) °ª °è»ê (¾î¶² Cascade¸¦ ¾µÁö °áÁ¤ÇÏ±â À§ÇÔ)
+    // View ê³µê°„ì—ì„œì˜ ê¹Šì´(Z) ê°’ ê³„ì‚° (ì–´ë–¤ Cascadeë¥¼ ì“¸ì§€ ê²°ì •í•˜ê¸° ìœ„í•¨)
     float3 viewPos = mul(float4(In.WorldPosition, 1.0f), g_matView).xyz;
     float viewDepth = viewPos.z;
 
-    // ±×¸²ÀÚ °ª »ùÇÃ¸µ (0.0: ¿ÏÀü ±×¸²ÀÚ ~ 1.0: ºû ¹ŞÀ½)
+    // ê·¸ë¦¼ì ê°’ ìƒ˜í”Œë§ (0.0: ì™„ì „ ê·¸ë¦¼ì ~ 1.0: ë¹› ë°›ìŒ)
     float shadowFactor = sample_csm_shadow(In.WorldPosition, N, viewDepth);
     
-    // 3. ÃÖÁ¾ »ö»ó °è»ê: Á÷Á¢±¤ + IBL + Emissive, ¸ğµÎ ±×¸²ÀÚ ¿µÇâÀ» ¹ŞÀ½
+    // 3. ìµœì¢… ìƒ‰ìƒ ê³„ì‚°: ì§ì ‘ê´‘ + IBL + Emissive, ëª¨ë‘ ê·¸ë¦¼ì ì˜í–¥ì„ ë°›ìŒ
     float3 finalColor = (litColor.rgb * shadowFactor) + iblColor + finalEmissive;
 
-    // 4. ÇÃ·¹ÀÌ¾îÀÏ °æ¿ì »ö»ó º¸Á¤ (g_otherplayerid¿¡ µû¶ó »ö»ó º¯°æ)
-    if (g_otherplayerid == -2) 
-        finalColor += albedo * 0.05f;
-    else if (g_otherplayerid > -1) 
-        finalColor = lerp_op(finalColor);
+    // 4. í”Œë ˆì´ì–´ì¼ ê²½ìš° ìƒ‰ìƒ ë³´ì • (g_otherplayeridì— ë”°ë¼ ìƒ‰ìƒ ë³€ê²½)
+    if (g_otherplayerid > -1) 
+        finalColor = ApplyPhantomAura(finalColor, N, V);
     
-    // MASK ¸ğµå: alphaCutoff ÀÌÇÏÀÇ ÇÈ¼¿À» Æó±â (clip ÇÔ¼ö »ç¿ë)
+    // MASK ëª¨ë“œ: alphaCutoff ì´í•˜ì˜ í”½ì…€ì„ íê¸° (clip í•¨ìˆ˜ ì‚¬ìš©)
     if (AlphaMode == 1)
-        clip(diffuseSample.a - AlphaCutoff); // ¾ËÆÄ°¡ cutoffº¸´Ù ÀÛÀ¸¸é ÇÈ¼¿ Æó±â
+        clip(diffuseSample.a - AlphaCutoff); // ì•ŒíŒŒê°€ cutoffë³´ë‹¤ ì‘ìœ¼ë©´ í”½ì…€ íê¸°
     
-    // Åæ ¸ÅÇÎ ¹× °¨¸¶ º¸Á¤
+    // í†¤ ë§¤í•‘ ë° ê°ë§ˆ ë³´ì •
     finalColor = finalColor / (finalColor + 1.0f);
     finalColor = pow(finalColor, 1.0f / 2.2f);
     

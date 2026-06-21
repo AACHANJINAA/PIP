@@ -1,25 +1,25 @@
 // Particle_Draw.hlsl
 
-cbuffer cbCamera : register(b1) // ¿£Áø Ç¥ÁØ Ä«¸Ş¶ó ·¹Áö½ºÅÍ
+cbuffer cbCamera : register(b1) // ì—”ì§„ í‘œì¤€ ì¹´ë©”ë¼ ë ˆì§€ìŠ¤í„°
 {
     matrix g_matView;
     matrix g_matProjection;
     float4 gvCameraPosition;
 };
 
-// ÆÄÆ¼Å¬ »ö»ó ¹× Å©±â
+// íŒŒí‹°í´ ìƒ‰ìƒ ë° í¬ê¸°
 cbuffer cbParticle : register(b2)
 {
     float4 g_Color;
     float g_Size;
-    float progress; // 0~1 »çÀÌÀÇ °ªÀ¸·Î, ÆÄÆ¼Å¬ÀÌ ´Ù ¸ğ¿´´ÂÁö?
-    float dying_progress; // 0 ~ 1·Î, ÆÄÆ¼Å¬ÀÌ »ç¶óÁö´Â ÁßÀÎÁö?
+    float progress; // 0~1 ì‚¬ì´ì˜ ê°’ìœ¼ë¡œ, íŒŒí‹°í´ì´ ë‹¤ ëª¨ì˜€ëŠ”ì§€?
+    float dying_progress; // 0 ~ 1ë¡œ, íŒŒí‹°í´ì´ ì‚¬ë¼ì§€ëŠ” ì¤‘ì¸ì§€?
 };
 
-// ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ °è»êÇØµĞ ÇöÀç ÆÄÆ¼Å¬ À§Ä¡ ¹öÆÛ (ÀĞ±â Àü¿ë)
+// ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ê³„ì‚°í•´ë‘” í˜„ì¬ íŒŒí‹°í´ ìœ„ì¹˜ ë²„í¼ (ì½ê¸° ì „ìš©)
 StructuredBuffer<float3> g_ParticleBuffer : register(t0);
 
-// ¹İÂ¦ÀÌ´Â ºû ÅØ½ºÃ³
+// ë°˜ì§ì´ëŠ” ë¹› í…ìŠ¤ì²˜
 Texture2D g_txParticle : register(t1);
 SamplerState g_samLinear : register(s0);
 
@@ -30,7 +30,7 @@ struct VS_OUT
     float4 Color : COLOR;
 };
 
-// °¡»óÀÇ Äõµå(»ç°¢Çü)¸¦ À§ÇÑ 4°³ÀÇ UV¿Í ·ÎÄÃ ÁÂÇ¥
+// ê°€ìƒì˜ ì¿¼ë“œ(ì‚¬ê°í˜•)ë¥¼ ìœ„í•œ 4ê°œì˜ UVì™€ ë¡œì»¬ ì¢Œí‘œ
 static const float2 QuadUVs[4] = { float2(0, 0), float2(1, 0), float2(0, 1), float2(1, 1) };
 static const float2 QuadPos[4] = { float2(-0.5, 0.5), float2(0.5, 0.5), float2(-0.5, -0.5), float2(0.5, -0.5) };
 
@@ -38,26 +38,26 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 {
     VS_OUT Out;
     
-    // ÀÎ½ºÅÏ½º ID¸¦ ÅëÇØ ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ °è»êÇÑ ¿ùµå À§Ä¡¸¦ °¡Á®¿É´Ï´Ù.
+    // ì¸ìŠ¤í„´ìŠ¤ IDë¥¼ í†µí•´ ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ê³„ì‚°í•œ ì›”ë“œ ìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
     float3 worldPos = g_ParticleBuffer[instI];
 
-    // Ä«¸Ş¶ó¸¦ Ç×»ó Á¤¸éÀ¸·Î ¹Ù¶óº¸µµ·Ï Ãà(Right, Up) °è»ê (Billboarding)
+    // ì¹´ë©”ë¼ë¥¼ í•­ìƒ ì •ë©´ìœ¼ë¡œ ë°”ë¼ë³´ë„ë¡ ì¶•(Right, Up) ê³„ì‚° (Billboarding)
     float3 look = normalize(gvCameraPosition.xyz - worldPos);
     float3 right = normalize(cross(float3(0, 1, 0), look));
     float3 up = cross(look, right);
 
-    // 0~3¹ø VertexID¿¡ µû¶ó »ç°¢ÇüÀÇ ³× ²ÀÁşÁ¡ À§Ä¡·Î ¹ú·ÁÁİ´Ï´Ù.
+    // 0~3ë²ˆ VertexIDì— ë”°ë¼ ì‚¬ê°í˜•ì˜ ë„¤ ê¼­ì§“ì  ìœ„ì¹˜ë¡œ ë²Œë ¤ì¤ë‹ˆë‹¤.
     float2 qpos = QuadPos[vI] * g_Size;
     worldPos += right * qpos.x + up * qpos.y;
 
-    // Åõ¿µ º¯È¯
+    // íˆ¬ì˜ ë³€í™˜
     Out.Pos = mul(float4(worldPos, 1.0f), g_matView);
     Out.Pos = mul(Out.Pos, g_matProjection);
     Out.UV = QuadUVs[vI];
     Out.Color = g_Color;
     
-    // ¾ËÆÄ°ª ¼­¼­È÷ ÁÙÀÌ±â
-    // ÁøÇàµµ°¡ 0.2(20%)¸¦ ³Ñ¾î°¡¸é ¼­¼­È÷ Åõ¸íÇØÁö±â ½ÃÀÛÇØ¼­ 1.0ÀÏ ¶§ ¿ÏÀüÈ÷ »ç¶óÁü
+    // ì•ŒíŒŒê°’ ì„œì„œíˆ ì¤„ì´ê¸°
+    // ì§„í–‰ë„ê°€ 0.2(20%)ë¥¼ ë„˜ì–´ê°€ë©´ ì„œì„œíˆ íˆ¬ëª…í•´ì§€ê¸° ì‹œì‘í•´ì„œ 1.0ì¼ ë•Œ ì™„ì „íˆ ì‚¬ë¼ì§
     float fadeProgress = saturate((dying_progress - 0.34f) / 0.34f);
     float alphaFade = 1.0f - fadeProgress;
     Out.Color.a *= alphaFade;
@@ -67,7 +67,7 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 
 //float4 PS_Particle(VS_OUT In) : SV_TARGET
 //{
-//    // ÅØ½ºÃ³ÀÇ »ö»ó°ú Åõ¸íµµ »ùÇÃ¸µ
+//    // í…ìŠ¤ì²˜ì˜ ìƒ‰ìƒê³¼ íˆ¬ëª…ë„ ìƒ˜í”Œë§
 //    float4 texColor = g_txParticle.Sample(g_samLinear, In.UV);
 //    return texColor * In.Color;
 //}
@@ -75,34 +75,39 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 float4 PS_Particle(VS_OUT In) : SV_TARGET
 {
    // -------------------------------------------------------------------
-    // 1. UV ÁÂÇ¥¸¦ ÀÌ¿ëÇØ 'ºÎµå·¯¿î ¿ø(Soft Circle)' ÇüÅÂ ¸¸µé±â
+    // 1. UV ì¢Œí‘œë¥¼ ì´ìš©í•´ 'ë¶€ë“œëŸ¬ìš´ ì›(Soft Circle)' í˜•íƒœ ë§Œë“¤ê¸°
     // -------------------------------------------------------------------
     float dist = distance(In.UV, float2(0.5f, 0.5f));
 
-    // °Å¸®°¡ 0.5(¿Ü°û)¿¡ °¡±î¿ï¼ö·Ï Åõ¸í(0.0)ÇØÁö°í, 0.2(Áß½É)·Î °¥¼ö·Ï ºÒÅõ¸í(1.0)
-    // °¢Áø ³×¸ğ°¡ ¾Æ´Ï¶ó, ¿Ü°ûÀÌ ÀºÀºÇÏ°Ô ÆÛÁö´Â ¾Æ¸§´Ù¿î µ¿±×¶õ ºû¹«¸®(Orb)
+    // ê±°ë¦¬ê°€ 0.5(ì™¸ê³½)ì— ê°€ê¹Œìš¸ìˆ˜ë¡ íˆ¬ëª…(0.0)í•´ì§€ê³ , 0.2(ì¤‘ì‹¬)ë¡œ ê°ˆìˆ˜ë¡ ë¶ˆíˆ¬ëª…(1.0)
+    // ê°ì§„ ë„¤ëª¨ê°€ ì•„ë‹ˆë¼, ì™¸ê³½ì´ ì€ì€í•˜ê²Œ í¼ì§€ëŠ” ì•„ë¦„ë‹¤ìš´ ë™ê·¸ë€ ë¹›ë¬´ë¦¬(Orb)
     float shapeAlpha = smoothstep(0.5f, 0.2f, dist);
 
     // -------------------------------------------------------------------
-    // 2. ¸ğÀÌ´Â ÁøÇàµµ(progress)¿¡ µû¶ó ¹à±â¸¦ ÂŞ¿í ²ø¾î¿Ã¸®±â
+    // 2. ëª¨ì´ëŠ” ì§„í–‰ë„(progress)ì— ë”°ë¼ ë°ê¸°ë¥¼ ì­ˆìš± ëŒì–´ì˜¬ë¦¬ê¸°
     // -------------------------------------------------------------------
-    // progress(0.0 ~ 1.0)¿¡ µû¶ó ¹à±â ¹èÀ²À» Á¤ÇÕ´Ï´Ù.
-    // Ã³À½ »ç¹æÀ¸·Î ÆÛÁ®ÀÖÀ» ¶© ¿ø·¡ »ö»óÀÇ 0.3¹è(¾îµÎ¿ò), 
-    // °ËÀ¸·Î ´Ù ¸ğ¿´À» ¶© 1.0¹è(ºûÀÌ Æø¹ßÇÏµí Â¸ÇØÁü)°¡ µË´Ï´Ù.
+    // progress(0.0 ~ 1.0)ì— ë”°ë¼ ë°ê¸° ë°°ìœ¨ì„ ì •í•©ë‹ˆë‹¤.
+    // ì²˜ìŒ ì‚¬ë°©ìœ¼ë¡œ í¼ì ¸ìˆì„ ë• ì›ë˜ ìƒ‰ìƒì˜ 0.3ë°°(ì–´ë‘ì›€), 
+    // ê²€ìœ¼ë¡œ ë‹¤ ëª¨ì˜€ì„ ë• 1.0ë°°(ë¹›ì´ í­ë°œí•˜ë“¯ ì¨í•´ì§)ê°€ ë©ë‹ˆë‹¤.
     float brightness = lerp(0.3f, 1.0f, progress);
 
-    // Ã³À½ »ı¼ºµÉ ¶§(0.0 ~ 0.1 ±¸°£) ÆÄÆ¼Å¬ÀÌ ¼­¼­È÷ ³ªÅ¸³ªµµ·Ï Åõ¸íµµ º¸°£
+    // ì²˜ìŒ ìƒì„±ë  ë•Œ(0.0 ~ 0.1 êµ¬ê°„) íŒŒí‹°í´ì´ ì„œì„œíˆ ë‚˜íƒ€ë‚˜ë„ë¡ íˆ¬ëª…ë„ ë³´ê°„
     float appearAlpha = saturate(progress / 0.1f);
 
     // -------------------------------------------------------------------
-    // 3. ÃÖÁ¾ »ö»ó Á¶ÇÕ
+    // 3. ìµœì¢… ìƒ‰ìƒ ê²°ì • (ì¤‘ì‹¬ë¶€ëŠ” í°ìƒ‰, ì™¸ê³½ì€ ì„¤ì •ëœ ìƒ‰ìƒìœ¼ë¡œ ìŠ¤ë¬´ìŠ¤í•˜ê²Œ í˜¼í•©)
     // -------------------------------------------------------------------
     float4 finalColor;
     
-    // RGB »ö»ó¿¡´Â ¹à±â ¹èÀ²À» °öÇØÁİ´Ï´Ù. (°ªÀÌ 1.0À» ³Ñ¾î°¡¸é Bloom È¿°ú°¡ °ãÃÄ ºû³ª°Ô µË´Ï´Ù)
-    finalColor.rgb = In.Color.rgb * brightness;
+    // íŒŒí‹°í´ ì¤‘ì‹¬ë¶€(dist=0)ëŠ” í°ìƒ‰, ì™¸ê³½(dist=0.2 ì´ìƒ)ì€ ì›ë˜ ìƒ‰ìƒì´ ë˜ë„ë¡ ë¶€ë“œëŸ½ê²Œ ë³´ê°„
+    float3 coreColor = float3(1.0f, 1.0f, 1.0f);
+    float colorBlend = smoothstep(0.0f, 0.2f, dist);
+    float3 blendedColor = lerp(coreColor, In.Color.rgb, colorBlend);
     
-    // Alpha(Åõ¸íµµ)¿¡´Â ¿ø ¸ğ¾ç ¸¶½ºÅ©(shapeAlpha)¿Í Ã³À½ µîÀå ÆäÀÌµåÀÎ(appearAlpha)À» ÇÔ²² Àû¿ëÇÕ´Ï´Ù.
+    // RGB ìƒ‰ìƒì— ë°ê¸°ë¥¼ ê³±í•´ì¤Œ
+    finalColor.rgb = blendedColor * brightness;
+    
+    // Alpha(íˆ¬ëª…ë„)ì—ëŠ” ì› ëª¨ì–‘ ë§ˆìŠ¤í¬(shapeAlpha)ì™€ ì²˜ìŒ ë“±ì¥ í˜ì´ë“œì¸(appearAlpha)ì„ í•¨ê»˜ ì ìš©í•©ë‹ˆë‹¤.
     finalColor.a = In.Color.a * shapeAlpha * appearAlpha;
 
     return finalColor;

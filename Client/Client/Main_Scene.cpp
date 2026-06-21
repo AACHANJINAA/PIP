@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -863,11 +863,12 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 	// 더미 플레이어 무기 및 파티클 세팅
 	std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
 	int colors_idx[4] = { player_id, other_player_id_1, other_player_id_2, other_player_id_3 };
+	// 다크 판타지 소울류 팬텀(Phantom) 느낌의 색상 오라
 	static const DirectX::XMFLOAT3 PlayerColors[4] = {
-		DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
-		DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
-		DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
-		DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
+		DirectX::XMFLOAT3(0.8f, 0.1f, 0.05f),  // [0] 적령 (Blood Red)
+		DirectX::XMFLOAT3(0.2f, 0.5f, 0.9f),   // [1] 청령 (Moonlight Blue)
+		DirectX::XMFLOAT3(0.9f, 0.6f, 0.1f),   // [2] 태양령 (Sunlight Gold)
+		DirectX::XMFLOAT3(0.5f, 0.1f, 0.8f),   // [3] 암령/광령 (Abyssal Purple)
 	};
 
 	for (int i = 0; i < 4; ++i) {

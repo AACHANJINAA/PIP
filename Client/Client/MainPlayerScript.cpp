@@ -251,12 +251,13 @@ void MainPlayerScript::awake()
 
 		// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
 		auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
+		// 다크 판타지 소울류 팬텀(Phantom) 느낌의 색상 오라
 		static const DirectX::XMFLOAT3 PlayerColors[4] =
 		{
-			DirectX::XMFLOAT3(0.863f, 0.078f, 0.235f), // crimson red
-			DirectX::XMFLOAT3(0.0f, 1.0f, 0.498f), // spring green
-			DirectX::XMFLOAT3(1.0f, 0.843f, 0.0f), // gold
-			DirectX::XMFLOAT3(0.541f, 0.169f, 0.886f), // violet
+			DirectX::XMFLOAT3(0.8f, 0.1f, 0.05f),  // [0] 적령 (Blood Red)
+			DirectX::XMFLOAT3(0.2f, 0.5f, 0.9f),   // [1] 청령 (Moonlight Blue)
+			DirectX::XMFLOAT3(0.9f, 0.6f, 0.1f),   // [2] 태양령 (Sunlight Gold)
+			DirectX::XMFLOAT3(0.5f, 0.1f, 0.8f),   // [3] 암령/광령 (Abyssal Purple)
 		};
 
 		DirectX::XMFLOAT4 color = { PlayerColors[_playerId % 4].x, PlayerColors[_playerId % 4].y, PlayerColors[_playerId % 4].z, 0.5f };
