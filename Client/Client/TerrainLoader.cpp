@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "TerrainLoader.h"
 
 #include "FoliageRenderComponent.h"
@@ -88,7 +88,7 @@ float TerrainLoader::get_height_anywhere(float world_x, float world_z)
 			return loader->get_height_at(world_x, world_z);
 		}
 	}
-	return -1.0f; // 지형이 없는 곳의 기본 높이
+	return -FLT_MAX; // 지형이 없는 곳은 바닥 충돌을 무시하기 위해 매우 낮은 값 반환
 }
 
 namespace
