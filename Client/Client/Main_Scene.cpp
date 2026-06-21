@@ -976,7 +976,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 void Main_Scene::cinematic_sequence(float deltaTime)
 {
 	// 디버깅을 위해서 바로 넘김
-	_isCutsceneDoneSent = true;
+	//_isCutsceneDoneSent = true;
 
 	// 컷씬에 필요한 변수들 준비
 	float bgm_time = SoundManager::instance()->get_playback_position("Cinematic_fountain_BGM");
@@ -1393,7 +1393,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		}
 
 		// 이동 속도 m단위 : 초당 0.1f
-		float speed = 0.1f;
+		float speed = 0.15f;
 
 		// 2번째 지점(192.44, 11.31, -59.76) 도착 또는 통과 시 이벤트 발생
 		if (!_isCinematicMoveInCastle && splineTime >= 1.f) 
@@ -1407,22 +1407,22 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 					auto animComp = dummies[i]->get_component<AnimationComponent>();
 
 					// 1. 먼저 재생을 시킴
-					animComp->play("walk", true, 0.2f);
+					animComp->play("walk", true, 0.8f);
 
 					// 2. 그 직후에 재생 시작 위치를 덮어씌움
 					animComp->set_progress(startOffsets[i]);
 				}
 			}
-			_dummy_player_1->transform()->set_local_position({ 159.09, 5.3, -60.95	});
+			_dummy_player_1->transform()->set_local_position({ 169.09, 5.3, -60.95	});
 			_dummy_player_1->transform()->set_local_rotation(0.0, 92.7, 0.0);
 
-			_dummy_player_2->transform()->set_local_position({ 160.15, 5.3, -61.56 });
+			_dummy_player_2->transform()->set_local_position({ 170.15, 5.3, -61.56 });
 			_dummy_player_2->transform()->set_local_rotation(0.0, 98.2, 0.0);
 
-			_dummy_player_3->transform()->set_local_position({ 159.12, 5.3, -59.35 });
+			_dummy_player_3->transform()->set_local_position({ 169.12, 5.3, -59.35 });
 			_dummy_player_3->transform()->set_local_rotation(0.0, 84.0, 0.0);
 
-			_dummy_player_4->transform()->set_local_position({ 158.09, 5.3, -58.70 });
+			_dummy_player_4->transform()->set_local_position({ 168.09, 5.3, -58.70 });
 			_dummy_player_4->transform()->set_local_rotation(0.0, 81.4, 0.0);
 		}
 
@@ -1458,7 +1458,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		if (splineTime >= 1.f)
 		{
 			// 최종 이동 각도 및 위치
-			DirectX::XMFLOAT3 finalPos = { 146.73, 5.30, -60.31 };
+			DirectX::XMFLOAT3 finalPos = { 136.73, 5.30, -60.31 };
 			DirectX::XMFLOAT3 finalRot = { 0.0, 80.9, 0.0 };
 
 			std::shared_ptr<GameObject> dummies[4] = { _dummy_player_1, _dummy_player_2, _dummy_player_3, _dummy_player_4 };
@@ -1528,8 +1528,8 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	// 마지막 넘어가기
 	if (bgm_time > 67.0f && !_isCutsceneDoneSent)
 	{
-		cameraObject->set_sinamatic_camera_mode(false);
-		//_isCutsceneDoneSent = true;
+		//cameraObject->set_sinamatic_camera_mode(false);
+		_isCutsceneDoneSent = true;
 	}
 
 	if (_isCutsceneDoneSent)
