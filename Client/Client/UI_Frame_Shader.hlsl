@@ -61,10 +61,10 @@ PS_INPUT VS_UI_FRAME(VS_INPUT input)
 
 static const float3 PlayerColors[4] =
 {
-    float3(0.863f, 0.078f, 0.235f), // crimson red
-	float3(0.0f, 1.0f, 0.498f), // spring green
-    float3(1.0f, 0.843f, 0.0f), // gold
-	float3(0.541f, 0.169f, 0.886f), // violet
+    float3(0.8f, 0.1f, 0.05f),  // [0] 적령 (Blood Red)
+    float3(0.2f, 0.5f, 0.9f),   // [1] 청령 (Moonlight Blue)
+    float3(0.9f, 0.6f, 0.1f),   // [2] 태양령 (Sunlight Gold)
+    float3(0.5f, 0.1f, 0.8f),   // [3] 암령/광령 (Abyssal Purple)
 };
 
      // 픽셀 셰이더
