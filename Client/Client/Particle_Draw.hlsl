@@ -95,6 +95,14 @@ float4 PS_Particle(VS_OUT In) : SV_TARGET
     // 밝기: 처음엔 0.3배로 흐릿하다가, 마지막에 에너지가 응집되며 1.5배로 밝게 빛남
     float brightness = lerp(0.3f, 1.5f, progress);
 
+    // [추가] 퍼질 때(죽어갈 때) 투명해지면서 회색/탁하게 변하는 것을 방지
+    if (dying_progress > 0.0f) {
+        // 흩어질 때는 온전한 본연의 색(고유 색상)을 100% 유지
+        timeBlendedColor = In.Color.rgb;
+        // 흩어지면서 사라질 때 색이 죽지 않도록 스스로 강렬하게 빛나게 부스트(Bloom)
+        brightness *= lerp(1.0f, 3.0f, dying_progress);
+    }
+
     float4 finalColor;
     finalColor.rgb = timeBlendedColor * brightness;
     
