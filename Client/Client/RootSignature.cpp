@@ -125,7 +125,7 @@ ComPtr<ID3D12RootSignature> GltfRootSignatureGenerator::create(ID3D12Device* dev
     samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     samplers[0].MipLODBias = 0;
-    samplers[0].MaxAnisotropy = 1;
+    samplers[0].MaxAnisotropy = 16;
     samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     samplers[0].MinLOD = 0;
     samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
@@ -215,12 +215,12 @@ ComPtr<ID3D12RootSignature> SkinnedRootSignatureGenerator::create(ID3D12Device* 
 	// 3. 정적 샘플러 설정 s0 + s1 (그림자용)
 
     D3D12_STATIC_SAMPLER_DESC samplers[2];
-    samplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    samplers[0].Filter = D3D12_FILTER_ANISOTROPIC;
     samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     samplers[0].MipLODBias = 0;
-    samplers[0].MaxAnisotropy = 1;
+    samplers[0].MaxAnisotropy = 16;
     samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     samplers[0].MinLOD = 0;
     samplers[0].MaxLOD = D3D12_FLOAT32_MAX;

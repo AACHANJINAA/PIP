@@ -12,7 +12,7 @@
 
 #include "json.hpp"
 #include <fstream>
-
+#include <unordered_set>
 
 // load_scene_from_file load scene dataa from a JSON file
 
@@ -47,6 +47,7 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
     }
 
     std::filesystem::path basePath = std::filesystem::path(filename).parent_path();
+    std::unordered_set<std::string> loaded_keys;
 
     for (const auto& objectJson : sceneJson)
     {
@@ -59,6 +60,23 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
             CLOG("Skipping object with empty MeshFile name: " << data.name);
             continue;
         }
+
+		// --- 중복 검사 로직 추가 ---
+		std::string duplicate_key = data.meshFile;
+		if (objectJson.contains("Transform")) {
+			const auto& transformJson = objectJson["Transform"];
+			duplicate_key += "_" + std::to_string(transformJson["Location"].value("X", 0.0f)) +
+				"_" + std::to_string(transformJson["Location"].value("Y", 0.0f)) +
+				"_" + std::to_string(transformJson["Location"].value("Z", 0.0f)) +
+				"_" + std::to_string(transformJson["Scale"].value("X", 1.0f)) +
+				"_" + std::to_string(transformJson["Scale"].value("Y", 1.0f)) +
+				"_" + std::to_string(transformJson["Scale"].value("Z", 1.0f));
+		}
+
+		if (loaded_keys.find(duplicate_key) != loaded_keys.end()) {
+			continue; // 완벽히 동일한 메쉬, 위치, 스케일이 이미 로드됨 (Z-Fighting 방지)
+		}
+		loaded_keys.insert(duplicate_key);
 
         // 1. 메쉬 로드 (GLTF 파일 파싱 및 재질 정보 포함)
         std::string mesh_path = (basePath / data.meshFile).string();
