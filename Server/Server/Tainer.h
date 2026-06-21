@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "CombatDef.h"
 #include "NPC.h"
 namespace PIP::GAME
@@ -7,7 +7,7 @@ namespace PIP::GAME
     class Tainer : public NPC
     {
     public:
-        Tainer(int64_t npc_id, int room_id, common::Vec3 position);
+        Tainer(int64_t npc_id, int room_id, common::Vec3 position, int32_t maxHp = 500);
         virtual ~Tainer() override = default;
 
         void SetupBT() override;
