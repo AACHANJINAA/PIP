@@ -34,6 +34,8 @@ public:
 	void set_shadow_max_distance(float distance) { shadow_max_distance = distance; }
 	float get_shadow_max_distance() const { return shadow_max_distance; }
 
+	void force_static_shadow_update() { _forceStaticUpdate = true; }
+
 	void set_static_update_distance_threshold(float distance) { _staticUpdateDistanceThreshold = distance; }
 	float static_update_distance_threshold() const { return _staticUpdateDistanceThreshold; }
 
@@ -70,7 +72,7 @@ private:
     CbCascades _staticCascadeData;
     f3 _lastStaticUpdateCamPos = {-999999.0f, -999999.0f, -999999.0f};
     bool _forceStaticUpdate = true;
-    float _staticUpdateDistanceThreshold = 20.0f; // 정적 그림자 맵 갱신 거리 기준 (단위: 미터)
+    float _staticUpdateDistanceThreshold = 10.0f; // 정적 그림자 맵 갱신 거리 기준 (단위: 미터)
 
     UINT _currentFrameIndex = 0;
     UINT _frameCount{ 0 }; // 캐스케이드 업데이트 주기 분리용 카운터

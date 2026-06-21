@@ -29,15 +29,14 @@ def create_controls_image():
     # (설명, 키)
     lines = [
         ("이동", "W, A, S, D"),
-        ("달리기", "Left Shift"),
-        ("대쉬 / 회피", "Space Bar"),
-        ("점프 및 상호작용", "F"),
-        ("  - 빈 공간에서는 점프", ""),
-        ("  - 레버나 NPC 근처에서는 상호작용", ""),
+        ("대쉬 / 회피", "Left Shift"),
+        ("점프", "Space Bar"),
+        ("상호작용", "F"),
         ("기본 공격", "마우스 좌클릭"),
         ("스킬 사용", "마우스 우클릭"),
         ("락온 토글", "마우스 휠 클릭 또는 Tab"),
-        ("퀘스트 스토리 확인", "Q")
+        ("퀘스트 및 스토리 확인", "Q"),
+        ("조작법 확인", "E")
     ]
 
     title_color = (200, 180, 130, 255) # 바랜 황금색 (Muted Gold)
@@ -84,7 +83,7 @@ def create_controls_image():
     # Draw Bottom Line (Gradient)
     draw_gradient_line(draw, height - 30, width, title_color, 200)
 
-    output_path = r"c:\Users\ckswl\Desktop\GITHUB\PIP\Client\Client\Resource\UI\Controls_UI.png"
+    output_path = r"c:\Users\ckswl\Desktop\GITHUB\PIP\Client\Client\Resource\UI\Controls_UI_New.png"
     img.save(output_path)
     print(f"Generated controls UI at: {output_path}")
 
