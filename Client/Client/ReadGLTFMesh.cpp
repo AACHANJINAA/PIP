@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 
@@ -2160,7 +2160,7 @@ void ReadGLTFMesh::bounding_box_merge()
 	}
 }
 
-bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayDir, const XMMATRIX& worldMatrix, float& outHitDist) const
+bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayDir, const XMMATRIX& worldMatrix, float& outHitDist, float maxHitDist) const
 {
 	bool hitAnything = false;
 	float closestDist = FLT_MAX;
@@ -2173,6 +2173,10 @@ bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayD
 	if (!worldOverallOBB.Intersects(rayStart, rayDir, overallDist))
 	{
 		return false; // 전체 박스에 안 맞았으면 하위 프리미티브는 볼 필요도 없음
+	}
+	if (overallDist >= maxHitDist)
+	{
+		return false; 
 	}
 
 	// 전체 박스에 맞았다면, 디테일한 개별 프리미티브 OBB들을 순회하며 진짜 맞았는지 검사
@@ -2193,6 +2197,10 @@ bool ReadGLTFMesh::intersects_ray(const XMVECTOR& rayStart, const XMVECTOR& rayD
 		float primHitDist = 0.0f;
 		if (worldPrimOBB.Intersects(rayStart, rayDir, primHitDist))
 		{
+			if (primHitDist >= maxHitDist)
+			{
+				continue;
+			}
 			// OBB에 맞았거나 내부에 있다면, 실제 삼각형(Triangle)들과 정밀 교차 판정 수행
 			size_t indexCount = primitive->_indices.size();
 			if (indexCount % 3 != 0) continue; // 정상적인 삼각형 데이터가 아님
