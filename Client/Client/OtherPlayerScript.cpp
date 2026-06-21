@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "OtherPlayerScript.h"
 
 #include "AnimationComponent.h"
@@ -21,7 +21,7 @@ void OtherPlayerScript::set_hp(int hp)
 	_hp = hp;
 	if (_hp < prevHp) {
 		if (transform()) {
-			SoundManager::instance()->play_3d("PlayerDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+			SoundManager::instance()->play_3d("Other_PlayerDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
 		}
 	}
 }
@@ -68,7 +68,7 @@ void OtherPlayerScript::on_sync_action_id(int32_t action_id)
         if (_action_id == common::packet::ActionID::Common::Attack) {
             if (transform()) {
                 // 3D 사운드 재생 (다른 플레이어 위치 기반)
-                SoundManager::instance()->play_3d("SwordSwing", transform()->get_world_position());
+                SoundManager::instance()->play_3d("Other_SwordSwing", transform()->get_world_position());
             }
         }
     }
@@ -296,7 +296,7 @@ void OtherPlayerScript::update(float deltaTime)
                     anim_comp->play("skill_end", false, _skillEndingAnimationSpeed);
 
                     // [추가] 타격 순간 먼지 사운드 재생 (메인 플레이어와 동일하게 구간 재생)
-                    SoundManager::instance()->play_3d_section("DustSound", transform()->get_world_position(), "00:00", "01:500", SoundType::SFX, 0.7f);
+                    SoundManager::instance()->play_3d_section("Other_DustSound", transform()->get_world_position(), "00:00", "01:500", SoundType::SFX, 0.7f);
 
                     if (_particleEffectObject) {
                         if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
@@ -310,7 +310,7 @@ void OtherPlayerScript::update(float deltaTime)
             if (!_isDashAnimationStarted)
             {
                 _isDashAnimationStarted = true;
-                SoundManager::instance()->play_3d("PlayerDash", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
+                SoundManager::instance()->play_3d("Other_PlayerDash", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
                 std::string animName = "dash_fwd";
                 if (_action_id == common::packet::ActionID::Common::DASH_BWD) animName = "dash_bwd";
                 else if (_action_id == common::packet::ActionID::Common::DASH_LEFT) animName = "dash_left";
@@ -413,6 +413,12 @@ void OtherPlayerScript::awake()
     
 
     animation_comp->play("idle");
+
+    // [사운드] 플레이어 무기 공격음 / 피격음 로드
+    SoundManager::instance()->load_sound("Other_SwordSwing", "Resource/Sound/SwordSwing.mp3", true);
+    SoundManager::instance()->load_sound("Other_DustSound", "Resource/Sound/Dust.wav", true);
+    SoundManager::instance()->load_sound("Other_PlayerDamage", "Resource/Sound/PlayerDamage.wav", true);
+    SoundManager::instance()->load_sound("Other_PlayerDash", "Resource/Sound/PlayerDash.ogg", true);
 
     // 재질 및 쉐이더 설정
 	// ResourceManager을 통해 재질 생성 및 셰이더 할당
