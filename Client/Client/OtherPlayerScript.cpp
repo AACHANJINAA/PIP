@@ -305,6 +305,19 @@ void OtherPlayerScript::update(float deltaTime)
                 }
             }
         }
+        else if (_action_id >= common::packet::ActionID::Common::DASH_FWD && _action_id <= common::packet::ActionID::Common::DASH_RIGHT)
+        {
+            if (!_isDashAnimationStarted)
+            {
+                _isDashAnimationStarted = true;
+                std::string animName = "dash_fwd";
+                if (_action_id == common::packet::ActionID::Common::DASH_BWD) animName = "dash_bwd";
+                else if (_action_id == common::packet::ActionID::Common::DASH_LEFT) animName = "dash_left";
+                else if (_action_id == common::packet::ActionID::Common::DASH_RIGHT) animName = "dash_right";
+
+                anim_comp->play(animName, false, 2.0f);
+            }
+        }
         else
         {
             if (_isSkillAnimationStarted) 
@@ -314,6 +327,7 @@ void OtherPlayerScript::update(float deltaTime)
         }
         break;
     case common::packet::EntityState::MOVE:
+        _isDashAnimationStarted = false; // [추가]
         if (_isSkillAnimationStarted) 
         {
             init_skill_variables();
@@ -321,6 +335,7 @@ void OtherPlayerScript::update(float deltaTime)
         anim_comp->play("walk", true, (common::move_speed::player_walk_speed / common::anim_speed::player_walk_animation));
         break;
     case common::packet::EntityState::RUN:
+        _isDashAnimationStarted = false; // [추가]
         if (_isSkillAnimationStarted)
         {
             init_skill_variables();
@@ -329,6 +344,7 @@ void OtherPlayerScript::update(float deltaTime)
        
         break;
 	case common::packet::EntityState::IDLE:
+        _isDashAnimationStarted = false; // [추가]
         if (_isSkillAnimationStarted)
         {
             init_skill_variables();
@@ -337,6 +353,7 @@ void OtherPlayerScript::update(float deltaTime)
        
         break;
     case common::packet::EntityState::GRABBED: // [추가]
+        _isDashAnimationStarted = false; // [추가]
         if (_isSkillAnimationStarted)
         {
             init_skill_variables();
@@ -370,6 +387,12 @@ void OtherPlayerScript::awake()
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01.gltf", "skill01");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill_end");
     std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
+
+    // [추가] 4방향 대쉬 애니메이션 로드 (이 부분이 누락되어 마지막 모션에서 멈춰있었음)
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Fwd.gltf", "dash_fwd");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Bwd.gltf", "dash_bwd");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Left.gltf", "dash_left");
+    std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Right.gltf", "dash_right");
     
 	render_comp->set_mesh(idleMesh);
 
@@ -380,6 +403,12 @@ void OtherPlayerScript::awake()
     animation_comp->add_animation("skill", idleMesh, "skill01");
     animation_comp->add_animation("skill_end", idleMesh, "skill_end");
     animation_comp->add_animation("die", idleMesh, "death");
+
+    // [추가] 4방향 대쉬 애니메이션 추가
+    animation_comp->add_animation("dash_fwd", idleMesh, "dash_fwd");
+    animation_comp->add_animation("dash_bwd", idleMesh, "dash_bwd");
+    animation_comp->add_animation("dash_left", idleMesh, "dash_left");
+    animation_comp->add_animation("dash_right", idleMesh, "dash_right");
     
 
     animation_comp->play("idle");

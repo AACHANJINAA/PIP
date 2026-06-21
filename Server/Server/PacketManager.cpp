@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "PacketManager.h"
+#include "Room.h" // [추가] RoomState 접근용
 namespace PIP::packet
 {
 	void PacketManager::Initialize()
@@ -44,6 +45,22 @@ namespace PIP::packet
                 break;
 
             case SERVER::SESSION_STATE::ST_INGAME:
+                // [추가] 씬 전환(대기) 중인지 확인
+                {
+                    auto room = SERVER::Server::Instance()->GetRoom(session->_room_id);
+                    if (room && room->GetRoomState() == SERVER::RoomState::WAITING)
+                    {
+                        // WAITING 상태일 때는 특정 패킷만 허용하고 나머지는 차단
+                        if (header._type == packet::PacketType::C2S_P_MOVE ||
+                            header._type == packet::PacketType::C2S_P_ACTION ||
+                            header._type == packet::PacketType::C2S_P_NPC_INTERACT)
+                        {
+                            // 무시할 패킷
+                            return; // 함수 즉시 종료 (핸들러 호출 X)
+                        }
+                    }
+                }
+
                 // 인게임에서 처리 가능한 모든 패킷 종류를 여기에 명시합니다.
                 switch (header._type)
                 {

@@ -118,7 +118,7 @@ void NPCScript::init_visual()
 	// 보스 특수 액션 사운드 로드
 	SoundManager::instance()->load_sound("BossCharge", "Resource/Sound/BossCharge.wav", true);
 	SoundManager::instance()->load_sound("BossGrab",   "Resource/Sound/BossGrab.wav", true);
-	SoundManager::instance()->load_sound("BossSmash",  "Resource/Sound/BossSmash.wav", true);
+	SoundManager::instance()->load_sound("BossLanding",  "Resource/Sound/BossLanding.mp3", true);
 	SoundManager::instance()->load_sound("BossRoar",   "Resource/Sound/BossRoar.wav", true);
 
 	if (_npcType == common::packet::NPCType::Elevator) {
@@ -530,7 +530,7 @@ void NPCScript::apply_snapshot()
 			if (_npcType == common::packet::NPCType::Tainer) {
 				SoundManager::instance()->stop("BossCharge");
 				SoundManager::instance()->stop("BossGrab");
-				SoundManager::instance()->stop("BossSmash");
+				SoundManager::instance()->stop("BossLanding");
 				SoundManager::instance()->stop("BossRoar");
 			}
 		}
@@ -548,7 +548,7 @@ void NPCScript::apply_snapshot()
 				SoundManager::instance()->play_3d_section("BossGrab", transform()->get_world_position(), "00:00:00", "00:00:500");
 			}
 			else if (_actionId == common::packet::ActionID::Tainer::Slam || _actionId == common::packet::ActionID::Tainer::GrabSlam) {
-				SoundManager::instance()->play_3d_section("BossSmash", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f);
+				SoundManager::instance()->play_3d("BossLanding", transform()->get_world_position(), SoundType::SFX, 1.5f, false);
 			}
 			else if (_actionId == common::packet::ActionID::Tainer::Roar) {
 				SoundManager::instance()->play_3d_section("BossRoar", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f);

@@ -166,6 +166,12 @@ private:
 
 	common::packet::EntityState _state = common::packet::EntityState::IDLE;
 	int32_t _actionId = 0;
+
+	// [추가] 대쉬 상태 변수
+	bool _isDashing = false;
+	int32_t _dashActionId = 0;
+	float _dashCooldownTimer = 0.0f; // [추가] 대쉬 쿨타임
+
 	int64_t _grabbedById = -1; // [추가]
 	int8_t  _grabSlot = -1;    // [추가]
 	float _timer = 0.0f;

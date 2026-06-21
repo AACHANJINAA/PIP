@@ -27,6 +27,8 @@
 #include "GameFramework.h"
 #include "FreeCameraScript.h"
 #include "SoundManager.h" // [사운드]
+#include "SceneManager.h"
+#include "Main_Scene.h"
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -167,6 +169,12 @@ void MainPlayerScript::awake()
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Skill_01_end.gltf", "skill01_end");
 	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Death.gltf", "death");
 
+	// [추가] 4방향 대쉬 애니메이션 로드
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Fwd.gltf", "dash_fwd");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Bwd.gltf", "dash_bwd");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Left.gltf", "dash_left");
+	std::dynamic_pointer_cast<ReadGLTFMesh>(idleMesh)->load_animation_only(animationpath + "Anim_DKF_Crouch_Alert_Right.gltf", "dash_right");
+
 
 	renderer->set_mesh(idleMesh);
 
@@ -177,6 +185,12 @@ void MainPlayerScript::awake()
 	animation_component->add_animation("skill", idleMesh, "skill01");
 	animation_component->add_animation("skill_end", idleMesh, "skill01_end");
 	animation_component->add_animation("die", idleMesh, "death");
+
+	// [추가] 4방향 대쉬 애니메이션 등록
+	animation_component->add_animation("dash_fwd", idleMesh, "dash_fwd");
+	animation_component->add_animation("dash_bwd", idleMesh, "dash_bwd");
+	animation_component->add_animation("dash_left", idleMesh, "dash_left");
+	animation_component->add_animation("dash_right", idleMesh, "dash_right");
 
 	// 초기 상태 설정 (강제로 적용하여 메쉬/애니메이션 로드)
 	animation_component->play("idle");
@@ -637,6 +651,23 @@ void MainPlayerScript::handle_state(float deltaTime)
 			send_network_sync(0.0f);
 		}
 	}
+	else if (_isDashing) {
+		// [추가] 대쉬 중에는 ACTION 상태 유지 및 애니메이션 처리
+		_state = common::packet::EntityState::ACTION;
+
+		std::string animName = "dash_fwd";
+		if (_dashActionId == common::packet::ActionID::Common::DASH_BWD) animName = "dash_bwd";
+		else if (_dashActionId == common::packet::ActionID::Common::DASH_LEFT) animName = "dash_left";
+		else if (_dashActionId == common::packet::ActionID::Common::DASH_RIGHT) animName = "dash_right";
+
+		anim_comp->play(animName, false, 2.0f);
+
+		if (anim_comp->is_anim_finished()) {
+			_isDashing = false;
+			_state = common::packet::EntityState::IDLE;
+			_actionId = 0;
+		}
+	}
 	else {
 		if (_speed >= common::move_speed::player_run_speed && common::Length(_currentMoveDir) > 0.01f) {
 			_state = common::packet::EntityState::RUN;
@@ -655,6 +686,11 @@ void MainPlayerScript::handle_state(float deltaTime)
 
 void MainPlayerScript::handle_input(float deltaTime)
 {
+	// 대쉬 쿨타임 감소
+	if (_dashCooldownTimer > 0.0f) {
+		_dashCooldownTimer -= deltaTime;
+	}
+
 	// Q 키를 누르면 퀘스트 스토리 UI 토글
 	if (InputManager::instance()->IsKeyDown('Q'))
 	{
@@ -737,6 +773,15 @@ void MainPlayerScript::handle_input(float deltaTime)
 
 	// [카운트다운] 서버에서 대기 중이면 모든 이동/스킬 입력 무시
 	if (NetworkManager::instance()->is_input_locked()) return;
+
+	// [컷씬] 시네마틱 컷씬 연출 중이면 모든 이동/액션 입력 무시
+	if (SceneManager::instance() && SceneManager::instance()->current_scene()) {
+		auto main_scene = dynamic_cast<Main_Scene*>(SceneManager::instance()->current_scene());
+		if (main_scene && main_scene->get_cinematic_mode()) {
+			_currentMoveDir = { 0, 0, 0 }; // 누르고 있던 방향 초기화
+			return;
+		}
+	}
 
 	if (InputManager::instance()->IsKeyDown(VK_F8))
 	{
@@ -869,21 +914,56 @@ void MainPlayerScript::handle_input(float deltaTime)
 	}
 
 
-	// 대쉬 입력 (LSHIFT키)
-	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LSHIFT)) {
+	// 대쉬 입력 (LSHIFT키) - 서버의 쿨타임(1.0초)에 맞춰 클라이언트에서도 쿨타임일 때는 입력을 무시함
+	if (!_isAttacking && !_isDashing && _dashCooldownTimer <= 0.0f && InputManager::instance()->IsKeyDown(VK_LSHIFT)) {
 		common::Quat dashRotation = _logicalRotation;
+		int32_t dashType = common::packet::ActionID::Common::DASH_BWD; // 기본값: 뒤로 백스텝
+
 		if (common::LengthSq(_currentMoveDir) > 0.001f) {
-			// 이동 입력이 있으면 해당 방향으로 대쉬
+			// 입력 방향 벡터
 			float yawRad = atan2f(_currentMoveDir.x, _currentMoveDir.z);
 			XMVECTOR qDash = XMQuaternionRotationRollPitchYaw(0, yawRad, 0);
 			XMStoreFloat4(&dashRotation, qDash);
+
+			if (is_lock_on) {
+				// 락온 상태: 보스를 계속 바라보며 누른 방향에 맞는 애니메이션 재생
+				// _currentyaw (캐릭터가 바라보는 방향)과 yawRad (이동 방향) 간의 차이 계산
+				float charYaw = XMConvertToRadians(_currentyaw);
+				float angleDiff = yawRad - charYaw;
+
+				// -PI ~ PI 사이로 정규화
+				while (angleDiff > XM_PI) angleDiff -= XM_2PI;
+				while (angleDiff < -XM_PI) angleDiff += XM_2PI;
+
+				// 각도에 따른 4방향 판별
+				if (abs(angleDiff) < XM_PI / 4.0f) {
+					dashType = common::packet::ActionID::Common::DASH_FWD;
+				} else if (abs(angleDiff) > 3.0f * XM_PI / 4.0f) {
+					dashType = common::packet::ActionID::Common::DASH_BWD;
+				} else if (angleDiff > 0) {
+					dashType = common::packet::ActionID::Common::DASH_RIGHT;
+				} else {
+					dashType = common::packet::ActionID::Common::DASH_LEFT;
+				}
+			} else {
+				// 비락온 상태: 누른 방향으로 캐릭터가 돌아서서 앞방향 대쉬
+				dashType = common::packet::ActionID::Common::DASH_FWD;
+			}
 		} else {
-			// 입력이 없으면 뒤로 대쉬 (소울라이크의 백스텝)
+			// 입력이 없으면 뒤로 백스텝 (소울라이크의 백스텝)
 			float yawRad = XMConvertToRadians(_currentyaw + 180.0f);
 			XMVECTOR qDash = XMQuaternionRotationRollPitchYaw(0, yawRad, 0);
 			XMStoreFloat4(&dashRotation, qDash);
+			dashType = common::packet::ActionID::Common::DASH_BWD;
 		}
-		NetworkManager::instance()->SendActionPacket(common::packet::ActionID::Common::DASH, -1, _logicalPosition, dashRotation);
+
+		_isDashing = true;
+		_dashActionId = dashType;
+		_actionId = dashType;
+		_state = common::packet::EntityState::ACTION;
+		_dashCooldownTimer = 1.0f; // 서버와 동일한 1초 쿨다운 적용
+
+		NetworkManager::instance()->SendActionPacket(dashType, -1, _logicalPosition, dashRotation);
 	}
 
 	// 점프 입력 (스페이스바)
@@ -897,7 +977,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 	//}
 
 	// 공격 입력 (공격 중이 아닐 때만 새 공격 시작 가능)
-	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_LBUTTON)) {
+	if (!_isAttacking && !_isDashing && InputManager::instance()->IsKeyDown(VK_LBUTTON)) {
 		_isAttacking = true;
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::Attack;
@@ -908,7 +988,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		// 공격 시작 시점에 즉시 상태를 ATTACK으로 변경하도록 update_state에서 처리됨
 	}
 
-	if (!_isAttacking && InputManager::instance()->IsKeyDown(VK_RBUTTON)) {
+	if (!_isAttacking && !_isDashing && InputManager::instance()->IsKeyDown(VK_RBUTTON)) {
 		if (!NetworkManager::instance()->is_skill_unlocked()) {
 			// 스킬이 해금되지 않았으면 무시
 		}
@@ -1271,6 +1351,17 @@ void MainPlayerScript::process_attack_and_packet()
 			NetworkManager::instance()->SendActionPacket(_actionId, targetId, _logicalPosition, _logicalRotation);
 			_packetSent = true;
 		}
+
+		if (anim_comp->is_anim_finished()) {
+			_isAttacking = false;
+			_state = common::packet::EntityState::IDLE;
+			_actionId = 0;
+			
+			if (_currentWeapon)
+			{
+				_currentWeapon->set_attack_active(false); // 공격이 끝나면 반드시 비활성화
+			}
+		}
 	}
 }
 
@@ -1305,6 +1396,9 @@ void MainPlayerScript::reset_state()
 {
 	_state = common::packet::EntityState::IDLE;
 	_actionId = 0;
+	_isDashing = false;    // [추가]
+	_dashActionId = 0;     // [추가]
+	_dashCooldownTimer = 0.0f; // [추가]
 	_grabbedById = -1;
 	_grabSlot = -1;
 	_isAttacking = false;
