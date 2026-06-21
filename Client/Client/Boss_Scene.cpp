@@ -60,7 +60,7 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	// 보스 스킬 사운드 로드 (3D 사운드)
 	SoundManager::instance()->load_sound("BossCharge", "Resource/Sound/BossCharge.wav", true);
 	SoundManager::instance()->load_sound("BossGrab", "Resource/Sound/BossGrab.wav", true);
-	SoundManager::instance()->load_sound("BossSmash", "Resource/Sound/BossSmash.wav", true);
+	SoundManager::instance()->load_sound("BossLanding", "Resource/Sound/BossLanding.mp3", true);
 	SoundManager::instance()->load_sound("BossRoar", "Resource/Sound/BossRoar.wav", true);
 }
 

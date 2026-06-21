@@ -29,11 +29,14 @@ namespace common::packet
 	{
 		namespace Common
 		{
-			constexpr int32_t Attack = 1;
-			constexpr int32_t SKILL1 = 2;
-			constexpr int32_t JUMP   = 3; // [추가] 점프 액션 ID
-			constexpr int32_t DASH   = 4; // [추가] 대쉬 액션 ID
-			constexpr int32_t INTERACT = 5; // [추가] 레버 등 환경 상호작용
+			constexpr int32_t Attack = 0;
+			constexpr int32_t SKILL1 = 1;
+			constexpr int32_t DASH_FWD = 2;
+			constexpr int32_t DASH_BWD = 3;
+			constexpr int32_t DASH_LEFT = 4;
+			constexpr int32_t DASH_RIGHT = 5;
+			constexpr int32_t INTERACT = 6;
+			constexpr int32_t JUMP = 7;
 		}
 
 		namespace Tainer

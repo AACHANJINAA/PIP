@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -990,7 +990,13 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	// 카메라 없다면 스킵
 	if (!cameraObject)
 	{
-		_isCutsceneDoneSent = true;
+		if (!_isCutsceneDoneSent) {
+			_isCutsceneDoneSent = true;
+			SoundManager::instance()->stop_all();
+			SoundManager::instance()->set_master_volume(1.0f);
+			NetworkManager::instance()->SendCutsceneDonePacket();
+		}
+		return;
 	}
 
 	// 컷씬 시작
@@ -1531,10 +1537,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 	{
 		//cameraObject->set_sinamatic_camera_mode(false);
 		_isCutsceneDoneSent = true;
-	}
 
-	if (_isCutsceneDoneSent)
-	{
 		// 모든 사운드 끄기 및 볼륨 원복
 		SoundManager::instance()->stop_all();
 		SoundManager::instance()->set_master_volume(1.0f);

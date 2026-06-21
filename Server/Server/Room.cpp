@@ -220,12 +220,20 @@ namespace PIP::SERVER
 			}
 			_actors.erase(player_id); // [추가] 통합 맵에서 제거
 			_readyPlayers.erase(player_id); // [추가] 준비 목록에서 제거
+			_cutsceneFinishedPlayers.erase(player_id); // [추가] 컷씬 시청 목록에서 제거
 			_players.erase(it);
 		}
 
 		// [추가] 누군가 나가서 남은 인원만으로 시작 조건을 만족하는지 체크
 		if (_room_state == RoomState::WAITING && !_players.empty()) {
 			CheckAndStartGame();
+		}
+
+		// [추가] 컷씬 도중 누군가 나가서 남은 인원들이 모두 컷씬 시청을 완료한 상태가 되었는지 체크
+		if (!_players.empty() && _cutsceneFinishedPlayers.size() >= _players.size() && _requestedSceneName.empty()) {
+			MYLOG("[Room " << _room_id << "] Remaining players finished cutscene! Transitioning to BossStage.");
+			_activatedLevers.clear();
+			ChangeScene("BossStage");
 		}
 
 		if (_players.empty()) {
@@ -430,6 +438,7 @@ namespace PIP::SERVER
 
 		WaitGame(); // [추가] 상태를 WAITING으로 변경하여 READY 체크가 정상 작동하게 함
 		_readyPlayers.clear();
+		_cutsceneFinishedPlayers.clear(); // [추가] 컷씬 완료자 목록 초기화
 		_requestedSceneName = nextSceneName;
 
 		// 2. 새로운 스테이지 생성 및 물리 초기화 (지형 로드)
@@ -665,7 +674,8 @@ namespace PIP::SERVER
 
 	void Room::UpdatePhysics(float deltaTime, JPH::TempAllocator* tempAllocator)
 	{
-		if (!_physicsSystem || _players.empty()) return;
+		// [수정] WAITING 상태(씬 전환 중)이면 물리 업데이트 생략
+		if (!_physicsSystem || _players.empty() || _room_state == RoomState::WAITING) return;
 		// --- 4. Jolt 월드 시뮬레이션 (Static 지형 및 비-Actor 물리 객체용) ---
 		// Actor들은 위에서 CharacterVirtual로 직접 제어했으므로,
 		// 여기서는 정적인 장애물이나 동적 프롭들만 계산됩니다.
@@ -904,6 +914,9 @@ namespace PIP::SERVER
 				MYLOG("[Room] Countdown finished! Boss battle started.");
 			}
 		}
+
+		// [추가] 방 상태가 WAITING(컷씬 중 등 씬 전환 상태)이면 AI 및 로직 동기화 업데이트를 건너뜁니다.
+		if (_room_state == RoomState::WAITING) return;
 
 		// --- [Step 1] 활성 셀 및 NPC 수집 (최적화: dynamic_cast 제거) ---
 		_activeNpcList.clear();
@@ -1375,6 +1388,7 @@ namespace PIP::SERVER
 	void Room::Execute_C2S_NPC_INTERACT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_NPC_INTERACT& interact_packet)
 	{
 		if (!session || !session->_player) return;
+
 		int64_t npc_id = interact_packet._npc_id;
 		int32_t quest_id = interact_packet._quest_id;
 
@@ -1663,7 +1677,10 @@ namespace PIP::SERVER
 				}
 				break;
 			}
-		case packet::ActionID::Common::DASH:
+		case packet::ActionID::Common::DASH_FWD:
+		case packet::ActionID::Common::DASH_BWD:
+		case packet::ActionID::Common::DASH_LEFT:
+		case packet::ActionID::Common::DASH_RIGHT:
 			{
 				if (session->_player->GetDashCooldown() <= 0.0f)
 				{
@@ -1688,7 +1705,12 @@ namespace PIP::SERVER
 					session->_player->SetHitCooldown(0.4f); // 0.4초 무적
 					session->_player->SetDashCooldown(1.0f); // 1초 쿨다운
 					
-					MYLOG("[DASH] Player " << session->_id << " Dodged.");
+					// [핵심] AddImpact로 인해 물리 이동이 발생하면 곧바로 SC_PACKET_MOVE가 브로드캐스트됨.
+					// 이때 아직 클라로부터 CS_PACKET_MOVE가 도착하지 않아 _actionId가 0(Attack)으로 전송되는 버그를 방지하기 위해 즉시 상태 업데이트.
+					session->_player->SetState(common::packet::EntityState::ACTION);
+					session->_player->SetActionId(action_packet._action_id);
+
+					MYLOG("[DASH] Player " << session->_id << " Dodged. ActionID: " << action_packet._action_id);
 				}
 			}
 			break;

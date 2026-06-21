@@ -60,6 +60,7 @@ private:
     bool _isSkilling = false;
     bool _isSkillAnimationStarted = false;      // [추가] 스킬 최초 시작 체크용
     bool _isSkillEndAnimationStart = false;     // [추가] 후딜레이(skill_end) 진입 체크용
+    bool _isDashAnimationStarted = false;       // [추가]
 
     float _skillAnimationspeed = 0.65f;
     float _skillSwingAnimationSpeed = 0.8f; // 검이 완성된 후 스킬 휘두르는 애니메이션 속도
