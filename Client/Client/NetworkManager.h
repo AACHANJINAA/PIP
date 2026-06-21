@@ -92,6 +92,7 @@ private:
 
 	void HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream); // [추가] 스탯 동기화
 	void HANDLE_S2C_COUNTDOWN(common::packet::PacketStream& stream);        // [추가] 카운트다운
+	void HANDLE_S2C_SKILL_UNLOCKED(common::packet::PacketStream& stream);   // [추가] 스킬 잠금 해제
 
 	// Client side: 인벤토리 관련 패킷 처리 함수들
     void Handle_S2C_P_INVENTORY_ALL_INFO(common::packet::PacketStream& stream);
@@ -128,5 +129,11 @@ private:
 	XMFLOAT3 _my_pos{ 0.0f, 0.0f, 0.0f };
 	// 카운트다운 동안 클라이언트 입력 잠금 플래그
 	bool _isInputLocked = false;
+	// 방 전체 스킬 잠금 해제 여부
+	bool _isSkillUnlocked = false;
+
+public:
+	bool is_skill_unlocked() const { return _isSkillUnlocked; }
+	void reset_skill_unlock() { _isSkillUnlocked = false; }
 };
 

@@ -282,6 +282,19 @@ void NetworkManager::RegisterHandler(common::packet::PacketType packet_type, Pac
 	_handlers[packet_type] = packet_handler;
 }
 
+void NetworkManager::HANDLE_S2C_SKILL_UNLOCKED(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_SKILL_UNLOCKED pkt;
+	stream >> pkt;
+
+	_isSkillUnlocked = true;
+	CLOG("[S->C] 스킬 잠금 해제됨!");
+	
+	// 클라이언트 피드백 (컷씬 연출 중에 호출되므로 추가 UI/Sound 필요시 여기에 구현)
+	// UI 표시
+	// auto ui_obj = ObjectManager::instance()->find_by_name("Skill_Unlock_UI"); // 예시
+}
+
 void NetworkManager::HANDLE_S2C_INTERACT_ACK(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_INTERACT_ACK ack_packet;
@@ -981,6 +994,11 @@ void NetworkManager::HANDLE_S2C_CHANGE_SCENE(common::packet::PacketStream& strea
 	std::string nextSceneName;
 	stream >> nextSceneName; // 가변 길이 씬 이름 파싱
 
+	// 캐슬 스테이지(마을/시작지점)로 돌아갈 때만 스킬 잠금을 초기화 (보스 방 진입 시 유지)
+	if ("CastleStage" == nextSceneName) {
+		_isSkillUnlocked = false;
+	}
+
 	std::string client_scene_name;
 	if ("MainStage" == nextSceneName)
 	{
@@ -1295,6 +1313,8 @@ bool NetworkManager::init_network()
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_INTERACT_ACK(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_COUNTDOWN,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_COUNTDOWN(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_SKILL_UNLOCKED,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_SKILL_UNLOCKED(stream); });
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);

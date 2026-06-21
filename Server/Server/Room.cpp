@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Room.h"
 
 #include "AIComponent.h"
@@ -465,7 +465,16 @@ namespace PIP::SERVER
 		}
 		_npcs.clear();
 		_activeNpcList.clear();
-		MYLOG("[Room] All NPCs cleared for scene transition.");
+
+		// 엘리베이터도 씬 전환 시 함께 정리 (안 하면 재진입 시 복사본 누적)
+		for (auto& elevator : _elevators) {
+			_actors.erase(elevator->GetId());
+			_gridMap.Remove(elevator.get());
+			// 클라이언트에 Despawn 패킷을 보낼 필요가 있다면 여기서 보낼 수도 있음 (씬이 바뀌므로 보통 불필요)
+		}
+		_elevators.clear();
+
+		MYLOG("[Room] All NPCs and Elevators cleared for scene transition.");
 	}
 
 	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config)
@@ -1627,6 +1636,14 @@ namespace PIP::SERVER
 					if (_activatedLevers.size() >= 2) {
 						// 레버 2개 작동 완료 -> 컷씬 재생 패킷 브로드캐스트
 						MYLOG("[Room " << _room_id << "] Both levers activated. Broadcasting PLAY_CUTSCENE.");
+						
+						// 스킬 해금 상태 반영 및 브로드캐스트
+						_isSkillUnlocked = true;
+						packet::SC_PACKET_SKILL_UNLOCKED skill_pkt;
+						skill_pkt._type = packet::PacketType::S2C_P_SKILL_UNLOCKED;
+						skill_pkt._size = sizeof(skill_pkt);
+						Broadcast(reinterpret_cast<char*>(&skill_pkt), sizeof(skill_pkt), -1, true);
+
 						packet::PacketStream stream;
 						packet::SC_PACKET_PLAY_CUTSCENE pkt;
 						pkt._type = packet::PacketType::S2C_P_PLAY_CUTSCENE;
@@ -1689,6 +1706,10 @@ namespace PIP::SERVER
 			break;
 		case packet::ActionID::Common::SKILL1:
 			{
+				if (!_isSkillUnlocked) {
+					MYLOG("[Cheat?] Player " << session->_id << " tried to use SKILL1 without unlocking it.");
+					return;
+				}
 				// (마나 차감은 이미 스킬 시작점인 C2S_MOVE에서 처리됨)
 
 				// 대검 찍기 스킬 (SKILL1) 구현
@@ -2443,6 +2464,7 @@ namespace PIP::SERVER
 				this->PushJob([this]() {
 					// 룸 초기화 및 캐슬 씬으로 복귀
 					_activatedLevers.clear();
+					_isSkillUnlocked = false; // [추가] 방 스킬 해금 상태 초기화
 					
 					// 퀘스트 및 플레이어 스탯 완전 초기화
 					for (auto& [pid, session] : _players) {
@@ -2451,8 +2473,8 @@ namespace PIP::SERVER
 							session->_player->init(session->_player->GetId());
 							session->_player->_quests.clear(); // init에서 퀘스트는 안 지우므로 명시적 삭제
 							
-							// 초기 퀘스트(1번) 지급
-							session->_player->AddQuest(1);
+							// 초기 퀘스트(1번) 지급 -> 퀘스트 없는 상태로 시작하도록 주석 처리
+							//session->_player->AddQuest(1);
 
 							// 2. 클라이언트에 전체 퀘스트 정보(초기화된 상태) 전송하여 클라도 동기화
 							packet::PacketStream quest_stream;
