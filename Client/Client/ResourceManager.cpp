@@ -970,7 +970,6 @@ ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::
 
     // Debug: 절대 경로 계산 및 존재성 확인
     std::filesystem::path dds_path = std::filesystem::absolute(file_path);
-    CLOG("Attempting to load cubemap DDS: " << file_path << " -> abs: " << dds_path.string());
 
     if (!std::filesystem::exists(dds_path)) {
         CERROR("Cubemap DDS file not found: " << dds_path.string());

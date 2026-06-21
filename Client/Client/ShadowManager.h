@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "stdafx.h"
 
 // 256바이트 정렬을 위한 헬퍼 구조체
@@ -19,7 +19,7 @@ struct CbShadow
     float splitNear;
     float splitMid;
     float bias;      
-    float pad;
+    float maxDistance;
 };
 
 class ShadowManager : public Singleton<ShadowManager>

@@ -477,7 +477,6 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 		// Visibility 레이어는 스킵 (렌더링에 사용 안 함)
 		if (layer_name.find("LANDSCAPE_VISIBILITY") != std::string::npos)
 		{
-			CLOG("Skipping visibility layer: " << layer_name);
 			continue;
 		}
 
