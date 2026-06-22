@@ -343,11 +343,6 @@ namespace PIP::SERVER
 			{
 				new_npc->ApplySpawnData(*data);
 			}
-			else
-			{
-				// Lua에 데이터가 없는 경우(예: 수동 스폰) 기본값 설정
-				new_npc->SetHP(100);
-			}
 
 			if (!name.empty()) new_npc->SetName(name);
 
@@ -2688,9 +2683,12 @@ namespace PIP::SERVER
 		common::Vec3 spawnPos = _currentStage->get_spawn_pos();
 
 		// 퀘스트 2를 진행 중일 경우 스폰 지점을 성(Castle)으로 덮어씀
-		auto quest2 = player->GetQuest(2);
-		if (quest2 && quest2->_state == common::packet::QuestState::IN_PROGRESS) {
-			spawnPos = LuaManager::Instance()->GetCastleSpawnPoint();
+		// (단, 보스 스테이지 등 씬 전환 후에는 덮어쓰지 않음)
+		if (_currentStage && _currentStage->get_stage_name() != "BossStage") {
+			auto quest2 = player->GetQuest(2);
+			if (quest2 && quest2->_state == common::packet::QuestState::IN_PROGRESS) {
+				spawnPos = LuaManager::Instance()->GetCastleSpawnPoint();
+			}
 		}
 
 		player->SetHP(player->_max_hp);

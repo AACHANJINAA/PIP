@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "NPC.h"
 
 #include <algorithm>
@@ -279,12 +279,7 @@ namespace PIP::GAME
 
 	void NPC::ApplySpawnData(const NPCSpawnData& data)
 	{
-		_hp = data.max_hp;
-		_maxHp = data.max_hp;
-		_spawnPosition = data.pos;
 		_patrolPoints = data.patrol_points;
-
-		SetPosition(data.pos);
 
 		// AI 블랙보드에도 순찰 지점 데이터 동기화
 		if (_aiComponent)
@@ -318,7 +313,7 @@ namespace PIP::GAME
 					bb->set("global_attack_cooldown", atkCD - deltaTime);
 				}
 
-				if (!bb->has("target_enemy")) {
+				if (!bb->has("target_enemy") && !is_boss()) {
 					float healTimer = bb->has("heal_timer") ? bb->get<float>("heal_timer") : 0.0f;
 					healTimer += deltaTime;
 					if (healTimer >= 5.0f) {
