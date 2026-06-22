@@ -44,8 +44,8 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	auto cameraObject = ObjectManager::instance()->create_game_object("Camera");
 	cameraObject->add_component<FreeCameraScript>();
 	cameraObject->set_layer("Camera");
-	cameraObject->transform()->set_local_position(XMFLOAT3(0.0f, 1.0f, 0.0f));
-	cameraObject->transform()->set_local_rotation(90.0f, 0.0f, 0.0f); // 약간 아래 보기
+	cameraObject->transform()->set_local_position(XMFLOAT3(15.77f, -6.95f, -1.31f));
+	cameraObject->transform()->set_local_rotation(62.8f, 1.4f, 0.0f); // 약간 아래 보기
 
 	auto cameraComp = cameraObject->add_component<CameraComponent>();
 	cameraComp->set_main_camera();
