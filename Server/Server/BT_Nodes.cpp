@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "BT_Nodes.h"
 
 #include "PlayerControllerComponent.h"
@@ -418,6 +418,7 @@ namespace PIP::GAME
 			_attackDurationTimer = 0.0f;
 			npc->SetState(common::packet::EntityState::IDLE);
 			npc->SetActionId(0);
+			_blackboard->set("force_retarget", true); // 공격 종료 시 타겟 재탐색
 			return NodeStatus::SUCCESS;
 		}
 
@@ -659,18 +660,43 @@ namespace PIP::GAME
 			return NodeStatus::FAILURE;
 		}
 
+		bool forceRetarget = _blackboard->has("force_retarget") ? _blackboard->get<bool>("force_retarget") : false;
+
+		// 1. 기존 타겟 유지 로직 (공격이 끝날 때까지 타겟 고정)
+		if (!forceRetarget && _blackboard->has("target_enemy")) {
+			int64_t currentTargetId = _blackboard->get<int64_t>("target_enemy");
+			if (currentTargetId != -1) {
+				auto currentTarget = room->GetPlayer(currentTargetId);
+				if (currentTarget && currentTarget->GetHP() > 0) {
+					return NodeStatus::SUCCESS; // 기존 타겟이 유효하면 그대로 유지
+				}
+			}
+		}
+
+		// 2. 새로운 타겟 탐색
 		common::Vec3 ownerPos = owner->GetPosition();
 		auto players = room->GetPlayersPos();
 		float _nearestDistSq = std::numeric_limits<float>::max();
+		int64_t newTargetId = -1;
+
 		for (auto [pid, pos] : players)
 		{
+			// 생존 여부 확인
+			auto p = room->GetPlayer(pid);
+			if (!p || p->GetHP() <= 0) continue;
+
 			float distSq = common::DistanceSq(ownerPos, pos);
-			// 가장 가까운 플레이어를 타겟으로 설정
 			if (distSq < _nearestDistSq) {
 				_nearestDistSq = distSq;
-				_blackboard->set("target_enemy", pid);
+				newTargetId = pid;
 			}
 		}
+
+		if (newTargetId != -1) {
+			_blackboard->set("target_enemy", newTargetId);
+			_blackboard->set("force_retarget", false); // 탐색 완료 후 플래그 해제
+		}
+
 		return NodeStatus::SUCCESS;
 	}
 
@@ -907,6 +933,7 @@ namespace PIP::GAME
 				_blackboard->set("charge_target_pos", std::any());
 				owner->SetState(common::packet::EntityState::IDLE);
 				owner->SetActionId(0);
+				_blackboard->set("force_retarget", true); // 돌진 종료 시 타겟 재탐색
 				return NodeStatus::SUCCESS;
 			}
 
@@ -1197,6 +1224,7 @@ namespace PIP::GAME
 				_dashDir = { 0, 0, 0 };
 				owner->SetState(common::packet::EntityState::IDLE);
 				owner->SetActionId(0);
+				_blackboard->set("force_retarget", true); // 잡기 종료 시 타겟 재탐색
 				return NodeStatus::SUCCESS;
 			}
 			return NodeStatus::RUNNING;
