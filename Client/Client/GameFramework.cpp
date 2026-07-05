@@ -756,6 +756,8 @@ void GameFramework::view_window_title_bar_with_frame_rate_and_camera_info_and_ma
 {
 	std::wstring windowTitle = _frameRate;
 
+	//std::wstring windowTitle = {};
+
 	if (_isCheckCameraPos)
 	{
 		// 현재 씬에 있는 "Camera"라는 이름의 게임 오브젝트를 찾습니다.
@@ -809,6 +811,7 @@ void GameFramework::view_window_title_bar_with_frame_rate_and_camera_info_and_ma
 	}
 	else
 	{
-		::SetWindowText(_hWnd, _frameRate);
+		//::SetWindowText(_hWnd, _frameRate);
+		::SetWindowText(_hWnd, L"S.T.L");
 	}
 }
