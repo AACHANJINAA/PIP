@@ -238,6 +238,7 @@ void Renderer::build_render_list(const CameraComponent* camera)
 	_renderMap.clear();
 	_gltfInstanceGroups.clear();
 	_gltfShadowInstanceGroups.clear();
+	_gltfDynamicShadowInstanceGroups.clear();
 	_shadowRenderMap.clear();
 
 	const auto& allGameObjects = ObjectManager::instance()->get_all_game_objects();
@@ -335,7 +336,11 @@ void Renderer::build_render_list(const CameraComponent* camera)
 			if (distXZ < shadowLimit)
 			{
 				if (psoName == "gltf") {
-					_gltfShadowInstanceGroups[renderComp->mesh()].push_back(gameObject);
+					if (renderComp->is_static()) {
+						_gltfShadowInstanceGroups[renderComp->mesh()].push_back(gameObject);
+					} else {
+						_gltfDynamicShadowInstanceGroups[renderComp->mesh()].push_back(gameObject);
+					}
 				}
 				else {
 					_shadowRenderMap[psoName].push_back(gameObject);
