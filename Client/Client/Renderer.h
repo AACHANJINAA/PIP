@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "CameraComponent.h"
 #include "RootSignature.h"
 #include "Shader.h"
@@ -32,6 +32,7 @@ public:
     const std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>>& get_render_map() const { return _renderMap; }
     const auto& get_shadow_render_map() const { return _shadowRenderMap; }
     const auto& get_gltf_shadow_instance_groups() const { return _gltfShadowInstanceGroups; }
+    const auto& get_gltf_dynamic_shadow_instance_groups() const { return _gltfDynamicShadowInstanceGroups; }
 
     void register_static_object(const std::shared_ptr<GameObject>& obj);
 private:
@@ -80,6 +81,7 @@ private:
 
     std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfInstanceGroups;
     std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfShadowInstanceGroups;
+    std::unordered_map<std::shared_ptr<Mesh>, std::vector<std::shared_ptr<GameObject>>> _gltfDynamicShadowInstanceGroups;
 
     // Static Pre-built 렌더 리스트
     std::unordered_map<std::string, std::vector<std::shared_ptr<GameObject>>> _staticRenderList;

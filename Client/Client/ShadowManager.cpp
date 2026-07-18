@@ -360,6 +360,46 @@ void ShadowManager::update_and_execute(ID3D12GraphicsCommandList* cmd, UINT fram
             cmd->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
             cmd->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
+            ID3D12PipelineState* psoDynamicGltf = renderer->get_pso("csm_depth");
+            ID3D12RootSignature* rootSigDynamicGltf = renderer->get_root_signature("csm_depth");
+
+            if (psoDynamicGltf && rootSigDynamicGltf) {
+                cmd->SetPipelineState(psoDynamicGltf);
+                cmd->SetGraphicsRootSignature(rootSigDynamicGltf);
+                cmd->SetGraphicsRootConstantBufferView(1, currentCbAddress);
+
+                const auto& dynamicShadowGroups = renderer->get_gltf_dynamic_shadow_instance_groups();
+
+                for (auto& pair : dynamicShadowGroups) {
+                    auto mesh = pair.first;
+                    auto& instances = pair.second;
+                    UINT count = (UINT)instances.size();
+                    if (count == 0) continue;
+
+                    std::vector<XMMATRIX> matrices;
+                    matrices.reserve(count);
+                    for (auto& obj : instances) {
+                        if (!obj || obj->is_destroyed()) continue;
+
+                        f3 objPos = obj->transform()->get_world_position();
+                        float dist = Vector3::Length(Vector3::Subtract(camPos, objPos));
+                        if (dist > radii[i]) continue;
+
+                        matrices.push_back(XMMatrixTranspose(XMLoadFloat4x4(&obj->transform()->world_matrix())));
+                    }
+
+                    UINT actualCount = (UINT)matrices.size();
+                    if (actualCount == 0) continue;
+
+                    auto alloc = GameFramework::instance()->linear_allocator()->allocate(sizeof(XMMATRIX) * actualCount);
+                    memcpy(alloc.cpuPtr, matrices.data(), sizeof(XMMATRIX) * actualCount);
+
+                    cmd->SetGraphicsRootShaderResourceView(2, alloc.gpuAddr);
+
+                    mesh->render_instance_CascadeShadowMap(cmd, actualCount);
+                }
+            }
+
             ID3D12PipelineState* pso = renderer->get_pso("csm_depth_skinned");
             ID3D12RootSignature* rootSig = renderer->get_root_signature("csm_depth_skinned");
 
