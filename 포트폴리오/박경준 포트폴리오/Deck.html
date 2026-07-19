@@ -1,443 +1,597 @@
-<html><head>
+<html style="--panel-h: 210px;"><head>
     <meta charset="utf-8">
     <style>
+        :root {
+            --bg: #000000;
+            --panel: #0d0d0d;
+            --text: #ffffff;
+            --muted: #9a9a9a;
+            --border: #2b2b2b;
+            --accent: #ffffff;
+        }
         body {
-            background-color: #0F172A;
-            color: #FFFFFF;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Pretendard', 'Malgun Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-        @keyframes gradient-bg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
         .slide {
             width: 1280px;
             height: 720px;
-            padding: 60px;
             box-sizing: border-box;
-            background: linear-gradient(-45deg, #0F172A, #1E293B, #020617, #0F172A);
-            background-size: 400% 400%;
-            animation: gradient-bg 15s ease infinite;
-            border: 1px solid #334155;
+            background: #000000;
+            border: 1px solid #2b2b2b;
             position: relative;
             overflow: hidden;
             margin: 0 auto;
         }
-        .title-large {
-            font-size: 54px;
-            margin-bottom: 15px;
-            color: #FFFFFF;
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-        }
-        .subtitle {
-            font-size: 24px;
-            color: #94A3B8;
-        }
+
+        /* ---- Reused generic classes (B/W theme) ---- */
+        .title-large { font-size: 54px; margin-bottom: 15px; color: #ffffff; font-weight: 800; }
+        .subtitle { font-size: 20px; color: #9a9a9a; }
         .section-header {
-            font-size: 40px;
-            color: #38BDF8;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #1E293B;
-            padding-bottom: 10px;
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-        }
-        .two-column {
-            display: flex;
-            gap: 40px;
-            height: calc(100% - 120px);
-        }
-        .col {
-            flex: 1;
-            background: rgba(30, 41, 59, 0.6);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(51, 65, 85, 0.5);
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        .col:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-        .col h2 {
-            color: #38BDF8;
-            margin-top: 0;
-            font-size: 28px;
-        }
-        .col p, .col li {
-            color: #CBD5E1;
-            line-height: 1.7;
-            font-size: 20px;
+            font-size: 32px; color: #ffffff; font-weight: 800;
+            margin-bottom: 24px; border-bottom: 2px solid #2b2b2b; padding-bottom: 12px;
         }
         .badge {
-            background: #0F172A;
-            border: 1px solid #38BDF8;
-            border-radius: 15px;
-            padding: 8px 18px;
-            color: #38BDF8;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: default;
+            background: #0d0d0d; border: 1px solid #4a4a4a; border-radius: 15px;
+            padding: 6px 16px; color: #e5e5e5; font-size: 14px; font-weight: 600;
         }
-        .badge:hover {
-            background: #38BDF8;
-            color: #0F172A;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
-            transform: scale(1.05);
-        }
+        .badge-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         .image-placeholder {
-            flex: 1;
-            background: #0F172A;
-            border-radius: 12px;
-            border: 1px dashed #475569;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #64748B;
-            font-size: 18px;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            position: relative; cursor: pointer; overflow: hidden;
+            background: #0d0d0d; border: 1px dashed #3a3a3a; color: #666;
+            display: flex; justify-content: center; align-items: center; font-size: 15px; text-align: center;
         }
-        .image-placeholder:hover {
-            border-color: #38BDF8;
+        .image-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+        .prob-sol { font-size: 15px; line-height: 1.65; margin-bottom: 14px; color: #d4d4d4; }
+        .prob-label { color: #ffffff; font-weight: bold; }
+        .sol-label { color: #ffffff; font-weight: bold; }
+        .gain-label { color: #ffffff; font-weight: bold; }
+        .highlight { color: #ffffff; border-bottom: 2px solid #ffffff; }
+
+        /* ---- Icon Link Buttons (Github / YouTube / Home / generic) ---- */
+        .icon-row { display: flex; gap: 12px; }
+        .icon-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1.5px solid #ffffff; display: flex; align-items: center; justify-content: center;
+            color: #ffffff; text-decoration: none; background: rgba(0,0,0,0.35); transition: 0.2s;
+            flex-shrink: 0;
         }
-        .image-placeholder img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.3s ease;
+        .icon-btn:hover { background: #ffffff; color: #000000; }
+        .icon-btn svg { width: 18px; height: 18px; fill: currentColor; pointer-events: none; }
+
+        /* ---- Cover Slide ---- */
+        .cover-slide { display: flex; height: 100%; }
+        .cover-left {
+            flex: 0 0 45%; display: flex; flex-direction: column; justify-content: center;
+            padding: 70px; box-sizing: border-box; position: relative;
         }
-        .prob-sol {
-            font-size: 20px;
-            line-height: 1.6;
-            margin-bottom: 15px;
+        .cover-tick { width: 3px; height: 40px; background: #ffffff; margin-bottom: 24px; }
+        .cover-title { font-size: 40px; font-weight: 800; line-height: 1.35; margin: 0 0 50px; }
+        .cover-meta { font-size: 16px; color: #d4d4d4; line-height: 2.1; }
+        .cover-meta .k { display: inline-block; width: 72px; color: #ffffff; font-weight: 600; }
+        .cover-icons { margin-top: 26px; }
+        .cover-right { flex: 1; position: relative; background: #0d0d0d; }
+        .cover-right .image-placeholder { width: 100%; height: 100%; border: none; border-radius: 0; }
+
+        /* ---- Project List Slide ---- */
+        .thumb-strip { display: flex; height: 270px; }
+        .thumb-item { flex: 1; position: relative; border-right: 1px solid #000; }
+        .thumb-item:last-child { border-right: none; }
+        .thumb-item .image-placeholder { width: 100%; height: 100%; border: none; border-radius: 0; }
+        .thumb-caption {
+            position: absolute; left: 14px; bottom: 14px; color: #ffffff; font-size: 12px;
+            letter-spacing: 0.5px; z-index: 5; text-shadow: 0 1px 4px rgba(0,0,0,0.9);
         }
-        .prob-label { color: #38BDF8; font-weight: bold; }
-        .sol-label { color: #10B981; font-weight: bold; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
-        .highlight { color: #A855F7; border-bottom: 2px dashed #A855F7; }
-        
-        /* Free Elements (PPT Mode) Final Styles */
-        .free-element {
-            position: absolute;
-            z-index: 100;
-            box-sizing: border-box;
+        .proj-list-body { display: flex; height: calc(100% - 270px); }
+        .proj-list-left { flex: 0 0 30%; display: flex; align-items: flex-end; padding: 40px; box-sizing: border-box; }
+        .proj-list-left h1 { font-size: 44px; font-weight: 800; margin: 0; }
+        .proj-list-right { flex: 1; padding: 36px 50px 30px 0; box-sizing: border-box; overflow: hidden; }
+        .proj-rule { width: 36px; height: 2px; background: #ffffff; margin-bottom: 16px; }
+        .proj-section { margin-bottom: 22px; }
+        .proj-section h2 { font-size: 22px; font-weight: 800; display: inline-block; margin: 0 10px 0 0; letter-spacing: 1px; }
+        .proj-section .proj-tag { font-size: 13px; color: #9a9a9a; }
+        .proj-section ul { margin: 10px 0 0; padding-left: 18px; color: #d4d4d4; font-size: 14px; line-height: 1.85; }
+
+        /* ---- Detail Slides (Overview / Content) ---- */
+        .detail-banner { position: relative; width: 100%; height: 150px; }
+        .detail-banner .image-placeholder { width: 100%; height: 100%; border: none; border-radius: 0; }
+        .detail-banner::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8), rgba(0,0,0,0) 65%);
+            pointer-events: none;
         }
-        .free-element.text-box {
-            padding: 10px;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid #475569;
-            border-radius: 8px;
-            color: white;
-            backdrop-filter: blur(5px);
-        }
-        .free-element.img-box img {
-            width: 100%; height: 100%; object-fit: contain;
+        .detail-banner-title {
+            position: absolute; left: 32px; bottom: 14px; font-size: 28px; font-weight: 800;
+            color: #ffffff; z-index: 5; letter-spacing: 1px; max-width: 70%;
         }
 
-        /* 완벽한 PDF 저장을 위한 Print 설정 */
+        .detail-overview-body {
+            display: flex; height: calc(100% - 150px); padding: 34px 40px; box-sizing: border-box; gap: 30px;
+        }
+        .detail-overview-photos { flex: 0 0 26%; display: flex; flex-direction: column; gap: 14px; }
+        .detail-overview-photos h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; }
+        .detail-overview-photos .image-placeholder { flex: 1; border-radius: 6px; }
+        .info-table {
+            flex: 1; display: grid; grid-template-columns: max-content 1fr;
+            column-gap: 24px; row-gap: 14px; align-content: center;
+            border-left: 1px solid #2b2b2b; padding-left: 34px;
+        }
+        .info-label { font-size: 14px; color: #9a9a9a; text-align: right; white-space: nowrap; padding-top: 2px; }
+        .info-value { font-size: 14px; color: #ffffff; line-height: 1.6; }
+
+        .detail-content-body { display: flex; height: calc(100% - 150px); padding: 30px 40px; box-sizing: border-box; gap: 30px; }
+        .detail-content-left { flex: 0 0 46%; }
+        .detail-content-left ul { padding-left: 20px; margin: 0; color: #d4d4d4; font-size: 16px; line-height: 2; }
+        .detail-content-left li::marker { color: #ffffff; }
+        .detail-content-right { flex: 1; }
+        .detail-content-right .image-placeholder { width: 100%; height: 100%; border-radius: 8px; }
+
+        /* ---- Tech Slide (Problem / Solution / Gain, no banner) ---- */
+        .tech-slide { padding: 40px 50px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; }
+        .tech-slide .section-header { margin-bottom: 20px; }
+        .tech-body { display: flex; gap: 34px; flex: 1; min-height: 0; }
+        .tech-text { flex: 0 0 46%; overflow: hidden; }
+        .tech-img { flex: 1; }
+        .tech-img .image-placeholder { width: 100%; height: 100%; border-radius: 8px; }
+
+        /* ---- Architecture / Full-image Slide ---- */
+        .arch-slide { padding: 40px 50px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; }
+        .arch-caption { color: #d4d4d4; font-size: 18px; margin: 0 0 18px; }
+        .arch-img { flex: 1; }
+        .arch-img .image-placeholder { width: 100%; height: 100%; border-radius: 8px; }
+
+        /* ---- Video Slide ---- */
+        .video-slide { padding: 40px 50px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; }
+        .video-frame {
+            flex: 1; position: relative; background: #000; border-radius: 8px; overflow: hidden;
+            border: 1px solid #2b2b2b;
+        }
+        .video-frame iframe { width: 100%; height: 100%; border: 0; }
+        .yt-print-thumb { display: none; width: 100%; height: 100%; background-position: center; background-size: cover; background-repeat: no-repeat; }
+        .pdf-yt-link {
+            position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.85);
+            color: #ffffff; text-align: center; padding: 12px 0; text-decoration: none;
+            font-weight: bold; font-size: 18px; border-top: 1px solid #2b2b2b;
+        }
+        .pdf-yt-link:hover { background: #ffffff; color: #000000; }
+
+        /* ---- Free Elements (PPT Mode) ---- */
+        .free-element { position: absolute; z-index: 100; box-sizing: border-box; }
+        .free-element.text-box {
+            padding: 10px; background: transparent;
+            border: none; color: white;
+        }
+        .free-element.img-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* ---- Print (PDF export) ---- */
         @media print {
-            /* 크롬 렌더링(그림화) 방지를 위한 필터 해제 */
-            * {
-                backdrop-filter: none !important;
-                -webkit-backdrop-filter: none !important;
-                filter: none !important;
-                animation: none !important;
-            }
-            
-            @page {
-                size: 1280px 720px; /* 슬라이드 16:9 픽셀 크기 강제 고정 */
-                margin: 0; /* 여백 제거 */
-            }
+            * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; filter: none !important; animation: none !important; }
+            @page { size: 1280px 720px; margin: 0; }
             body {
-                display: block !important;
-                gap: 0 !important;
-                margin: 0;
-                padding: 0;
-                background-color: #0F172A !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                display: block !important; gap: 0 !important; margin: 0; padding: 0;
+                background-color: #000000 !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
             .slide {
-                width: 1280px !important;
-                height: 720px !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                page-break-after: always;
-                break-after: page;
-                page-break-inside: avoid;
-                break-inside: avoid;
-                border: none !important;
-                box-shadow: none !important;
-                position: relative !important;
-                overflow: hidden !important;
+                width: 1280px !important; height: 720px !important; margin: 0 !important; padding: 0 !important;
+                page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid;
+                border: none !important; box-shadow: none !important; position: relative !important; overflow: hidden !important;
             }
-            /* 에디터 UI 숨김 */
-            #wysiwyg-panel, #img-toolbar, #free-toolbar, #iframe-toolbar {
-                display: none !important;
-            }
-            
-            /* 유튜브 iframe PDF 렌더링 버그 수정 */
+            #wysiwyg-panel, #img-toolbar, #free-toolbar, #iframe-toolbar, #text-toolbar { display: none !important; }
             .yt-iframe { display: none !important; }
             .yt-print-thumb { display: block !important; }
         }
     </style>
-<style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override">
-            .section-header, h2, .title-large, .prob-label { color: #38bdf8 !important; border-bottom-color: #38bdf8 !important; }
-            .badge { border-color: #38bdf8 !important; color: #38bdf8 !important; }
-            .sol-label, h3, strong { color: #80ffd4 !important; }
-            /* Cover photo border */
-            .free-element[style*="border-radius: 50%"] { border-color: #38bdf8 !important; }
-            /* Timeline top border */
-            div[style*="border-top: 4px"] { border-top-color: #80ffd4 !important; }
-        </style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style><style id="theme-override"></style></head>
-<body>
+<style id="theme-override"></style></head>
+<body class="nav-open panel-open">
+
+<!-- Icon defs reused by every icon-btn via <use> -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="icon-github" viewBox="0 0 16 16">
+    <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.55 7.55 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+  </symbol>
+  <symbol id="icon-youtube" viewBox="0 0 24 24">
+    <path d="M21.6 7.2s-.21-1.5-.87-2.16c-.83-.87-1.76-.87-2.19-.92C15.44 4 12 4 12 4h-.01s-3.44 0-6.54.12c-.43.05-1.36.05-2.19.92C2.6 5.7 2.4 7.2 2.4 7.2S2.19 8.94 2.19 10.68v1.63c0 1.74.21 3.48.21 3.48s.21 1.5.87 2.16c.83.87 1.92.84 2.4.93 1.74.17 7.33.22 7.33.22s3.44-.01 6.54-.12c.43-.05 1.36-.05 2.19-.92.66-.66.87-2.16.87-2.16s.21-1.74.21-3.48v-1.63c0-1.74-.21-3.48-.21-3.48ZM9.98 14.5V8.9l5.4 2.8-5.4 2.8Z"></path>
+  </symbol>
+  <symbol id="icon-home" viewBox="0 0 24 24">
+    <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3Z"></path>
+  </symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24">
+    <path d="M3.9 12a5 5 0 0 1 5-5h3v2h-3a3 3 0 1 0 0 6h3v2h-3a5 5 0 0 1-5-5Zm7-1h4v2h-4v-2Zm3-4h3a5 5 0 0 1 0 10h-3v-2h3a3 3 0 1 0 0-6h-3V7Z"></path>
+  </symbol>
+</svg>
+
     
-
-
-
-<div class="slide" id="slide-1783352270984-0">
-    <div class="free-element text-box" style="left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; text-align: center; border: none; background: transparent;">
-        <div class="title-large">게임 서버 프로그래머 Portfolio</div>
-        <div class="subtitle">MMORPG 서버 및 Jolt Physics 기반 서버 권위형 액션 RPG 제작 경험</div>
-        <div style="margin-top: 80px; font-size: 24px; color: #38BDF8;">
-            <p>Author: <strong>박경준</strong></p>
+<div class="slide" id="slide-1784448148466-0">
+    <div class="cover-slide">
+        <div class="cover-left">
+            <div class="cover-tick"></div>
+            <h1 class="cover-title">Game Server &amp; Client Programmer Portpolio</h1>
+            <div class="cover-meta">
+                <div class="subtitle" style="margin-bottom:18px;"><br></div>
+                <div><span style="font-size:18px;"><b>Autor</b></span><b style="font-size:18px;">&nbsp; &nbsp; : 박경준</b></div>
+                <div><span class="k">E-Mail</span>: pkj7323@gmail.com</div><div><b>HP&nbsp;</b> &nbsp; &nbsp; &nbsp; &nbsp;: 010-4674-2738</div>
+            </div>
         </div>
-    </div>
-</div><div class="slide" id="slide-1783352270984-1">
-    <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent;">
-        <h1 class="section-header">Project Overview</h1>
-    </div>
-    
-    <div class="free-element text-box" style="left: 64.8906px; top: 214.594px; width: 40%; height: 65%; background: rgba(30, 41, 59, 0.6); transform: none;">
-        <h2>Simplest MMORPG MINECRAFT</h2>
-        <p style="color: #38BDF8; font-weight: bold;">MMORPG Server</p><p style="color: #38BDF8; font-weight: bold;"><br></p>
-        <p>IOCP 기반 C++ 멀티스레드 서버. 동접 5000명 및 단일 맵 20만 객체 구동</p>
-        <p><strong><br></strong></p><p><strong>Role:</strong> Server Architecture &amp; Optimization&nbsp;</p><p><br></p>
-        <div class="badge-container">
-            <span class="badge">C++ 20</span>&nbsp;&nbsp;<span class="badge">IOCP</span>&nbsp;&nbsp;<span class="badge">DB</span>&nbsp;&nbsp;<span class="badge">Lock-Free Queue</span>
+        <div class="cover-right">
+            <div class="image-placeholder"><img src="images/KakaoTalk_20260719_015630957.png" style="object-position: 0% 42.8571%;"></div>
         </div>
-    </div>
-    
-    <div class="free-element image-placeholder" style="left: 659px; top: 214.594px; width: 45%; height: 65%; transform: none;"><img src="images/image10.png"><img src="images/image13.png"></div>
-</div>
-
-
-<div class="slide" id="slide-1783352270984-2">
-    <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-        <h1 class="section-header">시야 처리 병목 최적화 (Sector Grid)</h1>
-    </div>
-    
-    <div class="free-element text-box" style="left: 64.8906px; top: 267.914px; width: 45%; background: rgba(30, 41, 59, 0.8); transform: none; height: 355px;">
-        <div class="prob-sol">
-            <span class="prob-label">Problem:</span> 20만 마리의 NPC와 유저가 서로의 거리를 O(N^2)로 계산하여 서버 틱 심각한 저하 발생
+        <div class="free-element icon-link-box" style="left: 70px; top: 600px; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+            <a class="icon-btn" href="https://github.com/pkj7323?tab=repositories" target="_blank"><svg><use href="#icon-github"></use></svg></a>
         </div>
-        <div class="prob-sol">
-            <span class="sol-label">Solution:</span>&nbsp;공간을 고정 크기의 Grid(Sector)로 분할하고 std::shared_mutex(Read-Write Lock)를 적용하여 인접 섹터의 객체만 탐색하도록 변경
+        <div class="free-element icon-link-box" style="left: 126px; top: 600px; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+            <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-home"></use></svg></a>
         </div>
-        <div class="prob-sol">
-            <span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>
-            탐색 복잡도를 O(K) (1&lt;K&lt;N) 수준으로 낮추어 서버 딜레이 20~30ms 시 동시 접속자 수 4400명 안정적 유지 (별개 네트워크에 속한 컴퓨터의 더미 클라이언트 사용)</div>
-    </div>
-    
-    <div class="free-element image-placeholder" style="left: 703.891px; top: 231.008px; width: 40%; height: 60%; transform: none;"><img src="images/image27.png"></div>
-</div>
-
-
-<div class="slide" id="slide-1783352270984-3">
-    <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-        <h1 class="section-header">네트워크 I/O 병목 및 데이터 파편화 최적화</h1>
-    </div>
-    
-    <div class="free-element text-box" style="left: 64.8906px; top: 271.93px; width: 45%; background: rgba(30, 41, 59, 0.8); transform: none; height: 291px;">
-        <div class="prob-sol">
-            <span class="prob-label">Problem:</span> 매 틱마다 쏟아지는 수많은 객체의 이동/투사체 패킷 전송(Send) 시스템 콜 비용 과다
-        </div>
-        <div class="prob-sol">
-            <span class="sol-label">Solution:&nbsp;</span>전송 큐에 패킷을 버퍼링 후 WSABUF 배열을 이용한 Scatter-Gather I/O(Batching)로 뭉쳐서 보내고, 수신단에서 링 버퍼 기반 재조립(Reassembly) 파서 구현
-        </div>
-        <div class="prob-sol">
-            <span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>
-            WSASend 시스템 콜 횟수 대폭 감소 및 패킷 유실률 제로 달성
-        </div>
-    </div>
-    
-    
-<div class="free-element img-box" style="left: 639.984px; top: 185.188px; transform: none; height: 274px; width: 341px;"><img src="images/화면_캡처_2026-07-06_234751.png"></div><div class="free-element img-box" style="left: 904.062px; top: 272.922px; transform: none; width: 378px; height: 471px;"><img src="images/화면_캡처_2026-07-06_234821.png"></div></div><div class="slide" id="slide-1783352450197-4">
-                <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-                    <h1 class="section-header">DB&nbsp; 스레드 분리 및 Stored Procedure 설계 및 구현</h1>
-                </div>
-                <div class="free-element text-box" style="left: 64.8906px; top: 219.594px; width: 623px; background: rgba(30, 41, 59, 0.8); transform: none; height: 457px;">
-                    <div class="prob-sol"><span class="prob-label">Problem:</span>&nbsp;메인 워커 스레드에서 ODBC(동기식)로 DB에 쿼리를 전송할 경우, 응답이 올 때까지 IOCP 스레드가 정지(Blocking)되어 전체 서버의 응답 불능(Starvation)을 초래함.</div>
-                    <div class="prob-sol"><span class="sol-label">Solution:</span>&nbsp;<span style="color: rgb(240, 230, 230);">DB 전담 스레드 분리 &amp; Lock-Free Queue: 유저의 저장/불러오기 요청은 큐에 밀어넣고 워커 스레드는 즉각 복귀하여 패킷 처리를 이어갑니다.</span></div><span style="color: rgb(255, 255, 255);"><span style="color: rgb(245, 245, 245);"><span style="color: rgb(252, 252, 252);"><span style="color: rgb(246, 244, 244);"><div class="prob-sol"><font color="#a855f7"><span style="color: rgb(243, 237, 237);"><span style="color: rgb(88, 254, 204);">Stored Procedure 도입</span>: 복잡한 인벤토리, 퀘스트, 스킬 데이터 저장을 하나의 DB 프로시저로 묶어 네트워크 왕복 비용을 최소화하는것 뿐만 아니라 보안적으로 DB의 구조를 알 수 없도록 도입하였습니다.</span></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div>
-                    <div class="prob-sol"><span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>워커 스레드의 I/O 블로킹 되지 않음 풀부하 상황에서도 패킷 처리 지연(Lag) 방지가 가능해집니다.</div>
-                </div>
-                
-            <div class="free-element code-box" style="left: 690.875px; top: 284.5px; transform: none; width: 583px; max-width: 800px; text-align: left; background: rgb(30, 30, 30); border-radius: 8px; padding: 16px; box-shadow: rgba(0, 0, 0, 0.5) 0px 10px 25px; overflow: auto; font-size: 14px; height: 268px;"><pre style="margin: 0px;"><code class="language-cpp hljs"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">db_thread_func</span><span class="hljs-params">()</span> </span>{
-    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
-        DbJob job;
-        <span class="hljs-keyword">if</span> (db_queue.<span class="hljs-built_in">try_pop</span>(job)) { <span class="hljs-comment">// Lock-Free Queue 기반 작업 인계</span>
-            <span class="hljs-keyword">if</span> (job.type == SAVE_PLAYER) {
-                <span class="hljs-comment">// Stored Procedure 쿼리 실행으로 통신 비용 최소화</span>
-                std::string query = <span class="hljs-string">"EXEC sp_save_player "</span> + std::<span class="hljs-built_in">to_string</span>(job.uid);
-                <span class="hljs-built_in">SQLExecDirect</span>(hstmt, (SQLWCHAR*)query.<span class="hljs-built_in">c_str</span>(), SQL_NTS);
-            }
-        }
-    }
-}</code></pre></div></div><div class="slide" id="slide-1783353110378-5">
-                <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-                    <h1 class="section-header">Lua Script를 활용한 확장성 있는 NPC AI</h1>
-                </div>
-                <div class="free-element text-box" style="left: 64.8906px; top: 219.594px; width: 45%; background: rgba(30, 41, 59, 0.8); transform: none; height: 402px;">
-                    <div class="prob-sol"><span class="prob-label">Problem:</span>&nbsp;20만 마리의 몬스터 패턴을 모두 C++로 하드코딩하기엔 한계가 있으며, 하나의 글로벌 lua_State를 사용하면 멀티스레드 환경에서 치명적인 Lock 병목이 발생합니다.</div>
-                    <div class="prob-sol"><span class="sol-label">Solution:</span>&nbsp;<font color="#a855f7">&nbsp;</font><span style="color: rgb(198, 63, 63);">thread_local 기반 Lua VM 할당: 각 IOCP 워커 스레드마다 고유의 독립적인 lua_State 풀을 유지합니다.</span></div><span style="color: rgb(255, 255, 255);"><span style="color: rgb(152, 87, 87);"><div class="prob-sol"><font color="#a855f7"><span style="color: rgb(255, 250, 250);">서로 다른 스레드가 동시에 C++에서 Lua 스크립트를 호출해도 상호 배제(Lock)가 전혀 필요 없습니다.</span></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div>
-                    <div class="prob-sol"><span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>기획자가 직접 AI 로직(lua)을 수정할 수 있는 극대화된 확장성 확보 및 재컴파일 및 유지보수가 용이합니다</div>
-                </div>
-                
-            <div class="free-element code-box" style="left: 700px; top: 283.594px; transform: none; width: 525px; max-width: 800px; text-align: left; background: rgb(30, 30, 30); border-radius: 8px; padding: 16px; box-shadow: rgba(0, 0, 0, 0.5) 0px 10px 25px; overflow: auto; font-size: 14px; height: 276px;"><pre style="margin: 0px;"><code class="language-cpp hljs"><span class="hljs-comment">// npc_ai_manager.h 의 핵심 로직</span>
-<span class="hljs-function"><span class="hljs-type">static</span> lua_State* <span class="hljs-title">get_state</span><span class="hljs-params">(<span class="hljs-type">int</span> npc_type)</span> </span>{
-    <span class="hljs-comment">// thread_local 맵을 사용하여 스레드별로 안전하게 분리된 Lua State 반환</span>
-    <span class="hljs-keyword">thread_local</span> std::unordered_map&lt;<span class="hljs-type">int</span>, lua_State*&gt; pool;
-    
-    <span class="hljs-keyword">if</span> (pool.<span class="hljs-built_in">find</span>(npc_type) == pool.<span class="hljs-built_in">end</span>()) {
-        lua_State* L = <span class="hljs-built_in">luaL_newstate</span>();
-        <span class="hljs-built_in">luaL_openlibs</span>(L);
-        <span class="hljs-built_in">luaL_dofile</span>(L, <span class="hljs-built_in">get_script_path</span>(npc_type).<span class="hljs-built_in">c_str</span>()); <span class="hljs-comment">// 최초 1회 로드</span>
-        pool[npc_type] = L;
-    }
-    <span class="hljs-keyword">return</span> pool[npc_type];
-}</code></pre></div></div>
-
-
-<div class="slide" id="slide-1783352270984-4">
-    <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent;">
-        <h1 class="section-header">Project Overview</h1>
-    </div>
-    
-    <div class="free-element text-box" style="left: 5%; top: 25%; width: 40%; height: 65%; background: rgba(30, 41, 59, 0.6);">
-        <h2>PIP Project</h2>
-        <p style="color: #38BDF8; font-weight: bold;">Action RPG Game S.T.L (DirectX 12 + Jolt Physics)</p><p style="color: #38BDF8; font-weight: bold;"><br></p>
-        <p>프레임 단위 정밀 타격을 위한 서버 권위형 액션 RPG</p><p><br></p><p><br></p>
-        <p><strong>Role:</strong> Server Physics &amp; AI Sync</p><p><br></p><p><br></p>
-        <div class="badge-container">
-            <span class="badge">C++</span>
-<span class="badge">Jolt Physics</span>
-<span class="badge">Behavior Tree</span>
-        </div>
-    </div>
-    
-    <div class="free-element image-placeholder" style="left: 50%; top: 25%; width: 45%; height: 65%;"><img src="images/화면_캡처_2026-07-06_232030.png"></div>
-</div><div class="slide" id="slide-1783355571706-7">
-                <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-                    <h1 class="section-header">Game Demo</h1>
-                    <p style="color: #CBD5E1; font-size: 20px;">게임 데모 영상입니다.</p>
-                </div>
-                
-            <div class="free-element video-box" style="left: 320px; top: 226.594px; transform: none; width: 640px; height: 360px; background: rgb(0, 0, 0); border-radius: 8px; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.5) 0px 10px 25px;"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/S6mWQzQodZk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" style="pointer-events: none;"></iframe></div><div class="free-element text-box link-box" style="left: 421.5px; top: 587.594px; transform: none; min-width: 120px; text-align: center; background: rgba(30, 41, 59, 0.9); border: 1px solid rgb(56, 189, 248); border-radius: 20px; padding: 8px 16px; width: 437px; height: 32px;"><a href="https://www.youtube.com/watch?v=S6mWQzQodZk" target="_blank" style="color: #38BDF8; text-decoration: none; font-weight: bold; font-size: 16px;">영상 바로가기 ☝️</a></div></div>
-
-
-<div class="slide" id="slide-1783352270984-5">
-    <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-        <h1 class="section-header">서버 물리 엔진(Jolt) 부하 억제 설계</h1>
-    </div>
-    
-    <div class="free-element text-box" style="left: 64.8906px; top: 255.93px; width: 629px; background: rgba(30, 41, 59, 0.8); transform: none; height: 374px;">
-        <div class="prob-sol">
-            <span class="prob-label">Problem:</span> 다수의 플레이어와 몬스터 객체 물리 연산을 서버가 모두 담당할 경우 심각한 물리 스레드 병목 발생
-        </div>
-        <div class="prob-sol">
-            <span class="sol-label">Solution:</span> 대기 중인 NPC의 Motion Type을 Kinematic으로 설정 시야 처리를 통해 멀리있는 NPC의 물리 업데이트를 해제하여 연산에서 제외하고, 근접 시 Dynamic으로 자동 승격(Dynamic Promotion)과 물리엔진 업데이트 -&gt; ray cast방식으로 경량화</div>
-        <div class="prob-sol">
-            <span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>
-            충돌 연산 부하 최소화를 통한 안정적 서버 물리 프레임 타임 확보
-        <br>50000마리 NPC + 400명 플레이어 부하 테스트시 안정적인 부하 밸런싱</div>
-    </div>
-    
-    <div class="free-element image-placeholder" style="left: 716.078px; top: 258.5px; width: 499px; height: 203px; transform: none;"><img src="images/image5.jpeg"></div>
-<div class="free-element img-box" style="left: 717.062px; top: 471.922px; transform: none; width: 496px; height: 210px;"><img src="images/image6.png"></div></div>
-
-
-<div class="slide" id="slide-1783352270984-6">
-    <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-        <h1 class="section-header">정밀 피격 동기화를 위한 지연 보상 (Rewind)</h1>
-    </div>
-    
-    <div class="free-element text-box" style="left: 64.8906px; top: 255.93px; width: 45%; background: rgba(30, 41, 59, 0.8); transform: none; height: 323px;">
-        <div class="prob-sol">
-            <span class="prob-label">Problem:</span> 네트워크 지연(Ping)으로 인해 클라이언트 화면의 몬스터 위치와 서버 위치가 달라 타격감 훼손
-        </div>
-        <div class="prob-sol">
-            <span class="sol-label">Solution:</span>&nbsp;모든 물리 객체의 최근 1초간 위치/히트박스 스냅샷을 원형 큐에 저장. 공격 패킷 타임스탬프 기반 과거 시간으로 Rewind 후 판정 처리
-        </div>
-        <div class="prob-sol">
-            <span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>
-            Ping 100ms 환경에서도 불일치 없는 완벽한 서버 권위형 피격 판정 달성
-        </div>
-    </div>
-    
-    <div class="free-element image-placeholder" style="left: 703.891px; top: 203.023px; width: 40%; height: 60%; transform: none;"><img src="images/화면_캡처_2026-07-06_232754.png"></div>
-</div><div class="slide" id="slide-1783353244530-9">
-                <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-                    <h1 class="section-header">Behavior Tree(BT)를 활용한 보스 AI</h1>
-                </div>
-                <div class="free-element text-box" style="left: 64.8906px; top: 219.594px; width: 594px; background: rgba(30, 41, 59, 0.8); transform: none; height: 461px;">
-                    <div class="prob-sol"><span class="prob-label">Problem:</span>&nbsp;보스의 복잡한 페이즈 변화, 스킬 연계, 어그로 타겟 상실 등 다양한 예외 상황을 기존의 FSM(상태머신)으로 짜면 스파게티 코드가 되어 유령 포인터(Dangling Pointer) 및 서버 크래시를 유발함.</div>
-                    <div class="prob-sol"><span class="sol-label">Solution:</span>&nbsp;<font color="#a855f7"><span style="color: rgb(245, 239, 239);"><span style="color: rgb(148, 225, 127);">BT 모듈화 아키텍처: std::shared_ptr&lt;BTNode&gt; 기반의 트리 구조로 AI를 설계해 조건(Decorator)과 행동(Action)을 엄격히 분리했습니다.</span></span></font></div><div class="prob-sol"><font color="#a855f7"><span style="color: rgb(250, 249, 249);">빌더 패턴을 도입하여 트리 구조로 노드들을 붙일 수 있으며 블랙보드로 노드들의 공용데이터를 공유하도록 설계함</span></font></div>
-                    <div class="prob-sol"><span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>현재 상태 체크 시간 획기적 단축, 재사용 가능한 AI 노드 라이브러리 확보</div>
-                </div>
-                
-            <div class="free-element img-box" style="left: 675.5px; top: 261.094px; transform: none; height: 380px; width: 463px;"><img src="images/화면_캡처_2026-07-07_010422.png"></div></div><div class="slide" id="slide-1783353324647-10">
-                <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-                    <h1 class="section-header">Data Race가 없는 안전한 Room 아키텍처</h1>
-                </div>
-                <div class="free-element text-box" style="left: 64.8906px; top: 185.5px; width: 578px; background: rgba(30, 41, 59, 0.8); transform: none; height: 495px;">
-                    <div class="prob-sol"><span class="prob-label">Problem:</span>&nbsp;같은 인스턴스(Room)에 속한 몬스터와 유저들의 상태(HP, 위치)를 여러 워커 스레드가 동시에 수정하려 들면, 복잡한 Deadlock(교착상태)과 Data Race(데이터 오염)가 필연적으로 발생하고 이는 MO게임 기획 단계에서 없앨 수 있었습니다.</div>
-                    <div class="prob-sol"><span class="sol-label">Solution:</span>&nbsp;<span style="color: rgb(250, 250, 250);"><span style="color: rgb(210, 188, 188);"></span></span><span style="color: rgb(255, 255, 255);"><span style="color: rgb(250, 250, 250);"><span style="color: rgb(210, 188, 188);">J<font color="#a855f7">ob Queue 기반 로직 직렬화: 방(Room)마다 고유한 Command Queue를 부여하여 상태를 변경하는 모든 이벤트(공격, 이동, 버프)를 람다(Lambda)로 캡처해 Push 합니다</font></span><font color="#a855f7"></font></span><font color="#a855f7">.</font></span><font color="#a855f7"></font></div><span style="color: rgb(243, 18, 18);"><span style="color: rgb(163, 123, 123);"><div class="prob-sol"><font color="#a855f7"></font></div><div class="prob-sol"><font color="#a855f7"><span style="color: rgb(243, 18, 18);"><span style="color: rgb(255, 255, 255);">한 번에 단 하나의 스레드만 해당 룸의 Job 큐를 비워냄으로써 로직이 순차적으로 실행됩니다.</span></span></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div></span><div class="prob-sol"><font color="#a855f7"></font></div>
-                    <div class="prob-sol"><span style="color: #10B981; font-weight: bold;">Performance Gain:</span><br>객체별 Mutex Lock 오버헤드 완전 제거로 CPU 사이클을 절약하고, 데드락 구조를 원천 차단하여 초고속 전투 연산 달성 -&gt; 물리엔진 루프에 알맞는 구조를 부가적으로 얻을수 있었습니다.</div>
-                </div>
-                
-            <div class="free-element code-box" style="left: 651.969px; top: 304px; transform: none; width: 617px; max-width: 800px; text-align: left; background: rgb(30, 30, 30); border-radius: 8px; padding: 16px; box-shadow: rgba(0, 0, 0, 0.5) 0px 10px 25px; overflow: auto; font-size: 14px; height: 256px;"><pre style="margin: 0px;"><code class="language-cpp hljs"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">PacketHandler::handle_attack</span><span class="hljs-params">(Session* session, AttackPacket* packet)</span> </span>{
-    <span class="hljs-keyword">auto</span> room = session-&gt;<span class="hljs-built_in">get_room</span>();
-    <span class="hljs-keyword">if</span> (!room) <span class="hljs-keyword">return</span>;
-    <span class="hljs-comment">// Data Race를 막기 위해 해당 룸의 전용 JobQueue로 로직을 밀어넣음</span>
-    room-&gt;<span class="hljs-built_in">PushJob</span>([room, session, packet]() {
-        <span class="hljs-comment">// 이 블록 안의 코드는 오직 하나의 스레드에서만 안전하게 실행 보장!</span>
-        <span class="hljs-keyword">auto</span> target = room-&gt;<span class="hljs-built_in">find_monster</span>(packet-&gt;target_id);
-        <span class="hljs-keyword">if</span> (target) {
-            target-&gt;<span class="hljs-built_in">take_damage</span>(packet-&gt;damage);
-        }
-    });
-}</code></pre></div></div><div class="slide" id="slide-1783354571571-11">
-                <div class="free-element text-box" style="left: 5%; top: 10%; border: none; background: transparent; width: 90%;">
-                    <h1 class="section-header">기술 성과 2026 한국게임학회 춘계 학술발표대회 발표</h1>
-                </div>
-                <div class="free-element text-box" style="left: 64.8906px; top: 264.031px; width: 616px; background: rgba(30, 41, 59, 0.8); transform: none; height: 71px;">
-                    <div class="prob-sol"><span class="prob-label">성과: 포스터 발표 부문으로 참가하여 기술적 성과를 발표 하였습니다</span>&nbsp;</div>
-                </div>
-                
-            <div class="free-element text-box link-box" style="left: 64.8906px; top: 392.43px; transform: none; min-width: 120px; text-align: center; background: rgba(30, 41, 59, 0.9); border: 1px solid rgb(56, 189, 248); border-radius: 20px; padding: 8px 16px; width: 455.203px; height: 50px;"><a href="https://drive.google.com/file/d/1GB7p7R5uQKIvkaGU4tpdiPf4bilkpkLU/view?usp=sharing" target="_blank" style="color: #38BDF8; text-decoration: none; font-weight: bold; font-size: 16px;">PIP 2026 한국게임학회 춘계 학술대회 발표 논문 PDF 다운로드 </a></div><div class="free-element img-box" style="left: 815px; top: 219.594px; transform: none; height: 471px; width: 354px;"><img src="images/화면_캡처_2026-07-07_011155.png"></div></div>
-
-
-<div class="slide" id="slide-1783352270984-7">
-    <div class="free-element text-box" style="left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; text-align: center; border: none; background: transparent;">
-        <h1 class="title-large">Thank You!</h1>
-        <p class="subtitle" style="margin-bottom: 40px;">서버 프로그래머 포트폴리오를 검토해 주셔서 감사합니다.</p>
-        <p style="font-size: 24px; color: #38BDF8;">
-            GitHub: https://github.com/AACHANJINAA/PIP<br>GitHub: https://github.com/pkj7323/ServerGP<br>
-            Contact: pkj73231015@gmail.com</p>
     </div>
 </div>
 
 
+<div class="slide" id="slide-1784448148467-6">
+    <div class="detail-banner">
+        <div class="image-placeholder"><img src="images/KakaoTalk_20260719_015630957.png" style="object-fit: cover; object-position: 51.5656% 25%;"></div>
+        <h1 class="detail-banner-title">PIP Project</h1>
+    </div>
+    <div class="detail-overview-body">
+        <div class="detail-overview-photos">
+            <h3>프로젝트 개요</h3>
+            <div class="image-placeholder"><img src="images/KakaoTalk_20260719_015803703.png"></div>
+            <div class="image-placeholder"><img src="images/화면_캡처_2026-07-06_232754.png"></div>
+        </div>
+        <div class="info-table">
+            <div class="info-label"><span style="font-size: 20px;">프로젝트 이름</span></div><div class="info-value"><span style="font-size: 20px;">PIP Project</span></div>
+            <div class="info-label"><span style="font-size: 20px;">장르</span></div><div class="info-value"><span style="font-size: 20px;">Action RPG (DirectX 12 + Jolt Physics)</span></div>
+            <div class="info-label"><span style="font-size: 20px;">설명</span></div><div class="info-value"><span style="font-size: 20px;">프레임 단위 정밀 타격을 위한 액션 RPG</span></div>
+            <div class="info-label"><span style="font-size: 20px;">담당 역할</span></div><div class="info-value"><span style="font-size: 20px;">Server Physics &amp; AI Sync</span></div>
+            <div class="info-label"><span style="font-size: 20px;">기술 스택</span></div><div class="info-value"><div class="badge-container"><span class="badge" style="font-size: 20px;">C++23</span>
+<span class="badge" style="font-size: 20px;">Jolt Physics</span>
+<span class="badge" style="font-size: 20px;">Behavior Tree</span>
+<span class="badge" style="font-size: 20px;">IOCP</span></div></div>
+        </div>
+    </div>
+    <div class="free-element icon-link-box" style="right: 76px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-youtube"></use></svg></a>
+    </div>
+    <div class="free-element icon-link-box" style="right: 24px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+        <a class="icon-btn" href="https://github.com/AACHANJINAA/PIP" target="_blank"><svg><use href="#icon-github"></use></svg></a>
+    </div>
+</div><div class="slide" id="slide-1784448148467-9">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">Behavior Tree(BT)를 활용한 보스 AI</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> 보스의 복잡한 페이즈(Phase) 변화, 스킬, 타겟팅 로직이 얽혀 스파게티 코드 가능성</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> 행동 트리(BT)의 Action 노드를 상속 구조로 모듈화하고, 타겟(유저) 상실 시 즉시 대응하는 예외처리(안전장치) 노드를 Decorator로 배치</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> 보스 패턴 로직의 재사용성 확보</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/화면_캡처_2026-07-07_010422.png" style="object-fit: contain; object-position: 50% 50%;"></div>
+            </div>
+        </div>
+    </div>
+</div><div class="slide" id="slide-1784448148467-7">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">서버 물리 엔진(Jolt) 부하 억제 설계</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> 다수의 플레이어와 몬스터 객체 물리 연산을 서버가 모두 담당할 경우 심각한 물리 스레드 병목 발생</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> 대기 중인 NPC의 Motion Type을 Kinematic/Static(Sleep 상태)으로 설정하여 연산에서 제외하고, 교전 시 Dynamic으로 자동 승격(Dynamic Promotion)</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> 충돌 연산 부하 최소화를 통한 안정적 서버 물리 프레임 타임 확보</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/image5.jpeg" style="object-position: 50% 50%; object-fit: contain;"></div>
+            </div>
+        </div>
+    </div>
+<div class="free-element text-box" style="left: 737px; top: 500.547px; transform: none; width: 116px; height: 36px;">최적화 전/후</div><div class="free-element text-box" style="left: 1039.16px; top: 502.188px; transform: none; width: 118px; height: 40px;">최적화 전/후</div><div class="free-element img-box" style="left: 683.391px; top: 562.812px; transform: none; width: 494.359px; height: 118.375px;"><img src="images/image6.png"></div></div><div class="slide" id="slide-1784448148467-8">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">정밀 피격 동기화를 위한 지연 보상 (Rewind)</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label"><br></span></div><div class="prob-sol"><span class="prob-label"><br></span></div><div class="prob-sol"><font style="font-size: 19px;"><span class="prob-label" style=""><br></span></font></div><div class="prob-sol"><font style="font-size: 19px;"><span class="prob-label" style="">Problem:</span> 네트워크 지연(Ping)으로 인해 클라이언트 화면의 몬스터 위치와 서버 위치가 달라 타격감 훼손</font></div>
+                <div class="prob-sol"><font style="font-size: 18px;"><span class="sol-label" style="">Solution:</span> 모든 물리 객체의 최근 1초간 위치/히트박스 스냅샷을 원형 큐에 저장. 공격 패킷 타임스탬프 기반 과거 시간으로 Rewind 후 판정 처리</font></div>
+                <div class="prob-sol"><font style="font-size: 20px;"><span class="gain-label" style="">Performance Gain:</span> Ping 100ms 환경에서도 불일치 없는 서버 피격 판정 달성</font></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/화면_캡처_2026-07-06_232754.png"></div>
+            </div>
+        </div>
+    </div>
+</div><div class="slide" id="slide-1784448148467-10">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">Data Race가 없는 안전한 Room(인스턴스 던전) 아키텍처</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 21px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> 한 방(Room)에 속한 객체 상태를 여러 워커 스레드가 동시 다발적으로 접근하여 수정하면 데이터 오염 및 데드락 위험</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> 방(Room)마다 고유한 Job Queue(명령 대기열)를 부여하여, 상태를 변경하는 모든 로직(이벤트)을 큐에 밀어넣고 단일 스레드 흐름으로 순차 처리(직렬화)</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> 객체 단위의 동기화 락(Lock) 비용 완전 제거로 인해 서버 반응 속도 향상 및 데드락 100% 방지, MO RPG특성을 이용</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/KakaoTalk_20260719_015803703.png"></div>
+            </div>
+        </div>
+    </div>
+</div><div class="slide" id="slide-1784448148467-1">
+    <div class="detail-banner">
+        <div class="image-placeholder"><img src="images/image13.png"></div>
+        <h1 class="detail-banner-title">SImplest Minecraft MMORPG GAME</h1>
+    </div>
+    <div class="detail-overview-body">
+        <div class="detail-overview-photos">
+            <h3>프로젝트 개요</h3>
+            <div class="image-placeholder"><img src="images/image13.png"></div>
+            <div class="image-placeholder"><img src="images/image10.png" style=""></div>
+        </div>
+        <div class="info-table">
+            <div class="info-label"><span style="font-size: 22px;">프로젝트 이름</span></div><div class="info-value"><span style="font-size: 22px;">ServerGP (겜서버 텀프로젝트)</span></div>
+            <div class="info-label"><span style="font-size: 22px;">장르</span></div><div class="info-value"><span style="font-size: 22px;">MMORPG server, client</span></div>
+            <div class="info-label"><span style="font-size: 22px;">설명</span></div><div class="info-value"><span style="font-size: 22px;">IOCP 기반 C++ 멀티스레드 서버. 동접 4400명 및 단일 맵 20만 객체 동시 구동</span></div>
+            <div class="info-label"><span style="font-size: 22px;">담당 역할</span></div><div class="info-value"><span style="font-size: 22px;">Server Architecture &amp; Optimization, client dev</span></div>
+            <div class="info-label"><span style="font-size: 22px;">기술 스택</span></div><div class="info-value"><div class="badge-container"><span class="badge" style="font-size: 22px;">C++</span>
+<span class="badge" style="font-size: 22px;">IOCP</span>
+<span class="badge" style="font-size: 22px;">ODBC</span>
+<span class="badge" style="font-size: 22px;">Lock-Free Queue</span>
+<span class="badge" style="font-size: 22px;">Lua</span></div></div>
+        </div>
+    </div>
+    <div class="free-element icon-link-box" style="right: 76px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-youtube"></use></svg></a>
+    </div>
+    <div class="free-element icon-link-box" style="right: 24px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-github"></use></svg></a>
+    </div>
+</div>
+
+
+<div class="slide" id="slide-1784448148467-2">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">시야 처리 병목 최적화 (Sector Grid)</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> 20만 마리의 NPC와 유저가 서로의 거리를 O(N^2)로 계산하여 서버 틱 심각한 저하 발생</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> 공간을 고정 크기의 Grid(Sector)로 분할하고 std::shared_mutex(Read-Write Lock)를 적용하여 인접 섹터의 객체만 탐색하도록 변경</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> 탐색 복잡도를 O(k) 수준으로 낮추어 동시 접속자 수 4400명 안정적 유지</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/image27.png" style="object-fit: contain; object-position: 50% 50%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="slide" id="slide-1784448148467-3">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">네트워크 I/O 병목 및 데이터 프래그멘테이션 최적화</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 17px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 17px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> 매 틱마다 쏟아지는 수많은 객체의 이동/투사체 패킷 전송(Send) 시스템 콜 비용 과다</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> 전송 큐에 패킷을 버퍼링 후 WSABUF 배열을 이용한 Scatter-Gather I/O(Batching)로 뭉쳐서 보내고, 수신단에서 링 버퍼 기반 재조립(Reassembly) 파서 구현</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> WSASend 시스템 콜 횟수 대폭 감소 및 패킷 유실률 제로 달성</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/화면_캡처_2026-07-06_234821.png" style="object-fit: contain; object-position: 50% 50%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="slide" id="slide-1784448148467-4">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">DB 스레드 분리 및 Stored Procedure 설계</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> ODBC DB 접근(동기식) 시 IOCP 워커 스레드가 블로킹되어 서버 응답 불능(Starvation) 발생 위험</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> DB 전담 스레드 풀을 분리하고 Lock-Free Queue로 작업을 위임. 복잡한 쿼리는 DB의 Stored Procedure(저장 프로시저)로 호출해 통신 및 쿼리 비용 최소화</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> 워커 스레드의 I/O 블로킹 완전 제거로 동접 5,000명 환경에서도 지연 없는 즉각적 응답 보장</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_182652.png" style="object-fit: contain; object-position: 50% 50%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="slide" id="slide-1784448148467-5">
+    <div class="tech-slide">
+        <div>
+            <div class="proj-rule"></div>
+            <h1 class="section-header">Lua Script를 활용한 확장성 있는 NPC AI</h1>
+        </div>
+        <div class="tech-body">
+            <div class="tech-text">
+                <div class="prob-sol"><span class="prob-label" style="font-size: 21px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 21px;"><br></span></div><div class="prob-sol"><span class="prob-label" style="font-size: 19px;">Problem:</span><span style="font-size: 19px;"> 20만 객체의 모든 AI 패턴을 하드코딩하기 어렵고, 공유된 Lua State에 여러 스레드가 접근하면 심각한 락(Lock) 병목 발생</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="sol-label" style="font-size: 19px;">Solution:</span><span style="font-size: 19px;"> C++ 서버에서 `thread_local` 기반으로 워커 스레드마다 독립적인 `lua_State` 풀을 유지하여, 상호 배제(Lock) 비용 없이 AI 스크립트 고속 실행</span></div><span style="font-size: 19px;">
+                </span><div class="prob-sol"><span class="gain-label" style="font-size: 19px;">Performance Gain:</span><span style="font-size: 19px;"> 하드코딩 탈피 및 동기화 오버헤드 0%를 달성하여 방대한 AI 처리량 확보</span></div>
+            </div>
+            <div class="tech-img">
+                <div class="image-placeholder"><img src="images/image10.png"></div>
+            </div>
+        </div>
+    </div>
+</div><div class="slide" id="slide-1784453767910-11">
+                <div class="thumb-strip">
+                    <div class="thumb-item">
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_201830.png" style="object-fit: contain; object-position: 50% 50%;"></div>
+                        <div class="thumb-caption">| PROJECT</div>
+                    </div>
+                    <div class="thumb-item">
+                        <div class="image-placeholder"><img src="images/image3.png" style="object-position: 49.1176% 36.1111%;"></div>
+                        <div class="thumb-caption">| PM GAME</div>
+                    </div>
+                    <div class="thumb-item">
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_185138.png" style="object-position: 52.6471% 77.7778%;"></div>
+                        <div class="thumb-caption"><span style="color: rgb(10, 239, 255);">| </span><span style="color: rgb(10, 239, 255);">메탈슬러그 모작</span></div>
+                    </div>
+                </div>
+                <div class="proj-list-body">
+                    <div class="proj-list-left">
+                        <h1>PROJECTS</h1>
+                    </div>
+                    <div class="proj-list-right">
+                        <div class="proj-rule"></div>
+                        <div class="proj-section"><h2>게임 엔진 프로젝트<span style="color: rgb(154, 154, 154); font-size: 13px;"> unity 개발 프로젝트</span></h2><ul>
+                                <li>unity 기능을 최대한 활용한 게임 개발</li><li>스플라인, 프리팹, 콜리전, 콜라이더, Scene Hirachy</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            <div class="free-element text-box" style="left: 383.328px; top: 431.031px; transform: none; width: 673px; height: 123px;"><div><b><span style="font-size: 24px;">PM GAME </span><font color="#858585"><span style="font-size: 14px;">컴퓨터 그래픽스</span></font></b></div><div>- 컴퓨터 그래픽스 및 OpenGL 사용한 게임개발</div><div>- 고급 텍스쳐링 기법 사용, 직접광, 스포트 라이트, 점 조명 구현</div><div>- 씬, 메인루프, 입력, 오브젝트 생성 삭제, 그래픽스 엔진, glsl, 기본적인 3D 자체 게임 엔진</div></div><div class="free-element text-box" style="left: 383.094px; top: 566px; transform: none; width: 675px; height: 120px;"><div><span style="font-size: 22px;"><b>메탈 슬러그 모작 </b><span style="font-size: 16px; color: rgb(136, 134, 134);">windows programming</span></span></div><div>- win32사용한 2D 게임 개발</div><div>- 충돌체와 이동 속도 계산을 위한 정밀한 물리 도입</div><div>- 2D 애니메이션을 위한 세밀한 상태머신 개발</div></div></div><div class="slide" id="slide-1784466341827-12">
+                <div class="detail-banner">
+                    <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_201830.png" style="object-position: 49.3151% 90%;"></div>
+                    <h1 class="detail-banner-title">Unity Project</h1>
+                    <div class="free-element icon-link-box" style="right: 76px; top: 22px; left: auto; width: 45px; height: 36px; background: transparent; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 0px;">
+                        <a class="icon-btn" href="https://youtu.be/vhEZ5tUTjAM" target="_blank"><svg><use href="#icon-youtube"></use></svg></a>
+                    </div>
+                    <div class="free-element icon-link-box" style="right: 24px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+                        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-github"></use></svg></a>
+                    </div>
+                </div>
+                <div class="detail-overview-body">
+                    <div class="detail-overview-photos">
+                        <h3>프로젝트 개요</h3>
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_195646.png"></div>
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_201830.png" style=""></div>
+                    </div>
+                    <div class="info-table">
+                        <div class="info-label"><span style="font-size: 18px;">프로젝트 이름</span></div><div class="info-value"><span style="font-size: 18px;">Unity Project</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">장르</span></div><div class="info-value"><span style="font-size: 18px;">TPS,레이싱 등</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">설명</span></div><div class="info-value"><span style="font-size: 18px;">유니티 6.0을 사용한 여러 프로젝트 (5개)입니다</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">개발 인원</span></div><div class="info-value"><span style="font-size: 18px;">1명</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">담당 역할</span></div><div class="info-value"><span style="font-size: 18px;">클라이언트 개발</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">개발 언어</span></div><div class="info-value"><span style="font-size: 18px;">untiy6, c#</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">사용 툴 &amp; 라이브러리</span></div><div class="info-value"><span style="font-size: 18px;">Visual Studio, Git, unity</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">제작 기간</span></div><div class="info-value"><span style="font-size: 18px;">2025 / 05 ~ 2025 / 06 (한달)</span></div><div class="info-value"><br></div>
+                    </div>
+                </div>
+            <div class="free-element text-box link-box" style="left: 503.562px; top: 604.391px; transform: none; min-width: 120px; text-align: center; background: rgba(30, 41, 59, 0.9); border: 1px solid rgb(56, 189, 248); border-radius: 20px; padding: 8px 16px; width: 312px; height: 50px;"><a href="https://youtu.be/vhEZ5tUTjAM" target="_blank" style="color: #38BDF8; text-decoration: none; font-weight: bold; font-size: 16px;">유튜브 링크</a></div></div><div class="slide" id="slide-1784457868435-12">
+                <div class="detail-banner">
+                    <div class="image-placeholder"><img src="images/image3.png" style="object-position: 50.0979% 100%;"></div>
+                    <h1 class="detail-banner-title">PM GAME | 3D Space Shooting Game</h1>
+                    <div class="free-element icon-link-box" style="right: 76px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+                        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-youtube"></use></svg></a>
+                    </div>
+                    <div class="free-element icon-link-box" style="right: 24px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+                        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-github"></use></svg></a>
+                    </div>
+                </div>
+                <div class="detail-overview-body">
+                    <div class="detail-overview-photos">
+                        <h3>프로젝트 개요</h3>
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_185617.png"></div>
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_185649.png"></div>
+                    </div>
+                    <div class="info-table">
+                        <div class="info-label"><span style="font-size: 20px;">프로젝트 이름</span></div><div class="info-value"><span style="font-size: 20px;">PM GAME</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">장르</span></div><div class="info-value"><span style="font-size: 20px;">3D 1/3인칭 슈팅게임</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">설명</span></div><div class="info-value"><span style="font-size: 20px;">3D 1/3인칭 우주선 슈팅 게임, 날아오는 운석을 파괴하라</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">개발 인원</span></div><div class="info-value"><span style="font-size: 20px;">2명</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">담당 역할</span></div><div class="info-value"><span style="font-size: 20px;">그래픽스, 오브젝트 관리, 게임 메인 루프, 입력, 사운드, 조명, 적 로직, 플레이어 로직 등 거의 모든 클라이언트 개발 및 자체 엔진 개발 제작</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">개발 언어</span></div><div class="info-value"><span style="font-size: 20px;">C++20</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">사용 툴 &amp; 라이브러리</span></div><div class="info-value"><span style="font-size: 20px;">Visual Studio, Git, OpenGL, GLM, fmod</span></div>
+                        <div class="info-label"><span style="font-size: 20px;">제작 기간</span></div><div class="info-value"><span style="font-size: 20px;">2024 / 10 ~ 2024 / 11</span></div>
+                    </div>
+                </div>
+            </div><div class="slide" id="slide-1784466579597-14">
+                <div class="detail-banner">
+                    <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_185138.png" style="object-position: 54.6967% 32.5%;"></div>
+                    <h1 class="detail-banner-title">Metal Slug 모작</h1>
+                    <div class="free-element icon-link-box" style="right: 76px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+                        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-youtube"></use></svg></a>
+                    </div>
+                    <div class="free-element icon-link-box" style="right: 24px; top: 22px; left: auto; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+                        <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-github"></use></svg></a>
+                    </div>
+                </div>
+                <div class="detail-overview-body">
+                    <div class="detail-overview-photos">
+                        <h3>프로젝트 개요</h3>
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_185047.png"></div>
+                        <div class="image-placeholder"><img src="images/화면_캡처_2026-07-19_185258.png"></div>
+                    </div>
+                    <div class="info-table">
+                        <div class="info-label"><span style="font-size: 18px;">프로젝트 이름</span></div><div class="info-value"><span style="font-size: 18px;">메탈슬러그 모작</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">장르</span></div><div class="info-value"><span style="font-size: 18px;">2D 플랫포머 슈팅</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">설명</span></div><div class="info-value"><span style="font-size: 18px;">메탈슬러그 게임을 win32라이브러리를 사용해서 모작을 만들었습니다.</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">개발 인원</span></div><div class="info-value"><span style="font-size: 18px;">2명</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">담당 역할</span></div><div class="info-value"><span style="font-size: 18px;">애니메이션 스프라이트 편집, 상태머신 작성, 플레이어 로직, 보스와 적의 공격 로직 모든 리소스 관리,편집</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">개발 언어</span></div><div class="info-value"><span style="font-size: 18px;">C++20, win32, fmod</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">사용 툴 &amp; 라이브러리</span></div><div class="info-value"><span style="font-size: 18px;">Visual Studio, Git</span></div>
+                        <div class="info-label"><span style="font-size: 18px;">제작 기간</span></div><div class="info-value"><span style="font-size: 18px;">2024 / 05 ~ 2024 / 06</span></div>
+                    </div>
+                </div>
+            </div><div class="slide" id="slide-1784448148467-11">
+    <div class="cover-slide">
+        <div class="cover-right" style="order:1;">
+            <div class="image-placeholder"><img src="images/KakaoTalk_20260719_015835963_04.png" style="object-fit: contain; object-position: 50% 50%;"></div>
+        </div>
+        <div class="cover-left" style="order:2; flex: 0 0 55%;">
+            <div class="cover-tick"></div>
+            <h1 class="cover-title">Thank You</h1>
+            <div class="cover-meta">
+                <div>포트폴리오를 검토해 주셔서 감사합니다.</div>
+                <div style="margin-top:12px;"><span class="k">Author</span>: 박경준</div>
+                <div><span class="k">E-Mail</span>: pkj7323@gmail.com</div><div><b>HP</b>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: 010-4674-2738</div>
+            </div>
+        </div>
+        <div class="free-element icon-link-box" style="left: 646px; top: 600px; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+            <a class="icon-btn" href="https://github.com/pkj7323" target="_blank"><svg><use href="#icon-github"></use></svg></a>
+        </div>
+        <div class="free-element icon-link-box" style="left: 702px; top: 600px; width: 40px; height: 40px; background: transparent; border: none; padding: 0;">
+            <a class="icon-btn" href="#" target="_blank"><svg><use href="#icon-home"></use></svg></a>
+        </div>
+    </div>
+</div>
+
+
+    
+    
     
     
     
@@ -447,19 +601,11 @@
     
     
     
-
-    
-    
-    
-
-    
     
     
 
     
     
-    
-
     
     
     
@@ -467,7 +613,11 @@
     
     
     
-<a href="blob:http://127.0.0.1:5000/3c2621d5-f53a-4ec4-93a2-6c6704d7dcf3" download="Portfolio_Export.pdf" style="display: none;"></a>
+    
+    
+
+    
+    
     
     
     
@@ -475,127 +625,24 @@
     
     
     
-
-    
-    
-    
-
-    
     
     
 
     
     
     
+    
+    
+
+    
+    
+    
+    
+    
 
     
     
     
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     
     
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-<div id="text-toolbar" style="display: none; top: 7172.59px; left: 336.25px;">
-        <button id="btn-format-bold" title="굵게 (Bold)">B</button>
-        <button id="btn-format-color" title="테마 색상 (Primary)">🎨</button>
-        <button id="btn-format-hilite" title="형광펜 (Highlight)">🖍️</button>
-        <button id="btn-format-clear" title="서식 지우기">❌</button>
-    </div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    
-    
-<a href="blob:http://127.0.0.1:5000/f6c3d0b8-9359-4af8-85c3-03e5dcd77522" download="Portfolio_Export.pdf" style="display: none;"></a></body></html>
+<a href="blob:http://127.0.0.1:5000/4b9b8dd0-e2d9-4e2d-b351-0d8bac6a1c7f" download="Portfolio_Export.pdf" style="display: none;"></a></body></html>
