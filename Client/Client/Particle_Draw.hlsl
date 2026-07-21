@@ -38,7 +38,7 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
 {
     VS_OUT Out;
     
-    // 인스턴스 ID를 통해 컴퓨트 셰이더가 계산한 월드 위치를 가져옵니다.
+    // 인스턴스 ID를 통해 컴퓨트 셰이더가 계산한 월드 위치를 가져옴
     float3 worldPos = g_ParticleBuffer[instI];
 
     // 카메라를 항상 정면으로 바라보도록 축(Right, Up) 계산 (Billboarding)
@@ -46,11 +46,9 @@ VS_OUT VS_Particle(uint vI : SV_VertexID, uint instI : SV_InstanceID)
     float3 right = normalize(cross(float3(0, 1, 0), look));
     float3 up = cross(look, right);
 
-    // 0~3의 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줍니다.
+    // 0~3의 VertexID에 따라 사각형의 네 꼭짓점 위치로 벌려줌
     float current_size = g_Size;
-    //if (dying_progress > 0.0f) {
-    //    current_size *= 1.5f; // 분수 파티클(퍼질 때)은 크기를 1.5배 키움
-    //}
+  
     float2 qpos = QuadPos[vI] * current_size;
     worldPos += right * qpos.x + up * qpos.y;
 
