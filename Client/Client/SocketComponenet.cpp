@@ -7,11 +7,11 @@
 #include "ObjectManager.h"
 #include "ResourceManager.h"
 
-SocketComponenet::SocketComponenet()
+SocketComponent::SocketComponent()
 {
 }
 
-void SocketComponenet::late_update(float deltaTime)
+void SocketComponent::late_update(float deltaTime)
 {
 	if(_isFollowAnimation)
 	{
@@ -48,7 +48,7 @@ void SocketComponenet::late_update(float deltaTime)
 	}
 }
 
-void SocketComponenet::add_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
+void SocketComponent::add_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
 {
 	// 추가하고자 하는 소켓 이름이 이미 존재하는지 확인
 	for (const auto& pair : _connectedObjects)
@@ -95,7 +95,7 @@ void SocketComponenet::add_connecting(std::string socket_name, const std::string
 
 // TODO: KJ요청 : 메쉬가 없는 오브젝트도 추가할 수 있도록 하는 add_connecting 함수 오버로드
 // KJ수정 : 오브젝트 리턴
-std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& socket_name,
+std::shared_ptr<GameObject> SocketComponent::add_connecting(const std::string& socket_name,
                                                              const std::string& bone_name, const std::string& mesh,
                                                              XMFLOAT3 local_pos, XMFLOAT3 local_rotation,
                                                              XMFLOAT3 local_scale)
@@ -150,7 +150,7 @@ std::shared_ptr<GameObject> SocketComponenet::add_connecting(const std::string& 
 	return info.Object;
 }
 
-void SocketComponenet::fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, 
+void SocketComponent::fix_connecting(std::string socket_name, const std::string& bone_name, const std::shared_ptr<Mesh>& mesh, 
 	XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
 {
 	// 고치 싶은 소켓을 찾아 수정하는 함수임
@@ -186,7 +186,7 @@ void SocketComponenet::fix_connecting(std::string socket_name, const std::string
 	}
 }
 
-void SocketComponenet::delete_connecting(std::string socket_name)
+void SocketComponent::delete_connecting(std::string socket_name)
 {
 	// 지우고 싶은 소켓을 찾아 삭제하는 함수임
 	for (auto it = _connectedObjects.begin(); it != _connectedObjects.end(); ++it)
@@ -204,7 +204,7 @@ void SocketComponenet::delete_connecting(std::string socket_name)
 	}
 }
 
-void SocketComponenet::create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
+void SocketComponent::create_object(std::string socket_name, const std::string& bone_name, std::string mesh, XMFLOAT3 loacl_pos, XMFLOAT3 loacl_rotation, XMFLOAT3 loacl_scale)
 {
 
 }

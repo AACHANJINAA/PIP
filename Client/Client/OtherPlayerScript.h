@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "RenderComponent.h"
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
@@ -7,7 +7,7 @@
 class OtherPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponenet>;
+	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponent>;
     OtherPlayerScript() = default;
     virtual ~OtherPlayerScript() = default;
 

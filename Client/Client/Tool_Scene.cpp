@@ -160,7 +160,7 @@ void Tool_Scene::view_bones()
         _socketRot = { 0.0f, 0.0f, 0.0f };
         _socketScale = { 1.0f, 1.0f, 1.0f };
 
-        auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+        auto socketComp = _targetCharacter->get_component<SocketComponent>();
         if (socketComp)
         {
             socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
@@ -186,7 +186,7 @@ void Tool_Scene::spawn_want_socket_mesh()
         if (_weaponMesh)
         {
             // 기존에 붙어있던 무기가 있다면 소켓에서 제거
-            auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+            auto socketComp = _targetCharacter->get_component<SocketComponent>();
             if (socketComp)
             {
                 socketComp->delete_connecting("ToolSocket");
@@ -214,7 +214,7 @@ void Tool_Scene::spawn_want_socket_mesh()
             _socketRot = { 0.0f, 0.0f, 0.0f };
             _socketScale = { 1.0f, 1.0f, 1.0f };
 
-            auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+            auto socketComp = _targetCharacter->get_component<SocketComponent>();
             if (socketComp && _weaponMesh)
             {
                 socketComp->add_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _loadedWeaponPath, _socketPos, _socketRot, _socketScale);
@@ -245,7 +245,7 @@ void Tool_Scene::edit_socket_mesh()
 
     if (bChanged)
     {
-        auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+        auto socketComp = _targetCharacter->get_component<SocketComponent>();
         if (socketComp)
         {
             socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
@@ -401,7 +401,7 @@ void Tool_Scene::draw_and_pick_bones()
             _socketRot = { 0.0f, 0.0f, 0.0f };
             _socketScale = { 1.0f, 1.0f, 1.0f };
 
-            auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+            auto socketComp = _targetCharacter->get_component<SocketComponent>();
             if (socketComp)
             {
                 socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
@@ -500,7 +500,7 @@ void Tool_Scene::draw_gizmo()
         _socketRot = { resRot[0], resRot[1], resRot[2] };
         _socketScale = { resScale[0], resScale[1], resScale[2] };
 
-        auto socketComp = _targetCharacter->get_component<SocketComponenet>();
+        auto socketComp = _targetCharacter->get_component<SocketComponent>();
         if (socketComp) {
             socketComp->fix_connecting("ToolSocket", _boneNames[_selectedBoneIndex], _weaponMesh, _socketPos, _socketRot, _socketScale);
         }

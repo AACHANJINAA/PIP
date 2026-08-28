@@ -10,11 +10,11 @@ struct ConnectingSocketInfo
 	DirectX::XMFLOAT4X4 _localMatrix;
 };
 
-class SocketComponenet : public Behavior
+class SocketComponent : public Behavior
 {
 public:
-	SocketComponenet();
-	~SocketComponenet() override = default;
+	SocketComponent();
+	~SocketComponent() override = default;
 
 public:
 	void late_update(float deltaTime) override;

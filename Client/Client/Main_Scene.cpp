@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Main_Scene.h"
 #include "SceneManager.h"
 
@@ -886,7 +886,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 	for (int i = 0; i < 4; ++i) {
 		if (!dummies[i]) continue;
 
-		auto socket = dummies[i]->add_component<SocketComponenet>();
+		auto socket = dummies[i]->add_component<SocketComponent>();
 		auto currentWeaponObject = socket->add_connecting(
 			"Cinematic_Weapon_" + std::to_string(i),
 			"hand_r", 
@@ -1290,7 +1290,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 				for (int i = 0; i < 4; ++i) {
 					if (dummies[i]) {
 						// 소멸할 때는 따라가지 않도록 설정
-						dummies[i]->get_component<SocketComponenet>()->set_isFollowAnimation(false);
+						dummies[i]->get_component<SocketComponent>()->set_isFollowAnimation(false);
 
 						dummies[i]->get_component<AnimationComponent>()->play("skill_end", false, 1.0f);
 						_isCinematicSkillEndPlayed = true;
