@@ -105,7 +105,7 @@ void OtherPlayerScript::init_skill_variables()
     _isSwordGathered = false;
 
     if (game_object()) {
-        if (auto socket = game_object()->get_component<SocketComponenet>())
+        if (auto socket = game_object()->get_component<SocketComponent>())
             socket->set_isFollowAnimation(false); // 검 따라가기 해제
     }
 
@@ -235,7 +235,7 @@ void OtherPlayerScript::update(float deltaTime)
                 _skillGatherTimer = 0.0f;
 
                 if (game_object()) {
-                    if (auto socket = game_object()->get_component<SocketComponenet>())
+                    if (auto socket = game_object()->get_component<SocketComponent>())
                         socket->set_isFollowAnimation(true); // 손에 다시 붙이기
                 }
                 if (_particleEffectObject) {
@@ -289,7 +289,7 @@ void OtherPlayerScript::update(float deltaTime)
                     _isSkillEndAnimationStart = true;
 
                     if (game_object()) {
-                        if (auto socket = game_object()->get_component<SocketComponenet>())
+                        if (auto socket = game_object()->get_component<SocketComponent>())
                             socket->set_isFollowAnimation(false); // 검 공중에 정지
                     }
 
@@ -438,7 +438,7 @@ void OtherPlayerScript::awake()
 
     // 무기 오브젝트 생성
     auto owner = game_object();
-    auto socket = owner->get_component<SocketComponenet>();
+    auto socket = owner->get_component<SocketComponent>();
 
     // 다크나이트의 hand_l 오프셋을 참고하여 hand_r용으로 미러링한 값입니다.
     // 좌표와 회전은 모델을 보면서 미세 조정이 필요할 수 있습니다.

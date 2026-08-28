@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Chess_Scene.h"
 
 #include "AnimationComponent.h"
@@ -298,8 +298,9 @@ void Chess_Scene::Spawn_SK_MagicConstruct(ID3D12Device* device, ID3D12GraphicsCo
         ResourceManager::instance()->set_shader_for_material(material, "skinned");
 
         // 원하는 무기 붙이기
-        auto socket_component = hi_brute->get_component<SocketComponenet>();
-        socket_component->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
+        auto socket_component = hi_brute->get_component<SocketComponent>();
+        socket_component->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", 
+            { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
 
         // 스키닝 애니메이션 pso 설정              
         renderer->set_pso_name("skinned");
@@ -394,7 +395,7 @@ void Chess_Scene::Spawn_DarkKnight(ID3D12Device* device, ID3D12GraphicsCommandLi
         ResourceManager::instance()->set_shader_for_material(material, "skinned");
 
         // 원하는 무기 붙이기
-        auto socket_compnenet = hi_brute->get_component<SocketComponenet>();
+        auto socket_compnenet = hi_brute->get_component<SocketComponent>();
         socket_compnenet->add_connecting("ik_hand_l_sword", "hand_l", "Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf", { 0.0623f, -0.8154f, 0.1643f }, { -10.f,90.f,-179.f }, { 2.f,2.f,2.f });
 
         // 스키닝 애니메이션 pso 설정              

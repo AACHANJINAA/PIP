@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ReadGLTFMesh.h"
 #include "ResourceManager.h"
 
@@ -1186,18 +1186,22 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 		std::vector<XMUINT4> joint_indices_vec;
 		std::vector<XMFLOAT4> weights_vec;
 
-		// [수정] JOINTS_0 읽기 (u8, u16 대응 + Stride 적용)
+		// JOINTS_0 읽기 (u8, u16 대응 + Stride 적용)
 		if (primitive_json["attributes"].contains("JOINTS_0"))
 		{
 			int accessor_idx = primitive_json["attributes"]["JOINTS_0"];
 			const json& accessor = gltf_json["accessors"][accessor_idx];
 			const json& buffer_view = gltf_json["bufferViews"][accessor["bufferView"].get<int>()];
 
-			const char* buffer_start = binary_buffer.data() + buffer_view.value("byteOffset", 0) + accessor.value("byteOffset", 0);
+			const char* buffer_start = 
+				binary_buffer.data() 
+				+ buffer_view.value("byteOffset", 0) 
+				+ accessor.value("byteOffset", 0);
+
 			int count = accessor["count"];
 			int component_type = accessor["componentType"]; // 5121(u8), 5123(u16)
 
-			// [핵심] 버퍼 뷰의 Stride를 가져옵니다. (없으면 0)
+			// 버퍼 뷰의 Stride를 가져오기 (없으면 0)
 			int byte_stride = buffer_view.value("byteStride", 0);
 
 			joint_indices_vec.resize(count);
@@ -1208,7 +1212,7 @@ void ReadGLTFMesh::process_skinned_mesh(const json& gltf_json, const std::vector
 
 				if (component_type == 5123) // Unsigned Short (2 byte)
 				{
-					// Stride가 0이면(Tight) 요소 크기(2*4=8) 사용, 아니면 Stride 사용
+					// Stride가 0이면 요소 크기(2*4=8) 사용, 아니면 Stride 사용
 					int step = (byte_stride > 0) ? byte_stride : (sizeof(uint16_t) * 4);
 
 					// i번째 요소의 정확한 메모리 위치 계산

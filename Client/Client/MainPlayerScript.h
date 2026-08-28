@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "ScriptComponent.h"
 #include "RenderComponent.h"                        // [추가] 튜플에 사용하려면 전체 정의가 필요합니다.
 #include "AnimationComponent.h"
@@ -10,7 +10,7 @@ constexpr float SENDINTERVAL{ 0.02f };
 class MainPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponenet, TargetingComponent>;
+	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponent, TargetingComponent>;
 
 	MainPlayerScript() = default;
 	~MainPlayerScript() override = default;

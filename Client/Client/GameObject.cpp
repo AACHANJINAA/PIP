@@ -181,7 +181,7 @@ void GameObject::add_glTF_conponent_pack()
 	// 여기에 있는 add 순서는 꼭 지켜져야 함 -> 그래서 이렇게 pack 함수로 묶어둠
 	add_component<RenderComponent>();
 	add_component<AnimationComponent>();
-	add_component<SocketComponenet>();
+	add_component<SocketComponent>();
 }
 
 void GameObject::remove_component(const std::shared_ptr<Component>& component)
