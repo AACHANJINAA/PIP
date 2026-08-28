@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "LinearAllocator.h"
 
 LinearAllocator::LinearAllocator(ID3D12Device* device, size_t totalSize, UINT frameCount)
@@ -54,7 +54,7 @@ LinearAllocator::Allocation LinearAllocator::allocate(size_t size)
 	if (_currentOffset + alignedSize > frameMaxBoundary)
 	{
 		// 이 로그가 뜬다면 초기 설정한 32MB 용량이 부족하다는 뜻
-		CERROR("LinearAllocator Out of Memory in current frame! -> Memory Bu Jok Ham");
+		CERROR("LinearAllocator Out of Memory in current frame!");
 		return { nullptr, 0 };
 	}
 
