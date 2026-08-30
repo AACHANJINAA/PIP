@@ -77,7 +77,11 @@ namespace PIP::SERVER
 		void Execute_C2S_ACTION(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ACTION& action_packet);
 		void Execute_C2S_NPC_INTERACT(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_NPC_INTERACT& interact_packet);
 		void Execute_C2S_CUTSCENE_DONE(const std::shared_ptr<SESSION>& session); // [추가] 퀘스트 등 상호작용
-		void ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config);
+		// rewindTimestamp: when set, ValidateHit rewinds the target to this server-tick snapshot
+		// instead of the current tick (lag-compensated hit detection for network-driven attacks).
+		// Left empty for NPC/AI-driven attacks, which should always judge against the live position.
+		void ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config,
+		                        std::optional<uint32_t> rewindTimestamp = std::nullopt);
 		void Execute_C2S_MOVE(std::shared_ptr<SESSION> session, const common::packet::CS_PACKET_MOVE& move_packet);
 		void Execute_C2S_ROOM_ENTER(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_ENTER_ROOM& enter_packet);
 		void Execute_C2S_PLAYER_READY(const std::shared_ptr<SESSION>& session, const common::packet::CS_PACKET_PLAYER_READY& ready_packet);

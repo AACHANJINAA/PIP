@@ -212,6 +212,24 @@ namespace PIP::GAME
 		return nullptr;
 	}
 
+	uint32_t Player::ComputeRewindTimestamp(uint32_t serverNow, uint32_t clientTimeStamp)
+	{
+		constexpr uint32_t MAX_REWIND_MS = 1000; // Actor::_history 가 유지하는 최근 1초 스냅샷 창과 동일하게 클램프
+
+		uint32_t rawDelta = serverNow - clientTimeStamp; // uint32_t 래핑 연산이라 초 단위 차이에선 안전
+
+		// 시계 오프셋 + 최선의 경우 지연시간을 관측된 최솟값으로 추정 (핑이 튈 때만 커지고, 클록 오프셋 자체는 흡수)
+		if (!_actionClockOffsetInit || rawDelta < _actionClockOffsetMs) {
+			_actionClockOffsetMs = rawDelta;
+			_actionClockOffsetInit = true;
+		}
+
+		uint32_t extraDelayMs = rawDelta - _actionClockOffsetMs; // 기준선 대비 이번 패킷이 더 늦게 온 정도
+		uint32_t rewindMs = std::min(extraDelayMs, MAX_REWIND_MS);
+
+		return serverNow - rewindMs;
+	}
+
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
 	                         const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
 	{
