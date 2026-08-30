@@ -25,6 +25,7 @@
 #include <queue>
 #include <algorithm>
 #include <variant>
+#include <optional>
 #include <typeindex>
 #include <unordered_set>
 #include <set>

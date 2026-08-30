@@ -499,7 +499,8 @@ namespace PIP::SERVER
 		MYLOG("[Room] All NPCs and Elevators cleared for scene transition.");
 	}
 
-	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config)
+	void Room::ExecuteActorAction(GAME::Actor* attacker, const GAME::AttackConfig& config,
+	                              std::optional<uint32_t> rewindTimestamp)
 	{
 		if (!attacker) return;
 
@@ -522,6 +523,9 @@ namespace PIP::SERVER
 		_gridMap.GetNearbyObjects(finalPos, nearby);
 
 		uint32_t now = static_cast<uint32_t>(GetTickCount64());
+		// 네트워크로 들어온 플레이어 공격은 지연 보상된 과거 시점으로 리와인드해서 판정하고,
+		// NPC/AI가 직접 실행한 공격(rewindTimestamp 미지정)은 항상 현재 시점으로 판정한다.
+		uint32_t hitTimestamp = rewindTimestamp.value_or(now);
 
 		// 피격된 대상들을 모으기 위한 리스트
 		std::vector<packet::PlayerHitInfo> player_hits;
@@ -551,7 +555,7 @@ namespace PIP::SERVER
 				if (attacker->GetFaction() == target->GetFaction()) continue;
 
 				// 3. 타겟의 ValidateHit 호출 (공격자 포인터 전달)
-				if (target->ValidateHit(_physicsSystem, config.shape, attackTransform, now, attacker, (int32_t)config.damage))
+				if (target->ValidateHit(_physicsSystem, config.shape, attackTransform, hitTimestamp, attacker, (int32_t)config.damage))
 				{
 					// [추가] 타겟 타입에 따라 피격 정보 기록
 					if (auto p = dynamic_cast<GAME::Player*>(target)) {
@@ -1582,6 +1586,10 @@ namespace PIP::SERVER
 	{
 		if (!session || !session->_player) return;
 
+		// 지연 보상(리와인드) 판정용 시점: 클라이언트가 실제로 공격을 낸 시점 근처로 되감아서 검사한다.
+		uint32_t serverNow = static_cast<uint32_t>(GetTickCount64());
+		uint32_t rewindTimestamp = session->_player->ComputeRewindTimestamp(serverNow, action_packet._client_time_stamp);
+
 		std::vector<packet::NPCHitInfo> npc_hits;
 		std::vector<packet::PlayerHitInfo> player_hits;
 
@@ -1606,8 +1614,8 @@ namespace PIP::SERVER
 					config.shape = result.Get();
 				}
 
-				// 공용 로직으로 판정 및 브로드캐스트 위임
-				ExecuteActorAction(session->_player.get(), config);
+				// 공용 로직으로 판정 및 브로드캐스트 위임 (리와인드 판정 적용)
+				ExecuteActorAction(session->_player.get(), config, rewindTimestamp);
 			}
 			break;
 		case packet::ActionID::Common::INTERACT:
@@ -1788,8 +1796,8 @@ namespace PIP::SERVER
 					config.shape = result.Get();
 				}
 
-				// 서버 권위 판정: ExecuteActorAction을 통해 통합 처리 (팀킬 방지, 넉백, 패킷 브로드캐스트 포함)
-				ExecuteActorAction(session->_player.get(), config);
+				// 서버 권위 판정: ExecuteActorAction을 통해 통합 처리 (팀킬 방지, 넉백, 패킷 브로드캐스트 포함, 리와인드 판정 적용)
+				ExecuteActorAction(session->_player.get(), config, rewindTimestamp);
 
 				MYLOG("Executed SKILL1 (Greatsword Slam) for player session: " << session->_id);
 			}

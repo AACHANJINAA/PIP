@@ -224,6 +224,7 @@ void NetworkManager::SendActionPacket(int32_t actionID, int64_t targetID,
 	packet._target_id = targetID;
 	packet._position = pos;
 	packet._direction = dir;
+	packet._client_time_stamp = static_cast<uint32_t>(GetTickCount64()); // 서버 지연 보상(리와인드) 판정용
 
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
 }

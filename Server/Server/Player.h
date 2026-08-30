@@ -83,6 +83,11 @@ namespace PIP::GAME
 		void SetLastClientTick(uint32_t tick) { _lastClientTick = tick; }
 		uint32_t GetLastClientTick() const { return _lastClientTick; }
 
+		// [추가] 공격 패킷의 클라이언트 타임스탬프로 지연 보상(리와인드) 판정용 시점을 계산.
+		// 클라이언트/서버 시계는 동기화되어 있지 않으므로 절대 시각 비교 대신, 지금까지 관측된
+		// 최솟값(clockOffset)을 기준선으로 삼아 "그 기준선보다 얼마나 더 늦게 왔는지"만 되감는다.
+		uint32_t ComputeRewindTimestamp(uint32_t serverNow, uint32_t clientTimeStamp);
+
 		bool IsDirty();
 		void SyncSentData();
 
@@ -133,5 +138,8 @@ namespace PIP::GAME
 		int64_t _owner_id; // 이 플레이어를 소유한 세션 ID	
 		int32_t	_hp;
 		uint32_t _lastClientTick = 0;
+
+		uint32_t _actionClockOffsetMs = 0;
+		bool _actionClockOffsetInit = false;
 	};
 }
