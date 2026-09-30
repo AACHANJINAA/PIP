@@ -14,11 +14,15 @@ namespace PIP::GAME
         void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
         void LightPhysicsUpdate(float deltaTime); // LOD용 경량 물리
         void SetVelocity(const common::Vec3& velocity) { _aiVelocity = velocity; }
+        // 피격 시 넉백. 넉백 경로를 구체 스윕으로 미리 검사해서 벽 앞에서 멈추도록 속도를 줄여 적용
+        // (LightPhysicsUpdate에는 수평 충돌 검사가 없어서 AddImpact만 쓰면 벽을 뚫음)
+        void AddKnockback(const common::Vec3& impulse);
         void ResetVerticalVelocity() { _verticalVelocity = -1.0f; } // [추가] 리스폰 시 중력 로직 강제 진입용
 
 	private:
         common::Vec3 _aiVelocity = { 0,0,0 };
         float _verticalVelocity = 0.0f;
+        float _radius = 0.0f;
 
         // 캐싱된 컴포넌트 포인터 (GetComponent 오버헤드 8% 제거)
         TransformComponent* _cachedTransform = nullptr;

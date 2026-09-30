@@ -94,12 +94,14 @@ namespace PIP
 	private:
 		struct NavMeshInfo {
 			dtNavMesh* navMesh = nullptr;
-			dtNavMeshQuery* navQuery = nullptr;
 			~NavMeshInfo() {
-				if (navQuery) dtFreeNavMeshQuery(navQuery);
 				if (navMesh) dtFreeNavMesh(navMesh);
 			}
 		};
+
+		// dtNavMeshQuery는 내부에 노드 풀/오픈 리스트를 가지고 있어 스레드 안전하지 않음.
+		// dtNavMesh(읽기 전용)는 공유하고, Query만 호출한 스레드 전용으로 하나씩 만들어 반환한다.
+		dtNavMeshQuery* GetThreadQuery(const std::string& name);
 
 		std::vector<MapObject> _map_objects;
 		std::vector<TerrainTile> _terrainTiles;

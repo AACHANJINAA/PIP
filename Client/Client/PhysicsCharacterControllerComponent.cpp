@@ -23,8 +23,8 @@ void PhysicsCharacterControllerComponent::initialize(float height, float radius)
     // [수정] RotatedTranslatedShape 쓰지 말고 순수 캡슐만 사용 (중심이 0,0,0)
     _settings->mShape = new JPH::CapsuleShape(halfCylinderHeight, radius);
 
-    // 발바닥 위치 정의 (바닥 체크용)
-    _settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -(height * 0.5f));
+    // 캡슐 중심이 원점이므로 아래 반구(y < -halfCylinderHeight)에 닿은 접촉만 지지로 인정 (서버와 동일)
+    _settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), halfCylinderHeight);
 
     _character = new JPH::CharacterVirtual(_settings, JPH::RVec3::sZero(), JPH::Quat::sIdentity(), system);
 
