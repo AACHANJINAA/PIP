@@ -10,8 +10,89 @@ namespace PIP::GAME
 	void NPCControllerComponent::Initialize(JPH::PhysicsSystem* system, float height, float radius)
 	{
 		CharacterControllerComponent::Initialize(system, height, radius);
+		_radius = radius;
 		// 생성 시점에 미리 캐싱 (GetComponent 8% 점유율 제거)
 		_cachedTransform = GetOwner()->GetComponent<TransformComponent>();
+	}
+
+	namespace
+	{
+		// 넉백 경로를 막는 "벽"만 골라내는 콜렉터
+		class KnockbackWallCollector : public JPH::CastShapeCollector
+		{
+		public:
+			explicit KnockbackWallCollector(JPH::Vec3Arg dir) : _dir(dir) {}
+
+			void AddHit(const JPH::ShapeCastResult& inResult) override
+			{
+				// 벽 -> 구체 방향의 접촉 노멀
+				JPH::Vec3 normal = -inResult.mPenetrationAxis.NormalizedOr(JPH::Vec3::sZero());
+
+				// 걸어 올라갈 수 있는 바닥/경사는 벽이 아님 (LightPhysicsUpdate의 isSteep 기준과 동일)
+				if (normal.GetY() >= 0.6f) return;
+				// 진행 방향을 막지 않는 면(옆/뒤에 이미 붙어 있는 벽, 천장 등)은 무시
+				if (normal.Dot(_dir) > -0.1f) return;
+
+				if (inResult.mFraction < _fraction)
+				{
+					_fraction = inResult.mFraction;
+					_hadHit = true;
+					UpdateEarlyOutFraction(inResult.mFraction);
+				}
+			}
+
+			bool HadHit() const { return _hadHit; }
+			float GetFraction() const { return _fraction; }
+
+		private:
+			JPH::Vec3 _dir;
+			float _fraction = 1.0f;
+			bool _hadHit = false;
+		};
+	}
+
+	void NPCControllerComponent::AddKnockback(const common::Vec3& impulse)
+	{
+		using namespace common::VectorHelper;
+
+		common::Vec3 total = _impactVelocity + impulse;
+		if (!_character || !_physicsSystem || _radius <= 0.0f) {
+			_impactVelocity = total;
+			return;
+		}
+
+		common::Vec3 horizontal = { total.x, 0.0f, total.z };
+		float speed = std::min(common::Length(horizontal), 50.0f); // 최대 넉백 속도 제한 (업데이트 쪽과 동일)
+		if (speed < 0.1f) {
+			_impactVelocity = total;
+			return;
+		}
+		common::Vec3 dir = common::Normalize(horizontal);
+
+		// ImpactFriction으로 감쇄되어 멈출 때까지 밀려나는 총 거리: v^2 / 2a
+		float distance = speed * speed / (2.0f * ImpactFriction);
+
+		// 캡슐 중심(허리) 높이에서 캡슐 반지름 크기의 구체를 넉백 방향으로 스윕
+		JPH::SphereShape sphere(_radius);
+		sphere.SetEmbedded();
+		JPH::Vec3 joltDir = Utils::ToJolt(dir);
+		JPH::RShapeCast shapeCast(&sphere, JPH::Vec3::sReplicate(1.0f),
+			JPH::RMat44::sTranslation(_character->GetPosition()), joltDir * distance);
+
+		JPH::ShapeCastSettings castSettings;
+		KnockbackWallCollector collector(joltDir);
+		_physicsSystem->GetNarrowPhaseQuery().CastShape(shapeCast, castSettings, JPH::RVec3::sZero(), collector,
+			_physicsSystem->GetDefaultBroadPhaseLayerFilter(_physicsLayer),
+			_physicsSystem->GetDefaultLayerFilter(_physicsLayer));
+
+		if (collector.HadHit()) {
+			// 벽에서 살짝 떨어진 지점까지만 밀리도록 초기 속도를 역산: v = sqrt(2ad)
+			const float skin = 0.05f;
+			float allowed = std::max(0.0f, distance * collector.GetFraction() - skin);
+			speed = std::sqrt(2.0f * ImpactFriction * allowed);
+		}
+
+		_impactVelocity = dir * speed;
 	}
 
 	void NPCControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)

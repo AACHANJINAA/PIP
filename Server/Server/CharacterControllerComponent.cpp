@@ -39,8 +39,9 @@ namespace PIP::GAME
 		// 3. 컨트롤러 설정
 		_settings = new JPH::CharacterVirtualSettings();
 		_settings->mShape = capsuleShape;
-		// SupportingVolume도 캡슐 주변을 감싸도록 설정
-		_settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -_halfHeight); // 발바닥 위치 인식
+		// 캡슐 중심이 원점이므로 y < -halfCylinderHeight (아래 반구)에 닿은 접촉만 지지로 인정
+		// (몸통/머리 쪽 접촉까지 지지로 치면 벽 모서리에 스치기만 해도 OnGround가 됨)
+		_settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), halfCylinderHeight);
 		_settings->mMaxSlopeAngle = JPH::DegreesToRadians(50.0f);
 		_settings->mUp = JPH::Vec3::sAxisY();
 

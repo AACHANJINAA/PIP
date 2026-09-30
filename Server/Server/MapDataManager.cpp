@@ -793,20 +793,35 @@ namespace PIP
 			return false;
 		}
 
-		info->navQuery = dtAllocNavMeshQuery();
-		if (!info->navQuery || dtStatusFailed(info->navQuery->init(info->navMesh, 2048))) {
-			MYERROR("dtNavMeshQuery init failed for: " << name);
-			return false;
-		}
-
 		_navMeshes[name] = info;
 		MYLOG("NavMesh '" << name << "' Loaded Successfully. Polys: " << params.polyCount);
 		return true;
 	}
-	bool MapDataManager::FindPath(const std::string& name, const common::Vec3& start, const common::Vec3& end, std::vector<common::Vec3>& outPath) {
+	dtNavMeshQuery* MapDataManager::GetThreadQuery(const std::string& name)
+	{
 		auto it = _navMeshes.find(name);
-		if (it == _navMeshes.end()) return false;
-		auto query = it->second->navQuery;
+		if (it == _navMeshes.end()) return nullptr;
+		const dtNavMesh* navMesh = it->second->navMesh;
+
+		struct QueryDeleter {
+			void operator()(dtNavMeshQuery* q) const { dtFreeNavMeshQuery(q); }
+		};
+		// 스레드(로직 워커)마다 네비메쉬당 Query 하나. 스레드 종료 시 자동 해제.
+		thread_local std::unordered_map<const dtNavMesh*, std::unique_ptr<dtNavMeshQuery, QueryDeleter>> t_queries;
+
+		auto qit = t_queries.find(navMesh);
+		if (qit != t_queries.end()) return qit->second.get();
+
+		std::unique_ptr<dtNavMeshQuery, QueryDeleter> query(dtAllocNavMeshQuery());
+		if (!query || dtStatusFailed(query->init(navMesh, 2048))) {
+			MYERROR("dtNavMeshQuery init failed for: " << name);
+			return nullptr;
+		}
+		return t_queries.emplace(navMesh, std::move(query)).first->second.get();
+	}
+	bool MapDataManager::FindPath(const std::string& name, const common::Vec3& start, const common::Vec3& end, std::vector<common::Vec3>& outPath) {
+		auto query = GetThreadQuery(name);
+		if (!query) return false;
 
 		outPath.clear();
 
@@ -898,9 +913,8 @@ namespace PIP
 
 	// 해당 위치에서 가장 가까운 네비메쉬 위 좌표 반환 (스냅 기능)
 	bool MapDataManager::GetClosestPoint(const std::string& name, const common::Vec3& pos, common::Vec3& outPos) {
-		auto it = _navMeshes.find(name);
-		if (it == _navMeshes.end()) return false;
-		auto query = it->second->navQuery;
+		auto query = GetThreadQuery(name);
+		if (!query) return false;
 
 		dtQueryFilter filter;
 		filter.setIncludeFlags(1);
@@ -917,9 +931,8 @@ namespace PIP
 
 	// 두 지점 사이에 장애물(네비메쉬 단절)이 있는지 체크 (Raycast)
 	bool MapDataManager::IsWalkable(const std::string& name, const common::Vec3& start, const common::Vec3& end) {
-		auto it = _navMeshes.find(name);
-		if (it == _navMeshes.end()) return false;
-		auto query = it->second->navQuery;
+		auto query = GetThreadQuery(name);
+		if (!query) return false;
 
 		dtQueryFilter filter;
 		filter.setIncludeFlags(1);

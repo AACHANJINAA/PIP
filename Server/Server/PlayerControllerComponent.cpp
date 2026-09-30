@@ -90,9 +90,9 @@ namespace PIP::GAME
         JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;
 
         // 요철을 잘 넘게 하려면 mWalkStairsStepUp을 조절 (기본값 0.4f)
-        updateSettings.mWalkStairsStepUp = JPH::Vec3(0, 1.f, 0);
-        // 경사로에서 뜨지 않게 하려면 mStickToFloorStepDown 조절
-        updateSettings.mStickToFloorStepDown = JPH::Vec3(0, 1.5f, 0);
+        updateSettings.mWalkStairsStepUp = JPH::Vec3(0, 0.4f, 0);
+        // 경사로에서 뜨지 않게 하려면 mStickToFloorStepDown 조절 (아래 방향 벡터여야 함. 양수면 천장으로 끌려 올라감)
+        updateSettings.mStickToFloorStepDown = JPH::Vec3(0, -0.5f, 0);
 
         // 3. 물리 시뮬레이션 실행 (레이어 필터 확인 필수!)
         // 지형(NON_MOVING)이 포함된 레이어를 사용해야 합니다.

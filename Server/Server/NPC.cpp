@@ -230,9 +230,12 @@ namespace PIP::GAME
 				SetState(common::packet::EntityState::HITTED);
 
 				if (auto cc = GetComponent<CharacterControllerComponent>()) {
-					cc->AddImpact(knockbackDir * 15.0f);
 					if (auto nc = dynamic_cast<NPCControllerComponent*>(cc)) {
+						nc->AddKnockback(knockbackDir * 15.0f); // 벽 앞에서 멈추도록 스윕 검사 후 적용
 						nc->SetVelocity({ 0, 0, 0 }); // [추가] AI 이동 관성 제거하여 넉백 저항 없애기
+					}
+					else {
+						cc->AddImpact(knockbackDir * 15.0f);
 					}
 				}
 				// 3. AI 타겟 설정 (나를 때린 놈을 타겟으로)
