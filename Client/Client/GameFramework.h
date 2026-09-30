@@ -61,7 +61,6 @@ private:
 	HANDLE _fenceEvent;
 	HANDLE _frameLatencyWaitableObject = nullptr; // Frame Latency Waitable Object
 
-	TimerManager _gameTimer;
 	_TCHAR _frameRate[50];
 
 	std::unique_ptr<Scene> _scene;

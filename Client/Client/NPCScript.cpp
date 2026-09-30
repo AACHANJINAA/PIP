@@ -43,6 +43,12 @@ void NPCScript::handle_animation_branching()
 		return;
 	}
 
+	// 피격 처리 (피격 모션이 등록된 몬스터만, 없으면 기존처럼 아래 분기로 진행)
+	if (_state == EntityState::HITTED && anim->has_animation("Hit")) {
+		anim->play("Hit", false);
+		return;
+	}
+
 	// 2. 액션(공격/스킬) 상태 분기
 	if (_state == EntityState::ACTION) 
 	{
@@ -186,12 +192,14 @@ void NPCScript::init_visual()
 		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Walk.gltf", "walk");
 		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Attack.gltf", "attack");
 		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Death.gltf", "die");
+		dynamic_pointer_cast<ReadGLTFMesh>(baseMesh)->load_animation_only("Resource/Character/DragonBrute/animation/A_DragonBrute_Hit.gltf", "hit");
 
 		render_comp->set_mesh(baseMesh);
 		animation_component->add_animation("Idle", baseMesh, "idle");
 		animation_component->add_animation("Walk", baseMesh, "walk");
 		animation_component->add_animation("Attack", baseMesh, "attack");
 		animation_component->add_animation("Death", baseMesh, "die");
+		animation_component->add_animation("Hit", baseMesh, "hit");
 
 		// [수정] 서버에서 애니메이션 패킷이 오기 전까지 초기 상태가 없으면 뼈(Bone)가 초기화되지 않아 부서진 것처럼 보이므로 기본 재생
 		animation_component->play("Idle");

@@ -343,7 +343,7 @@ void GameFramework::ProcessInput()
 
 //void GameFramework::AnimateObjects()
 //{
-//	_scene.get()->AnimateObjects(_gameTimer.GetTimeElapsed(), _commandList.Get());
+//	_scene.get()->AnimateObjects(TimerManager::instance()->GetTimeElapsed(), _commandList.Get());
 //} 씬에 있던거 게임프레임워크로 옮김
 
 void GameFramework::WaitForGpuComplete()
@@ -426,8 +426,8 @@ void GameFramework::FrameAdvance()
 	SceneManager::instance()->process_scene_change_if_requested(_device.Get(), currentRenderAllocator.Get(), _commandList.Get());
 
 	// 2. 타이머 & 로직 & 물리 업데이트
-	_gameTimer.Tick(0.0f);
-	float deltaTime = _gameTimer.GetTimeElapsed();
+	TimerManager::instance()->Tick(0.0f);
+	float deltaTime = TimerManager::instance()->GetTimeElapsed();
 
 	// 너무 큰 델타 타임은 프레임 드랍으로 인한 일시적인 현상이므로, 최대값을 0.1초로 제한 (예: 10 FPS 이하로 떨어지는 경우)
 	// 델타타임 스파이크 방지
@@ -576,7 +576,7 @@ void GameFramework::FrameAdvance()
 	ResourceManager::instance()->release_upload_buffers(_fence->GetCompletedValue());
 	// 후처리
 	ObjectManager::instance()->process_destructions();
-	_gameTimer.GetFrameRate(_frameRate + 7, 42);
+	TimerManager::instance()->GetFrameRate(_frameRate + 7, 42);
 
 
 	view_window_title_bar_with_frame_rate_and_camera_info_and_main_player_pos();
