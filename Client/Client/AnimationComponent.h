@@ -31,6 +31,9 @@ public:
 	// 현재 재생 중인 애니메이션이 특정 진행도에 도달하면 멈추도록 설정
 	void set_pause_at_progress(float targetProgress);
 
+	// 해당 별칭의 애니메이션이 등록되어 있는지 여부
+	bool has_animation(const std::string& name) const { return _animResources.contains(name); }
+
 	// 현재 재생 중인 애니메이션 별칭 반환
 	const std::string& get_current_name() const { return _currentName; }
 

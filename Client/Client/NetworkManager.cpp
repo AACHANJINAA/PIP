@@ -552,7 +552,6 @@ void NetworkManager::HANDLE_S2C_PLAYER_ATTACK(common::packet::PacketStream& stre
 
 	if (attack_header._hit_count > 0 && attack_header._attacker_id == _my_session_id)
 	{
-		TimerManager::instance()->SetHitStop(0.12f, 0.05f);
 		if (isSkill) {
 			auto mainCam = CameraComponent::get_main();
 			if (mainCam && mainCam->game_object()) {
@@ -631,7 +630,6 @@ void NetworkManager::HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream)
 
 	if (attack_header._hit_count > 0 && attack_header._attacker_id == _my_session_id)
 	{
-		TimerManager::instance()->SetHitStop(0.12f, 0.05f);
 		if (isSkill) {
 			auto mainCam = CameraComponent::get_main();
 			if (mainCam && mainCam->game_object()) {
