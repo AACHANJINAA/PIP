@@ -164,7 +164,12 @@ ID3D12Resource* CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D1
 	inline void DebugLogStream(const std::ostringstream& oss, LogLevel level = LogLevel::Log)
 	{
 		std::string msg = oss.str() + "\n";
-		OutputDebugStringA(msg.c_str());
+
+		// 문자열은 UTF-8(/utf-8)이므로 VS 출력 창에는 UTF-16으로 변환해서 보냄 (OutputDebugStringA는 CP949로 해석해 한글이 깨짐)
+		int wide_length = MultiByteToWideChar(CP_UTF8, 0, msg.c_str(), static_cast<int>(msg.size()), nullptr, 0);
+		std::wstring wide_msg(wide_length, L'\0');
+		MultiByteToWideChar(CP_UTF8, 0, msg.c_str(), static_cast<int>(msg.size()), wide_msg.data(), wide_length);
+		OutputDebugStringW(wide_msg.c_str());
 
 		// 콘솔 출력 (색상 적용)
 		switch (level)

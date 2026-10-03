@@ -45,6 +45,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		std::cout.clear();
 		std::cerr.clear();
 
+		// 소스와 문자열 상수가 UTF-8(/utf-8)이므로 콘솔 출력도 UTF-8로 맞춤
+		SetConsoleOutputCP(CP_UTF8);
+
 		// ANSI 이스케이프 시퀀스 활성화 (색상 출력을 위해)
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		DWORD dwMode = 0;
