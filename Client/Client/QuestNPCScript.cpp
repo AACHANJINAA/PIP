@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "gameobject.h"
 #include "QuestNPCScript.h"
 #include "ObjectManager.h"

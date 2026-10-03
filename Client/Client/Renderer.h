@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CameraComponent.h"
 #include "RootSignature.h"
 #include "Shader.h"

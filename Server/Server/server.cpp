@@ -277,7 +277,7 @@ namespace PIP::SERVER
 		MYLOG("          Server Initializing...         ");
 		MYLOG("=========================================");
 
-		std::wcout.imbue(std::locale("korean"));
+		std::wcout.imbue(std::locale(".UTF-8"));
 		WSAData wsadata;
 		if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
 		{

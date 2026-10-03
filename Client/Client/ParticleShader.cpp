@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ParticleShader.h"
 #include "ResourceManager.h"
 #include "Renderer.h"

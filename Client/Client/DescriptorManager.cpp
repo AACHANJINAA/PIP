@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "DescriptorManager.h"
 
 void DescriptorManager::initialize(ID3D12Device* device, UINT descriptor_count)

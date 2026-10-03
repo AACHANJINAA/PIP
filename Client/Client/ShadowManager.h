@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "stdafx.h"
 
 // 256바이트 정렬을 위한 헬퍼 구조체
