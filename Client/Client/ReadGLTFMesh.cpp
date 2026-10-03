@@ -1737,6 +1737,44 @@ bool ReadGLTFMesh::get_primitive_geometry(const std::string& material_name, std:
 	return false;
 }
 
+bool ReadGLTFMesh::get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& bone_palette, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const
+{
+	out_positions.clear();
+	out_indices.clear();
+
+	// GPU용 전치 행렬을 원래 행 벡터 규약 행렬로 되돌림
+	std::vector<XMMATRIX> palette;
+	palette.reserve(bone_palette.size());
+	for (const auto& m : bone_palette) palette.push_back(XMMatrixTranspose(XMLoadFloat4x4(&m)));
+
+	for (const auto& primitive : _primitives)
+	{
+		const UINT base = static_cast<UINT>(out_positions.size());
+		if (!primitive->_skinned_vertices.empty())
+		{
+			for (const auto& v : primitive->_skinned_vertices)
+			{
+				const XMVECTOR p = XMLoadFloat3(&v._position);
+				XMVECTOR skinned = XMVectorZero();
+				for (int k = 0; k < 4; ++k)
+				{
+					if (v._boneWeights[k] <= 0.0f || v._boneIndices[k] >= palette.size()) continue;
+					skinned = XMVectorAdd(skinned, XMVectorScale(XMVector3TransformCoord(p, palette[v._boneIndices[k]]), v._boneWeights[k]));
+				}
+				XMFLOAT3 out;
+				XMStoreFloat3(&out, skinned);
+				out_positions.push_back(out);
+			}
+		}
+		else
+		{
+			for (const auto& v : primitive->_vertices) out_positions.push_back(v._position);
+		}
+		for (UINT index : primitive->_indices) out_indices.push_back(base + index);
+	}
+	return !out_positions.empty();
+}
+
 XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(std::string& bone_name) const
 {
 	int node_index = get_bone_index_by_name(bone_name);

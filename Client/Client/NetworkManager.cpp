@@ -19,6 +19,7 @@
 #include "TainerScript.h"
 #include "UIFrameRenderComponent.h"
 #include "QuestNPCScript.h"
+#include "PhysicsColliderComponent.h"
 #include "LeverScript.h"
 #include "UIManager.h"
 #include "TimerManager.h"
@@ -788,6 +789,36 @@ void NetworkManager::HANDLE_S2C_NPC_COUNT(common::packet::PacketStream& stream)
 		ObjectManager::instance()->register_npc(boss_id, Boss);
 	}
 }
+// 서버 HitboxComponent와 같은 피격 히트박스 (NPC.cpp, Tainer.cpp 생성자 값). 위치 기준은 발바닥, 스케일 무시
+static void attach_npc_hurtbox(GameObject& npc, common::packet::NPCType type)
+{
+	using Collider = PhysicsColliderComponent;
+	Collider::ShapeType shape;
+	XMFLOAT3 size;
+	f3 center;
+	switch (type)
+	{
+	case common::packet::NPCType::Basic:
+	case common::packet::NPCType::MagicGuard:
+		shape = Collider::ShapeType::Capsule; size = { 0.5f, 0.4f, 0.0f }; center = { 0.0f, 0.9f, 0.0f };  // 키 1.8m
+		break;
+	case common::packet::NPCType::Tainer:
+		shape = Collider::ShapeType::Capsule; size = { 3.0f, 1.0f, 0.0f }; center = { 0.0f, 4.0f, 0.0f };  // 키 8m
+		break;
+	case common::packet::NPCType::DynamicBox:
+		shape = Collider::ShapeType::Box; size = { 1.0f, 1.0f, 1.0f }; center = { 0.0f, 0.0f, 0.0f };
+		break;
+	default:
+		return; // QuestNPC, Elevator 등은 판정 대상이 아님
+	}
+
+	auto hurtbox = npc.add_component<Collider>();
+	hurtbox->initialize(shape, size, center, { 0.0f, 0.0f, 0.0f }, true, Collider::BodyMode::QueryOnly);
+	hurtbox->set_ignore_owner_scale(true);
+	hurtbox->set_role(Collider::Role::Hurtbox);
+	hurtbox->set_active(true);
+}
+
 void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 {
 	common::packet::SC_PACKET_NPC_SPAWN npc_spawn_packet;
@@ -864,6 +895,9 @@ void NetworkManager::HANDLE_S2C_SPAWN_NPC(common::packet::PacketStream& stream)
 			NPC_logic = NPC->add_component<NPCScript>().get();
 			break;
 	}
+
+	// 평타 예측 판정용 피격 히트박스
+	attach_npc_hurtbox(*NPC, npc_spawn_packet._npc_type);
 
 	// 4. 공통 데이터 초기화
 	if (NPC_logic) {

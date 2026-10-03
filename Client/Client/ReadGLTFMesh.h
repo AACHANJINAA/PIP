@@ -183,6 +183,9 @@ public:
 
 	// 재질 이름으로 프리미티브를 찾아 CPU 정점 위치와 인덱스를 복사 (디버그 기록용)
 	bool get_primitive_geometry(const std::string& material_name, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const;
+	// 모든 프리미티브의 정점을 CPU에서 스키닝해 모델 공간 위치로 복사 (디버그 기록용)
+	// bone_palette: AnimationComponent의 스키닝 행렬 팔레트 (GPU용 전치 행렬). 스킨이 없는 프리미티브는 원래 위치
+	bool get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& bone_palette, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const;
 
 	// 애니메이션만 있는 glTF 파일 로더 추가
 	void load_animation_only(const std::string& file_path, const std::string& want_name = "null_name");

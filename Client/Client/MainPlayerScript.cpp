@@ -30,6 +30,7 @@
 #include "SceneManager.h"
 #include "Main_Scene.h"
 #include "PhysicsDebugCapture.h"
+#include "NPCScript.h"
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -70,6 +71,11 @@ void MainPlayerScript::set_mp(int mp)
 
 void MainPlayerScript::update(float deltaTime)
 {
+	_hitClock += deltaTime;
+	// 평타가 어떤 경로로 끝나든 칼날 판정이 켜진 채 남지 않게 함
+	if (!_isAttacking && _bladeCollider && _bladeCollider->is_hit_query_active())
+		_bladeCollider->end_hit_query();
+
 	die_ui_update(deltaTime);
 	update_hp_bar(deltaTime);
 	update_mp_bar(deltaTime);
@@ -269,6 +275,7 @@ void MainPlayerScript::awake()
 			true,
 			PhysicsColliderComponent::BodyMode::QueryOnly);
 		_bladeCollider->attach_to_bone("ik_hand_r");
+		_bladeCollider->set_role(PhysicsColliderComponent::Role::Hitbox); // 켜져 있는 동안 NPC 피격 히트박스와 겹침 검사
 
 		// 검증용 기준 형상 (디버그 빌드에서만 효과 있음)
 		PhysicsDebugCapture::instance()->add_reference_primitive(owner, "M_DKF_Sword", "ik_hand_r");
@@ -1013,7 +1020,6 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_isAttacking = true;
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::Attack;
-		_debugCaptureIndex = 0;
 
 		// [사운드] 공격음 재생 (단순 효과음이므로 2D 재생 혹은 필요 시 play_3d 적용 가능)
 		SoundManager::instance()->play("SwordSwing");
@@ -1341,6 +1347,9 @@ void MainPlayerScript::process_attack_and_packet()
 
 	if (_isSkilling)
 	{
+		// 스킬 판정은 아직 칼날 판정을 쓰지 않음 (4단계)
+		if (_bladeCollider && _bladeCollider->is_hit_query_active()) _bladeCollider->end_hit_query();
+
 		if (!_isSkillEndAnimationStart && anim_comp->is_anim_finished()) // 마지막은 아니고 스킬 애니메이션이 끝났을 때
 		{
 			_isSkillEndAnimationStart = true;
@@ -1379,22 +1388,19 @@ void MainPlayerScript::process_attack_and_packet()
 			}
 		}
 
-		// [디버그] 평타 자동 연속 기록: 기준 진행도를 넘은 프레임의 끝에서 기록 (기록 시점은 한 프레임 뒤 자세)
-		if (_debugCaptureAttack && duration > 0.0f)
+		// 평타 예측 판정: 구간 동안 칼날 판정을 켬 (판정과 결과 전달은 칼날 콜라이더의 late_update → on_trigger_enter)
+		if (_bladeCollider && duration > 0.0f)
 		{
-			static constexpr float kCaptureProgress[] = { 0.3f, 0.45f, 0.6f };
-			bool crossed = false;
-			while (_debugCaptureIndex < static_cast<int>(std::size(kCaptureProgress)) &&
-				anim_progress >= duration * kCaptureProgress[_debugCaptureIndex])
-			{
-				++_debugCaptureIndex;
-				crossed = true;
-			}
-			if (crossed)
-			{
-				int percent = static_cast<int>(anim_progress / duration * 100.0f);
-				PhysicsDebugCapture::instance()->request_capture("attack " + std::to_string(percent) + "%");
-			}
+			_attackProgress = anim_progress / duration;
+			const bool in_window = _attackProgress >= kAttackHitStart && _attackProgress <= kAttackHitEnd;
+			if (in_window && !_bladeCollider->is_hit_query_active()) _bladeCollider->begin_hit_query();
+			else if (!in_window && _bladeCollider->is_hit_query_active()) _bladeCollider->end_hit_query();
+		}
+
+		// [디버그] 평타 자동 연속 기록: 판정 구간(5~80%) 동안 매 프레임 기록 (적중 프레임은 on_trigger_enter에서 라벨을 바꿈)
+		if (_debugCaptureAttack && _bladeCollider && _bladeCollider->is_hit_query_active())
+		{
+			PhysicsDebugCapture::instance()->request_capture("attack " + std::to_string(static_cast<int>(_attackProgress * 100.0f)) + "%");
 		}
 
 		if (!_packetSent && anim_progress >= (duration * 0.3f)) 
@@ -1414,6 +1420,29 @@ void MainPlayerScript::process_attack_and_packet()
 			}
 		}
 	}
+}
+
+void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const TriggerHit& hit)
+{
+	auto npc = other ? other->get_component<NPCScript>() : nullptr;
+	if (!npc || npc->hp() <= 0) return;
+
+	// 서버는 피격 쿨다운 중인 NPC를 판정하지 않으므로 클라이언트도 예측 적중으로 치지 않음
+	auto last = _lastPredictedHitTime.find(npc->id());
+	if (last != _lastPredictedHitTime.end() && _hitClock - last->second < kPredictedHitCooldown)
+	{
+		CLOG("[MeleeHit] 쿨다운 중이라 무시: NPC " << npc->id());
+		return;
+	}
+	_lastPredictedHitTime[npc->id()] = _hitClock;
+
+	CLOG("[MeleeHit] 예측 적중: NPC " << npc->id() << " (" << other->name() << ")"
+		<< ", 진행도 " << static_cast<int>(_attackProgress * 100.0f) << "%"
+		<< ", 지점 (" << hit.point.x << ", " << hit.point.y << ", " << hit.point.z << ")"
+		<< ", 방향 (" << hit.direction.x << ", " << hit.direction.y << ", " << hit.direction.z << ")");
+
+	if (_debugCaptureAttack)
+		PhysicsDebugCapture::instance()->request_capture("hit NPC " + std::to_string(npc->id()));
 }
 
 void MainPlayerScript::init_skill_variables()

@@ -52,6 +52,9 @@ public:
 	bool try_get_bone_model_matrix(const std::string& bone_name, XMFLOAT4X4& out) const;
 	// 모델 공간 뼈 행렬 × 오브젝트 월드 행렬
 	bool try_get_bone_world_matrix(const std::string& bone_name, XMFLOAT4X4& out) const;
+	// 이 캐릭터의 스키닝 행렬 팔레트(GPU용 전치 행렬)와 그것을 계산한 메쉬 (디버그 기록에서 CPU 스키닝용)
+	const std::vector<XMFLOAT4X4>& bone_palette() const { return _boneTransforms; }
+	const ReadGLTFMesh* pose_mesh() const { return _poseMesh; }
 
 
 	//// DW설명 : 뼈대 변환 행렬 버퍼 얻기 -> 작동 안함

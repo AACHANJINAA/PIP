@@ -163,6 +163,17 @@ void GameObject::on_collision_exit(const std::shared_ptr<GameObject>& other)
 	}
 	
 }
+void GameObject::on_trigger_enter(const std::shared_ptr<GameObject>& other, const TriggerHit& hit)
+{
+	// 이 객체에 붙은 모든 스크립트의 콜백을 호출
+	for (const auto& component : _components)
+	{
+		if (auto script = std::dynamic_pointer_cast<ScriptComponent>(component))
+		{
+			script->on_trigger_enter(other, hit);
+		}
+	}
+}
 
 void GameObject::set_layer(const std::string& name)
 {

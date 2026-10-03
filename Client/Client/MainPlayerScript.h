@@ -19,6 +19,9 @@ public:
 	void fixed_update(float deltaTime) override;
 	void awake() override;
 
+	// 칼날 공격 판정이 NPC 히트박스와 겹쳤을 때 (평타 예측 판정)
+	void on_trigger_enter(std::shared_ptr<GameObject> other, const TriggerHit& hit) override;
+
 	void set_hp(int hp);
 	int hp() const { return _hp; }
 	
@@ -95,9 +98,17 @@ private:
 	// 칼날 캡슐 (ik_hand_r 부착, 바디 없는 검사 전용)
 	std::shared_ptr<PhysicsColliderComponent> _bladeCollider;
 
-	// [디버그] 평타 자동 연속 기록 (F7 토글): 진행도 30%, 45%, 60%에서 한 프레임씩 기록
+	// [디버그] 평타 자동 연속 기록 (F7 토글): 판정 구간(5~80%) 동안 매 프레임 기록
 	bool _debugCaptureAttack = false;
-	int _debugCaptureIndex = 0;
+
+	// 평타 예측 판정: 애니메이션 진행도 이 구간 동안 칼날 판정을 켬
+	static constexpr float kAttackHitStart = 0.05f;
+	static constexpr float kAttackHitEnd = 0.8f;
+	// 서버 NPC 피격 쿨다운(0.5초) 흉내: NPC id별 마지막 예측 적중 시각 (_hitClock 기준)
+	static constexpr float kPredictedHitCooldown = 0.5f;
+	float _hitClock = 0.0f;
+	float _attackProgress = 0.0f; // 로그용 현재 평타 진행도 (0~1)
+	std::unordered_map<int64_t, float> _lastPredictedHitTime;
 
 	int32_t _hp{ 100 };
 	int32_t _maxHp{ 100 };
