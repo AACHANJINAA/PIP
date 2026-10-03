@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "GameFramework.h"
 #include "ResourceManager.h"
+#include "TransformComponent.h"
 
 AnimationComponent::AnimationComponent() : Behavior("AnimationComponent")
 {
@@ -61,7 +62,8 @@ void AnimationComponent::late_update(float deltaTime)
 	if (_bonePaletteSize > 0)
 	{
 		// 1. CPU 메모리(_boneTransforms 벡터)에 뼈대 애니메이션 결과를 먼저 계산합니다. -> _boneTransforms 이건 애니메이션 컴포넌트마다 하나씩 따로 들고있음
-		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop);
+		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop, &_jointModelMatrices);
+		_poseMesh = glTF_mesh.get();
 
 		// 2. 선형 할당기 창구에 가서 "나 이만큼 메모리 필요해!" 하고 즉시 빌려오기 (오버헤드 0) -> GPU에 올릴 뼈대 행렬 데이터 크기만큼 빌려오기
 		auto alloc = GameFramework::instance()->linear_allocator()->allocate(_bonePaletteSize);
@@ -89,6 +91,48 @@ void AnimationComponent::late_update(float deltaTime)
 	if (!_isLoop && _nowAnimationTime < timeBeforeUpdate) {
 		_isFinished = true;
 	}
+}
+
+bool AnimationComponent::try_get_bone_model_matrix(const std::string& bone_name, XMFLOAT4X4& out) const
+{
+	if (!_poseMesh || _jointModelMatrices.empty()) return false;
+
+	// 메쉬가 바뀌면 조인트 인덱스가 달라지므로 캐시를 비움
+	if (_jointIndexCacheMesh != _poseMesh)
+	{
+		_jointIndexCache.clear();
+		_jointIndexCacheMesh = _poseMesh;
+	}
+
+	int joint_index;
+	auto it = _jointIndexCache.find(bone_name);
+	if (it != _jointIndexCache.end())
+	{
+		joint_index = it->second;
+	}
+	else
+	{
+		joint_index = _poseMesh->get_joint_index_by_name(bone_name);
+		_jointIndexCache[bone_name] = joint_index; // 못 찾은 경우(-1)도 캐싱
+	}
+
+	if (joint_index < 0 || joint_index >= static_cast<int>(_jointModelMatrices.size())) return false;
+
+	out = _jointModelMatrices[joint_index];
+	return true;
+}
+
+bool AnimationComponent::try_get_bone_world_matrix(const std::string& bone_name, XMFLOAT4X4& out) const
+{
+	XMFLOAT4X4 bone_model;
+	if (!try_get_bone_model_matrix(bone_name, bone_model)) return false;
+
+	auto owner = game_object();
+	if (!owner || !owner->transform()) return false;
+
+	XMFLOAT4X4 owner_world = owner->transform()->world_matrix();
+	XMStoreFloat4x4(&out, XMMatrixMultiply(XMLoadFloat4x4(&bone_model), XMLoadFloat4x4(&owner_world)));
+	return true;
 }
 
 void AnimationComponent::add_animation(const std::string& want_name, const std::shared_ptr<Mesh>& mesh,

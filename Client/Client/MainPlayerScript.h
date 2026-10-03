@@ -10,7 +10,7 @@ constexpr float SENDINTERVAL{ 0.02f };
 class MainPlayerScript : public ScriptComponent
 {
 public:
-	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponent, TargetingComponent>;
+	using required_components = std::tuple<RenderComponent, AnimationComponent, SocketComponent, TargetingComponent, PhysicsColliderComponent>;
 
 	MainPlayerScript() = default;
 	~MainPlayerScript() override = default;
@@ -91,6 +91,13 @@ private:
 	// 무기 오브젝트 참조 (필요 시)
 	std::shared_ptr<GameObject> _currentWeaponObject = nullptr;
 	std::shared_ptr<WeaponScript> _currentWeapon;
+
+	// 칼날 캡슐 (ik_hand_r 부착, 바디 없는 검사 전용)
+	std::shared_ptr<PhysicsColliderComponent> _bladeCollider;
+
+	// [디버그] 평타 자동 연속 기록 (F7 토글): 진행도 30%, 45%, 60%에서 한 프레임씩 기록
+	bool _debugCaptureAttack = false;
+	int _debugCaptureIndex = 0;
 
 	int32_t _hp{ 100 };
 	int32_t _maxHp{ 100 };

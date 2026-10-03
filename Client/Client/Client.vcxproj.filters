@@ -350,6 +350,9 @@
     <ClInclude Include="PhysicsColliderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsDebugCapture.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
+    </ClInclude>
     <ClInclude Include="RenderComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\RenderComponents</Filter>
     </ClInclude>
@@ -677,6 +680,9 @@
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
     </ClCompile>
     <ClCompile Include="PhysicsColliderComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsDebugCapture.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\PhysicsComponents</Filter>
     </ClCompile>
     <ClCompile Include="RenderComponent.cpp">

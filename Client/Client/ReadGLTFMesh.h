@@ -167,7 +167,9 @@ public:
 	// void set_bone_palette_buffer_from_animation_component(ComPtr<ID3D12Resource> bone_palette_buffer) { _bone_palette_buffer_from_animation_component = bone_palette_buffer; }
 
 	// 추후 인스턴싱을 위해서 확장하고 있는 함수
-	void update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop = true);
+	// out_joint_model_matrices: 조인트(스킨 순서)별 모델 공간 뼈 행렬을 함께 받고 싶을 때 전달 (전치하지 않은 DirectX 행 벡터 규약)
+	void update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop = true,
+		std::vector<DirectX::XMFLOAT4X4>* out_joint_model_matrices = nullptr);
 
 	// 현재 사용중인 것
 	void update_animation(float& delta_time, const std::string& animation_name, UINT8* mapped_buffer, bool _isLoop = true);
@@ -175,6 +177,12 @@ public:
 	void render_skinned(ID3D12GraphicsCommandList* commandList);
 	void render_instance_skinned(ID3D12GraphicsCommandList* commandList); // 스키닝 인스턴싱으로 렌더링
 	size_t get_joint_count() const { return _joints.size(); }
+
+	// 스킨 조인트 순서(GPU 팔레트 순서)에서의 인덱스. 없으면 -1 (get_bone_index_by_name은 노드 인덱스를 반환하므로 구분)
+	int get_joint_index_by_name(const std::string& name) const;
+
+	// 재질 이름으로 프리미티브를 찾아 CPU 정점 위치와 인덱스를 복사 (디버그 기록용)
+	bool get_primitive_geometry(const std::string& material_name, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const;
 
 	// 애니메이션만 있는 glTF 파일 로더 추가
 	void load_animation_only(const std::string& file_path, const std::string& want_name = "null_name");

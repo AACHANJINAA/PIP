@@ -55,7 +55,7 @@
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\Jolt\lib\$(Configuration);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\Jolt\lib\ReleaseDebugRenderer;$(LibraryPath)</LibraryPath>
     <TargetName>STL_Client</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -83,7 +83,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_OBJECT_STREAM;JPH_USE_AVX2;JPH_USE_AVX;JPH_USE_SSE4_1;JPH_USE_SSE4_2;JPH_USE_LZCNT;JPH_USE_TZCNT;JPH_USE_F16C;JPH_USE_FMADD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -95,7 +95,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Jolt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Fmod\lib;$(SolutionDir)..\Jolt\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Fmod\lib;$(SolutionDir)..\Jolt\lib\ReleaseDebugRenderer;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -170,6 +170,7 @@
     <ClInclude Include="ParticleSystemComponent.h" />
     <ClInclude Include="PhysicsCharacterControllerComponent.h" />
     <ClInclude Include="PhysicsColliderComponent.h" />
+    <ClInclude Include="PhysicsDebugCapture.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerShader.h" />
     <ClInclude Include="BillboardUIShader.h" />
@@ -308,6 +309,7 @@
     <ClCompile Include="ParticleSystemComponent.cpp" />
     <ClCompile Include="PhysicsCharacterControllerComponent.cpp" />
     <ClCompile Include="PhysicsColliderComponent.cpp" />
+    <ClCompile Include="PhysicsDebugCapture.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerShader.cpp" />
     <ClCompile Include="BillboardUIShader.cpp" />
