@@ -254,7 +254,8 @@ void MainPlayerScript::awake()
 	}
 
 	// --- 칼날 캡슐 (플레이어 메쉬의 칼 M_DKF_Sword는 ik_hand_r에 100% 스키닝됨, 값은 칼 메쉬 분석 결과) ---
-	// ik_hand_r 기준 칼은 +Z 방향으로 z = -0.152 ~ 1.142 (길이 약 1.29m)
+	// ik_hand_r 기준 칼은 glTF 원본에서 +Z 방향 z = -0.152 ~ 1.142 (길이 약 1.29m)
+	// 엔진 로더가 glTF의 Z를 뒤집으므로 엔진 안에서는 -Z 방향 z = -1.142 ~ 0.152
 	_bladeCollider = owner->get_component<PhysicsColliderComponent>();
 	if (_bladeCollider)
 	{
@@ -263,8 +264,8 @@ void MainPlayerScript::awake()
 		_bladeCollider->initialize(
 			PhysicsColliderComponent::ShapeType::Capsule,
 			{ kBladeRadius, kBladeHalfLength - kBladeRadius, 0.0f }, // x = 반지름, y = 원기둥 반높이
-			{ 0.0f, 0.0f, 0.495f },                                   // 뼈 좌표계 중심 (칼 길이의 중점)
-			{ 90.0f, 0.0f, 0.0f },                                    // Y축 캡슐을 +Z(칼끝) 방향으로
+			{ 0.0f, 0.0f, -0.495f },                                  // 뼈 좌표계 중심 (칼 길이의 중점)
+			{ 90.0f, 0.0f, 0.0f },                                    // Y축 캡슐을 Z축(칼 방향)으로
 			true,
 			PhysicsColliderComponent::BodyMode::QueryOnly);
 		_bladeCollider->attach_to_bone("ik_hand_r");

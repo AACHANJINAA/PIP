@@ -129,8 +129,8 @@
 | 항목 | 값 |
 |---|---|
 | 부착 뼈 | `ik_hand_r` |
-| 중심 | (0, 0, 0.495) |
-| 축 | +Z (Jolt 캡슐은 Y축 기준이라 X축으로 90도 회전) |
+| 중심 | (0, 0, -0.495) (엔진은 glTF Z를 뒤집으므로 분석값 +0.495의 부호 반대) |
+| 축 | Z (Jolt 캡슐은 Y축 기준이라 X축으로 90도 회전) |
 | 전체 길이 | 약 1.29m (반높이 = 0.647 - 반지름) |
 | 반지름 | 0.1 전후 (칼날만 0.096, 코등이 포함 0.132) |
 
@@ -160,8 +160,8 @@
 ```cpp
 auto blade = player->add_component<PhysicsColliderComponent>();
 blade->initialize(ShapeType::Capsule, { r, 0.647f - r, 0 },
-                  { 0, 0, 0.495f },   // center: 붙은 기준(뼈) 좌표계 오프셋
-                  { 90, 0, 0 },       // rotation_offset: Y축 캡슐을 +Z로
+                  { 0, 0, -0.495f },  // center: 붙은 기준(뼈) 좌표계 오프셋
+                  { 90, 0, 0 },       // rotation_offset: Y축 캡슐을 Z축으로
                   /*isSensor*/ true,
                   BodyMode::QueryOnly);
 blade->attach_to_bone("ik_hand_r");
@@ -187,7 +187,7 @@ blade->attach_to_bone("ik_hand_r");
 ### 3.5 검증 방법: Jolt 한 프레임 기록
 
 - 서버의 `DEBUG_VIEWER` 기록 장치(`DebugRendererRecorder`로 `physics_dump.bin` 기록, `Room.cpp:771`)를 클라이언트로 옮긴다.
-- 기록한 파일은 레포의 `Jolt/JoltViewer`로 확인한다.
+- 기록한 파일은 레포의 `Jolt/JoltViewer`로 확인한다. 원점에서 먼 기록은 `-focus=x,y,z` 인자로 카메라를 옮긴다(`BoneCollider_Spec_KR.md` 7.3).
 - 한 프레임에 **캡슐과 실제 칼날 삼각형을 함께** 기록한다. 칼 정점 3087개에 그 순간의 `ik_hand_r` 행렬을 곱해 와이어프레임으로 그리면, 캡슐이 칼날을 감싸는지 바로 보인다.
 - `DrawBodies`는 마지막 물리 스텝 때의 바디 위치를 그려서 애니메이션보다 늦을 수 있다. 캡슐도 그 순간의 뼈 행렬로 직접 그린다.
 
@@ -225,7 +225,7 @@ blade->attach_to_bone("ik_hand_r");
 
 - `PhysicsColliderComponent`에 `attach_to_bone()`, `BodyMode::QueryOnly`, `late_update`(현재·이전 월드 변환 보관)를 추가한다.
 - `get_shape()` 반환문 누락을 고친다.
-- 플레이어에 칼날 캡슐 콜라이더를 붙인다. `ik_hand_r`, 중심 (0, 0, 0.495), X축 90도, 반지름 0.1 전후, `QueryOnly`.
+- 플레이어에 칼날 캡슐 콜라이더를 붙인다. `ik_hand_r`, 중심 (0, 0, -0.495), X축 90도, 반지름 0.1 전후, `QueryOnly`.
 - 소켓 오브젝트와 그 충돌체는 건드리지 않는다.
 
 **1-3. 클라이언트 한 프레임 기록 (3.5)**
@@ -268,8 +268,8 @@ blade->attach_to_bone("ik_hand_r");
 
 1단계(1-1 ~ 1-3) 구현 이후의 알려진 문제는 `BoneCollider_Spec_KR.md` 7장에 정리했다.
 
-- 칼날 캡슐 방향이 반대다. 엔진이 glTF의 Z축을 뒤집어 읽으므로 중심을 (0, 0, -0.495)로 고쳐야 한다(미해결). 아래 3장·4장의 (0, 0, 0.495)는 수정 전 값이다.
-- 기록이 세계 좌표 그대로라 뷰어에서 찾기 어렵다. 원점 기준 기록이 필요하다(미해결).
-- Release용 Jolt lib(79MB) 커밋으로 저장소 용량이 커진다.
+- 칼날 캡슐 방향이 반대였다. 엔진이 glTF의 Z축을 뒤집어 읽으므로 중심을 (0, 0, -0.495)로 고쳤고, 기록으로 캡슐이 칼날을 감싸는 것을 확인했다.
+- 기록이 세계 좌표 그대로라 뷰어에서 찾기 어려웠다. 뷰어에 `-focus=x,y,z` 인자를 추가해 해결했다.
+- Release용 Jolt lib(LTCG 없이 27.5MB) 커밋으로 저장소 용량이 커진다.
 
 - 평타 애니메이션 한 번의 실제 길이(1.8배속 기준). 서버 피격 쿨다운 0.5초와 비교해서 연타가 씹히는지 확인해야 한다.
