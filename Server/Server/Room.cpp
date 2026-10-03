@@ -766,7 +766,9 @@ namespace PIP::SERVER
 
 		
 
-		// [핵심 2] 매 프레임 그릴 때마다 임시로 레코더를 생성해서 넘깁니다.
+		// [핵심 2] 세션 동안 유지되는 레코더 하나로 기록합니다.
+		// (캡처마다 레코더를 새로 만들면 배치/형상 ID가 1부터 다시 매겨져, 메쉬처럼 디버그 형상을 캐시하는 모양이
+		//  뷰어에서 다른 형상으로 그려집니다. 정의는 처음 쓸 때만 기록되므로 같은 레코더를 이어 써야 합니다.)
 #ifdef DEBUG_VIEWER
 		if (_isSessionOpen && _captureNextFrame && _recorder)
 		{
@@ -781,9 +783,8 @@ namespace PIP::SERVER
 
 
 
-			// [핵심 수정 1] 중괄호를 추가해서 recorder의 생명주기를 강제로 제한합니다.
 			{
-				JPH::DebugRendererRecorder recorder(*_streamOut);
+				JPH::DebugRendererRecorder& recorder = *_recorder;
 				// 1. 기존의 월드 바디들(지형, 엘리베이터 등) 그리기
 				_physicsSystem->DrawBodies(drawSettings, &recorder);
 
@@ -820,7 +821,8 @@ namespace PIP::SERVER
 					}
 				}
 				recorder.EndFrame();
-			} // <-- 이 괄호를 빠져나가면서 recorder가 정상적으로 소멸되고, 파일 쓰기가 깔끔하게 마무리됩니다.
+				_dumpFile.flush(); // 서버 실행 중에도 뷰어로 열 수 있게 바로 기록 (안 하면 마지막 프레임이 잘림)
+			}
 
 			_captureNextFrame = false;
 		}
@@ -2741,6 +2743,13 @@ namespace PIP::SERVER
 	void Room::StartPhysicsRecording()
 	{
 #ifdef DEBUG_VIEWER
+		// Jolt 디버그 렌더러는 프로세스당 하나만 전제하고 기록 파일도 하나이므로 0번 방에서만 기록
+		if (_room_id != 0)
+		{
+			MYLOG("[Physics] 물리 기록은 0번 방에서만 지원합니다. (요청 방: " << _room_id << ")");
+			return;
+		}
+
 		// 1. 세션이 안 열려있으면 (최초 1회) 파일을 생성하고 레코더를 초기화
 		if (!_isSessionOpen) {
 			_dumpFile.open("physics_dump.bin", std::ios::binary);
