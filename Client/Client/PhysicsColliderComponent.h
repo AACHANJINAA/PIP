@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <unordered_set>
 
 #include "Behavior.h"
+#include "ScriptComponent.h" // TriggerHit
 
 class PhysicsColliderComponent : public Behavior
 {
@@ -12,6 +14,9 @@ public:
 	// Body: Jolt 바디를 만들어 물리 접촉을 받음 (기존 방식)
 	// QueryOnly: 바디 없이 모양과 월드 변환만 보관 (겹침 검사, 디버그 기록용)
 	enum class BodyMode { Body, QueryOnly };
+
+	// 판정 역할: Hitbox(공격, 예: 칼날)가 켜져 있으면 Hurtbox(피격, 예: NPC 몸통)와 겹침을 검사한다
+	enum class Role { None, Hitbox, Hurtbox };
 
 	PhysicsColliderComponent();
 	~PhysicsColliderComponent() override;
@@ -37,6 +42,23 @@ public:
 	ShapeType shape_type() const { return _shapeType; }
 	BodyMode body_mode() const { return _bodyMode; }
 
+	// 판정 역할. Hurtbox는 공격 판정의 검사 대상으로 등록된다
+	void set_role(Role role);
+	Role role() const { return _role; }
+
+	// true면 오브젝트의 위치와 회전만 쓰고 스케일은 무시 (서버 히트박스처럼 미터 단위 오프셋 유지)
+	void set_ignore_owner_scale(bool ignore) { _ignoreOwnerScale = ignore; }
+
+	// 공격 판정 (Hitbox, QueryOnly 전용)
+	// 켜져 있는 동안 late_update에서 직전 → 현재 자세 사이를 나눠 Hurtbox와 겹침을 검사하고,
+	// 겹친 상대마다 한 번 game_object()->on_trigger_enter를 호출한다. 켤 때 맞힌 대상 목록을 비운다
+	void begin_hit_query();
+	void end_hit_query();
+	bool is_hit_query_active() const { return _hitQueryActive; }
+	// 이번 프레임에 난 적중 (디버그 기록용)
+	const std::vector<TriggerHit>& last_hits() const { return _lastHits; }
+	static const std::vector<PhysicsColliderComponent*>& hurtboxes() { return s_hurtboxes; }
+
 	// 특정 콜백 등록 (예: WeaponScript에서 공격 패킷 보내기용)
 	void set_on_collision_callback(std::function<void(std::shared_ptr<GameObject>)> callback)
 	{
@@ -59,6 +81,7 @@ public:
 private:
 	void create_body();
 	bool compute_world_transform(JPH::RMat44& out);
+	void run_hit_query();
 
 	ShapeType	_shapeType = ShapeType::Box;
 	BodyMode	_bodyMode = BodyMode::Body;
@@ -81,4 +104,13 @@ private:
 	bool _hasWorldTransform = false;
 	JPH::RMat44 _worldTransform = JPH::RMat44::sIdentity();
 	JPH::RMat44 _prevWorldTransform = JPH::RMat44::sIdentity();
+
+	// 판정 역할
+	Role _role = Role::None;
+	bool _ignoreOwnerScale = false;
+	bool _hitQueryActive = false;
+	std::unordered_set<const GameObject*> _hitTargets; // 이번 판정 구간에 이미 맞힌 대상
+	std::vector<TriggerHit> _lastHits;
+
+	static std::vector<PhysicsColliderComponent*> s_hurtboxes;
 };

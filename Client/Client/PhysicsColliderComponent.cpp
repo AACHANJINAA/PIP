@@ -11,10 +11,24 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Collision/CollideShape.h>
+#include <Jolt/Physics/Collision/CollisionDispatch.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+
+std::vector<PhysicsColliderComponent*> PhysicsColliderComponent::s_hurtboxes;
+
+namespace
+{
+    // 공격 판정 스윕: 한 단계당 최대 회전/이동량
+    constexpr float kMaxStepAngle = JPH::DegreesToRadians(15.0f);
+    constexpr float kMaxStepDistance = 0.2f;
+    constexpr int kMaxSteps = 12;
+}
 PhysicsColliderComponent::PhysicsColliderComponent() : _bodyID{} {}
 
 PhysicsColliderComponent::~PhysicsColliderComponent()
 {
+    std::erase(s_hurtboxes, this);
     if (!_bodyID.IsInvalid() && PhysicsManager::instance()->get_physics_system())
     {
         PhysicsManager::instance()->get_body_interface().RemoveBody(_bodyID);
@@ -84,6 +98,24 @@ void PhysicsColliderComponent::create_body()
     auto& bodyInterface = PhysicsManager::instance()->get_body_interface();
     _bodyID = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::Activate);
 }
+void PhysicsColliderComponent::set_role(Role role)
+{
+    if (_role == Role::Hurtbox) std::erase(s_hurtboxes, this);
+    _role = role;
+    if (_role == Role::Hurtbox) s_hurtboxes.push_back(this);
+}
+
+void PhysicsColliderComponent::begin_hit_query()
+{
+    _hitQueryActive = true;
+    _hitTargets.clear();
+}
+
+void PhysicsColliderComponent::end_hit_query()
+{
+    _hitQueryActive = false;
+}
+
 void PhysicsColliderComponent::set_active(bool active)
 {
     _isActive = active;
@@ -144,6 +176,83 @@ void PhysicsColliderComponent::late_update(float deltaTime)
     _prevWorldTransform = _hasWorldTransform ? _worldTransform : world;
     _worldTransform = world;
     _hasWorldTransform = true;
+
+    run_hit_query();
+}
+
+void PhysicsColliderComponent::run_hit_query()
+{
+    _lastHits.clear();
+    if (!_hitQueryActive || _role != Role::Hitbox || !_hasWorldTransform || !_shape) return;
+
+    auto owner = game_object();
+    if (!owner) return;
+
+    // 직전 → 현재 자세 사이를 나눌 단계 수 (회전 각도와 이동 거리 기준)
+    JPH::Quat q0 = _prevWorldTransform.GetQuaternion();
+    const JPH::Quat q1 = _worldTransform.GetQuaternion();
+    if (q0.Dot(q1) < 0.0f) q0 = -q0; // 짧은 쪽으로 보간
+    const float angle = 2.0f * std::acos(std::min(1.0f, std::abs(q0.Dot(q1))));
+    const JPH::Vec3 p0 = _prevWorldTransform.GetTranslation();
+    const JPH::Vec3 p1 = _worldTransform.GetTranslation();
+    const float travel = (p1 - p0).Length();
+    const int steps = std::clamp(static_cast<int>(std::ceil(std::max(angle / kMaxStepAngle, travel / kMaxStepDistance))), 1, kMaxSteps);
+
+    // 후보 거르기용 반경: 내 모양 크기 + 이번 프레임 이동량
+    const float self_radius = _shape->GetLocalBounds().GetExtent().Length();
+
+    std::vector<std::pair<PhysicsColliderComponent*, TriggerHit>> hits;
+    for (PhysicsColliderComponent* target : s_hurtboxes)
+    {
+        auto target_owner = target->game_object();
+        if (!target_owner || target_owner == owner || !target_owner->is_enable()) continue;
+        if (!target->_isActive || !target->_hasWorldTransform || !target->_shape) continue;
+        if (_hitTargets.contains(target_owner.get())) continue;
+
+        const JPH::Vec3 target_center = target->_worldTransform.GetTranslation();
+        const float reach = self_radius * 2.0f + target->_shape->GetLocalBounds().GetExtent().Length() + travel;
+        if ((target_center - p0).LengthSq() > reach * reach && (target_center - p1).LengthSq() > reach * reach) continue;
+
+        // 직전 자세는 이전 프레임에 이미 검사했으므로 t > 0인 자세만 검사
+        for (int i = 1; i <= steps; ++i)
+        {
+            const float t = static_cast<float>(i) / steps;
+            const JPH::RMat44 pose = JPH::RMat44::sRotationTranslation(q0.SLERP(q1, t).Normalized(), p0 + (p1 - p0) * t);
+
+            JPH::CollideShapeSettings settings;
+            JPH::ClosestHitCollisionCollector<JPH::CollideShapeCollector> collector;
+            JPH::CollisionDispatch::sCollideShapeVsShape(
+                _shape, target->_shape,
+                JPH::Vec3::sReplicate(1.0f), JPH::Vec3::sReplicate(1.0f),
+                pose, target->_worldTransform,
+                JPH::SubShapeIDCreator(), JPH::SubShapeIDCreator(),
+                settings, collector);
+            if (!collector.HadHit()) continue;
+
+            // 적중 지점과 그 지점에서 내 콜라이더가 움직인 방향
+            const JPH::Vec3 point = collector.mHit.mContactPointOn2;
+            const JPH::Vec3 local = pose.Inversed() * point;
+            JPH::Vec3 direction = _worldTransform * local - _prevWorldTransform * local;
+            direction = direction.LengthSq() > 1e-8f ? direction.Normalized() : JPH::Vec3::sZero();
+
+            TriggerHit hit;
+            hit.self = this;
+            hit.other = target;
+            hit.point = { point.GetX(), point.GetY(), point.GetZ() };
+            hit.direction = { direction.GetX(), direction.GetY(), direction.GetZ() };
+            hits.emplace_back(target, hit);
+            _hitTargets.insert(target_owner.get());
+            break;
+        }
+    }
+
+    // 콜백 안에서 오브젝트가 생성/파괴될 수 있으므로 검사를 마친 뒤 전달
+    for (const auto& [target, hit] : hits)
+    {
+        _lastHits.push_back(hit);
+        if (auto target_owner = target->game_object())
+            owner->on_trigger_enter(target_owner, hit);
+    }
 }
 
 bool PhysicsColliderComponent::compute_world_transform(JPH::RMat44& out)
@@ -153,6 +262,13 @@ bool PhysicsColliderComponent::compute_world_transform(JPH::RMat44& out)
 
     // 기준 행렬: 뼈 부착이면 (뼈 모델 행렬 × 오브젝트 월드), 아니면 오브젝트 월드
     XMMATRIX basis = XMLoadFloat4x4(&owner->transform()->world_matrix());
+    if (_ignoreOwnerScale)
+    {
+        // 연출용 스케일(예: 몬스터 1.5배)이 오프셋에 곱해지지 않도록 위치와 회전만 사용
+        XMVECTOR owner_scale, owner_rotation, owner_translation;
+        if (XMMatrixDecompose(&owner_scale, &owner_rotation, &owner_translation, basis))
+            basis = XMMatrixAffineTransformation(XMVectorReplicate(1.0f), XMVectorZero(), owner_rotation, owner_translation);
+    }
     if (is_attached_to_bone())
     {
         auto anim = owner->get_component<AnimationComponent>();

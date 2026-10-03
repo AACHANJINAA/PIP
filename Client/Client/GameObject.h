@@ -4,6 +4,7 @@
 class Component;
 class Behavior;
 class TransformComponent; // TransformComponent에 대한 전방 선언 추가
+struct TriggerHit;
 class GameObject : public Object, public std::enable_shared_from_this<GameObject>
 {
 public:
@@ -24,6 +25,7 @@ public:
 	void on_collision_enter(const std::shared_ptr<GameObject>& other);
 	void on_collision_stay(const std::shared_ptr<GameObject>& other);
 	void on_collision_exit(const std::shared_ptr<GameObject>& other);
+	void on_trigger_enter(const std::shared_ptr<GameObject>& other, const TriggerHit& hit);
 
 	void set_enabled(bool enabled) { _enabled = enabled; }
 	bool is_enable() const { return _enabled; }

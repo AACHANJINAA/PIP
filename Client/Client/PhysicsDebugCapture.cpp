@@ -17,6 +17,8 @@
 #include "ReadGLTFMesh.h"
 #include "TransformComponent.h"
 
+#include <unordered_set>
+
 namespace
 {
 	constexpr const char* kDumpFileName = "client_physics_dump.bin";
@@ -151,8 +153,28 @@ void PhysicsDebugCapture::record_frame()
 		physics_system->DrawBodies(settings, renderer);
 	}
 
-	// 2. QueryOnly 콜라이더 (현재: 초록, 직전 프레임: 어두운 초록) + 부착 뼈 축
+	// 2. QueryOnly 콜라이더 + 부착 뼈 축
+	//    공격(Hitbox)과 기타: 초록 / 직전 프레임 어두운 초록, 피격(Hurtbox): 하늘색, 이번 프레임에 맞은 Hurtbox: 빨강
+	using Role = PhysicsColliderComponent::Role;
 	const JPH::Color prev_color(0, 100, 0);
+	const JPH::Color hurtbox_color(80, 200, 255);
+
+	std::unordered_set<const PhysicsColliderComponent*> hit_this_frame;
+	for (const auto& object : ObjectManager::instance()->get_all_game_objects())
+	{
+		if (!object || !object->is_enable() || object->is_destroyed()) continue;
+		for (const auto& component : object->components())
+			if (auto collider = std::dynamic_pointer_cast<PhysicsColliderComponent>(component))
+				for (const auto& hit : collider->last_hits())
+				{
+					hit_this_frame.insert(hit.other);
+					// 적중 지점 (빨간 십자)과 그 지점의 공격 진행 방향 (노란 화살표)
+					const JPH::RVec3 point(hit.point.x, hit.point.y, hit.point.z);
+					renderer->DrawMarker(point, JPH::Color::sRed, 0.3f);
+					renderer->DrawArrow(point, point + 0.5f * JPH::Vec3(hit.direction.x, hit.direction.y, hit.direction.z), JPH::Color::sYellow, 0.05f);
+				}
+	}
+
 	for (const auto& object : ObjectManager::instance()->get_all_game_objects())
 	{
 		if (!object || !object->is_enable() || object->is_destroyed()) continue;
@@ -164,6 +186,12 @@ void PhysicsDebugCapture::record_frame()
 			if (!collider->has_world_transform() || !collider->get_shape()) continue;
 
 			const JPH::Shape* shape = collider->get_shape();
+			if (collider->role() == Role::Hurtbox)
+			{
+				const JPH::Color color = hit_this_frame.contains(collider.get()) ? JPH::Color::sRed : hurtbox_color;
+				shape->Draw(renderer, collider->world_transform(), JPH::Vec3::sReplicate(1.0f), color, false, true);
+				continue;
+			}
 			shape->Draw(renderer, collider->prev_world_transform(), JPH::Vec3::sReplicate(1.0f), prev_color, false, true);
 			shape->Draw(renderer, collider->world_transform(), JPH::Vec3::sReplicate(1.0f), JPH::Color::sGreen, false, true);
 
@@ -206,6 +234,63 @@ void PhysicsDebugCapture::record_frame()
 			XMFLOAT3 pos = owner->transform()->get_world_position();
 			renderer->DrawText3D(JPH::RVec3(pos.x, pos.y + 2.2f, pos.z), _label, JPH::Color::sYellow, 0.2f);
 		}
+	}
+
+	// 4. 피격 히트박스를 가진 오브젝트(NPC)의 실제 메쉬 (애니메이션 적용, 회색 와이어). 기록 크기를 줄이려고 플레이어 근처만
+	constexpr float kMeshDrawRange = 15.0f;
+	XMFLOAT3 player_pos = { 0.0f, 0.0f, 0.0f };
+	bool has_player = false;
+	for (const auto& reference : _references)
+		if (auto owner = reference.owner.lock(); owner && owner->transform())
+		{
+			player_pos = owner->transform()->get_world_position();
+			has_player = true;
+			break;
+		}
+
+	for (PhysicsColliderComponent* hurtbox : PhysicsColliderComponent::hurtboxes())
+	{
+		auto owner = hurtbox->game_object();
+		if (!owner || !owner->is_enable() || !owner->transform()) continue;
+
+		const XMFLOAT3 pos = owner->transform()->get_world_position();
+		const float dx = pos.x - player_pos.x, dy = pos.y - player_pos.y, dz = pos.z - player_pos.z;
+		if (has_player && dx * dx + dy * dy + dz * dz > kMeshDrawRange * kMeshDrawRange) continue;
+
+		auto render = owner->get_component<RenderComponent>();
+		auto gltf = render ? std::dynamic_pointer_cast<ReadGLTFMesh>(render->mesh()) : nullptr;
+		if (!gltf) continue;
+
+		// 애니메이션이 있으면 그 자세로 CPU 스키닝, 없으면 원래 정점
+		std::vector<XMFLOAT3> positions;
+		std::vector<UINT> indices;
+		auto anim = owner->get_component<AnimationComponent>();
+		const bool skinned = anim && anim->pose_mesh() == gltf.get() && !anim->bone_palette().empty();
+		static const std::vector<XMFLOAT4X4> kNoPalette;
+		if (!gltf->get_skinned_geometry(skinned ? anim->bone_palette() : kNoPalette, positions, indices) || indices.empty()) continue;
+
+		// 모델 공간 → 월드 (렌더링과 같게 스케일 포함)
+		const XMMATRIX world = XMLoadFloat4x4(&owner->transform()->world_matrix());
+		JPH::Array<JPH::DebugRenderer::Vertex> vertices(positions.size());
+		JPH::AABox bounds;
+		for (size_t i = 0; i < positions.size(); ++i)
+		{
+			XMFLOAT3 p;
+			XMStoreFloat3(&p, XMVector3TransformCoord(XMLoadFloat3(&positions[i]), world));
+			vertices[i].mPosition = JPH::Float3(p.x, p.y, p.z);
+			vertices[i].mNormal = JPH::Float3(0.0f, 1.0f, 0.0f);
+			vertices[i].mUV = JPH::Float2(0.0f, 0.0f);
+			vertices[i].mColor = JPH::Color::sWhite;
+			bounds.Encapsulate(JPH::Vec3(p.x, p.y, p.z));
+		}
+		static_assert(std::is_same_v<UINT, JPH::uint32>);
+
+		JPH::DebugRenderer* base_renderer = renderer; // 6인자 DrawGeometry는 기본 클래스에만 있음
+		JPH::DebugRenderer::Batch batch = base_renderer->CreateTriangleBatch(vertices.data(), static_cast<int>(vertices.size()),
+		                                                                    indices.data(), static_cast<int>(indices.size()));
+		JPH::DebugRenderer::GeometryRef geometry = new JPH::DebugRenderer::Geometry(batch, bounds);
+		base_renderer->DrawGeometry(JPH::RMat44::sIdentity(), JPH::Color::sGrey, geometry,
+		                            JPH::DebugRenderer::ECullMode::Off, JPH::DebugRenderer::ECastShadow::Off, JPH::DebugRenderer::EDrawMode::Wireframe);
 	}
 
 	renderer->EndFrame();

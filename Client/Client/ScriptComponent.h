@@ -3,6 +3,17 @@
 #include "Behavior.h"
 #include "TransformComponent.h"
 
+class PhysicsColliderComponent;
+
+// 검사 전용 콜라이더(공격 판정)가 다른 콜라이더(피격 판정)와 겹쳤을 때 전달되는 정보
+struct TriggerHit
+{
+    PhysicsColliderComponent* self = nullptr;   // 이 오브젝트의 콜라이더 (예: 칼날)
+    PhysicsColliderComponent* other = nullptr;  // 상대 콜라이더 (예: NPC 히트박스)
+    XMFLOAT3 point = { 0, 0, 0 };               // 적중 지점 (월드)
+    XMFLOAT3 direction = { 0, 0, 0 };           // 적중 지점에서 공격 콜라이더가 움직인 방향 (정규화)
+};
+
 class ScriptComponent : public Behavior
 {
 public:
@@ -19,4 +30,6 @@ public:
     virtual void on_collision_enter(std::shared_ptr<GameObject> other) {}
     virtual void on_collision_stay(std::shared_ptr<GameObject> other) {}
     virtual void on_collision_exit(std::shared_ptr<GameObject> other) {}
+    // 공격 판정 콜라이더가 켜져 있는 동안 상대마다 한 번 호출 (Unity의 OnTriggerEnter와 비슷)
+    virtual void on_trigger_enter(std::shared_ptr<GameObject> other, const TriggerHit& hit) {}
 };
