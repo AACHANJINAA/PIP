@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "LinearAllocator.h"
 
 LinearAllocator::LinearAllocator(ID3D12Device* device, size_t totalSize, UINT frameCount)

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "RootSignature.h"
 
 const std::string& DefaultRootSignatureGenerator::name() const

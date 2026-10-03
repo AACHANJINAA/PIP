@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CombatDef.h"
 #include "GridMap.h"
 #include "JoltSetup.h"

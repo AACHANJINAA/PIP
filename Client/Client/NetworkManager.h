@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "stdafx.h"
 void error_display(const char* msg, int err_no);
 class NetworkManager : public Singleton<NetworkManager>

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "PhysicsDebugCapture.h"
 
 #ifdef JPH_DEBUG_RENDERER

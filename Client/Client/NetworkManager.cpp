@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "NetworkManager.h"
 #include "GameFramework.h"
 #include "LayerManager.h"

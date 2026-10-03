@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ResourceManager.h"
 #include "LightManager.h"
 #include "Mesh.h" // ReadObjMesh, ReadGlbMesh 등을 포함해야 함
