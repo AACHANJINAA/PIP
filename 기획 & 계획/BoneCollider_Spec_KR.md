@@ -192,8 +192,8 @@ _bladeCollider = owner->add_component<PhysicsColliderComponent>();
 _bladeCollider->initialize(
     PhysicsColliderComponent::ShapeType::Capsule,
     { kBladeRadius, 0.647f - kBladeRadius, 0.0f },   // x = 반지름, y = 반높이
-    { 0.0f, 0.0f, 0.495f },                           // 뼈 좌표계 중심
-    { 90.0f, 0.0f, 0.0f },                            // Y축 캡슐을 +Z(칼끝) 방향으로
+    { 0.0f, 0.0f, -0.495f },                          // 뼈 좌표계 중심 (엔진은 glTF Z를 뒤집으므로 -Z, 7.1)
+    { 90.0f, 0.0f, 0.0f },                            // Y축 캡슐을 Z축(칼 방향)으로
     true,
     PhysicsColliderComponent::BodyMode::QueryOnly);
 _bladeCollider->attach_to_bone("ik_hand_r");
@@ -237,7 +237,9 @@ if (anim->try_get_bone_world_matrix("ik_hand_r", handWorld))
 1. 클라이언트를 Debug로 실행한다.
 2. **F8**: 클라이언트와 서버가 각각 한 프레임을 기록한다. 클라이언트 파일은 실행 폴더의 `client_physics_dump.bin`이다.
 3. **F7**: 평타 자동 연속 기록을 켠다. 켠 상태로 평타를 치면 30%, 45%, 60% 세 프레임이 기록된다. 다시 누르면 끈다.
-4. `Jolt/JoltViewer/JoltViewer.exe <파일 경로>`로 연다. 인자는 공백으로 나뉘므로 경로에 공백이 없어야 한다. 파일은 클라이언트 작업 폴더에 생긴다(VS에서 실행하면 보통 `Client/Client`).
+4. `Jolt/JoltViewer/JoltViewer.exe -focus=x,y,z <파일 경로>`로 연다.
+   - 기록은 세계 좌표 그대로라, `-focus`로 카메라 시작 위치를 플레이어 쪽으로 보낸다. 세션 첫 기록 때 클라이언트 로그에 `[PhysicsDebugCapture] 뷰어: JoltViewer.exe -focus=...`가 찍히므로 그 값을 쓴다. 생략하면 원점을 본다.
+   - 인자는 공백으로 나뉘므로 경로에 공백이 없어야 한다. 파일은 클라이언트 작업 폴더에 생긴다(VS에서 실행하면 보통 `Client/Client`).
 5. 기록할 때마다 파일을 flush하므로 게임을 켜 둔 상태에서도 바로 열 수 있다. 세션(파일)은 클라이언트 종료 시 닫히고, 다음 실행에서 첫 기록 때 새로 만든다(덮어씀).
 6. 기록은 Debug와 Release 모두 동작한다. 클라이언트 Release는 디버그 렌더러를 켠 별도 Jolt 라이브러리를 쓴다(6장 참고).
 
@@ -246,10 +248,10 @@ if (anim->try_get_bone_world_matrix("ik_hand_r", handWorld))
 ## 5. 검증 체크리스트
 
 - [ ] 기존 동작 유지: 무기 소켓 오브젝트, 대검 스킬 연출, `Chess_Scene` NPC 충돌이 그대로다.
-- [ ] 대기 자세에서 초록 캡슐이 흰 칼날을 감싼다.
+- [x] 초록 캡슐이 흰 칼날을 감싼다 (2026-10-04 F8 기록으로 확인).
 - [ ] 평타 30%, 45%, 60% 자세에서 캡슐이 칼날을 따라간다.
-- [ ] 칼끝과 손잡이 끝이 캡슐 밖으로 나오지 않는다.
-- [ ] `ik_hand_r` 축의 +Z가 칼끝 방향이다.
+- [x] 칼끝과 손잡이 끝이 캡슐 밖으로 나오지 않는다.
+- [x] `ik_hand_r` 축의 -Z가 칼끝 방향이다 (엔진은 glTF Z를 뒤집음, 7.1).
 - [ ] 다른 플레이어나 더미가 있을 때도 내 캡슐이 내 칼에 붙어 있다(공유 문제 해결 확인).
 - [x] Debug/Release 빌드 성공 (Release도 `ReleaseDebugRenderer` Jolt로 기록 가능).
 - [ ] 캡슐 반지름 확정 (칼날만 0.1, 코등이 포함 0.13).
@@ -260,8 +262,8 @@ if (anim->try_get_bone_world_matrix("ik_hand_r", handWorld))
 
 | 항목 | 내용 | 대응 |
 |---|---|---|
-| Jolt 라이브러리 (해결) | 기존 `Jolt/lib/Debug`(/MTd)에는 디버그 렌더러가 있고, `Jolt/lib/Release`(/MT)는 Jolt CMake의 `Distribution` 구성과 같아 디버그 렌더러가 없다. Debug Jolt는 CRT(/MTd vs /MT)가 달라 Release에 링크할 수 없다 | PIP에 포함된 Jolt 소스와 완전히 일치하는 커밋(`JoltPhysics` 리포 `e486f5b5`, 5.5.1-dev)을 찾아 CMake `Release` 구성(최적화 + `JPH_DEBUG_RENDERER` + `JPH_PROFILE_ENABLED` + `JPH_FLOATING_POINT_EXCEPTIONS_ENABLED`, 정적 CRT, DX12 컴퓨트 포함, Vulkan 제외)으로 빌드해 `Jolt/lib/ReleaseDebugRenderer`에 두었다. 클라이언트 Release만 이 라이브러리와 정의를 쓰고, 서버는 기존 `lib/Release`를 그대로 쓴다 |
-| JoltViewer 파일 열기 (해결) | Jolt 소스 확인 결과 실행 인자로 파일 경로를 받는다(`JoltViewer <파일>`). 인자를 공백으로 나누므로 경로에 공백이 있으면 안 된다 | 4.4에 반영 |
+| Jolt 라이브러리 (해결) | 기존 `Jolt/lib/Debug`(/MTd)에는 디버그 렌더러가 있고, `Jolt/lib/Release`(/MT)는 Jolt CMake의 `Distribution` 구성과 같아 디버그 렌더러가 없다. Debug Jolt는 CRT(/MTd vs /MT)가 달라 Release에 링크할 수 없다 | PIP에 포함된 Jolt 소스와 완전히 일치하는 커밋(`JoltPhysics` 리포 `e486f5b5`, 5.5.1-dev)을 찾아 CMake `Release` 구성(최적화 + `JPH_DEBUG_RENDERER` + `JPH_PROFILE_ENABLED` + `JPH_FLOATING_POINT_EXCEPTIONS_ENABLED`, 정적 CRT, DX12 컴퓨트 포함, Vulkan 제외)으로 빌드해 `Jolt/lib/ReleaseDebugRenderer`에 두었다. 클라이언트 툴셋(v143 기본값 MSVC 14.38)과 같은 컴파일러를 쓰고 LTCG는 끈다(7.6). 클라이언트 Release만 이 라이브러리와 정의를 쓰고, 서버는 기존 `lib/Release`를 그대로 쓴다 |
+| JoltViewer 파일 열기 (해결) | Jolt 소스 확인 결과 실행 인자로 파일 경로를 받는다(`JoltViewer <파일>`). 인자를 공백으로 나누므로 경로에 공백이 있으면 안 된다. 카메라 시작 위치 인자 `-focus=x,y,z`를 추가했다(7.3) | 4.4에 반영 |
 | 콜라이더 여러 개 | `PhysicsManager`는 충돌 알림 때 첫 번째 콜라이더만 찾는다 | 칼날 캡슐은 `QueryOnly`라 무관. NPC 부위별 히트박스(2단계)에서 해결 |
 | 스케일 | Jolt 모양은 행렬 스케일을 반영하지 않는다 | 스케일 제거 후 경고 로그. 스케일 있는 NPC는 2단계에서 모양 크기에 반영 |
 | `Body` 모드 뼈 부착 | 물리 스텝이 `late_update`보다 먼저라 한 프레임 늦다 | 이번 범위는 `QueryOnly`만 사용 |
@@ -272,24 +274,27 @@ if (anim->try_get_bone_world_matrix("ik_hand_r", handWorld))
 
 1-1 ~ 1-3 구현을 커밋했고, JoltViewer로 첫 기록을 확인했다.
 
-### 7.1 칼날 캡슐 방향이 반대 (미해결)
+### 7.1 칼날 캡슐 방향이 반대 (해결)
 
 - JoltViewer에서 초록 캡슐이 손잡이에서 칼날 **반대쪽**으로 뻗어 있었다.
 - 원인: 엔진의 glTF 로더가 오른손 → 왼손 좌표계 변환으로 정점과 노드 행렬의 Z를 뒤집는다(`ReadGLTFMesh.cpp`의 `-positions[i].z`, `z_flip * m * z_flip`). 칼 메쉬 분석값(+Z, z = -0.152 ~ 1.142)은 glTF 원본 기준이라, 엔진 안에서는 칼이 뼈 기준 **-Z** 방향(z = -1.142 ~ 0.152)에 놓인다.
-- 수정 예정: 캡슐 중심을 (0, 0, 0.495)에서 **(0, 0, -0.495)**로 바꾼다. 회전(X축 90도)은 캡슐 축만 Z에 맞추므로 그대로 둔다. 이 문서 4.1과 `HitFeel_Plan_KR.md`의 값도 함께 고친다.
+- 수정: 캡슐 중심을 (0, 0, 0.495)에서 **(0, 0, -0.495)**로 바꿨다(`MainPlayerScript.cpp`). 회전(X축 90도)은 캡슐 축만 Z에 맞추므로 그대로 둔다. 이 문서 4.1과 `HitFeel_Plan_KR.md`의 값도 함께 고쳤다.
+- 확인: F8 기록에서 캡슐이 흰 칼날을 칼끝부터 손잡이 끝까지 감싸고, 뼈 축 Z가 손잡이 쪽을 가리킨다(2026-10-04).
 - 참고: 같은 기록에서 노란 캡슐은 기존 소켓 오브젝트의 무기 충돌체(`LongswordScript`)다. 공격 판정이 켜졌을 때만 따라 움직여서 마지막 활성 위치에 멈춰 있다. 판정에 쓰이지 않는다.
 
 ### 7.2 커밋 용량
 
-- `Jolt/lib/ReleaseDebugRenderer/Jolt.lib`가 79MB다. GitHub는 50MB 초과 파일에 경고를 띄우지만 100MB 미만이라 푸시는 된다.
+- `Jolt/lib/ReleaseDebugRenderer/Jolt.lib`는 처음에 LTCG를 켜고 빌드해 79MB였다. LTCG를 끄고 다시 빌드해 27.5MB가 됐다(7.6).
 - Jolt lib는 LFS가 아니라 일반 git 파일로 관리된다(기존 Debug 67MB, Release 24MB와 같음).
 - `.gitignore`의 Jolt 예외를 `!Jolt/lib/*/`로 바꿔 구성 폴더 이름과 상관없이 추적되게 했다.
 
-### 7.3 원점 기준 기록 없음 (미해결)
+### 7.3 원점에서 먼 기록이 뷰어에서 안 보임 (해결)
 
 - 기록은 세계 좌표 그대로 저장된다. 플레이 위치가 원점에서 멀면(예: (-215, 8, -366)) 뷰어 카메라에서 빈 화면처럼 보인다.
-- 임시 방법: 기록 파일의 선, 삼각형, 라벨, 형상 위치를 첫 프레임 칼날 중심만큼 빼서 사본을 만든다(`client_physics_dump*.bin`은 git 무시 대상). 형상 정의는 로컬 좌표라 그대로 둔다.
-- 수정 예정: 클라이언트가 첫 기록 때의 플레이어 위치를 원점으로 잡고 모든 그림을 그만큼 옮겨 기록한다. 한 파일 안의 캡처는 같은 기준점을 써서 프레임 사이 움직임을 그대로 비교할 수 있게 한다.
+- 기록 쪽을 옮기는 대신 뷰어를 고쳤다. Jolt 디버그 렌더러는 프로세스당 하나만 만들 수 있어서(`DebugRenderer::sInstance`) 기록 시 좌표를 옮기는 래퍼를 끼울 수 없고, 바디를 직접 다시 그려야 해서 뷰어 쪽이 더 간단하다.
+- `JoltViewer`에 `-focus=x,y,z` 인자를 추가했다. 카메라가 그 위치를 뒤쪽 위(+3, +6)에서 바라보며 시작한다. 기록 파일은 세계 좌표 그대로라 서버 기록과도 같은 좌표로 비교할 수 있다.
+- 클라이언트는 세션 첫 기록 때 플레이어 위치로 만든 뷰어 실행 명령을 로그로 남긴다(`PhysicsDebugCapture::open_session`).
+- 뷰어 소스와 빌드 방법은 7.5.
 
 ### 7.4 서버 기록 수정 (해결)
 
@@ -300,3 +305,29 @@ if (anim->try_get_bone_world_matrix("ik_hand_r", handWorld))
 - 수정: 세션 레코더 하나를 계속 쓰고 캡처마다 flush한다. 0번 방에서만 기록한다(디버그 렌더러는 프로세스당 하나를 전제).
 - 클라이언트 `PhysicsDebugCapture`는 처음부터 같은 방식이라 해당 없다.
 
+### 7.5 JoltViewer 소스 (PIP에 포함)
+
+- 뷰어를 PIP 안에서 고치고 빌드할 수 있게 `Jolt/JoltViewer`(뷰어 소스)와 `Jolt/TestFramework`를 JoltPhysics `e486f5b5`(PIP `Jolt/Jolt` 소스와 같은 커밋)에서 가져왔다.
+- `Jolt/JoltViewer/CMakeLists.txt`는 원본 `Build/CMakeLists.txt`를 옮긴 것이다. PIP `.gitignore`가 `Build/` 폴더를 무시해서 위치를 바꿨고, 기본값은 JoltViewer만 빌드한다.
+- `JPH_USE_DXC`를 기본 OFF로 바꿨다. ON이면 실행 시 `dxcompiler.dll`이 필요하고, OFF면 Windows 기본 FXC(d3dcompiler_47)를 쓴다. 뷰어는 컴퓨트 셰이더를 쓰지 않는다.
+- 셰이더 등 실행 자산은 기존 `Jolt/Assets`를 쓴다(뷰어가 exe 위쪽 폴더에서 `Assets`를 찾음).
+- 빌드 후 결과물을 `Jolt/JoltViewer/JoltViewer.exe`로 복사한다. 빌드 폴더 `Jolt/JoltViewer/Build`는 git 무시 대상이다.
+
+```bash
+cmake -S Jolt/JoltViewer -B Jolt/JoltViewer/Build -G "Visual Studio 17 2022" -A x64
+cmake --build Jolt/JoltViewer/Build --config Release --target JoltViewer
+cp Jolt/JoltViewer/Build/Release/JoltViewer.exe Jolt/JoltViewer/JoltViewer.exe
+```
+
+### 7.6 클라이언트 Release 링크 실패 (해결)
+
+- 증상: 클라이언트 Release 빌드에서 `LINK : fatal error C1007: 인식할 수 없는 플래그 '-archSSE2'이(가) 'p2'에 있습니다`.
+- 원인: `ReleaseDebugRenderer/Jolt.lib`를 CMake 기본 컴파일러(MSVC 14.44)로, LTCG(`/GL`)를 켠 채 빌드했다. 클라이언트 툴셋 v143은 이 PC에서 14.38을 쓰고(`Microsoft.VCToolsVersion.v143.default.txt`), LTCG lib에 든 중간 코드는 그보다 오래된 링커가 읽지 못한다.
+- 수정: 같은 소스와 구성으로 14.38, LTCG OFF로 다시 빌드했다. LTCG가 없는 lib는 같거나 더 새 컴파일러면 링크되므로 VS 업데이트나 다른 PC에서도 깨지지 않는다.
+
+```bash
+cmake -S Jolt/JoltViewer -B <빌드 폴더> -G "Visual Studio 17 2022" -A x64 -T "v143,version=14.38" -DINTERPROCEDURAL_OPTIMIZATION=OFF -DJPH_USE_DXC=ON -DTARGET_VIEWER=OFF
+cmake --build <빌드 폴더> --config Release --target Jolt
+```
+
+- 결과물 `Release/Jolt.lib`를 `Jolt/lib/ReleaseDebugRenderer/Jolt.lib`로 복사한다. `JPH_USE_DXC=ON`은 기존 lib와 같게 맞춘 것이다(뷰어 기본값은 OFF).

@@ -124,6 +124,16 @@ bool PhysicsDebugCapture::open_session()
 	_recorder = std::make_unique<JPH::DebugRendererRecorder>(*_stream);
 	_capturedFrames = 0;
 	CLOG("[PhysicsDebugCapture] 기록 세션 시작: " << kDumpFileName);
+
+	// 기록은 세계 좌표 그대로라, 뷰어 카메라를 기준 형상 소유자(플레이어) 위치로 보내는 명령을 남김
+	for (const auto& reference : _references)
+	{
+		auto owner = reference.owner.lock();
+		if (!owner || !owner->transform()) continue;
+		XMFLOAT3 pos = owner->transform()->get_world_position();
+		CLOG("[PhysicsDebugCapture] 뷰어: JoltViewer.exe -focus=" << pos.x << "," << pos.y << "," << pos.z << " <" << kDumpFileName << " 경로>");
+		break;
+	}
 	return true;
 }
 
