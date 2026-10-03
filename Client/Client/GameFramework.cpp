@@ -9,6 +9,7 @@
 #include "Renderer.h"
 #include "UIManager.h"
 #include "SoundManager.h"
+#include "PhysicsDebugCapture.h"
 #include "DamageTextManager.h"
 
 #include "DescriptorManager.h"
@@ -121,6 +122,7 @@ void GameFramework::OnDestroy()
 	DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pdxgiDebug));
 	if (pdxgiDebug) pdxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
 #endif
+	PhysicsDebugCapture::instance()->close_session();
 	ImGuiManager::instance()->release();
 	UIManager::instance()->release();
 	SoundManager::instance()->release();
@@ -456,6 +458,9 @@ void GameFramework::FrameAdvance()
 
 	// 사운드 업데이트
 	SoundManager::instance()->update(deltaTime);
+
+	// 물리 디버그 기록 (모든 late_update 이후라 화면에 그려질 자세와 일치)
+	PhysicsDebugCapture::instance()->process_end_of_frame();
 
 	// ---------------------------------------------------------
 	// 3. [비동기 리소스 업로드] (대기 없음!)

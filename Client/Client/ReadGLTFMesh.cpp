@@ -432,7 +432,8 @@ void ReadGLTFMesh::update_animation(float& delta_time, const std::string& animat
 	}
 }
 
-void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop)
+void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop,
+	std::vector<DirectX::XMFLOAT4X4>* out_joint_model_matrices)
 {
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
@@ -446,6 +447,17 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 		DirectX::XMFLOAT4X4 identity;
 		DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
 		std::fill(bone_transforms.begin(), bone_transforms.end(), identity);
+
+		// 스키닝 행렬이 항등이면 화면에는 바인드 포즈가 그려지므로, 뼈 행렬도 바인드 포즈(역바인드 행렬의 역)로 채움
+		if (out_joint_model_matrices)
+		{
+			out_joint_model_matrices->resize(_joints.size());
+			for (size_t i = 0; i < _joints.size(); ++i)
+			{
+				XMMATRIX inverse_bind_matrix = XMLoadFloat4x4(&_skeleton[i]._inverse_bind_matrix);
+				XMStoreFloat4x4(&(*out_joint_model_matrices)[i], XMMatrixInverse(nullptr, inverse_bind_matrix));
+			}
+		}
 
 		return;
 	}
@@ -569,6 +581,16 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 
 		// GPU 전송을 위해 Transpose (Row-Major)
 		XMStoreFloat4x4(&bone_transforms[i], XMMatrixTranspose(final_matrix));
+	}
+
+	// 5-1. 조인트별 모델 공간 뼈 행렬 (캐릭터별 보관용, 공용 _nodes는 다음 캐릭터가 덮어쓰므로 여기서 복사)
+	if (out_joint_model_matrices)
+	{
+		out_joint_model_matrices->resize(_joints.size());
+		for (size_t i = 0; i < _joints.size(); ++i)
+		{
+			(*out_joint_model_matrices)[i] = _nodes[_joints[i]]._global_transform;
+		}
 	}
 
 	// 6. GPU 업로드
@@ -1677,6 +1699,42 @@ int ReadGLTFMesh::get_bone_index_by_name(const std::string& name) const
 		}
 	}
 	return -1; // 못 찾음
+}
+
+int ReadGLTFMesh::get_joint_index_by_name(const std::string& name) const
+{
+	for (size_t i = 0; i < _skeleton.size(); ++i)
+	{
+		if (_skeleton[i]._name == name)
+		{
+			return static_cast<int>(i); // 조인트 인덱스 반환
+		}
+	}
+	return -1; // 못 찾음
+}
+
+bool ReadGLTFMesh::get_primitive_geometry(const std::string& material_name, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const
+{
+	for (const auto& primitive : _primitives)
+	{
+		if (primitive->_materialIndex < 0 || primitive->_materialIndex >= static_cast<int>(_material_names.size())) continue;
+		if (_material_names[primitive->_materialIndex] != material_name) continue;
+
+		out_positions.clear();
+		if (!primitive->_skinned_vertices.empty())
+		{
+			out_positions.reserve(primitive->_skinned_vertices.size());
+			for (const auto& v : primitive->_skinned_vertices) out_positions.push_back(v._position);
+		}
+		else
+		{
+			out_positions.reserve(primitive->_vertices.size());
+			for (const auto& v : primitive->_vertices) out_positions.push_back(v._position);
+		}
+		out_indices = primitive->_indices;
+		return !out_positions.empty();
+	}
+	return false;
 }
 
 XMFLOAT4X4 ReadGLTFMesh::get_socket_transform(std::string& bone_name) const

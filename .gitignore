@@ -378,14 +378,13 @@ Content/Developers/
 # Ignore Binaries and Intermediate folders within plugins
 /Plugins/*/Binaries/
 /Plugins/*/Intermediate/
-# Force track Jolt lib folder
+# Force track Jolt lib folder (구성별 하위 폴더 전체: Debug, Release, ReleaseDebugRenderer 등)
 !Jolt/lib/
-
-!Jolt/lib/Debug/
-!Jolt/lib/Release/
+!Jolt/lib/*/
 
 .gemini/
 gha-creds-*.json
 *.jbin
 /Server/Server/physics_dump.bin
 /Jolt/JoltViewer/physics_dump.bin
+client_physics_dump*.bin

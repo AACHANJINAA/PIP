@@ -44,6 +44,15 @@ public:
 	bool is_anim_finished() const { return _isFinished; }
 	void set_anim_speed(float wantSpeed) { _animationSpeed = std::max(wantSpeed, 0.0f); }
 
+	// --- 캐릭터별 뼈 자세 조회 ---
+	// late_update에서 계산된 이 캐릭터의 뼈 행렬 (공용 메쉬의 _nodes와 달리 다른 캐릭터가 덮어쓰지 않음)
+	// late_update 이후부터 다음 프레임 late_update 전까지 유효. 업데이트 단계에서 읽으면 직전 프레임 자세
+	bool has_pose() const { return !_jointModelMatrices.empty(); }
+	// 모델 공간 뼈 행렬. 자세가 없거나 뼈가 없으면 false
+	bool try_get_bone_model_matrix(const std::string& bone_name, XMFLOAT4X4& out) const;
+	// 모델 공간 뼈 행렬 × 오브젝트 월드 행렬
+	bool try_get_bone_world_matrix(const std::string& bone_name, XMFLOAT4X4& out) const;
+
 
 	//// DW설명 : 뼈대 변환 행렬 버퍼 얻기 -> 작동 안함
 	//const ComPtr<ID3D12Resource>& get_bone_palette_buffer() const { return _bone_palette_buffer; }
@@ -94,5 +103,11 @@ private:
 	// 인스턴싱을 위한 노드 정보와, 뼈대 행렬 들고있기
 	std::vector<NodeInfo> _nodes; // 노드 정보 리스트 (glTF node index와 1:1 매칭)
 	std::vector<DirectX::XMFLOAT4X4> _boneTransforms; // 뼈대 행렬 팔레트 (CPU 메모리) -> 뼈대 행렬들을 애니메이션 컴포넌트가 관리하도록 변경
+
+	// 캐릭터별 뼈 자세 (조인트 순서, 모델 공간, 전치하지 않음)
+	std::vector<DirectX::XMFLOAT4X4> _jointModelMatrices;
+	const ReadGLTFMesh* _poseMesh = nullptr; // _jointModelMatrices를 계산한 메쉬
+	mutable std::unordered_map<std::string, int> _jointIndexCache; // 뼈 이름 -> 조인트 인덱스
+	mutable const ReadGLTFMesh* _jointIndexCacheMesh = nullptr;      // 캐시를 만든 메쉬
 };
 

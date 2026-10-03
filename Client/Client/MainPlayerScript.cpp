@@ -29,6 +29,7 @@
 #include "SoundManager.h" // [사운드]
 #include "SceneManager.h"
 #include "Main_Scene.h"
+#include "PhysicsDebugCapture.h"
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -250,6 +251,26 @@ void MainPlayerScript::awake()
 		// 롱소드 로직 추가 (내부에서 콜라이더 initialize 호출됨)
 		_currentWeapon = _currentWeaponObject->add_component<LongswordScript>();
 		_currentWeapon->set_attack_active(true);
+	}
+
+	// --- 칼날 캡슐 (플레이어 메쉬의 칼 M_DKF_Sword는 ik_hand_r에 100% 스키닝됨, 값은 칼 메쉬 분석 결과) ---
+	// ik_hand_r 기준 칼은 +Z 방향으로 z = -0.152 ~ 1.142 (길이 약 1.29m)
+	_bladeCollider = owner->get_component<PhysicsColliderComponent>();
+	if (_bladeCollider)
+	{
+		constexpr float kBladeRadius = 0.1f;
+		constexpr float kBladeHalfLength = 0.647f;
+		_bladeCollider->initialize(
+			PhysicsColliderComponent::ShapeType::Capsule,
+			{ kBladeRadius, kBladeHalfLength - kBladeRadius, 0.0f }, // x = 반지름, y = 원기둥 반높이
+			{ 0.0f, 0.0f, 0.495f },                                   // 뼈 좌표계 중심 (칼 길이의 중점)
+			{ 90.0f, 0.0f, 0.0f },                                    // Y축 캡슐을 +Z(칼끝) 방향으로
+			true,
+			PhysicsColliderComponent::BodyMode::QueryOnly);
+		_bladeCollider->attach_to_bone("ik_hand_r");
+
+		// 검증용 기준 형상 (디버그 빌드에서만 효과 있음)
+		PhysicsDebugCapture::instance()->add_reference_primitive(owner, "M_DKF_Sword", "ik_hand_r");
 	}
 
 	auto skillRender = _SkillObject->get_component<RenderComponent>();
@@ -787,6 +808,14 @@ void MainPlayerScript::handle_input(float deltaTime)
 	if (InputManager::instance()->IsKeyDown(VK_F8))
 	{
 		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::PHYSICS_SNAPSHOT);
+		PhysicsDebugCapture::instance()->request_capture("F8");
+	}
+
+	// [디버그] 평타 자동 연속 기록 토글
+	if (InputManager::instance()->IsKeyDown(VK_F7))
+	{
+		_debugCaptureAttack = !_debugCaptureAttack;
+		CLOG("[Debug] 평타 자동 연속 기록: " << (_debugCaptureAttack ? "ON" : "OFF"));
 	}
 	//if (InputManager::instance()->IsKeyDown(VK_F10))
 	//{
@@ -983,6 +1012,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 		_isAttacking = true;
 		_packetSent = false;
 		_actionId = common::packet::ActionID::Common::Attack;
+		_debugCaptureIndex = 0;
 
 		// [사운드] 공격음 재생 (단순 효과음이므로 2D 재생 혹은 필요 시 play_3d 적용 가능)
 		SoundManager::instance()->play("SwordSwing");
@@ -1345,6 +1375,24 @@ void MainPlayerScript::process_attack_and_packet()
 			}
 			else {
 				_currentWeapon->set_attack_active(false);
+			}
+		}
+
+		// [디버그] 평타 자동 연속 기록: 기준 진행도를 넘은 프레임의 끝에서 기록 (기록 시점은 한 프레임 뒤 자세)
+		if (_debugCaptureAttack && duration > 0.0f)
+		{
+			static constexpr float kCaptureProgress[] = { 0.3f, 0.45f, 0.6f };
+			bool crossed = false;
+			while (_debugCaptureIndex < static_cast<int>(std::size(kCaptureProgress)) &&
+				anim_progress >= duration * kCaptureProgress[_debugCaptureIndex])
+			{
+				++_debugCaptureIndex;
+				crossed = true;
+			}
+			if (crossed)
+			{
+				int percent = static_cast<int>(anim_progress / duration * 100.0f);
+				PhysicsDebugCapture::instance()->request_capture("attack " + std::to_string(percent) + "%");
 			}
 		}
 
