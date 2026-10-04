@@ -97,6 +97,7 @@ private:
 
 	// 칼날 캡슐 (ik_hand_r 부착, 바디 없는 검사 전용)
 	std::shared_ptr<PhysicsColliderComponent> _bladeCollider;
+	std::shared_ptr<PhysicsColliderComponent> _skillBladeCollider;	// 대검 스킬 판정 (무기 오브젝트의 콜라이더, 적중은 이 스크립트가 받음)
 
 	// [디버그] 평타 자동 연속 기록 (F7 토글): 판정 구간(5~80%) 동안 매 프레임 기록
 	bool _debugCaptureAttack = false;
@@ -111,6 +112,13 @@ private:
 	// 예측 적중 시 카메라 킥 (FreeCameraScript::add_kick): 칼이 지나가는 방향으로 한 번 튀었다 돌아옴
 	static constexpr float kAttackHitKickDistance = 0.06f;	// m
 	static constexpr float kAttackHitKickAngle = 0.8f;		// 도
+	// 대검 스킬 예측 적중 연출 (평타보다 크게)
+	static constexpr float kSkillHitStop = 0.12f;
+	// 대검 스킬 판정 시작 진행도: skill01(1.1초)에서 칼을 45~84%에 들어 올리고 85%부터 내려침 (오른손 높이로 확인)
+	static constexpr float kSkillHitStart = 0.85f;
+	static constexpr float kSkillReactionStrength = 1.5f;	// 부위 피격 리액션 세기 배율 (각도·최대 각도에 곱함)
+	static constexpr float kSkillHitKickDistance = 0.15f;	// m
+	static constexpr float kSkillHitKickAngle = 2.0f;		// 도
 	float _hitClock = 0.0f;
 	float _attackProgress = 0.0f; // 로그용 현재 평타 진행도 (0~1)
 	std::unordered_map<int64_t, float> _lastPredictedHitTime;

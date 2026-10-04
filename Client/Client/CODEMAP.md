@@ -149,7 +149,7 @@ Object
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
 | `QuestNPCScript.h/.cpp` | 퀘스트 NPC (상호작용 F UI, 퀘스트 마커). 이동 보간 안 함 |
 | `LeverScript.h/.cpp` | 레버 상호작용과 UI |
-| `WeaponScript.h/.cpp` | 무기 정보·공격 활성 플래그·스킬 차지·쿨다운, `LongswordScript`(같은 파일). 소켓 오브젝트 `MainWeapon`의 `Body` 모드 캡슐 충돌체(노란 캡슐)를 씀. 판정에는 쓰이지 않음(로그만) |
+| `WeaponScript.h/.cpp` | 무기 정보·공격 활성 플래그·스킬 차지·쿨다운, `LongswordScript`(같은 파일). `LongswordScript::awake`가 소켓 오브젝트 `MainWeapon`(10배 대검, 화면엔 파티클)의 콜라이더를 **대검 스킬 판정 캡슐**(QueryOnly Hitbox, 반지름 0.5m, 길이 약 10m, 로컬 중심 (0, 0.35, 0))로 설정. 판정은 `MainPlayerScript`가 켜고 적중도 받음 |
 | `TargetingComponent.h/.cpp` | 락온 대상 선정·토글 |
 | `FreeCameraScript.h/.cpp` | 플레이어 추적 카메라·자유 카메라, 화면 흔들기(`add_trauma` 무작위 떨림, `add_kick` 정해진 방향으로 한 번 튐), 동적 줌 오프셋, 시네마틱 모드 |
 | `ToolCameraScript.h/.cpp` | 툴 씬 카메라 |
@@ -201,7 +201,7 @@ Object
 |---|---|
 | `PhysicsManager.h/.cpp` | Jolt 초기화, 0.02초 고정 스텝, 접촉 이벤트 큐 → 메인 스레드에서 `PhysicsColliderComponent::OnContact`(첫 번째 콜라이더만), 지형 하이트필드 생성 |
 | `JoltSetup.h` | 브로드페이즈·오브젝트 레이어 필터 |
-| `PhysicsColliderComponent.h/.cpp` | 박스·구·캡슐 콜라이더. `BodyMode::Body`(Jolt 바디) / `QueryOnly`(바디 없이 모양·월드 변환만). **뼈 부착**(`attach_to_bone`), 스케일 무시(`set_ignore_owner_scale`), **역할**(`Role::Hitbox` 공격 / `Hurtbox` 피격, Hurtbox는 정적 목록 등록), **공격 판정**(`begin/end_hit_query`: late_update에서 직전→현재 자세를 15도·0.2m 단위로 나눠 `CollisionDispatch::sCollideShapeVsShape`, 대상마다 1회 `on_trigger_enter`. 캡슐이면 `TriggerHit`에 쓸고 간 구간 기록) |
+| `PhysicsColliderComponent.h/.cpp` | 박스·구·캡슐 콜라이더. `BodyMode::Body`(Jolt 바디) / `QueryOnly`(바디 없이 모양·월드 변환만). **뼈 부착**(`attach_to_bone`), 스케일 무시(`set_ignore_owner_scale`), **역할**(`Role::Hitbox` 공격 / `Hurtbox` 피격, Hurtbox는 정적 목록 등록), **공격 판정**(`begin/end_hit_query`: late_update에서 직전→현재 자세를 15도·0.2m 단위로 나눠 `CollisionDispatch::sCollideShapeVsShape`, 대상마다 1회 `on_trigger_enter`, `set_hit_receiver`로 받을 오브젝트 지정 가능. 캡슐이면 `TriggerHit`에 쓸고 간 구간 기록) |
 | `PhysicsCharacterControllerComponent.h/.cpp` | 캐릭터 컨트롤러 (fixed_update) |
 | `PhysicsDebugCapture.h/.cpp` | JoltViewer용 기록(`client_physics_dump.bin`): Jolt 바디, QueryOnly 콜라이더(공격 초록, 피격 하늘색, 적중 빨강), 뼈 축, 기준 프리미티브(칼날), 적중 지점·방향, NPC 실제 메쉬(CPU 스키닝, 15m 이내). 첫 기록 시 viewer `-focus` 명령을 로그로 출력 |
 

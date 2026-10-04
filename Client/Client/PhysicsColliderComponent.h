@@ -57,6 +57,9 @@ public:
 	bool is_hit_query_active() const { return _hitQueryActive; }
 	// 이번 프레임에 난 적중 (디버그 기록용)
 	const std::vector<TriggerHit>& last_hits() const { return _lastHits; }
+	// 적중(on_trigger_enter)을 받을 오브젝트. 지정하지 않으면 이 콜라이더의 오브젝트
+	// (예: 손에 붙은 무기 오브젝트의 판정을 플레이어 스크립트가 받음)
+	void set_hit_receiver(const std::shared_ptr<GameObject>& receiver) { _hitReceiver = receiver; }
 	static const std::vector<PhysicsColliderComponent*>& hurtboxes() { return s_hurtboxes; }
 
 	// 특정 콜백 등록 (예: WeaponScript에서 공격 패킷 보내기용)
@@ -111,6 +114,7 @@ private:
 	bool _hitQueryActive = false;
 	std::unordered_set<const GameObject*> _hitTargets; // 이번 판정 구간에 이미 맞힌 대상
 	std::vector<TriggerHit> _lastHits;
+	std::weak_ptr<GameObject> _hitReceiver;
 
 	static std::vector<PhysicsColliderComponent*> s_hurtboxes;
 };

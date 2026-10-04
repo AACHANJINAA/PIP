@@ -78,16 +78,21 @@ public:
 
         set_weapon_info(longsword);
 
-        // 캡슐 콜라이더 초기화
+        // 대검 스킬 판정 캡슐 (HitFeel_Plan_KR.md 3단계)
+        // 무기 오브젝트는 SM_Weapon_Sword__10을 10배로 키운 것(화면에는 파티클로 보이는 대검). 메쉬는 노드 이동 포함 로컬 Y -0.149 ~ 0.848
+        // 중심은 오브젝트 스케일(10배)이 곱해지는 로컬 단위, 캡슐 크기는 스케일이 적용되지 않으므로 미터 단위
+        // 판정은 MainPlayerScript가 스킬 휘두르는 동안 begin/end_hit_query로 켜고, 결과는 set_hit_receiver로 플레이어가 받음
         if (_collider) {
+            constexpr float kSkillBladeRadius = 0.5f;       // 칼날 폭 약 1.1m의 절반 정도
+            constexpr float kSkillBladeHalfLength = 5.0f;   // 길이 약 10m
             _collider->initialize(
                 PhysicsColliderComponent::ShapeType::Capsule,
-                { _info.radius, _info.halfHeight, 0.0f }, // size.x = radius, size.y = halfHeight
-                { 0.0f, _info.halfHeight + 0.2f, 0.0f },  // 오프셋: 손잡이(0,0,0)에서 검날 방향(Y)으로 약간 밀어냄
+                { kSkillBladeRadius, kSkillBladeHalfLength - kSkillBladeRadius, 0.0f }, // x = 반지름, y = 원기둥 반높이
+                { 0.0f, 0.35f, 0.0f },  // 칼 메쉬 중점 (로컬, 10배 하면 손에서 3.5m)
                 { 0.0f, 0.0f, 0.0f },
-                true // 센서(Trigger) 모드
-            );
-            _collider->set_active(false); // 초기 상태는 비활성화
+                true,
+                PhysicsColliderComponent::BodyMode::QueryOnly);
+            _collider->set_role(PhysicsColliderComponent::Role::Hitbox);
         }
     }
 };
