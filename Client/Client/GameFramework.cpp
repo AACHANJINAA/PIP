@@ -10,6 +10,7 @@
 #include "UIManager.h"
 #include "SoundManager.h"
 #include "PhysicsDebugCapture.h"
+#include "ServerClock.h"
 #include "DamageTextManager.h"
 
 #include "DescriptorManager.h"
@@ -337,6 +338,11 @@ void GameFramework::ProcessInput()
 	{
 		_isFullscreenToggle = true;
 	}
+	// [디버그] 네트워크 창 (RTT, 시계 차이, 인공 지연)
+	if (InputManager::instance()->IsKeyDown(VK_F6))
+	{
+		ServerClock::instance()->toggle_debug_window();
+	}
 	if (InputManager::instance()->IsKeyDown('T'))
 	{
 		_isCheckCameraPos = !_isCheckCameraPos;
@@ -436,6 +442,7 @@ void GameFramework::FrameAdvance()
 	deltaTime = std::min(deltaTime, 0.1f);
 
 	ProcessNetwork(); // (스레드 분리했다면 큐 비우기)
+	ServerClock::instance()->update(); // 시간 동기화 요청, 서버 시각 추정 갱신
 
 	// 2. 리플리케이션 시스템 업데이트 (ReplicationSystem)
 	// 채워진 스냅샷 데이터를 각 오브젝트(INetSync)에 일괄 적용합니다.
@@ -544,6 +551,7 @@ void GameFramework::FrameAdvance()
 
 	// 데미지 텍스트 렌더링 (ImGui 기반)
 	DamageTextManager::instance()->update_and_render(deltaTime);
+	ServerClock::instance()->draw_debug_window();
 
 	// 화면 맨 위에 ImGui 그리기 명령 전달
 	ImGuiManager::instance()->render(_commandList.Get());

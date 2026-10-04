@@ -155,6 +155,7 @@
     <ClInclude Include="MonsterHPUIRenderComponent.h" />
     <ClInclude Include="MonsterHPUIShader.h" />
     <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="ServerClock.h" />
     <ClInclude Include="FreeCamera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameObject.h" />
@@ -294,6 +295,7 @@
     <ClCompile Include="MonsterHPUIRenderComponent.cpp" />
     <ClCompile Include="MonsterHPUIShader.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
+    <ClCompile Include="ServerClock.cpp" />
     <ClCompile Include="FreeCamera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameObject.cpp" />

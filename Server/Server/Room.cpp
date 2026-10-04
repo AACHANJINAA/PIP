@@ -522,7 +522,7 @@ namespace PIP::SERVER
 		std::vector<GAME::GameObject*> nearby;
 		_gridMap.GetNearbyObjects(finalPos, nearby);
 
-		uint32_t now = static_cast<uint32_t>(GetTickCount64());
+		uint32_t now = static_cast<uint32_t>(common::NetNowMs());
 		// 네트워크로 들어온 플레이어 공격은 지연 보상된 과거 시점으로 리와인드해서 판정하고,
 		// NPC/AI가 직접 실행한 공격(rewindTimestamp 미지정)은 항상 현재 시점으로 판정한다.
 		uint32_t hitTimestamp = rewindTimestamp.value_or(now);
@@ -1055,7 +1055,7 @@ namespace PIP::SERVER
 		}
 
 		// --- [Step 2] 로직 업데이트 루프 (O(Active NPCs)) ---
-		uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+		uint32_t currentTick = static_cast<uint32_t>(common::NetNowMs());
 
 		// [추가] 엘리베이터 업데이트 및 동기화
 		for (auto& elevator : _elevators) {
@@ -1143,7 +1143,7 @@ namespace PIP::SERVER
 		}
 
 		// 플레이어 업데이트 및 스냅샷 기록
-		currentTick = static_cast<uint32_t>(GetTickCount64());
+		currentTick = static_cast<uint32_t>(common::NetNowMs());
 		for (auto& [pid, session] : _players) {
 			session->_player->Update(deltaTime, tempAllocator);
 			session->_player->RecordSnapshot(currentTick);
@@ -1230,7 +1230,7 @@ namespace PIP::SERVER
 		move_packet_data._rotation = npc->GetRotation();
 		move_packet_data._state = npc->GetState();
 		move_packet_data._action_id = npc->GetActionId();
-		move_packet_data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+		move_packet_data._time_stamp = static_cast<uint32_t>(common::NetNowMs());
 		// [추가] 잡기 정보 동기화
 		// NPC가 잡혔을 가능성은 낮지만 일관성을 위해 추가
 		// (혹은 NPC가 플레이어를 잡고 있는 상태에서 플레이어의 시점에서는 NPC의 위치가 중요하므로)
@@ -1317,7 +1317,7 @@ namespace PIP::SERVER
 			data._position = pos;
 			data._velocity = npc->GetVelocity();
 			data._rotation = npc->GetRotation();
-			data._time_stamp = static_cast<uint32_t>(GetTickCount64());
+			data._time_stamp = static_cast<uint32_t>(common::NetNowMs());
 			data._state = npc->GetState();
 			data._action_id = npc->GetActionId();
 			data._grabbed_by_id = npc->GetGrabbedById(); // [추가]
@@ -1589,7 +1589,7 @@ namespace PIP::SERVER
 		if (!session || !session->_player) return;
 
 		// 지연 보상(리와인드) 판정용 시점: 클라이언트가 실제로 공격을 낸 시점 근처로 되감아서 검사한다.
-		uint32_t serverNow = static_cast<uint32_t>(GetTickCount64());
+		uint32_t serverNow = static_cast<uint32_t>(common::NetNowMs());
 		uint32_t rewindTimestamp = session->_player->ComputeRewindTimestamp(serverNow, action_packet._client_time_stamp);
 
 		std::vector<packet::NPCHitInfo> npc_hits;

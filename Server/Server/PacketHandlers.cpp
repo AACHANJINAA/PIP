@@ -402,6 +402,28 @@ namespace PIP::packet
 		//	});
 	}
 
+	void Handle_C2S_TIME_SYNC(const std::shared_ptr<SERVER::SESSION>& session, PacketStream& stream)
+	{
+		// 클라이언트의 RTT·시계 차이 추정용. 지연을 줄이려고 방 잡 큐를 거치지 않고 네트워크 스레드에서 바로 응답한다
+		packet::CS_PACKET_TIME_SYNC recv_packet;
+		try
+		{
+			stream >> recv_packet;
+		}
+		catch (const std::runtime_error& e)
+		{
+			MYERROR("[TimeSync] **ERROR**: Failed to read time sync packet. " << e.what());
+			return;
+		}
+
+		packet::SC_PACKET_TIME_SYNC ack_packet;
+		ack_packet._type = PacketType::S2C_P_TIME_SYNC;
+		ack_packet._size = sizeof(ack_packet);
+		ack_packet._client_time = recv_packet._client_time;
+		ack_packet._server_time = common::NetNowMsPrecise();
+		session->do_send(reinterpret_cast<const char*>(&ack_packet), sizeof(ack_packet));
+	}
+
 	void Handle_C2S_ROOM_LIST(const std::shared_ptr<SERVER::SESSION>& session, PacketStream& stream)
 	{
 		packet::CS_PACKET_ROOM_LIST recv_packet;

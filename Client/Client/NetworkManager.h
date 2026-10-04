@@ -34,9 +34,17 @@ public:
     void SendPlayerReadyPacket();
     void SendCutsceneDonePacket();
     void SendDebugCommandPacket(common::packet::DebugCommandType command);
+    void SendTimeSyncPacket(double client_time);
 
     void SendAttackResultPacket(int64_t target_id, float damage, float force);
     bool is_running() const { return _isRunning; }
+    bool is_login() const { return _isLogin; }
+
+    // [디버그] 인공 수신 지연·흔들림 (ms). 패킷 순서는 유지한다
+    float sim_latency_ms() const { return _simLatencyMs; }
+    float sim_jitter_ms() const { return _simJitterMs; }
+    void set_sim_latency_ms(float ms) { _simLatencyMs = std::max(ms, 0.0f); }
+    void set_sim_jitter_ms(float ms) { _simJitterMs = std::max(ms, 0.0f); }
     bool is_input_locked() const { return _isInputLocked; }
     long long get_my_session_id() const { return _my_session_id; }
     XMFLOAT3 get_minimap_server_position() const { return _my_pos; }
@@ -92,6 +100,7 @@ private:
 
 	void HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream); // [추가] 스탯 동기화
 	void HANDLE_S2C_COUNTDOWN(common::packet::PacketStream& stream);        // [추가] 카운트다운
+	void HANDLE_S2C_TIME_SYNC(common::packet::PacketStream& stream);        // 시간 동기화 응답
 	void HANDLE_S2C_SKILL_UNLOCKED(common::packet::PacketStream& stream);   // [추가] 스킬 잠금 해제
 
 	// Client side: 인벤토리 관련 패킷 처리 함수들
@@ -123,7 +132,20 @@ private:
     std::atomic<bool> _isRunning{ false };
 
     // 완성된 패킷만 담는 큐 (네트워크 스레드 -> 메인 스레드)
-	concurrency::concurrent_queue<std::vector<char>> _packetQueue; // 수신된 패킷을 저장하는 큐
+    struct QueuedPacket
+    {
+        std::vector<char> data;
+        double recv_ms = 0.0;    // 네트워크 스레드가 패킷을 다 받은 시각 (NetNowMsPrecise)
+        double release_ms = 0.0; // 처리해도 되는 시각 (인공 지연 적용)
+    };
+	concurrency::concurrent_queue<QueuedPacket> _packetQueue; // 수신된 패킷을 저장하는 큐
+    std::deque<QueuedPacket> _delayedPackets; // 인공 지연 대기 (메인 스레드 전용)
+    double _currentPacketArrivalMs = 0.0;     // 지금 처리 중인 패킷의 도착 시각 (핸들러에서 사용)
+
+    float _simLatencyMs = 0.0f;
+    float _simJitterMs = 0.0f;
+    double _lastReleaseMs = 0.0;
+    std::mt19937 _simRandom{ std::random_device{}() };
 
 	// 플레이어의 현재 위치 (서버에서 받은 최신 위치)
 	XMFLOAT3 _my_pos{ 0.0f, 0.0f, 0.0f };
