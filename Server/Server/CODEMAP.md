@@ -104,8 +104,7 @@ GameObject (ValidateHit 순수 가상)
 ### 5.4 `Actor` (플레이어·NPC 공통)
 
 - **위치·속도·회전 조회**: 캐릭터 컨트롤러가 있으면 Jolt 캐릭터 위치(발바닥 보정)가 진짜 위치, 없으면 Transform. 회전은 Transform.
-- **위치 기록(리와인드용)**: `RecordSnapshot(시각)`이 `{시각, 위치, 회전}`을 최근 30개까지 보관, `GetSnapshotAt(시각)`이 그 시각 이후 첫 기록(없으면 마지막)을 돌려준다. `Room::UpdateLogics`가 매 로직 루프(약 16ms)마다 플레이어·NPC에 기록한다.
-  - **주의**: 주석은 "1초 유지"지만 로직 루프 기준 30개는 **약 0.5초**다. 판정 쪽 되감기 한도(`Player::ComputeRewindTimestamp`의 `MAX_REWIND_MS`)는 1초라, 0.5초 넘게 되감으면 가장 오래된 기록으로 판정된다.
+- **위치 기록(리와인드용)**: `RecordSnapshot(시각)`이 `{시각, 위치, 회전}`을 최근 `kMaxHistory`(60)개까지 보관, `GetSnapshotAt(시각)`이 그 시각 이후 첫 기록(없으면 마지막)을 돌려준다. `Room::UpdateLogics`가 매 로직 루프(약 16ms)마다 플레이어·NPC에 기록한다. 60개 ≈ 1초로 되감기 한도(`Player::ComputeRewindTimestamp`의 `MAX_REWIND_MS` = 1000)와 맞춘다(2026-10-04, 30개 ≈ 0.5초에서 늘림). 로직 루프 간격이나 되감기 한도를 바꾸면 같이 맞춘다.
 - 파벌(`FACTION_PLAYER/MONSTER/NEUTRAL`), 활성 플래그, 리스폰 대기·사망 연출 시간, 잡기(`grabbed_by_id`, 손 슬롯).
 
 ### 5.5 갱신 흐름 (누가 언제 부르나)
