@@ -121,6 +121,7 @@ private:
 	static constexpr float kSkillHitKickAngle = 2.0f;		// 도
 	float _hitClock = 0.0f;
 	float _attackProgress = 0.0f; // 로그용 현재 평타 진행도 (0~1)
+	float _skillProgress = 0.0f;  // 로그용 현재 스킬(skill01) 진행도 (0~1)
 	std::unordered_map<int64_t, float> _lastPredictedHitTime;
 
 	int32_t _hp{ 100 };

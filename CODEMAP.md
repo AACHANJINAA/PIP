@@ -29,7 +29,7 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 
 | 문서 | 내용 | 상태 |
 |---|---|---|
-| `HitFeel_Plan_KR.md` | 타격감 개선 전체 계획 (진단, 1~4단계) | 1·2단계 완료, 3단계 대기 |
+| `HitFeel_Plan_KR.md` | 타격감 개선 전체 계획 (진단, 1~4단계) | 1·2단계 완료, 3단계 진행 중 (히트스톱·타격음·카메라 킥·부위 리액션·대검 스킬 판정 완료, 이펙트 남음) |
 | `BoneCollider_Spec_KR.md` | 1단계: 뼈 부착 칼날 캡슐, 물리 기록, 뷰어 | 완료 |
 | `MeleeHitPrediction_Spec_KR.md` | 2단계: 평타 예측 판정 (스윕, 피격 히트박스, `on_trigger_enter`) | 동작 확인 |
 | `NetMotionSync_Design_KR.md` | 시계 동기화, 보간 버퍼, 넉백 모션 이벤트 | S1~S4 완료 |
