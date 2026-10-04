@@ -254,6 +254,7 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	// 생성(또는 AOI 재진입) 시 좌표가 우선: 쌓여 있던 표본을 버리고 생성 위치에서 시작
 	_positionBuffer.clear();
 	_pendingStates.clear();
+	_motions.clear();
 	{
 		// 지금 렌더 시각에 표본을 둔다 (추정 서버 시각에 두면 그보다 이른 서버 시각으로 이어 오는 이동 패킷이 버려짐)
 		SnapshotBuffer::Sample sample;
@@ -375,10 +376,13 @@ void NPCScript::update(float deltaTime)
 	// 서버 시각 기준 보간 (NetMotionSync_Design_KR.md 5.2): 렌더 시각 = 추정 서버 시각 - 보간 지연
 	if (!_positionBuffer.empty())
 	{
-		const SnapshotBuffer::Result interp = _positionBuffer.sample(render_time());
-		transform()->set_local_position(interp.pos);
+		const double renderTime = render_time();
+		const SnapshotBuffer::Result interp = _positionBuffer.sample(renderTime);
+		XMFLOAT3 pos = interp.pos;
+		apply_motion(renderTime, pos); // 넉백 중이면 수평 위치는 곡선 (서버와 같은 곡선·시각)
+		transform()->set_local_position(pos);
 		transform()->set_local_rotation(interp.rot);
-		_serverPos = interp.pos;
+		_serverPos = pos;
 		_serverVel = interp.vel; // TainerScript 등이 이동 애니메이션 선택에 사용
 		_serverRot = interp.rot;
 		ServerClock::instance()->count_interp_mode(ServerClock::InterpTarget::Npc, static_cast<int>(interp.mode));
@@ -510,6 +514,50 @@ void NPCScript::apply_state(const NetSnapshot& snapshot)
 	_grabbedById = snapshot.grabbed_by_id; // [추가]
 	_grabSlot = snapshot.grab_slot;         // [추가]
 	set_hp(snapshot.hp);                   // [추가] HP 동기화
+}
+
+void NPCScript::on_motion_start(const common::packet::SC_PACKET_MOTION_START& packet)
+{
+	ActiveMotion motion;
+	motion.id = packet._motion_id;
+	motion.curve = packet._curve;
+	motion.start_time = packet._start_time;
+	motion.end_time = packet._start_time + (packet._hold + packet._duration) * 1000.0;
+	motion.start_pos = packet._start_pos;
+	motion.end_pos = packet._end_pos;
+	motion.hold = packet._hold;
+	motion.duration = packet._duration;
+
+	// 새 모션이 시작되면 앞선 모션은 그 시각에 끝남 (넉백 중 다시 맞은 경우)
+	for (auto& prev : _motions)
+		prev.end_time = std::min(prev.end_time, motion.start_time);
+	_motions.push_back(motion);
+}
+
+void NPCScript::on_motion_end(const common::packet::SC_PACKET_MOTION_END& packet)
+{
+	for (auto& motion : _motions)
+		if (motion.id == packet._motion_id)
+			motion.end_time = std::min(motion.end_time, packet._end_time);
+}
+
+bool NPCScript::apply_motion(double render_time, XMFLOAT3& pos)
+{
+	// 끝난 지 오래된 모션 정리 (보간 버퍼 보관 시간과 같은 1초)
+	while (!_motions.empty() && _motions.front().end_time < render_time - SnapshotBuffer::kKeepMs)
+		_motions.pop_front();
+
+	for (const auto& motion : _motions)
+	{
+		if (render_time < motion.start_time || render_time >= motion.end_time) continue;
+
+		const float elapsed = static_cast<float>((render_time - motion.start_time) / 1000.0);
+		const float t = common::motion::Progress(motion.curve, motion.hold, motion.duration, elapsed);
+		pos.x = motion.start_pos.x + (motion.end_pos.x - motion.start_pos.x) * t;
+		pos.z = motion.start_pos.z + (motion.end_pos.z - motion.start_pos.z) * t;
+		return true;
+	}
+	return false;
 }
 
 double NPCScript::render_time() const

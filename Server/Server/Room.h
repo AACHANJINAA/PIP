@@ -68,6 +68,8 @@ namespace PIP::SERVER
 		// 특정 플레이어를 보고 있는 플레이어들에게 데이터 전송
 		void BroadcastToPlayerViewers(int64_t player_id, const char* data, size_t size);
 		void BroadcastNpcBatch();
+		// NPC 컨트롤러에 쌓인 모션 시작·중단을 그 NPC를 보는 플레이어에게 전송 (NetMotionSync_Design_KR.md 5.3)
+		void BroadcastNpcMotionEvents(GAME::NPC* npc);
 
 		void SendRoomInfoToNewPlayer(std::shared_ptr<SESSION> new_player);
 		void SendNpcSpawnToPlayer(const std::shared_ptr<SESSION>& session, const GAME::NPC* npc);

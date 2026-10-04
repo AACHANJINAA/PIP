@@ -145,7 +145,7 @@ Object
 |---|---|
 | `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·히트스톱 0.05초), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
 | `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_server_move`로 이동 패킷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 30ms)으로 위치·회전 보간**, 상태·액션(공격음)·잡기·HP·MP는 패킷 서버 시각에 적용(`apply_state`). 생성·부활은 `reset_transform`(버퍼 비우고 그 위치에서 시작). 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
-| `NPCScript.h/.cpp` | NPC 공통. `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
+| `NPCScript.h/.cpp` | NPC 공통. `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
 | `QuestNPCScript.h/.cpp` | 퀘스트 NPC (상호작용 F UI, 퀘스트 마커). 이동 보간 안 함 |
 | `LeverScript.h/.cpp` | 레버 상호작용과 UI |
@@ -212,7 +212,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 
 | 파일 | 역할 |
 |---|---|
-| `NetworkManager.h/.cpp` | 블로킹 소켓 + 수신 전용 스레드(`network_worker` → 패킷 조립 → `concurrent_queue`, 수신 시각 기록). 메인 스레드 `process_queued_packets`에서 핸들러 실행. **인공 수신 지연·흔들림**(순서 유지). 송신 함수 `Send*Packet`, 수신 핸들러 `HANDLE_S2C_*`(로그인, 방, 플레이어 스폰·이동·피격, NPC 스폰·이동·배치·피격, 퀘스트, 인벤토리, 컷씬, 카운트다운, 시간 동기화 등) |
+| `NetworkManager.h/.cpp` | 블로킹 소켓 + 수신 전용 스레드(`network_worker` → 패킷 조립 → `concurrent_queue`, 수신 시각 기록). 메인 스레드 `process_queued_packets`에서 핸들러 실행. **인공 수신 지연·흔들림**(순서 유지). 송신 함수 `Send*Packet`, 수신 핸들러 `HANDLE_S2C_*`(로그인, 방, 플레이어 스폰·이동·피격, NPC 스폰·이동·배치·피격, 퀘스트, 인벤토리, 컷씬, 카운트다운, 시간 동기화, 모션 시작·종료 등) |
 | `ServerClock.h/.cpp` | 서버 시각 추정. TIME_SYNC 왕복(로그인 직후 0.1초×5, 이후 2초), RTT 최소 표본 기준 offset, 초당 5ms 이내로 따라감. `server_now_ms`, `arrival_now_ms`(− RTT/2), `unwrap_server_time`(32비트 서버 시각 복원), 보간 지연 상수(NPC 70, 플레이어 30). **F6 창**: RTT, offset, 보간 상태 집계(NPC·플레이어 따로), 서버 위치 유령(NPC·다른 플레이어), 인공 지연 슬라이더 |
 | `SnapshotBuffer.h/.cpp` | 서버 시각 표본 버퍼. 에르미트 위치 보간 + slerp, 긴 간격은 마지막 100ms만, 최대 100ms 외삽, 5m 이상 순간이동 |
 | `ReplicationSystem.h/.cpp`, `INetSync.h` | 엔티티 id → `INetSync` 등록, 스냅샷 전달(`on_receive_snapshot`), 매 프레임 `apply_snapshot` |

@@ -34,6 +34,10 @@ public:
 	virtual void on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_move_packet);
 	void initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN& spawnPkt);
 
+	// 모션 이벤트 (넉백 등, NetMotionSync_Design_KR.md 5.3): 렌더 시각이 구간 안이면 수평 위치를 곡선으로 계산
+	void on_motion_start(const common::packet::SC_PACKET_MOTION_START& packet);
+	void on_motion_end(const common::packet::SC_PACKET_MOTION_END& packet);
+
 	// --- INetSync 인터페이스 구현 ---
 	void on_receive_snapshot(const NetSnapshot& snapshot) override;
 	void apply_snapshot() override;
@@ -61,6 +65,22 @@ protected:
 		NetSnapshot snapshot;
 	};
 	std::deque<PendingState> _pendingStates;
+
+	// 모션 구간. 구간 안의 위치 스냅샷은 수평 위치에 쓰지 않음(높이·회전은 스냅샷 보간)
+	struct ActiveMotion
+	{
+		uint32_t id;
+		common::motion::MotionCurve curve;
+		double start_time;		// 서버 시각 (ms)
+		double end_time;		// 예정 종료 시각, MOTION_END나 다음 모션이 오면 앞당겨짐
+		XMFLOAT3 start_pos;
+		XMFLOAT3 end_pos;
+		float hold;
+		float duration;
+	};
+	std::deque<ActiveMotion> _motions;
+	// render_time이 모션 구간 안이면 그 모션의 수평 위치를 pos에 덮어씀
+	bool apply_motion(double render_time, XMFLOAT3& pos);
 
 	void apply_state(const NetSnapshot& snapshot);	// 상태·액션·잡기·HP와 그에 따른 사운드
 	double render_time() const;						// 추정 서버 시각 - 보간 지연

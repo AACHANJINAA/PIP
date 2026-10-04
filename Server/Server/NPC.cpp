@@ -231,8 +231,9 @@ namespace PIP::GAME
 
 				if (auto cc = GetComponent<CharacterControllerComponent>()) {
 					if (auto nc = dynamic_cast<NPCControllerComponent*>(cc)) {
-						nc->AddKnockback(knockbackDir * knockback); // 공격 설정의 넉백 세기. 벽 앞에서 멈추도록 스윕 검사 후 적용
-						nc->SetVelocity({ 0, 0, 0 }); // [추가] AI 이동 관성 제거하여 넉백 저항 없애기
+						// 공격 설정의 넉백 세기로 넉백 모션 시작 (벽 스윕으로 끝 위치 확정, AI 이동 관성 제거).
+						// 시작 정보는 Room::ExecuteActorAction이 꺼내 MOTION_START로 보냄
+						nc->StartKnockback(knockbackDir * knockback);
 					}
 					else {
 						cc->AddImpact(knockbackDir * knockback);
@@ -260,6 +261,7 @@ namespace PIP::GAME
 		_hitCooldown = 0.0f;
 		_actionId = 0;
 		_state = common::packet::EntityState::IDLE;
+		if (_npcController) _npcController->CancelMotion(); // 진행 중이던 넉백 모션 버림 (클라는 재생성 시 초기화)
 		// dirty 필드를 엉뚱한 값으로 세팅 → 부활 직후 반드시 패킷 발송
 		_lastSentPos = { 9999.f, 9999.f, 9999.f };
 		_lastSentRot = { 0.f, 0.f, 0.f, -1.f };

@@ -271,6 +271,24 @@ void NetworkManager::HANDLE_S2C_TIME_SYNC(common::packet::PacketStream& stream)
 	ServerClock::instance()->on_time_sync(sync_packet._client_time, sync_packet._server_time, _currentPacketArrivalMs);
 }
 
+void NetworkManager::HANDLE_S2C_MOTION_START(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_MOTION_START packet;
+	stream >> packet;
+	auto npc = ObjectManager::instance()->find_npc(packet._entity_id);
+	if (!npc) return;
+	if (auto script = npc->get_component<NPCScript>()) script->on_motion_start(packet);
+}
+
+void NetworkManager::HANDLE_S2C_MOTION_END(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_MOTION_END packet;
+	stream >> packet;
+	auto npc = ObjectManager::instance()->find_npc(packet._entity_id);
+	if (!npc) return;
+	if (auto script = npc->get_component<NPCScript>()) script->on_motion_end(packet);
+}
+
 void NetworkManager::SendNPCInteractPacket(int64_t npc_id, int32_t quest_id)
 {
 	if (!_isLogin) return;
@@ -1372,6 +1390,10 @@ bool NetworkManager::init_network()
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_COUNTDOWN(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_TIME_SYNC,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_TIME_SYNC(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_MOTION_START,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_MOTION_START(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_MOTION_END,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_MOTION_END(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_SKILL_UNLOCKED,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_SKILL_UNLOCKED(stream); });
 

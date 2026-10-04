@@ -42,7 +42,7 @@ IOCP 기반 권위 서버. 방(Room)마다 Jolt 물리 시스템을 따로 돌�
 | 잡 | `PushJob`/`ProcessJobs` (네트워크 스레드 → 로직 스레드 전달) |
 | 입장·씬 | `EnterPlayer/LeavePlayer`, `SetupPlayerSpawn`, `CheckAndStartGame`, `ChangeScene(스테이지 이름)`, 컷씬 완료 처리 |
 | 패킷 실행 | `Execute_C2S_MOVE`(클라 위치 검증), `Execute_C2S_ACTION`(평타: 앞 1m 반지름 2m 구체, 대검 스킬, 상호작용(레버·퀘스트)), `Execute_C2S_NPC_INTERACT`, `Execute_C2S_PLAYER_READY` 등 |
-| 공격 판정 | `ExecuteActorAction(공격자, AttackConfig, 리와인드 시각)`: GridMap 후보 → 대상 `ValidateHit`(과거 스냅샷 기준 히트박스 겹침) → 피격 패킷 브로드캐스트 |
+| 공격 판정 | `ExecuteActorAction(공격자, AttackConfig, 리와인드 시각)`: GridMap 후보 → 대상 `ValidateHit`(과거 스냅샷 기준 히트박스 겹침) → 피격 패킷 브로드캐스트. NPC가 맞으면 `BroadcastNpcMotionEvents`로 넉백 `MOTION_START`(그 NPC를 보는 플레이어에게). 물리 갱신 뒤에도 같은 함수로 막혀서 끝난 모션의 `MOTION_END` 전송 |
 | 갱신 | `UpdateLogics`: 활성 셀(플레이어 주변) NPC 수집, 플레이어 갱신·스냅샷 기록(`RecordSnapshot`), **바뀐 플레이어는 매 로직 루프마다 `SC_PACKET_MOVE` 브로드캐스트**, NPC AI·갱신, **NPC 이동은 0.05초마다 바뀐 것만 셀 단위로 `NPC_MOVE_BATCH`** |
 | 물리 | `UpdatePhysics`: Jolt 스텝, 컨트롤러 갱신(NPC 경량 갱신, 보스·플레이어 전체) |
 | 사망·리스폰 | `OnNPCDead`, `OnPlayerDead`, NPC 리스폰 |
@@ -146,7 +146,7 @@ GameObject (ValidateHit 순수 가상)
 |---|---|---|
 | `TransformComponent` | 모든 엔티티 | 위치·회전, 부드러운 회전(`SmoothRotateTo`), 앞·오른쪽 방향, Jolt 변환 |
 | `CharacterControllerComponent` | (기반) | Jolt `CharacterVirtual` 래퍼. 캡슐 크기, 충격 속도(`AddImpact/AddImpulse`, 마찰 `ImpactFriction=35`로 감속), 지면 판정, 위치(발바닥 = 캐릭터 중심 − 반높이) |
-| `NPCControllerComponent` | NPC | 이동 속도, `AddKnockback`(넉백 방향으로 스윕해 벽 앞에서 멈추게 초기 속도 계산), 경량 물리 갱신(`LightPhysicsUpdate`), 수직 속도 초기화 |
+| `NPCControllerComponent` | NPC | 이동 속도, **넉백 모션** `StartKnockback`(넉백 방향으로 구체 스윕해 벽 앞 끝 위치 확정, 버팀 0.06초 + 일정 감속 곡선, 동작 중엔 AI 이동·충격량 무시하고 서버 시각 기준 곡선 위치로 이동, 0.3m 넘게 벗어나면 중단 기록), `TakeStartedMotion`/`TakeInterruptedMotion`(Room이 꺼내 전송), 경량 물리 갱신(`LightPhysicsUpdate`), 수직 속도 초기화 |
 | `PlayerControllerComponent` | 플레이어 | 클라 입력 방향으로 이동 속도 적용 |
 | `PhysicsComponent` | DynamicBox, 엘리베이터 | 일반 Jolt 바디 생성·속도 |
 | `HitboxComponent` | 플레이어, NPC | 이름 붙은 히트박스(모양, 오프셋, 회전) 목록. `CheckCollision`: 과거 스냅샷의 위치·회전(스케일 없음)으로 공격 모양과 모양 대 모양 겹침 검사 |
