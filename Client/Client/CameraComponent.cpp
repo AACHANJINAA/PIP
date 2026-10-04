@@ -146,6 +146,17 @@ void CameraComponent::recalculate_view_matrix()
 			+ XMVectorScale(right, std::tan(_shakeAngle.x)) + XMVectorScale(up, std::tan(_shakeAngle.y)));
 	}
 
+	// [방어] 위치·시선에 NaN/무한대가 섞이면 뷰 행렬 전체가 깨져 화면이 통째로 검게 나옴: 흔들림 없이 계산하고 원인 기록
+	if (XMVector3IsNaN(pos) || XMVector3IsInfinite(pos) || XMVector3IsNaN(look) || XMVector3IsInfinite(look))
+	{
+		CERROR("[Camera] 뷰 계산에 NaN: shake offset (" << _shakeOffset.x << ", " << _shakeOffset.y << ", " << _shakeOffset.z
+			<< "), shake angle (" << _shakeAngle.x << ", " << _shakeAngle.y << "), transform pos (" << f3pos.x << ", " << f3pos.y << ", " << f3pos.z
+			<< "), forward (" << f3look.x << ", " << f3look.y << ", " << f3look.z << "), up (" << f3up.x << ", " << f3up.y << ", " << f3up.z << ")");
+		pos = XMLoadFloat3(&f3pos);
+		look = XMLoadFloat3(&f3look);
+		up = XMLoadFloat3(&f3up);
+	}
+
 	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookToLH(pos, look, up));
 	// 스카이박스용 뷰 행렬 (이동 성분 제거) 계산 및 상수 버퍼에 복사
 
