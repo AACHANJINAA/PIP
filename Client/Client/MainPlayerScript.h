@@ -108,6 +108,9 @@ private:
 	static constexpr float kPredictedHitCooldown = 0.5f;
 	// 예측 적중 시 공격자(나)와 피격자(NPC) 애니메이션을 멈추는 시간
 	static constexpr float kAttackHitStop = 0.05f;
+	// 예측 적중 시 카메라 킥 (FreeCameraScript::add_kick): 칼이 지나가는 방향으로 한 번 튀었다 돌아옴
+	static constexpr float kAttackHitKickDistance = 0.06f;	// m
+	static constexpr float kAttackHitKickAngle = 0.8f;		// 도
 	float _hitClock = 0.0f;
 	float _attackProgress = 0.0f; // 로그용 현재 평타 진행도 (0~1)
 	std::unordered_map<int64_t, float> _lastPredictedHitTime;

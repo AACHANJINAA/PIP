@@ -207,6 +207,7 @@ void MainPlayerScript::awake()
 	SoundManager::instance()->load_sound("DustSound",       "Resource/Sound/Dust.wav",             true);
 	SoundManager::instance()->load_sound("PlayerDamage",    "Resource/Sound/PlayerDamage.wav",     false);
 	SoundManager::instance()->load_sound("PlayerDash",      "Resource/Sound/PlayerDash.ogg",       false);
+	SoundManager::instance()->load_sound("SwordHit",        "Resource/Sound/SwordSwingStrong.mp3", true); // 칼이 맞는 소리 (타격 지점 3D)
 
 	// -------------- 재질 생성부 ----------------------- //
 	// ResourceManager을 통해 재질 생성 및 쉐이더 할당
@@ -1444,6 +1445,13 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 	// 히트스톱: 나와 맞은 NPC의 시간만 멈춤 (월드 전체를 멈추지 않음, NPC 위치 보간은 서버 시각이라 계속 진행)
 	game_object()->hit_stop(kAttackHitStop);
 	other->hit_stop(kAttackHitStop);
+
+	// 타격음(칼 + 맞은 쪽)과 카메라 킥(칼이 지나가는 방향)을 칼이 닿는 순간에 (서버 응답에서는 중복 재생하지 않음)
+	SoundManager::instance()->play_3d("SwordHit", hit.point);
+	npc->on_predicted_hit();
+	if (auto mainCam = CameraComponent::get_main(); mainCam && mainCam->game_object())
+		if (auto freeCam = mainCam->game_object()->get_component<FreeCameraScript>())
+			freeCam->add_kick(hit.direction, kAttackHitKickDistance, kAttackHitKickAngle);
 
 	if (_debugCaptureAttack)
 		PhysicsDebugCapture::instance()->request_capture("hit NPC " + std::to_string(npc->id()));

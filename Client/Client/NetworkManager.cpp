@@ -713,7 +713,11 @@ void NetworkManager::HANDLE_S2C_NPC_ATTACK(common::packet::PacketStream& stream)
 				(float)hit_info._damage,
 				isSkill
 			);
-			SoundManager::instance()->play_3d("HitSound", DirectX::XMFLOAT3(npc_pos.x, npc_pos.y, npc_pos.z));
+			// 칼 타격음: 내 예측 적중으로 이미 냈으면 생략 (예측이 빗나간 적중, 다른 플레이어의 적중만 여기서)
+			const bool predicted = attack_header._attacker_id == _my_session_id
+				&& (*it)->get_component<NPCScript>()->predicted_hit_recently();
+			if (!predicted)
+				SoundManager::instance()->play_3d("SwordHit", DirectX::XMFLOAT3(npc_pos.x, npc_pos.y, npc_pos.z));
 		}
 	}
 }
