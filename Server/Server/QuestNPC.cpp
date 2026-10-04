@@ -29,7 +29,7 @@ namespace PIP::GAME
 		const JPH::RMat44& attackTransform,
 		uint32_t timestamp,
 		GameObject* attacker,
-		int32_t damage)
+		int32_t damage, float knockback)
 	{
 		// 퀘스트 NPC는 무적이므로 타격을 무시함
 		return false;

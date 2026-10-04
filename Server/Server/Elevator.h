@@ -19,7 +19,7 @@ namespace PIP::GAME
 		common::packet::EntityState GetState() const override { return _state; }
 		
 		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
-						 uint32_t timestamp, GameObject* attacker, int32_t damage) override { return false; }
+						 uint32_t timestamp, GameObject* attacker, int32_t damage, float knockback) override { return false; }
 
 		common::Vec3 GetPosition() const override;
 		common::Vec3 GetVelocity() const override;

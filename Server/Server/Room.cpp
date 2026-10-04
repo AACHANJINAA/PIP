@@ -555,7 +555,7 @@ namespace PIP::SERVER
 				if (attacker->GetFaction() == target->GetFaction()) continue;
 
 				// 3. 타겟의 ValidateHit 호출 (공격자 포인터 전달)
-				if (target->ValidateHit(_physicsSystem, config.shape, attackTransform, hitTimestamp, attacker, (int32_t)config.damage))
+				if (target->ValidateHit(_physicsSystem, config.shape, attackTransform, hitTimestamp, attacker, (int32_t)config.damage, config.knockbackValue))
 				{
 					// [추가] 타겟 타입에 따라 피격 정보 기록
 					if (auto p = dynamic_cast<GAME::Player*>(target)) {

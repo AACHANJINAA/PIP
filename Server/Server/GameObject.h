@@ -40,7 +40,8 @@ namespace PIP::GAME
                                  uint32_t timestamp,
                                  // 리와인드용
                                  GameObject* attacker,
-                                 int32_t damage) = 0; // NPC, Player가 각각 구현
+                                 int32_t damage,
+                                 float knockback) = 0; // NPC, Player가 각각 구현 (knockback: 공격 설정의 넉백 세기)
 
     private:
         int64_t _id;

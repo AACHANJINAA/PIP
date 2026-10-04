@@ -157,9 +157,9 @@ namespace PIP::GAME
 	}
 
 	bool Tainer::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
-		const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
+		const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage, float knockback)
 	{
-		bool hit = NPC::ValidateHit(physics, attackShape, attackTransform, timestamp, attacker, damage);
+		bool hit = NPC::ValidateHit(physics, attackShape, attackTransform, timestamp, attacker, damage, knockback);
 		if (hit) CheckPhaseTransition();
 		return hit;
 	}
