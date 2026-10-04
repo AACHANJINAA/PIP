@@ -1,0 +1,183 @@
+# 클라이언트 코드맵 (Client/Client)
+
+DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04 기준)를 보고 작성했다. 코드를 바꾸면 해당 항목을 같이 고친다.
+전체 색인은 저장소 루트 `CODEMAP.md`, 서버는 `Server/Server/CODEMAP.md`, 공용은 `Common/CODEMAP.md`.
+
+---
+
+## 1. 빌드·실행 기본
+
+| 항목 | 내용 |
+|---|---|
+| 솔루션 | `Client/Client.sln`, 프로젝트 `Client.vcxproj` (출력 `Client/x64/<구성>/STL_Client.exe`) |
+| 언어·옵션 | `stdcpplatest`, `/utf-8` (소스·문자열 UTF-8). 툴셋 v143(이 PC 기본 MSVC 14.38) |
+| 미리 컴파일 헤더 | `stdafx.h` (STL, DX12, `Singleton<T>` 템플릿, `CLOG/CINFO/CERROR` 로그 매크로, `Packet.h` 포함) |
+| 컴파일 스위치 (`stdafx.h`) | `_ONDEBUGCONSOLE`(디버그 콘솔 + 로그), `_DEBUG_PHYSICS_VISUALIZATION`(DebugDrawManager 렌더) |
+| Jolt | Debug: `Jolt/lib/Debug`, Release: `Jolt/lib/ReleaseDebugRenderer`(디버그 렌더러 포함, MSVC 14.38·LTCG 없음). Release에도 `JPH_DEBUG_RENDERER` 정의 |
+| 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생) |
+| 작업 폴더 | `Client/Client`. 리소스·셰이더(`*.hlsl`) 경로가 이 폴더 기준 |
+| 인코딩 | `.editorconfig` 규칙 UTF-8 BOM. `/utf-8`이라 BOM이 없어도 빌드됨. 맞추려면 `Tools/EnsureUtf8Bom.ps1` |
+
+로그: `CLOG(expr)`는 `DebugLogStream` → VS 출력 창(UTF-16 변환) + 콘솔(UTF-8). `CERROR`는 `DebugBreak()`까지 한다.
+
+---
+
+## 2. 프레임 흐름 (`GameFramework::FrameAdvance`)
+
+1. ImGui 새 프레임, 씬 전환 요청 처리(`SceneManager::process_scene_change_if_requested`)
+2. `TimerManager::Tick` → `deltaTime`
+3. `ProcessNetwork` → `NetworkManager::process_queued_packets` (패킷 핸들러 실행)
+4. `ServerClock::update` (시간 동기화 요청, 서버 시각 추정)
+5. `ReplicationSystem::update` → 등록된 `INetSync::apply_snapshot` (NPC 상태 적용)
+6. `ProcessInput` (F6/F11 등 전역 키)
+7. `update_game_logic`: 새 오브젝트 awake/start → 모든 `GameObject::update` → 모든 `late_update` → `LightManager::update` → 메인 카메라 뷰 행렬 → `DebugDrawManager::Update`
+8. `update_physics` (Jolt 고정 스텝 0.02초)
+9. 현재 씬 `scene_process`, `SoundManager::update`
+10. `PhysicsDebugCapture::process_end_of_frame` (모든 late_update 이후 기록)
+11. 비동기 리소스 업로드 → `Renderer::render` → 후처리 훅 → `DamageTextManager`·`ServerClock` ImGui → ImGui 렌더 → Present
+
+---
+
+## 3. 엔티티(게임 오브젝트) 시스템
+
+| 파일 | 역할 |
+|---|---|
+| `Object.h/.cpp` | 모든 엔진 객체의 기반. 이름, 고유 ID, 파괴 플래그, persistent(씬 전환 유지). 복사·이동 금지 |
+| `GameObject.h/.cpp` | 컴포넌트 컨테이너. `add_component<T>()`는 `T::required_components` 튜플에 있는 컴포넌트를 먼저 자동 추가한다(추가 순서 = 갱신 순서). 레이어 비트, 활성/비활성, `on_collision_*`·`on_trigger_enter`를 모든 `ScriptComponent`에 전달 |
+| `Component.h/.cpp` | 컴포넌트 기반. 소유 GameObject를 weak_ptr로 보관 (`game_object()`) |
+| `Behavior.h/.cpp` | 갱신되는 컴포넌트. `awake/start/update/late_update/fixed_update/on_enable/on_disable/on_destroy`, 활성 플래그 |
+| `ScriptComponent.h/.cpp` | 게임 로직 스크립트 기반 (Unity MonoBehaviour 격). 메시지·충돌 콜백, `on_trigger_enter(other, TriggerHit)` (공격 판정 콜라이더가 상대와 겹칠 때) |
+| `TransformComponent.h/.cpp` | 위치·회전(쿼터니언)·스케일, 부모-자식 계층, 월드 행렬 캐시, 카메라 회전 모드 |
+| `ObjectManager.h/.cpp` | 오브젝트 생성·파괴 요청·지연 파괴, 이름/레이어 검색, NPC id ↔ 오브젝트 등록(`register_npc/find_npc`), 씬 전환 시 비persistent 정리 |
+| `LayerManager.h/.cpp` | 레이어 이름 ↔ 비트 (`Player`, `OtherPlayer`, `Enemy` 등) |
+
+---
+
+## 4. 씬
+
+| 파일 | 역할 |
+|---|---|
+| `Scene.h/.cpp` | 씬 기반. `build_objects`, `scene_process`, 씬 파일(JSON) 로드, 폴리지·조명 로드, `render_post_process`(빈 가상 함수) |
+| `SceneManager.h/.cpp` | 씬 등록·전환(`SCENE_NUM`), 서버가 지정한 씬 이름, 스카이박스·지형·메인 랜드스케이프·미니맵·풀 생성 |
+| `Title_Scene` | 타이틀·리소스 로딩·오프닝 연출, 방 입장 |
+| `Main_Scene` | 메인 게임 씬 (UI, 몬스터 HP UI, 레버, 컷씬 시퀀스, 더미 파티클) |
+| `Boss_Scene` | 보스전 씬 |
+| `Chess_Scene` | 테스트 씬 (더미 NPC, 각종 메쉬 스폰, `Body` 모드 콜라이더 사용 예) |
+| `Tool_Scene` | 소켓(무기 부착) 편집 툴 (ImGui, 뼈 선택, 기즈모) |
+
+---
+
+## 5. 플레이어·NPC·게임플레이 스크립트
+
+| 파일 | 역할 |
+|---|---|
+| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·히트스톱 0.05초), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
+| `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_sync_*`로 서버 값 수신, 속도로 추측 + 오프셋 감소(도착 시각 기준, S3에서 보간 버퍼로 바꿀 예정), 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
+| `NPCScript.h/.cpp` | NPC 공통. `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
+| `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
+| `QuestNPCScript.h/.cpp` | 퀘스트 NPC (상호작용 F UI, 퀘스트 마커). 이동 보간 안 함 |
+| `LeverScript.h/.cpp` | 레버 상호작용과 UI |
+| `WeaponScript.h/.cpp` | 무기 정보·공격 활성 플래그·스킬 차지·쿨다운, `LongswordScript`(같은 파일). 소켓 오브젝트 `MainWeapon`의 `Body` 모드 캡슐 충돌체(노란 캡슐)를 씀. 판정에는 쓰이지 않음(로그만) |
+| `TargetingComponent.h/.cpp` | 락온 대상 선정·토글 |
+| `FreeCameraScript.h/.cpp` | 플레이어 추적 카메라·자유 카메라, 화면 흔들기(`add_trauma`), 동적 줌 오프셋, 시네마틱 모드 |
+| `ToolCameraScript.h/.cpp` | 툴 씬 카메라 |
+| `MonsterHPComponent.h/.cpp` | 몬스터 HP 값·비율 |
+| `BoardCubeScript`, `GltfTestScript` | 테스트용 스크립트 |
+
+---
+
+## 6. 애니메이션·메쉬·리소스
+
+| 파일 | 역할 |
+|---|---|
+| `AnimationComponent.h/.cpp` | 애니메이션 별칭 → (메쉬, 실제 이름) 매핑, `play/play_until_progress`, 진행도, **캐릭터별 뼈 자세 보관**(`try_get_bone_model/world_matrix`, 공용 메쉬 노드에 의존하지 않음), 스키닝 팔레트(`bone_palette`), **히트스톱**(`hit_stop`, 임시 구현. 이후 GameObject 시간 배율로 옮길 예정) |
+| `SocketComponenet.h/.cpp` (파일명 오타 그대로) | 뼈에 다른 오브젝트 부착(`add_connecting`), 애니메이션 따라가기 토글. late_update에서 같은 프레임 자세를 읽음 |
+| `Mesh.h/.cpp` | 메쉬 기반(정점·인덱스 업로드, 렌더, 인스턴싱, CSM 그림자 렌더, OBB), 디버그 메쉬 |
+| `ReadGLTFMesh.h/.cpp` | **주력 로더.** glTF 정적/스킨 메쉬, 스킨·애니메이션 채널, 노드 계층, `update_animation`(팔레트 + 조인트 모델 행렬 출력), 소켓 행렬, 조인트 인덱스, 프리미티브 형상·CPU 스키닝 형상(디버그 기록용), 파티클 목표점 추출. 엔진이 glTF의 Z를 뒤집어 읽음(좌표계 변환) |
+| `ReadGLBMesh`, `ReadFBXMesh`(Assimp), `ReadOBJMesh` | 보조 로더 |
+| `SkyboxMesh`, `TerrainLoader.h/.cpp` | 스카이박스, 지형(하이트맵, 레이어 텍스처 배열, 풀 배치 가중치) |
+| `ResourceManager.h/.cpp` | 메쉬·텍스처·머티리얼 캐시, 업로드 버퍼 수명, IBL 맵, 스카이박스, R8 텍스처 배열, 기본 텍스처 |
+| `DescriptorManager`, `LinearAllocator` | 디스크립터 힙 할당, 프레임별 256바이트 정렬 상수 버퍼 선형 할당 |
+
+---
+
+## 7. 렌더링
+
+| 파일 | 역할 |
+|---|---|
+| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계 |
+| `Shader.h/.cpp` + 각 `*Shader` | PSO 설정 단위(입력 레이아웃, 셰이더 파일, 블렌드·깊이·래스터 상태, 객체별 상수). 셰이더 클래스 ↔ hlsl: `GltfShader`→`Gltf_Shader.hlsl`, `GltfSkinnedShader`→`Gltf_Skinned_Shader.hlsl`, `GlbShader`→`GLB_Shader.hlsl`, `TerrainShader`, `SkyboxShader`, `ShadowDepth(Skinned)Shader`, `UIShader`, `UIFrameShader`, `BillboardUIShader`, `MonsterHPUIShader`, `MinimapShader`, `OcclusionQueryShader`, `DebugShader`, `ParticleShader`→`Particle_Draw.hlsl`, `DefaultObjectShader`/`PlayerShader`→`Shaders.hlsl` |
+| `RootSignature.h/.cpp` | 이름별 루트 시그니처 생성기 (gltf, skinned, terrain, ui, debug, csm, minimap, occlusion, `compute_particle`, `particle_draw` 등) |
+| `RenderComponent.h/.cpp` | 메쉬 + PSO 이름 + 객체 상수 버퍼, 컬링 상태. 파생: `InstancedRenderComponent`, `FoliageRenderComponent`, `TerrainRenderComponent`, `SkyboxRenderComponent`, `UIRenderComponent`, `UIFrameRenderComponent`, `BillboardUIRenderComponent`, `MonsterHPUIRenderComponent`, `ParticleRenderComponent` |
+| `ShadowManager.h/.cpp` | 캐스케이드 그림자(CSM), 정적 그림자 갱신 조건 |
+| `LightManager.h/.cpp` | 조명 상수 버퍼, 태양 방향, IBL 구면 조화 |
+| `OcclusionManager.h/.cpp` | 오클루전 쿼리 힙·결과(N-1 프레임 결과로 조건부 렌더) |
+| `MinimapManager.h/.cpp` | 미니맵 타일·플레이어 위치 |
+| `CameraComponent.h/.cpp` | 투영·뷰 행렬, 카메라 상수, 흔들기 오프셋, 메인 카메라 |
+| `ParticleSystemComponent.h/.cpp` + `Particle_CS.hlsl` | 대검 스킬 전용 파티클(칼 모양 목표점으로 모임, 컴퓨트로 위치 계산). 범용화 계획은 `기획 & 계획/ParticleSystem_Plan_KR.md`. 알려진 문제: 컴퓨트 루트 상수 21개인데 24개 설정, 셰이더 개수 상한 5만 하드코딩 |
+| `UIManager`, `DamageTextManager`, `ImGuiManager` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명 |
+| `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |
+
+렌더 타깃: 씬을 스왑체인 백버퍼에 바로 그린다(오프스크린 씬 타깃 없음). 화면 후처리를 하려면 이 구조부터 바꿔야 한다.
+
+---
+
+## 8. 물리 (Jolt)
+
+| 파일 | 역할 |
+|---|---|
+| `PhysicsManager.h/.cpp` | Jolt 초기화, 0.02초 고정 스텝, 접촉 이벤트 큐 → 메인 스레드에서 `PhysicsColliderComponent::OnContact`(첫 번째 콜라이더만), 지형 하이트필드 생성 |
+| `JoltSetup.h` | 브로드페이즈·오브젝트 레이어 필터 |
+| `PhysicsColliderComponent.h/.cpp` | 박스·구·캡슐 콜라이더. `BodyMode::Body`(Jolt 바디) / `QueryOnly`(바디 없이 모양·월드 변환만). **뼈 부착**(`attach_to_bone`), 스케일 무시(`set_ignore_owner_scale`), **역할**(`Role::Hitbox` 공격 / `Hurtbox` 피격, Hurtbox는 정적 목록 등록), **공격 판정**(`begin/end_hit_query`: late_update에서 직전→현재 자세를 15도·0.2m 단위로 나눠 `CollisionDispatch::sCollideShapeVsShape`, 대상마다 1회 `on_trigger_enter`) |
+| `PhysicsCharacterControllerComponent.h/.cpp` | 캐릭터 컨트롤러 (fixed_update) |
+| `PhysicsDebugCapture.h/.cpp` | JoltViewer용 기록(`client_physics_dump.bin`): Jolt 바디, QueryOnly 콜라이더(공격 초록, 피격 하늘색, 적중 빨강), 뼈 축, 기준 프리미티브(칼날), 적중 지점·방향, NPC 실제 메쉬(CPU 스키닝, 15m 이내). 첫 기록 시 viewer `-focus` 명령을 로그로 출력 |
+
+NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC 생성 시 서버 값과 같게 붙인다(일반 NPC 캡슐 r0.5·키1.8·발 위 0.9m, 보스 r3·키8·발 위 4m, DynamicBox 1m 박스).
+
+---
+
+## 9. 네트워크·동기화
+
+| 파일 | 역할 |
+|---|---|
+| `NetworkManager.h/.cpp` | 블로킹 소켓 + 수신 전용 스레드(`network_worker` → 패킷 조립 → `concurrent_queue`, 수신 시각 기록). 메인 스레드 `process_queued_packets`에서 핸들러 실행. **인공 수신 지연·흔들림**(순서 유지). 송신 함수 `Send*Packet`, 수신 핸들러 `HANDLE_S2C_*`(로그인, 방, 플레이어 스폰·이동·피격, NPC 스폰·이동·배치·피격, 퀘스트, 인벤토리, 컷씬, 카운트다운, 시간 동기화 등) |
+| `ServerClock.h/.cpp` | 서버 시각 추정. TIME_SYNC 왕복(로그인 직후 0.1초×5, 이후 2초), RTT 최소 표본 기준 offset, 초당 5ms 이내로 따라감. `server_now_ms`, `arrival_now_ms`(− RTT/2), `unwrap_server_time`(32비트 서버 시각 복원), 보간 지연 상수(NPC 70, 플레이어 30). **F6 창**: RTT, offset, 보간 상태 집계, NPC 서버 위치 유령, 인공 지연 슬라이더 |
+| `SnapshotBuffer.h/.cpp` | 서버 시각 표본 버퍼. 에르미트 위치 보간 + slerp, 긴 간격은 마지막 100ms만, 최대 100ms 외삽, 5m 이상 순간이동 |
+| `ReplicationSystem.h/.cpp`, `INetSync.h` | 엔티티 id → `INetSync` 등록, 스냅샷 전달(`on_receive_snapshot`), 매 프레임 `apply_snapshot` |
+
+---
+
+## 10. 기타 매니저·유틸
+
+| 파일 | 역할 |
+|---|---|
+| `InputManager` | 키 상태(Down/Up/Press), 마우스 델타·고정 |
+| `TimerManager` | 프레임 시간. `SetHitStop`·`_gameTimeScale`은 사용처 없음(정리 대상) |
+| `SoundManager` | FMOD, 2D/3D 재생, 구간 재생(`play_3d_section`), 그룹 볼륨 |
+| `main.cpp` | `wWinMain`, 디버그 콘솔 할당(UTF-8 코드페이지), 창 생성, `GameFramework::OnCreate`, 서버 주소 설정 |
+| `d3dx12.h`, `DDSTextureLoader12`, `WICTextureLoader12` | 외부 헬퍼 |
+| `BehaviorTree.h` | 클라이언트 쪽 BT 사본. 사용처 없음 |
+| `generate_*.py` | UI 이미지 생성 스크립트 |
+
+**사용하지 않는 파일(내용이 전부 주석이거나 비어 있음)**: `Camera.h/.cpp`(Renderer.cpp가 include만), `FreeCamera.h/.cpp`, `ColiderComponent.h/.cpp`, `LongswordScript.h/.cpp`(실제 클래스는 `WeaponScript.h`), `BehaviorTree.cpp`.
+
+---
+
+## 11. 디버그 키
+
+| 키 | 동작 | 위치 |
+|---|---|---|
+| F6 | 네트워크 창 토글 | `GameFramework::ProcessInput` |
+| F7 | 평타 판정 구간 매 프레임 물리 기록 토글 | `MainPlayerScript::handle_input` |
+| F8 | 클라 물리 한 프레임 기록 + 서버 물리 스냅샷 요청 | `MainPlayerScript::handle_input` |
+| F11 | 전체 화면 | `GameFramework::ProcessInput` |
+
+기록 파일은 `Jolt/JoltViewer/RunViewer.py`로 연다.
+
+---
+
+## 12. 진행 중 작업 (관련 문서)
+
+- 타격감: `기획 & 계획/HitFeel_Plan_KR.md`, `BoneCollider_Spec_KR.md`(1단계), `MeleeHitPrediction_Spec_KR.md`(2단계)
+- 이동·넉백 동기화: `기획 & 계획/NetMotionSync_Design_KR.md` (S1·S2 완료, 다음 S3 다른 플레이어 보간)
+- 파티클: `기획 & 계획/ParticleSystem_Plan_KR.md`
