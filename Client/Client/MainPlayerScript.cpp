@@ -1214,7 +1214,7 @@ void MainPlayerScript::send_network_sync(float deltaTime)
 			_currentMoveDir,
 			_logicalRotation,
 			_state,
-			_actionId, static_cast<uint32_t>(GetTickCount64())
+			_actionId, static_cast<uint32_t>(common::NetNowMs())
 		);
 	}
 }

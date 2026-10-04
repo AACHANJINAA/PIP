@@ -28,6 +28,7 @@
 #include "FreeCameraScript.h"
 #include "CameraComponent.h"
 #include "Main_Scene.h"
+#include "ServerClock.h"
 
 void error_display(const char* msg, int err_no)
 {
@@ -74,9 +75,31 @@ void NetworkManager::process_queued_packets()
 	//typeAccumTime.clear();
 
 	// 이 함수는 '메인 스레드'의 게임 루프에서 호출됩니다.
-	std::vector<char> packetData;
-	while (_packetQueue.try_pop(packetData))
+	// 1. 받은 패킷을 대기열로 옮기며 처리 가능 시각을 정함 (인공 지연이 없으면 받은 시각 그대로)
+	QueuedPacket queued;
+	while (_packetQueue.try_pop(queued))
 	{
+		double release = queued.recv_ms;
+		if (_simLatencyMs > 0.0f || _simJitterMs > 0.0f)
+		{
+			std::uniform_real_distribution<double> jitter(-_simJitterMs, _simJitterMs);
+			release = std::max(queued.recv_ms + _simLatencyMs + jitter(_simRandom), queued.recv_ms);
+		}
+		// TCP처럼 순서는 유지 (앞 패킷보다 먼저 처리되지 않음)
+		queued.release_ms = std::max(release, _lastReleaseMs);
+		_lastReleaseMs = queued.release_ms;
+		_delayedPackets.push_back(std::move(queued));
+	}
+
+	// 2. 처리 시각이 된 패킷만 처리
+	const double now = common::NetNowMsPrecise();
+	while (!_delayedPackets.empty() && _delayedPackets.front().release_ms <= now)
+	{
+		QueuedPacket current = std::move(_delayedPackets.front());
+		_delayedPackets.pop_front();
+		_currentPacketArrivalMs = current.release_ms;
+		std::vector<char>& packetData = current.data;
+
 		common::packet::PacketStream stream(packetData.data(), packetData.size());
 		auto* header = reinterpret_cast<common::packet::PacketHeader*>(packetData.data());
 		//auto pStart = std::chrono::high_resolution_clock::now();
@@ -161,7 +184,9 @@ void NetworkManager::recv_packet()
 
 			if (_recvBuffer.size() < header->_size) break;
 
-			std::vector<char> singlePacket(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
+			QueuedPacket singlePacket;
+			singlePacket.data.assign(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
+			singlePacket.recv_ms = common::NetNowMsPrecise(); // 메인 스레드 처리 지연이 RTT에 섞이지 않게 여기서 기록
 			_packetQueue.push(std::move(singlePacket));
 			_recvBuffer.erase(_recvBuffer.begin(), _recvBuffer.begin() + header->_size);
 		}
@@ -225,9 +250,25 @@ void NetworkManager::SendActionPacket(int32_t actionID, int64_t targetID,
 	packet._target_id = targetID;
 	packet._position = pos;
 	packet._direction = dir;
-	packet._client_time_stamp = static_cast<uint32_t>(GetTickCount64()); // 서버 지연 보상(리와인드) 판정용
+	packet._client_time_stamp = static_cast<uint32_t>(common::NetNowMs()); // 서버 지연 보상(리와인드) 판정용
 
 	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+void NetworkManager::SendTimeSyncPacket(double client_time)
+{
+	common::packet::CS_PACKET_TIME_SYNC packet;
+	packet._type = common::packet::PacketType::C2S_P_TIME_SYNC;
+	packet._size = sizeof(packet);
+	packet._client_time = client_time;
+	send_packet(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+void NetworkManager::HANDLE_S2C_TIME_SYNC(common::packet::PacketStream& stream)
+{
+	common::packet::SC_PACKET_TIME_SYNC sync_packet;
+	stream >> sync_packet;
+	ServerClock::instance()->on_time_sync(sync_packet._client_time, sync_packet._server_time, _currentPacketArrivalMs);
 }
 
 void NetworkManager::SendNPCInteractPacket(int64_t npc_id, int32_t quest_id)
@@ -342,6 +383,7 @@ void NetworkManager::HANDLE_S2C_LOGIN_ACK(common::packet::PacketStream& stream)
 		_my_session_id = ack_packet._my_session_id; // [핵심] 자신의 ID 저장
 		CLOG("[S->C] Login successful! My Session ID is now: " << _my_session_id);
 		_isLogin = true;
+		ServerClock::instance()->reset(); // 새 접속 기준으로 시계를 다시 잰다
 	}
 	else
 	{
@@ -1342,6 +1384,8 @@ bool NetworkManager::init_network()
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_INTERACT_ACK(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_COUNTDOWN,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_COUNTDOWN(stream); });
+	RegisterHandler(common::packet::PacketType::S2C_P_TIME_SYNC,
+		[this](common::packet::PacketStream& stream) { HANDLE_S2C_TIME_SYNC(stream); });
 	RegisterHandler(common::packet::PacketType::S2C_P_SKILL_UNLOCKED,
 		[this](common::packet::PacketStream& stream) { HANDLE_S2C_SKILL_UNLOCKED(stream); });
 

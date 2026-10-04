@@ -1,0 +1,57 @@
+﻿#pragma once
+
+// 서버 시각 추정 (NetMotionSync_Design_KR.md 5.1)
+// - TIME_SYNC 왕복으로 RTT와 "서버 시각 - 클라 시각" 차이(offset)를 잰다
+// - 최근 표본 중 RTT가 가장 작은 표본의 offset을 목표로 삼는다 (지연이 튄 표본은 시계 차이 추정이 부정확)
+// - offset은 한 번에 뛰지 않고 천천히 따라간다 (큰 차이는 즉시 맞춤)
+class ServerClock : public Singleton<ServerClock>
+{
+	friend class Singleton<ServerClock>;
+public:
+	// 매 프레임 호출: 로그인 상태에서 동기화 요청을 보낼 때가 되면 보내고, offset을 목표로 옮긴다
+	void update();
+	// TIME_SYNC 응답. arrival_ms: 패킷이 클라에 도착한 시각 (네트워크 스레드 수신 시각, 인공 지연 포함)
+	void on_time_sync(double client_time, double server_time, double arrival_ms);
+	// 재접속 등으로 처음부터 다시 잴 때
+	void reset();
+
+	bool is_synced() const { return _synced; }
+	// 추정 서버 시각 (ms, common::NetNowMs 기준)
+	double server_now_ms() const;
+	double offset_ms() const { return _offset; }
+	double best_rtt_ms() const { return _bestRtt; }
+	double last_rtt_ms() const { return _lastRtt; }
+
+	// ImGui 디버그 창 (F6 토글): RTT, offset, 인공 지연 설정
+	void toggle_debug_window() { _showDebugWindow = !_showDebugWindow; }
+	void draw_debug_window();
+
+private:
+	ServerClock() = default;
+
+	struct Sample
+	{
+		double rtt;
+		double offset;
+	};
+
+	static constexpr size_t kMaxSamples = 16;
+	static constexpr int kBurstCount = 5;			// 접속 직후 빠르게 보낼 횟수
+	static constexpr double kBurstIntervalMs = 100.0;
+	static constexpr double kIntervalMs = 2000.0;
+	static constexpr double kSlewMsPerSec = 5.0;	// offset이 따라가는 최대 속도
+	static constexpr double kSnapMs = 50.0;			// 이보다 크게 어긋나면 즉시 맞춤
+
+	std::deque<Sample> _samples;
+	double _offset = 0.0;
+	double _targetOffset = 0.0;
+	double _bestRtt = 0.0;
+	double _lastRtt = 0.0;
+	bool _synced = false;
+
+	int _burstRemaining = kBurstCount;
+	double _nextSendMs = 0.0;
+	double _lastUpdateMs = 0.0;
+
+	bool _showDebugWindow = false;
+};

@@ -191,6 +191,9 @@
     <ClInclude Include="NetworkManager.h">
       <Filter>0. Engine\6. Network</Filter>
     </ClInclude>
+    <ClInclude Include="ServerClock.h">
+      <Filter>0. Engine\6. Network</Filter>
+    </ClInclude>
     <ClInclude Include="main.h">
       <Filter>5. App</Filter>
     </ClInclude>
@@ -551,6 +554,9 @@
       <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
     <ClCompile Include="NetworkManager.cpp">
+      <Filter>0. Engine\6. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerClock.cpp">
       <Filter>0. Engine\6. Network</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">

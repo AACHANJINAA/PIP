@@ -652,7 +652,7 @@ namespace PIP::SERVER
 			// 4. 게임 로직 업데이트 (남은 시간만큼)
 			auto t_logic_start = steady_clock::now();
 			float dt = static_cast<float>(elapsed.count());
-			uint32_t currentTick = static_cast<uint32_t>(GetTickCount64());
+			uint32_t currentTick = static_cast<uint32_t>(common::NetNowMs());
 			for (auto& room : _rooms) {
 				if (room->GetLogicThreadIndex() == thread_idx) {
 					// [변경] 할당자 전달

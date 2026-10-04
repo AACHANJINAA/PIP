@@ -2,6 +2,7 @@
 // 테스트 주석: common::packet 네임스페이스가 포함된 파일입니다.
 // [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
+#include "NetClock.h"
 
 
 namespace common::packet
@@ -153,6 +154,10 @@ namespace common::packet
 
 		//------------------------------------------- 게임 흐름 제어 패킷 --------------------------------------- //
 		S2C_P_COUNTDOWN = 1001, // 보스전 카운트다운 패킷 (서버 -> 클라)
+
+		//------------------------------------------- 시간 동기화 패킷 --------------------------------------- //
+		C2S_P_TIME_SYNC = 1101, // 클라 -> 서버: 클라 시각 (서버가 바로 되돌려 줌)
+		S2C_P_TIME_SYNC = 1102, // 서버 -> 클라: 클라 시각 에코 + 서버 시각 (RTT, 시계 차이 추정)
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -281,7 +286,18 @@ namespace common::packet
 		DebugCommandType _command;
 	};
 
+	// 시간 동기화 요청 (클라 시각은 서버가 그대로 되돌려 줌)
+	struct CS_PACKET_TIME_SYNC : PacketHeader {
+		double		_client_time;	// 보낼 때의 클라 NetNowMsPrecise
+	};
+
 	// ------------------------------------------ server to client ------------------------------------------ // 
+	// 시간 동기화 응답
+	struct SC_PACKET_TIME_SYNC : PacketHeader {
+		double		_client_time;	// 요청의 클라 시각 에코
+		double		_server_time;	// 요청을 받은 순간의 서버 NetNowMsPrecise (정수 ms로 보내면 평균 0.5ms 치우침)
+	};
+
 	// 서버 -> 클라
 	// 로그인 결과 패킷
 	struct SC_PACKET_LOGIN_ACK : PacketHeader
