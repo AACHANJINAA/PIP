@@ -58,7 +58,7 @@
 
 ### 2.3 열거형·상수
 
-- `EntityState`(IDLE, MOVE, RUN, JUMP, HOVER, LANDING, ACTION, SKILL_ONE, HITTED, DEAD, GRABBED), `NPCType`(Basic, Tainer, Elevator, MagicGuard, QuestNPC, Lever, DynamicBox), `ActionID::Common/Tainer/...`, `DebugCommandType`, `DebugShapeType`
+- `EntityState`(IDLE, MOVE, RUN, JUMP, HOVER, LANDING, ACTION, SKILL_ONE, HITTED, DEAD, GRABBED), `NPCType`(Basic, Tainer, Elevator, MagicGuard, QuestNPC, Lever, DynamicBox), `ActionID::Common/Tainer/...`, `DebugCommandType`(물리 기록, 보스 씬 전환, 주변 몬스터 즉사, 스킬 즉시 해금), `DebugShapeType`
 - `common::anim_speed`(수정 금지), `common::move_speed`(걷기 8, 달리기 50, 한 프레임 최대 50)
 
 ---

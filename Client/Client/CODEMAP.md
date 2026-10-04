@@ -243,6 +243,8 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | F7 | 평타 판정 구간 매 프레임 물리 기록 토글 | `MainPlayerScript::handle_input` |
 | F8 | 클라 물리 한 프레임 기록 + 서버 물리 스냅샷 요청 | `MainPlayerScript::handle_input` |
 | F11 | 전체 화면 | `GameFramework::ProcessInput` |
+| K | 300m 안 몬스터 즉사 (서버 디버그 명령) | `MainPlayerScript::handle_input` |
+| U | 대검 스킬 즉시 해금 (서버 디버그 명령 `UNLOCK_SKILL`) | `MainPlayerScript::handle_input` |
 
 기록 파일은 `Jolt/JoltViewer/RunViewer.py`로 연다.
 

@@ -836,6 +836,11 @@ void MainPlayerScript::handle_input(float deltaTime)
 	{
 		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::KILL_MONSTERS_NEARBY);
 	}
+	// [디버그] 대검 스킬 즉시 해금 (서버가 방 해금 상태를 바꾸고 S2C_P_SKILL_UNLOCKED를 보냄)
+	if (InputManager::instance()->IsKeyDown('U'))
+	{
+		NetworkManager::instance()->SendDebugCommandPacket(common::packet::DebugCommandType::UNLOCK_SKILL);
+	}
 	// DW추가 : 사망 상태 로직 추가
 	if (0 >= hp() || _state == common::packet::EntityState::GRABBED)
 	{

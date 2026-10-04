@@ -565,6 +565,9 @@ namespace PIP::packet
 				else if (debug_packet._command == packet::DebugCommandType::KILL_MONSTERS_NEARBY) {
 					room->KillMonstersNearby(session->_id);
 				}
+				else if (debug_packet._command == packet::DebugCommandType::UNLOCK_SKILL) {
+					room->DebugUnlockSkill();
+				}
 			});
 		}
 	}

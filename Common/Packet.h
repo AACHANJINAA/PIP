@@ -285,6 +285,7 @@ namespace common::packet
 		PHYSICS_STOP = 2,     // 물리 녹화 중지
 		CHANGE_SCENE_BOSS = 3, // 보스 씬으로 강제 전환
 		KILL_MONSTERS_NEARBY = 4, // [추가] 300m 이내 모든 몬스터 즉사
+		UNLOCK_SKILL = 5,         // 방 스킬(대검) 즉시 해금 (레버 2개 작동과 같은 효과, 컷씬 없음)
 	};
 
 	struct CS_PACKET_DEBUG_COMMAND : PacketHeader {

@@ -135,6 +135,8 @@ namespace PIP::SERVER
 		void StartPhysicsRecording();
 		void StopPhysicsRecording();
 		void KillMonstersNearby(int64_t player_id, float range = 300.0f);
+		// [디버그] 방 스킬 즉시 해금 (해금 패킷 브로드캐스트)
+		void DebugUnlockSkill();
 
 	private:
 		void SpawnBoss();
