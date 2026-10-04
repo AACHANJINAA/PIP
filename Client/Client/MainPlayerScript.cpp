@@ -31,6 +31,7 @@
 #include "Main_Scene.h"
 #include "PhysicsDebugCapture.h"
 #include "NPCScript.h"
+#include "HitReactionComponent.h"
 
 void MainPlayerScript::set_hp(int hp)
 {
@@ -1450,6 +1451,10 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 	// 히트스톱: 나와 맞은 NPC의 시간만 멈춤 (월드 전체를 멈추지 않음, NPC 위치 보간은 서버 시각이라 계속 진행)
 	game_object()->hit_stop(kAttackHitStop);
 	other->hit_stop(kAttackHitStop);
+
+	// 맞은 부위 뼈를 칼이 지나가는 방향으로 꺾음 (히트스톱 동안 꺾인 채로 멈췄다가 스프링으로 돌아옴)
+	if (auto reaction = other->get_component<HitReactionComponent>())
+		reaction->react(hit);
 
 	// 타격음(칼 + 맞은 쪽)과 카메라 킥(칼이 지나가는 방향)을 칼이 닿는 순간에 (서버 응답에서는 중복 재생하지 않음)
 	SoundManager::instance()->play_3d("SwordHit", hit.point);

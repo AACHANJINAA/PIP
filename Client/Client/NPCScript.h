@@ -5,12 +5,13 @@
 #include "AnimationComponent.h"
 #include "GameFramework.h"
 #include "MonsterHPComponent.h"
+#include "HitReactionComponent.h"
 
 class NPCScript : public ScriptComponent, public INetSync {
 public:
 	NPCScript();
 	~NPCScript() override;
-	using required_components = std::tuple<TransformComponent, MonsterHPComponent, AnimationComponent, RenderComponent>;
+	using required_components = std::tuple<TransformComponent, MonsterHPComponent, AnimationComponent, RenderComponent, HitReactionComponent>;
 
 	virtual void init_visual();
 

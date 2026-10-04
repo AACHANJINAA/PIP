@@ -62,7 +62,8 @@ void AnimationComponent::late_update(float deltaTime)
 	if (_bonePaletteSize > 0)
 	{
 		// 1. CPU 메모리(_boneTransforms 벡터)에 뼈대 애니메이션 결과를 먼저 계산합니다. -> _boneTransforms 이건 애니메이션 컴포넌트마다 하나씩 따로 들고있음
-		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop, &_jointModelMatrices);
+		glTF_mesh->update_animation(_nowAnimationTime, _nowAnimationName, _boneTransforms, _isLoop, &_jointModelMatrices,
+			_jointOffsets.empty() ? nullptr : &_jointOffsets);
 		_poseMesh = glTF_mesh.get();
 
 		// 2. 선형 할당기 창구에 가서 "나 이만큼 메모리 필요해!" 하고 즉시 빌려오기 (오버헤드 0) -> GPU에 올릴 뼈대 행렬 데이터 크기만큼 빌려오기

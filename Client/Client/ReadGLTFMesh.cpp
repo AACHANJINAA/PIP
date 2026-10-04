@@ -433,7 +433,7 @@ void ReadGLTFMesh::update_animation(float& delta_time, const std::string& animat
 }
 
 void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop,
-	std::vector<DirectX::XMFLOAT4X4>* out_joint_model_matrices)
+	std::vector<DirectX::XMFLOAT4X4>* out_joint_model_matrices, const std::vector<JointRotationOffset>* joint_offsets)
 {
 	if (animation_name == "t_pose" || !_animations.contains(animation_name))
 	{
@@ -569,6 +569,13 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 		}
 	}
 
+	// 4-1. 절차적 추가 회전 (피격 리액션 등)
+	std::vector<std::pair<int, XMFLOAT4>> restore_rotations;
+	if (joint_offsets && !joint_offsets->empty())
+	{
+		apply_joint_offsets(*joint_offsets, restore_rotations);
+	}
+
 	// 5. 스키닝 행렬(Matrix Palette) 계산
 	for (size_t i = 0; i < _joints.size(); ++i)
 	{
@@ -591,6 +598,12 @@ void ReadGLTFMesh::update_animation(float& delta_time, std::string animation_nam
 		{
 			(*out_joint_model_matrices)[i] = _nodes[_joints[i]]._global_transform;
 		}
+	}
+
+	// 5-2. 추가 회전으로 바꾼 로컬 회전 복구 (공용 노드라 회전 채널이 없는 노드는 다음 캐릭터에 그대로 남음)
+	for (const auto& [node_idx, rotation] : restore_rotations)
+	{
+		_nodes[node_idx]._rotation = rotation;
 	}
 
 	// 6. GPU 업로드
@@ -1701,6 +1714,32 @@ int ReadGLTFMesh::get_bone_index_by_name(const std::string& name) const
 	return -1; // 못 찾음
 }
 
+bool ReadGLTFMesh::joint_moves_skin(int joint) const
+{
+	if (joint < 0 || joint >= static_cast<int>(_skeleton.size())) return false;
+	if (_jointMovesSkin.size() != _skeleton.size())
+	{
+		// 가중치가 붙은 뼈와 그 조상 뼈를 표시
+		_jointMovesSkin.assign(_skeleton.size(), 0);
+		for (const auto& primitive : _primitives)
+		{
+			for (const auto& v : primitive->_skinned_vertices)
+			{
+				for (int k = 0; k < 4; ++k)
+				{
+					if (v._boneWeights[k] <= 0.001f) continue;
+					for (int j = static_cast<int>(v._boneIndices[k]); j >= 0 && j < static_cast<int>(_skeleton.size()) && !_jointMovesSkin[j];
+						j = _skeleton[j]._parent_index)
+					{
+						_jointMovesSkin[j] = 1;
+					}
+				}
+			}
+		}
+	}
+	return _jointMovesSkin[joint] != 0;
+}
+
 int ReadGLTFMesh::get_joint_index_by_name(const std::string& name) const
 {
 	for (size_t i = 0; i < _skeleton.size(); ++i)
@@ -1737,10 +1776,12 @@ bool ReadGLTFMesh::get_primitive_geometry(const std::string& material_name, std:
 	return false;
 }
 
-bool ReadGLTFMesh::get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& bone_palette, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const
+bool ReadGLTFMesh::get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& bone_palette, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices,
+	std::vector<SkinInfluence>* out_influences) const
 {
 	out_positions.clear();
 	out_indices.clear();
+	if (out_influences) out_influences->clear();
 
 	// GPU용 전치 행렬을 원래 행 벡터 규약 행렬로 되돌림
 	std::vector<XMMATRIX> palette;
@@ -1764,11 +1805,22 @@ bool ReadGLTFMesh::get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& 
 				XMFLOAT3 out;
 				XMStoreFloat3(&out, skinned);
 				out_positions.push_back(out);
+				if (out_influences)
+				{
+					SkinInfluence influence;
+					for (int k = 0; k < 4; ++k)
+					{
+						influence.joints[k] = v._boneIndices[k];
+						influence.weights[k] = v._boneWeights[k];
+					}
+					out_influences->push_back(influence);
+				}
 			}
 		}
 		else
 		{
 			for (const auto& v : primitive->_vertices) out_positions.push_back(v._position);
+			if (out_influences) out_influences->resize(out_positions.size());
 		}
 		for (UINT index : primitive->_indices) out_indices.push_back(base + index);
 	}
@@ -1904,6 +1956,50 @@ void ReadGLTFMesh::load_nodes(const json& gltf_json)
 
 		// 초기 전역 행렬은 단위 행렬로 설정
 		XMStoreFloat4x4(&node_info._global_transform, XMMatrixIdentity());
+	}
+}
+
+void ReadGLTFMesh::apply_joint_offsets(const std::vector<JointRotationOffset>& offsets, std::vector<std::pair<int, XMFLOAT4>>& restore)
+{
+	// 부모 쪽 뼈부터 적용해야 자식의 부모 행렬이 이미 반영된 상태가 됨 (깊이 순 정렬)
+	auto depth_of = [this](int joint) {
+		int depth = 0;
+		for (int j = joint; j >= 0 && depth < 256; j = _skeleton[j]._parent_index) ++depth;
+		return depth;
+	};
+	std::vector<std::pair<int, const JointRotationOffset*>> ordered;
+	ordered.reserve(offsets.size());
+	for (const auto& offset : offsets)
+	{
+		if (offset.joint < 0 || offset.joint >= static_cast<int>(_joints.size())) continue;
+		ordered.emplace_back(depth_of(offset.joint), &offset);
+	}
+	std::sort(ordered.begin(), ordered.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+
+	for (const auto& [depth, offset] : ordered)
+	{
+		const XMVECTOR rotvec = XMLoadFloat3(&offset->model_rotvec);
+		const float angle = XMVectorGetX(XMVector3Length(rotvec));
+		if (angle < 1e-5f) continue;
+
+		const int node_idx = _joints[offset->joint];
+		NodeInfo& node = _nodes[node_idx];
+		const int parent_idx = node._parent_index;
+		const XMMATRIX parent_global = parent_idx >= 0 ? XMLoadFloat4x4(&_nodes[parent_idx]._global_transform) : XMMatrixIdentity();
+
+		// 모델 공간 회전축 -> 부모 뼈 공간. 회전축은 유사 벡터라 거울 변환(행렬식 < 0)이면 방향이 뒤집힘
+		const XMMATRIX to_parent = XMMatrixInverse(nullptr, parent_global);
+		XMVECTOR axis = XMVector3TransformNormal(XMVectorScale(rotvec, 1.0f / angle), to_parent);
+		if (XMVectorGetX(XMMatrixDeterminant(to_parent)) < 0.0f) axis = XMVectorNegate(axis);
+		if (!(XMVectorGetX(XMVector3LengthSq(axis)) >= 1e-12f)) continue; // 0이거나 NaN(부모 행렬이 역행렬 불가 등)
+		axis = XMVector3Normalize(axis);
+
+		// 로컬 = S * R * T 에서 R 다음(부모 공간)에 추가 회전: R' = R * Q
+		restore.emplace_back(node_idx, node._rotation);
+		const XMVECTOR q_offset = XMQuaternionRotationNormal(axis, angle);
+		XMStoreFloat4(&node._rotation, XMQuaternionNormalize(XMQuaternionMultiply(XMLoadFloat4(&node._rotation), q_offset)));
+
+		update_node_hierarchy(node_idx, parent_global);
 	}
 }
 

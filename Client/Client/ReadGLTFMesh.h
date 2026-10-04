@@ -129,6 +129,21 @@ struct AnimationClip
 };
 
 // glTF 'nodes' 배열의 상태를 관리하기 위한 구조체
+// 애니메이션 위에 더하는 조인트 회전 (피격 리액션 등 절차적 연출)
+// model_rotvec: 메쉬 모델 공간 기준 회전 벡터 (회전축 × 각도(라디안)). 부모 뼈 기준으로 바꿔서 적용
+struct JointRotationOffset
+{
+	int joint = -1;						// 스킨 조인트 인덱스
+	DirectX::XMFLOAT3 model_rotvec = { 0.0f, 0.0f, 0.0f };
+};
+
+// 정점 하나에 영향을 주는 조인트와 가중치
+struct SkinInfluence
+{
+	UINT joints[4] = { 0, 0, 0, 0 };
+	float weights[4] = { 0, 0, 0, 0 };
+};
+
 struct NodeInfo
 {
 	int _parent_index = -1;
@@ -168,8 +183,10 @@ public:
 
 	// 추후 인스턴싱을 위해서 확장하고 있는 함수
 	// out_joint_model_matrices: 조인트(스킨 순서)별 모델 공간 뼈 행렬을 함께 받고 싶을 때 전달 (전치하지 않은 DirectX 행 벡터 규약)
+	// joint_offsets: 키프레임 자세 위에 더할 조인트 회전 (없으면 nullptr). 공용 노드 상태는 계산 후 원래대로 돌려 다른 캐릭터에 남지 않음
 	void update_animation(float& delta_time, std::string animation_name, std::vector<DirectX::XMFLOAT4X4>& bone_transforms, bool _isLoop = true,
-		std::vector<DirectX::XMFLOAT4X4>* out_joint_model_matrices = nullptr);
+		std::vector<DirectX::XMFLOAT4X4>* out_joint_model_matrices = nullptr,
+		const std::vector<JointRotationOffset>* joint_offsets = nullptr);
 
 	// 현재 사용중인 것
 	void update_animation(float& delta_time, const std::string& animation_name, UINT8* mapped_buffer, bool _isLoop = true);
@@ -180,12 +197,19 @@ public:
 
 	// 스킨 조인트 순서(GPU 팔레트 순서)에서의 인덱스. 없으면 -1 (get_bone_index_by_name은 노드 인덱스를 반환하므로 구분)
 	int get_joint_index_by_name(const std::string& name) const;
+	// 조인트 이름, 부모 조인트 인덱스 (부모가 조인트가 아니면 -1)
+	const std::string& get_joint_name(int joint) const { return _skeleton[joint]._name; }
+	int get_joint_parent(int joint) const { return _skeleton[joint]._parent_index; }
+	// 이 뼈를 돌리면 화면의 정점이 움직이는지 (자신이나 자식 뼈에 가중치가 붙은 정점이 있음). IK 뼈처럼 정점이 없는 뼈는 false
+	bool joint_moves_skin(int joint) const;
 
 	// 재질 이름으로 프리미티브를 찾아 CPU 정점 위치와 인덱스를 복사 (디버그 기록용)
 	bool get_primitive_geometry(const std::string& material_name, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const;
 	// 모든 프리미티브의 정점을 CPU에서 스키닝해 모델 공간 위치로 복사 (디버그 기록용)
 	// bone_palette: AnimationComponent의 스키닝 행렬 팔레트 (GPU용 전치 행렬). 스킨이 없는 프리미티브는 원래 위치
-	bool get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& bone_palette, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices) const;
+	// out_influences: 정점마다 영향 조인트 4개와 가중치 (정적 프리미티브는 가중치 0). 필요할 때만 전달
+	bool get_skinned_geometry(const std::vector<DirectX::XMFLOAT4X4>& bone_palette, std::vector<DirectX::XMFLOAT3>& out_positions, std::vector<UINT>& out_indices,
+		std::vector<SkinInfluence>* out_influences = nullptr) const;
 
 	// 애니메이션만 있는 glTF 파일 로더 추가
 	void load_animation_only(const std::string& file_path, const std::string& want_name = "null_name");
@@ -317,6 +341,7 @@ private: // 애니메이션을 위해 필요한 멤버들
 	
 	// 모든 노드의 리스트 (glTF node index와 1:1 매칭)
 	std::vector<NodeInfo> _nodes;
+	mutable std::vector<char> _jointMovesSkin;	// joint_moves_skin 캐시 (처음 조회할 때 정점 가중치로 계산)
 
 	// 현재 재생 중인 애니메이션 시간
 	// DW설명 : GltfAnimationScript 에서 관리하도록 변경함
@@ -328,5 +353,7 @@ private: // 애니메이션을 위해 필요한 멤버들
 
 	// 헬퍼 함수: 노드 계층 구조를 순회하며 전역 행렬 갱신
 	void update_node_hierarchy(int node_index, const DirectX::XMMATRIX& parent_transform);
+	// 계층 계산이 끝난 공용 노드에 조인트 추가 회전을 적용하고 하위 계층을 다시 계산. 바꾼 로컬 회전은 restore에 기록
+	void apply_joint_offsets(const std::vector<JointRotationOffset>& offsets, std::vector<std::pair<int, DirectX::XMFLOAT4>>& restore);
 
 };

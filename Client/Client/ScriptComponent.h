@@ -12,6 +12,12 @@ struct TriggerHit
     PhysicsColliderComponent* other = nullptr;  // 상대 콜라이더 (예: NPC 히트박스)
     XMFLOAT3 point = { 0, 0, 0 };               // 적중 지점 (월드)
     XMFLOAT3 direction = { 0, 0, 0 };           // 적중 지점에서 공격 콜라이더가 움직인 방향 (정규화)
+
+    // 공격 콜라이더가 캡슐이면 이번 프레임에 쓸고 지나간 구간 (직전·현재 자세의 캡슐 중심선 양 끝, 월드). 메쉬 단위 판정용
+    bool has_self_segment = false;
+    XMFLOAT3 self_prev_a = { 0, 0, 0 }, self_prev_b = { 0, 0, 0 };
+    XMFLOAT3 self_cur_a = { 0, 0, 0 }, self_cur_b = { 0, 0, 0 };
+    float self_radius = 0.0f;
 };
 
 class ScriptComponent : public Behavior
