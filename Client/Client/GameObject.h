@@ -29,6 +29,15 @@ public:
 
 	void set_enabled(bool enabled) { _enabled = enabled; }
 	bool is_enable() const { return _enabled; }
+
+	// --- 오브젝트별 시간 (HitFeel_Plan_KR.md 3.2, 언리얼 CustomTimeDilation과 같은 개념) ---
+	// update·late_update에 deltaTime × 시간 배율을 넘긴다. 히트스톱 중에는 0 (애니메이션, 스크립트 타이머 등이 같이 멈춤)
+	// 서버 시각 기준 위치 보간(NPC, 다른 플레이어)은 deltaTime을 쓰지 않으므로 멈추지 않는다
+	// fixed_update(물리 고정 스텝)는 배율을 적용하지 않는다
+	void hit_stop(float duration) { _hitStopTimer = std::max(_hitStopTimer, duration); } // 이미 걸려 있으면 더 긴 쪽
+	bool is_hit_stopped() const { return _hitStopTimer > 0.0f; }
+	void set_time_scale(float scale) { _timeScale = std::max(scale, 0.0f); }
+	float time_scale() const { return _timeScale; }
 	
 	// [변경] 레이어 타입을 uint32_t로 변경
 	uint32_t layer_mask() const { return _layerMask; }
@@ -134,6 +143,12 @@ private:
 	uint32_t                                _layerMask = 0;
 	bool _enabled = true;
 	mutable bool _isIterating = false; // [추가] 순회 중 상태를 나타내는 플래그
+
+	float _timeScale = 1.0f;
+	mutable float _hitStopTimer = 0.0f;		// 남은 히트스톱 시간 (실제 시간으로 줄어듦)
+	mutable float _localDelta = 0.0f;		// 이번 프레임 update에서 계산한 오브젝트 시간 (late_update가 같은 값을 씀)
+	mutable bool _hasLocalDelta = false;
+	float consume_delta(float deltaTime) const;	// 히트스톱·배율을 적용한 이번 프레임 시간
 };
 //public:
 //	MeshType _meshType{}; // 메쉬 어떤걸 원하는지?

@@ -22,15 +22,8 @@ void AnimationComponent::late_update(float deltaTime)
 		return;
 	}
 
-	// 현재 애니메이션 시간 갱신 (히트스톱 중에는 멈추고, 이번 프레임에 풀리면 남은 시간만큼만 진행)
-	float playTime = deltaTime;
-	if (_hitStopTimer > 0.0f)
-	{
-		_hitStopTimer -= deltaTime;
-		playTime = std::max(-_hitStopTimer, 0.0f);
-		_hitStopTimer = std::max(_hitStopTimer, 0.0f);
-	}
-	_nowAnimationTime += playTime * _animationSpeed;
+	// 현재 애니메이션 시간 갱신 (히트스톱·시간 배율은 GameObject가 deltaTime에 이미 적용함)
+	_nowAnimationTime += deltaTime * _animationSpeed;
 	float timeBeforeUpdate = _nowAnimationTime;
 
 	// 애니메이션 리소스 찾기

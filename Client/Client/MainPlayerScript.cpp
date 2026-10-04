@@ -1441,9 +1441,9 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 		<< ", 지점 (" << hit.point.x << ", " << hit.point.y << ", " << hit.point.z << ")"
 		<< ", 방향 (" << hit.direction.x << ", " << hit.direction.y << ", " << hit.direction.z << ")");
 
-	// 히트스톱: 나와 맞은 NPC의 애니메이션만 멈춤 (월드 전체를 멈추지 않음)
-	if (auto anim = game_object()->get_component<AnimationComponent>()) anim->hit_stop(kAttackHitStop);
-	if (auto npc_anim = other->get_component<AnimationComponent>()) npc_anim->hit_stop(kAttackHitStop);
+	// 히트스톱: 나와 맞은 NPC의 시간만 멈춤 (월드 전체를 멈추지 않음, NPC 위치 보간은 서버 시각이라 계속 진행)
+	game_object()->hit_stop(kAttackHitStop);
+	other->hit_stop(kAttackHitStop);
 
 	if (_debugCaptureAttack)
 		PhysicsDebugCapture::instance()->request_capture("hit NPC " + std::to_string(npc->id()));
