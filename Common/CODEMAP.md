@@ -12,6 +12,7 @@
 | `Packet.h` | 네트워크 프로토콜 전체. 네임스페이스 `common::packet`. 패킷 구조체는 `#pragma pack(push, 1)` 안에 있다(정렬 패딩 없음) |
 | `PacketStream.h` | 패킷 직렬화 버퍼 (`<<`, `>>`, 문자열·가변 데이터) |
 | `NetClock.h` | 공용 네트워크 시계 `common::NetNowMs()`(uint64 ms), `NetNowMsPrecise()`(double ms). `steady_clock` 기반, PC마다 기준점이 다르다(서버 시각 추정은 클라 `ServerClock`) |
+| `MotionCurve.h` | 모션 이벤트 공용 정의 `common::motion`: `MotionType`(Knockback), `MotionCurve`(EaseOutQuad), `Progress(곡선, 버팀, 이동 시간, 경과)` → 0~1. 서버 이동과 클라 재생이 같은 함수를 씀 |
 | `Vector3.h` | `common::Vec3`(= `XMFLOAT3`), `Vec4`, `Quat`(= `XMFLOAT4`), 상수(`Vec3Zero` 등), `Dot/Length/Normalize/Distance`, NaN 검사, `common::VectorHelper` 연산자(+, -, *, /) |
 | `JoltHelper.h` | `PIP::Utils::ToJolt/FromJolt` (Vec3, Quat, 행렬 ↔ Jolt) |
 | `TerrainData.h` | 하이트맵 지형 데이터 로드(metadata.json + raw), 정보·높이 배열 |
@@ -40,6 +41,7 @@
 | 901 | 스탯 동기화 | |
 | 1001 | 보스전 카운트다운 | |
 | 1101~1102 | 시간 동기화 | `C2S_P_TIME_SYNC { double _client_time }`, `S2C_P_TIME_SYNC { double _client_time, double _server_time }` |
+| 1201~1202 | 모션 이벤트 | `S2C_P_MOTION_START`(엔티티, 모션 번호, 종류, 곡선, 서버 시작 시각, 시작·끝 위치, 버팀, 이동 시간), `S2C_P_MOTION_END`(엔티티, 모션 번호, 서버 종료 시각, 위치) |
 
 새 패킷을 추가할 때: 번호 → 구조체 → 서버 `PacketManager`(핸들러 등록 + **세션 상태별 허용 목록**) → 클라 `NetworkManager::RegisterHandler`.
 

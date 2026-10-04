@@ -3,6 +3,7 @@
 // [TEST] Gemini CLI를 통한 파일 수정 테스트 주석입니다.
 #include "Vector3.h"
 #include "NetClock.h"
+#include "MotionCurve.h"
 
 
 namespace common::packet
@@ -158,6 +159,10 @@ namespace common::packet
 		//------------------------------------------- 시간 동기화 패킷 --------------------------------------- //
 		C2S_P_TIME_SYNC = 1101, // 클라 -> 서버: 클라 시각 (서버가 바로 되돌려 줌)
 		S2C_P_TIME_SYNC = 1102, // 서버 -> 클라: 클라 시각 에코 + 서버 시각 (RTT, 시계 차이 추정)
+
+		//------------------------------------------- 모션 이벤트 패킷 --------------------------------------- //
+		S2C_P_MOTION_START = 1201, // 서버 -> 클라: 정해진 궤적 동작 시작 (넉백 등)
+		S2C_P_MOTION_END = 1202,   // 서버 -> 클라: 동작이 예정보다 일찍 끝남 (막힘 등)
 	};
 
 	enum class DebugShapeType : uint8_t {
@@ -296,6 +301,27 @@ namespace common::packet
 	struct SC_PACKET_TIME_SYNC : PacketHeader {
 		double		_client_time;	// 요청의 클라 시각 에코
 		double		_server_time;	// 요청을 받은 순간의 서버 NetNowMsPrecise (정수 ms로 보내면 평균 0.5ms 치우침)
+	};
+
+	// 모션 이벤트 시작 (NetMotionSync_Design_KR.md 5.3). 수평 위치 = 시작 + (끝 - 시작) * Progress, 높이는 지형·스냅샷을 따름
+	struct SC_PACKET_MOTION_START : PacketHeader {
+		int64_t					_entity_id;
+		uint32_t				_motion_id;		// 엔티티별 증가 번호 (MOTION_END와 짝)
+		motion::MotionType		_motion_type;
+		motion::MotionCurve		_curve;
+		double					_start_time;	// 서버 NetNowMsPrecise (ms)
+		Vec3					_start_pos;
+		Vec3					_end_pos;		// 서버가 시작할 때 벽 스윕으로 확정한 끝 위치
+		float					_hold;			// 시작 후 버팀 시간 (초)
+		float					_duration;		// 버팀 이후 이동 시간 (초)
+	};
+
+	// 모션 이벤트가 예정보다 일찍 끝남. 이 시각 이후는 다시 위치 스냅샷으로 보간
+	struct SC_PACKET_MOTION_END : PacketHeader {
+		int64_t		_entity_id;
+		uint32_t	_motion_id;
+		double		_end_time;		// 서버 NetNowMsPrecise (ms)
+		Vec3		_end_pos;
 	};
 
 	// 서버 -> 클라

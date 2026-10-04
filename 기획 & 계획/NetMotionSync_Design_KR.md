@@ -177,6 +177,19 @@ MotionEvent
 
 **1차 범위는 넉백만**(확정). 보스 돌진·잡기 돌진은 스냅샷 보간으로 두고, 필요하면 이후 같은 구조로 옮긴다.
 
+**S4 구현 (2026-10-04, 클라이언트 2개로 동작 확인)**
+
+| 위치 | 내용 |
+|---|---|
+| `Common/MotionCurve.h` (신규) | `MotionType`, `MotionCurve`(EaseOutQuad = 일정 감속), `Progress(곡선, hold, duration, 경과 초)`. 서버·클라가 같은 함수로 위치 계산 |
+| `Packet.h` | `S2C_P_MOTION_START`(1201), `S2C_P_MOTION_END`(1202) |
+| 서버 `NPCControllerComponent` | `AddKnockback`(초기 속도 + 감쇄)을 `StartKnockback`(모션)으로 교체. 거리 = v²/(2×35), 벽 스윕으로 줄임, 이동 시간 = v/35, 버팀 0.06초(`kKnockbackHold`). 모션 중 `PhysicsUpdate`·`LightPhysicsUpdate` 모두 수평 속도 = (곡선 위치(서버 시각) − 현재) / dt. 실제 위치가 곡선에서 0.3m 넘게 벗어나면 중단 기록. 리스폰 시 취소 |
+| 서버 `Room` | `BroadcastNpcMotionEvents`: 피격 직후 `MOTION_START`, 물리 갱신 뒤 중단된 모션 `MOTION_END`. 그 NPC를 보는 플레이어에게만 |
+| 클라 `NPCScript` | 모션 목록 보관. 렌더 시각이 구간 안이면 수평 위치 = 곡선, 높이·회전은 스냅샷 보간. 새 모션이 오면 앞 모션은 그 시작 시각에 끝냄. `MOTION_END`는 종료 시각을 앞당김. 스폰 시 초기화 |
+
+- 곡선 모양이 기존 물리(일정 감속)와 같으므로 이동 거리·시간은 이전과 같고, 앞에 버팀이 붙고 모든 클라이언트가 같은 곡선을 그린다.
+- 아직 안 한 것: AOI 진입 시 진행 중인 모션 전달(모션이 1초 이내라 스냅샷 보간으로 충분하다고 보고 보류), 구간 경계에서 섞기(중단 시에만 작은 튐 가능), 플레이어가 맞는 넉백(고정 20, 범위 밖).
+
 ### 5.4 히트스톱과 넉백의 관계
 
 - 히트스톱은 **공격자 클라이언트만의 연출**로 유지한다(서버는 모름). 다른 플레이어 화면에서는 보이지 않는다.
@@ -191,7 +204,7 @@ MotionEvent
 | `CS_P_TIME_SYNC` / `SC_P_TIME_SYNC` | 신규 |
 | `SC_PACKET_MOVE` | `_server_time` 추가 |
 | `NPCMoveData` | `_time_stamp`를 고해상도 서버 시각으로 (클라이언트가 실제로 사용) |
-| `SC_P_MOTION_START` / `SC_P_MOTION_END` | 신규 (MotionEvent) |
+| `SC_P_MOTION_START` / `SC_P_MOTION_END` | 신규 (MotionEvent, 1201/1202) |
 | `SC_PACKET_NPC_ATTACK`의 피격 정보 | 넉백 이벤트와 연결할 `motion_id` (선택) |
 
 ---

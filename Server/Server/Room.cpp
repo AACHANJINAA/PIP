@@ -583,6 +583,7 @@ namespace PIP::SERVER
 					}
 					else if (auto n = dynamic_cast<GAME::NPC*>(target)) {
 						npc_hits.emplace_back(n->GetNpcId(), (int32_t)config.damage, n->GetHP());
+						BroadcastNpcMotionEvents(n); // 피격 넉백 모션 시작
 
 						// [수정] NPC 사망 처리 로직 추가
 						if (n->GetHP() <= 0 && n->IsActive()) {
@@ -733,6 +734,7 @@ namespace PIP::SERVER
 
 			nc->LightPhysicsUpdate(deltaTime);
 			_gridMap.UpdatePosition(npc, npc->GetPosition());
+			BroadcastNpcMotionEvents(npc); // 막혀서 일찍 끝난 넉백 모션
 		}
 
 		// [보스 예외 처리] 보스는 거리와 상관없이 항상 정밀 물리(Inner) 대상
@@ -740,6 +742,7 @@ namespace PIP::SERVER
 			if (boss->is_boss()) {
 				boss->PhysicsUpdate(deltaTime, tempAllocator);
 				_gridMap.UpdatePosition(boss, boss->GetPosition());
+				BroadcastNpcMotionEvents(boss);
 			}
 		}
 		// --- 3. 플레이어 물리 시뮬레이션 및 스마트 동기화 ---
@@ -1281,6 +1284,39 @@ namespace PIP::SERVER
 		// 여기서는 간단하게 방 전체 전송 (추후 GridMap 기반으로 고도화 가능)
 		// 혹은 GridMap을 통해 주변 플레이어를 찾아서 전송
 		Broadcast(data, size);
+	}
+
+	void Room::BroadcastNpcMotionEvents(GAME::NPC* npc)
+	{
+		auto nc = npc ? npc->GetNPCController() : nullptr;
+		if (!nc) return;
+
+		if (auto started = nc->TakeStartedMotion()) {
+			packet::SC_PACKET_MOTION_START pkt;
+			pkt._type = packet::PacketType::S2C_P_MOTION_START;
+			pkt._size = sizeof(pkt);
+			pkt._entity_id = npc->GetId();
+			pkt._motion_id = started->id;
+			pkt._motion_type = started->type;
+			pkt._curve = started->curve;
+			pkt._start_time = started->startTime;
+			pkt._start_pos = started->startPos;
+			pkt._end_pos = started->endPos;
+			pkt._hold = started->hold;
+			pkt._duration = started->duration;
+			BroadcastToNPCViewers(npc->GetId(), reinterpret_cast<const char*>(&pkt), sizeof(pkt));
+		}
+
+		if (auto ended = nc->TakeInterruptedMotion()) {
+			packet::SC_PACKET_MOTION_END pkt;
+			pkt._type = packet::PacketType::S2C_P_MOTION_END;
+			pkt._size = sizeof(pkt);
+			pkt._entity_id = npc->GetId();
+			pkt._motion_id = ended->id;
+			pkt._end_time = ended->endTime;
+			pkt._end_pos = ended->endPos;
+			BroadcastToNPCViewers(npc->GetId(), reinterpret_cast<const char*>(&pkt), sizeof(pkt));
+		}
 	}
 
 	void Room::BroadcastCountdown(int8_t count)

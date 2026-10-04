@@ -51,22 +51,18 @@ namespace PIP::GAME
 		};
 	}
 
-	void NPCControllerComponent::AddKnockback(const common::Vec3& impulse)
+	void NPCControllerComponent::StartKnockback(const common::Vec3& impulse)
 	{
 		using namespace common::VectorHelper;
 
-		common::Vec3 total = _impactVelocity + impulse;
 		if (!_character || !_physicsSystem || _radius <= 0.0f) {
-			_impactVelocity = total;
+			_impactVelocity += impulse;
 			return;
 		}
 
-		common::Vec3 horizontal = { total.x, 0.0f, total.z };
+		common::Vec3 horizontal = { impulse.x, 0.0f, impulse.z };
 		float speed = std::min(common::Length(horizontal), 50.0f); // 최대 넉백 속도 제한 (업데이트 쪽과 동일)
-		if (speed < 0.1f) {
-			_impactVelocity = total;
-			return;
-		}
+		if (speed < 0.1f) return;
 		common::Vec3 dir = common::Normalize(horizontal);
 
 		// ImpactFriction으로 감쇄되어 멈출 때까지 밀려나는 총 거리: v^2 / 2a
@@ -86,13 +82,67 @@ namespace PIP::GAME
 			_physicsSystem->GetDefaultLayerFilter(_physicsLayer));
 
 		if (collector.HadHit()) {
-			// 벽에서 살짝 떨어진 지점까지만 밀리도록 초기 속도를 역산: v = sqrt(2ad)
+			// 벽에서 살짝 떨어진 지점까지만 밀리도록 거리를 줄이고 초기 속도를 역산: v = sqrt(2ad)
 			const float skin = 0.05f;
-			float allowed = std::max(0.0f, distance * collector.GetFraction() - skin);
-			speed = std::sqrt(2.0f * ImpactFriction * allowed);
+			distance = std::max(0.0f, distance * collector.GetFraction() - skin);
+			speed = std::sqrt(2.0f * ImpactFriction * distance);
+		}
+		if (distance < 0.01f) return; // 벽에 붙어 있어 밀릴 거리가 없음
+
+		// 같은 감속(ImpactFriction)으로 멈추는 시간 = v / a. 이동 모양은 EaseOutQuad(일정 감속)와 같다
+		const common::Vec3 startPos = GetPosition();
+		_motion.id = _nextMotionId++;
+		_motion.type = common::motion::MotionType::Knockback;
+		_motion.curve = common::motion::MotionCurve::EaseOutQuad;
+		_motion.startTime = common::NetNowMsPrecise();
+		_motion.startPos = startPos;
+		_motion.endPos = startPos + dir * distance;
+		_motion.hold = kKnockbackHold;
+		_motion.duration = speed / ImpactFriction;
+		_motionActive = true;
+		_startedMotion = _motion;
+		_interruptedMotion.reset(); // 앞선 모션의 중단 기록은 새 모션 시작으로 대체됨
+
+		// 모션이 이동을 맡으므로 남은 충격량·AI 이동 관성 제거
+		_impactVelocity = common::Vec3Zero;
+		_aiVelocity = common::Vec3Zero;
+	}
+
+	bool NPCControllerComponent::StepMotion(const common::Vec3& currentPos, float deltaTime, common::Vec3& horizontalVel, common::Vec3& target) const
+	{
+		if (!_motionActive) return false;
+
+		// 서버 시계 기준 경과 시간 (클라도 같은 시각·곡선으로 계산). 이번 갱신이 끝나면 곡선의 현재 위치에 있도록 속도를 정함
+		const float elapsed = static_cast<float>((common::NetNowMsPrecise() - _motion.startTime) / 1000.0);
+		const float t = common::motion::Progress(_motion.curve, _motion.hold, _motion.duration, elapsed);
+		target = {
+			_motion.startPos.x + (_motion.endPos.x - _motion.startPos.x) * t,
+			currentPos.y,
+			_motion.startPos.z + (_motion.endPos.z - _motion.startPos.z) * t };
+
+		horizontalVel = { 0.0f, 0.0f, 0.0f };
+		if (deltaTime > 0.0f) {
+			horizontalVel.x = (target.x - currentPos.x) / deltaTime;
+			horizontalVel.z = (target.z - currentPos.z) / deltaTime;
+		}
+		return true;
+	}
+
+	void NPCControllerComponent::FinishMotionStep(const common::Vec3& actualPos, const common::Vec3& target)
+	{
+		if (!_motionActive) return;
+
+		const float dx = actualPos.x - target.x;
+		const float dz = actualPos.z - target.z;
+		if (dx * dx + dz * dz > kMotionMaxDeviation * kMotionMaxDeviation) {
+			// 스윕에 안 잡힌 장애물(다른 캐릭터, 가파른 경사 등)에 막힘: 여기서 끝내고 클라에 알림
+			_motionActive = false;
+			_interruptedMotion = MotionEndInfo{ _motion.id, common::NetNowMsPrecise(), actualPos };
+			return;
 		}
 
-		_impactVelocity = dir * speed;
+		const double endTime = _motion.startTime + (_motion.hold + _motion.duration) * 1000.0;
+		if (common::NetNowMsPrecise() >= endTime) _motionActive = false; // 예정대로 끝 (클라도 같은 시각에 끝냄)
 	}
 
 	void NPCControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)
@@ -101,26 +151,31 @@ namespace PIP::GAME
 
 		using namespace common::VectorHelper;
 
-		// 1. 외부 임팩트(넉백) 감쇄 처리
-		float impactSpeed = common::Length(_impactVelocity);
-		if (impactSpeed > 50.0f) _impactVelocity = common::Normalize(_impactVelocity) * 50.0f; // 최대 넉백 속도 제한
-
-		if (impactSpeed > 0.1f) {
-			_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction *
-				deltaTime);
-		}
-		else {
-			_impactVelocity = common::Vec3Zero;
-		}
-
-		// 2. 최종 수평 속도 합성 (AI 이동 + 넉백)
 		common::Vec3 horizontalVel;
-		// 강한 넉백 상태일 때는 AI 이동을 무시하고 밀려나게 함
-		if (common::Length(_impactVelocity) > 10.0f) {
-			horizontalVel = _impactVelocity;
-		}
-		else {
-			horizontalVel = _aiVelocity + _impactVelocity;
+		common::Vec3 motionTarget;
+		// 0. 모션(넉백) 중이면 곡선이 수평 이동을 맡음
+		const bool inMotion = StepMotion(GetPosition(), deltaTime, horizontalVel, motionTarget);
+		if (!inMotion) {
+			// 1. 외부 임팩트(넉백) 감쇄 처리
+			float impactSpeed = common::Length(_impactVelocity);
+			if (impactSpeed > 50.0f) _impactVelocity = common::Normalize(_impactVelocity) * 50.0f; // 최대 넉백 속도 제한
+
+			if (impactSpeed > 0.1f) {
+				_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction *
+					deltaTime);
+			}
+			else {
+				_impactVelocity = common::Vec3Zero;
+			}
+
+			// 2. 최종 수평 속도 합성 (AI 이동 + 넉백)
+			// 강한 넉백 상태일 때는 AI 이동을 무시하고 밀려나게 함
+			if (common::Length(_impactVelocity) > 10.0f) {
+				horizontalVel = _impactVelocity;
+			}
+			else {
+				horizontalVel = _aiVelocity + _impactVelocity;
+			}
 		}
 		JPH::Vec3 finalJoltVel = Utils::ToJolt(horizontalVel);
 
@@ -159,6 +214,8 @@ namespace PIP::GAME
 		if (auto tc = GetOwner()->GetComponent<TransformComponent>()) {
 			tc->SetPosition(footPos);
 		}
+
+		if (inMotion) FinishMotionStep(footPos, motionTarget);
 	}
 	void NPCControllerComponent::LightPhysicsUpdate(float deltaTime)
 	{
@@ -174,30 +231,35 @@ namespace PIP::GAME
 
 		// [최적화 1] XZ 이동이 없고 이미 접지 상태라면 BVH 탐색(CastRay) 스킵
 		// _verticalVelocity가 -0.2보다 크다는 것은 이미 지면에 안착하여 리셋된 상태임을 의미
-		bool isMovingXZ = (common::LengthSq(_aiVelocity) > 0.0001f || common::LengthSq(_impactVelocity) > 0.0001f);
+		bool isMovingXZ = (_motionActive || common::LengthSq(_aiVelocity) > 0.0001f || common::LengthSq(_impactVelocity) > 0.0001f);
 		if (!isMovingXZ && _verticalVelocity > -0.2f) {
 			return;
 		}
 
-		// --- [추가] 1. 외부 임팩트(넉백) 감쇄 처리 (PhysicsUpdate와 동일 로직) ---
-		float impactSpeed = common::Length(_impactVelocity);
-		if (impactSpeed > 50.0f) _impactVelocity = common::Normalize(_impactVelocity) * 50.0f; // 최대 넉백 속도 제한
-
-		if (impactSpeed > 0.1f) {
-			_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction * deltaTime);
-		}
-		else {
-			_impactVelocity = common::Vec3Zero;
-		}
-
-		// --- [추가] 2. 최종 수평 속도 합성 (AI 이동 + 넉백) ---
 		common::Vec3 horizontalVel;
-		// 강한 넉백 상태일 때는 AI 이동을 무시하고 밀려나게 함
-		if (common::Length(_impactVelocity) > 10.0f) {
-			horizontalVel = _impactVelocity;
-		}
-		else {
-			horizontalVel = _aiVelocity + _impactVelocity;
+		common::Vec3 motionTarget;
+		// 0. 모션(넉백) 중이면 곡선이 수평 이동을 맡음 (PhysicsUpdate와 동일)
+		const bool inMotion = StepMotion(currentPos, deltaTime, horizontalVel, motionTarget);
+		if (!inMotion) {
+			// --- [추가] 1. 외부 임팩트(넉백) 감쇄 처리 (PhysicsUpdate와 동일 로직) ---
+			float impactSpeed = common::Length(_impactVelocity);
+			if (impactSpeed > 50.0f) _impactVelocity = common::Normalize(_impactVelocity) * 50.0f; // 최대 넉백 속도 제한
+
+			if (impactSpeed > 0.1f) {
+				_impactVelocity = common::Normalize(_impactVelocity) * std::max(0.0f, impactSpeed - ImpactFriction * deltaTime);
+			}
+			else {
+				_impactVelocity = common::Vec3Zero;
+			}
+
+			// --- [추가] 2. 최종 수평 속도 합성 (AI 이동 + 넉백) ---
+			// 강한 넉백 상태일 때는 AI 이동을 무시하고 밀려나게 함
+			if (common::Length(_impactVelocity) > 10.0f) {
+				horizontalVel = _impactVelocity;
+			}
+			else {
+				horizontalVel = _aiVelocity + _impactVelocity;
+			}
 		}
 		horizontalVel.y = 0; // 수평 속도 고정
 
@@ -273,5 +335,7 @@ namespace PIP::GAME
 
 		// 캐싱된 포인터로 바로 접근
 		_cachedTransform->SetPosition(nextPos);
+
+		if (inMotion) FinishMotionStep(nextPos, motionTarget);
 	}
 }

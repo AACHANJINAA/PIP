@@ -101,6 +101,8 @@ private:
 	void HANDLE_S2C_PLAYER_STAT_SYNC(common::packet::PacketStream& stream); // [추가] 스탯 동기화
 	void HANDLE_S2C_COUNTDOWN(common::packet::PacketStream& stream);        // [추가] 카운트다운
 	void HANDLE_S2C_TIME_SYNC(common::packet::PacketStream& stream);        // 시간 동기화 응답
+	void HANDLE_S2C_MOTION_START(common::packet::PacketStream& stream);     // 모션 이벤트 시작 (넉백)
+	void HANDLE_S2C_MOTION_END(common::packet::PacketStream& stream);       // 모션 이벤트 조기 종료
 	void HANDLE_S2C_SKILL_UNLOCKED(common::packet::PacketStream& stream);   // [추가] 스킬 잠금 해제
 
 	// Client side: 인벤토리 관련 패킷 처리 함수들
