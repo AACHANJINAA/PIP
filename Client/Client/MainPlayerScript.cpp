@@ -1362,8 +1362,8 @@ void MainPlayerScript::process_attack_and_packet()
 		if (_bladeCollider && _bladeCollider->is_hit_query_active()) _bladeCollider->end_hit_query();
 		if (_skillBladeCollider)
 		{
-			const float progress = duration > 0.0f ? anim_progress / duration : 0.0f;
-			const bool swinging = _isSwordGathered && !_isSkillEndAnimationStart && progress >= kSkillHitStart;
+			_skillProgress = duration > 0.0f ? anim_progress / duration : 0.0f;
+			const bool swinging = _isSwordGathered && !_isSkillEndAnimationStart && _skillProgress >= kSkillHitStart;
 			if (swinging && !_skillBladeCollider->is_hit_query_active()) _skillBladeCollider->begin_hit_query();
 			else if (!swinging && _skillBladeCollider->is_hit_query_active()) _skillBladeCollider->end_hit_query();
 		}
@@ -1459,7 +1459,7 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 	const float hit_stop = skill ? kSkillHitStop : kAttackHitStop;
 
 	CLOG("[MeleeHit] 예측 적중" << (skill ? "(대검 스킬)" : "") << ": NPC " << npc->id() << " (" << other->name() << ")"
-		<< ", 진행도 " << static_cast<int>(_attackProgress * 100.0f) << "%"
+		<< ", 진행도 " << static_cast<int>((skill ? _skillProgress : _attackProgress) * 100.0f) << "%"
 		<< ", 지점 (" << hit.point.x << ", " << hit.point.y << ", " << hit.point.z << ")"
 		<< ", 방향 (" << hit.direction.x << ", " << hit.direction.y << ", " << hit.direction.z << ")");
 
