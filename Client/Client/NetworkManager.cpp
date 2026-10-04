@@ -457,8 +457,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 		if (existing_other) {
 			auto other_player_logic = existing_other->get_component<OtherPlayerScript>();
 			if (other_player_logic) {
-				other_player_logic->on_sync_position(spawn_data._position);
-				other_player_logic->on_sync_rotation(spawn_data._rotation);
+				other_player_logic->reset_transform(spawn_data._position, spawn_data._rotation);
 				other_player_logic->set_max_hp(spawn_data._max_hp); // [추가]
 				other_player_logic->set_hp(spawn_data._hp);
 				other_player_logic->on_sync_mp(spawn_data._mp); // [추가]
@@ -490,14 +489,10 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 				}
 			}
 
-			other_player->transform()->set_local_position(spawn_data._position);
-			other_player->transform()->set_local_rotation(spawn_data._rotation);
 			other_player->set_layer("OtherPlayer");
 
-			// 2. [추가] 스크립트 내부 논리 좌표 초기화
-			// on_sync_position을 호출하여 _logicalPosition을 서버 좌표로 맞춰줍니다.
-			other_player_logic->on_sync_position(spawn_data._position);
-			other_player_logic->on_sync_rotation(spawn_data._rotation);
+			// 보간 버퍼를 생성 위치에서 시작 (트랜스폼도 같이 설정)
+			other_player_logic->reset_transform(spawn_data._position, spawn_data._rotation);
 
 			other_player_logic->set_max_hp(spawn_data._max_hp); // [추가]
 			other_player_logic->set_hp(spawn_data._hp);
@@ -547,15 +542,7 @@ void NetworkManager::HANDLE_S2C_MOVE(common::packet::PacketStream& stream)
 			});
 		if (it != other_players.end())
 		{
-			auto other_player_script = (*it)->get_component<OtherPlayerScript>();
-			other_player_script->on_sync_position(move_packet._position);
-			other_player_script->on_sync_rotation(move_packet._rotation);
-			other_player_script->on_sync_state(move_packet._state);
-			other_player_script->on_sync_action_id(move_packet._action_id);
-			other_player_script->on_sync_grab(move_packet._grabbed_by_id, move_packet._grab_slot); // [추가]
-			other_player_script->on_sync_velocity(move_packet._velocity); // [추가]
-			other_player_script->on_sync_hp(move_packet._hp);             // [추가]
-			other_player_script->on_sync_mp(move_packet._mp);             // [추가]
+			(*it)->get_component<OtherPlayerScript>()->on_server_move(move_packet);
 		}
 	}
 }
@@ -757,8 +744,7 @@ void NetworkManager::HANDLE_S2C_PLAYER_RESURRECT(common::packet::PacketStream& s
 		{
 			auto other_player_script = (*it)->get_component<OtherPlayerScript>();
 			other_player_script->set_hp(resurrect_packet._hp);
-			other_player_script->on_sync_position(resurrect_packet._position);
-			other_player_script->on_sync_rotation({ 0,0,0,1 });
+			other_player_script->reset_transform(resurrect_packet._position, { 0,0,0,1 });
 			other_player_script->reset_state(); // [추가] 리스폰 시 상태 초기화
 		}
 	}

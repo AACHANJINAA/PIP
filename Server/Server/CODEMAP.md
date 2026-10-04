@@ -131,7 +131,7 @@ GameObject (ValidateHit 순수 가상)
 
 | 엔티티 | 파일 | 역할 |
 |---|---|---|
-| `Player` | `Player.h/.cpp` | HP/MP/공격력, 쿨다운(피격 0.5초, 대시), 퀘스트, 인벤토리. `IsDirty`(보낸 값과 비교), `CreateMovePacket`(정지·액션 중이면 속도 0), `ComputeRewindTimestamp`(클라 시각 차이의 관측 최솟값을 기준선으로, 늦게 온 만큼 되감기, 최대 1초), `ValidateHit` |
+| `Player` | `Player.h/.cpp` | HP/MP/공격력, 쿨다운(피격 0.5초, 대시), 퀘스트, 인벤토리. `IsDirty`(보낸 값과 비교), `CreateMovePacket`(정지·액션 중이면 속도 0, 서버 시각 `_server_time` 기록), `ComputeRewindTimestamp`(클라 시각 차이의 관측 최솟값을 기준선으로, 늦게 온 만큼 되감기, 최대 1초), `ValidateHit` |
 | `NPC` | `NPC.h/.cpp` | 종류·방 id·스폰 위치·순찰 지점, 행동 트리 구성(`SetupBT`), `ValidateHit`(피격 쿨다운 0.5초, HP 감소, `HITTED`, 넉백), `IsDirty`(상태·액션·잡기·위치 변화), 리스폰(`ResetForRespawn`). **버그: 넉백이 공격 설정 값(평타 5, 대검 30)과 무관하게 항상 초속 15** |
 | `MagicGuard` | `MagicGuard.h/.cpp` | 내비메시 경비병. BT: 피격 → 감지·추적(`FindPath/FollowPath`) → 공격, 없으면 순찰 |
 | `Tainer` | `Tainer.h/.cpp` | 보스. 페이즈 전환, 공격 설정(내려찍기, 돌진, 잡기 돌진, 포효 등), 보스 BT |

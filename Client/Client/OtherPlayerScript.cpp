@@ -14,6 +14,8 @@
 #include "ParticleSystemComponent.h"
 #include "ParticleRenderComponent.h"
 #include "UIManager.h"
+#include "ServerClock.h"
+#include "DebugDrawManager.h"
 
 void OtherPlayerScript::set_hp(int hp)
 {
@@ -26,45 +28,47 @@ void OtherPlayerScript::set_hp(int hp)
 	}
 }
 
-void OtherPlayerScript::on_sync_position(const XMFLOAT3& newPosition)
+void OtherPlayerScript::on_server_move(const common::packet::SC_PACKET_MOVE& packet)
 {
-    // 1. 패킷이 오기 전까지 화면에 그려지고 있던 '최종 시각적 위치' 계산
-    common::Vec3 currentVisualPos = _logicalPosition + _visualOffset;
+	// 서버 시각 기준 보간 (NetMotionSync_Design_KR.md 5.2): 표본을 덮어쓰지 않고 모두 쌓아 렌더 시각에 꺼내 씀
+	SnapshotBuffer::Sample sample;
+	sample.time = packet._server_time;
+	sample.pos = packet._position;
+	sample.vel = packet._velocity;
+	sample.rot = to_visual_rotation(packet._rotation);
+	_positionBuffer.push(sample);
 
-    // 2. 논리 위치는 서버가 보내준 좌표로 즉시 업데이트 (순간이동)
-    _logicalPosition = newPosition;
-
-    // 3. 화면이 툭 튀는 것을 막기 위해 오프셋 재계산
-    // (이전 시각적 위치 - 새로운 서버 위치)를 오프셋으로 설정하여 현재 렌더링 위치를 유지함
-    _visualOffset = currentVisualPos - _logicalPosition;
-
-    // 4. 만약 오차가 너무 크면(예: 5m 이상) 보간하지 않고 즉시 스냅 (텔레포트 대응)
-    if (common::LengthSq(_visualOffset) > 5.0f * 5.0f) {
-        _visualOffset = { 0, 0, 0 };
-    }
+	_pendingStates.push_back({ packet._server_time, packet._state, packet._action_id,
+		packet._grabbed_by_id, packet._grab_slot, packet._hp, packet._mp });
 }
 
-void OtherPlayerScript::on_sync_rotation(const XMFLOAT4& newRotation)
+void OtherPlayerScript::reset_transform(const XMFLOAT3& position, const XMFLOAT4& server_rotation)
 {
-    // 서버가 알려준 회전으로 내 GameObject의 회전을 설정
-    if (transform())
-    {
-        transform()->set_local_rotation(newRotation);
-		transform()->rotate(0, 180, 0); // 서버와 클라이언트 간 모델 회전 차이 보정
+	_positionBuffer.clear();
+	_pendingStates.clear();
+
+	// 지금 렌더 시각에 표본을 둔다. 이후 도착하는 이동 패킷(서버 시각이 이보다 늦음)이 버려지지 않는다
+	SnapshotBuffer::Sample sample;
+	sample.time = ServerClock::instance()->is_synced() ? render_time() : 0.0;
+	sample.pos = position;
+	sample.rot = to_visual_rotation(server_rotation);
+	_positionBuffer.push(sample);
+
+	if (transform())
+	{
+		transform()->set_local_position(sample.pos);
+		transform()->set_local_rotation(sample.rot);
 	}
 }
 
-void OtherPlayerScript::on_sync_state(common::packet::EntityState state)
+void OtherPlayerScript::apply_state(const PendingState& pending)
 {
-    _prevState = _state;
-	_state = state;
-}
-void OtherPlayerScript::on_sync_action_id(int32_t action_id)
-{
-	_action_id = action_id;
+	const common::packet::EntityState prevState = _state;
+	_state = pending.state;
+	_action_id = pending.action_id;
 
-    // 상태 변화(IDLE 등 -> ACTION) 감지 후 즉시 공격 사운드 재생
-    if (_prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
+    // 상태 변화(IDLE 등 -> ACTION) 감지 후 공격 사운드 재생
+    if (prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
         if (_action_id == common::packet::ActionID::Common::Attack) {
             if (transform()) {
                 // 3D 사운드 재생 (다른 플레이어 위치 기반)
@@ -72,12 +76,28 @@ void OtherPlayerScript::on_sync_action_id(int32_t action_id)
             }
         }
     }
+
+	_grabbedById = pending.grabbed_by_id;
+	_grabSlot = pending.grab_slot;
+	_hp = pending.hp;
+	_mp = pending.mp;
 }
 
-void OtherPlayerScript::on_sync_grab(int64_t grabbed_by_id, int8_t grab_slot)
+double OtherPlayerScript::render_time() const
 {
-	_grabbedById = grabbed_by_id;
-	_grabSlot = grab_slot;
+	auto clock = ServerClock::instance();
+	// 동기화 전에는 서버 시각을 모르므로 최신 표본을 그대로 보여줌
+	if (!clock->is_synced()) return _positionBuffer.empty() ? 0.0 : _positionBuffer.latest().time;
+	return clock->arrival_now_ms() - ServerClock::kPlayerInterpDelayMs;
+}
+
+XMFLOAT4 OtherPlayerScript::to_visual_rotation(const XMFLOAT4& server_rotation)
+{
+	// 서버와 클라이언트 간 모델 회전 차이 보정 (TransformComponent::rotate(0, 180, 0)과 같은 순서)
+	XMFLOAT4 rot;
+	const XMVECTOR q180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0);
+	XMStoreFloat4(&rot, XMQuaternionNormalize(XMQuaternionMultiply(q180, XMLoadFloat4(&server_rotation))));
+	return rot;
 }
 
 void OtherPlayerScript::reset_state()
@@ -86,8 +106,6 @@ void OtherPlayerScript::reset_state()
 	_action_id = 0;
 	_grabbedById = -1;
 	_grabSlot = -1;
-	_velocity = { 0, 0, 0 };
-	_visualOffset = { 0, 0, 0 };
 
 	// 애니메이션 강제 초기화
 	auto anim = game_object()->get_component<AnimationComponent>();
@@ -141,6 +159,14 @@ void OtherPlayerScript::update(float deltaTime)
         return;
     }
 
+    // 상태·액션·잡기·HP·MP는 그 스냅샷의 서버 시각이 렌더 시각에 닿았을 때 적용 (모션 전환과 위치를 같은 시점에 맞춤)
+    const double renderTime = render_time();
+    while (!_pendingStates.empty() && _pendingStates.front().time <= renderTime)
+    {
+        apply_state(_pendingStates.front());
+        _pendingStates.pop_front();
+    }
+
     // 0. 잡기 상태일 때 본 부착 처리 (다른 플레이어)
     if (_grabbedById != -1) {
         auto bossObj = ObjectManager::instance()->find_npc(_grabbedById);
@@ -169,9 +195,6 @@ void OtherPlayerScript::update(float deltaTime)
                     XMFLOAT4X4 finalWorld;
                     XMStoreFloat4x4(&finalWorld, matPlayer);
                     transform()->set_world_matrix(finalWorld);
-
-                    _logicalPosition = transform()->local_position();
-                    _visualOffset = { 0, 0, 0 };
                     return;
                 }
             }
@@ -183,20 +206,21 @@ void OtherPlayerScript::update(float deltaTime)
         _state = common::packet::EntityState::IDLE;
     }
 
-    // [추측 항법] 서버의 속도값을 활용해 매 프레임 위치 예측
-	_logicalPosition += _velocity * deltaTime;
-
-	// 1. 시각적 오프셋을 매 프레임 조금씩 줄여나감 (0으로 수렴)
-	// deltaTime * 15.0f 정도면 약 0.1초 내외로 보정이 완료되어 매우 부드럽게 보입니다.
-    float lerpFactor = std::min(1.0f, deltaTime * _lerpFactor);
-    _visualOffset = _visualOffset * (1.0f - lerpFactor);
-
-    // [중요 - 이 부분이 빠졌습니다!]
-	// 논리 위치와 시각적 오프셋을 더해 실제 Transform에 적용
-    if (transform())
+    // 위치·회전: 렌더 시각(도착 기준 서버 시각 - 30ms)으로 보간
+    if (transform() && !_positionBuffer.empty())
     {
-        common::Vec3 visualPosition = _logicalPosition + _visualOffset + common::Vec3{0, 0.0f, 0};
-        transform()->set_local_position(visualPosition);
+        const SnapshotBuffer::Result interp = _positionBuffer.sample(renderTime);
+        transform()->set_local_position(interp.pos);
+        transform()->set_local_rotation(interp.rot);
+        ServerClock::instance()->count_interp_mode(ServerClock::InterpTarget::Player, static_cast<int>(interp.mode));
+
+        // [디버그] 서버가 마지막으로 보낸 위치 (F6 창에서 켬)
+        if (ServerClock::instance()->show_server_ghost())
+        {
+            const auto& latest = _positionBuffer.latest();
+            DebugDrawManager::instance()->AddDebugShape(common::packet::DebugShapeType::BOX,
+                { latest.pos.x, latest.pos.y + 0.9f, latest.pos.z }, latest.rot, { 0.3f, 0.9f, 0.3f }, deltaTime * 1.5f);
+        }
     }
 
 	// 파티클 효과가 활성화된 상태에서 애니메이션이 끝났는지 체크하여, 끝났다면 파티클 효과도 비활성화
@@ -431,9 +455,6 @@ void OtherPlayerScript::awake()
 
     // 위치, 회전 정보
     transform()->set_local_scale({ 1.0f, 1.0f, 1.0f });
-    // 초기화 시 현재 위치를 논리 위치로 설정
-    _logicalPosition = transform()->local_position();
-    _visualOffset = { 0, 0, 0 };
 
 
     // 무기 오브젝트 생성

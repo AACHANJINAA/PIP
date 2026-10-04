@@ -49,7 +49,7 @@
 |---|---|
 | `CS_PACKET_MOVE` | 위치, 이동 입력 방향, 회전, 상태, 액션, 클라 틱 |
 | `CS_PACKET_ACTION` | 액션 id, 대상 id, 방향, 위치, 클라 시각(`NetNowMs`, 리와인드 판정용) |
-| `SC_PACKET_MOVE` | 플레이어 위치·속도·회전·상태·액션, 클라 틱 에코, 잡기, HP·MP (서버 시각 없음. S3에서 추가 예정) |
+| `SC_PACKET_MOVE` | 플레이어 위치·속도·회전·상태·액션, 클라 틱 에코, 잡기, HP·MP, 서버 시각(`_server_time`, double, `NetNowMsPrecise`. 다른 플레이어 보간 기준) |
 | `NPCMoveData` / `SC_PACKET_NPC_MOVE_BATCH` | NPC id, 회전, 위치, 속도, 서버 시각(uint32, `NetNowMs`), 상태, 액션, 잡기, HP |
 | `SC_PACKET_NPC_SPAWN` | NPC 종류(`NPCType`), 위치, 회전, HP, 상태, 액션 + 이름 |
 | `NPCHitInfo` / `SC_PACKET_NPC_ATTACK` | 피격 대상, 데미지, 남은 HP |
