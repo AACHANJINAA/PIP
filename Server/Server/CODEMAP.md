@@ -72,7 +72,7 @@ IOCP 기반 권위 서버. 방(Room)마다 Jolt 물리 시스템을 따로 돌�
 
 | 클래스 | 파일 | 역할 |
 |---|---|---|
-| `GameObject` | `GameObject.h/.cpp` | 고유 id(전역 원자 카운터, NPC·플레이어는 `SetId`로 덮어씀), 이름, 컴포넌트 목록(`vector<unique_ptr<Component>>`) + 타입 캐시(`unordered_map<type_index, Component*>`). `Update/PhysicsUpdate`는 모든 컴포넌트에 그대로 전달. **`ValidateHit`(피격 검증)은 순수 가상**이라 판정 대상 엔티티가 각자 구현 |
+| `GameObject` | `GameObject.h/.cpp` | 고유 id(전역 원자 카운터, NPC·플레이어는 `SetId`로 덮어씀), 이름, 컴포넌트 목록(`vector<unique_ptr<Component>>`) + 타입 캐시(`unordered_map<type_index, Component*>`). `Update/PhysicsUpdate`는 모든 컴포넌트에 그대로 전달. **`ValidateHit`(피격 검증, 데미지·넉백 값을 받음)은 순수 가상**이라 판정 대상 엔티티가 각자 구현 |
 | `Component` | `Component.h/.cpp` | 소유자를 **원시 포인터**(`GameObject* _owner`)로 보관(소유자가 컴포넌트를 `unique_ptr`로 가지므로 수명이 같다). 가상 함수 `Initialize`, `Update(dt)`, `Update(dt, TempAllocator*)`, `PhysicsUpdate(dt)`, `PhysicsUpdate(dt, TempAllocator*)`. `GetComponent<T>()`로 같은 오브젝트의 다른 컴포넌트 접근 |
 
 ### 5.2 컴포넌트 추가·조회 규칙
@@ -132,7 +132,7 @@ GameObject (ValidateHit 순수 가상)
 | 엔티티 | 파일 | 역할 |
 |---|---|---|
 | `Player` | `Player.h/.cpp` | HP/MP/공격력, 쿨다운(피격 0.5초, 대시), 퀘스트, 인벤토리. `IsDirty`(보낸 값과 비교), `CreateMovePacket`(정지·액션 중이면 속도 0, 서버 시각 `_server_time` 기록), `ComputeRewindTimestamp`(클라 시각 차이의 관측 최솟값을 기준선으로, 늦게 온 만큼 되감기, 최대 1초), `ValidateHit` |
-| `NPC` | `NPC.h/.cpp` | 종류·방 id·스폰 위치·순찰 지점, 행동 트리 구성(`SetupBT`), `ValidateHit`(피격 쿨다운 0.5초, HP 감소, `HITTED`, 넉백), `IsDirty`(상태·액션·잡기·위치 변화), 리스폰(`ResetForRespawn`). **버그: 넉백이 공격 설정 값(평타 5, 대검 30)과 무관하게 항상 초속 15** |
+| `NPC` | `NPC.h/.cpp` | 종류·방 id·스폰 위치·순찰 지점, 행동 트리 구성(`SetupBT`), `ValidateHit`(피격 쿨다운 0.5초, HP 감소, `HITTED`, 공격 설정의 넉백 값으로 넉백), `IsDirty`(상태·액션·잡기·위치 변화), 리스폰(`ResetForRespawn`) |
 | `MagicGuard` | `MagicGuard.h/.cpp` | 내비메시 경비병. BT: 피격 → 감지·추적(`FindPath/FollowPath`) → 공격, 없으면 순찰 |
 | `Tainer` | `Tainer.h/.cpp` | 보스. 페이즈 전환, 공격 설정(내려찍기, 돌진, 잡기 돌진, 포효 등), 보스 BT |
 | `QuestNPC` | `QuestNPC.h/.cpp` | 퀘스트 NPC. 판정을 받지 않음(`ValidateHit`가 항상 실패) |
@@ -192,5 +192,5 @@ GameObject (ValidateHit 순수 가상)
 
 ## 10. 진행 중 작업 (관련 문서)
 
-- 넉백 값 버그 수정과 넉백 모션 이벤트: `기획 & 계획/NetMotionSync_Design_KR.md` S4
+- 넉백 모션 이벤트(넉백 값 버그는 수정됨): `기획 & 계획/NetMotionSync_Design_KR.md` S4
 - 서버 리소스 경로를 exe 기준 PathManager로 바꾸는 건은 배포 폴더 구성부터 정하기로 함(미정)

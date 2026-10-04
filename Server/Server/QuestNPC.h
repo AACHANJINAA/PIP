@@ -15,6 +15,6 @@ namespace PIP::GAME
 			const JPH::RMat44& attackTransform,
 			uint32_t timestamp,
 			GameObject* attacker,
-			int32_t damage) override;
+			int32_t damage, float knockback) override;
 	};
 }

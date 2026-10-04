@@ -232,7 +232,7 @@ namespace PIP::GAME
 	}
 
 	bool Player::ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape,
-	                         const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage)
+	                         const JPH::RMat44& attackTransform, uint32_t timestamp, GameObject* attacker, int32_t damage, float knockback)
 	{
 		if (_hitCooldown > 0.0f) return false; 
 

@@ -12,7 +12,7 @@ namespace PIP::GAME
 		Player(int64_t owner_id);
 		~Player() override = default;
 		bool ValidateHit(JPH::PhysicsSystem* physics, const JPH::Shape* attackShape, const JPH::RMat44& attackTransform,
-		                 uint32_t timestamp, GameObject* attacker, int32_t damage) override;
+		                 uint32_t timestamp, GameObject* attacker, int32_t damage, float knockback) override;
 		void Update(float deltaTime, JPH::TempAllocator* allocator) override;
 		void PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator) override;
 		void init(int64_t id);
