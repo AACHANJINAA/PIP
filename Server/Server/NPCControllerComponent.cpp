@@ -147,7 +147,8 @@ namespace PIP::GAME
 
 	void NPCControllerComponent::PhysicsUpdate(float deltaTime, JPH::TempAllocator* allocator)
 	{
-		if (!_character || !_isPhysicsActive) return;
+		// 사망 등으로 물리가 꺼져도 진행 중인 넉백 모션은 끝까지 진행 (클라는 MOTION_START대로 곡선을 재생하므로 서버도 같이 움직여야 함)
+		if (!_character || (!_isPhysicsActive && !_motionActive)) return;
 
 		using namespace common::VectorHelper;
 
@@ -220,7 +221,8 @@ namespace PIP::GAME
 	void NPCControllerComponent::LightPhysicsUpdate(float deltaTime)
 	{
 		// [NPC 전용 최적화] 시뮬레이션 없이 ShapeCast로 바닥만 체크하는 경량 모드
-		if (!_character || !_isPhysicsActive) return;
+		// 사망 등으로 물리가 꺼져도 진행 중인 넉백 모션은 끝까지 진행 (PhysicsUpdate와 동일)
+		if (!_character || (!_isPhysicsActive && !_motionActive)) return;
 		if (!_cachedTransform)
 		{
 			_cachedTransform = GetOwner()->GetComponent<TransformComponent>();

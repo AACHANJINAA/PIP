@@ -146,7 +146,7 @@ GameObject (ValidateHit 순수 가상)
 |---|---|---|
 | `TransformComponent` | 모든 엔티티 | 위치·회전, 부드러운 회전(`SmoothRotateTo`), 앞·오른쪽 방향, Jolt 변환 |
 | `CharacterControllerComponent` | (기반) | Jolt `CharacterVirtual` 래퍼. 캡슐 크기, 충격 속도(`AddImpact/AddImpulse`, 마찰 `ImpactFriction=35`로 감속), 지면 판정, 위치(발바닥 = 캐릭터 중심 − 반높이) |
-| `NPCControllerComponent` | NPC | 이동 속도, **넉백 모션** `StartKnockback`(넉백 방향으로 구체 스윕해 벽 앞 끝 위치 확정, 버팀 0.06초 + 일정 감속 곡선, 동작 중엔 AI 이동·충격량 무시하고 서버 시각 기준 곡선 위치로 이동, 0.3m 넘게 벗어나면 중단 기록), `TakeStartedMotion`/`TakeInterruptedMotion`(Room이 꺼내 전송), 경량 물리 갱신(`LightPhysicsUpdate`), 수직 속도 초기화 |
+| `NPCControllerComponent` | NPC | 이동 속도, **넉백 모션** `StartKnockback`(넉백 방향으로 구체 스윕해 벽 앞 끝 위치 확정, 버팀 0.06초 + 일정 감속 곡선, 동작 중엔 AI 이동·충격량 무시하고 서버 시각 기준 곡선 위치로 이동, 0.3m 넘게 벗어나면 중단 기록, 사망으로 물리가 꺼져도 진행 중인 모션은 끝까지 진행), `TakeStartedMotion`/`TakeInterruptedMotion`(Room이 꺼내 전송), 경량 물리 갱신(`LightPhysicsUpdate`), 수직 속도 초기화 |
 | `PlayerControllerComponent` | 플레이어 | 클라 입력 방향으로 이동 속도 적용 |
 | `PhysicsComponent` | DynamicBox, 엘리베이터 | 일반 Jolt 바디 생성·속도 |
 | `HitboxComponent` | 플레이어, NPC | 이름 붙은 히트박스(모양, 오프셋, 회전) 목록. `CheckCollision`: 과거 스냅샷의 위치·회전(스케일 없음)으로 공격 모양과 모양 대 모양 겹침 검사 |
