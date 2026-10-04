@@ -194,6 +194,9 @@
     <ClInclude Include="ServerClock.h">
       <Filter>0. Engine\6. Network</Filter>
     </ClInclude>
+    <ClInclude Include="SnapshotBuffer.h">
+      <Filter>0. Engine\6. Network</Filter>
+    </ClInclude>
     <ClInclude Include="main.h">
       <Filter>5. App</Filter>
     </ClInclude>
@@ -557,6 +560,9 @@
       <Filter>0. Engine\6. Network</Filter>
     </ClCompile>
     <ClCompile Include="ServerClock.cpp">
+      <Filter>0. Engine\6. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="SnapshotBuffer.cpp">
       <Filter>0. Engine\6. Network</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
