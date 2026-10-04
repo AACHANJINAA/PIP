@@ -1736,11 +1736,7 @@ namespace PIP::SERVER
 						MYLOG("[Room " << _room_id << "] Both levers activated. Broadcasting PLAY_CUTSCENE.");
 						
 						// 스킬 해금 상태 반영 및 브로드캐스트
-						_isSkillUnlocked = true;
-						packet::SC_PACKET_SKILL_UNLOCKED skill_pkt;
-						skill_pkt._type = packet::PacketType::S2C_P_SKILL_UNLOCKED;
-						skill_pkt._size = sizeof(skill_pkt);
-						Broadcast(reinterpret_cast<char*>(&skill_pkt), sizeof(skill_pkt), -1, true);
+						DebugUnlockSkill();
 
 						packet::PacketStream stream;
 						packet::SC_PACKET_PLAY_CUTSCENE pkt;
@@ -2930,6 +2926,16 @@ namespace PIP::SERVER
 			StartGame(); // 이제 방 상태를 PLAYING으로 변경하여 게임 루프가 본격적으로 돌아가게 함
 			_requestedSceneName.clear(); // [추가] 스테이지 진입 처리가 끝났음을 마킹
 		}
+	}
+
+	void Room::DebugUnlockSkill()
+	{
+		_isSkillUnlocked = true;
+		packet::SC_PACKET_SKILL_UNLOCKED skill_pkt;
+		skill_pkt._type = packet::PacketType::S2C_P_SKILL_UNLOCKED;
+		skill_pkt._size = sizeof(skill_pkt);
+		Broadcast(reinterpret_cast<char*>(&skill_pkt), sizeof(skill_pkt), -1, true);
+		MYLOG("[Room " << _room_id << "] Skill unlocked.");
 	}
 
 	void Room::KillMonstersNearby(int64_t player_id, float range)
