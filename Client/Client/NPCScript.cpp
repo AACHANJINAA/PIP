@@ -255,9 +255,9 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	_positionBuffer.clear();
 	_pendingStates.clear();
 	{
+		// 지금 렌더 시각에 표본을 둔다 (추정 서버 시각에 두면 그보다 이른 서버 시각으로 이어 오는 이동 패킷이 버려짐)
 		SnapshotBuffer::Sample sample;
-		auto clock = ServerClock::instance();
-		sample.time = clock->is_synced() ? clock->server_now_ms() : 0.0;
+		sample.time = ServerClock::instance()->is_synced() ? render_time() : 0.0;
 		sample.pos = _serverPos;
 		sample.rot = _serverRot;
 		_positionBuffer.push(sample);
@@ -381,7 +381,7 @@ void NPCScript::update(float deltaTime)
 		_serverPos = interp.pos;
 		_serverVel = interp.vel; // TainerScript 등이 이동 애니메이션 선택에 사용
 		_serverRot = interp.rot;
-		ServerClock::instance()->count_interp_mode(static_cast<int>(interp.mode));
+		ServerClock::instance()->count_interp_mode(ServerClock::InterpTarget::Npc, static_cast<int>(interp.mode));
 
 		// [디버그] 서버가 마지막으로 보낸 위치 (F6 창에서 켬)
 		if (ServerClock::instance()->show_server_ghost())

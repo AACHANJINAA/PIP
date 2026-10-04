@@ -32,8 +32,12 @@ public:
 	static constexpr double kNpcInterpDelayMs = 70.0;	// 서버 NPC 전송 간격 50ms + 여유
 	static constexpr double kPlayerInterpDelayMs = 30.0;
 
-	// [디버그] 이번 프레임 보간 상태 집계 (SnapshotBuffer::Mode 값), NPC 서버 위치(유령) 표시 여부
-	void count_interp_mode(int mode) { if (mode >= 0 && mode < kModeCount) ++_modeCounts[mode]; }
+	// [디버그] 이번 프레임 보간 상태 집계 (SnapshotBuffer::Mode 값, NPC와 다른 플레이어 따로), 서버 위치(유령) 표시 여부
+	enum class InterpTarget { Npc, Player, Count };
+	void count_interp_mode(InterpTarget target, int mode)
+	{
+		if (mode >= 0 && mode < kModeCount) ++_modeCounts[static_cast<int>(target)][mode];
+	}
 	bool show_server_ghost() const { return _showDebugWindow && _showServerGhost; }
 
 	// ImGui 디버그 창 (F6 토글): RTT, offset, 인공 지연 설정
@@ -71,6 +75,7 @@ private:
 	bool _showServerGhost = false;
 
 	static constexpr int kModeCount = 5;
-	int _modeCounts[kModeCount] = {};		// 이번 프레임 집계 중
-	int _shownModeCounts[kModeCount] = {};	// 직전 프레임 결과 (창에 표시)
+	static constexpr int kTargetCount = static_cast<int>(InterpTarget::Count);
+	int _modeCounts[kTargetCount][kModeCount] = {};			// 이번 프레임 집계 중
+	int _shownModeCounts[kTargetCount][kModeCount] = {};	// 직전 프레임 결과 (창에 표시)
 };

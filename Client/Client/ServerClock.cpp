@@ -10,8 +10,8 @@ void ServerClock::update()
 	_lastUpdateMs = now;
 
 	// 직전 프레임 보간 상태 집계를 창 표시용으로 넘기고 새로 셈
-	std::copy(std::begin(_modeCounts), std::end(_modeCounts), std::begin(_shownModeCounts));
-	std::fill(std::begin(_modeCounts), std::end(_modeCounts), 0);
+	std::memcpy(_shownModeCounts, _modeCounts, sizeof(_modeCounts));
+	std::memset(_modeCounts, 0, sizeof(_modeCounts));
 
 	// offset을 목표로 천천히 옮김
 	const double diff = _targetOffset - _offset;
@@ -97,12 +97,18 @@ void ServerClock::draw_debug_window()
 	ImGui::Text("Offset %.1f ms (target %.1f)", _offset, _targetOffset);
 	ImGui::Text("Server now %.0f ms", server_now_ms());
 
-	// 보간 상태 (NPC·다른 플레이어 수): 외삽이 많으면 보간 지연이 전송 간격보다 짧거나 패킷이 늦는 것
+	// 보간 상태 (대상 수): 움직이는 중에 외삽이 많으면 보간 지연이 전송 간격보다 짧거나 패킷이 늦는 것
+	// (멈춘 대상은 패킷이 오지 않으므로 Capped로 세는 것이 정상)
 	ImGui::Separator();
-	ImGui::Text("Interp %d / Hold %d / Extrap %d / Capped %d",
-		_shownModeCounts[1], _shownModeCounts[2], _shownModeCounts[3], _shownModeCounts[4]);
+	const char* labels[kTargetCount] = { "NPC   ", "Player" };
+	for (int target = 0; target < kTargetCount; ++target)
+	{
+		const int* counts = _shownModeCounts[target];
+		ImGui::Text("%s Interp %d / Hold %d / Extrap %d / Capped %d",
+			labels[target], counts[1], counts[2], counts[3], counts[4]);
+	}
 	ImGui::Text("Delay NPC %.0f ms / Player %.0f ms", kNpcInterpDelayMs, kPlayerInterpDelayMs);
-	ImGui::Checkbox("Show NPC server position (ghost)", &_showServerGhost);
+	ImGui::Checkbox("Show server position (ghost)", &_showServerGhost);
 
 	// 인공 수신 지연·흔들림 (같은 PC에서 나쁜 네트워크 재현용, 수신 쪽만 늦춤)
 	ImGui::Separator();

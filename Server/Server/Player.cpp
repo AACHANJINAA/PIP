@@ -147,6 +147,7 @@ namespace PIP::GAME
 		res._grab_slot = _grabSlot;         // [추가]
 		res._hp = _hp;                     // [추가] 실시간 HP 동기화
 		res._mp = _mp;                     // [추가] 실시간 MP 동기화
+		res._server_time = common::NetNowMsPrecise(); // 다른 클라가 이 시각 기준으로 보간
 		return res;
 	}
 

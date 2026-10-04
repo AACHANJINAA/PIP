@@ -375,6 +375,7 @@ namespace common::packet
 		int8_t			_grab_slot;     // [추가] 잡힌 슬롯 (0: 왼손, 1: 오른손 등)
 		int32_t			_hp;            // [추가] 실시간 체력 동기화
 		int32_t			_mp;            // [추가] 실시간 마나 동기화
+		double			_server_time;   // 패킷을 만든 서버 시각 (NetNowMsPrecise, ms). 다른 플레이어 보간 기준
 	};
 
 	// 공격 결과 패킷 (사용되지 않음)

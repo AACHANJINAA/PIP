@@ -3,6 +3,7 @@
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
 #include "SocketComponenet.h"
+#include "SnapshotBuffer.h"
 
 class OtherPlayerScript : public ScriptComponent
 {
@@ -15,14 +16,10 @@ public:
 
     void awake() override;
 
-    // 서버로부터 위치 동기화 패킷을 받았을 때 호출될 함수 (예시)
-    void on_sync_position(const XMFLOAT3& newPosition);
-	void on_sync_rotation(const XMFLOAT4& newRotation);
-    void on_sync_state(common::packet::EntityState state);
-    void on_sync_action_id(int32_t action_id);
-    void on_sync_grab(int64_t grabbed_by_id, int8_t grab_slot); // [추가]
-    void on_sync_velocity(const common::Vec3& velocity) { _velocity = velocity; } // [추가]
-    void on_sync_hp(int hp) { _hp = hp; } // [추가]
+    // 서버 이동 패킷: 위치·회전은 보간 버퍼에, 상태·액션·잡기·HP·MP는 그 서버 시각에 적용하도록 대기열에 쌓음
+    void on_server_move(const common::packet::SC_PACKET_MOVE& packet);
+    // 생성·부활처럼 서버가 위치를 정해 주는 경우: 쌓인 표본을 버리고 이 위치·회전(서버 기준)에서 다시 시작
+    void reset_transform(const XMFLOAT3& position, const XMFLOAT4& server_rotation);
     void on_sync_mp(int mp) { _mp = mp; } // [추가]
     void reset_state(); // [추가] 리스폰 시 상태 초기화
 
@@ -40,17 +37,28 @@ private:
     int _maxHp{ 100 }; // [추가]
     int _mp{ 100 }; // [추가]
     int64_t _playerId = -1; // [수정] Session ID(0) 와의 충돌 방지를 위해 -1 로 초기화
-    common::packet::EntityState _state;
-    common::packet::EntityState _prevState = common::packet::EntityState::IDLE; // [추가] 이전 상태 추적용
+    common::packet::EntityState _state = common::packet::EntityState::IDLE;
     int32_t _action_id = 0;
     int64_t _grabbedById = -1; // [추가]
     int8_t  _grabSlot = -1;    // [추가]
-    // --- [추측 항법 및 보간용 변수] ---
-    common::Vec3    _logicalPosition;   // 서버가 알려준 최신 논리적 위치
-    common::Vec3    _visualOffset;      // 시각적 보간을 위한 오프셋 (이전 위치와의 차이)
-    common::Vec3    _velocity;          // 추측 항법을 위한 속도 (옵션)
 
-    float           _lerpFactor = 15.0f; // 보간 속도 (수치가 클수록 서버 위치에 빨리 도달)
+    // --- 서버 시각 기준 보간 (NetMotionSync_Design_KR.md 5.2) ---
+    SnapshotBuffer _positionBuffer;     // 위치·회전 (회전은 모델 정면 보정을 넣은 값)
+    struct PendingState
+    {
+        double time;                    // 서버 시각 (ms)
+        common::packet::EntityState state;
+        int32_t action_id;
+        int64_t grabbed_by_id;
+        int8_t  grab_slot;
+        int32_t hp;
+        int32_t mp;
+    };
+    std::deque<PendingState> _pendingStates;
+
+    void apply_state(const PendingState& pending);  // 상태·액션(공격음)·잡기·HP·MP
+    double render_time() const;                     // 도착 기준 서버 시각 - 플레이어 보간 지연
+    static XMFLOAT4 to_visual_rotation(const XMFLOAT4& server_rotation); // 서버와 모델 정면 차이(Y 180도) 보정
 
 
 	// 공격 관련 변수들
