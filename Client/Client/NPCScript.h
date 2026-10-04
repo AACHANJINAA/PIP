@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "INetSync.h"
+#include "SnapshotBuffer.h"
 #include "ScriptComponent.h"
 #include "AnimationComponent.h"
 #include "GameFramework.h"
@@ -50,9 +51,18 @@ protected:
 	XMFLOAT3 _serverVel = { 0, 0, 0 };      // 서버 기준 속도
 	XMFLOAT4 _serverRot = { 0, 0, 0, 1 };   // 서버 기준 회전
 	
-	float _accumulatedTime = 0.0f;          // 패킷 수신 후 경과 시간
 	bool _isFirstUpdate = true;             // 첫 패킷인지 여부
 
-	NetSnapshot _pendingSnapshot;
-	bool _isNewDataArrived = false;
+	// 서버 시각 기준 보간 (위치·회전)과, 서버 시각에 맞춰 적용할 상태 대기열
+	SnapshotBuffer _positionBuffer;
+	struct PendingState
+	{
+		double time;
+		NetSnapshot snapshot;
+	};
+	std::deque<PendingState> _pendingStates;
+
+	void apply_state(const NetSnapshot& snapshot);	// 상태·액션·잡기·HP와 그에 따른 사운드
+	double render_time() const;						// 추정 서버 시각 - 보간 지연
+	XMFLOAT4 to_visual_rotation(const common::Quat& server_rot) const;
 };

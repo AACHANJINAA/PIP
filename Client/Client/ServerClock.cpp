@@ -9,6 +9,10 @@ void ServerClock::update()
 	const double elapsed = _lastUpdateMs > 0.0 ? now - _lastUpdateMs : 0.0;
 	_lastUpdateMs = now;
 
+	// 직전 프레임 보간 상태 집계를 창 표시용으로 넘기고 새로 셈
+	std::copy(std::begin(_modeCounts), std::end(_modeCounts), std::begin(_shownModeCounts));
+	std::fill(std::begin(_modeCounts), std::end(_modeCounts), 0);
+
 	// offset을 목표로 천천히 옮김
 	const double diff = _targetOffset - _offset;
 	if (std::abs(diff) > kSnapMs) _offset = _targetOffset;
@@ -73,6 +77,14 @@ double ServerClock::server_now_ms() const
 	return common::NetNowMsPrecise() + _offset;
 }
 
+double ServerClock::unwrap_server_time(uint32_t stamp) const
+{
+	const double now = server_now_ms();
+	const uint32_t now32 = static_cast<uint32_t>(static_cast<uint64_t>(now));
+	const int32_t diff = static_cast<int32_t>(now32 - stamp); // 양수면 stamp가 과거
+	return static_cast<double>(static_cast<uint64_t>(now)) - diff;
+}
+
 void ServerClock::draw_debug_window()
 {
 	if (!_showDebugWindow) return;
@@ -84,6 +96,13 @@ void ServerClock::draw_debug_window()
 	ImGui::Text("RTT  best %.1f ms / last %.1f ms", _bestRtt, _lastRtt);
 	ImGui::Text("Offset %.1f ms (target %.1f)", _offset, _targetOffset);
 	ImGui::Text("Server now %.0f ms", server_now_ms());
+
+	// 보간 상태 (NPC·다른 플레이어 수): 외삽이 많으면 보간 지연이 전송 간격보다 짧거나 패킷이 늦는 것
+	ImGui::Separator();
+	ImGui::Text("Interp %d / Hold %d / Extrap %d / Capped %d",
+		_shownModeCounts[1], _shownModeCounts[2], _shownModeCounts[3], _shownModeCounts[4]);
+	ImGui::Text("Delay NPC %.0f ms / Player %.0f ms", kNpcInterpDelayMs, kPlayerInterpDelayMs);
+	ImGui::Checkbox("Show NPC server position (ghost)", &_showServerGhost);
 
 	// 인공 수신 지연·흔들림 (같은 PC에서 나쁜 네트워크 재현용, 수신 쪽만 늦춤)
 	ImGui::Separator();

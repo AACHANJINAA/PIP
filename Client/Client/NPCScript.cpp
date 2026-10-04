@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 #include "NPCScript.h"
+#include "ServerClock.h"
+#include "DebugDrawManager.h"
 #include "ReplicationSystem.h"
 #include "AnimationComponent.h"
 #include "GameFramework.h"
@@ -229,63 +231,18 @@ void NPCScript::on_destroy()
 
 void NPCScript::on_server_update(const common::packet::SC_PACKET_NPC_MOVE& npc_move_packet)
 {
-	common::packet::EntityState prevState = _state;
-
-	_serverPos = npc_move_packet._position;
-	_serverVel = npc_move_packet._velocity;
-	_accumulatedTime = 0.0f; // 패킷 수신 후 시간 리셋
-	_state = npc_move_packet._state;
-
-	// 공격 시작 시 사운드 재생
-	if (prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
-		if (transform()) {
-			SoundManager::instance()->play_3d("MonsterAttack", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
-		}
-	}
-	
-	// 사망 시 사운드 재생
-	if (prevState != common::packet::EntityState::DEAD && _state == common::packet::EntityState::DEAD) {
-		if (transform()) {
-			SoundManager::instance()->play_3d("MonsterDie", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
-		}
-	}
-
-	if (_actionId != npc_move_packet._action_id) {
-		_actionId = npc_move_packet._action_id;
-		
-		// 보스 액션별 사운드 구간 재생 (원하는 시작/종료 시간 문자열로 지정)
-		if (_npcType == common::packet::NPCType::Tainer) {
-			if (_actionId == common::packet::ActionID::Tainer::Charge || _actionId == common::packet::ActionID::Tainer::GrabCharge) {
-				SoundManager::instance()->play_3d_section("BossCharge", transform()->get_world_position(), "00:03:00", "00:04:00"); 
-			} else if (_actionId == common::packet::ActionID::Tainer::Grab) {
-				SoundManager::instance()->play_3d_section("BossGrab", transform()->get_world_position(), "00:00:00", "00:00:500"); 
-			} else if (_actionId == common::packet::ActionID::Tainer::Slam || _actionId == common::packet::ActionID::Tainer::GrabSlam) {
-				SoundManager::instance()->play_3d_section("BossSmash", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f);
-			} else if (_actionId == common::packet::ActionID::Tainer::Roar) {
-				SoundManager::instance()->play_3d_section("BossRoar", transform()->get_world_position(), "00:00:00", "00:01:00", SoundType::SFX, 1.5f); 
-			}
-		}
-	}
-	_hp = npc_move_packet._hp; // [추가] HP 동기화
-	_grabbedById = -1; // 단일 이동 패킷엔 아직 그랩 정보가 없음 (일관성을 위해 리셋)
-	_grabSlot = -1;
-
-	// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
-	XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&npc_move_packet._rotation);
-	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
-	XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
-
-	// 보정된 회전값을 _serverRot에 저장
-	XMStoreFloat4(&_serverRot, qFinal);
-
-	// 첫 패킷 수신 시 즉시 동기화
-	if (_isFirstUpdate) {
-		if (transform()) {
-			transform()->set_local_position(_serverPos);
-			transform()->set_local_rotation(_serverRot);
-		}
-		_isFirstUpdate = false;
-	}
+	// 단일 이동 패킷도 배치와 같은 스냅샷 경로로 처리
+	NetSnapshot snapshot;
+	snapshot.pos = npc_move_packet._position;
+	snapshot.vel = npc_move_packet._velocity;
+	snapshot.rot = npc_move_packet._rotation;
+	snapshot.state = npc_move_packet._state;
+	snapshot.timestamp = npc_move_packet._time_stamp;
+	snapshot.action_id = npc_move_packet._action_id;
+	snapshot.grabbed_by_id = -1; // 단일 이동 패킷엔 그랩 정보가 없음
+	snapshot.grab_slot = -1;
+	snapshot.hp = npc_move_packet._hp;
+	on_receive_snapshot(snapshot);
 }
 
 void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN& spawnPkt)
@@ -293,8 +250,19 @@ void NPCScript::initialize_from_server(const common::packet::SC_PACKET_NPC_SPAWN
 	_serverPos = spawnPkt._position;
 	_serverVel = { 0, 0, 0 };
 	_serverRot = spawnPkt._rotation; // [수정] 서버에서 받은 회전값 사용
-	_accumulatedTime = 0.0f;
-	_isNewDataArrived = false; // 대기 중인 스냅샷 무시 (생성 시 좌표가 우선)
+
+	// 생성(또는 AOI 재진입) 시 좌표가 우선: 쌓여 있던 표본을 버리고 생성 위치에서 시작
+	_positionBuffer.clear();
+	_pendingStates.clear();
+	{
+		SnapshotBuffer::Sample sample;
+		auto clock = ServerClock::instance();
+		sample.time = clock->is_synced() ? clock->server_now_ms() : 0.0;
+		sample.pos = _serverPos;
+		sample.rot = _serverRot;
+		_positionBuffer.push(sample);
+	}
+	_isFirstUpdate = false;
 
 	_state = spawnPkt._state;
 	_actionId = spawnPkt._action_id;
@@ -404,85 +372,25 @@ void NPCScript::update(float deltaTime)
 
 	if (_isFirstUpdate || !transform()) return;
 
-	_accumulatedTime += deltaTime;
+	// 서버 시각 기준 보간 (NetMotionSync_Design_KR.md 5.2): 렌더 시각 = 추정 서버 시각 - 보간 지연
+	if (!_positionBuffer.empty())
+	{
+		const SnapshotBuffer::Result interp = _positionBuffer.sample(render_time());
+		transform()->set_local_position(interp.pos);
+		transform()->set_local_rotation(interp.rot);
+		_serverPos = interp.pos;
+		_serverVel = interp.vel; // TainerScript 등이 이동 애니메이션 선택에 사용
+		_serverRot = interp.rot;
+		ServerClock::instance()->count_interp_mode(static_cast<int>(interp.mode));
 
-	// [최적화] 패킷이 0.5초 이상 안 오면 예측 이동(Dead Reckoning) 중지 (가출 방지)
-	XMVECTOR vServerVel = XMLoadFloat3(&_serverVel);
-
-	// [방어 코드 1] 서버 속도가 너무 빠르면 캡핑 (보스 넉백 등 예외 상황 방지)
-	float speedSq = XMVectorGetX(XMVector3LengthSq(vServerVel));
-	if (speedSq > 100.0f * 100.0f) { // 초속 100m 이상은 비정상으로 간주
-		vServerVel = XMVector3Normalize(vServerVel) * 100.0f;
-	}
-
-	if (_accumulatedTime > 0.3f) {
-		vServerVel = XMVectorZero();
-	}
-
-	// 1. 추측 항법 (Dead Reckoning)
-	XMVECTOR vServerPos = XMLoadFloat3(&_serverPos);
-	XMVECTOR vPredictedPos = vServerPos + (vServerVel * _accumulatedTime);
-
-	// [방어 코드 2] 예측 위치가 서버 위치로부터 너무 멀어지면 보정 (최대 5m)
-	XMVECTOR vDiff = vPredictedPos - vServerPos;
-	if (XMVectorGetX(XMVector3LengthSq(vDiff)) > 5.0f * 5.0f) {
-		vPredictedPos = vServerPos + XMVector3Normalize(vDiff) * 5.0f;
-	}
-
-	// 2. 위치 보간 (Lerp)
-	XMVECTOR vCurrentPos = XMLoadFloat3(&transform()->local_position());
-
-	// [NaN 체크 강화]
-	if (common::XMVector3AnyNaN(vCurrentPos) || common::XMVector3AnyNaN(vPredictedPos)) {
-		vCurrentPos = vServerPos;
-		vPredictedPos = vServerPos;
-		transform()->set_local_position(_serverPos);
-		CERROR("[NPCScript] Critical NaN detected! Resetting to server position.");
-	}
-
-	float distSq = XMVectorGetX(XMVector3LengthSq(vPredictedPos - vCurrentPos));
-	
-	
-	XMVECTOR vNextPos;
-	float lerpSpeed = 10.0f;
-	if (distSq > 10.0f * 10.0f) {
-		// 10m 이상이면 보간하지 않고 즉시 목표 위치로 스냅 (가장 안전)
-		vNextPos = vPredictedPos;
-	}
-	else {
-		if (distSq > 0.5f * 0.5f) {
-			lerpSpeed = 15.0f;
+		// [디버그] 서버가 마지막으로 보낸 위치 (F6 창에서 켬)
+		if (ServerClock::instance()->show_server_ghost())
+		{
+			const auto& latest = _positionBuffer.latest();
+			DebugDrawManager::instance()->AddDebugShape(common::packet::DebugShapeType::BOX,
+				{ latest.pos.x, latest.pos.y + 0.9f, latest.pos.z }, latest.rot, { 0.3f, 0.9f, 0.3f }, deltaTime * 1.5f);
 		}
-
-		// [중요] 보간 계수 t를 [0.0, 1.0] 범위로 제한
-		float clampedDelta = std::min(deltaTime, 0.1f);
-		float t = std::min(1.0f, clampedDelta * lerpSpeed);
-		vNextPos = XMVectorLerp(vCurrentPos, vPredictedPos, t);
 	}
-
-	// [NaN 방어]
-	if (common::XMVector3AnyNaN(vNextPos)) {
-		CERROR("[NPCScript] Interpolated position is NaN! Fallback to predicted pos.");
-		vNextPos = vPredictedPos;
-	}
-
-	XMFLOAT3 nextPos;
-	XMStoreFloat3(&nextPos, vNextPos);
-	transform()->set_local_position(nextPos);
-
-	// ---------------------------------------------------------
-	// 3. 회전 보간 (Slerp)
-	// ---------------------------------------------------------
-
-	//// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
-	//XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_serverRot);
-	//XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
-	//XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
-
-	//// 보정된 회전값을 _serverRot에 저장
-	//XMStoreFloat4(&_serverRot, qFinal);
-
-	transform()->set_local_rotation(_serverRot);
 
 	/*auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
@@ -507,10 +415,35 @@ void NPCScript::set_id(int64_t npc_id)
 // --- INetSync 인터페이스 구현 ---
 void NPCScript::on_receive_snapshot(const NetSnapshot& snapshot)
 {
-	// [구조적 강제] 핸들러에선 오직 데이터 복사만 수행! (매우 빠름)
-	_pendingSnapshot = snapshot;
-	_isNewDataArrived = true;
+	// 위치는 보간 버퍼에, 상태는 서버 시각에 적용하도록 대기열에 쌓음 (한 프레임에 여러 개가 와도 모두 보관)
+	const double time = ServerClock::instance()->unwrap_server_time(snapshot.timestamp);
+
+	SnapshotBuffer::Sample sample;
+	sample.time = time;
+	sample.pos = snapshot.pos;
+	sample.vel = snapshot.vel;
+	sample.rot = to_visual_rotation(snapshot.rot);
+	_positionBuffer.push(sample);
+	_pendingStates.push_back({ time, snapshot });
+
+	// 첫 스냅샷은 보간 없이 바로 적용
+	if (_isFirstUpdate)
+	{
+		_serverPos = sample.pos;
+		_serverRot = sample.rot;
+		if (transform()) {
+			transform()->set_local_position(_serverPos);
+			transform()->set_local_rotation(_serverRot);
+		}
+		while (!_pendingStates.empty())
+		{
+			apply_state(_pendingStates.front().snapshot);
+			_pendingStates.pop_front();
+		}
+		_isFirstUpdate = false;
+	}
 }
+
 void NPCScript::apply_snapshot()
 {
 	auto owner = game_object();
@@ -518,11 +451,21 @@ void NPCScript::apply_snapshot()
 	{
 		return;
 	}
-	if(!_isNewDataArrived) return;
 
+	// 상태·액션·잡기·HP는 그 스냅샷의 서버 시각이 렌더 시각에 닿았을 때 적용 (모션 전환과 위치를 같은 시점에 맞춤)
+	const double now = render_time();
+	while (!_pendingStates.empty() && _pendingStates.front().time <= now)
+	{
+		apply_state(_pendingStates.front().snapshot);
+		_pendingStates.pop_front();
+	}
+}
+
+void NPCScript::apply_state(const NetSnapshot& snapshot)
+{
 	common::packet::EntityState prevState = _state;
 
-	_state = _pendingSnapshot.state;
+	_state = snapshot.state;
 
 	// 공격 시작 시 사운드 재생
 	if (prevState != common::packet::EntityState::ACTION && _state == common::packet::EntityState::ACTION) {
@@ -544,8 +487,8 @@ void NPCScript::apply_snapshot()
 		}
 	}
 
-	if (_actionId != _pendingSnapshot.action_id) {
-		_actionId = _pendingSnapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
+	if (_actionId != snapshot.action_id) {
+		_actionId = snapshot.action_id; // NetSnapshot에 action_id가 포함되어 있어야 함
 		
 		// 보스 액션별 사운드 구간 재생 (원하는 시작/종료 시간 문자열로 지정)
 		if (_npcType == common::packet::NPCType::Tainer) {
@@ -564,35 +507,30 @@ void NPCScript::apply_snapshot()
 		}
 	}
 
-	_grabbedById = _pendingSnapshot.grabbed_by_id; // [추가]
-	_grabSlot = _pendingSnapshot.grab_slot;         // [추가]
-	set_hp(_pendingSnapshot.hp);                   // [추가] HP 동기화
+	_grabbedById = snapshot.grabbed_by_id; // [추가]
+	_grabSlot = snapshot.grab_slot;         // [추가]
+	set_hp(snapshot.hp);                   // [추가] HP 동기화
+}
 
-	_serverPos = _pendingSnapshot.pos;
-	_serverVel = _pendingSnapshot.vel;
-	_accumulatedTime = 0.0f;
+double NPCScript::render_time() const
+{
+	auto clock = ServerClock::instance();
+	// 동기화 전에는 서버 시각을 모르므로 최신 표본을 그대로 보여줌
+	if (!clock->is_synced()) return _positionBuffer.empty() ? 0.0 : _positionBuffer.latest().time;
+	return clock->arrival_now_ms() - ServerClock::kNpcInterpDelayMs;
+}
 
-	if (_npcType == common::packet::NPCType::Elevator) {
-		_serverRot = _pendingSnapshot.rot;
+XMFLOAT4 NPCScript::to_visual_rotation(const common::Quat& server_rot) const
+{
+	XMFLOAT4 rot;
+	if (_npcType == common::packet::NPCType::Elevator)
+	{
+		XMStoreFloat4(&rot, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&server_rot)));
+		return rot;
 	}
-	else {
-		// --- 1. 서버에서 받은 회전값(rot)에 Y축 180도 추가 회전 적용 ---
-		XMVECTOR qServer = XMLoadFloat4((XMFLOAT4*)&_pendingSnapshot.rot);
-		XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0); // Y축 180도(PI) 회전
-		XMVECTOR qFinal = XMQuaternionMultiply(qServer, qRotate180);         // 회전 결합
-
-		// 보정된 회전값을 _serverRot에 저장
-		XMStoreFloat4(&_serverRot, qFinal);
-	}
-
-	// [핵심] 첫 번째 데이터를 받으면 이 플래그를 반드시 꺼줘야 합니다!
-	// 이게 true로 남아있으면 update() 함수가 맨 위에서 return 됩니다.
-	if (_isFirstUpdate) {
-		if (transform()) {
-			transform()->set_local_position(_serverPos);
-			transform()->set_local_rotation(_serverRot);
-		}
-		_isFirstUpdate = false;
-	}
-	_isNewDataArrived = false;
+	// 서버 회전에 Y축 180도 추가 (모델 정면 방향 보정)
+	XMVECTOR qServer = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&server_rot));
+	XMVECTOR qRotate180 = XMQuaternionRotationRollPitchYaw(0, XM_PI, 0);
+	XMStoreFloat4(&rot, XMQuaternionMultiply(qServer, qRotate180));
+	return rot;
 }
