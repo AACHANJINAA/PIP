@@ -64,33 +64,96 @@ IOCP 기반 권위 서버. 방(Room)마다 Jolt 물리 시스템을 따로 돌�
 
 ---
 
-## 5. 엔티티
+## 5. 엔티티·컴포넌트 시스템
 
-| 파일 | 역할 |
+클라이언트와 **별개로 구현된** 컴포넌트 구조다(네임스페이스 `PIP::GAME`). 클라이언트보다 단순하다: 수명 주기 함수가 적고, 갱신은 방이 엔티티 종류별로 직접 부른다.
+
+### 5.1 기반 클래스
+
+| 클래스 | 파일 | 역할 |
+|---|---|---|
+| `GameObject` | `GameObject.h/.cpp` | 고유 id(전역 원자 카운터, NPC·플레이어는 `SetId`로 덮어씀), 이름, 컴포넌트 목록(`vector<unique_ptr<Component>>`) + 타입 캐시(`unordered_map<type_index, Component*>`). `Update/PhysicsUpdate`는 모든 컴포넌트에 그대로 전달. **`ValidateHit`(피격 검증)은 순수 가상**이라 판정 대상 엔티티가 각자 구현 |
+| `Component` | `Component.h/.cpp` | 소유자를 **원시 포인터**(`GameObject* _owner`)로 보관(소유자가 컴포넌트를 `unique_ptr`로 가지므로 수명이 같다). 가상 함수 `Initialize`, `Update(dt)`, `Update(dt, TempAllocator*)`, `PhysicsUpdate(dt)`, `PhysicsUpdate(dt, TempAllocator*)`. `GetComponent<T>()`로 같은 오브젝트의 다른 컴포넌트 접근 |
+
+### 5.2 컴포넌트 추가·조회 규칙
+
+- `AddComponent<T>(args...)`: `T(owner, args...)` 생성 → 목록 추가 → 타입 캐시 등록 → **즉시 `Initialize()` 호출**. 클라이언트와 달리 **중복 검사가 없고**(같은 타입을 두 번 붙이면 둘 다 들어가고 캐시는 마지막 것을 가리킴), 의존 컴포넌트 자동 추가(`required_components`)도 없다. 필요한 컴포넌트는 엔티티 생성자에서 순서대로 직접 붙인다.
+- `GetComponent<T>()`: 정확한 타입이면 캐시에서 바로, 아니면 `dynamic_cast`로 상속 관계를 찾아 캐시에 넣는다. 예: `GetComponent<CharacterControllerComponent>()`가 `NPCControllerComponent`를 찾는다.
+- 컴포넌트 제거·파괴·활성 플래그가 없다. 엔티티가 사라질 때 함께 사라진다.
+- Jolt `PhysicsSystem`이 필요한 컴포넌트(캐릭터 컨트롤러, 물리 바디)는 생성 시점이 아니라 **방에 들어갈 때 방의 물리 시스템으로 초기화**한다(방마다 물리 세계가 따로 있기 때문).
+
+### 5.3 엔티티 상속 관계와 구성
+
+```
+GameObject (ValidateHit 순수 가상)
+└─ Actor          활성, HP·상태(가상), 파벌, 잡기 정보, 위치 기록(리와인드)
+   ├─ Player      SESSION이 shared_ptr로 소유
+   ├─ NPC         Room::_npcs(unique_ptr)가 소유
+   │  ├─ MagicGuard, Tainer(보스), QuestNPC
+   └─ Elevator    Room::_elevators(unique_ptr)가 소유
+```
+
+| 엔티티 | 생성자에서 붙이는 컴포넌트 (순서대로) |
 |---|---|
-| `GameObject.h/.cpp`, `Component.h/.cpp` | 서버 쪽 컴포넌트 구조 (`AddComponent/GetComponent`, `Update/PhysicsUpdate`) |
-| `Actor.h` | 플레이어·NPC 공통: 활성, HP, 상태(`EntityState`), 파벌, 잡기 정보, **위치 기록**(`RecordSnapshot`/`GetSnapshotAt`, 최근 30개 ≈ 1초, 리와인드 판정용) |
-| `Player.h/.cpp` | 플레이어. HP/MP/공격력, 쿨다운(피격 0.5초, 대시), 퀘스트, 인벤토리, `IsDirty`, `CreateMovePacket`(정지·액션 중 속도 0), `ComputeRewindTimestamp`(클라 시각 차이의 관측 최솟값을 기준선으로 늦게 온 만큼 되감기, 최대 1초), `ValidateHit` |
-| `NPC.h/.cpp` | NPC. 종류별 구성(DynamicBox는 물리만), 히트박스(캡슐 r0.5·키1.8·발 위 0.9m), 행동 트리, `ValidateHit`(피격 쿨다운 0.5초, HP 감소, `HITTED`, **넉백 초속 15 고정: 공격 설정의 넉백 값이 전달되지 않는 버그**), `IsDirty`, 리스폰 |
-| `MagicGuard.h/.cpp` | 길찾기 경비병 NPC (내비메시 순찰·추적 BT) |
-| `Tainer.h/.cpp` | 보스. 히트박스 캡슐 r3·키8·발 위 4m, 페이즈, 공격 설정(내려찍기, 돌진, 잡기 돌진 등) |
-| `QuestNPC.h/.cpp` | 퀘스트 NPC (판정 안 받음) |
-| `Elevator.h/.cpp` | 엘리베이터 |
+| `Player` | Transform → PlayerController(레이어 MOVING) → Inventory → Hitbox |
+| `NPC` (일반) | Transform → NPCController(레이어 NPC) → Hitbox(캡슐 r0.5·키1.8·발 위 0.9m) → AI → `SetupBT()`(행동 트리 구성) |
+| `NPC` (DynamicBox) | Transform → Physics(일반 Jolt 바디) → Hitbox(박스 반크기 0.5). AI·컨트롤러 없음 |
+| `Tainer` | NPC 구성 후 히트박스를 캡슐 r3·키8·발 위 4m로 교체, 공격 설정 초기화, 보스 전용 BT |
+| `Elevator` | Transform → Physics |
+
+### 5.4 `Actor` (플레이어·NPC 공통)
+
+- **위치·속도·회전 조회**: 캐릭터 컨트롤러가 있으면 Jolt 캐릭터 위치(발바닥 보정)가 진짜 위치, 없으면 Transform. 회전은 Transform.
+- **위치 기록(리와인드용)**: `RecordSnapshot(시각)`이 `{시각, 위치, 회전}`을 최근 30개까지 보관, `GetSnapshotAt(시각)`이 그 시각 이후 첫 기록(없으면 마지막)을 돌려준다. `Room::UpdateLogics`가 매 로직 루프(약 16ms)마다 플레이어·NPC에 기록한다.
+  - **주의**: 주석은 "1초 유지"지만 로직 루프 기준 30개는 **약 0.5초**다. 판정 쪽 되감기 한도(`Player::ComputeRewindTimestamp`의 `MAX_REWIND_MS`)는 1초라, 0.5초 넘게 되감으면 가장 오래된 기록으로 판정된다.
+- 파벌(`FACTION_PLAYER/MONSTER/NEUTRAL`), 활성 플래그, 리스폰 대기·사망 연출 시간, 잡기(`grabbed_by_id`, 손 슬롯).
+
+### 5.5 갱신 흐름 (누가 언제 부르나)
+
+엔티티 갱신은 GameObject 목록을 일괄 순회하지 않고 **방이 종류별로 직접** 부른다.
+
+| 단계 | 호출 | 대상 |
+|---|---|---|
+| 물리 (`Room::UpdatePhysics`, 1/60초 고정 스텝) | 방 Jolt 월드 스텝 | 정적 지형, 일반 물리 바디 |
+| | `PhysicsComponent::PhysicsUpdate` | 시야 안 DynamicBox |
+| | `NPCControllerComponent::LightPhysicsUpdate` | 시야 안 일반 NPC (경량 갱신) |
+| | `NPC::PhysicsUpdate` → 모든 컴포넌트 | 보스 (거리와 무관하게 정밀 갱신) |
+| | `Player::PhysicsUpdate` → 모든 컴포넌트 | 플레이어 (잡힌 상태면 건너뜀) |
+| | `GridMap::UpdatePosition` | 위 대상 전부 (셀 위치 갱신) |
+| 로직 (`Room::UpdateLogics`) | `NPC::Update` | 활성 셀 NPC + 보스: 피격 쿨다운·`HITTED` 해제, 비전투 회복(5초마다 10%), 공격 쿨다운, `AIComponent::Update`(행동 트리 tick) |
+| | 방에서 직접 | NPC 속도 방향으로 회전 설정, `RecordSnapshot` |
+| | `Player::Update` | 쿨다운, MP 회복(초당 8) |
+| | 방에서 직접 | 플레이어 `RecordSnapshot`, 바뀌었으면 이동 패킷 브로드캐스트 |
+| 판정 (`ExecuteActorAction`) | 대상의 `ValidateHit` → `HitboxComponent::CheckCollision` | 공격 시점 |
+
+
+
+### 5.6 엔티티별 역할
+
+| 엔티티 | 파일 | 역할 |
+|---|---|---|
+| `Player` | `Player.h/.cpp` | HP/MP/공격력, 쿨다운(피격 0.5초, 대시), 퀘스트, 인벤토리. `IsDirty`(보낸 값과 비교), `CreateMovePacket`(정지·액션 중이면 속도 0), `ComputeRewindTimestamp`(클라 시각 차이의 관측 최솟값을 기준선으로, 늦게 온 만큼 되감기, 최대 1초), `ValidateHit` |
+| `NPC` | `NPC.h/.cpp` | 종류·방 id·스폰 위치·순찰 지점, 행동 트리 구성(`SetupBT`), `ValidateHit`(피격 쿨다운 0.5초, HP 감소, `HITTED`, 넉백), `IsDirty`(상태·액션·잡기·위치 변화), 리스폰(`ResetForRespawn`). **버그: 넉백이 공격 설정 값(평타 5, 대검 30)과 무관하게 항상 초속 15** |
+| `MagicGuard` | `MagicGuard.h/.cpp` | 내비메시 경비병. BT: 피격 → 감지·추적(`FindPath/FollowPath`) → 공격, 없으면 순찰 |
+| `Tainer` | `Tainer.h/.cpp` | 보스. 페이즈 전환, 공격 설정(내려찍기, 돌진, 잡기 돌진, 포효 등), 보스 BT |
+| `QuestNPC` | `QuestNPC.h/.cpp` | 퀘스트 NPC. 판정을 받지 않음(`ValidateHit`가 항상 실패) |
+| `Elevator` | `Elevator.h/.cpp` | 엘리베이터 (물리 바디, 위·아래 이동) |
 
 ---
 
-## 6. 컴포넌트
+## 6. 컴포넌트 목록
 
-| 파일 | 역할 |
-|---|---|
-| `TransformComponent` | 위치·회전, 부드러운 회전 |
-| `CharacterControllerComponent` | Jolt `CharacterVirtual` 래퍼. 충격 속도(`AddImpact`, 마찰 `ImpactFriction=35`), 지면 판정 |
-| `NPCControllerComponent` | NPC 이동, `AddKnockback`(넉백 방향으로 스윕해서 벽 앞에서 멈추게 초기 속도 계산), 경량 물리 갱신, 위치는 발바닥 기준 |
-| `PlayerControllerComponent` | 플레이어 이동 속도 적용 |
-| `PhysicsComponent` | 일반 Jolt 바디 (DynamicBox) |
-| `HitboxComponent` | 이름 붙은 히트박스 목록, `CheckCollision`(과거 스냅샷의 위치·회전으로 모양 대 모양 검사, 스케일 없음) |
-| `AIComponent` | Lua 스크립트 또는 행동 트리 실행, 블랙보드 |
-| `InventoryComponent` | 재료·장비 |
+| 컴포넌트 | 붙는 곳 | 역할 |
+|---|---|---|
+| `TransformComponent` | 모든 엔티티 | 위치·회전, 부드러운 회전(`SmoothRotateTo`), 앞·오른쪽 방향, Jolt 변환 |
+| `CharacterControllerComponent` | (기반) | Jolt `CharacterVirtual` 래퍼. 캡슐 크기, 충격 속도(`AddImpact/AddImpulse`, 마찰 `ImpactFriction=35`로 감속), 지면 판정, 위치(발바닥 = 캐릭터 중심 − 반높이) |
+| `NPCControllerComponent` | NPC | 이동 속도, `AddKnockback`(넉백 방향으로 스윕해 벽 앞에서 멈추게 초기 속도 계산), 경량 물리 갱신(`LightPhysicsUpdate`), 수직 속도 초기화 |
+| `PlayerControllerComponent` | 플레이어 | 클라 입력 방향으로 이동 속도 적용 |
+| `PhysicsComponent` | DynamicBox, 엘리베이터 | 일반 Jolt 바디 생성·속도 |
+| `HitboxComponent` | 플레이어, NPC | 이름 붙은 히트박스(모양, 오프셋, 회전) 목록. `CheckCollision`: 과거 스냅샷의 위치·회전(스케일 없음)으로 공격 모양과 모양 대 모양 겹침 검사 |
+| `AIComponent` | NPC | 모드 `None/Lua/BT`. BT 모드면 블랙보드와 루트 노드를 들고 매 갱신 tick. Lua 모드는 스크립트의 `Update(dt)` 호출(현재 호출처 없음) |
+| `InventoryComponent` | 플레이어 | 재료·장비, 저장 필요 여부 |
+
 
 ---
 
