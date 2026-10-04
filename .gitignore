@@ -388,3 +388,6 @@ gha-creds-*.json
 /Server/Server/physics_dump.bin
 /Jolt/JoltViewer/physics_dump.bin
 client_physics_dump*.bin
+
+# ImGui가 실행 중 저장하는 창 위치·크기 (개인 설정)
+imgui.ini
