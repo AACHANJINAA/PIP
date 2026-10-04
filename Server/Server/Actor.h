@@ -51,10 +51,12 @@ namespace PIP::GAME
             return tc ? tc->GetRotation() : common::Quat{ 0,0,0,1 };
         }
 
-        // [핵심] 매 프레임 위치/회전 기록 (Room::UpdatePhysics에서 호출)
+        // [핵심] 매 로직 루프 위치/회전 기록 (Room::UpdateLogics에서 호출)
+        // 로직 루프 약 16ms × 60개 ≈ 1초. 되감기 한도(Player::ComputeRewindTimestamp의 MAX_REWIND_MS = 1000)와 맞춘다
+        static constexpr size_t kMaxHistory = 60;
         void RecordSnapshot(uint32_t timestamp) {
             _history.push_back({ timestamp, GetPosition(), GetRotation() });
-            if (_history.size() > 30) _history.pop_front(); // 1초 유지
+            if (_history.size() > kMaxHistory) _history.pop_front();
         }
 
         // [핵심] 특정 시점의 가장 가까운 데이터 찾기
