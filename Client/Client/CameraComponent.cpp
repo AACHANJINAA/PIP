@@ -139,6 +139,13 @@ void CameraComponent::recalculate_view_matrix()
 	XMVECTOR offset = XMVectorScale(right, _shakeOffset.x) + XMVectorScale(up, _shakeOffset.y);
 	pos = XMVectorAdd(pos, offset);
 
+	// 흔들림 회전: 시선을 오른쪽·위로 살짝 틈 (작은 각이라 tan으로 충분)
+	if (_shakeAngle.x != 0.0f || _shakeAngle.y != 0.0f)
+	{
+		look = XMVector3Normalize(XMVector3Normalize(look)
+			+ XMVectorScale(right, std::tan(_shakeAngle.x)) + XMVectorScale(up, std::tan(_shakeAngle.y)));
+	}
+
 	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookToLH(pos, look, up));
 	// 스카이박스용 뷰 행렬 (이동 성분 제거) 계산 및 상수 버퍼에 복사
 

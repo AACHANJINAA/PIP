@@ -313,18 +313,29 @@ void NPCScript::set_hp(int hp)
 		hp_component.get()->set_current_hp(hp);
 	}
 
-	// [사운드] 보스가 피격 당할 때 BossDamage 사운드 재생
-	if (hp < prevHp && _npcType == common::packet::NPCType::Tainer) {
-		if (transform()) {
-			SoundManager::instance()->play_3d("BossDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
-		}
+	// [사운드] 피격음. 내 예측 적중으로 이미 냈으면 생략 (서버 응답은 왕복 지연만큼 늦음)
+	if (hp < prevHp && !predicted_hit_recently()) play_damage_sound();
+}
+
+void NPCScript::on_predicted_hit()
+{
+	play_damage_sound();
+	_lastPredictedHitMs = common::NetNowMsPrecise();
+}
+
+bool NPCScript::predicted_hit_recently() const
+{
+	return common::NetNowMsPrecise() - _lastPredictedHitMs < kPredictedHitSoundWindowMs;
+}
+
+void NPCScript::play_damage_sound()
+{
+	if (!transform()) return;
+	if (_npcType == common::packet::NPCType::Tainer) {
+		SoundManager::instance()->play_3d("BossDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
 	}
-	
-	// [사운드] 매직가드 피격 사운드 재생
-	if (hp < prevHp && _npcType == common::packet::NPCType::MagicGuard) {
-		if (transform()) {
-			SoundManager::instance()->play_3d("MagicGuardDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
-		}
+	else if (_npcType == common::packet::NPCType::MagicGuard) {
+		SoundManager::instance()->play_3d("MagicGuardDamage", transform()->get_world_position(), SoundType::SFX, 1.0f, false);
 	}
 }
 

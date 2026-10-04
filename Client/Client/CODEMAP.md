@@ -143,7 +143,7 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
+| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초, 칼 타격음 `SwordHit`, 맞은 NPC `on_predicted_hit` 피격음, 카메라 킥 `add_kick`), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
 | `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_server_move`로 이동 패킷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 30ms)으로 위치·회전 보간**, 상태·액션(공격음)·잡기·HP·MP는 패킷 서버 시각에 적용(`apply_state`). 생성·부활은 `reset_transform`(버퍼 비우고 그 위치에서 시작). 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
 | `NPCScript.h/.cpp` | NPC 공통. `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
@@ -151,7 +151,7 @@ Object
 | `LeverScript.h/.cpp` | 레버 상호작용과 UI |
 | `WeaponScript.h/.cpp` | 무기 정보·공격 활성 플래그·스킬 차지·쿨다운, `LongswordScript`(같은 파일). 소켓 오브젝트 `MainWeapon`의 `Body` 모드 캡슐 충돌체(노란 캡슐)를 씀. 판정에는 쓰이지 않음(로그만) |
 | `TargetingComponent.h/.cpp` | 락온 대상 선정·토글 |
-| `FreeCameraScript.h/.cpp` | 플레이어 추적 카메라·자유 카메라, 화면 흔들기(`add_trauma`), 동적 줌 오프셋, 시네마틱 모드 |
+| `FreeCameraScript.h/.cpp` | 플레이어 추적 카메라·자유 카메라, 화면 흔들기(`add_trauma` 무작위 떨림, `add_kick` 정해진 방향으로 한 번 튐), 동적 줌 오프셋, 시네마틱 모드 |
 | `ToolCameraScript.h/.cpp` | 툴 씬 카메라 |
 | `MonsterHPComponent.h/.cpp` | 몬스터 HP 값·비율 |
 | `BoardCubeScript`, `GltfTestScript` | 테스트용 스크립트 |
@@ -185,7 +185,7 @@ Object
 | `LightManager.h/.cpp` | 조명 상수 버퍼, 태양 방향, IBL 구면 조화 |
 | `OcclusionManager.h/.cpp` | 오클루전 쿼리 힙·결과(N-1 프레임 결과로 조건부 렌더) |
 | `MinimapManager.h/.cpp` | 미니맵 타일·플레이어 위치 |
-| `CameraComponent.h/.cpp` | 투영·뷰 행렬, 카메라 상수, 흔들기 오프셋, 메인 카메라 |
+| `CameraComponent.h/.cpp` | 투영·뷰 행렬, 카메라 상수, 흔들기 오프셋·회전(`set_shake_angle`), 메인 카메라 |
 | `ParticleSystemComponent.h/.cpp` + `Particle_CS.hlsl` | 대검 스킬 전용 파티클(칼 모양 목표점으로 모임, 컴퓨트로 위치 계산). 범용화 계획은 `기획 & 계획/ParticleSystem_Plan_KR.md`. 알려진 문제: 컴퓨트 루트 상수 21개인데 24개 설정, 셰이더 개수 상한 5만 하드코딩 |
 | `UIManager`, `DamageTextManager`, `ImGuiManager` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명 |
 | `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |

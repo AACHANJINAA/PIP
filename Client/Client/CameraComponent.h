@@ -45,6 +45,8 @@ public:
 
     // [추가] 카메라 쉐이크를 위한 오프셋 설정
     void set_shake_offset(const DirectX::XMFLOAT3& offset) { _shakeOffset = offset; }
+    // 흔들림 회전 (라디안): x = 오른쪽으로 돌림, y = 위로 돌림. 시선 방향만 살짝 틀고 카메라 트랜스폼은 그대로
+    void set_shake_angle(const DirectX::XMFLOAT2& angle) { _shakeAngle = angle; }
 
     // --- Main Camera Management ---
 	void set_main_camera() { _mainCamera = this; }
@@ -59,6 +61,7 @@ private:
     BoundingFrustum _frustum;
 
     DirectX::XMFLOAT3 _shakeOffset = { 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT2 _shakeAngle = { 0.0f, 0.0f };
     // 역할 이전 (from CCamera):
     // 뷰포트와 시저렉트 정보입니다.
     D3D12_VIEWPORT  _viewport;

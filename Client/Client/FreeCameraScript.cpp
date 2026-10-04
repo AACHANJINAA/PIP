@@ -65,34 +65,68 @@ void FreeCameraScript::late_update(float delta_time)
         InputManager::instance()->ChangeShowCusor();
     }
 
+    XMFLOAT3 shakeOffset = { 0.0f, 0.0f, 0.0f };
+    XMFLOAT2 shakeAngle = { 0.0f, 0.0f };
+
     // [추가] 카메라 쉐이크(Trauma) 처리
     if (_trauma > 0.0f)
     {
         // Trauma 값에 따라 흔들림 정도(Shake) 계산 (제곱 또는 세제곱으로 자연스럽게)
         float shake = _trauma * _trauma;
-        
-        // Perlin Noise 대신 난수를 사용하여 방향 무작위화
-        float offsetX = _maxShakeOffset * shake * (((rand() % 100) / 100.0f) * 2.0f - 1.0f);
-        float offsetY = _maxShakeOffset * shake * (((rand() % 100) / 100.0f) * 2.0f - 1.0f);
 
-        auto cam = game_object()->get_component<CameraComponent>();
-        if (cam)
-        {
-            cam->set_shake_offset({ offsetX, offsetY, 0.0f });
-        }
+        // Perlin Noise 대신 난수를 사용하여 방향 무작위화
+        shakeOffset.x = _maxShakeOffset * shake * (((rand() % 100) / 100.0f) * 2.0f - 1.0f);
+        shakeOffset.y = _maxShakeOffset * shake * (((rand() % 100) / 100.0f) * 2.0f - 1.0f);
 
         // Trauma 자연 감소 (선형 감소)
         _trauma -= delta_time * 1.5f; // 초당 1.5씩 감소
         if (_trauma < 0.0f) _trauma = 0.0f;
     }
-    else
+
+    // 타격 킥: 정해진 방향으로 한 번 밀렸다가 돌아옴. 밀릴 때와 돌아올 때 모두 smoothstep(가속 후 감속)이라 부드럽게 이어짐
+    if (_kickTime >= 0.0f)
     {
-        auto cam = game_object()->get_component<CameraComponent>();
-        if (cam)
+        _kickTime += delta_time;
+        if (_kickTime >= kKickRiseTime + kKickReturnTime)
         {
-            cam->set_shake_offset({ 0.0f, 0.0f, 0.0f });
+            _kickTime = -1.0f;
+        }
+        else
+        {
+            auto smoothstep = [](float x) { x = std::clamp(x, 0.0f, 1.0f); return x * x * (3.0f - 2.0f * x); };
+            const float k = _kickTime < kKickRiseTime
+                ? smoothstep(_kickTime / kKickRiseTime)
+                : 1.0f - smoothstep((_kickTime - kKickRiseTime) / kKickReturnTime);
+            shakeOffset.x += _kickDir.x * _kickDistance * k;
+            shakeOffset.y += _kickDir.y * _kickDistance * k;
+            shakeAngle.x = _kickDir.x * _kickAngle * k;
+            shakeAngle.y = _kickDir.y * _kickAngle * k;
         }
     }
+
+    if (auto cam = game_object()->get_component<CameraComponent>())
+    {
+        cam->set_shake_offset(shakeOffset);
+        cam->set_shake_angle(shakeAngle);
+    }
+}
+
+void FreeCameraScript::add_kick(const XMFLOAT3& world_dir, float distance, float angle_deg)
+{
+    // 월드 방향을 화면 축(오른쪽, 위)으로 투영. 화면에 거의 수직인 방향이면 무시
+    const XMVECTOR dir = XMLoadFloat3(&world_dir);
+    XMFLOAT3 up3 = transform()->up();
+    XMFLOAT3 look3 = transform()->forward();
+    const XMVECTOR up = XMVector3Normalize(XMLoadFloat3(&up3));
+    const XMVECTOR right = XMVector3Normalize(XMVector3Cross(up, XMLoadFloat3(&look3))); // CameraComponent와 같은 계산
+    XMFLOAT2 screen = { XMVectorGetX(XMVector3Dot(dir, right)), XMVectorGetX(XMVector3Dot(dir, up)) };
+    const float len = std::sqrt(screen.x * screen.x + screen.y * screen.y);
+    if (len < 0.2f) return;
+
+    _kickDir = { screen.x / len, screen.y / len };
+    _kickDistance = distance;
+    _kickAngle = XMConvertToRadians(angle_deg);
+    _kickTime = 0.0f;
 }
 
 void FreeCameraScript::free_camera_update(float delta_time)

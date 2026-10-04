@@ -22,6 +22,10 @@ public:
 	void set_id(int64_t npc_id);
 	void set_npc_type(common::packet::NPCType type) { _npcType = type; } // 추가
 	void set_hp(int hp);
+	// 내 칼날 예측 적중 순간 (HitFeel_Plan_KR.md 3단계): 종류별 피격음을 바로 재생하고 시각을 기록
+	// 이후 서버 HP 감소(set_hp)와 서버 피격 응답에서는 같은 소리를 다시 내지 않음
+	void on_predicted_hit();
+	bool predicted_hit_recently() const;
 	int  get_hp() const { return _hp; }
 	void set_position(const XMFLOAT3& position);
 
@@ -83,6 +87,9 @@ protected:
 	bool apply_motion(double render_time, XMFLOAT3& pos);
 
 	void apply_state(const NetSnapshot& snapshot);	// 상태·액션·잡기·HP와 그에 따른 사운드
+	void play_damage_sound();						// 종류별 피격음 (보스, 매직 컨스트럭트)
+	double _lastPredictedHitMs = -1.0e9;			// 마지막 예측 적중 시각 (NetNowMsPrecise)
+	static constexpr double kPredictedHitSoundWindowMs = 1000.0; // 이 안에 온 서버 피격은 예측으로 이미 소리를 낸 것으로 봄
 	double render_time() const;						// 추정 서버 시각 - 보간 지연
 	XMFLOAT4 to_visual_rotation(const common::Quat& server_rot) const;
 };

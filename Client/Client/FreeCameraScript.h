@@ -36,6 +36,10 @@ public:
 		if (_trauma > 1.0f) _trauma = 1.0f;
 	}
 
+	// 타격 킥 (HitFeel_Plan_KR.md 3단계): 화면이 world_dir(칼이 지나가는 방향)을 화면에 투영한 쪽으로
+	// distance(m)만큼 밀리고 angle_deg만큼 돌아갔다가(0.08초) 부드럽게 돌아옴(0.35초). 무작위로 떠는 trauma와 달리 한 번 튐
+	void add_kick(const XMFLOAT3& world_dir, float distance, float angle_deg);
+
 	// [추가] 줌 오프셋 제어 함수 (스킬 사용 시 줌아웃 효과)
 	void set_dynamic_zoom_offset(float offset) { _dynamicZoomOffset = offset; }
 	float get_dynamic_zoom_offset() const { return _dynamicZoomOffset; }
@@ -48,6 +52,14 @@ private:
 
 	float _trauma = 0.0f; // 카메라 흔들림 정도 (0.0 ~ 1.0)
 	float _maxShakeOffset = 0.5f; // 최대 흔들림 폭
+
+	// 타격 킥 상태 (카메라 오브젝트는 히트스톱이 걸리지 않으므로 실제 시간으로 진행)
+	static constexpr float kKickRiseTime = 0.08f;	// 최대로 밀리기까지 (초)
+	static constexpr float kKickReturnTime = 0.35f;	// 원래 자리로 돌아오기까지 (초)
+	XMFLOAT2 _kickDir = { 0.0f, 0.0f };				// 화면 축 (오른쪽, 위) 방향
+	float _kickDistance = 0.0f;
+	float _kickAngle = 0.0f;						// 라디안
+	float _kickTime = -1.0f;						// 음수면 꺼짐
 
     // 역할 이전 (from FreeCamera):
     // 마우스 입력을 처리하여 카메라를 회전시킵니다.
