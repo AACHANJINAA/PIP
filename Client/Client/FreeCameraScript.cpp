@@ -121,7 +121,7 @@ void FreeCameraScript::add_kick(const XMFLOAT3& world_dir, float distance, float
     const XMVECTOR right = XMVector3Normalize(XMVector3Cross(up, XMLoadFloat3(&look3))); // CameraComponent와 같은 계산
     XMFLOAT2 screen = { XMVectorGetX(XMVector3Dot(dir, right)), XMVectorGetX(XMVector3Dot(dir, up)) };
     const float len = std::sqrt(screen.x * screen.x + screen.y * screen.y);
-    if (len < 0.2f) return;
+    if (!std::isfinite(len) || len < 0.2f) return; // NaN 방향이면 비교가 거짓이라 그대로 통과하므로 따로 거름
 
     _kickDir = { screen.x / len, screen.y / len };
     _kickDistance = distance;
