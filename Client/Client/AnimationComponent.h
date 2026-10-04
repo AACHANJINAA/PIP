@@ -44,11 +44,6 @@ public:
 	bool is_anim_finished() const { return _isFinished; }
 	void set_anim_speed(float wantSpeed) { _animationSpeed = std::max(wantSpeed, 0.0f); }
 
-	// 히트스톱: duration 동안 애니메이션 시간을 진행시키지 않음 (재생 속도와 별개라 play()가 속도를 덮어써도 유지됨)
-	// 이미 걸려 있으면 더 긴 쪽을 남김
-	void hit_stop(float duration) { _hitStopTimer = std::max(_hitStopTimer, duration); }
-	bool is_hit_stopped() const { return _hitStopTimer > 0.0f; }
-
 	// --- 캐릭터별 뼈 자세 조회 ---
 	// late_update에서 계산된 이 캐릭터의 뼈 행렬 (공용 메쉬의 _nodes와 달리 다른 캐릭터가 덮어쓰지 않음)
 	// late_update 이후부터 다음 프레임 late_update 전까지 유효. 업데이트 단계에서 읽으면 직전 프레임 자세
@@ -86,7 +81,6 @@ private:
 	bool _isFinished = false; // 애니메이션이 끝났는지 설정!
 	float _nowAnimationTime{ 0.f };
 	float _animationSpeed{ 1.f }; // 애니메이션 속도 추가 1.0이 기본임
-	float _hitStopTimer = 0.0f; // 남은 히트스톱 시간
 
 	bool _isPauseTargetSet = false; // 특정 진행도에서 멈출지 여부
 	float _pauseTargetProgress = 0.0f; // 멈출 목표 진행도 (0.0 ~ 1.0)

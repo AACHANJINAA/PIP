@@ -47,7 +47,7 @@ Unity와 비슷한 구조: 씬의 모든 것이 `GameObject`이고 기능은 컴
 | 클래스 | 파일 | 역할 |
 |---|---|---|
 | `Object` | `Object.h/.cpp` | 이름, 고유 ID(전역 원자 카운터), 파괴 플래그, `persistent`(씬 전환 때 유지). **복사·이동 금지**, 소유는 항상 `shared_ptr`. `Object::destroy(obj)`는 즉시 지우지 않고 `ObjectManager` 파괴 큐에 넣는다(persistent면 무시, `delay` 인자는 미구현) |
-| `GameObject` | `GameObject.h/.cpp` | 컴포넌트 목록(`vector<shared_ptr<Component>>`), Transform 바로가기, 레이어 비트 마스크, 활성 플래그. `enable_shared_from_this` |
+| `GameObject` | `GameObject.h/.cpp` | 컴포넌트 목록(`vector<shared_ptr<Component>>`), Transform 바로가기, 레이어 비트 마스크, 활성 플래그. `enable_shared_from_this`. **오브젝트별 시간**: `hit_stop(시간)`, `set_time_scale` → `update`·`late_update`에 deltaTime × 배율(히트스톱 중 0)을 넘김. `fixed_update`는 적용 안 함 |
 | `Component` | `Component.h/.cpp` | 소유 GameObject를 `weak_ptr`로 보관(`game_object()`가 lock해서 반환). `required_components` 기본값은 빈 튜플. **갱신 함수가 없다** (`TransformComponent`, `CameraComponent`는 Component라 update가 호출되지 않음) |
 | `Behavior` | `Behavior.h/.cpp` | 갱신되는 컴포넌트. 활성 플래그(`set_enabled`가 바뀔 때 `on_enable/on_disable` 호출), 수명 함수 `awake/start/update/late_update/fixed_update/on_destroy` |
 | `ScriptComponent` | `ScriptComponent.h/.cpp` | 게임 로직 스크립트 기반(Unity MonoBehaviour 격). `transform()` 편의 함수, `on_message`, `on_collision_enter/stay/exit`, `on_trigger_enter(other, TriggerHit)` |
@@ -143,7 +143,7 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·히트스톱 0.05초), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
+| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
 | `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_server_move`로 이동 패킷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 30ms)으로 위치·회전 보간**, 상태·액션(공격음)·잡기·HP·MP는 패킷 서버 시각에 적용(`apply_state`). 생성·부활은 `reset_transform`(버퍼 비우고 그 위치에서 시작). 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
 | `NPCScript.h/.cpp` | NPC 공통. `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
@@ -162,7 +162,7 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `AnimationComponent.h/.cpp` | 애니메이션 별칭 → (메쉬, 실제 이름) 매핑, `play/play_until_progress`, 진행도, **캐릭터별 뼈 자세 보관**(`try_get_bone_model/world_matrix`, 공용 메쉬 노드에 의존하지 않음), 스키닝 팔레트(`bone_palette`), **히트스톱**(`hit_stop`, 임시 구현. 이후 GameObject 시간 배율로 옮길 예정) |
+| `AnimationComponent.h/.cpp` | 애니메이션 별칭 → (메쉬, 실제 이름) 매핑, `play/play_until_progress`, 진행도, **캐릭터별 뼈 자세 보관**(`try_get_bone_model/world_matrix`, 공용 메쉬 노드에 의존하지 않음), 스키닝 팔레트(`bone_palette`) |
 | `SocketComponenet.h/.cpp` (파일명 오타 그대로) | 뼈에 다른 오브젝트 부착(`add_connecting`), 애니메이션 따라가기 토글. late_update에서 같은 프레임 자세를 읽음 |
 | `Mesh.h/.cpp` | 메쉬 기반(정점·인덱스 업로드, 렌더, 인스턴싱, CSM 그림자 렌더, OBB), 디버그 메쉬 |
 | `ReadGLTFMesh.h/.cpp` | **주력 로더.** glTF 정적/스킨 메쉬, 스킨·애니메이션 채널, 노드 계층, `update_animation`(팔레트 + 조인트 모델 행렬 출력), 소켓 행렬, 조인트 인덱스, 프리미티브 형상·CPU 스키닝 형상(디버그 기록용), 파티클 목표점 추출. 엔진이 glTF의 Z를 뒤집어 읽음(좌표계 변환) |

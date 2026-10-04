@@ -48,8 +48,25 @@ void GameObject::start() const
 		}
 	}
 }
-void GameObject::update(float deltaTime) const
+float GameObject::consume_delta(float deltaTime) const
 {
+	// 히트스톱 중에는 멈추고, 이번 프레임에 풀리면 남은 시간만큼만 진행
+	float playTime = deltaTime;
+	if (_hitStopTimer > 0.0f)
+	{
+		_hitStopTimer -= deltaTime;
+		playTime = std::max(-_hitStopTimer, 0.0f);
+		_hitStopTimer = std::max(_hitStopTimer, 0.0f);
+	}
+	return playTime * _timeScale;
+}
+
+void GameObject::update(float frameDelta) const
+{
+	const float deltaTime = consume_delta(frameDelta);
+	_localDelta = deltaTime;
+	_hasLocalDelta = true;
+
 	_isIterating = true;
 	// 자신의 모든 Behaviour 컴포넌트의 update를 호출합니다.
 	for (const auto& component : _components)
@@ -78,8 +95,12 @@ void GameObject::fixed_update(float fixed_delta_time) const
 	}
 }
 
-void GameObject::late_update(float delta_time)
+void GameObject::late_update(float frame_delta)
 {
+	// update에서 계산한 같은 프레임의 오브젝트 시간을 씀 (이번 프레임 update를 거치지 않은 경우만 새로 계산)
+	const float delta_time = _hasLocalDelta ? _localDelta : consume_delta(frame_delta);
+	_hasLocalDelta = false;
+
 	for (const auto& component : _components)
 	{
 		if (auto behavior = std::dynamic_pointer_cast<Behavior>(component))
