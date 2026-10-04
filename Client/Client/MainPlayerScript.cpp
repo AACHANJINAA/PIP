@@ -259,6 +259,10 @@ void MainPlayerScript::awake()
 		// 롱소드 로직 추가 (내부에서 콜라이더 initialize 호출됨)
 		_currentWeapon = _currentWeaponObject->add_component<LongswordScript>();
 		_currentWeapon->set_attack_active(true);
+
+		// 대검 스킬 판정: 무기 오브젝트 콜라이더(LongswordScript가 대검 캡슐로 설정)의 적중을 이 스크립트가 받음
+		_skillBladeCollider = _currentWeaponObject->get_component<PhysicsColliderComponent>();
+		if (_skillBladeCollider) _skillBladeCollider->set_hit_receiver(owner);
 	}
 
 	// --- 칼날 캡슐 (플레이어 메쉬의 칼 M_DKF_Sword는 ik_hand_r에 100% 스키닝됨, 값은 칼 메쉬 분석 결과) ---
@@ -1354,8 +1358,15 @@ void MainPlayerScript::process_attack_and_packet()
 
 	if (_isSkilling)
 	{
-		// 스킬 판정은 아직 칼날 판정을 쓰지 않음 (4단계)
+		// 스킬 중에는 평타 칼날 판정 대신 대검 판정: 칼이 다 모인 뒤 내려치는 구간(85% ~ 끝)만 (들어 올릴 때는 끔, 끝나면 칼은 공중에 멈춤)
 		if (_bladeCollider && _bladeCollider->is_hit_query_active()) _bladeCollider->end_hit_query();
+		if (_skillBladeCollider)
+		{
+			const float progress = duration > 0.0f ? anim_progress / duration : 0.0f;
+			const bool swinging = _isSwordGathered && !_isSkillEndAnimationStart && progress >= kSkillHitStart;
+			if (swinging && !_skillBladeCollider->is_hit_query_active()) _skillBladeCollider->begin_hit_query();
+			else if (!swinging && _skillBladeCollider->is_hit_query_active()) _skillBladeCollider->end_hit_query();
+		}
 
 		if (!_isSkillEndAnimationStart && anim_comp->is_anim_finished()) // 마지막은 아니고 스킬 애니메이션이 끝났을 때
 		{
@@ -1443,25 +1454,29 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 	}
 	_lastPredictedHitTime[npc->id()] = _hitClock;
 
-	CLOG("[MeleeHit] 예측 적중: NPC " << npc->id() << " (" << other->name() << ")"
+	// 대검 스킬 판정이면 평타보다 큰 연출 (히트스톱, 리액션, 카메라 킥)
+	const bool skill = _skillBladeCollider && hit.self == _skillBladeCollider.get();
+	const float hit_stop = skill ? kSkillHitStop : kAttackHitStop;
+
+	CLOG("[MeleeHit] 예측 적중" << (skill ? "(대검 스킬)" : "") << ": NPC " << npc->id() << " (" << other->name() << ")"
 		<< ", 진행도 " << static_cast<int>(_attackProgress * 100.0f) << "%"
 		<< ", 지점 (" << hit.point.x << ", " << hit.point.y << ", " << hit.point.z << ")"
 		<< ", 방향 (" << hit.direction.x << ", " << hit.direction.y << ", " << hit.direction.z << ")");
 
 	// 히트스톱: 나와 맞은 NPC의 시간만 멈춤 (월드 전체를 멈추지 않음, NPC 위치 보간은 서버 시각이라 계속 진행)
-	game_object()->hit_stop(kAttackHitStop);
-	other->hit_stop(kAttackHitStop);
+	game_object()->hit_stop(hit_stop);
+	other->hit_stop(hit_stop);
 
 	// 맞은 부위 뼈를 칼이 지나가는 방향으로 꺾음 (히트스톱 동안 꺾인 채로 멈췄다가 스프링으로 돌아옴)
 	if (auto reaction = other->get_component<HitReactionComponent>())
-		reaction->react(hit);
+		reaction->react(hit, skill ? kSkillReactionStrength : 1.0f);
 
 	// 타격음(칼 + 맞은 쪽)과 카메라 킥(칼이 지나가는 방향)을 칼이 닿는 순간에 (서버 응답에서는 중복 재생하지 않음)
 	SoundManager::instance()->play_3d("SwordHit", hit.point);
 	npc->on_predicted_hit();
 	if (auto mainCam = CameraComponent::get_main(); mainCam && mainCam->game_object())
 		if (auto freeCam = mainCam->game_object()->get_component<FreeCameraScript>())
-			freeCam->add_kick(hit.direction, kAttackHitKickDistance, kAttackHitKickAngle);
+			freeCam->add_kick(hit.direction, skill ? kSkillHitKickDistance : kAttackHitKickDistance, skill ? kSkillHitKickAngle : kAttackHitKickAngle);
 
 	if (_debugCaptureAttack)
 		PhysicsDebugCapture::instance()->request_capture("hit NPC " + std::to_string(npc->id()));
@@ -1469,6 +1484,7 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 
 void MainPlayerScript::init_skill_variables()
 {
+	if (_skillBladeCollider && _skillBladeCollider->is_hit_query_active()) _skillBladeCollider->end_hit_query();
 	_isSkilling = false;
 	_isSkillAnimationStarted = false;
 	_isSkillEndAnimationStart = false;

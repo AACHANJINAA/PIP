@@ -259,11 +259,13 @@ void PhysicsColliderComponent::run_hit_query()
     }
 
     // 콜백 안에서 오브젝트가 생성/파괴될 수 있으므로 검사를 마친 뒤 전달
+    auto receiver = _hitReceiver.lock();
+    if (!receiver) receiver = owner;
     for (const auto& [target, hit] : hits)
     {
         _lastHits.push_back(hit);
         if (auto target_owner = target->game_object())
-            owner->on_trigger_enter(target_owner, hit);
+            receiver->on_trigger_enter(target_owner, hit);
     }
 }
 
