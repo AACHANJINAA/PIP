@@ -38,18 +38,90 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 
 ---
 
-## 3. 엔티티(게임 오브젝트) 시스템
+## 3. 엔티티(게임 오브젝트)·컴포넌트 시스템
 
-| 파일 | 역할 |
+Unity와 비슷한 구조: 씬의 모든 것이 `GameObject`이고 기능은 컴포넌트로 붙인다. 매니저류(렌더러, 네트워크, 사운드 등)는 컴포넌트가 아니라 `Singleton<T>`이다.
+
+### 3.1 기반 클래스
+
+| 클래스 | 파일 | 역할 |
+|---|---|---|
+| `Object` | `Object.h/.cpp` | 이름, 고유 ID(전역 원자 카운터), 파괴 플래그, `persistent`(씬 전환 때 유지). **복사·이동 금지**, 소유는 항상 `shared_ptr`. `Object::destroy(obj)`는 즉시 지우지 않고 `ObjectManager` 파괴 큐에 넣는다(persistent면 무시, `delay` 인자는 미구현) |
+| `GameObject` | `GameObject.h/.cpp` | 컴포넌트 목록(`vector<shared_ptr<Component>>`), Transform 바로가기, 레이어 비트 마스크, 활성 플래그. `enable_shared_from_this` |
+| `Component` | `Component.h/.cpp` | 소유 GameObject를 `weak_ptr`로 보관(`game_object()`가 lock해서 반환). `required_components` 기본값은 빈 튜플. **갱신 함수가 없다** (`TransformComponent`, `CameraComponent`는 Component라 update가 호출되지 않음) |
+| `Behavior` | `Behavior.h/.cpp` | 갱신되는 컴포넌트. 활성 플래그(`set_enabled`가 바뀔 때 `on_enable/on_disable` 호출), 수명 함수 `awake/start/update/late_update/fixed_update/on_destroy` |
+| `ScriptComponent` | `ScriptComponent.h/.cpp` | 게임 로직 스크립트 기반(Unity MonoBehaviour 격). `transform()` 편의 함수, `on_message`, `on_collision_enter/stay/exit`, `on_trigger_enter(other, TriggerHit)` |
+
+### 3.2 컴포넌트 추가 규칙 (`GameObject::add_component<T>(args...)`)
+
+1. **같은 타입이 이미 있으면 새로 만들지 않고 기존 것을 반환한다.** `get_component<T>`가 `dynamic_pointer_cast`라 파생 타입도 걸린다. 결과적으로 **한 오브젝트에 같은 타입 컴포넌트는 하나뿐**이다(예: 플레이어의 칼날 캡슐은 플레이어 오브젝트의 유일한 `PhysicsColliderComponent`. 콜라이더가 더 필요하면 자식 오브젝트를 만든다).
+2. `T::required_components` 튜플의 컴포넌트를 먼저 재귀적으로 추가한 뒤 `T`를 추가한다. **추가 순서 = 목록 순서 = 갱신 순서**라, 의존 대상이 항상 먼저 갱신된다.
+3. `awake`·`update` 순회 중에 `add_component`를 부르면 assert로 막는다(반복자 무효화 방지). 필요한 컴포넌트는 `required_components`에 넣는다.
+4. `ObjectManager::create_game_object`가 `init()`에서 `TransformComponent`를 첫 번째로 붙인다.
+
+주요 `required_components`:
+
+| 스크립트 | 자동으로 붙는 컴포넌트 |
 |---|---|
-| `Object.h/.cpp` | 모든 엔진 객체의 기반. 이름, 고유 ID, 파괴 플래그, persistent(씬 전환 유지). 복사·이동 금지 |
-| `GameObject.h/.cpp` | 컴포넌트 컨테이너. `add_component<T>()`는 `T::required_components` 튜플에 있는 컴포넌트를 먼저 자동 추가한다(추가 순서 = 갱신 순서). 레이어 비트, 활성/비활성, `on_collision_*`·`on_trigger_enter`를 모든 `ScriptComponent`에 전달 |
-| `Component.h/.cpp` | 컴포넌트 기반. 소유 GameObject를 weak_ptr로 보관 (`game_object()`) |
-| `Behavior.h/.cpp` | 갱신되는 컴포넌트. `awake/start/update/late_update/fixed_update/on_enable/on_disable/on_destroy`, 활성 플래그 |
-| `ScriptComponent.h/.cpp` | 게임 로직 스크립트 기반 (Unity MonoBehaviour 격). 메시지·충돌 콜백, `on_trigger_enter(other, TriggerHit)` (공격 판정 콜라이더가 상대와 겹칠 때) |
-| `TransformComponent.h/.cpp` | 위치·회전(쿼터니언)·스케일, 부모-자식 계층, 월드 행렬 캐시, 카메라 회전 모드 |
-| `ObjectManager.h/.cpp` | 오브젝트 생성·파괴 요청·지연 파괴, 이름/레이어 검색, NPC id ↔ 오브젝트 등록(`register_npc/find_npc`), 씬 전환 시 비persistent 정리 |
-| `LayerManager.h/.cpp` | 레이어 이름 ↔ 비트 (`Player`, `OtherPlayer`, `Enemy` 등) |
+| `MainPlayerScript` | Render, Animation, Socket, Targeting, PhysicsCollider |
+| `OtherPlayerScript` | Render, Animation, Socket |
+| `NPCScript` (Tainer·QuestNPC 상속) | Transform, MonsterHP, Animation, Render (`QuestNPCScript`는 Render, Animation) |
+| `LeverScript` | Render, Animation |
+| `WeaponScript` | PhysicsCollider |
+| `FreeCameraScript`, `ToolCameraScript` | Camera |
+
+### 3.3 수명 주기
+
+| 시점 | 무엇이 일어나나 |
+|---|---|
+| 생성 | `ObjectManager::create_game_object(이름)`: GameObject 생성 → `init()`(Transform 추가) → 전체 목록과 "새 오브젝트" 큐에 넣음. 이어서 생성한 쪽이 컴포넌트를 붙인다 |
+| `awake` → `start` | 다음 `update_game_logic` 시작에서 `process_new_game_objects`: 새 오브젝트 **전부 awake를 먼저**, 그다음 전부 start. 활성 Behavior만 |
+| `update` → `late_update` | 매 프레임 `update_game_logic`: 활성 GameObject의 활성 Behavior를 목록 순서대로. 모든 오브젝트의 update가 끝난 뒤 모든 오브젝트의 late_update |
+| `fixed_update` | `update_physics`에서 0.02초 누적마다: 모든 오브젝트 fixed_update(Transform → 물리 바디 동기화) → `PhysicsManager::update`(Jolt 스텝 + 접촉 이벤트 전달) |
+| 파괴 | `destroy()` → 파괴 큐 → 프레임 끝(Present 뒤) `process_destructions`: 모든 Behavior의 `on_destroy`(비활성이어도 호출) → 부모-자식 연결 해제 → 목록에서 제거. 한 프레임 처리 예산 500ms를 넘으면 다음 프레임으로 미룸. 컴포넌트만 파괴하면 소유 GameObject에서 제거 |
+| 씬 전환 | `clear_non_persistent_objects`: persistent가 아닌 오브젝트 전부 파괴 요청 |
+
+- **GameObject의 활성 플래그**(`GameObject::set_enabled`)는 갱신·렌더 대상에서 빼기만 하고 `on_enable/on_disable`을 부르지 않는다. 그 콜백은 `Behavior::set_enabled`에서만 불린다.
+- NPC는 씬 시작 때 서버가 알려준 수만큼 **비활성 풀 오브젝트**로 미리 만들고(`HANDLE_S2C_NPC_COUNT`), 스폰 패킷이 오면 활성화하면서 컴포넌트를 붙인다(이미 붙어 있으면 재초기화만).
+
+### 3.4 Transform과 계층
+
+- `TransformComponent`: 로컬 위치·회전(쿼터니언)·스케일, 부모(`weak_ptr`)·자식 목록. 로컬이 바뀌면 자신과 자식 전체를 dirty로 표시하고, `world_matrix()`를 읽을 때 다시 계산한다(지연 계산). `set_world_matrix`로 월드 행렬을 직접 넣을 수도 있다(잡기 부착 등).
+- 뼈에 다른 오브젝트를 붙일 때는 Transform 계층 대신 `SocketComponent`가 매 late_update에서 뼈 행렬로 월드 행렬을 계산해 넣는다.
+
+### 3.5 레이어·검색
+
+- `LayerManager`: 레이어 이름 ↔ 비트(`Player`, `OtherPlayer`, `Enemy` 등). `GameObject::set_layer(이름)`, `is_in_layer(이름)`.
+- `ObjectManager`: `find_by_name`, `find_by_layer(마스크)`, `find_object(이름/ID)`, NPC id 캐시(`register_npc/find_npc`). 전체 목록은 `vector`라 이름·레이어 검색은 선형 탐색이다.
+
+### 3.6 컴포넌트 상속 관계
+
+```
+Object
+├─ GameObject
+└─ Component                       (갱신 없음)
+   ├─ TransformComponent
+   ├─ CameraComponent
+   └─ Behavior                     (awake/update/late_update/fixed_update)
+      ├─ AnimationComponent, SocketComponent, TargetingComponent, MonsterHPComponent
+      ├─ PhysicsColliderComponent, PhysicsCharacterControllerComponent, ParticleSystemComponent
+      ├─ RenderComponent
+      │  ├─ InstancedRenderComponent → FoliageRenderComponent
+      │  ├─ TerrainRenderComponent, SkyboxRenderComponent, ParticleRenderComponent
+      │  ├─ UIRenderComponent → UIFrameRenderComponent
+      │  └─ BillboardUIRenderComponent, MonsterHPUIRenderComponent
+      └─ ScriptComponent
+         ├─ MainPlayerScript, OtherPlayerScript, LeverScript
+         ├─ NPCScript (+ INetSync) → TainerScript, QuestNPCScript
+         ├─ WeaponScript → LongswordScript
+         └─ FreeCameraScript, ToolCameraScript, BoardCubeScript, GltfTestScript
+```
+
+### 3.7 렌더러·네트워크와의 연결
+
+- **렌더링**: 컴포넌트가 렌더러에 직접 등록하지 않는다. `Renderer::build_render_list`가 매 프레임 모든 오브젝트의 `RenderComponent`를 찾아 **`pso_name()` 별로 묶고**(`_renderMap`), 거리·프러스텀·오클루전으로 거른 뒤 PSO별로 그린다. 그릴 셰이더는 `RenderComponent::set_pso_name("skinned")`처럼 PSO 이름으로 고른다.
+- **네트워크**: 서버가 움직이는 엔티티(NPC)는 `INetSync`를 구현하고 `ReplicationSystem`에 id로 등록한다. 패킷 핸들러 → `on_receive_snapshot`, 매 프레임 → `apply_snapshot`.
+- **충돌**: Jolt 접촉 → `PhysicsManager` 큐 → 오브젝트의 첫 `PhysicsColliderComponent::OnContact` → `GameObject::on_collision_enter` → 모든 스크립트. 공격 판정은 `PhysicsColliderComponent::run_hit_query` → `GameObject::on_trigger_enter` → 모든 스크립트.
 
 ---
 
