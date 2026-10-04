@@ -37,6 +37,10 @@ void TainerScript::init_visual()
     auto animComp = obj->get_component<AnimationComponent>();
     auto renderComp = obj->get_component<RenderComponent>();
 
+    // 부위 피격 리액션: 몸이 매우 커서(5배) 작은 각도도 크게 보이므로 약하게
+    if (auto reaction = obj->get_component<HitReactionComponent>())
+        reaction->set_settings({ .peak_angle_deg = 20.0f, .max_angle_deg = 35.0f, .frequency = 1.5f, .damping_ratio = 0.5f });
+
     if (animComp && renderComp)
     {
         const std::string basePath = "Resource/Character/BoneGolem/";
@@ -198,7 +202,8 @@ void TainerScript::handle_animation_branching()
 		}
         break;
 	case EntityState::HITTED:
-        anim_comp->play("hit", false);
+        // 피격 모션은 재생하지 않음: 부위 피격 리액션(HitReactionComponent)이 맡음 ("hit" 애니메이션은 등록만 해 둠)
+        anim_comp->play("idle");
 		break;
     case EntityState::DEAD:
         anim_comp->play("death", false);

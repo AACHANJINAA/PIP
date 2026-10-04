@@ -145,7 +145,7 @@ Object
 |---|---|
 | `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초, 칼 타격음 `SwordHit`, 맞은 NPC `on_predicted_hit` 피격음, 카메라 킥 `add_kick`), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
 | `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_server_move`로 이동 패킷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 30ms)으로 위치·회전 보간**, 상태·액션(공격음)·잡기·HP·MP는 패킷 서버 시각에 적용(`apply_state`). 생성·부활은 `reset_transform`(버퍼 비우고 그 위치에서 시작). 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
-| `NPCScript.h/.cpp` | NPC 공통. `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
+| `NPCScript.h/.cpp` | NPC 공통(필수 컴포넌트에 `HitReactionComponent`, 피격 시 피격 모션 대신 리액션). `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
 | `QuestNPCScript.h/.cpp` | 퀘스트 NPC (상호작용 F UI, 퀘스트 마커). 이동 보간 안 함 |
 | `LeverScript.h/.cpp` | 레버 상호작용과 UI |
@@ -162,10 +162,11 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `AnimationComponent.h/.cpp` | 애니메이션 별칭 → (메쉬, 실제 이름) 매핑, `play/play_until_progress`, 진행도, **캐릭터별 뼈 자세 보관**(`try_get_bone_model/world_matrix`, 공용 메쉬 노드에 의존하지 않음), 스키닝 팔레트(`bone_palette`) |
+| `AnimationComponent.h/.cpp` | 애니메이션 별칭 → (메쉬, 실제 이름) 매핑, `play/play_until_progress`, 진행도, **캐릭터별 뼈 자세 보관**(`try_get_bone_model/world_matrix`, 공용 메쉬 노드에 의존하지 않음), 스키닝 팔레트(`bone_palette`), 조인트 추가 회전(`set_joint_offsets`, 키프레임 자세 위에 더함) |
+| `HitReactionComponent.h/.cpp` | **부위 피격 리액션.** `react(TriggerHit)`: NPC 메쉬를 현재 자세로 CPU 스키닝해 칼날 캡슐이 쓸고 간 구간에 닿은 정점을 찾고, 정점 뼈 가중치 비율대로 여러 뼈(다리 포함, 정점 없는 뼈·루트·골반 제외) + 부모 2개를 칼 방향으로 꺾고 감쇠 스프링으로 돌아옴. 세기·복귀 속도는 캐릭터별 `set_settings`(각 `init_visual`에서 종류별로 설정). 로그 `[HitReaction]`. 오브젝트 시간으로 진행해 히트스톱 중엔 꺾인 채 멈춤. `NPCScript`의 필수 컴포넌트 |
 | `SocketComponenet.h/.cpp` (파일명 오타 그대로) | 뼈에 다른 오브젝트 부착(`add_connecting`), 애니메이션 따라가기 토글. late_update에서 같은 프레임 자세를 읽음 |
 | `Mesh.h/.cpp` | 메쉬 기반(정점·인덱스 업로드, 렌더, 인스턴싱, CSM 그림자 렌더, OBB), 디버그 메쉬 |
-| `ReadGLTFMesh.h/.cpp` | **주력 로더.** glTF 정적/스킨 메쉬, 스킨·애니메이션 채널, 노드 계층, `update_animation`(팔레트 + 조인트 모델 행렬 출력), 소켓 행렬, 조인트 인덱스, 프리미티브 형상·CPU 스키닝 형상(디버그 기록용), 파티클 목표점 추출. 엔진이 glTF의 Z를 뒤집어 읽음(좌표계 변환) |
+| `ReadGLTFMesh.h/.cpp` | **주력 로더.** glTF 정적/스킨 메쉬, 스킨·애니메이션 채널, 노드 계층, `update_animation`(팔레트 + 조인트 모델 행렬 출력, 조인트 추가 회전 `JointRotationOffset` 적용 후 공용 노드 복구), 소켓 행렬, 조인트 인덱스·이름·부모, `joint_moves_skin`(정점 가중치 기준), 프리미티브 형상·CPU 스키닝 형상(디버그 기록·피격 리액션, 정점별 뼈 가중치 `SkinInfluence` 선택 출력), 파티클 목표점 추출. 엔진이 glTF의 Z를 뒤집어 읽음(좌표계 변환) |
 | `ReadGLBMesh`, `ReadFBXMesh`(Assimp), `ReadOBJMesh` | 보조 로더 |
 | `SkyboxMesh`, `TerrainLoader.h/.cpp` | 스카이박스, 지형(하이트맵, 레이어 텍스처 배열, 풀 배치 가중치) |
 | `ResourceManager.h/.cpp` | 메쉬·텍스처·머티리얼 캐시, 업로드 버퍼 수명, IBL 맵, 스카이박스, R8 텍스처 배열, 기본 텍스처 |
@@ -200,7 +201,7 @@ Object
 |---|---|
 | `PhysicsManager.h/.cpp` | Jolt 초기화, 0.02초 고정 스텝, 접촉 이벤트 큐 → 메인 스레드에서 `PhysicsColliderComponent::OnContact`(첫 번째 콜라이더만), 지형 하이트필드 생성 |
 | `JoltSetup.h` | 브로드페이즈·오브젝트 레이어 필터 |
-| `PhysicsColliderComponent.h/.cpp` | 박스·구·캡슐 콜라이더. `BodyMode::Body`(Jolt 바디) / `QueryOnly`(바디 없이 모양·월드 변환만). **뼈 부착**(`attach_to_bone`), 스케일 무시(`set_ignore_owner_scale`), **역할**(`Role::Hitbox` 공격 / `Hurtbox` 피격, Hurtbox는 정적 목록 등록), **공격 판정**(`begin/end_hit_query`: late_update에서 직전→현재 자세를 15도·0.2m 단위로 나눠 `CollisionDispatch::sCollideShapeVsShape`, 대상마다 1회 `on_trigger_enter`) |
+| `PhysicsColliderComponent.h/.cpp` | 박스·구·캡슐 콜라이더. `BodyMode::Body`(Jolt 바디) / `QueryOnly`(바디 없이 모양·월드 변환만). **뼈 부착**(`attach_to_bone`), 스케일 무시(`set_ignore_owner_scale`), **역할**(`Role::Hitbox` 공격 / `Hurtbox` 피격, Hurtbox는 정적 목록 등록), **공격 판정**(`begin/end_hit_query`: late_update에서 직전→현재 자세를 15도·0.2m 단위로 나눠 `CollisionDispatch::sCollideShapeVsShape`, 대상마다 1회 `on_trigger_enter`. 캡슐이면 `TriggerHit`에 쓸고 간 구간 기록) |
 | `PhysicsCharacterControllerComponent.h/.cpp` | 캐릭터 컨트롤러 (fixed_update) |
 | `PhysicsDebugCapture.h/.cpp` | JoltViewer용 기록(`client_physics_dump.bin`): Jolt 바디, QueryOnly 콜라이더(공격 초록, 피격 하늘색, 적중 빨강), 뼈 축, 기준 프리미티브(칼날), 적중 지점·방향, NPC 실제 메쉬(CPU 스키닝, 15m 이내). 첫 기록 시 viewer `-focus` 명령을 로그로 출력 |
 

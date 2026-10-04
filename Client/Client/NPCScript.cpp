@@ -45,11 +45,8 @@ void NPCScript::handle_animation_branching()
 		return;
 	}
 
-	// 피격 처리 (피격 모션이 등록된 몬스터만, 없으면 기존처럼 아래 분기로 진행)
-	if (_state == EntityState::HITTED && anim->has_animation("Hit")) {
-		anim->play("Hit", false);
-		return;
-	}
+	// 피격(HITTED)은 피격 모션을 재생하지 않음: 부위 피격 리액션(HitReactionComponent)이 맡고, 모션은 아래 이동·대기 분기로 진행
+	// (피격 모션은 리액션을 덮어 보이지 않게 함. "Hit" 애니메이션은 등록만 해 둠)
 
 	// 2. 액션(공격/스킬) 상태 분기
 	if (_state == EntityState::ACTION) 
@@ -183,6 +180,10 @@ void NPCScript::init_visual()
 
 		transform()->set_local_scale({ 1.5f,1.5f,1.5f });
 
+		// 부위 피격 리액션: 크고 단단한 체형이라 드래곤 브루트보다 약하게
+		if (auto reaction = game_object()->get_component<HitReactionComponent>())
+			reaction->set_settings({ .peak_angle_deg = 30.0f, .max_angle_deg = 45.0f, .frequency = 1.5f, .damping_ratio = 0.5f });
+
 		return;
 	}
 
@@ -210,6 +211,10 @@ void NPCScript::init_visual()
 		ResourceManager::instance()->create_material(material_name);
 		ResourceManager::instance()->set_shader_for_material(material_name, "skinned");
 		render_comp->set_pso_name("skinned");
+
+		// 부위 피격 리액션: 몸이 작아 크게 꺾여도 자연스러움 (2026-10-05 확인값)
+		if (auto reaction = game_object()->get_component<HitReactionComponent>())
+			reaction->set_settings({ .peak_angle_deg = 60.0f, .max_angle_deg = 80.0f, .frequency = 1.0f, .damping_ratio = 0.5f });
 	}
 }
 

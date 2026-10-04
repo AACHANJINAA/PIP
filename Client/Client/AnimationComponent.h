@@ -48,6 +48,11 @@ public:
 	// late_update에서 계산된 이 캐릭터의 뼈 행렬 (공용 메쉬의 _nodes와 달리 다른 캐릭터가 덮어쓰지 않음)
 	// late_update 이후부터 다음 프레임 late_update 전까지 유효. 업데이트 단계에서 읽으면 직전 프레임 자세
 	bool has_pose() const { return !_jointModelMatrices.empty(); }
+	// 이 캐릭터의 조인트별 모델 공간 뼈 행렬 (조인트 순서)
+	const std::vector<XMFLOAT4X4>& joint_model_matrices() const { return _jointModelMatrices; }
+
+	// 키프레임 자세 위에 더할 조인트 회전 (HitReactionComponent가 매 프레임 설정). 비우면 적용 안 함
+	void set_joint_offsets(std::vector<JointRotationOffset> offsets) { _jointOffsets = std::move(offsets); }
 	// 모델 공간 뼈 행렬. 자세가 없거나 뼈가 없으면 false
 	bool try_get_bone_model_matrix(const std::string& bone_name, XMFLOAT4X4& out) const;
 	// 모델 공간 뼈 행렬 × 오브젝트 월드 행렬
@@ -110,6 +115,7 @@ private:
 	// 캐릭터별 뼈 자세 (조인트 순서, 모델 공간, 전치하지 않음)
 	std::vector<DirectX::XMFLOAT4X4> _jointModelMatrices;
 	const ReadGLTFMesh* _poseMesh = nullptr; // _jointModelMatrices를 계산한 메쉬
+	std::vector<JointRotationOffset> _jointOffsets; // 키프레임 위에 더할 조인트 회전
 	mutable std::unordered_map<std::string, int> _jointIndexCache; // 뼈 이름 -> 조인트 인덱스
 	mutable const ReadGLTFMesh* _jointIndexCacheMesh = nullptr;      // 캐시를 만든 메쉬
 };

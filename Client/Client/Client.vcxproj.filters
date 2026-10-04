@@ -482,6 +482,9 @@
     <ClInclude Include="AnimationComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
     </ClInclude>
+    <ClInclude Include="HitReactionComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
+    </ClInclude>
     <ClInclude Include="UIFrameShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
@@ -719,6 +722,9 @@
       <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
     <ClCompile Include="AnimationComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="HitReactionComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\AnimationComponent</Filter>
     </ClCompile>
     <ClCompile Include="CameraComponent.cpp">

@@ -240,6 +240,18 @@ void PhysicsColliderComponent::run_hit_query()
             hit.other = target;
             hit.point = { point.GetX(), point.GetY(), point.GetZ() };
             hit.direction = { direction.GetX(), direction.GetY(), direction.GetZ() };
+            if (_shapeType == ShapeType::Capsule)
+            {
+                // 캡슐은 로컬 Y축 중심선 (절반 높이 _size.y, 반지름 _size.x)
+                auto to_xm = [](JPH::RVec3Arg v) { return XMFLOAT3{ static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()) }; };
+                const JPH::Vec3 top(0.0f, _size.y, 0.0f);
+                hit.has_self_segment = true;
+                hit.self_prev_a = to_xm(_prevWorldTransform * top);
+                hit.self_prev_b = to_xm(_prevWorldTransform * -top);
+                hit.self_cur_a = to_xm(_worldTransform * top);
+                hit.self_cur_b = to_xm(_worldTransform * -top);
+                hit.self_radius = _size.x;
+            }
             hits.emplace_back(target, hit);
             _hitTargets.insert(target_owner.get());
             break;
