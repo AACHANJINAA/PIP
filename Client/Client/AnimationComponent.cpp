@@ -22,8 +22,15 @@ void AnimationComponent::late_update(float deltaTime)
 		return;
 	}
 
-	// 현재 애니메이션 시간 갱신
-	_nowAnimationTime += deltaTime * _animationSpeed;
+	// 현재 애니메이션 시간 갱신 (히트스톱 중에는 멈추고, 이번 프레임에 풀리면 남은 시간만큼만 진행)
+	float playTime = deltaTime;
+	if (_hitStopTimer > 0.0f)
+	{
+		_hitStopTimer -= deltaTime;
+		playTime = std::max(-_hitStopTimer, 0.0f);
+		_hitStopTimer = std::max(_hitStopTimer, 0.0f);
+	}
+	_nowAnimationTime += playTime * _animationSpeed;
 	float timeBeforeUpdate = _nowAnimationTime;
 
 	// 애니메이션 리소스 찾기
@@ -136,7 +143,7 @@ bool AnimationComponent::try_get_bone_world_matrix(const std::string& bone_name,
 }
 
 void AnimationComponent::add_animation(const std::string& want_name, const std::shared_ptr<Mesh>& mesh,
-                                       const std::string& actualAnimName)
+									   const std::string& actualAnimName)
 {
 	auto gltf_mesh = std::dynamic_pointer_cast<ReadGLTFMesh>(mesh);
 	if (!gltf_mesh) {

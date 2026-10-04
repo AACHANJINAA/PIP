@@ -106,6 +106,8 @@ private:
 	static constexpr float kAttackHitEnd = 0.8f;
 	// 서버 NPC 피격 쿨다운(0.5초) 흉내: NPC id별 마지막 예측 적중 시각 (_hitClock 기준)
 	static constexpr float kPredictedHitCooldown = 0.5f;
+	// 예측 적중 시 공격자(나)와 피격자(NPC) 애니메이션을 멈추는 시간
+	static constexpr float kAttackHitStop = 0.05f;
 	float _hitClock = 0.0f;
 	float _attackProgress = 0.0f; // 로그용 현재 평타 진행도 (0~1)
 	std::unordered_map<int64_t, float> _lastPredictedHitTime;
