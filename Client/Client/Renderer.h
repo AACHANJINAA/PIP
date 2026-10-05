@@ -21,6 +21,8 @@ public:
 
     ID3D12RootSignature* get_root_signature(const std::string& name) const;
     ID3D12PipelineState* get_pso(const std::string& name) const;
+    // 컴퓨트 PSO를 이름으로 공유 (처음 요청할 때 셰이더 파일을 컴파일해 한 번만 만듦, 실패하면 nullptr)
+    ID3D12PipelineState* get_or_create_compute_pso(const std::string& name, const std::wstring& shader_file, const char* entry, const std::string& root_signature);
 
 	std::shared_ptr<Shader> get_shader(const std::string& name) const;
 
@@ -45,6 +47,8 @@ private:
     std::shared_ptr<Mesh> _unitCube; // 쿼리용 단위 큐브
     void render_pso_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, CameraComponent* camera, UINT frame_index);
     void draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
+    // 파티클 PSO 그룹 그리기: 오브젝트마다 컴퓨트 → 그래픽 상태 복구 → 그리기 (두 렌더 경로 공용)
+    void render_particle_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, const std::vector<std::shared_ptr<GameObject>>& objects, CameraComponent* camera, UINT frame_index);
 
     // --- Static 렌더 리스트 관리 ---
     void clear_static_render_list();

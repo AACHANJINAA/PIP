@@ -105,7 +105,7 @@ VfxManager::instance()->play("hit_spark", hit.point, hit.direction);
 | 항목 | 방식 |
 |---|---|
 | 파티클 저장 | 방출기(프리셋)마다 고정 크기 풀(RWStructuredBuffer, 기본 2048개). 링 버퍼처럼 앞에서부터 덮어씀 |
-| 방출 요청 (CPU) | `play`·연속 방출이 **방출 요청**(위치, 방향, 개수, 난수 시드)을 쌓는다. 프레임마다 요청 목록을 업로드 버퍼에 담는데, CPU가 링 버퍼 쓰기 위치를 관리해 요청마다 풀 시작 위치를 미리 정해 둔다(GPU 원자 연산 불필요). 풀이 차면 가장 오래된 것을 덮는다 |
+| 방출 요청 (CPU) | `play`·연속 방출이 **방출 요청**(위치, 방향, 개수, 난수 시드)을 쌓는다. 프레임마다 요청 목록을 업로드 버퍼에 담는데, CPU가 링 버퍼 쓰기 위치를 관리해 요청마다 풀 시작 위치를 미리 정해 둔다(GPU 원자 연산 불필요). 풀이 차면 새로 만들지 않는다(유니티 VFX Graph Capacity, Niagara FixedCount와 같음). CPU가 묶음별 최대 수명으로 빈자리를 추정하므로 GPU에서 개수를 읽어 오지 않는다 |
 | 방출 (GPU) | **방출 컴퓨트**: 이번 프레임 새 파티클 수만큼 스레드. 스레드는 자기 번호로 요청을 찾고(요청 수가 적어 순차·이진 탐색), `시드 + 번호`로 만든 해시 난수와 프리셋 상수(방출 모양, 수명·속도·크기 범위, 퍼짐 각도)로 초기값을 만들어 풀에 쓴다 |
 | 갱신 (GPU) | **갱신 컴퓨트**가 풀 전체를 돈다: 나이 증가, 속도 적분(중력, 공기 저항), 수명이 다하면 죽음 표시 |
 | 그리기 (GPU) | 풀 크기만큼 `DrawInstanced(4, 풀 크기)`. 죽은 파티클은 정점 셰이더에서 화면 밖으로 보내 버린다(정렬·압축 없음). CPU로 다시 읽어오지 않음 |
@@ -214,7 +214,65 @@ VfxManager::instance()->play("hit_spark", hit.point, hit.direction);
 
 ## 5. 정해야 할 것
 
-1. **파생 클래스 이름:** `GatherParticleComponent`(추천) / 다른 이름.
-2. ~~**시뮬레이션 방식**~~ **확정(2026-10-06): CPU는 방출 요청만, 방출(초기값 생성)·갱신·그리기는 GPU 컴퓨트.** 3.2, 3.6.
-3. **풀 크기 기본값:** 이펙트당 2048개(추천). 프리셋마다 지정 가능.
-4. **프리셋 형식:** 처음엔 C++ 구조체(추천) / 처음부터 JSON 등 데이터 파일.
+모두 확정(2026-10-06).
+
+1. **클래스 구조:** 범용 `ParticleSystemComponent`가 기반, 기존 대검 연출은 파생 `GatherParticleComponent`.
+2. **시뮬레이션 방식:** CPU는 방출 요청만, 방출(초기값 생성)·갱신·그리기는 GPU 컴퓨트. 3.2, 3.6.
+3. **최대 개수:** 이펙트마다 고정 `max_particles`(기본 2048), 꽉 차면 새로 만들지 않음. 유니티 `Max Particles`·VFX Graph Capacity, Niagara FixedCount와 같은 방식.
+4. **프리셋 형식:** Lua 파일(서버 데이터 `NPC_Data.lua` 등과 같은 방식, 주석·변형 가능, 실행 중 다시 읽기). 클라에 Lua 5.4.2 라이브러리를 복사해 연결.
+
+---
+
+## 6. 구현 체크리스트
+
+항목을 끝낼 때마다 `[x]`로 바꾸고, 필요하면 결과나 바뀐 결정을 한 줄 붙인다. 단계 마지막 검증을 통과해야 다음 단계로 간다. 작업 브랜치: `worktree-particle-system`(워크트리 `.claude/worktrees/particle-system`).
+
+### P0. 클라이언트 Lua 연결
+
+- [x] `Server/Server/lua-5.4.2_Win64_dll17_lib/`(include, `lua54.lib`, `lua54.dll`)를 `Client/Client/ThirdParty/lua-5.4.2/`로 복사
+- [x] `Client.vcxproj` Debug·Release: include·lib 경로, `lua54.lib` 링크, 빌드 후 `lua54.dll`을 `$(OutDir)`로 복사 — PostBuildEvent `xcopy /Y /D`
+- [x] `LuaUtil.h/.cpp`: `luaL_dofile`, 전역 테이블 순회, number/bool/string/vec3/color/range 읽기(없으면 기본값, 모르는 키 로그). 서버 `LuaManager`의 C API 사용 방식 따름 — `LuaState`, `LuaTable`(읽은 키 기록 → `warn_unknown_keys`), `lua_for_each_global_table`, `for_each_array`
+- [x] 검증: 빌드, 테스트 Lua 파일 하나를 읽어 로그로 값 확인 (확인 후 테스트 코드 제거) — 게임 밖 별도 테스트 프로그램으로 확인(저장소에 안 넣음): 범위·색·버스트 배열·`extend` 변형, 타입 오류·오타 키·없는 파일 로그. 클라 빌드 성공, `lua54.dll` 복사 확인
+
+### P1. 기존 시스템 분리 (화면 변화 없음)
+
+- [x] 기존 `ParticleSystemComponent` → `GatherParticleComponent`(새 파일). API 그대로
+- [x] 새 기반 `ParticleSystemComponent`: 가상 `dispatch_compute(cmd)`, `draw(cmd, frame)`, `particle_count()` (범용 구현은 P2). Gather가 셋을 오버라이드 — P1에서는 가상 함수만, 기본 구현은 아무것도 안 함
+- [x] `ParticleRenderComponent`: 같은 오브젝트의 `ParticleSystemComponent`를 찾아 `draw` 호출, 파티클 컴포넌트 `required_components`로 자동 부착 — `set_particle_system` 제거(사용처 4곳 호출도 삭제)
+- [x] 사용처 교체: `MainPlayerScript`, `OtherPlayerScript`, `Main_Scene`(컷씬·분수), `ParticleShader::update_per_object`, `Renderer` — ParticleShader는 Gather 전용으로, 없으면 바로 반환(기존 널 검사 누락 수정)
+- [x] 버그 1: `compute_particle` 루트 상수 21 → 24 (`RootSignature.cpp`)
+- [x] 버그 2: `Particle_CS.hlsl`의 `idx >= 50000` → 실제 개수를 상수로 전달 — 패딩 자리에 `g_ParticleCount`
+- [x] 버그 3: 컴퓨트 PSO를 컴포넌트마다 만들지 않고 최초 1회 공유 — `Renderer::get_or_create_compute_pso`(이름으로 공유, 실패도 기록해 매 프레임 재컴파일 안 함)
+- [x] 버그 4: 렌더러 파티클 경로 2곳(`draw_render_list` 분기, 미사용 `draw_render_occlusion_culling_list` Step 5)을 `Renderer::render_particles(...)`로 합침 — `Renderer::render_particle_group`. 실제로 도는 건 `draw_render_list` 쪽 하나였음(오클루전 경로는 호출 안 됨)
+- [x] 검증: 대검 스킬(내 것·다른 플레이어), 컷씬 파티클, 분수 파티클이 전과 같음. 분수 30만 개 전부 움직임. D3D12 디버그 레이어 오류 없음 — 2026-10-06 Release 서버 + 클라 2개로 확인. 상한 제거 후 분수가 30만 개 전부 보여 많아짐 → 예전에 실제로 보이던 5만 개로 생성 수 변경. 디버그 레이어는 VS 밖 실행이라 미확인
+
+### P2. 범용 파티클 (GPU 방출 + 갱신 + 빌보드)
+
+- [ ] `ParticleSystemSettings` (유니티 모듈 이름): Main(`duration`, `looping`, `play_on_awake`, `start_lifetime/speed/size/rotation` 범위, `start_color` 두 색, `gravity_modifier`, `drag`, `max_particles`=2048), Emission(`rate_over_time`, `bursts`), Shape(Point/Sphere/Hemisphere/Cone/Edge, `radius`, `angle`, `length`), Over lifetime(`end_color`, `end_size_multiplier`), Renderer(`blend` Additive/Alpha, `render_mode` Billboard/StretchedBillboard, `length_scale`). 공간은 World만
+- [ ] API: `play()`, `stop()`, `clear()`, `emit(count)`, `emit(count, pos, dir)`, `is_playing()`, `settings()`
+- [ ] CPU 방출: 연속 방출 누적 + 버스트 → 방출 요청, 오브젝트 시간 기준
+- [ ] 링 버퍼 관리: 묶음별 (시작, 개수, 최대 수명 만료 시각), 만료된 꼬리 전진, `max_particles` 초과분은 잘라내고 로그 1회 (GPU 읽기 없음)
+- [ ] 업로드: 요청·설정·dt를 `GameFramework::linear_allocator()`로
+- [ ] 셰이더 `Particle_Emit_CS.hlsl`: 요청 찾기, 해시 난수, 모양별 초기값
+- [ ] 셰이더 `Particle_Update_CS.hlsl`: 나이, 중력·저항, 죽음 표시
+- [ ] 셰이더 `Particle_Billboard.hlsl`: 빌보드·속도 늘림, 수명별 색·크기, 부드러운 원, 죽은 것은 화면 밖
+- [ ] 루트 시그니처 `particle_compute`, `particle_billboard` (`RootSignature.cpp`)
+- [ ] `ParticleBillboardShader` 프로토타입 2개 → PSO `particle_additive`, `particle_alpha` (깊이 테스트 O, 쓰기 X)
+- [ ] 렌더러: `draw_render_list` 시작 시 모든 파티클 그룹 컴퓨트 선행 패스 → 힙 1회 복구 → 그룹별 `draw`
+- [ ] 검증: 플레이어 앞 임시 테스트 방출기로 수명·중력·색/크기 변화·가산/알파·속도 늘림 확인, `max_particles` 초과 로그, 디버그 레이어 오류 없음 (확인 후 테스트 방출기 제거)
+
+### P3. Lua 프리셋 + VfxManager + 타격 스파크
+
+- [ ] 프리셋 파일 `Resource/Vfx/VfxPresets.lua` (`vfx.이름 = {...}`, 변형은 `extend(base, overrides)`)
+- [ ] `VfxPresetLibrary`: Lua 테이블 → `ParticleSystemSettings`, 모르는 키·잘못된 값 로그
+- [ ] `VfxManager`: `play(name, pos, dir, scale = 1)`, 이름별 방출기 오브젝트 지연 생성(풀링), 씬 전환으로 파괴되면 재생성, `reload()`
+- [ ] 디버그 키 F5: 프리셋 다시 읽기 (`GameFramework::ProcessInput`)
+- [ ] 프리셋 `hit_spark`(가산, 속도 늘림, 흰색→주황, 칼 방향 원뿔, 수명 0.15~0.3초, 30~50개), `skill_hit_spark`(더 크고 많게)
+- [ ] 연결: `MainPlayerScript::on_trigger_enter`에서 `VfxManager::play(skill ? "skill_hit_spark" : "hit_spark", hit.point, hit.direction)`
+- [ ] 검증: 평타·대검 적중 지점에서 칼 방향으로 스파크, F5로 Lua 값 수정이 바로 반영, 씬 전환 후에도 재생
+
+### 마무리
+
+- [ ] 문서: `ParticleSystem_Plan_KR.md`(결정·체크리스트 결과), `Client/Client/CODEMAP.md`(새 파일·렌더 경로·디버그 키 F5), 루트 `CODEMAP.md` 상태
+- [ ] PathManager 합칠 때: 새 셰이더를 `Shaders/`로, 경로를 PathManager로 (합치는 시점에 별도 진행)
+
