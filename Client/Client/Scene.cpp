@@ -25,8 +25,9 @@ void Scene::on_scene_loaded()
 {
 }
 
-void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* device,ID3D12GraphicsCommandList* commandList, bool IsTitle)
+void Scene::load_scene_from_file(const std::string& filename_in, ID3D12Device* device,ID3D12GraphicsCommandList* commandList, bool IsTitle)
 {
+    const std::string filename = PathManager::Expand(filename_in); // 별칭 표기를 논리 경로로 (캐시 키·부모 폴더 계산 통일)
     std::ifstream file(PathManager::ResolveApp(filename));
     if (!file.is_open()) {
         CERROR("Failed to open scene file: " << filename);
@@ -139,8 +140,9 @@ void Scene::load_scene_from_file(const std::string& filename, ID3D12Device* devi
     }
 }
 
-void Scene::load_foliage_from_file(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+void Scene::load_foliage_from_file(const std::string& filename_in, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    const std::string filename = PathManager::Expand(filename_in); // 별칭 표기를 논리 경로로 (캐시 키·부모 폴더 계산 통일)
     std::ifstream file(PathManager::ResolveApp(filename));
     if (!file.is_open()) {
         CERROR("Failed to open foliage file: " << filename);
@@ -256,8 +258,9 @@ void Scene::load_foliage_from_file(const std::string& filename, ID3D12Device* de
     }
 }
 
-void Scene::load_from_file_with_light(const std::string& filename, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+void Scene::load_from_file_with_light(const std::string& filename_in, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
+    const std::string filename = PathManager::Expand(filename_in); // 별칭 표기를 논리 경로로 (캐시 키·부모 폴더 계산 통일)
 	std::ifstream file(PathManager::ResolveApp(filename));
 	if (!file.is_open()) {
 		CERROR("Failed to open scene file with light: " << filename);

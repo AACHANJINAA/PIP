@@ -1465,8 +1465,9 @@ int ReadGLTFMesh::get_palette_index_by_name(const std::string& name) const
 	return 0; // 못 찾으면 루트 뼈대(0번)로 반환한다 -> 보통 이 경우일것
 }
 
-void ReadGLTFMesh::load_animation_only(const std::string& file_path, const std::string& want_name)
+void ReadGLTFMesh::load_animation_only(const std::string& file_path_in, const std::string& want_name)
 {
+	const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키·부모 폴더 계산 통일)
 	if (want_name != "null_name" && _animations.contains(want_name)) {
 		return;
 	}
