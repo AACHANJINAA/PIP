@@ -8,7 +8,8 @@ cbuffer cbUpdateInfo : register(b0)
     float g_SkillProgress; // 스킬 진행도 (0.0: 시작 위치 -> 1.0: 목표 위치 완성)
     float g_DyingProgress; // 파티클 사라지는 연출 (0.0: 생존, 1.0: 죽음)
     float g_BurstRadius;   // [추가] 초기 확산 최대 반경
-    float2 g_Padding;      // 16바이트 정렬을 위한 패딩
+    uint g_ParticleCount;  // 실제 파티클 수 (이 번호 이상 스레드는 건너뜀)
+    float g_Padding;       // 루트 상수 24개에 맞춘 패딩
 };
 
 // C++에서 구워둔 정답지 버퍼 (t0 - 읽기 전용)
@@ -71,7 +72,7 @@ void CS_Main(uint3 DTid : SV_DispatchThreadID)
     
     uint idx = DTid.x;
 
-    if (idx >= 50000)
+    if (idx >= g_ParticleCount)
         return;
     
     // 1. 목표 월드 위치 계산

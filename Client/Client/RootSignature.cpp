@@ -811,8 +811,9 @@ ComPtr<ID3D12RootSignature> ComputeParticleRootSignatureGenerator::create(ID3D12
 
     CD3DX12_ROOT_PARAMETER params[3];
 
-    // [0] b0: 상수 버퍼 20개 (행렬 16개 + 위치 3개 + 진행도 1개 + 사라지는 연출 진행도 1개)
-    params[0].InitAsConstants(21, 0);
+    // [0] b0: 루트 상수 24개 (행렬 16 + 위치 3 + 진행도 1 + 사라짐 진행도 1 + 확산 반경 1 + 파티클 수 1 + 패딩 1)
+    // GatherParticleComponent::dispatch_compute의 ComputeConstants, Particle_CS.hlsl의 cbUpdateInfo와 맞춤
+    params[0].InitAsConstants(24, 0);
     // [1] t0: 타겟 버퍼 (SRV)
     params[1].InitAsShaderResourceView(0);
 

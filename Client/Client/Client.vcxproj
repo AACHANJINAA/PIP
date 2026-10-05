@@ -107,6 +107,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GatherParticleComponent.h" />
     <ClInclude Include="LuaUtil.h" />
     <ClInclude Include="..\..\Common\JoltHelper.h" />
     <ClInclude Include="..\..\Common\json.hpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GatherParticleComponent.cpp" />
     <ClCompile Include="LuaUtil.cpp" />
     <ClCompile Include="AnimationComponent.cpp" />
     <ClCompile Include="HitReactionComponent.cpp" />

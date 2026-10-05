@@ -545,19 +545,7 @@ void Renderer::draw_render_list(ID3D12GraphicsCommandList* commandList, CameraCo
 
 		// 파티클 특수 처리
 		if (psoName == "particle_draw") {
-			for (const auto& gameObject : gameObjects) {
-				auto particleRenderComp = gameObject->get_component<ParticleRenderComponent>();
-				auto psComp = gameObject->get_component<ParticleSystemComponent>();
-				if (particleRenderComp && psComp && particleRenderComp->is_enabled()) {
-					psComp->dispatch_compute(commandList);
-					commandList->SetPipelineState(pso);
-					commandList->SetGraphicsRootSignature(root_signature);
-					if (camera) camera->update_shader_variables(commandList, frame_index);
-					shader_prototype->update_per_object(commandList, this, gameObject.get());
-					gameObject->prepare_render();
-					particleRenderComp->render(commandList, frame_index);
-				}
-			}
+			render_particle_group(commandList, psoName, gameObjects, camera, frame_index);
 			continue;
 		}
 
@@ -831,37 +819,7 @@ void Renderer::draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* com
 	// Step 5: 파티클 렌더링 (항상 Occlusion Culling 이후, Skybox 이후)
 	auto itParticle = _renderMap.find("particle_draw");
 	if (itParticle != _renderMap.end() && !itParticle->second.empty()) {
-		const std::string target = "particle_draw";
-		auto pso = get_pso(target);
-		auto proto = _shaderPrototypes[target];
-		auto root_sig = get_root_signature(proto->required_root_signature());
-
-		for (auto& obj : itParticle->second) {
-			auto particleRenderComp = obj->get_component<ParticleRenderComponent>();
-			auto psComp = obj->get_component<ParticleSystemComponent>();
-
-			if (particleRenderComp && psComp && particleRenderComp->is_enabled()) {
-
-				// 1. 연산 패스 (Compute) : 위치 계산
-				psComp->dispatch_compute(commandList);
-
-				// 2. 파이프라인 상태 복구 (Compute -> Graphics)
-				commandList->SetPipelineState(pso);
-				commandList->SetGraphicsRootSignature(root_sig);
-				commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-				// 연산 중에 날아간 카메라 상수 버퍼(b1) 다시 세팅
-				if (camera) {
-					camera->update_shader_variables(commandList, frame_index);
-					camera->set_viewports_and_scissor_rects(commandList);
-				}
-
-				// 3. 그리기 준비 및 호출
-				proto->update_per_object(commandList, this, obj.get());
-				obj->prepare_render();
-				particleRenderComp->render(commandList, frame_index);
-			}
-		}
+		render_particle_group(commandList, "particle_draw", itParticle->second, camera, frame_index);
 	}
 
 	// --- STEP 6: UI 및 특수 렌더 (Early-Z 활용 안 함) ---
@@ -901,6 +859,65 @@ ID3D12RootSignature* Renderer::get_root_signature(const std::string& name) const
 	// 맵에 해당 이름의 루트 시그니처가 없으면 nullptr을 반환합니다.
 	// (또는 에러를 로그로 남기거나 기본값을 반환할 수도 있습니다.)
 	return nullptr;
+}
+
+ID3D12PipelineState* Renderer::get_or_create_compute_pso(const std::string& name, const std::wstring& shader_file, const char* entry, const std::string& root_signature)
+{
+	if (auto pso = get_pso(name)) return pso;
+
+	ID3D12RootSignature* root_sig = get_root_signature(root_signature);
+	ComPtr<ID3DBlob> blob;
+	D3D12_SHADER_BYTECODE cs = Shader::compile_shader_from_file(shader_file, entry, "cs_5_1", blob);
+	if (!root_sig || !cs.pShaderBytecode)
+	{
+		CERROR("[Renderer] 컴퓨트 PSO 생성 실패: " << name);
+		_pipelineStates[name] = nullptr; // 매 프레임 다시 컴파일하지 않도록 실패도 기록
+		return nullptr;
+	}
+
+	D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
+	desc.pRootSignature = root_sig;
+	desc.CS = cs;
+	ComPtr<ID3D12PipelineState> pso;
+	if (FAILED(_device->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso))))
+	{
+		CERROR("[Renderer] 컴퓨트 PSO 생성 실패: " << name);
+	}
+	_pipelineStates[name] = pso;
+	return pso.Get();
+}
+
+void Renderer::render_particle_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, const std::vector<std::shared_ptr<GameObject>>& objects, CameraComponent* camera, UINT frame_index)
+{
+	auto pso = get_pso(psoName);
+	auto proto_it = _shaderPrototypes.find(psoName);
+	if (!pso || proto_it == _shaderPrototypes.end()) return;
+	auto& proto = proto_it->second;
+	auto root_sig = get_root_signature(proto->required_root_signature());
+	ID3D12DescriptorHeap* heaps[] = { _dynamic_descriptor_heap.Get() };
+
+	for (const auto& obj : objects) {
+		auto particleRenderComp = obj->get_component<ParticleRenderComponent>();
+		auto psComp = obj->get_component<ParticleSystemComponent>();
+		if (!particleRenderComp || !psComp || !particleRenderComp->is_enabled()) continue;
+
+		// 1. 연산 패스 (컴퓨트)
+		psComp->dispatch_compute(commandList);
+
+		// 2. 그래픽 상태 복구 (컴퓨트가 PSO·루트 시그니처를 바꿈)
+		commandList->SetPipelineState(pso);
+		commandList->SetGraphicsRootSignature(root_sig);
+		commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+		if (camera) {
+			camera->update_shader_variables(commandList, frame_index);
+			camera->set_viewports_and_scissor_rects(commandList);
+		}
+
+		// 3. 그리기
+		proto->update_per_object(commandList, this, obj.get());
+		obj->prepare_render();
+		particleRenderComp->render(commandList, frame_index);
+	}
 }
 
 ID3D12PipelineState* Renderer::get_pso(const std::string& name) const

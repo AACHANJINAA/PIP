@@ -170,6 +170,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GatherParticleComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
     <ClInclude Include="LuaUtil.h">
       <Filter>0. Engine\7. Helper</Filter>
     </ClInclude>
@@ -544,6 +547,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GatherParticleComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
     <ClCompile Include="LuaUtil.cpp">
       <Filter>0. Engine\7. Helper</Filter>
     </ClCompile>

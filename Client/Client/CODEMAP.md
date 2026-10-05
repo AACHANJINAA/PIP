@@ -14,7 +14,7 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 | 미리 컴파일 헤더 | `stdafx.h` (STL, DX12, `Singleton<T>` 템플릿, `CLOG/CINFO/CERROR` 로그 매크로, `Packet.h` 포함) |
 | 컴파일 스위치 (`stdafx.h`) | `_ONDEBUGCONSOLE`(디버그 콘솔 + 로그), `_DEBUG_PHYSICS_VISUALIZATION`(DebugDrawManager 렌더) |
 | Jolt | Debug: `Jolt/lib/Debug`, Release: `Jolt/lib/ReleaseDebugRenderer`(디버그 렌더러 포함, MSVC 14.38·LTCG 없음). Release에도 `JPH_DEBUG_RENDERER` 정의 |
-| 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생) |
+| 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생), Lua 5.4.2(`ThirdParty/lua-5.4.2/`, 서버와 같은 빌드를 복사, 빌드 후 `lua54.dll`을 실행 파일 폴더로 복사) |
 | 작업 폴더 | `Client/Client`. 리소스·셰이더(`*.hlsl`) 경로가 이 폴더 기준 |
 | 인코딩 | `.editorconfig` 규칙 UTF-8 BOM. `/utf-8`이라 BOM이 없어도 빌드됨. 맞추려면 `Tools/EnsureUtf8Bom.ps1` |
 
@@ -104,7 +104,8 @@ Object
    ├─ CameraComponent
    └─ Behavior                     (awake/update/late_update/fixed_update)
       ├─ AnimationComponent, SocketComponent, TargetingComponent, MonsterHPComponent
-      ├─ PhysicsColliderComponent, PhysicsCharacterControllerComponent, ParticleSystemComponent
+      ├─ PhysicsColliderComponent, PhysicsCharacterControllerComponent
+      ├─ ParticleSystemComponent (자동으로 ParticleRenderComponent 부착) → GatherParticleComponent
       ├─ RenderComponent
       │  ├─ InstancedRenderComponent → FoliageRenderComponent
       │  ├─ TerrainRenderComponent, SkyboxRenderComponent, ParticleRenderComponent
@@ -178,7 +179,7 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계 |
+| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계. 파티클은 `render_particle_group`(오브젝트마다 컴퓨트 → 그래픽 상태 복구 → 그리기, 두 렌더 경로 공용), 컴퓨트 PSO 공유 `get_or_create_compute_pso` |
 | `Shader.h/.cpp` + 각 `*Shader` | PSO 설정 단위(입력 레이아웃, 셰이더 파일, 블렌드·깊이·래스터 상태, 객체별 상수). 셰이더 클래스 ↔ hlsl: `GltfShader`→`Gltf_Shader.hlsl`, `GltfSkinnedShader`→`Gltf_Skinned_Shader.hlsl`, `GlbShader`→`GLB_Shader.hlsl`, `TerrainShader`, `SkyboxShader`, `ShadowDepth(Skinned)Shader`, `UIShader`, `UIFrameShader`, `BillboardUIShader`, `MonsterHPUIShader`, `MinimapShader`, `OcclusionQueryShader`, `DebugShader`, `ParticleShader`→`Particle_Draw.hlsl`, `DefaultObjectShader`/`PlayerShader`→`Shaders.hlsl` |
 | `RootSignature.h/.cpp` | 이름별 루트 시그니처 생성기 (gltf, skinned, terrain, ui, debug, csm, minimap, occlusion, `compute_particle`, `particle_draw` 등) |
 | `RenderComponent.h/.cpp` | 메쉬 + PSO 이름 + 객체 상수 버퍼, 컬링 상태. 파생: `InstancedRenderComponent`, `FoliageRenderComponent`, `TerrainRenderComponent`, `SkyboxRenderComponent`, `UIRenderComponent`, `UIFrameRenderComponent`, `BillboardUIRenderComponent`, `MonsterHPUIRenderComponent`, `ParticleRenderComponent` |
@@ -187,7 +188,9 @@ Object
 | `OcclusionManager.h/.cpp` | 오클루전 쿼리 힙·결과(N-1 프레임 결과로 조건부 렌더) |
 | `MinimapManager.h/.cpp` | 미니맵 타일·플레이어 위치 |
 | `CameraComponent.h/.cpp` | 투영·뷰 행렬, 카메라 상수, 흔들기 오프셋·회전(`set_shake_angle`), 메인 카메라 |
-| `ParticleSystemComponent.h/.cpp` + `Particle_CS.hlsl` | 대검 스킬 전용 파티클(칼 모양 목표점으로 모임, 컴퓨트로 위치 계산). 범용화 계획은 `기획 & 계획/ParticleSystem_Plan_KR.md`. 알려진 문제: 컴퓨트 루트 상수 21개인데 24개 설정, 셰이더 개수 상한 5만 하드코딩 |
+| `ParticleSystemComponent.h/.cpp` | 파티클 기반(유니티 ParticleSystem에 해당). 렌더러가 부르는 가상 `dispatch_compute`·`draw`·`particle_count`. 붙이면 `ParticleRenderComponent`가 자동으로 붙음. 범용 방출·갱신(GPU)은 진행 중(`기획 & 계획/ParticleSystem_Plan_KR.md` 6장 P2) |
+| `GatherParticleComponent.h/.cpp` + `Particle_CS.hlsl` | 목표점으로 모이는 파티클(대검 스킬, 컷씬 플레이어, 분수). 위치를 진행도(`set_compute_data`)로부터 컴퓨트가 직접 계산. 루트 상수 24개(파티클 수 포함), 컴퓨트 PSO는 렌더러가 공유 |
+| `ParticleRenderComponent.h/.cpp` | 파티클을 렌더 목록에 올리는 렌더 컴포넌트. 같은 오브젝트의 파티클 컴포넌트 `draw`를 부름 |
 | `UIManager`, `DamageTextManager`, `ImGuiManager` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명 |
 | `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |
 
@@ -231,6 +234,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | `d3dx12.h`, `DDSTextureLoader12`, `WICTextureLoader12` | 외부 헬퍼 |
 | `BehaviorTree.h` | 클라이언트 쪽 BT 사본. 사용처 없음 |
 | `generate_*.py` | UI 이미지 생성 스크립트 |
+| `LuaUtil.h/.cpp` | Lua 데이터 파일 읽기(`LuaState::do_file`, `LuaTable`: 숫자·색·범위·배열, 없으면 기본값, 타입 오류·모르는 키 로그, `lua_for_each_global_table`). 이펙트 프리셋용 |
 
 **사용하지 않는 파일(내용이 전부 주석이거나 비어 있음)**: `Camera.h/.cpp`(Renderer.cpp가 include만), `FreeCamera.h/.cpp`, `ColiderComponent.h/.cpp`, `LongswordScript.h/.cpp`(실제 클래스는 `WeaponScript.h`), `BehaviorTree.cpp`.
 

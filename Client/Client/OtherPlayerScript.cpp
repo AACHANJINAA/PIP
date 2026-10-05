@@ -11,7 +11,7 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "SocketComponenet.h"
-#include "ParticleSystemComponent.h"
+#include "GatherParticleComponent.h"
 #include "ParticleRenderComponent.h"
 #include "UIManager.h"
 #include "ServerClock.h"
@@ -128,7 +128,7 @@ void OtherPlayerScript::init_skill_variables()
     }
 
     if (_particleEffectObject) {
-        if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+        if (auto psComp = _particleEffectObject->get_component<GatherParticleComponent>())
             psComp->set_particle_dying(true); // 흩어짐 연출 시작
     }
 }
@@ -226,7 +226,7 @@ void OtherPlayerScript::update(float deltaTime)
 	// 파티클 효과가 활성화된 상태에서 애니메이션이 끝났는지 체크하여, 끝났다면 파티클 효과도 비활성화
     if (_particleEffectObject && _particleEffectObject->is_enable())
     {
-        auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+        auto psComp = _particleEffectObject->get_component<GatherParticleComponent>();
         if (psComp && psComp->is_death_timer_end())
         {
             _particleEffectObject->set_enabled(false);
@@ -263,7 +263,7 @@ void OtherPlayerScript::update(float deltaTime)
                         socket->set_isFollowAnimation(true); // 손에 다시 붙이기
                 }
                 if (_particleEffectObject) {
-                    if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+                    if (auto psComp = _particleEffectObject->get_component<GatherParticleComponent>())
                         psComp->set_particle_dying(false); // 흩어짐 플래그 끄기
                 }
 
@@ -282,7 +282,7 @@ void OtherPlayerScript::update(float deltaTime)
                 if (current_anim_time >= _skillParticleSpawnTime)
                 {
                     _particleEffectObject->set_enabled(true);
-                    auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+                    auto psComp = _particleEffectObject->get_component<GatherParticleComponent>();
 
                     // 아직 안 모임 -> 애니 정지 및 타이머 누적
                     if (!_isSwordGathered)
@@ -323,7 +323,7 @@ void OtherPlayerScript::update(float deltaTime)
                     SoundManager::instance()->play_3d_section("Other_DustSound", transform()->get_world_position(), "00:00", "01:500", SoundType::SFX, 0.7f);
 
                     if (_particleEffectObject) {
-                        if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+                        if (auto psComp = _particleEffectObject->get_component<GatherParticleComponent>())
                             psComp->set_particle_dying(true); // 파티클 흩어짐
                     }
                 }
@@ -500,7 +500,7 @@ void OtherPlayerScript::awake()
         _particleEffectObject->set_layer("OtherPlayer");
 
         // 3. 연산 담당 컴포넌트 추가 및 데이터 전송
-        auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
+        auto psComp = _particleEffectObject->add_component<GatherParticleComponent>();
         // 다크 판타지 소울류 팬텀(Phantom) 느낌의 색상 오라
         static const DirectX::XMFLOAT3 PlayerColors[4] =
         {
@@ -517,7 +517,6 @@ void OtherPlayerScript::awake()
         auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
         prComp->set_pso_name("particle_draw");
 
-        prComp->set_particle_system(psComp);
 
         // 5. 위치 동기화 (대검 오브젝트의 자식으로 설정)
         _particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
