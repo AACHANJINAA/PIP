@@ -930,3 +930,62 @@ ComPtr<ID3D12RootSignature> BillboardUIRootSignatureGenerator::create(ID3D12Devi
     device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
     return rootSignature;
 }
+
+const std::string& ParticleComputeRootSignatureGenerator::name() const
+{
+    static const std::string sigName = "particle_compute";
+    return sigName;
+}
+
+ComPtr<ID3D12RootSignature> ParticleComputeRootSignatureGenerator::create(ID3D12Device* device)
+{
+    CD3DX12_ROOT_PARAMETER params[3];
+    params[0].InitAsConstantBufferView(0);   // b0: 방출기 상수 (프레임 업로드 버퍼)
+    params[1].InitAsShaderResourceView(0);   // t0: 방출 요청 (프레임 업로드 버퍼)
+    params[2].InitAsUnorderedAccessView(0);  // u0: 파티클 풀
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error)))
+    {
+        if (error) CERROR((char*)error->GetBufferPointer());
+        return nullptr;
+    }
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
+}
+
+const std::string& ParticleBillboardRootSignatureGenerator::name() const
+{
+    static const std::string sigName = "particle_billboard";
+    return sigName;
+}
+
+ComPtr<ID3D12RootSignature> ParticleBillboardRootSignatureGenerator::create(ID3D12Device* device)
+{
+    CD3DX12_ROOT_PARAMETER params[4];
+    params[0].InitAsConstantBufferView(0);   // b0: 오브젝트 정보 (RenderComponent가 묶음, 엔진 호환용)
+    params[1].InitAsConstantBufferView(1);   // b1: 카메라
+    params[2].InitAsConstantBufferView(2);   // b2: 방출기 상수
+    params[3].InitAsShaderResourceView(0);   // t0: 파티클 풀
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error)))
+    {
+        if (error) CERROR((char*)error->GetBufferPointer());
+        return nullptr;
+    }
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
+}

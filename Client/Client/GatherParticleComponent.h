@@ -45,6 +45,7 @@ public:
     // 사라지는 연출 지속 시간을 설정
     void set_death_duration(float duration) { _deathDuration = duration; }
 
+    void awake() override {}   // 범용 파티클의 PSO 지정·자동 재생을 쓰지 않음 (사용처가 particle_draw로 지정)
     void update(float deltaTime) override;
 
 private:
