@@ -15,7 +15,8 @@ LuaState::~LuaState()
 
 bool LuaState::do_file(const std::string& path)
 {
-	if (luaL_dofile(_L, path.c_str()) != LUA_OK)
+	// 별칭("Vfx:...")이나 App 기준 상대 경로를 실제 경로로
+	if (luaL_dofile(_L, PathManager::ResolveApp(path).string().c_str()) != LUA_OK)
 	{
 		const char* err = lua_tostring(_L, -1);
 		CERROR("[Lua] " << path << " 읽기 실패: " << (err ? err : "(알 수 없음)"));

@@ -2,8 +2,8 @@
   "_comment": "경로 별칭과 배포 범위. 클라·서버 공용. 설명은 기획 & 계획/PathAlias_Migration_KR.md",
   "binaries": {
     "client": {
-      "Debug":   ["Client/x64/Debug/STL_Client.exe", "Client/x64/Debug/fmodL.dll", "Client/x64/Debug/assimp-vc142-mtd.dll"],
-      "Release": ["Client/x64/Release/STL_Client.exe", "Client/x64/Release/fmod.dll", "Client/x64/Release/assimp-vc142-mt.dll"]
+      "Debug":   ["Client/x64/Debug/STL_Client.exe", "Client/x64/Debug/fmodL.dll", "Client/x64/Debug/assimp-vc142-mtd.dll", "Client/x64/Debug/lua54.dll"],
+      "Release": ["Client/x64/Release/STL_Client.exe", "Client/x64/Release/fmod.dll", "Client/x64/Release/assimp-vc142-mt.dll", "Client/x64/Release/lua54.dll"]
     },
     "server": {
       "Debug":   ["Server/x64/Debug/STL_Server.exe", "Server/x64/Debug/lua54.dll"],
@@ -37,6 +37,10 @@
         "Brute_Left_Right_Dance", "Brute_Woman_Dance", "Brute_pa_dark_Dance", "Brute_die",
         "DDSMapData", "Character.obj", "Character.mtl", "Character.dds", "test_mesh.obj"
       ]
+    },
+    "Vfx": {
+      "dev": "Client/Client/Resource/Vfx",
+      "include": { "client": ["*"] }
     },
     "Weapons": {
       "dev": "Client/Client/Resource/Weapons",

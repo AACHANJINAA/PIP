@@ -22,7 +22,7 @@ public:
 
     const VfxPresetLibrary& presets();
 
-    static constexpr const char* kPresetPath = "Resource/Vfx/VfxPresets.lua";
+    static constexpr const char* kPresetPath = "Vfx:VfxPresets.lua";
 
 private:
     VfxManager() = default;
