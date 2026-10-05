@@ -248,18 +248,18 @@ VfxManager::instance()->play("hit_spark", hit.point, hit.direction);
 
 ### P2. 범용 파티클 (GPU 방출 + 갱신 + 빌보드)
 
-- [ ] `ParticleSystemSettings` (유니티 모듈 이름): Main(`duration`, `looping`, `play_on_awake`, `start_lifetime/speed/size/rotation` 범위, `start_color` 두 색, `gravity_modifier`, `drag`, `max_particles`=2048), Emission(`rate_over_time`, `bursts`), Shape(Point/Sphere/Hemisphere/Cone/Edge, `radius`, `angle`, `length`), Over lifetime(`end_color`, `end_size_multiplier`), Renderer(`blend` Additive/Alpha, `render_mode` Billboard/StretchedBillboard, `length_scale`). 공간은 World만
-- [ ] API: `play()`, `stop()`, `clear()`, `emit(count)`, `emit(count, pos, dir)`, `is_playing()`, `settings()`
-- [ ] CPU 방출: 연속 방출 누적 + 버스트 → 방출 요청, 오브젝트 시간 기준
-- [ ] 링 버퍼 관리: 묶음별 (시작, 개수, 최대 수명 만료 시각), 만료된 꼬리 전진, `max_particles` 초과분은 잘라내고 로그 1회 (GPU 읽기 없음)
-- [ ] 업로드: 요청·설정·dt를 `GameFramework::linear_allocator()`로
-- [ ] 셰이더 `Particle_Emit_CS.hlsl`: 요청 찾기, 해시 난수, 모양별 초기값
-- [ ] 셰이더 `Particle_Update_CS.hlsl`: 나이, 중력·저항, 죽음 표시
-- [ ] 셰이더 `Particle_Billboard.hlsl`: 빌보드·속도 늘림, 수명별 색·크기, 부드러운 원, 죽은 것은 화면 밖
-- [ ] 루트 시그니처 `particle_compute`, `particle_billboard` (`RootSignature.cpp`)
-- [ ] `ParticleBillboardShader` 프로토타입 2개 → PSO `particle_additive`, `particle_alpha` (깊이 테스트 O, 쓰기 X)
-- [ ] 렌더러: `draw_render_list` 시작 시 모든 파티클 그룹 컴퓨트 선행 패스 → 힙 1회 복구 → 그룹별 `draw`
-- [ ] 검증: 플레이어 앞 임시 테스트 방출기로 수명·중력·색/크기 변화·가산/알파·속도 늘림 확인, `max_particles` 초과 로그, 디버그 레이어 오류 없음 (확인 후 테스트 방출기 제거)
+- [x] `ParticleSystemSettings` (유니티 모듈 이름): Main(`duration`, `looping`, `play_on_awake`, `start_lifetime/speed/size/rotation` 범위, `start_color` 두 색, `gravity_modifier`, `drag`, `max_particles`=2048), Emission(`rate_over_time`, `bursts`), Shape(Point/Sphere/Hemisphere/Cone/Edge, `radius`, `angle`, `length`), Over lifetime(`end_color`, `end_size_multiplier`), Renderer(`blend` Additive/Alpha, `render_mode` Billboard/StretchedBillboard, `length_scale`). 공간은 World만 — `ParticleSystemSettings.h`, 두 번째 시작 색은 `start_color_2`
+- [x] API: `play()`, `stop()`, `clear()`, `emit(count)`, `emit(count, pos, dir)`, `is_playing()`, `settings()`
+- [x] CPU 방출: 연속 방출 누적 + 버스트 → 방출 요청, 오브젝트 시간 기준 — 주기 첫 프레임에만 0초 버스트(히트스톱으로 시간이 0이어도 중복 안 함)
+- [x] 링 버퍼 관리: 묶음별 (시작, 개수, 최대 수명 만료 시각), 만료된 꼬리 전진, `max_particles` 초과분은 잘라내고 로그 1회 (GPU 읽기 없음)
+- [x] 업로드: 요청·설정·dt를 `GameFramework::linear_allocator()`로 — 요청이 없어도 t0용 빈 자리 1개 확보
+- [x] 셰이더 `Particle_Emit_CS.hlsl`: 요청 찾기, 해시 난수, 모양별 초기값 — 공용 정의는 `Particle_Common.hlsli`, 해시는 PCG
+- [x] 셰이더 `Particle_Update_CS.hlsl`: 나이, 중력·저항, 죽음 표시 — `clear()`는 상수 플래그로 갱신 컴퓨트가 전부 지움
+- [x] 셰이더 `Particle_Billboard.hlsl`: 빌보드·속도 늘림, 수명별 색·크기, 부드러운 원, 죽은 것은 화면 밖 — 셰이더 파일은 BOM 없이 저장(컴파일러가 BOM을 못 읽음), fxc로 전부 컴파일 확인
+- [x] 루트 시그니처 `particle_compute`, `particle_billboard` (`RootSignature.cpp`)
+- [x] `ParticleBillboardShader` 프로토타입 2개 → PSO `particle_additive`, `particle_alpha` (깊이 테스트 O, 쓰기 X)
+- [x] 렌더러: `draw_render_list` 시작 시 모든 파티클 그룹 컴퓨트 선행 패스 → 힙 1회 복구 → 그룹별 `draw` — PSO 그룹 단위로 컴퓨트를 먼저 몰아서 실행(그룹 3개라 그룹마다 상태 복구 1회), `render_order`에 `particle_alpha`·`particle_additive` 추가
+- [x] 검증: 플레이어 앞 임시 테스트 방출기로 수명·중력·색/크기 변화·가산/알파·속도 늘림 확인, `max_particles` 초과 로그, 디버그 레이어 오류 없음 (확인 후 테스트 방출기 제거) — 2026-10-06 Release로 모드 4가지(분수·연기·폭발·비) 확인, 최대 개수 초과 로그 확인. 테스트 방출기는 지우지 않고 디버그 패널(`\` 키, `DebugPanel`)의 Particle Test로 옮김(사용자 요청). 디버그 레이어는 VS 밖 실행이라 미확인
 
 ### P3. Lua 프리셋 + VfxManager + 타격 스파크
 

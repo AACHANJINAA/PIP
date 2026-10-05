@@ -47,7 +47,8 @@ private:
     std::shared_ptr<Mesh> _unitCube; // 쿼리용 단위 큐브
     void render_pso_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, CameraComponent* camera, UINT frame_index);
     void draw_render_occlusion_culling_list(ID3D12GraphicsCommandList* commandList, CameraComponent* camera, UINT frame_index);
-    // 파티클 PSO 그룹 그리기: 오브젝트마다 컴퓨트 → 그래픽 상태 복구 → 그리기 (두 렌더 경로 공용)
+    // 파티클 PSO 그룹 그리기: 그룹의 컴퓨트를 먼저 몰아서 → 그래픽 상태 한 번 복구 → 그리기 (두 렌더 경로 공용)
+    static bool is_particle_pso(const std::string& pso) { return pso == "particle_draw" || pso == "particle_alpha" || pso == "particle_additive"; }
     void render_particle_group(ID3D12GraphicsCommandList* commandList, const std::string& psoName, const std::vector<std::shared_ptr<GameObject>>& objects, CameraComponent* camera, UINT frame_index);
 
     // --- Static 렌더 리스트 관리 ---

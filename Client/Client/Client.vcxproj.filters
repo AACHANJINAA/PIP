@@ -170,6 +170,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ParticleBillboardShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystemSettings.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
     <ClInclude Include="GatherParticleComponent.h">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
     </ClInclude>
@@ -547,6 +553,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ParticleBillboardShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
     <ClCompile Include="GatherParticleComponent.cpp">
       <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
     </ClCompile>
@@ -961,6 +970,18 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Minimap_shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Particle_Common.hlsli">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Particle_Emit_CS.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Particle_Update_CS.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Particle_Billboard.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Particle_CS.hlsl">

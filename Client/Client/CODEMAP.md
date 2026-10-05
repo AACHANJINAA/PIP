@@ -179,18 +179,20 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계. 파티클은 `render_particle_group`(오브젝트마다 컴퓨트 → 그래픽 상태 복구 → 그리기, 두 렌더 경로 공용), 컴퓨트 PSO 공유 `get_or_create_compute_pso` |
+| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계. 파티클 PSO 3개(`particle_draw`, `particle_alpha`, `particle_additive`, 이 순서로 그림)는 `render_particle_group`(그룹의 컴퓨트를 먼저 몰아서 → 그래픽 상태 한 번 복구 → 그리기, 두 렌더 경로 공용), 컴퓨트 PSO 공유 `get_or_create_compute_pso` |
 | `Shader.h/.cpp` + 각 `*Shader` | PSO 설정 단위(입력 레이아웃, 셰이더 파일, 블렌드·깊이·래스터 상태, 객체별 상수). 셰이더 클래스 ↔ hlsl: `GltfShader`→`Gltf_Shader.hlsl`, `GltfSkinnedShader`→`Gltf_Skinned_Shader.hlsl`, `GlbShader`→`GLB_Shader.hlsl`, `TerrainShader`, `SkyboxShader`, `ShadowDepth(Skinned)Shader`, `UIShader`, `UIFrameShader`, `BillboardUIShader`, `MonsterHPUIShader`, `MinimapShader`, `OcclusionQueryShader`, `DebugShader`, `ParticleShader`→`Particle_Draw.hlsl`, `DefaultObjectShader`/`PlayerShader`→`Shaders.hlsl` |
-| `RootSignature.h/.cpp` | 이름별 루트 시그니처 생성기 (gltf, skinned, terrain, ui, debug, csm, minimap, occlusion, `compute_particle`, `particle_draw` 등) |
+| `RootSignature.h/.cpp` | 이름별 루트 시그니처 생성기 (gltf, skinned, terrain, ui, debug, csm, minimap, occlusion, `compute_particle`, `particle_draw`, 범용 파티클 `particle_compute`·`particle_billboard` 등) |
 | `RenderComponent.h/.cpp` | 메쉬 + PSO 이름 + 객체 상수 버퍼, 컬링 상태. 파생: `InstancedRenderComponent`, `FoliageRenderComponent`, `TerrainRenderComponent`, `SkyboxRenderComponent`, `UIRenderComponent`, `UIFrameRenderComponent`, `BillboardUIRenderComponent`, `MonsterHPUIRenderComponent`, `ParticleRenderComponent` |
 | `ShadowManager.h/.cpp` | 캐스케이드 그림자(CSM), 정적 그림자 갱신 조건 |
 | `LightManager.h/.cpp` | 조명 상수 버퍼, 태양 방향, IBL 구면 조화 |
 | `OcclusionManager.h/.cpp` | 오클루전 쿼리 힙·결과(N-1 프레임 결과로 조건부 렌더) |
 | `MinimapManager.h/.cpp` | 미니맵 타일·플레이어 위치 |
 | `CameraComponent.h/.cpp` | 투영·뷰 행렬, 카메라 상수, 흔들기 오프셋·회전(`set_shake_angle`), 메인 카메라 |
-| `ParticleSystemComponent.h/.cpp` | 파티클 기반(유니티 ParticleSystem에 해당). 렌더러가 부르는 가상 `dispatch_compute`·`draw`·`particle_count`. 붙이면 `ParticleRenderComponent`가 자동으로 붙음. 범용 방출·갱신(GPU)은 진행 중(`기획 & 계획/ParticleSystem_Plan_KR.md` 6장 P2) |
+| `ParticleSystemComponent.h/.cpp` + `ParticleSystemSettings.h` | **범용 GPU 파티클**(유니티 ParticleSystem에 해당). 붙이면 `ParticleRenderComponent` 자동 부착. 설정 `ParticleSystemSettings`(유니티 모듈 이름: 수명·속도·크기·회전 범위, 두 색 무작위, 중력·저항, `max_particles`, 초당 방출·버스트, 모양 Point/Sphere/Hemisphere/Cone/Edge, 수명별 색·크기, 블렌딩 가산/알파, 일반/속도 늘림). `play/stop/clear/emit`. CPU는 방출 요청만 만들고(링 버퍼 쓰기 위치·살아 있는 수는 묶음별 최대 수명으로 추정, 꽉 차면 방출 안 함), `dispatch_compute`가 갱신 → 방출 컴퓨트, `draw`가 빌보드. 방출 위치·방향은 오브젝트 위치·정면(+Z), 시간은 오브젝트 시간 |
+| `Particle_Common.hlsli`, `Particle_Emit_CS.hlsl`, `Particle_Update_CS.hlsl`, `Particle_Billboard.hlsl` | 범용 파티클 셰이더: 공용 구조체(파티클·방출 요청 48바이트, 방출기 상수)와 PCG 난수, 방출(요청 찾기·모양별 초기값), 갱신(중력·저항·나이, `clear`), 빌보드(죽은 것은 화면 밖, 속도 늘림, 부드러운 원). **BOM 없이 저장** |
 | `GatherParticleComponent.h/.cpp` + `Particle_CS.hlsl` | 목표점으로 모이는 파티클(대검 스킬, 컷씬 플레이어, 분수). 위치를 진행도(`set_compute_data`)로부터 컴퓨트가 직접 계산. 루트 상수 24개(파티클 수 포함), 컴퓨트 PSO는 렌더러가 공유 |
 | `ParticleRenderComponent.h/.cpp` | 파티클을 렌더 목록에 올리는 렌더 컴포넌트. 같은 오브젝트의 파티클 컴포넌트 `draw`를 부름 |
+| `ParticleBillboardShader.h/.cpp` | 범용 파티클 PSO `particle_additive`(가산)·`particle_alpha`(알파). 깊이 테스트 O, 쓰기 X, 컬링 없음 |
 | `UIManager`, `DamageTextManager`, `ImGuiManager` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명 |
 | `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |
 
