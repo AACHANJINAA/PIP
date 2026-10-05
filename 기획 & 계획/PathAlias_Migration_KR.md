@@ -354,7 +354,7 @@ static std::string Expand(std::string_view path);
 - [x] 끝나면 별칭별 크기와 합계를 출력한다
 - [x] `--check`: `Saved/used_files.txt`(클라·서버)를 읽어, 그 앱의 배포 범위(별칭 + `include` - `exclude`)에 들지 않는 파일을 출력한다. 하나라도 있으면 종료 코드 1. 새 하위 폴더를 쓰기 시작하고 `include`에 추가하지 않은 경우가 여기서 잡힌다
 - [x] `.gitignore`에 `/Deploy/` 추가
-- [ ] 확인: `Deploy/Client`, `Deploy/Server`를 저장소 밖으로 옮겨 실행했을 때 배포 모드 로그가 나오고 정상 동작해야 한다
+- [ ] 확인: `Deploy/Client`, `Deploy/Server`를 저장소 밖으로 옮겨 실행했을 때 배포 모드 로그가 나오고 정상 동작해야 한다 — 서버 배포본(저장소 안 `Deploy/server`)이 배포 모드로 사본에서 전부 로드함을 확인(2026-10-06). 클라 배포본은 생성(4.41GB)까지 확인, 실행 확인 남음
 
 ### 6.5 4단계: 점진적 이동
 
@@ -382,26 +382,26 @@ static std::string Expand(std::string_view path);
 
 ### 6.6 검증 체크리스트 (단계마다)
 
-- [ ] 클라·서버 Debug, Release 빌드
+- [x] 클라·서버 Debug, Release 빌드
 - [ ] 개발 모드: VS 실행 + `x64/Release` exe 더블클릭 둘 다
 - [ ] 씬 5개 진입: 타이틀, 메인, 보스, 체스, 툴. 콘솔에 텍스처·메쉬·사운드·셰이더 로드 에러가 없어야 한다
-- [ ] 서버 로그: 지형 5개, 정적 메쉬 3개, NavMesh, Lua 4개 로드 성공
-- [ ] `deploy.py --check`로 `used_files.txt` 검사 통과
+- [x] 서버 로그: 지형 5개, 정적 메쉬 3개, NavMesh, Lua 4개 로드 성공 (개발·배포 모드 둘 다)
+- [ ] `deploy.py --check`로 `used_files.txt` 검사 통과 — 서버 통과, 클라는 실행 기록이 쌓인 뒤 확인
 - [ ] 배포 모드: `python Tools/deploy.py --config Release`로 만든 결과를 저장소 밖에 두고 서버 실행 → 클라 접속 → 메인·보스 씬
 - [ ] F8 물리 덤프와 `imgui.ini`가 각 배포본의 `Saved/`에 생기는지
 
 ### 6.7 문서
 
-- [ ] `Common/CODEMAP.md`: PathManager 설명(매니페스트, `Expand`, 모드 판단)
-- [ ] `Client/Client/CODEMAP.md`, `Server/Server/CODEMAP.md`: 1장 경로 기준, 배포 폴더
-- [ ] 루트 `CODEMAP.md`: 진행 중 설계 문서 표에 이 문서 추가(파티클 브랜치 병합 후), `Tools/deploy.py` 추가
-- [ ] 이 문서의 3·4장과 부록 A는 이동이 끝난 항목을 표시하거나 지운다
+- [x] `Common/CODEMAP.md`: PathManager 설명(매니페스트, `Expand`, 모드 판단)
+- [x] `Client/Client/CODEMAP.md`, `Server/Server/CODEMAP.md`: 1장 경로 기준, 배포 폴더
+- [ ] 루트 `CODEMAP.md`: 진행 중 설계 문서 표에 이 문서 추가(파티클 브랜치 병합 후), `Tools/deploy.py` 추가 — `Tools` 줄과 공통 규칙은 반영, 문서 표는 병합 후
+- [x] 이 문서의 3·4장과 부록 A는 이동이 끝난 항목을 표시하거나 지운다 (부록 A에 **완료** 표시, 계속 갱신)
 
 ---
 
 ## 부록 A. 파일별 경로 사용처 전체 목록
 
-주석을 제외한 코드에서 경로 문자열이 나오는 줄이다. 줄 번호는 `temp/path-manager` `bf195ba23` 기준이라 코드가 바뀌면 틀어진다. "별칭(안)"은 3장 표를 기계적으로 적용한 결과다.
+주석을 제외한 코드에서 경로 문자열이 나오는 줄이다. 줄 번호는 `temp/path-manager` `bf195ba23` 기준이라 코드가 바뀌면 틀어진다. "별칭(안)"은 3장 표를 기계적으로 적용한 결과다. 별칭으로 옮긴 줄은 끝에 **완료**를 붙였다(2026-10-06, 2차 작업).
 
 총 363줄, 38개 파일.
 
@@ -423,7 +423,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 24 | `Resource/SkyBox/` | `SkyBox:` |
+| 24 | `Resource/SkyBox/` | `SkyBox:` | **완료**
 | 25 | `farmland/farmland_skybox.dds` | (build_skybox 인자 4.5) |
 | 26 | `farmland/farmland_specular.dds` | (build_skybox 인자 4.5) |
 | 27 | `farmland/farmland_diffuse.txt` | (build_skybox 인자 4.5) |
@@ -438,7 +438,7 @@ static std::string Expand(std::string_view path);
 | 62 | `Resource/Sound/BossGrab.wav` | `Sound:BossGrab.wav` |
 | 63 | `Resource/Sound/BossLanding.mp3` | `Sound:BossLanding.mp3` |
 | 64 | `Resource/Sound/BossRoar.wav` | `Sound:BossRoar.wav` |
-| 89 | `Resource/UI/ID/Player_` | `UI:ID/Player_` |
+| 89 | `Resource/UI/ID/Player_` | `UI:ID/Player_` | **완료**
 | 105 | `Resource/UI/HP_Bar_Frame.dds` | `UI:HP_Bar_Frame.dds` |
 | 110 | `Resource/UI/HP_Bar.dds` | `UI:HP_Bar.dds` |
 | 121 | `Resource/UI/Q_interaction_UI_OFF.png` | `UI:Q_interaction_UI_OFF.png` |
@@ -489,7 +489,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 28 | `Resource\\SkyBox\\` | `SkyBox:` |
+| 28 | `Resource\\SkyBox\\` | `SkyBox:` | **완료**
 | 29 | `night_field\\night_field_skybox.dds` | (build_skybox 인자 4.5) |
 | 30 | `night_field\\night_field_diffuse.dds` | (build_skybox 인자 4.5) |
 | 31 | `night_field\\night_field_specular.dds` | (build_skybox 인자 4.5) |
@@ -569,7 +569,7 @@ static std::string Expand(std::string_view path);
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
 | 169 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
-| 171 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 171 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` | **완료**
 | 172 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 173 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 174 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -598,7 +598,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 47 | `Resource/SkyBox/` | `SkyBox:` |
+| 47 | `Resource/SkyBox/` | `SkyBox:` | **완료**
 | 48 | `cloudy/cloudy_skybox.dds` | (build_skybox 인자 4.5) |
 | 49 | `cloudy/cloudy_specular.dds` | (build_skybox 인자 4.5) |
 | 50 | `diffuse.txt` | (build_skybox 인자 4.5) |
@@ -623,9 +623,9 @@ static std::string Expand(std::string_view path);
 | 87 | `Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` |
 | 91 | `Resource/MainLandscape_Meshes/Landscape_-2_-1_MapData/Landscape_-2_-1_ExportedClientData.json` | `LandscapeMeshes:Landscape_-2_-1_MapData/Landscape_-2_-1_ExportedClientData.json` |
 | 117 | `Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf` | `LeverAndPosition:Meshes/Cube_5E5A4B61.gltf` |
-| 119 | `World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json` | `WorldBatch:Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json` |
+| 119 | `World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json` | `WorldBatch:Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json` | **완료**
 | 123 | `Resource/Sound/MainBGM.mp3` | `Sound:MainBGM.mp3` |
-| 174 | `Resource/UI/ID/Player_` | `UI:ID/Player_` |
+| 174 | `Resource/UI/ID/Player_` | `UI:ID/Player_` | **완료**
 | 190 | `Resource/UI/HP_Bar_Frame.dds` | `UI:HP_Bar_Frame.dds` |
 | 195 | `Resource/UI/HP_Bar.dds` | `UI:HP_Bar.dds` |
 | 206 | `Resource/UI/Q_interaction_UI_OFF.png` | `UI:Q_interaction_UI_OFF.png` |
@@ -665,7 +665,7 @@ static std::string Expand(std::string_view path);
 | 573 | `Resource/Lever/Animation/Lever_UP.gltf` | `Lever:Animation/Lever_UP.gltf` |
 | 602 | `Resource/Lever/Lever.gltf` | `Lever:Lever.gltf` |
 | 645 | `Resource/UI/just_black_background.dds` | `UI:just_black_background.dds` |
-| 659 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 659 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` | **완료**
 | 661 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 662 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 663 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -674,7 +674,7 @@ static std::string Expand(std::string_view path);
 | 666 | `Anim_DKF_Skill_01.gltf` | (접두 변수 4.5) |
 | 667 | `Anim_DKF_Skill_01_end.gltf` | (접두 변수 4.5) |
 | 668 | `Anim_DKF_Death.gltf` | (접두 변수 4.5) |
-| 715 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 715 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` | **완료**
 | 717 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 718 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 719 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -683,7 +683,7 @@ static std::string Expand(std::string_view path);
 | 722 | `Anim_DKF_Skill_01.gltf` | (접두 변수 4.5) |
 | 723 | `Anim_DKF_Skill_01_end.gltf` | (접두 변수 4.5) |
 | 724 | `Anim_DKF_Death.gltf` | (접두 변수 4.5) |
-| 771 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 771 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` | **완료**
 | 773 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 774 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 775 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -692,7 +692,7 @@ static std::string Expand(std::string_view path);
 | 778 | `Anim_DKF_Skill_01.gltf` | (접두 변수 4.5) |
 | 779 | `Anim_DKF_Skill_01_end.gltf` | (접두 변수 4.5) |
 | 780 | `Anim_DKF_Death.gltf` | (접두 변수 4.5) |
-| 827 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 827 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` | **완료**
 | 829 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 830 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 831 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -750,7 +750,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 505 | `Resource/UI/ID/Player_` | `UI:ID/Player_` |
+| 505 | `Resource/UI/ID/Player_` | `UI:ID/Player_` | **완료**
 | 1143 | `Resource/Sound/QuestComplete.mp3` | `Sound:QuestComplete.mp3` |
 
 ### `Client/Client/OcclusionQueryShader.cpp` (2)
@@ -765,7 +765,7 @@ static std::string Expand(std::string_view path);
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
 | 405 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
-| 407 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 407 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` | **완료**
 | 408 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 409 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 410 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -831,10 +831,10 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 253 | `MapData/Heightmap.json` | `CommonMapData:Heightmap.json` |
+| 253 | `MapData/Heightmap.json` | `CommonMapData:Heightmap.json` | **완료**
 | 260 | `Resource\\HeightMap\\rocky_terrain\\rocky_terrain_02_4k.gltf` | `HeightMap:rocky_terrain/rocky_terrain_02_4k.gltf` |
 | 261 | `Resource\\HeightMap\\aerial_rocks\\textures\\aerial_rocks_04_diff_4k.dds` | `HeightMap:aerial_rocks/textures/aerial_rocks_04_diff_4k.dds` |
-| 292 | `Resource/MainLandscape` | `MainLandscape:` |
+| 292 | `Resource/MainLandscape` | `MainLandscape:` | **완료**
 
 ### `Client/Client/ShadowDepthShader.cpp` (1)
 
@@ -859,7 +859,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 46 | `Resource/Character/BoneGolem/` | `Character:BoneGolem/` |
+| 46 | `Resource/Character/BoneGolem/` | `Character:BoneGolem/` | **완료**
 | 49 | `BoneGolemRd.gltf` | (접두 변수 4.5) |
 | 54 | `A_BoneGolem_Idle.gltf` | (접두 변수 4.5) |
 | 55 | `A_BoneGolem_Walk.gltf` | (접두 변수 4.5) |
@@ -876,7 +876,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 470 | `Resource/MainLandscape/SharedTextures/` | `MainLandscape:SharedTextures/` |
+| 470 | `Resource/MainLandscape/SharedTextures/` | `MainLandscape:SharedTextures/` | **완료**
 | 498 | `_Albedo.dds` | (접두 변수 4.5) |
 | 499 | `_Normal.dds` | (접두 변수 4.5) |
 | 500 | `_Roughness.dds` | (접두 변수 4.5) |
@@ -896,7 +896,7 @@ static std::string Expand(std::string_view path);
 | 116 | `Resource/UI/PIP_GAMES_LOGO.dds` | `UI:PIP_GAMES_LOGO.dds` |
 | 128 | `Resource/UI/game_title_alpha.dds` | `UI:game_title_alpha.dds` |
 | 140 | `Resource/UI/Controls_UI_New.png` | `UI:Controls_UI_New.png` |
-| 178 | `Resource/SkyBox/` | `SkyBox:` |
+| 178 | `Resource/SkyBox/` | `SkyBox:` | **완료**
 | 179 | `cloudy/cloudy_skybox.dds` | (build_skybox 인자 4.5) |
 | 180 | `cloudy/cloudy_specular.dds` | (build_skybox 인자 4.5) |
 | 181 | `diffuse.txt` | (build_skybox 인자 4.5) |
@@ -913,7 +913,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 17 | `Resource/SkyBox/` | `SkyBox:` |
+| 17 | `Resource/SkyBox/` | `SkyBox:` | **완료**
 | 18 | `farmland/farmland_skybox.dds` | (build_skybox 인자 4.5) |
 | 19 | `farmland/farmland_specular.dds` | (build_skybox 인자 4.5) |
 | 20 | `farmland/farmland_diffuse.txt` | (build_skybox 인자 4.5) |
@@ -937,10 +937,10 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 92 | `NPC_Data.lua` | `Lua:NPC_Data.lua` |
-| 127 | `QuestData.lua` | `Lua:QuestData.lua` |
-| 160 | `LeverData.lua` | `Lua:LeverData.lua` |
-| 382 | `PlayerData.lua` | `Lua:PlayerData.lua` |
+| 92 | `NPC_Data.lua` | `Lua:NPC_Data.lua` | **완료**
+| 127 | `QuestData.lua` | `Lua:QuestData.lua` | **완료**
+| 160 | `LeverData.lua` | `Lua:LeverData.lua` | **완료**
+| 382 | `PlayerData.lua` | `Lua:PlayerData.lua` | **완료**
 
 ### `Server/Server/Room.cpp` (1)
 
@@ -952,8 +952,8 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 242 | `MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json` |
-| 247 | `MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` |
-| 251 | `World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.json` | `WorldBatch:Tile_X-1_Y-1/Tile_X-1_Y-1.json` |
-| 255 | `1-BossScene/Boss_Landscape_ExportedClientData.json` | `BossMap:Boss_Landscape_ExportedClientData.json` |
-| 264 | `Resource/NavMesh2.obj` | `NavMesh:NavMesh2.obj` |
+| 242 | `MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json` | **완료**
+| 247 | `MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` | **완료**
+| 251 | `World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.json` | `WorldBatch:Tile_X-1_Y-1/Tile_X-1_Y-1.json` | **완료**
+| 255 | `1-BossScene/Boss_Landscape_ExportedClientData.json` | `BossMap:Boss_Landscape_ExportedClientData.json` | **완료**
+| 264 | `Resource/NavMesh2.obj` | `NavMesh:NavMesh2.obj` | **완료**
