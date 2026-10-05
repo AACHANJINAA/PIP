@@ -16,6 +16,7 @@
 | `Vector3.h` | `common::Vec3`(= `XMFLOAT3`), `Vec4`, `Quat`(= `XMFLOAT4`), 상수(`Vec3Zero` 등), `Dot/Length/Normalize/Distance`, NaN 검사, `common::VectorHelper` 연산자(+, -, *, /) |
 | `JoltHelper.h` | `PIP::Utils::ToJolt/FromJolt` (Vec3, Quat, 행렬 ↔ Jolt) |
 | `TerrainData.h` | 하이트맵 지형 데이터 로드(metadata.json + raw), 정보·높이 배열 |
+| `PathManager.h` | 서버·클라 공용 경로 관리(헤더 전용, Windows). `Init(AppKind)`가 exe 위치로 배포/개발을 판별(배포: 클라 `Resource/`+`Shaders/`, 서버 `Lua/`가 exe 옆에 있음. 개발: 위로 올라가며 `Common/Packet.h`가 있는 저장소 루트 탐색)하고 루트(`App`, `Shader`, `Lua`, `ClientResource`, `CommonData`, `Saved`)를 정한 뒤 cwd를 App으로 맞춤. `Resolve(root, rel)`, `ResolveApp("Resource/...")`, `ToUtf8`. 필수 폴더가 없으면 메시지 박스 |
 | `json.hpp` | nlohmann json 3.12.0 |
 | `stb_image.h` | 이미지 로드 |
 

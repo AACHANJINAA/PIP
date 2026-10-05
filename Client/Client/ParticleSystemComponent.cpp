@@ -36,7 +36,8 @@ void ParticleSystemComponent::create_compute_pso()
     UINT compileFlags = 0;
 #endif
 
-    HRESULT hr = D3DCompileFromFile(L"Particle_CS.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+    const std::wstring shader_path = PathManager::Resolve(PathRoot::Shader, L"Particle_CS.hlsl").wstring();
+    HRESULT hr = D3DCompileFromFile(shader_path.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
         "CS_Main", "cs_5_1", compileFlags, 0, &computeShader, &errorBlob);
 
     if (FAILED(hr)) {

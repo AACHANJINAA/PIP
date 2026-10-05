@@ -2784,7 +2784,7 @@ namespace PIP::SERVER
 
 		// 1. 세션이 안 열려있으면 (최초 1회) 파일을 생성하고 레코더를 초기화
 		if (!_isSessionOpen) {
-			_dumpFile.open("physics_dump.bin", std::ios::binary);
+			_dumpFile.open(PathManager::Resolve(PathRoot::Saved, "physics_dump.bin"), std::ios::binary);
 			if (_dumpFile.is_open()) {
 				_streamOut = std::make_unique<JPH::StreamOutWrapper>(_dumpFile);
 				_recorder = std::make_unique<JPH::DebugRendererRecorder>(*_streamOut);

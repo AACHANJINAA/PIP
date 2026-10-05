@@ -8,7 +8,7 @@ ReadOBJMesh::ReadOBJMesh(const std::string& filePath)
 	set_name(filePath); // Object의 이름 설정
 
 	// --- 아래는 기존의 파싱 로직을 거의 그대로 사용합니다 ---
-	std::ifstream in{ filePath };
+	std::ifstream in{ PathManager::ResolveApp(filePath) };
 	if (!in) {
 		CERROR("OBJ파일 읽기 오류")
 		return;
@@ -214,7 +214,7 @@ void ReadOBJMesh::LoadMtlFile(const std::string& objFilePath, const std::string&
 {
 	// .obj 파일의 경로를 기준으로 .mtl 파일의 전체 경로를 생성
 	std::string mtlFilePath = objFilePath.substr(0, objFilePath.find_last_of("/\\")) + "/" + mtlFileName;
-	std::ifstream in(mtlFilePath);
+	std::ifstream in(PathManager::ResolveApp(mtlFilePath));
 	if (!in) {
 		return; // 파일 열기 실패
 	}

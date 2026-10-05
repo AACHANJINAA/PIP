@@ -116,7 +116,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	//load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
 	ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf", false);
 
-	std::string path = "../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
+	std::string path = PathManager::Resolve(PathRoot::CommonData, "World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json").string();
 	DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
 
 	// [사운드] 전역 BGM 재생

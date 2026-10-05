@@ -115,7 +115,7 @@ bool PhysicsDebugCapture::open_session()
 {
 	if (_recorder) return true;
 
-	_file.open(kDumpFileName, std::ios::binary | std::ios::trunc);
+	_file.open(PathManager::Resolve(PathRoot::Saved, kDumpFileName), std::ios::binary | std::ios::trunc);
 	if (!_file.is_open())
 	{
 		CLOG("[PhysicsDebugCapture] 파일을 열 수 없음: " << kDumpFileName);
@@ -125,7 +125,7 @@ bool PhysicsDebugCapture::open_session()
 	_stream = std::make_unique<JPH::StreamOutWrapper>(_file);
 	_recorder = std::make_unique<JPH::DebugRendererRecorder>(*_stream);
 	_capturedFrames = 0;
-	CLOG("[PhysicsDebugCapture] 기록 세션 시작: " << kDumpFileName);
+	CLOG("[PhysicsDebugCapture] 기록 세션 시작: " << PathManager::ToUtf8(PathManager::Resolve(PathRoot::Saved, kDumpFileName)));
 
 	// 기록은 세계 좌표 그대로라, 뷰어 카메라를 기준 형상 소유자(플레이어) 위치로 보내는 명령을 남김
 	for (const auto& reference : _references)

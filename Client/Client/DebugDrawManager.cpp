@@ -127,7 +127,7 @@ void DebugDrawManager::Render(ID3D12GraphicsCommandList* cmdList, UINT frameInde
 void DebugDrawManager::LoadLocalDebugShape(const std::string& jsonPath, const std::string& targetActor,
 	const std::string& targetMesh)
 {
-    std::ifstream file(jsonPath);
+    std::ifstream file(PathManager::ResolveApp(jsonPath));
     if (!file.is_open()) return;
 
     nlohmann::json root;

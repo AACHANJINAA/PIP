@@ -292,7 +292,7 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     new_texture_info.name = file_path;
 
     // 2. DDS 경로 생성
-    std::filesystem::path original_path(file_path);
+    std::filesystem::path original_path = PathManager::ResolveApp(file_path);
     std::filesystem::path dds_path = original_path;
     // 확장자 대체
     dds_path.replace_extension(".dds");
@@ -426,7 +426,7 @@ std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::st
     using json = nlohmann::json;
     std::vector<std::string> loaded_material_names;
     
-        std::ifstream gltf_file(file_path);
+        std::ifstream gltf_file(PathManager::ResolveApp(file_path));
     if (!gltf_file.is_open()) {
             CERROR("Failed to open glTF file: " << file_path);
             return loaded_material_names;
@@ -844,7 +844,7 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
 {
     // 1. Irradiance Map (인덱스 1)
     _ibl_irradiance_path = diffuse_path;
-    std::ifstream sh_file(_ibl_irradiance_path);
+    std::ifstream sh_file(PathManager::ResolveApp(_ibl_irradiance_path));
 
     if (sh_file.is_open())
     {
@@ -984,7 +984,7 @@ ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::
     }
 
     // Debug: 절대 경로 계산 및 존재성 확인
-    std::filesystem::path dds_path = std::filesystem::absolute(file_path);
+    std::filesystem::path dds_path = std::filesystem::absolute(PathManager::ResolveApp(file_path));
 
     if (!std::filesystem::exists(dds_path)) {
         CERROR("Cubemap DDS file not found: " << dds_path.string());
@@ -1089,7 +1089,7 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
     if (it != _textures.end())
         return &it->second;
     // 1. 파일 읽기
-    std::ifstream file(file_path, std::ios::binary);
+    std::ifstream file(PathManager::ResolveApp(file_path), std::ios::binary);
     if (!file.is_open())
     {
         CERROR("Heightmap raw file not found: " << file_path);
@@ -1190,7 +1190,7 @@ ResourceManager::TextureInfo* ResourceManager::load_texture_r8(const std::string
         return &it->second;
 
     // 2. 파일 읽기
-    std::ifstream file(file_path, std::ios::binary);
+    std::ifstream file(PathManager::ResolveApp(file_path), std::ios::binary);
     if (!file.is_open())
     {
         CERROR("R8 texture file not found: " << file_path);
@@ -1358,7 +1358,7 @@ ResourceManager::TextureInfo* ResourceManager::create_texture_array_r8(const std
 
         for (size_t i = 0; i < array_size; ++i)
         {
-            std::ifstream file(file_paths[i], std::ios::binary);
+            std::ifstream file(PathManager::ResolveApp(file_paths[i]), std::ios::binary);
             if (!file.is_open())
             {
                 CERROR("Failed to open R8 file for array: " <<

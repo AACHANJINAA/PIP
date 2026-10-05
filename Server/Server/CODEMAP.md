@@ -15,7 +15,8 @@ IOCP 기반 권위 서버. 방(Room)마다 Jolt 물리 시스템을 따로 돌�
 | 컴파일 스위치 (`pch.h`) | `DEBUG_VIEWER`(Jolt 물리 기록 `physics_dump.bin`), `ENABLE_DEBUG_LOG`(MYLOG 출력, Release에서는 빠짐), `_DEBUG_PHYSICS_VISUALIZATION` |
 | Jolt | `Jolt/lib/Debug`, `Jolt/lib/Release` |
 | 외부 | Lua 5.4(`lua-5.4.2_Win64_dll17_lib/`, `lua54.dll`), Recast/Detour(`Recast/`, `Detour/`, 내비메시), nlohmann json |
-| **작업 폴더** | **`Server/Server` (프로젝트 폴더)여야 한다.** 지형·씬 JSON(`../../Client/Client/Resource/...`, `../../Common/...`), Lua 데이터(`*.lua`), 내비메시(`Resource/NavMesh2.obj`) 경로가 모두 이 기준. `Server.vcxproj`에 `LocalDebuggerWorkingDirectory=$(ProjectDir)`. 개인 `.vcxproj.user`에 다른 값이 있으면 그쪽이 우선하므로 "상속"으로 되돌릴 것 |
+| 경로 기준 | `common::PathManager`(`Common/PathManager.h`)가 exe 위치로 판단(작업 폴더 무관). 배포 폴더(exe 옆에 `Lua/`)면 exe 폴더, 아니면 저장소의 `Server/Server`가 App 루트. 루트: `Lua/`(Lua 데이터), `Resource/`(내비메시), `ClientResource`(배포 `Data/ClientResource`, 개발 `Client/Client/Resource`), `CommonData`(배포 `Data/Common`, 개발 `Common`), `Saved/`(`physics_dump.bin`) |
+| 배포 폴더 | `STL_Server.exe`, `lua54.dll`, `Lua/*.lua`, `Resource/NavMesh2.obj`, `Data/ClientResource/`(`MainLandscape/`, `MainLandscape_Meshes/Landscape_-1_-1_MapData`, `Landscape_-1_0_MapData`, `1-BossScene/`), `Data/Common/World_Batch_glTF/Tile_X-1_Y-1/`, `Saved/`(자동 생성). `.jbin` 캐시는 원본 메쉬 옆에 생긴다 |
 | 시계 | `common::NetNowMs()`(steady_clock ms). 리와인드 기록·판정, NPC 시각 모두 이 시계 |
 
 ---
@@ -171,7 +172,7 @@ GameObject (ValidateHit 순수 가상)
 |---|---|
 | `MapDataManager.h/.cpp` | 하이트맵 지형(`LoadMainLandscapeData`), 정적 메쉬 충돌체(`LoadStaticMeshShapes`, JSON 옆에 `.jbin` 캐시 저장), 서버 익스포트 데이터, 지형 그룹(스테이지별), 내비메시(Detour, `dtNavMeshQuery`는 스레드별), 지면 높이 |
 | `glTFMeshLoader` | 충돌용 glTF 메쉬 로드 |
-| `LuaManager.h/.cpp` + `*.lua` | Lua 데이터: `NPC_Data.lua`(스폰), `QuestData.lua`, `LeverData.lua`, `PlayerData.lua`(초기 스탯, 퀘스트2 부활 위치). AI용 Lua 함수 등록. `Monster.lua`는 C++에서 로드하지 않음(`AIComponent::SetLuaScript` 호출처 없음, AI는 행동 트리 사용) |
+| `LuaManager.h/.cpp` + `Lua/*.lua` | Lua 데이터: `NPC_Data.lua`(스폰), `QuestData.lua`, `LeverData.lua`, `PlayerData.lua`(초기 스탯, 퀘스트2 부활 위치). AI용 Lua 함수 등록. `Monster.lua`는 C++에서 로드하지 않음(`AIComponent::SetLuaScript` 호출처 없음, AI는 행동 트리 사용) |
 | `DBManager` | DB 작업 스레드, 로그인·인벤토리 저장(현재 더미 모드) |
 | `CombatDef.h` | `AttackConfig`(모양, 위치 오프셋, 데미지, 넉백 값, 쿨다운, 상태·액션, 잡기 여부) |
 | `GridMap` | 셀 공간 분할, 주변 객체·셀 조회 |
@@ -193,4 +194,3 @@ GameObject (ValidateHit 순수 가상)
 ## 10. 진행 중 작업 (관련 문서)
 
 - 넉백 모션 이벤트(넉백 값 버그는 수정됨): `기획 & 계획/NetMotionSync_Design_KR.md` S4
-- 서버 리소스 경로를 exe 기준 PathManager로 바꾸는 건은 배포 폴더 구성부터 정하기로 함(미정)

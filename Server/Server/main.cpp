@@ -16,6 +16,9 @@ int main()
 	// 소스와 문자열 상수가 UTF-8(/utf-8)이므로 콘솔 출력도 UTF-8로 맞춤
 	SetConsoleOutputCP(CP_UTF8);
 	std::wcout.imbue(std::locale(".UTF-8"));
+
+	// Lua, 맵 데이터 경로 기준 (배포 폴더 / 저장소 자동 판별)
+	common::PathManager::Init(common::AppKind::Server);
 	std::vector<int> p_cores = GetPerformanceCoreIndices();
 
 	int total_cores = p_cores.empty() ? static_cast<int>(std::thread::hardware_concurrency()) : static_cast<int>(p_cores.size());

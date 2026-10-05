@@ -10,7 +10,7 @@ ReadFBXMesh::ReadFBXMesh(const std::string& file_path)
 	// aiProcess_Triangulate: 모든 면을 삼각형으로 분할
 	// aiProcess_FlipUVs: UV(텍스처 좌표)의 y축을 뒤집기
 	// aiProcess_CalcTangentSpace: 탄젠트와 바이탄젠트 계산
-	const aiScene* pScene = importer.ReadFile(file_path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* pScene = importer.ReadFile(PathManager::ToUtf8(PathManager::ResolveApp(file_path)), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	// 파일 읽기 실패 시 처리
 	if (!pScene || pScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !pScene->mRootNode)

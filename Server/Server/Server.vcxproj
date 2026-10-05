@@ -72,7 +72,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <!-- 지형(../../Client, ../../Common), Lua, Resource/NavMesh 경로가 프로젝트 폴더 기준이므로 VS 실행도 프로젝트 폴더에서 -->
+    <!-- 경로는 PathManager가 exe 위치로 계산하므로 작업 폴더와 무관. 기존 동작과 맞추려고 프로젝트 폴더로 둠 -->
     <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -237,6 +237,7 @@
     <ClInclude Include="..\..\Common\json.hpp" />
     <ClInclude Include="..\..\Common\Packet.h" />
     <ClInclude Include="..\..\Common\PacketStream.h" />
+    <ClInclude Include="..\..\Common\PathManager.h" />
     <ClInclude Include="..\..\Common\stb_image.h" />
     <ClInclude Include="..\..\Common\TerrainData.h" />
     <ClInclude Include="..\..\Common\Vector3.h" />
@@ -292,11 +293,11 @@
     <ClInclude Include="TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LeverData.lua" />
-    <None Include="Monster.lua" />
-    <None Include="NPC_Data.lua" />
-    <None Include="PlayerData.lua" />
-    <None Include="QuestData.lua" />
+    <None Include="Lua\LeverData.lua" />
+    <None Include="Lua\Monster.lua" />
+    <None Include="Lua\NPC_Data.lua" />
+    <None Include="Lua\PlayerData.lua" />
+    <None Include="Lua\QuestData.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
