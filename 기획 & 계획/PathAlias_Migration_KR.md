@@ -346,7 +346,7 @@ static std::string Expand(std::string_view path);
 
 ### 6.4 3단계: 배포 프로그램 (`Tools/deploy.py`)
 
-- [x] 인자: `--app client|server|all`, `--config Release`, `--out <폴더>`(기본 `Deploy/`), `--build`(지정 시 MSBuild 먼저 실행), `--check`. Python 3, 표준 라이브러리만 사용
+- [x] 인자: `--app client|server|all`, `--config Release`, `--out <폴더>`(기본 `Deploy/`), `--build`(지정 시 MSBuild 먼저 실행), `--check`. Python 3, 표준 라이브러리만 사용. 인자 없이 `python Tools/deploy.py`로 실행하면 대화형 메뉴(배포, 빌드 후 배포, 사용 파일 검사, 기록 지우기)
 - [x] `PathManifest.json`을 읽고 `binaries`의 `{Config}`를 치환해 exe와 DLL을 복사한다
 - [x] 별칭마다 `include[앱]`의 항목만 복사한다. `"*"`는 폴더 전체이고, 별칭 `exclude`와 전체 `exclude`를 뺀다. 폴더는 `robocopy /MIR`, 파일은 `shutil.copy2`. 위치는 6.0의 1번 규칙을 따른다
 - [x] `include`에 적었는데 없는 경로는 경고를 출력한다(오타 방지)

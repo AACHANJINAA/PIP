@@ -4,7 +4,8 @@
 PathManager는 Deploy.json이 있을 때만 배포 모드로 동작한다. 설명: 기획 & 계획/PathAlias_Migration_KR.md
 
 사용:
-    python Tools/deploy.py                              # 클라·서버 Release를 Deploy/ 에
+    python Tools/deploy.py                              # 대화형 메뉴 (번호를 골라 실행)
+    python Tools/deploy.py --app all                    # 클라·서버 Release를 Deploy/ 에
     python Tools/deploy.py --app server --config Debug
     python Tools/deploy.py --build                      # 빌드 후 배포
     python Tools/deploy.py --check                      # 사용 파일이 배포 범위에 있는지 검사
@@ -199,9 +200,91 @@ def deploy(manifest, apps, config, out_root):
         print(f"  합계 {format_size(total)}")
 
 
+def ask(title, options, default=1):
+    """번호 선택. options: [(표시, 값)], 엔터는 기본값"""
+    print(f"\n{title}")
+    for i, (label, _) in enumerate(options, 1):
+        print(f"  {i}. {label}{'  (기본)' if i == default else ''}")
+    while True:
+        answer = input("> ").strip()
+        if not answer:
+            return options[default - 1][1]
+        if answer.isdigit() and 1 <= int(answer) <= len(options):
+            return options[int(answer) - 1][1]
+        print(f"  1~{len(options)} 중에서 고르세요")
+
+
+def ask_text(title, default):
+    answer = input(f"\n{title} [{default}]: ").strip()
+    return answer or default
+
+
+def ask_yes(title, default=True):
+    answer = input(f"\n{title} [{'Y/n' if default else 'y/N'}]: ").strip().lower()
+    return default if not answer else answer in ("y", "yes", "ㅛ")
+
+
+def resolve_out(out):
+    out_root = Path(out)
+    return out_root if out_root.is_absolute() else REPO / out_root
+
+
+def interactive():
+    """실행 인자 없이 실행하면 메뉴로 고른다"""
+    manifest = load_manifest()
+    app_options = [("클라·서버 둘 다", ["client", "server"]), ("클라", ["client"]), ("서버", ["server"])]
+    config_options = [("Release", "Release"), ("Debug", "Debug")]
+
+    while True:
+        print("\n========== PIP 배포 도구 ==========")
+        action = ask("할 일", [
+            ("배포 폴더 만들기", "deploy"),
+            ("빌드 후 배포 폴더 만들기", "build"),
+            ("사용 파일 검사 (used_files.txt가 배포 범위 안인지)", "check"),
+            ("사용 파일 기록 지우기 (검사를 처음부터 다시 쌓을 때)", "reset"),
+            ("종료", "quit"),
+        ])
+        if action == "quit":
+            return 0
+
+        apps = ask("대상", app_options)
+
+        try:
+            if action == "check":
+                check(manifest, apps)
+            elif action == "reset":
+                for app in apps:
+                    used = REPO / manifest["appRoots"][app] / "Saved" / "used_files.txt"
+                    if used.exists():
+                        used.unlink()
+                        print(f"[{app}] 삭제: {used}")
+                    else:
+                        print(f"[{app}] 기록 없음")
+            else:
+                config = ask("빌드 구성", config_options)
+                out_root = resolve_out(ask_text("출력 폴더 (상대 경로면 저장소 기준)", "Deploy"))
+                build_note = " / 빌드 먼저" if action == "build" else ""
+                print(f"\n  대상: {', '.join(apps)} / 구성: {config} / 출력: {out_root}{build_note}")
+                if not ask_yes("진행할까요?"):
+                    continue
+                if action == "build":
+                    build(apps, config)
+                deploy(manifest, apps, config, out_root)
+                print("\n완료")
+        except RuntimeError as e:
+            print(f"\n오류: {e}")
+
+
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
+    if len(sys.argv) == 1:
+        try:
+            return interactive()
+        except (KeyboardInterrupt, EOFError):
+            print()
+            return 0
+
     parser = argparse.ArgumentParser(description="PathManifest.json 기준으로 배포 폴더를 만든다")
     parser.add_argument("--app", choices=["client", "server", "all"], default="all")
     parser.add_argument("--config", choices=["Debug", "Release"], default="Release")
@@ -217,10 +300,7 @@ def main():
         return check(manifest, apps)
     if args.build:
         build(apps, args.config)
-    out_root = Path(args.out)
-    if not out_root.is_absolute():
-        out_root = REPO / out_root
-    deploy(manifest, apps, args.config, out_root)
+    deploy(manifest, apps, args.config, resolve_out(args.out))
     return 0
 
 
