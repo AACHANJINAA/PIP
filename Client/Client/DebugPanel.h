@@ -20,6 +20,7 @@ private:
     DebugPanel() = default;
 
     void draw_particle_test();
+    void draw_vfx_presets();        // 프리셋 목록, 다시 읽기, 플레이어 앞에서 재생
     void apply_particle_mode();     // 모드에 맞춰 설정·방출 방향을 다시 정함
     void place_particle_test();     // 플레이어 앞(보는 방향 반대쪽 3m, 1m 위)으로 옮김
 
@@ -28,4 +29,5 @@ private:
     std::shared_ptr<GameObject> _particleTest;
     int _particleMode = 0;
     int _burstCount = 1500;
+    int _vfxIndex = 0;
 };

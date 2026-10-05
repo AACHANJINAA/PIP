@@ -263,16 +263,16 @@ VfxManager::instance()->play("hit_spark", hit.point, hit.direction);
 
 ### P3. Lua 프리셋 + VfxManager + 타격 스파크
 
-- [ ] 프리셋 파일 `Resource/Vfx/VfxPresets.lua` (`vfx.이름 = {...}`, 변형은 `extend(base, overrides)`)
-- [ ] `VfxPresetLibrary`: Lua 테이블 → `ParticleSystemSettings`, 모르는 키·잘못된 값 로그
-- [ ] `VfxManager`: `play(name, pos, dir, scale = 1)`, 이름별 방출기 오브젝트 지연 생성(풀링), 씬 전환으로 파괴되면 재생성, `reload()`
-- [ ] 디버그 키 F5: 프리셋 다시 읽기 (`GameFramework::ProcessInput`)
-- [ ] 프리셋 `hit_spark`(가산, 속도 늘림, 흰색→주황, 칼 방향 원뿔, 수명 0.15~0.3초, 30~50개), `skill_hit_spark`(더 크고 많게)
-- [ ] 연결: `MainPlayerScript::on_trigger_enter`에서 `VfxManager::play(skill ? "skill_hit_spark" : "hit_spark", hit.point, hit.direction)`
-- [ ] 검증: 평타·대검 적중 지점에서 칼 방향으로 스파크, F5로 Lua 값 수정이 바로 반영, 씬 전환 후에도 재생
+- [x] 프리셋 파일 `Resource/Vfx/VfxPresets.lua` (`vfx.이름 = {...}`, 변형은 `extend(base, overrides)`) — BOM 없는 UTF-8, 키 설명 주석 포함
+- [x] `VfxPresetLibrary`: Lua 테이블 → `ParticleSystemSettings`, 모르는 키·잘못된 값 로그 — 문자열 열거형(shape·blend·render_mode)도 모르는 값이면 로그, `start_color_2`가 없으면 단색. 게임 밖 테스트로 두 프리셋 경고 없이 읽힘 확인
+- [x] `VfxManager`: `play(name, pos, dir, scale = 1)`, 이름별 방출기 오브젝트 지연 생성(풀링), 씬 전환으로 파괴되면 재생성, `reload()` — `scale` 인자는 쓰임새가 정해지지 않아 넣지 않음(`play(name, pos, dir)`). 방출기는 반복·연속 방출을 끄고 time = 0 버스트만 방출
+- [x] 디버그 키 F5: 프리셋 다시 읽기 (`GameFramework::ProcessInput`) — 디버그 패널(`\`)에도 VFX Presets 항목(다시 읽기, 프리셋 골라 플레이어 앞 재생)
+- [x] 프리셋 `hit_spark`(가산, 속도 늘림, 흰색→주황, 칼 방향 원뿔, 수명 0.15~0.3초, 30~50개), `skill_hit_spark`(더 크고 많게) — 평타 40개·최대 512, 스킬 120개·최대 1024
+- [x] 연결: `MainPlayerScript::on_trigger_enter`에서 `VfxManager::play(skill ? "skill_hit_spark" : "hit_spark", hit.point, hit.direction)`
+- [x] 검증: 평타·대검 적중 지점에서 칼 방향으로 스파크, F5로 Lua 값 수정이 바로 반영, 씬 전환 후에도 재생 — 2026-10-06 Release로 확인
 
 ### 마무리
 
-- [ ] 문서: `ParticleSystem_Plan_KR.md`(결정·체크리스트 결과), `Client/Client/CODEMAP.md`(새 파일·렌더 경로·디버그 키 F5), 루트 `CODEMAP.md` 상태
+- [x] 문서: `ParticleSystem_Plan_KR.md`(결정·체크리스트 결과), `Client/Client/CODEMAP.md`(새 파일·렌더 경로·디버그 키 F5), 루트 `CODEMAP.md` 상태 — 타격감 계획 문서에도 타격 스파크 반영
 - [ ] PathManager 합칠 때: 새 셰이더를 `Shaders/`로, 경로를 PathManager로 (합치는 시점에 별도 진행)
 
