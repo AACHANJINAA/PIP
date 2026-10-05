@@ -16,7 +16,7 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 | Jolt | Debug: `Jolt/lib/Debug`, Release: `Jolt/lib/ReleaseDebugRenderer`(디버그 렌더러 포함, MSVC 14.38·LTCG 없음). Release에도 `JPH_DEBUG_RENDERER` 정의 |
 | 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생), Lua 5.4.2(`ThirdParty/lua-5.4.2/`, 서버와 같은 빌드를 복사, 빌드 후 `lua54.dll`을 실행 파일 폴더로 복사) |
 | 작업 폴더 | `Client/Client`. 리소스·셰이더(`*.hlsl`) 경로가 이 폴더 기준 |
-| 인코딩 | `.editorconfig` 규칙 UTF-8 BOM. `/utf-8`이라 BOM이 없어도 빌드됨. 맞추려면 `Tools/EnsureUtf8Bom.ps1` |
+| 인코딩 | `.editorconfig`: C++ 소스는 UTF-8 BOM(`/utf-8`이라 없어도 빌드됨, 맞추려면 `Tools/EnsureUtf8Bom.ps1`), 셰이더는 **BOM 없는** UTF-8(BOM이 있으면 `D3DCompileFromFile`이 "Illegal character"로 실패) |
 
 로그: `CLOG(expr)`는 `DebugLogStream` → VS 출력 창(UTF-16 변환) + 콘솔(UTF-8). `CERROR`는 `DebugBreak()`까지 한다.
 

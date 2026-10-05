@@ -37,7 +37,7 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 
 ## 공통 규칙
 
-- 서버·클라 모두 `/utf-8` 컴파일. 소스는 UTF-8 BOM(`.editorconfig`).
+- 서버·클라 모두 `/utf-8` 컴파일. C++ 소스는 UTF-8 BOM, 셰이더(`*.hlsl`, `*.hlsli`)는 BOM 없는 UTF-8(셰이더 컴파일러가 BOM을 못 읽음). `.editorconfig`
 - 서버 작업 폴더는 `Server/Server`, 클라 작업 폴더는 `Client/Client` (리소스 상대 경로 기준).
 - `Common`을 바꾸면 서버와 클라를 둘 다 다시 빌드한다.
 - 코드 구조를 바꾸면 해당 폴더 `CODEMAP.md`도 같이 고친다.
