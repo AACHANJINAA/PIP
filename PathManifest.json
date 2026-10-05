@@ -1,0 +1,114 @@
+{
+  "_comment": "경로 별칭과 배포 범위. 클라·서버 공용. 설명은 기획 & 계획/PathAlias_Migration_KR.md",
+  "binaries": {
+    "client": {
+      "Debug":   ["Client/x64/Debug/STL_Client.exe", "Client/x64/Debug/fmodL.dll", "Client/x64/Debug/assimp-vc142-mtd.dll"],
+      "Release": ["Client/x64/Release/STL_Client.exe", "Client/x64/Release/fmod.dll", "Client/x64/Release/assimp-vc142-mt.dll"]
+    },
+    "server": {
+      "Debug":   ["Server/x64/Debug/STL_Server.exe", "Server/x64/Debug/lua54.dll"],
+      "Release": ["Server/x64/Release/STL_Server.exe", "Server/x64/Release/lua54.dll"]
+    }
+  },
+  "appRoots": {
+    "client": "Client/Client",
+    "server": "Server/Server"
+  },
+  "aliases": {
+    "UI": {
+      "dev": "Client/Client/Resource/UI",
+      "include": { "client": ["*"] },
+      "exclude": ["default_png", "*.py"]
+    },
+    "Sound": {
+      "dev": "Client/Client/Resource/Sound",
+      "include": { "client": ["*"] }
+    },
+    "SkyBox": {
+      "dev": "Client/Client/Resource/SkyBox",
+      "include": { "client": ["*"] },
+      "exclude": ["star"]
+    },
+    "Character": {
+      "dev": "Client/Client/Resource/Character",
+      "include": { "client": ["*"] },
+      "exclude": [
+        "Animation_BruteHi", "BruteDance", "Brute_Head_Spin_Dance", "Brute_Joyful_Dance",
+        "Brute_Left_Right_Dance", "Brute_Woman_Dance", "Brute_pa_dark_Dance", "Brute_die",
+        "DDSMapData", "Character.obj", "Character.mtl", "Character.dds", "test_mesh.obj"
+      ]
+    },
+    "Weapons": {
+      "dev": "Client/Client/Resource/Weapons",
+      "include": { "client": ["*"] }
+    },
+    "Lever": {
+      "dev": "Client/Client/Resource/Lever",
+      "include": { "client": ["*"] }
+    },
+    "LeverAndPosition": {
+      "dev": "Client/Client/Resource/LeverAndPosition",
+      "include": { "client": ["*"] }
+    },
+    "Elevator": {
+      "dev": "Client/Client/Resource/Elevator",
+      "include": { "client": ["*"] }
+    },
+    "Foliage": {
+      "dev": "Client/Client/Resource/Foliage",
+      "include": { "client": ["*"] },
+      "exclude": ["Foliage_stone_-1_-1_MapData", "Foliage_tree_-1_-1_MapData", "Foliage_tree_0_0_MapData", "base_foliage_tree"]
+    },
+    "BossMap": {
+      "dev": "Client/Client/Resource/1-BossScene",
+      "include": { "client": ["*"], "server": ["*"] }
+    },
+    "LandscapeMeshes": {
+      "dev": "Client/Client/Resource/MainLandscape_Meshes",
+      "include": {
+        "client": ["*"],
+        "server": ["Landscape_-1_-1_MapData", "Landscape_-1_0_MapData"]
+      }
+    },
+    "MainLandscape": {
+      "dev": "Client/Client/Resource/MainLandscape",
+      "include": {
+        "client": ["*"],
+        "server": ["Landscape*"]
+      }
+    },
+    "HeightMap": {
+      "dev": "Client/Client/Resource/HeightMap",
+      "include": { "client": ["*"] },
+      "exclude": ["HeightMap.dds", "HeightMap.png"]
+    },
+    "ChessMap": {
+      "dev": "Client/Client/Resource/MD",
+      "include": { "client": ["*"] }
+    },
+    "Shaders": {
+      "dev": "Client/Client/Shaders",
+      "include": { "client": ["*"] }
+    },
+    "CommonMapData": {
+      "dev": "Common/MapData",
+      "include": { "client": ["*"] }
+    },
+    "WorldBatch": {
+      "dev": "Common/World_Batch_glTF",
+      "include": {
+        "client": ["Tile_X-1_Y-1"],
+        "server": ["Tile_X-1_Y-1"]
+      }
+    },
+    "Lua": {
+      "dev": "Server/Server/Lua",
+      "include": { "server": ["*"] }
+    },
+    "NavMesh": {
+      "dev": "Server/Server/Resource",
+      "include": { "server": ["NavMesh2.obj"] }
+    }
+  },
+  "exclude": ["*.psd", "*.blend", "*.jbin", "*.ini"]
+}
