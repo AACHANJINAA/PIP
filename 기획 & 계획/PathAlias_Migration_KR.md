@@ -21,28 +21,44 @@
 | 기본 모드 | **개발 모드.** 저장소 원본을 읽는다 |
 | 배포 모드 판단 | 배포 프로그램이 exe 옆에 `Deploy.json`을 쓴다. 그 파일이 있을 때만 배포 모드. 루트 위치도 이 파일에서 읽는다(배포 폴더 구조를 C++에 하드코딩하지 않음) |
 | 경로 목록 | 저장소 루트의 `PathManifest.json`. 게임(PathManager)과 배포 프로그램이 같은 파일을 읽는다 |
-| 별칭 단위 | **폴더 단위.** 별칭 하나 = 폴더 하나. 배포는 별칭 폴더를 통째로 복사(데이터 파일이 참조하는 `.bin`, 텍스처, `Meshes/`도 같이 따라옴) |
-| 코드 표기 | `"별칭:폴더 안 경로"`. 예: `"UI:HP_Bar.dds"`, `"DarkKnight:DKF_animations/Anim_DKF_Death.gltf"` |
+| 별칭 단위 | **상위 폴더 단위.** 별칭은 코드에서 부르는 이름(예: `Character` = `Resource/Character`)일 뿐이다. 배포할 때 무엇을 복사할지는 별칭마다 앱별 `include`/`exclude`로 따로 정한다 |
+| 배포 범위 | 앱별 `include`에 적은 하위 폴더·파일만 복사한다. 폴더는 통째로 복사하므로 데이터 파일이 참조하는 `.bin`, 텍스처, `Meshes/`도 같이 따라온다(3.5). 앱 키가 없으면 그 앱 배포본에는 별칭을 넣지 않는다 |
+| 코드 표기 | `"별칭:별칭 폴더 안 경로"`. 예: `"UI:HP_Bar.dds"`, `"Character:DarkKnight/DKF_animations/Anim_DKF_Death.gltf"` |
 | 전환 방식 | **점진적.** 기존 `"Resource/..."` 표기와 별칭 표기를 둘 다 받는다. 새 코드는 별칭으로 쓰고, 기존 파일은 손댈 때 바꾼다 |
-| 사용 파일 기록 | 개발 모드에서 PathManager로 연 파일을 전부 기록해 `Saved/used_files.txt`로 남긴다. 배포 전에 "매니페스트에 없는 폴더에서 읽은 파일"을 검사하는 데 쓴다 |
+| 사용 파일 기록 | 개발 모드에서 PathManager로 연 파일을 전부 기록해 `Saved/used_files.txt`로 남긴다. 배포 전에 "배포 범위(`include`)에 없는 파일을 읽었는지" 검사하는 데 쓴다. `include` 추가를 잊은 경우를 잡는 장치라 **필수 단계**다 |
 
 ### 2.1 `PathManifest.json` 모양 (안)
 
 ```json
 {
   "aliases": {
-    "UI":         { "dev": "Client/Client/Resource/UI",                   "apps": ["client"] },
-    "Sound":      { "dev": "Client/Client/Resource/Sound",                "apps": ["client"] },
-    "BossMap":    { "dev": "Client/Client/Resource/1-BossScene",          "apps": ["client", "server"] },
-    "Lua":        { "dev": "Server/Server/Lua",                           "apps": ["server"] }
+    "UI": {
+      "dev": "Client/Client/Resource/UI",
+      "include": { "client": ["*"] },
+      "exclude": ["default_png", "*.py"]
+    },
+    "Character": {
+      "dev": "Client/Client/Resource/Character",
+      "include": { "client": ["DarkKnight", "BoneGolem", "SK_MagicConstruct"] }
+    },
+    "LandscapeMeshes": {
+      "dev": "Client/Client/Resource/MainLandscape_Meshes",
+      "include": {
+        "client": ["*"],
+        "server": ["Landscape_-1_-1_MapData", "Landscape_-1_0_MapData"]
+      }
+    },
+    "Lua": { "dev": "Server/Server/Lua", "include": { "server": ["*"] } }
   },
-  "exclude": ["*.psd", "*.blend"]
+  "exclude": ["*.psd", "*.blend", "*.jbin"]
 }
 ```
 
-- `dev`: 저장소 루트 기준 경로.
+- `dev`: 저장소 루트 기준 경로. PathManager는 이것만 쓴다(개발 모드의 별칭 → 폴더 표).
+- `include`: 앱(`client`, `server`)별로 복사할 항목. 항목은 별칭 폴더 기준 하위 폴더·파일 경로이고 와일드카드를 쓸 수 있다. `"*"`는 전체다.
+- `exclude`(별칭별, 전체 공통): `include` 결과에서 뺄 항목.
 - 배포 위치는 개발 폴더의 상대 위치를 그대로 따른다(6.0의 1번). App 밖 별칭만 `<exe 폴더>/External/<별칭>/`이다. 배포 프로그램이 `Deploy.json`에 별칭 → 상대 경로를 기록한다.
-- `apps`: 그 별칭을 어느 배포본에 넣을지. 서버는 클라 리소스 중 `apps`에 `server`가 있는 것만 받는다(1차 작업의 `Data/ClientResource` 사본을 대신함).
+- 서버는 클라 리소스 중 `include`에 `server`가 있는 것만 받는다. 1차 작업의 `Data/ClientResource` 사본을 대신한다.
 
 ### 2.2 기존 표기와 공존시키는 규칙 (중요)
 
@@ -69,45 +85,51 @@ static std::string Expand(std::string_view path);
 
 ## 3. 별칭 제안표
 
-"코드 사용" 열은 주석이 아닌 코드에서 해당 폴더 경로가 나오는 횟수다. 접두 변수로 조합하는 경우는 변수 1개를 1회로 셌다.
+"코드 사용" 열은 주석이 아닌 코드에서 해당 폴더 경로가 나오는 횟수다. 접두 변수로 조합하는 경우는 변수 1개를 1회로 셌다. `include`가 비어 있는 앱은 그 별칭을 받지 않는다.
 
-### 3.1 클라이언트
+### 3.1 별칭 목록 (19개)
 
-| 별칭(안) | 개발 경로 (`Client/Client/` 기준) | 코드 사용 | 크기 | 비고 |
-|---|---|---|---|---|
-| `UI` | `Resource/UI` | 91 + `ID/` 11 | 63M | `Player_N.dds`는 문자열 조합(4.5). `UI/default_png`(21M)는 코드 참조 없음 |
-| `Sound` | `Resource/Sound` | 27 | 98M | `SoundManager::load_sound` 경유 |
-| `SkyBox` | `Resource/SkyBox` | 8 + `build_skybox` 5곳 | 241M | 4.5 참고. `star/`는 코드 참조 없음 |
-| `DarkKnight` | `Resource/Character/DarkKnight` | 17 + 접두 변수 6 | | 플레이어. 애니메이션은 `DKF_animations/` |
-| `DarkKnightNoSword` | `Resource/Character/DarkKnightNoneSword` | 3 | | |
-| `BoneGolem` | `Resource/Character/BoneGolem` | 7 + 접두 변수 1 | | Tainer 보스 |
-| `MagicConstruct` | `Resource/Character/SK_MagicConstruct` | 14 | | |
-| `DragonBrute` | `Resource/Character/DragonBrute` | 7 | | |
-| `BruteHi` | `Resource/Character/BruteHi` | 3 | | |
-| `BruteAnim` | `Resource/Character/Brute_Attack_animation`, `Brute_Walk`, `Brute_idle` | 2 + 2 + 2 | | 별칭 하나에 폴더 여러 개를 묶을지, 각각 별칭을 줄지 결정 필요 |
-| `Bandit` | `Resource/Character/Bandit_Rd_NPC` | 3 | | |
-| `Gramma` | `Resource/Character/Gramma_Walk` | 1 | | |
-| `Weapons` | `Resource/Weapons` | 6 | 7.1M | |
-| `Lever` | `Resource/Lever` | 4 + `Animation/` 2 | 11M | |
-| `LeverAndPosition` | `Resource/LeverAndPosition` | 3 | 11M | |
-| `Elevator` | `Resource/Elevator` | 3 | 24M | |
-| `Foliage` | `Resource/Foliage` | 2 + 1 | 13M | 실제 로드는 `Foliage_tree_-1_0_MapData`뿐 |
-| `BossMap` | `Resource/1-BossScene` | 1 | 165M | **서버 공용** |
-| `LandscapeMeshes` | `Resource/MainLandscape_Meshes` | 6 | 2.9G | **서버 공용**(`-1_-1`, `-1_0`만). 서버만 일부를 쓰므로 하위 폴더별 별칭도 고려 |
-| `MainLandscape` | `Resource/MainLandscape` | 1 + `SharedTextures/` 접두 변수 1 | 142M | **서버 공용**. `Landscape01~05`는 `directory_iterator`로 전부 읽음 |
-| `HeightMap` | `Resource/HeightMap` | 2 | 155M | 체스 씬 지형 텍스처 |
-| `ChessMap` | `Resource/MD` | 1 | 207M | 체스 씬 JSON |
-| `Shaders` | `Shaders` | 34 (셰이더 클래스 18개 파일 + 파티클) | | 이미 `Resolve(PathRoot::Shader, ...)`. 별칭 전환은 선택 |
-| `CommonMapData` | `../../Common/MapData` (저장소 `Common/MapData`) | 1 | 977K | 체스 씬 하이트맵 |
-| `WorldBatch` | 저장소 `Common/World_Batch_glTF` | 1 (클라 디버그 도형) | 107M | **서버 공용**. 실제 사용은 `Tile_X-1_Y-1/`뿐 |
+| 별칭 | 개발 경로 (저장소 기준) | include: client | include: server | exclude | 코드 사용 |
+|---|---|---|---|---|---|
+| `UI` | `Client/Client/Resource/UI` | `*` | | `default_png`(21M), `*.py` | 91 + `ID/` 11 |
+| `Sound` | `Client/Client/Resource/Sound` | `*` | | | 27 |
+| `SkyBox` | `Client/Client/Resource/SkyBox` | `BRDF.dds`, `diffuse.txt`, `cloudy`, `farmland`, `night` | | | 8 + `build_skybox` 5곳 |
+| `Character` | `Client/Client/Resource/Character` | 3.2 표 | | | 3.2 표 |
+| `Weapons` | `Client/Client/Resource/Weapons` | `*` | | | 6 |
+| `Lever` | `Client/Client/Resource/Lever` | `*` | | | 6 |
+| `LeverAndPosition` | `Client/Client/Resource/LeverAndPosition` | `*` | | | 3 |
+| `Elevator` | `Client/Client/Resource/Elevator` | `*` | | | 3 |
+| `Foliage` | `Client/Client/Resource/Foliage` | `*` | | `Foliage_stone_-1_-1_MapData`, `Foliage_tree_-1_-1_MapData`, `Foliage_tree_0_0_MapData`, `base_foliage_tree` | 3 |
+| `BossMap` | `Client/Client/Resource/1-BossScene` | `*` | `*` | | 1 + 서버 1 |
+| `LandscapeMeshes` | `Client/Client/Resource/MainLandscape_Meshes` | `*` | `Landscape_-1_-1_MapData`, `Landscape_-1_0_MapData` | | 6 + 서버 2 |
+| `MainLandscape` | `Client/Client/Resource/MainLandscape` | `*` | `Landscape*` (`SharedTextures` 제외) | | 1 + 접두 변수 1 + 서버 1 |
+| `HeightMap` | `Client/Client/Resource/HeightMap` | `aerial_rocks`, `rocky_terrain` | | | 2 |
+| `ChessMap` | `Client/Client/Resource/MD` | `*` | | | 1 |
+| `Shaders` | `Client/Client/Shaders` | `*` | | | 34 (지금은 `Resolve(PathRoot::Shader)`, 별칭 전환은 선택) |
+| `CommonMapData` | `Common/MapData` | `*` | | | 1 (App 밖 → `External/`) |
+| `WorldBatch` | `Common/World_Batch_glTF` | `Tile_X-1_Y-1` | `Tile_X-1_Y-1` | | 클라 1 + 서버 1 (App 밖 → `External/`) |
+| `Lua` | `Server/Server/Lua` | | `*` | | 4 |
+| `NavMesh` | `Server/Server/Resource` | | `NavMesh2.obj` | | 1 |
 
-### 3.2 서버
+`MainLandscape`의 서버 범위는 `MapDataManager::LoadMainLandscapeData`가 `Landscape*` 폴더의 `metadata.json`과 raw만 읽기 때문이다. `SharedTextures`(129M)는 클라 렌더링 전용이다.
 
-| 별칭(안) | 개발 경로 | 코드 사용 | 비고 |
+### 3.2 `Character` 하위 폴더
+
+| 하위 폴더 | 배포(client) | 코드 사용 | 비고 |
 |---|---|---|---|
-| `Lua` | `Server/Server/Lua` | 4 (+ `AIComponent::SetLuaScript`, 호출처 없음) | |
-| `NavMesh` | `Server/Server/Resource` | 1 | `NavMesh2.obj`만 사용(`NavMesh.obj`는 코드 참조 없음) |
-| `BossMap`, `LandscapeMeshes`, `MainLandscape`, `WorldBatch` | 클라 별칭과 같음 | 각 1~2 | `server.cpp` 시작부 |
+| `DarkKnight` | 포함 | 17 + 접두 변수 6 | 플레이어. 애니메이션은 `DKF_animations/` |
+| `DarkKnightNoneSword` | 포함 | 3 | |
+| `BoneGolem` | 포함 | 7 + 접두 변수 1 | Tainer 보스 |
+| `SK_MagicConstruct` | 포함 | 14 | |
+| `DragonBrute` | 포함 | 7 | |
+| `BruteHi` | 포함 | 3 | |
+| `Brute_Attack_animation`, `Brute_Walk`, `Brute_idle` | 포함 | 2, 2, 2 | |
+| `Bandit_Rd_NPC` | 포함 | 3 | |
+| `Gramma_Walk` | 포함 | 1 | |
+| `Animation_BruteHi`, `BruteDance` | 제외 | 0 (주석 코드에만 있음) | 각 36M |
+| `Brute_Head_Spin_Dance`, `Brute_Joyful_Dance`, `Brute_Left_Right_Dance`, `Brute_Woman_Dance`, `Brute_pa_dark_Dance`, `Brute_die` | 제외 | 0 | 약 180M |
+| `DDSMapData` | 제외 | 0 | 327M. `ExportedClientData.json`이 있지만 로드하는 코드 없음 |
+| `Character.obj/.mtl/.dds`, `test_mesh.obj` | 제외 | 0 | 약 20M |
 
 ### 3.3 저장 위치 (별칭 아님, 루트 유지)
 
@@ -115,21 +137,16 @@ static std::string Expand(std::string_view path);
 |---|---|
 | `Saved` | 클라 `imgui.ini`(`ImGuiManager`), `client_physics_dump.bin`(`PhysicsDebugCapture`), 서버 `physics_dump.bin`(`Room`), 앞으로 `used_files.txt` |
 
-### 3.4 코드에서 참조하지 않는 폴더 (배포 제외 후보)
+### 3.4 별칭이 없는 폴더 (배포에서 자동으로 빠짐)
 
-주석이 아닌 코드에 경로가 없는 폴더다. 데이터 파일(씬 JSON 등)에서 참조하는지는 3.5 범위까지만 확인했다.
+주석이 아닌 코드에 경로가 없는 최상위 폴더다. 매니페스트에 별칭이 없으니 복사하지 않는다. 별칭 안에서 제외하는 하위 폴더는 3.1의 `exclude`와 3.2에 있다.
 
 | 폴더 | 크기 | 비고 |
 |---|---|---|
 | `Resource/Test`, `Test_glTF`, `TESTMapData` | 65M, 31M, 52K | 테스트용 |
 | `Resource/Monster`, `Resource/Default` | 256K, 4K | |
-| `Resource/Character/DDSMapData` | 327M | `ExportedClientData.json`이 있지만 로드하는 코드 없음 |
-| `Resource/Character/` 의 춤·사망 애니 폴더 8개 (`Animation_BruteHi`, `BruteDance`, `Brute_*_Dance` 5개, `Brute_die`) | 약 250M | `Animation_BruteHi`, `BruteDance`는 주석 코드에만 있음 |
-| `Resource/Character/Character.obj/.mtl/.dds`, `test_mesh.obj` | 약 20M | |
-| `Resource/UI/default_png` | 21M | |
-| `Resource/SkyBox/star` | 65M | |
-| `Resource/Foliage/` 중 `Foliage_tree_-1_0_MapData` 외 4개 | 약 10M | |
-| `Server/Server/Resource/NavMesh.obj` | | |
+| `Resource/SkyBox/star` (별칭 안, include에 없음) | 65M | |
+| `Server/Server/Resource/NavMesh.obj` (별칭 안, include에 없음) | | |
 
 ### 3.5 데이터 파일이 다른 파일을 부르는 구조 (폴더째 복사해야 하는 이유)
 
@@ -205,8 +222,8 @@ static std::string Expand(std::string_view path);
 
 | 위치 | 현재 | 별칭 표기 예 |
 |---|---|---|
-| `MainPlayerScript` (1), `Main_Scene` (4), `OtherPlayerScript` (1) | `animationpath = "Resource/Character/DarkKnight/DKF_animations/"` + 파일명 | `"DarkKnight:DKF_animations/"` + 파일명 |
-| `TainerScript` | `basePath = "Resource/Character/BoneGolem/"` | `"BoneGolem:"` |
+| `MainPlayerScript` (1), `Main_Scene` (4), `OtherPlayerScript` (1) | `animationpath = "Resource/Character/DarkKnight/DKF_animations/"` + 파일명 | `"Character:DarkKnight/DKF_animations/"` + 파일명 |
+| `TainerScript` | `basePath = "Resource/Character/BoneGolem/"` | `"Character:BoneGolem/"` |
 | `TerrainLoader::load_landscape_weightmaps` | `sharedTexpath = "Resource/MainLandscape/SharedTextures/"` + `_Albedo/_Normal/_Roughness.dds` | `"MainLandscape:SharedTextures/"` |
 | `Boss_Scene`, `Main_Scene`, `NetworkManager` | `"Resource/UI/ID/Player_" + n + ".dds"` | `"UI:ID/Player_" + n + ".dds"` |
 | `SceneManager::build_skybox` 호출 5곳 (`Boss_Scene`, `Chess_Scene`, `Main_Scene`, `Title_Scene`, `Tool_Scene`) | 공용 폴더 `"Resource/SkyBox/"`(체스는 `"Resource\\SkyBox\\"`) + 파일명 4개 | 공용 폴더 인자를 `"SkyBox:"`로 바꾸거나, 인자를 없애고 별칭으로 고정 |
@@ -268,10 +285,11 @@ static std::string Expand(std::string_view path);
   },
   "appRoots": { "client": "Client/Client", "server": "Server/Server" },
   "aliases": {
-    "UI":       { "dev": "Client/Client/Resource/UI", "apps": ["client"] },
-    "BossMap":  { "dev": "Client/Client/Resource/1-BossScene", "apps": ["client", "server"] },
-    "Shaders":  { "dev": "Client/Client/Shaders", "apps": ["client"] },
-    "Lua":      { "dev": "Server/Server/Lua", "apps": ["server"] }
+    "UI":        { "dev": "Client/Client/Resource/UI", "include": { "client": ["*"] }, "exclude": ["default_png", "*.py"] },
+    "Character": { "dev": "Client/Client/Resource/Character", "include": { "client": ["DarkKnight", "BoneGolem", "..."] } },
+    "BossMap":   { "dev": "Client/Client/Resource/1-BossScene", "include": { "client": ["*"], "server": ["*"] } },
+    "WorldBatch":{ "dev": "Common/World_Batch_glTF", "include": { "client": ["Tile_X-1_Y-1"], "server": ["Tile_X-1_Y-1"] } },
+    "Lua":       { "dev": "Server/Server/Lua", "include": { "server": ["*"] } }
   },
   "exclude": ["*.psd", "*.blend", "*.jbin"]
 }
@@ -288,8 +306,8 @@ static std::string Expand(std::string_view path);
 
 ### 6.2 1단계: PathManager 기능 (`Common/PathManager.h`)
 
-- [ ] `PathManifest.json`을 작성한다. 3.1·3.2 표의 별칭을 전부 넣고, 3.4의 배포 제외 후보는 넣지 않는다.
-  - 결정 필요: `BruteAnim`을 묶을지 나눌지, `LandscapeMeshes` 하위 폴더별 별칭.
+- [ ] `PathManifest.json`을 작성한다. 3.1 표의 별칭 19개와 앱별 `include`/`exclude`, 3.2의 `Character` 하위 폴더 목록을 넣는다. 3.4 폴더는 넣지 않는다.
+- [ ] PathManager는 `dev`만 읽는다. `include`/`exclude`는 배포 프로그램만 쓴다.
 - [ ] `Init` 흐름을 바꾼다.
   1. exe 폴더를 구한다.
   2. `Deploy.json`이 있으면 배포 모드다. 별칭 표는 exe 기준으로 만든다.
@@ -326,10 +344,11 @@ static std::string Expand(std::string_view path);
 
 - [ ] 인자: `-App client|server|all`, `-Config Release`, `-Out <폴더>`(기본 `Deploy/`), `-Build`(지정 시 MSBuild 먼저 실행), `-Check`
 - [ ] `PathManifest.json`을 읽고 `binaries`의 `{Config}`를 치환해 exe와 DLL을 복사한다
-- [ ] `apps`에 해당 앱이 있는 별칭만 복사한다(`robocopy /MIR`, `exclude` 적용). 위치는 6.0의 1번 규칙을 따른다
+- [ ] 별칭마다 `include[앱]`의 항목만 복사한다. `"*"`는 폴더 전체이고, 별칭 `exclude`와 전체 `exclude`를 뺀다. 폴더는 `robocopy /MIR`, 파일은 `Copy-Item`. 위치는 6.0의 1번 규칙을 따른다
+- [ ] `include`에 적었는데 없는 경로는 경고를 출력한다(오타 방지)
 - [ ] `Deploy.json`을 생성한다. `Saved/`는 만들지 않는다(실행 중 생성)
 - [ ] 끝나면 별칭별 크기와 합계를 출력한다
-- [ ] `-Check`: `Saved/used_files.txt`(클라·서버)를 읽어, 어느 별칭 폴더에도 속하지 않는 파일을 출력한다. 하나라도 있으면 종료 코드 1
+- [ ] `-Check`: `Saved/used_files.txt`(클라·서버)를 읽어, 그 앱의 배포 범위(별칭 + `include` - `exclude`)에 들지 않는 파일을 출력한다. 하나라도 있으면 종료 코드 1. 새 하위 폴더를 쓰기 시작하고 `include`에 추가하지 않은 경우가 여기서 잡힌다
 - [ ] `.gitignore`에 `/Deploy/` 추가
 - [ ] 확인: `Deploy/Client`, `Deploy/Server`를 저장소 밖으로 옮겨 실행했을 때 배포 모드 로그가 나오고 정상 동작해야 한다
 
@@ -380,7 +399,6 @@ static std::string Expand(std::string_view path);
 
 주석을 제외한 코드에서 경로 문자열이 나오는 줄이다. 줄 번호는 `temp/path-manager` `bf195ba23` 기준이라 코드가 바뀌면 틀어진다. "별칭(안)"은 3장 표를 기계적으로 적용한 결과다.
 
-
 총 363줄, 38개 파일.
 
 ### `Client/Client/BillboardUIShader.cpp` (3)
@@ -406,9 +424,9 @@ static std::string Expand(std::string_view path);
 | 26 | `farmland/farmland_specular.dds` | (build_skybox 인자 4.5) |
 | 27 | `farmland/farmland_diffuse.txt` | (build_skybox 인자 4.5) |
 | 28 | `BRDF.dds` | (build_skybox 인자 4.5) |
-| 33 | `Resource/Character/BoneGolem/BoneGolem.gltf` | `BoneGolem:BoneGolem.gltf` |
-| 34 | `Resource/Character/BoneGolem/BoneGolemRd.gltf` | `BoneGolem:BoneGolemRd.gltf` |
-| 35 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
+| 33 | `Resource/Character/BoneGolem/BoneGolem.gltf` | `Character:BoneGolem/BoneGolem.gltf` |
+| 34 | `Resource/Character/BoneGolem/BoneGolemRd.gltf` | `Character:BoneGolem/BoneGolemRd.gltf` |
+| 35 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 36 | `Resource/Elevator/Elevator.gltf` | `Elevator:Elevator.gltf` |
 | 39 | `Resource/1-BossScene/Boss_Landscape_ExportedClientData.json` | `BossMap:Boss_Landscape_ExportedClientData.json` |
 | 57 | `Resource/Sound/BossBGM.mp3` | `Sound:BossBGM.mp3` |
@@ -472,27 +490,27 @@ static std::string Expand(std::string_view path);
 | 30 | `night_field\\night_field_diffuse.dds` | (build_skybox 인자 4.5) |
 | 31 | `night_field\\night_field_specular.dds` | (build_skybox 인자 4.5) |
 | 32 | `IBL_BRDF_LUT.dds` | (build_skybox 인자 4.5) |
-| 37 | `Resource/Character/BruteHi/bruteHi.gltf` | `BruteHi:bruteHi.gltf` |
-| 38 | `Resource/Character/Brute_Walk/Brute_Walk.gltf` | `BruteAnim:Brute_Walk/Brute_Walk.gltf` |
-| 39 | `Resource/Character/BoneGolem/BoneGolem.gltf` | `BoneGolem:BoneGolem.gltf` |
-| 40 | `Resource/Character/BoneGolem/BoneGolemRd.gltf` | `BoneGolem:BoneGolemRd.gltf` |
-| 41 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
-| 42 | `Resource/Character/Brute_idle/Brute_idle.gltf` | `BruteAnim:Brute_idle/Brute_idle.gltf` |
-| 43 | `Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf` | `BruteAnim:Brute_Attack_animation/Brute_Attack_animation.gltf` |
+| 37 | `Resource/Character/BruteHi/bruteHi.gltf` | `Character:BruteHi/bruteHi.gltf` |
+| 38 | `Resource/Character/Brute_Walk/Brute_Walk.gltf` | `Character:Brute_Walk/Brute_Walk.gltf` |
+| 39 | `Resource/Character/BoneGolem/BoneGolem.gltf` | `Character:BoneGolem/BoneGolem.gltf` |
+| 40 | `Resource/Character/BoneGolem/BoneGolemRd.gltf` | `Character:BoneGolem/BoneGolemRd.gltf` |
+| 41 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
+| 42 | `Resource/Character/Brute_idle/Brute_idle.gltf` | `Character:Brute_idle/Brute_idle.gltf` |
+| 43 | `Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf` | `Character:Brute_Attack_animation/Brute_Attack_animation.gltf` |
 | 54 | `Resource/MD/ExportedClientData.json` | `ChessMap:ExportedClientData.json` |
-| 126 | `Resource/Character/BruteHi/bruteHi.gltf` | `BruteHi:bruteHi.gltf` |
-| 220 | `Resource/Character/Gramma_Walk/Gramma_Walk.gltf` | `Gramma:Gramma_Walk.gltf` |
-| 272 | `Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf` | `MagicConstruct:SK_MagicConstruct.gltf` |
-| 275 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Dodge.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Unarmed_Dodge.gltf` |
-| 276 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack03.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Unarmed_Attack03.gltf` |
-| 277 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack02.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Unarmed_Attack02.gltf` |
-| 278 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack01.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Unarmed_Attack01.gltf` |
-| 279 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Unarmed_Attack.gltf` |
-| 280 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Stun.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Stun.gltf` |
-| 281 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Roar.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Roar.gltf` |
+| 126 | `Resource/Character/BruteHi/bruteHi.gltf` | `Character:BruteHi/bruteHi.gltf` |
+| 220 | `Resource/Character/Gramma_Walk/Gramma_Walk.gltf` | `Character:Gramma_Walk/Gramma_Walk.gltf` |
+| 272 | `Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf` | `Character:SK_MagicConstruct/SK_MagicConstruct.gltf` |
+| 275 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Dodge.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Dodge.gltf` |
+| 276 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack03.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack03.gltf` |
+| 277 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack02.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack02.gltf` |
+| 278 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack01.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack01.gltf` |
+| 279 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf` |
+| 280 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Stun.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Stun.gltf` |
+| 281 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Roar.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Roar.gltf` |
 | 302 | `Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf` | `Weapons:SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf` |
-| 373 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
-| 377 | `Resource/Character/DarkKnight/Anim_DKF_Attack_02.gltf` | `DarkKnight:Anim_DKF_Attack_02.gltf` |
+| 373 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
+| 377 | `Resource/Character/DarkKnight/Anim_DKF_Attack_02.gltf` | `Character:DarkKnight/Anim_DKF_Attack_02.gltf` |
 | 399 | `Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf` | `Weapons:SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf` |
 | 469 | `Resource/UI/HP_Bar_Frame.dds` | `UI:HP_Bar_Frame.dds` |
 | 479 | `Resource/UI/HP_Bar.dds` | `UI:HP_Bar.dds` |
@@ -546,8 +564,8 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 169 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
-| 171 | `Resource/Character/DarkKnight/DKF_animations/` | `DarkKnight:DKF_animations/` |
+| 169 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
+| 171 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
 | 172 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 173 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 174 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -583,18 +601,18 @@ static std::string Expand(std::string_view path);
 | 51 | `BRDF.dds` | (build_skybox 인자 4.5) |
 | 55 | `Resource/Foliage/SM_Grass_01.gltf` | `Foliage:SM_Grass_01.gltf` |
 | 56 | `Resource/Foliage/SM_Dead_grass_01.gltf` | `Foliage:SM_Dead_grass_01.gltf` |
-| 62 | `Resource/Character/BruteHi/bruteHi.gltf` | `BruteHi:bruteHi.gltf` |
+| 62 | `Resource/Character/BruteHi/bruteHi.gltf` | `Character:BruteHi/bruteHi.gltf` |
 | 63 | `Resource/Weapons/SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf` | `Weapons:SM_Weapon_Sword__10/SM_Weapon_Sword__10.gltf` |
-| 64 | `Resource/Character/DragonBrute/SK_DragonBrute.gltf` | `DragonBrute:SK_DragonBrute.gltf` |
-| 65 | `Resource/Character/Brute_Walk/Brute_Walk.gltf` | `BruteAnim:Brute_Walk/Brute_Walk.gltf` |
-| 66 | `Resource/Character/BoneGolem/BoneGolem.gltf` | `BoneGolem:BoneGolem.gltf` |
-| 67 | `Resource/Character/BoneGolem/BoneGolemRd.gltf` | `BoneGolem:BoneGolemRd.gltf` |
-| 68 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
-| 69 | `Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf` | `MagicConstruct:SK_MagicConstruct.gltf` |
-| 70 | `Resource/Character/Bandit_Rd_NPC/Bandit_Rd_NPC.gltf` | `Bandit:Bandit_Rd_NPC.gltf` |
+| 64 | `Resource/Character/DragonBrute/SK_DragonBrute.gltf` | `Character:DragonBrute/SK_DragonBrute.gltf` |
+| 65 | `Resource/Character/Brute_Walk/Brute_Walk.gltf` | `Character:Brute_Walk/Brute_Walk.gltf` |
+| 66 | `Resource/Character/BoneGolem/BoneGolem.gltf` | `Character:BoneGolem/BoneGolem.gltf` |
+| 67 | `Resource/Character/BoneGolem/BoneGolemRd.gltf` | `Character:BoneGolem/BoneGolemRd.gltf` |
+| 68 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
+| 69 | `Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf` | `Character:SK_MagicConstruct/SK_MagicConstruct.gltf` |
+| 70 | `Resource/Character/Bandit_Rd_NPC/Bandit_Rd_NPC.gltf` | `Character:Bandit_Rd_NPC/Bandit_Rd_NPC.gltf` |
 | 71 | `Resource/Lever/Lever.gltf` | `Lever:Lever.gltf` |
-| 72 | `Resource/Character/Brute_idle/Brute_idle.gltf` | `BruteAnim:Brute_idle/Brute_idle.gltf` |
-| 73 | `Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf` | `BruteAnim:Brute_Attack_animation/Brute_Attack_animation.gltf` |
+| 72 | `Resource/Character/Brute_idle/Brute_idle.gltf` | `Character:Brute_idle/Brute_idle.gltf` |
+| 73 | `Resource/Character/Brute_Attack_animation/Brute_Attack_animation.gltf` | `Character:Brute_Attack_animation/Brute_Attack_animation.gltf` |
 | 77 | `Resource/MainLandscape_Meshes/Landscape_0_0_MapData/Landscape_0_0_ExportedClientData.json` | `LandscapeMeshes:Landscape_0_0_MapData/Landscape_0_0_ExportedClientData.json` |
 | 78 | `Resource/MainLandscape_Meshes/Landscape_0_-1_MapData/Landscape_0_-1_ExportedClientData.json` | `LandscapeMeshes:Landscape_0_-1_MapData/Landscape_0_-1_ExportedClientData.json` |
 | 82 | `Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json` |
@@ -643,8 +661,8 @@ static std::string Expand(std::string_view path);
 | 573 | `Resource/Lever/Animation/Lever_UP.gltf` | `Lever:Animation/Lever_UP.gltf` |
 | 602 | `Resource/Lever/Lever.gltf` | `Lever:Lever.gltf` |
 | 645 | `Resource/UI/just_black_background.dds` | `UI:just_black_background.dds` |
-| 659 | `Resource/Character/DarkKnight/DKF_animations/` | `DarkKnight:DKF_animations/` |
-| 661 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
+| 659 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 661 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 662 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 663 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 664 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -652,8 +670,8 @@ static std::string Expand(std::string_view path);
 | 666 | `Anim_DKF_Skill_01.gltf` | (접두 변수 4.5) |
 | 667 | `Anim_DKF_Skill_01_end.gltf` | (접두 변수 4.5) |
 | 668 | `Anim_DKF_Death.gltf` | (접두 변수 4.5) |
-| 715 | `Resource/Character/DarkKnight/DKF_animations/` | `DarkKnight:DKF_animations/` |
-| 717 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
+| 715 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 717 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 718 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 719 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 720 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -661,8 +679,8 @@ static std::string Expand(std::string_view path);
 | 722 | `Anim_DKF_Skill_01.gltf` | (접두 변수 4.5) |
 | 723 | `Anim_DKF_Skill_01_end.gltf` | (접두 변수 4.5) |
 | 724 | `Anim_DKF_Death.gltf` | (접두 변수 4.5) |
-| 771 | `Resource/Character/DarkKnight/DKF_animations/` | `DarkKnight:DKF_animations/` |
-| 773 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
+| 771 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 773 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 774 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 775 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 776 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -670,8 +688,8 @@ static std::string Expand(std::string_view path);
 | 778 | `Anim_DKF_Skill_01.gltf` | (접두 변수 4.5) |
 | 779 | `Anim_DKF_Skill_01_end.gltf` | (접두 변수 4.5) |
 | 780 | `Anim_DKF_Death.gltf` | (접두 변수 4.5) |
-| 827 | `Resource/Character/DarkKnight/DKF_animations/` | `DarkKnight:DKF_animations/` |
-| 829 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
+| 827 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
+| 829 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
 | 830 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 831 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 832 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -712,17 +730,17 @@ static std::string Expand(std::string_view path);
 | 127 | `Resource/Sound/BossRoar.wav` | `Sound:BossRoar.wav` |
 | 131 | `Resource/Elevator/Elevator.gltf` | `Elevator:Elevator.gltf` |
 | 144 | `Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf` | `LeverAndPosition:Meshes/Cube_5E5A4B61.gltf` |
-| 160 | `Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf` | `MagicConstruct:SK_MagicConstruct.gltf` |
-| 162 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Idle01.gltf` | `MagicConstruct:A_MagicConstruct_Idle01.gltf` |
-| 163 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Walk_Forward.gltf` | `MagicConstruct:A_MagicConstruct_Walk_Forward.gltf` |
-| 164 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf` | `MagicConstruct:A_MagicConstruct_Combat_Unarmed_Attack.gltf` |
-| 165 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Death.gltf` | `MagicConstruct:A_MagicConstruct_Death.gltf` |
-| 192 | `Resource/Character/DragonBrute/SK_DragonBrute.gltf` | `DragonBrute:SK_DragonBrute.gltf` |
-| 194 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Idle.gltf` | `DragonBrute:animation/A_DragonBrute_Idle.gltf` |
-| 195 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Walk.gltf` | `DragonBrute:animation/A_DragonBrute_Walk.gltf` |
-| 196 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Attack.gltf` | `DragonBrute:animation/A_DragonBrute_Attack.gltf` |
-| 197 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Death.gltf` | `DragonBrute:animation/A_DragonBrute_Death.gltf` |
-| 198 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Hit.gltf` | `DragonBrute:animation/A_DragonBrute_Hit.gltf` |
+| 160 | `Resource/Character/SK_MagicConstruct/SK_MagicConstruct.gltf` | `Character:SK_MagicConstruct/SK_MagicConstruct.gltf` |
+| 162 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Idle01.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Idle01.gltf` |
+| 163 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Walk_Forward.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Walk_Forward.gltf` |
+| 164 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Combat_Unarmed_Attack.gltf` |
+| 165 | `Resource/Character/SK_MagicConstruct/A_MagicConstruct_Death.gltf` | `Character:SK_MagicConstruct/A_MagicConstruct_Death.gltf` |
+| 192 | `Resource/Character/DragonBrute/SK_DragonBrute.gltf` | `Character:DragonBrute/SK_DragonBrute.gltf` |
+| 194 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Idle.gltf` | `Character:DragonBrute/animation/A_DragonBrute_Idle.gltf` |
+| 195 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Walk.gltf` | `Character:DragonBrute/animation/A_DragonBrute_Walk.gltf` |
+| 196 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Attack.gltf` | `Character:DragonBrute/animation/A_DragonBrute_Attack.gltf` |
+| 197 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Death.gltf` | `Character:DragonBrute/animation/A_DragonBrute_Death.gltf` |
+| 198 | `Resource/Character/DragonBrute/animation/A_DragonBrute_Hit.gltf` | `Character:DragonBrute/animation/A_DragonBrute_Hit.gltf` |
 
 ### `Client/Client/NetworkManager.cpp` (2)
 
@@ -742,8 +760,8 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 405 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `DarkKnight:SKM_DKF_Full_With_Sword.gltf` |
-| 407 | `Resource/Character/DarkKnight/DKF_animations/` | `DarkKnight:DKF_animations/` |
+| 405 | `Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf` | `Character:DarkKnight/SKM_DKF_Full_With_Sword.gltf` |
+| 407 | `Resource/Character/DarkKnight/DKF_animations/` | `Character:DarkKnight/DKF_animations/` |
 | 408 | `Anim_DKF_Idle_Alert.gltf` | (접두 변수 4.5) |
 | 409 | `Anim_DKF_Walk_Alert_Fwd.gltf` | (접두 변수 4.5) |
 | 410 | `Anim_DKF_Run_Alert_Fwd.gltf` | (접두 변수 4.5) |
@@ -791,8 +809,8 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 28 | `Resource/Character/Bandit_Rd_NPC/Bandit_Rd_NPC.gltf` | `Bandit:Bandit_Rd_NPC.gltf` |
-| 32 | `Resource/Character/Bandit_Rd_NPC/Animations/A_Hu_F_Idle.gltf` | `Bandit:Animations/A_Hu_F_Idle.gltf` |
+| 28 | `Resource/Character/Bandit_Rd_NPC/Bandit_Rd_NPC.gltf` | `Character:Bandit_Rd_NPC/Bandit_Rd_NPC.gltf` |
+| 32 | `Resource/Character/Bandit_Rd_NPC/Animations/A_Hu_F_Idle.gltf` | `Character:Bandit_Rd_NPC/Animations/A_Hu_F_Idle.gltf` |
 | 200 | `Resource/UI/Quest_Exclamation_UI.png` | `UI:Quest_Exclamation_UI.png` |
 | 204 | `Resource/UI/Quest_Question_UI.png` | `UI:Quest_Question_UI.png` |
 | 208 | `Resource/UI/Quest_Question_UI.png` | `UI:Quest_Question_UI.png` |
@@ -837,7 +855,7 @@ static std::string Expand(std::string_view path);
 
 | 줄 | 현재 문자열 | 별칭(안) |
 |---|---|---|
-| 46 | `Resource/Character/BoneGolem/` | `BoneGolem:` |
+| 46 | `Resource/Character/BoneGolem/` | `Character:BoneGolem/` |
 | 49 | `BoneGolemRd.gltf` | (접두 변수 4.5) |
 | 54 | `A_BoneGolem_Idle.gltf` | (접두 변수 4.5) |
 | 55 | `A_BoneGolem_Walk.gltf` | (접두 변수 4.5) |
@@ -879,11 +897,11 @@ static std::string Expand(std::string_view path);
 | 180 | `cloudy/cloudy_specular.dds` | (build_skybox 인자 4.5) |
 | 181 | `diffuse.txt` | (build_skybox 인자 4.5) |
 | 182 | `BRDF.dds` | (build_skybox 인자 4.5) |
-| 193 | `Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf` | `DarkKnightNoSword:SKM_DKF_Full.gltf` |
+| 193 | `Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf` | `Character:DarkKnightNoneSword/SKM_DKF_Full.gltf` |
 | 199 | `Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` | `LandscapeMeshes:Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json` |
 | 200 | `Resource/Foliage/Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json` | `Foliage:Foliage_tree_-1_0_MapData/Foliage_tree_-1_0_MapData.json` |
-| 214 | `Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf` | `DarkKnightNoSword:SKM_DKF_Full.gltf` |
-| 215 | `Resource/Character/DarkKnightNoneSword/animations/Sit_idle.gltf` | `DarkKnightNoSword:animations/Sit_idle.gltf` |
+| 214 | `Resource/Character/DarkKnightNoneSword/SKM_DKF_Full.gltf` | `Character:DarkKnightNoneSword/SKM_DKF_Full.gltf` |
+| 215 | `Resource/Character/DarkKnightNoneSword/animations/Sit_idle.gltf` | `Character:DarkKnightNoneSword/animations/Sit_idle.gltf` |
 | 308 | `Resource/Sound/Monster Hunter Wilds Main Theme.mp3` | `Sound:Monster Hunter Wilds Main Theme.mp3` |
 | 312 | `Resource/Sound/monster_hunter_ost.mp3` | `Sound:monster_hunter_ost.mp3` |
 
