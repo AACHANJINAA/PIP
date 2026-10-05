@@ -33,7 +33,7 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 | `BoneCollider_Spec_KR.md` | 1단계: 뼈 부착 칼날 캡슐, 물리 기록, 뷰어 | 완료 |
 | `MeleeHitPrediction_Spec_KR.md` | 2단계: 평타 예측 판정 (스윕, 피격 히트박스, `on_trigger_enter`) | 동작 확인 |
 | `NetMotionSync_Design_KR.md` | 시계 동기화, 보간 버퍼, 넉백 모션 이벤트 | S1~S4 완료 |
-| `ParticleSystem_Plan_KR.md` | 범용 GPU 파티클·VfxManager, 충격파 왜곡 | 계획 (동기화 작업 이후) |
+| `ParticleSystem_Plan_KR.md` | 범용 GPU 파티클·VfxManager, 충격파 왜곡 | 계획 (시뮬레이션 방식 확정: 방출 요청만 CPU, 나머지 GPU 컴퓨트) |
 
 ## 공통 규칙
 
