@@ -85,13 +85,8 @@ double ServerClock::unwrap_server_time(uint32_t stamp) const
 	return static_cast<double>(static_cast<uint64_t>(now)) - diff;
 }
 
-void ServerClock::draw_debug_window()
+void ServerClock::draw_debug_contents()
 {
-	if (!_showDebugWindow) return;
-
-	ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Network (F6)", &_showDebugWindow, ImGuiWindowFlags_AlwaysAutoResize);
-
 	ImGui::Text("Synced: %s   Samples: %d", _synced ? "yes" : "no", static_cast<int>(_samples.size()));
 	ImGui::Text("RTT  best %.1f ms / last %.1f ms", _bestRtt, _lastRtt);
 	ImGui::Text("Offset %.1f ms (target %.1f)", _offset, _targetOffset);
@@ -117,6 +112,4 @@ void ServerClock::draw_debug_window()
 	float jitter = network->sim_jitter_ms();
 	if (ImGui::SliderFloat("Recv delay (ms)", &latency, 0.0f, 300.0f, "%.0f")) network->set_sim_latency_ms(latency);
 	if (ImGui::SliderFloat("Recv jitter (ms)", &jitter, 0.0f, 100.0f, "%.0f")) network->set_sim_jitter_ms(jitter);
-
-	ImGui::End();
 }

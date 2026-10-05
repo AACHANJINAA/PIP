@@ -107,6 +107,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DebugPanel.h" />
     <ClInclude Include="ParticleBillboardShader.h" />
     <ClInclude Include="ParticleSystemSettings.h" />
     <ClInclude Include="GatherParticleComponent.h" />
@@ -236,6 +237,7 @@
     <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DebugPanel.cpp" />
     <ClCompile Include="ParticleBillboardShader.cpp" />
     <ClCompile Include="GatherParticleComponent.cpp" />
     <ClCompile Include="LuaUtil.cpp" />

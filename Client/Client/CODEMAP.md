@@ -29,12 +29,12 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 3. `ProcessNetwork` → `NetworkManager::process_queued_packets` (패킷 핸들러 실행)
 4. `ServerClock::update` (시간 동기화 요청, 서버 시각 추정)
 5. `ReplicationSystem::update` → 등록된 `INetSync::apply_snapshot` (NPC 상태 적용)
-6. `ProcessInput` (F6/F11 등 전역 키)
+6. `ProcessInput` (`\`/F11 등 전역 키)
 7. `update_game_logic`: 새 오브젝트 awake/start → 모든 `GameObject::update` → 모든 `late_update` → `LightManager::update` → 메인 카메라 뷰 행렬 → `DebugDrawManager::Update`
 8. `update_physics` (Jolt 고정 스텝 0.02초)
 9. 현재 씬 `scene_process`, `SoundManager::update`
 10. `PhysicsDebugCapture::process_end_of_frame` (모든 late_update 이후 기록)
-11. 비동기 리소스 업로드 → `Renderer::render` → 후처리 훅 → `DamageTextManager`·`ServerClock` ImGui → ImGui 렌더 → Present
+11. 비동기 리소스 업로드 → `Renderer::render` → 후처리 훅 → `DamageTextManager`·`DebugPanel` ImGui → ImGui 렌더 → Present
 
 ---
 
@@ -193,7 +193,7 @@ Object
 | `GatherParticleComponent.h/.cpp` + `Particle_CS.hlsl` | 목표점으로 모이는 파티클(대검 스킬, 컷씬 플레이어, 분수). 위치를 진행도(`set_compute_data`)로부터 컴퓨트가 직접 계산. 루트 상수 24개(파티클 수 포함), 컴퓨트 PSO는 렌더러가 공유 |
 | `ParticleRenderComponent.h/.cpp` | 파티클을 렌더 목록에 올리는 렌더 컴포넌트. 같은 오브젝트의 파티클 컴포넌트 `draw`를 부름 |
 | `ParticleBillboardShader.h/.cpp` | 범용 파티클 PSO `particle_additive`(가산)·`particle_alpha`(알파). 깊이 테스트 O, 쓰기 X, 컬링 없음 |
-| `UIManager`, `DamageTextManager`, `ImGuiManager` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명 |
+| `UIManager`, `DamageTextManager`, `ImGuiManager`, `DebugPanel` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명, 개발용 디버그 패널(`\`) — ImGui 사용처는 11.1 |
 | `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |
 
 렌더 타깃: 씬을 스왑체인 백버퍼에 바로 그린다(오프스크린 씬 타깃 없음). 화면 후처리를 하려면 이 구조부터 바꿔야 한다.
@@ -219,7 +219,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | 파일 | 역할 |
 |---|---|
 | `NetworkManager.h/.cpp` | 블로킹 소켓 + 수신 전용 스레드(`network_worker` → 패킷 조립 → `concurrent_queue`, 수신 시각 기록). 메인 스레드 `process_queued_packets`에서 핸들러 실행. **인공 수신 지연·흔들림**(순서 유지). 송신 함수 `Send*Packet`, 수신 핸들러 `HANDLE_S2C_*`(로그인, 방, 플레이어 스폰·이동·피격, NPC 스폰·이동·배치·피격, 퀘스트, 인벤토리, 컷씬, 카운트다운, 시간 동기화, 모션 시작·종료 등) |
-| `ServerClock.h/.cpp` | 서버 시각 추정. TIME_SYNC 왕복(로그인 직후 0.1초×5, 이후 2초), RTT 최소 표본 기준 offset, 초당 5ms 이내로 따라감. `server_now_ms`, `arrival_now_ms`(− RTT/2), `unwrap_server_time`(32비트 서버 시각 복원), 보간 지연 상수(NPC 70, 플레이어 30). **F6 창**: RTT, offset, 보간 상태 집계(NPC·플레이어 따로), 서버 위치 유령(NPC·다른 플레이어), 인공 지연 슬라이더 |
+| `ServerClock.h/.cpp` | 서버 시각 추정. TIME_SYNC 왕복(로그인 직후 0.1초×5, 이후 2초), RTT 최소 표본 기준 offset, 초당 5ms 이내로 따라감. `server_now_ms`, `arrival_now_ms`(− RTT/2), `unwrap_server_time`(32비트 서버 시각 복원), 보간 지연 상수(NPC 70, 플레이어 30). 디버그 패널의 **Network** 항목(`draw_debug_contents`): RTT, offset, 보간 상태 집계(NPC·플레이어 따로), 서버 위치 유령(NPC·다른 플레이어, 패널이 열려 있을 때만), 인공 지연 슬라이더 |
 | `SnapshotBuffer.h/.cpp` | 서버 시각 표본 버퍼. 에르미트 위치 보간 + slerp, 긴 간격은 마지막 100ms만, 최대 100ms 외삽, 5m 이상 순간이동 |
 | `ReplicationSystem.h/.cpp`, `INetSync.h` | 엔티티 id → `INetSync` 등록, 스냅샷 전달(`on_receive_snapshot`), 매 프레임 `apply_snapshot` |
 
@@ -246,7 +246,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 
 | 키 | 동작 | 위치 |
 |---|---|---|
-| F6 | 네트워크 창 토글 | `GameFramework::ProcessInput` |
+| `\` (한국어 자판 ₩) | 디버그 패널 토글 (Network, Particle Test). 마우스로 조작하려면 ESC로 커서 표시. 예전 F6 네트워크 창은 여기로 옮김 | `GameFramework::ProcessInput` → `DebugPanel` |
 | F7 | 평타 판정 구간 매 프레임 물리 기록 토글 | `MainPlayerScript::handle_input` |
 | F8 | 클라 물리 한 프레임 기록 + 서버 물리 스냅샷 요청 | `MainPlayerScript::handle_input` |
 | F11 | 전체 화면 | `GameFramework::ProcessInput` |
@@ -254,6 +254,21 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | U | 대검 스킬 즉시 해금 (서버 디버그 명령 `UNLOCK_SKILL`) | `MainPlayerScript::handle_input` |
 
 기록 파일은 `Jolt/JoltViewer/RunViewer.py`로 연다.
+
+### 11.1 ImGui 사용처 (2026-10-06 조사)
+
+ImGui 1.92.7 WIP + ImGuizmo(`imgui/`). 모든 ImGui 창은 한 프레임 안에서 `ImGuiManager::new_frame`(`FrameAdvance` 시작) ~ `ImGuiManager::render`(Present 직전) 사이에 그린다.
+
+| 위치 | 내용 | 여는 방법 |
+|---|---|---|
+| `ImGuiManager.h/.cpp` | 초기화·해제·프레임 시작·렌더. 폰트용 SRV 1개짜리 전용 디스크립터 힙, 키보드 내비게이션, 다크 테마. 창 배치는 `imgui.ini`(git 무시). 입력은 `main.cpp` WndProc가 `ImGui_ImplWin32_WndProcHandler`로 먼저 넘김 | 항상 |
+| `DebugPanel.h/.cpp` | 개발용 패널. **Network**(`ServerClock::draw_debug_contents`), **Particle Test**(범용 파티클 테스트 방출기: 모드 4가지(분수·연기·폭발·비), 플레이어 앞 재생/정지, 위치 이동, 지우기, 버스트 개수로 최대 개수 초과 확인) | `\` 키 |
+| `DamageTextManager.h/.cpp` | 데미지 숫자. 화면 전체 크기의 투명·입력 없는 ImGui 창(`DamageTextOverlay`)에 월드 → 화면 투영 좌표로 글자를 그림(그림자 포함). 스킬은 다른 색. `add_damage_text`는 `NetworkManager` 피격 응답에서 호출 | 항상 (숫자가 있을 때) |
+| `Tool_Scene.h/.cpp` | 소켓(무기 부착) 편집 툴 "Socket Weapon Editor": 캐릭터 glTF 열기(파일 대화상자) → 뼈 목록·뼈 표시 → 무기 메쉬 열기 → 위치·회전·크기 드래그 편집(`SocketComponent::fix_connecting`). 화면에서 뼈를 마우스로 골라 선택(`draw_and_pick_bones`), ImGuizmo 기즈모로 직접 조작(Y 키로 이동/회전/크기 전환, LOCAL 기준) | `Chess_Scene`에서 T(다시 T로 돌아감). 일반 게임 흐름(타이틀 → 서버가 지정한 씬)에는 `Chess_Scene`으로 가는 경로가 없어서 시작 씬을 바꿔야 들어감 |
+| `ServerClock.cpp` | 네트워크 항목 내용만 그림 (창은 `DebugPanel`) | `\` 키 |
+
+- 한글 글꼴을 로드하지 않아 ImGui 글자는 영어로 쓴다(한글은 물음표로 보임).
+- `Tool_Scene::scene_process`는 `spawn_want_mesh`의 `ImGui::Begin`을 마지막에 `ImGui::End()`로 닫는 구조라, 중간 함수가 창을 따로 열지 않는다.
 
 ---
 
