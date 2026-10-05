@@ -170,6 +170,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="VfxManager.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="VfxPresetLibrary.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugPanel.h">
+      <Filter>0. Engine\9. ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleBillboardShader.h">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystemSettings.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="GatherParticleComponent.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaUtil.h">
+      <Filter>0. Engine\7. Helper</Filter>
+    </ClInclude>
     <ClInclude Include="GameFramework.h">
       <Filter>0. Engine\0. Core</Filter>
     </ClInclude>
@@ -541,6 +562,24 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="VfxManager.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="VfxPresetLibrary.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugPanel.cpp">
+      <Filter>0. Engine\9. ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleBillboardShader.cpp">
+      <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="GatherParticleComponent.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaUtil.cpp">
+      <Filter>0. Engine\7. Helper</Filter>
+    </ClCompile>
     <ClCompile Include="GameFramework.cpp">
       <Filter>0. Engine\0. Core</Filter>
     </ClCompile>
@@ -922,6 +961,9 @@
     <None Include="Shaders\IBL.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
+    <None Include="Resource\Vfx\VfxPresets.lua">
+      <Filter>3. Resources</Filter>
+    </None>
     <None Include="QuestData.lua">
       <Filter>1. Game\4. Quest</Filter>
     </None>
@@ -949,6 +991,18 @@
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Minimap_shader.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particle_Common.hlsli">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particle_Emit_CS.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particle_Update_CS.hlsl">
+      <Filter>2. Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particle_Billboard.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Particle_CS.hlsl">

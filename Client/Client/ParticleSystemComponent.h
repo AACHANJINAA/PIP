@@ -1,75 +1,102 @@
 ﻿#pragma once
+#include <deque>
+#include <random>
 #include "Behavior.h"
+#include "ParticleRenderComponent.h"
+#include "ParticleSystemSettings.h"
 
+// 범용 파티클 (유니티 ParticleSystem에 해당, ParticleSystem_Plan_KR.md)
+//
+// 사용법:
+//   auto ps = obj->add_component<ParticleSystemComponent>();   // ParticleRenderComponent는 자동으로 붙음
+//   auto& s = ps->settings();
+//   s.start_lifetime = { 0.5f, 1.0f }; s.rate_over_time = 40.0f; s.shape = ParticleShape::Cone;
+//   ps->play();                                                  // play_on_awake면 생략 가능
+//
+// 내부: CPU는 방출 요청(위치, 방향, 개수, 시드)만 만들고, 초기값 생성·갱신·그리기는 GPU 컴퓨트·빌보드가 한다.
+// 방출 위치·방향은 오브젝트의 월드 위치·정면(+Z). 시간은 오브젝트 시간(GameObject 시간 배율)을 따른다.
+//
+// 렌더러는 dispatch_compute·draw·particle_count만 부른다. 다른 동작이 필요한 파티클(GatherParticleComponent)은 이 셋을 오버라이드한다.
 class ParticleSystemComponent : public Behavior
 {
 public:
+    using required_components = std::tuple<ParticleRenderComponent>;
+
     ParticleSystemComponent();
-    virtual ~ParticleSystemComponent();
+    explicit ParticleSystemComponent(const std::string& name);
+    ~ParticleSystemComponent() override;
 
-    // C++에서 구운 정답지 데이터를 GPU로 올리는 함수
-    void init_particles(const std::vector<DirectX::XMFLOAT3>& targets, DirectX::XMFLOAT4 _set_color, float particle_size = 0.05f, float burst_radius = -1.0f);
+    void awake() override;
+    void update(float deltaTime) override;
 
-    // [추가] 매 프레임 업데이트에서 데이터만 저장해두는 함수
-    void set_compute_data(const DirectX::XMFLOAT4X4& weapon_world, const DirectX::XMFLOAT3& player_pos, float skill_progress);
+    // --- 설정 (유니티 인스펙터의 Main·Emission·Shape·Renderer 모듈) ---
+    ParticleSystemSettings& settings() { return _settings; }
+    const ParticleSystemSettings& settings() const { return _settings; }
+    void set_settings(const ParticleSystemSettings& settings) { _settings = settings; }
 
-    // [추가] 렌더러에서 직접 호출할 컴퓨트 셰이더 실행 함수
-    void dispatch_compute(ID3D12GraphicsCommandList* command_list);
+    // --- 재생 제어 ---
+    void play();                // 처음부터 재생 (연속 방출·버스트)
+    void stop();                // 방출만 멈춤 (살아 있는 파티클은 수명대로)
+    void clear();               // 살아 있는 파티클까지 모두 지움
+    bool is_playing() const { return _playing; }
 
-    // 렌더링 시 사용할 현재 버퍼의 GPU 주소
-    D3D12_GPU_VIRTUAL_ADDRESS get_current_buffer_address() const { return _currentBuffer ? _currentBuffer->GetGPUVirtualAddress() : 0; }
-    UINT get_particle_count() const { return _particleCount; }
+    // 즉시 방출: 오브젝트 위치·정면에서 / 지정한 월드 위치·방향에서 (재생 여부와 무관)
+    void emit(int count);
+    void emit(int count, const XMFLOAT3& world_pos, const XMFLOAT3& world_dir);
 
-    DirectX::XMFLOAT4 get_particle_color() const { return _particleColor; }
-	float get_particle_size() const { return _particleSize; } // 파티클 크기
-
-	// 파티클 없어지는 연출 관련 함수들
-	void set_particle_dying(bool isDying)
-	{
-		_isDying = isDying;
-		if (!isDying) {
-			_deathTimer = 0.0f; // 다시 살아날 때 타이머 리셋
-			_deathTimerEnd = false;
-		}
-	}
-	bool is_dying() const { return _isDying; }
-	float get_progress() const { return _skillProgress; }
-
-	// 3초 기준의 죽음 진행도 (0.0 ~ 1.0) 반환
-	float get_dying_progress() const { return std::clamp(_deathTimer / _deathDuration, 0.0f, 1.0f); }
-
-	// 없어지는 연출이 끝났는지 여부를 확인하는 함수
-	bool is_death_timer_end() const { return _deathTimerEnd; }
-
-	// 사라지는 연출 지속 시간을 설정
-	void set_death_duration(float duration) { _deathDuration = duration; }
-
-	// Behavior의 update 오버라이드
-	void update(float deltaTime) override;
+    // --- 렌더러가 호출 ---
+    // 그리기 전에 호출: 방출·갱신 컴퓨트 (리소스 상태 전환 포함, 그래픽 상태는 렌더러가 다시 묶음)
+    virtual void dispatch_compute(ID3D12GraphicsCommandList* command_list);
+    // ParticleRenderComponent가 호출: PSO·루트 시그니처·카메라·b0가 묶인 상태에서 그리기
+    virtual void draw(ID3D12GraphicsCommandList* command_list, UINT frame_index);
+    // 그릴 파티클 수 (0이면 그리지 않음). 범용은 살아 있을 수 있으면 풀 크기
+    virtual UINT particle_count() const;
 
 private:
-    void create_compute_pso();
+    struct EmitRequest      // Particle_Common.hlsli의 EmitRequest와 같은 배치 (48바이트)
+    {
+        XMFLOAT3 pos;
+        UINT poolStart;
+        XMFLOAT3 dir;
+        UINT count;
+        UINT seed;
+        UINT firstThread;
+        UINT pad[2];
+    };
+    struct Batch            // 링 버퍼에 쓴 묶음 (가장 오래된 것부터 만료되면 자리를 돌려받음)
+    {
+        UINT count;
+        double expireTime;  // 이 묶음의 최대 수명이 끝나는 시각 (_time 기준)
+    };
 
-private:
-    ComPtr<ID3D12Resource> _targetBuffer;  // 정답지 (SRV)
-    ComPtr<ID3D12Resource> _currentBuffer; // 현재 위치 (UAV)
+    void apply_render_pso();
+    bool ensure_pool(ID3D12Device* device);
+    void release_expired();
 
-    ComPtr<ID3D12PipelineState> _computePSO;
-    UINT _particleCount = 0;
+    ParticleSystemSettings _settings;
 
-    // [추가] 렌더러로 넘겨주기 위해 임시 저장해둘 데이터
-    DirectX::XMFLOAT4X4 _weaponWorld;
-    DirectX::XMFLOAT3 _playerPos;
-	DirectX::XMFLOAT4 _particleColor{ 1,1,1,1 }; // 파티클 색상 (기본값 흰색)
-    float _skillProgress = 0.0f;
-	float _particleSize = 0.05f; // 파티클 크기 (임시로 0.1f로 설정)
-    float _burstRadius = -1.0f; // 초기 파티클 확산 최대 반경
+    // 재생 상태
+    bool _playing = false;
+    float _playTime = 0.0f;         // 이번 주기에서 지난 시간
+    bool _cycleStarted = false;     // 이번 주기의 첫 update를 지났는지 (0초 버스트 한 번만)
+    float _emitAccumulator = 0.0f;  // 연속 방출 소수점 누적
+    double _time = 0.0;             // 컴포넌트 시간 (만료 계산용)
+    float _pendingDeltaTime = 0.0f; // 마지막 컴퓨트 이후 쌓인 시뮬레이션 시간
 
+    // 링 버퍼 (CPU가 쓰기 위치·살아 있을 수 있는 수를 추정, GPU에서 읽어 오지 않음)
+    std::deque<Batch> _batches;
+    UINT _head = 0;
+    UINT _aliveEstimate = 0;
+    bool _overflowLogged = false;
 
-    // 파티클 사라지는 연출을 위한 타이머
-	bool _isDying = false;
-	bool _deathTimerEnd = false;
-	float _deathTimer = 0.0f;
-	float _deathDuration = 3.f; // 사라지는 연출 총 시간 (3초)
+    std::vector<EmitRequest> _pendingRequests;
+    UINT _pendingParticles = 0;
+    std::mt19937 _rng;
 
+    // GPU 리소스
+    ComPtr<ID3D12Resource> _pool;
+    UINT _poolCapacity = 0;
+    D3D12_RESOURCE_STATES _poolState = D3D12_RESOURCE_STATE_COMMON;
+    bool _clearRequested = false;
+    D3D12_GPU_VIRTUAL_ADDRESS _constantsGpu = 0;    // 이번 프레임 방출기 상수 (draw에서 b2로)
 };

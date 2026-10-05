@@ -3,7 +3,7 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "GameObject.h"
-#include "ParticleSystemComponent.h"
+#include "GatherParticleComponent.h"
 
 const std::string& ParticleShader::pso_name() const {
     static const std::string name = "particle_draw";
@@ -71,12 +71,11 @@ void ParticleShader::update_per_object(ID3D12GraphicsCommandList* command_list, 
 
 
 
-    pInfo.Color = { 0.1f, 0.5f, 1.0f, 0.5f }; // 카리아 대검 파티클 색상
+    // particle_draw는 목표점으로 모이는 파티클(GatherParticleComponent) 전용
+    auto particleComponent = object->get_component<GatherParticleComponent>();
+    if (!particleComponent) return;
 
-    auto particleComponent = object->get_component<ParticleSystemComponent>();
-    if (particleComponent) {
-        pInfo.Color = particleComponent->get_particle_color();
-    }
+    pInfo.Color = particleComponent->get_particle_color();
 
     pInfo.Size = particleComponent->get_particle_size(); // 파티클 입자 하나의 크기 (수정하며 테스트)
 

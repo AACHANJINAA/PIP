@@ -29,15 +29,15 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 
 | 문서 | 내용 | 상태 |
 |---|---|---|
-| `HitFeel_Plan_KR.md` | 타격감 개선 전체 계획 (진단, 1~4단계) | 1·2단계 완료, 3단계 진행 중 (히트스톱·타격음·카메라 킥·부위 리액션·대검 스킬 판정 완료, 이펙트 남음) |
+| `HitFeel_Plan_KR.md` | 타격감 개선 전체 계획 (진단, 1~4단계) | 1·2단계 완료, 3단계 진행 중 (히트스톱·타격음·카메라 킥·부위 리액션·대검 스킬 판정·타격 스파크 완료, 칼 잔상·충격파 남음) |
 | `BoneCollider_Spec_KR.md` | 1단계: 뼈 부착 칼날 캡슐, 물리 기록, 뷰어 | 완료 |
 | `MeleeHitPrediction_Spec_KR.md` | 2단계: 평타 예측 판정 (스윕, 피격 히트박스, `on_trigger_enter`) | 동작 확인 |
 | `NetMotionSync_Design_KR.md` | 시계 동기화, 보간 버퍼, 넉백 모션 이벤트 | S1~S4 완료 |
-| `ParticleSystem_Plan_KR.md` | 범용 GPU 파티클·VfxManager, 충격파 왜곡 | 계획 (동기화 작업 이후) |
+| `ParticleSystem_Plan_KR.md` | 범용 GPU 파티클·VfxManager, 충격파 왜곡 | P0~P3 완료(클라 Lua, 기존 분리, 범용 GPU 파티클, Lua 프리셋·VfxManager·타격 스파크). 남은 것: PathManager 합칠 때 셰이더 경로, 이후 칼 잔상·충격파(4장 P4) |
 
 ## 공통 규칙
 
-- 서버·클라 모두 `/utf-8` 컴파일. 소스는 UTF-8 BOM(`.editorconfig`).
+- 서버·클라 모두 `/utf-8` 컴파일. C++ 소스는 UTF-8 BOM, 셰이더(`*.hlsl`, `*.hlsli`)는 BOM 없는 UTF-8(셰이더 컴파일러가 BOM을 못 읽음). `.editorconfig`
 - 경로는 `Common/PathManager.h`가 exe 위치로 계산(작업 폴더 무관). 별칭·배포 범위는 저장소 루트 `PathManifest.json`, 배포는 `python Tools/deploy.py`.
 - `Common`을 바꾸면 서버와 클라를 둘 다 다시 빌드한다.
 - 코드 구조를 바꾸면 해당 폴더 `CODEMAP.md`도 같이 고친다.

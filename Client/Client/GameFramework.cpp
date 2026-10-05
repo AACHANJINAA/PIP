@@ -11,6 +11,8 @@
 #include "SoundManager.h"
 #include "PhysicsDebugCapture.h"
 #include "ServerClock.h"
+#include "DebugPanel.h"
+#include "VfxManager.h"
 #include "DamageTextManager.h"
 
 #include "DescriptorManager.h"
@@ -338,10 +340,15 @@ void GameFramework::ProcessInput()
 	{
 		_isFullscreenToggle = true;
 	}
-	// [디버그] 네트워크 창 (RTT, 시계 차이, 인공 지연)
-	if (InputManager::instance()->IsKeyDown(VK_F6))
+	// [디버그] 디버그 패널 (\ 키, 한국어 자판의 ₩ 키와 같음): 네트워크, 파티클 테스트
+	if (InputManager::instance()->IsKeyDown(VK_OEM_5))
 	{
-		ServerClock::instance()->toggle_debug_window();
+		DebugPanel::instance()->toggle();
+	}
+	// [디버그] 이펙트 프리셋(Resource/Vfx/VfxPresets.lua) 다시 읽기
+	if (InputManager::instance()->IsKeyDown(VK_F5))
+	{
+		VfxManager::instance()->reload();
 	}
 	if (InputManager::instance()->IsKeyDown('T'))
 	{
@@ -551,7 +558,7 @@ void GameFramework::FrameAdvance()
 
 	// 데미지 텍스트 렌더링 (ImGui 기반)
 	DamageTextManager::instance()->update_and_render(deltaTime);
-	ServerClock::instance()->draw_debug_window();
+	DebugPanel::instance()->draw();
 
 	// 화면 맨 위에 ImGui 그리기 명령 전달
 	ImGuiManager::instance()->render(_commandList.Get());

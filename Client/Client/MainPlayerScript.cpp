@@ -22,7 +22,8 @@
 #include "MonsterHPComponent.h"
 #include "PhysicsCharacterControllerComponent.h"
 #include "SocketComponenet.h"
-#include "ParticleSystemComponent.h"
+#include "GatherParticleComponent.h"
+#include "VfxManager.h"
 #include "ParticleRenderComponent.h"
 #include "GameFramework.h"
 #include "FreeCameraScript.h"
@@ -123,7 +124,7 @@ void MainPlayerScript::update(float deltaTime)
 	// 스킬 이펙트가 활성화되어 있다면, 해당 이펙트의 지속 시간 체크
 	if (_particleEffectObject && _particleEffectObject->is_enable())
 	{
-		auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+		auto psComp = _particleEffectObject->get_component<GatherParticleComponent>();
 		if (psComp && psComp->is_death_timer_end())
 		{
 			_particleEffectObject->set_enabled(false);
@@ -300,7 +301,7 @@ void MainPlayerScript::awake()
 		_particleEffectObject->set_layer("Player");
 
 		// 3. 연산 담당 컴포넌트 추가 및 데이터 전송
-		auto psComp = _particleEffectObject->add_component<ParticleSystemComponent>();
+		auto psComp = _particleEffectObject->add_component<GatherParticleComponent>();
 		// 다크 판타지 소울류 팬텀(Phantom) 느낌의 색상 오라
 		static const DirectX::XMFLOAT3 PlayerColors[4] =
 		{
@@ -317,7 +318,6 @@ void MainPlayerScript::awake()
 		auto prComp = _particleEffectObject->add_component<ParticleRenderComponent>();
 		prComp->set_pso_name("particle_draw");
 
-		prComp->set_particle_system(psComp);
 
 		// 5. 위치 동기화 (대검 오브젝트의 자식으로 설정)
 		_particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
@@ -1059,7 +1059,7 @@ void MainPlayerScript::handle_input(float deltaTime)
 			game_object()->get_component<SocketComponent>()->set_isFollowAnimation(true); // 손에 다시 쥐어줌
 			if (_particleEffectObject) {
 				// 파티클 죽는 연출 끄기
-				_particleEffectObject->get_component<ParticleSystemComponent>()->set_particle_dying(false);
+				_particleEffectObject->get_component<GatherParticleComponent>()->set_particle_dying(false);
 			}
 		}
 	}
@@ -1303,7 +1303,7 @@ void MainPlayerScript::update_skill_visuals(float deltaTime)
 	if (current_anim_time >= _skillParticleSpawnTime)
 	{
 		_particleEffectObject->set_enabled(true);
-		auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+		auto psComp = _particleEffectObject->get_component<GatherParticleComponent>();
 
 		if (!_isSwordGathered)
 		{
@@ -1381,7 +1381,7 @@ void MainPlayerScript::process_attack_and_packet()
 				"00:00","01:500", SoundType::SFX, 0.8f );
 			//SoundManager::instance()->play_3d("DustSound", transform()->get_world_position(), SoundType::SFX, 0.7f);
 
-			auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>();
+			auto psComp = _particleEffectObject->get_component<GatherParticleComponent>();
 			if (psComp) psComp->set_particle_dying(true);
 
 			if (_currentWeapon) _currentWeapon->set_attack_active(true);
@@ -1471,6 +1471,9 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 	if (auto reaction = other->get_component<HitReactionComponent>())
 		reaction->react(hit, skill ? kSkillReactionStrength : 1.0f);
 
+	// 타격 스파크: 맞은 지점에서 칼이 지나가는 방향으로 (Resource/Vfx/VfxPresets.lua)
+	VfxManager::instance()->play(skill ? "skill_hit_spark" : "hit_spark", hit.point, hit.direction);
+
 	// 타격음(칼 + 맞은 쪽)과 카메라 킥(칼이 지나가는 방향)을 칼이 닿는 순간에 (서버 응답에서는 중복 재생하지 않음)
 	SoundManager::instance()->play_3d("SwordHit", hit.point);
 	npc->on_predicted_hit();
@@ -1502,7 +1505,7 @@ void MainPlayerScript::init_skill_variables()
 	if (_particleEffectObject)
 	{
 		// 파티클 죽는 연출 시작
-		if (auto psComp = _particleEffectObject->get_component<ParticleSystemComponent>())
+		if (auto psComp = _particleEffectObject->get_component<GatherParticleComponent>())
 			psComp->set_particle_dying(true);
 	}
 	/*_SkillObject->get_component<RenderComponent>()->set_enabled(false);

@@ -14,11 +14,11 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 | 미리 컴파일 헤더 | `stdafx.h` (STL, DX12, `Singleton<T>` 템플릿, `CLOG/CINFO/CERROR` 로그 매크로, `Packet.h` 포함) |
 | 컴파일 스위치 (`stdafx.h`) | `_ONDEBUGCONSOLE`(디버그 콘솔 + 로그), `_DEBUG_PHYSICS_VISUALIZATION`(DebugDrawManager 렌더) |
 | Jolt | Debug: `Jolt/lib/Debug`, Release: `Jolt/lib/ReleaseDebugRenderer`(디버그 렌더러 포함, MSVC 14.38·LTCG 없음). Release에도 `JPH_DEBUG_RENDERER` 정의 |
-| 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생) |
-| 경로 기준 | `common::PathManager`(`Common/PathManager.h`). 기본은 개발 모드: 저장소 `PathManifest.json`의 별칭을 쓰고 App 루트는 `Client/Client`. exe 옆에 `Deploy.json`이 있을 때만 배포 모드(App = exe 폴더). 작업 폴더(cwd)와 무관하며 Init 때 cwd도 App으로 맞춘다. 셰이더는 `Shaders/*.hlsl`, 실행 중 생성 파일(`imgui.ini`, `client_physics_dump.bin`, `used_files.txt`)은 `Saved/` |
-| 경로 처리 규칙 | 경로 표기는 기존 `"Resource/UI/a.dds"`와 별칭 `"UI:a.dds"` 둘 다 받는다(점진적 전환, 남은 사용처는 `기획 & 계획/PathAlias_Migration_KR.md` 부록 A). 로더 입구(`ResourceManager::load_*`, `get_texture`, `load_animation_only`, `Scene::load_*`)에서 `PathManager::Expand`해 캐시 키와 `parent_path` 계산을 통일하고, 파일을 실제로 여는 곳에서 `ResolveApp`. FMOD·Assimp·ImGui에는 `PathManager::ToUtf8` |
-| 배포 | `python Tools/deploy.py`(대화형 메뉴) 또는 `python Tools/deploy.py --app client`가 `Deploy/client/`에 exe·DLL과 별칭 폴더(같은 상대 위치, App 밖은 `External/`)를 복사하고 `Deploy.json`을 쓴다. 배포 범위는 `PathManifest.json`(클라는 `"*"` + `exclude`). `--check`로 `Saved/used_files.txt`가 배포 범위 안인지 검사 |
-| 인코딩 | `.editorconfig` 규칙 UTF-8 BOM. `/utf-8`이라 BOM이 없어도 빌드됨. 맞추려면 `Tools/EnsureUtf8Bom.ps1` |
+| 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생), Lua 5.4.2(`ThirdParty/lua-5.4.2/`, 서버와 같은 빌드를 복사, 빌드 후 `lua54.dll`을 실행 파일 폴더로 복사) |
+| 경로 기준 | `common::PathManager`(`Common/PathManager.h`). 기본은 개발 모드: 저장소 `PathManifest.json`의 별칭을 쓰고 App 루트는 `Client/Client`. exe 옆에 `Deploy.json`이 있을 때만 배포 모드(App = exe 폴더). 작업 폴더(cwd)와 무관하며 Init 때 cwd도 App으로 맞춘다. 셰이더는 `Shaders/*.hlsl`·`*.hlsli`, 실행 중 생성 파일(`imgui.ini`, `client_physics_dump.bin`, `used_files.txt`)은 `Saved/` |
+| 경로 처리 규칙 | 경로 표기는 기존 `"Resource/UI/a.dds"`와 별칭 `"UI:a.dds"` 둘 다 받는다(점진적 전환, 남은 사용처는 `기획 & 계획/PathAlias_Migration_KR.md` 부록 A). 로더 입구(`ResourceManager::load_*`, `get_texture`, `load_animation_only`, `Scene::load_*`)에서 `PathManager::Expand`해 캐시 키와 `parent_path` 계산을 통일하고, 파일을 실제로 여는 곳에서 `ResolveApp`(Lua는 `LuaState::do_file`). FMOD·Assimp·ImGui에는 `PathManager::ToUtf8` |
+| 배포 | `python Tools/deploy.py`(대화형 메뉴) 또는 `python Tools/deploy.py --app client`가 `Deploy/client/`에 exe·DLL(`lua54.dll` 포함)과 별칭 폴더(같은 상대 위치, App 밖은 `External/`)를 복사하고 `Deploy.json`을 쓴다. 배포 범위는 `PathManifest.json`(클라는 `"*"` + `exclude`). `--check`로 `Saved/used_files.txt`가 배포 범위 안인지 검사 |
+| 인코딩 | `.editorconfig`: C++ 소스는 UTF-8 BOM(`/utf-8`이라 없어도 빌드됨, 맞추려면 `Tools/EnsureUtf8Bom.ps1`), 셰이더는 **BOM 없는** UTF-8(BOM이 있으면 `D3DCompileFromFile`이 "Illegal character"로 실패) |
 
 로그: `CLOG(expr)`는 `DebugLogStream` → VS 출력 창(UTF-16 변환) + 콘솔(UTF-8). `CERROR`는 `DebugBreak()`까지 한다.
 
@@ -31,12 +31,12 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 3. `ProcessNetwork` → `NetworkManager::process_queued_packets` (패킷 핸들러 실행)
 4. `ServerClock::update` (시간 동기화 요청, 서버 시각 추정)
 5. `ReplicationSystem::update` → 등록된 `INetSync::apply_snapshot` (NPC 상태 적용)
-6. `ProcessInput` (F6/F11 등 전역 키)
+6. `ProcessInput` (`\`/F11 등 전역 키)
 7. `update_game_logic`: 새 오브젝트 awake/start → 모든 `GameObject::update` → 모든 `late_update` → `LightManager::update` → 메인 카메라 뷰 행렬 → `DebugDrawManager::Update`
 8. `update_physics` (Jolt 고정 스텝 0.02초)
 9. 현재 씬 `scene_process`, `SoundManager::update`
 10. `PhysicsDebugCapture::process_end_of_frame` (모든 late_update 이후 기록)
-11. 비동기 리소스 업로드 → `Renderer::render` → 후처리 훅 → `DamageTextManager`·`ServerClock` ImGui → ImGui 렌더 → Present
+11. 비동기 리소스 업로드 → `Renderer::render` → 후처리 훅 → `DamageTextManager`·`DebugPanel` ImGui → ImGui 렌더 → Present
 
 ---
 
@@ -106,7 +106,8 @@ Object
    ├─ CameraComponent
    └─ Behavior                     (awake/update/late_update/fixed_update)
       ├─ AnimationComponent, SocketComponent, TargetingComponent, MonsterHPComponent
-      ├─ PhysicsColliderComponent, PhysicsCharacterControllerComponent, ParticleSystemComponent
+      ├─ PhysicsColliderComponent, PhysicsCharacterControllerComponent
+      ├─ ParticleSystemComponent (자동으로 ParticleRenderComponent 부착) → GatherParticleComponent
       ├─ RenderComponent
       │  ├─ InstancedRenderComponent → FoliageRenderComponent
       │  ├─ TerrainRenderComponent, SkyboxRenderComponent, ParticleRenderComponent
@@ -145,7 +146,7 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초, 칼 타격음 `SwordHit`, 맞은 NPC `on_predicted_hit` 피격음, 카메라 킥 `add_kick`), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
+| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 타격 스파크 `VfxManager::play`, 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초, 칼 타격음 `SwordHit`, 맞은 NPC `on_predicted_hit` 피격음, 카메라 킥 `add_kick`), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
 | `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_server_move`로 이동 패킷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 30ms)으로 위치·회전 보간**, 상태·액션(공격음)·잡기·HP·MP는 패킷 서버 시각에 적용(`apply_state`). 생성·부활은 `reset_transform`(버퍼 비우고 그 위치에서 시작). 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
 | `NPCScript.h/.cpp` | NPC 공통(필수 컴포넌트에 `HitReactionComponent`, 피격 시 피격 모션 대신 리액션). `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
@@ -180,17 +181,22 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계 |
+| `Renderer.h/.cpp` | 루트 시그니처·PSO 생성, 렌더 목록 구성(`build_render_list`: 정적/동적, 프러스텀·오클루전), PSO별 그리기, 스카이박스·파티클·UI 단계, 통계. 파티클 PSO 3개(`particle_draw`, `particle_alpha`, `particle_additive`, 이 순서로 그림)는 `render_particle_group`(그룹의 컴퓨트를 먼저 몰아서 → 그래픽 상태 한 번 복구 → 그리기, 두 렌더 경로 공용), 컴퓨트 PSO 공유 `get_or_create_compute_pso` |
 | `Shader.h/.cpp` + 각 `*Shader` | PSO 설정 단위(입력 레이아웃, 셰이더 파일, 블렌드·깊이·래스터 상태, 객체별 상수). 셰이더 클래스 ↔ hlsl: `GltfShader`→`Gltf_Shader.hlsl`, `GltfSkinnedShader`→`Gltf_Skinned_Shader.hlsl`, `GlbShader`→`GLB_Shader.hlsl`, `TerrainShader`, `SkyboxShader`, `ShadowDepth(Skinned)Shader`, `UIShader`, `UIFrameShader`, `BillboardUIShader`, `MonsterHPUIShader`, `MinimapShader`, `OcclusionQueryShader`, `DebugShader`, `ParticleShader`→`Particle_Draw.hlsl`, `DefaultObjectShader`/`PlayerShader`→`Shaders.hlsl` |
-| `RootSignature.h/.cpp` | 이름별 루트 시그니처 생성기 (gltf, skinned, terrain, ui, debug, csm, minimap, occlusion, `compute_particle`, `particle_draw` 등) |
+| `RootSignature.h/.cpp` | 이름별 루트 시그니처 생성기 (gltf, skinned, terrain, ui, debug, csm, minimap, occlusion, `compute_particle`, `particle_draw`, 범용 파티클 `particle_compute`·`particle_billboard` 등) |
 | `RenderComponent.h/.cpp` | 메쉬 + PSO 이름 + 객체 상수 버퍼, 컬링 상태. 파생: `InstancedRenderComponent`, `FoliageRenderComponent`, `TerrainRenderComponent`, `SkyboxRenderComponent`, `UIRenderComponent`, `UIFrameRenderComponent`, `BillboardUIRenderComponent`, `MonsterHPUIRenderComponent`, `ParticleRenderComponent` |
 | `ShadowManager.h/.cpp` | 캐스케이드 그림자(CSM), 정적 그림자 갱신 조건 |
 | `LightManager.h/.cpp` | 조명 상수 버퍼, 태양 방향, IBL 구면 조화 |
 | `OcclusionManager.h/.cpp` | 오클루전 쿼리 힙·결과(N-1 프레임 결과로 조건부 렌더) |
 | `MinimapManager.h/.cpp` | 미니맵 타일·플레이어 위치 |
 | `CameraComponent.h/.cpp` | 투영·뷰 행렬, 카메라 상수, 흔들기 오프셋·회전(`set_shake_angle`), 메인 카메라 |
-| `ParticleSystemComponent.h/.cpp` + `Particle_CS.hlsl` | 대검 스킬 전용 파티클(칼 모양 목표점으로 모임, 컴퓨트로 위치 계산). 범용화 계획은 `기획 & 계획/ParticleSystem_Plan_KR.md`. 알려진 문제: 컴퓨트 루트 상수 21개인데 24개 설정, 셰이더 개수 상한 5만 하드코딩 |
-| `UIManager`, `DamageTextManager`, `ImGuiManager` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명 |
+| `ParticleSystemComponent.h/.cpp` + `ParticleSystemSettings.h` | **범용 GPU 파티클**(유니티 ParticleSystem에 해당). 붙이면 `ParticleRenderComponent` 자동 부착. 설정 `ParticleSystemSettings`(유니티 모듈 이름: 수명·속도·크기·회전 범위, 두 색 무작위, 중력·저항, `max_particles`, 초당 방출·버스트, 모양 Point/Sphere/Hemisphere/Cone/Edge, 수명별 색·크기, 블렌딩 가산/알파, 일반/속도 늘림). `play/stop/clear/emit`. CPU는 방출 요청만 만들고(링 버퍼 쓰기 위치·살아 있는 수는 묶음별 최대 수명으로 추정, 꽉 차면 방출 안 함), `dispatch_compute`가 갱신 → 방출 컴퓨트, `draw`가 빌보드. 방출 위치·방향은 오브젝트 위치·정면(+Z), 시간은 오브젝트 시간 |
+| `Particle_Common.hlsli`, `Particle_Emit_CS.hlsl`, `Particle_Update_CS.hlsl`, `Particle_Billboard.hlsl` | 범용 파티클 셰이더: 공용 구조체(파티클·방출 요청 48바이트, 방출기 상수)와 PCG 난수, 방출(요청 찾기·모양별 초기값), 갱신(중력·저항·나이, `clear`), 빌보드(죽은 것은 화면 밖, 속도 늘림, 부드러운 원). **BOM 없이 저장** |
+| `GatherParticleComponent.h/.cpp` + `Particle_CS.hlsl` | 목표점으로 모이는 파티클(대검 스킬, 컷씬 플레이어, 분수). 위치를 진행도(`set_compute_data`)로부터 컴퓨트가 직접 계산. 루트 상수 24개(파티클 수 포함), 컴퓨트 PSO는 렌더러가 공유 |
+| `ParticleRenderComponent.h/.cpp` | 파티클을 렌더 목록에 올리는 렌더 컴포넌트. 같은 오브젝트의 파티클 컴포넌트 `draw`를 부름 |
+| `ParticleBillboardShader.h/.cpp` | 범용 파티클 PSO `particle_additive`(가산)·`particle_alpha`(알파). 깊이 테스트 O, 쓰기 X, 컬링 없음 |
+| `VfxManager.h/.cpp`, `VfxPresetLibrary.h/.cpp`, `Resource/Vfx/VfxPresets.lua` | **이펙트 한 줄 재생** `VfxManager::play(이름, 위치, 방향)` (유니티 프리팹 Instantiate에 해당). 프리셋은 Lua 파일의 전역 테이블 `vfx`(키는 `ParticleSystemSettings`와 같음, `extend`로 변형, 모르는 키·값 로그). 이름별 방출기 오브젝트 하나를 재사용(반복·연속 방출 끄고 0초 버스트만 방출), 씬 전환으로 지워지면 다시 만듦. F5 또는 `reload()`로 다시 읽기. 프리셋: `hit_spark`(평타), `skill_hit_spark`(대검) |
+| `UIManager`, `DamageTextManager`, `ImGuiManager`, `DebugPanel` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명, 개발용 디버그 패널(`\`) — ImGui 사용처는 11.1 |
 | `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |
 
 렌더 타깃: 씬을 스왑체인 백버퍼에 바로 그린다(오프스크린 씬 타깃 없음). 화면 후처리를 하려면 이 구조부터 바꿔야 한다.
@@ -216,7 +222,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | 파일 | 역할 |
 |---|---|
 | `NetworkManager.h/.cpp` | 블로킹 소켓 + 수신 전용 스레드(`network_worker` → 패킷 조립 → `concurrent_queue`, 수신 시각 기록). 메인 스레드 `process_queued_packets`에서 핸들러 실행. **인공 수신 지연·흔들림**(순서 유지). 송신 함수 `Send*Packet`, 수신 핸들러 `HANDLE_S2C_*`(로그인, 방, 플레이어 스폰·이동·피격, NPC 스폰·이동·배치·피격, 퀘스트, 인벤토리, 컷씬, 카운트다운, 시간 동기화, 모션 시작·종료 등) |
-| `ServerClock.h/.cpp` | 서버 시각 추정. TIME_SYNC 왕복(로그인 직후 0.1초×5, 이후 2초), RTT 최소 표본 기준 offset, 초당 5ms 이내로 따라감. `server_now_ms`, `arrival_now_ms`(− RTT/2), `unwrap_server_time`(32비트 서버 시각 복원), 보간 지연 상수(NPC 70, 플레이어 30). **F6 창**: RTT, offset, 보간 상태 집계(NPC·플레이어 따로), 서버 위치 유령(NPC·다른 플레이어), 인공 지연 슬라이더 |
+| `ServerClock.h/.cpp` | 서버 시각 추정. TIME_SYNC 왕복(로그인 직후 0.1초×5, 이후 2초), RTT 최소 표본 기준 offset, 초당 5ms 이내로 따라감. `server_now_ms`, `arrival_now_ms`(− RTT/2), `unwrap_server_time`(32비트 서버 시각 복원), 보간 지연 상수(NPC 70, 플레이어 30). 디버그 패널의 **Network** 항목(`draw_debug_contents`): RTT, offset, 보간 상태 집계(NPC·플레이어 따로), 서버 위치 유령(NPC·다른 플레이어, 패널이 열려 있을 때만), 인공 지연 슬라이더 |
 | `SnapshotBuffer.h/.cpp` | 서버 시각 표본 버퍼. 에르미트 위치 보간 + slerp, 긴 간격은 마지막 100ms만, 최대 100ms 외삽, 5m 이상 순간이동 |
 | `ReplicationSystem.h/.cpp`, `INetSync.h` | 엔티티 id → `INetSync` 등록, 스냅샷 전달(`on_receive_snapshot`), 매 프레임 `apply_snapshot` |
 
@@ -233,6 +239,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | `d3dx12.h`, `DDSTextureLoader12`, `WICTextureLoader12` | 외부 헬퍼 |
 | `BehaviorTree.h` | 클라이언트 쪽 BT 사본. 사용처 없음 |
 | `generate_*.py` | UI 이미지 생성 스크립트 |
+| `LuaUtil.h/.cpp` | Lua 데이터 파일 읽기(`LuaState::do_file`, `LuaTable`: 숫자·색·범위·배열, 없으면 기본값, 타입 오류·모르는 키 로그, `lua_for_each_global_table`). 이펙트 프리셋용 |
 
 **사용하지 않는 파일(내용이 전부 주석이거나 비어 있음)**: `Camera.h/.cpp`(Renderer.cpp가 include만), `FreeCamera.h/.cpp`, `ColiderComponent.h/.cpp`, `LongswordScript.h/.cpp`(실제 클래스는 `WeaponScript.h`), `BehaviorTree.cpp`.
 
@@ -242,14 +249,30 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 
 | 키 | 동작 | 위치 |
 |---|---|---|
-| F6 | 네트워크 창 토글 | `GameFramework::ProcessInput` |
+| `\` (한국어 자판 ₩) | 디버그 패널 토글 (Network, Particle Test). 마우스로 조작하려면 ESC로 커서 표시. 예전 F6 네트워크 창은 여기로 옮김 | `GameFramework::ProcessInput` → `DebugPanel` |
 | F7 | 평타 판정 구간 매 프레임 물리 기록 토글 | `MainPlayerScript::handle_input` |
 | F8 | 클라 물리 한 프레임 기록 + 서버 물리 스냅샷 요청 | `MainPlayerScript::handle_input` |
+| F5 | 이펙트 프리셋(`Resource/Vfx/VfxPresets.lua`) 다시 읽기 | `GameFramework::ProcessInput` → `VfxManager::reload` |
 | F11 | 전체 화면 | `GameFramework::ProcessInput` |
 | K | 300m 안 몬스터 즉사 (서버 디버그 명령) | `MainPlayerScript::handle_input` |
 | U | 대검 스킬 즉시 해금 (서버 디버그 명령 `UNLOCK_SKILL`) | `MainPlayerScript::handle_input` |
 
 기록 파일은 `Jolt/JoltViewer/RunViewer.py`로 연다.
+
+### 11.1 ImGui 사용처 (2026-10-06 조사)
+
+ImGui 1.92.7 WIP + ImGuizmo(`imgui/`). 모든 ImGui 창은 한 프레임 안에서 `ImGuiManager::new_frame`(`FrameAdvance` 시작) ~ `ImGuiManager::render`(Present 직전) 사이에 그린다.
+
+| 위치 | 내용 | 여는 방법 |
+|---|---|---|
+| `ImGuiManager.h/.cpp` | 초기화·해제·프레임 시작·렌더. 폰트용 SRV 1개짜리 전용 디스크립터 힙, 키보드 내비게이션, 다크 테마. 창 배치는 `imgui.ini`(git 무시). 입력은 `main.cpp` WndProc가 `ImGui_ImplWin32_WndProcHandler`로 먼저 넘김 | 항상 |
+| `DebugPanel.h/.cpp` | 개발용 패널. **Network**(`ServerClock::draw_debug_contents`), **Particle Test**(범용 파티클 테스트 방출기: 모드 4가지(분수·연기·폭발·비), 플레이어 앞 재생/정지, 위치 이동, 지우기, 버스트 개수로 최대 개수 초과 확인), **VFX Presets**(프리셋 다시 읽기, 골라서 플레이어 앞 재생) | `\` 키 |
+| `DamageTextManager.h/.cpp` | 데미지 숫자. 화면 전체 크기의 투명·입력 없는 ImGui 창(`DamageTextOverlay`)에 월드 → 화면 투영 좌표로 글자를 그림(그림자 포함). 스킬은 다른 색. `add_damage_text`는 `NetworkManager` 피격 응답에서 호출 | 항상 (숫자가 있을 때) |
+| `Tool_Scene.h/.cpp` | 소켓(무기 부착) 편집 툴 "Socket Weapon Editor": 캐릭터 glTF 열기(파일 대화상자) → 뼈 목록·뼈 표시 → 무기 메쉬 열기 → 위치·회전·크기 드래그 편집(`SocketComponent::fix_connecting`). 화면에서 뼈를 마우스로 골라 선택(`draw_and_pick_bones`), ImGuizmo 기즈모로 직접 조작(Y 키로 이동/회전/크기 전환, LOCAL 기준) | `Chess_Scene`에서 T(다시 T로 돌아감). 일반 게임 흐름(타이틀 → 서버가 지정한 씬)에는 `Chess_Scene`으로 가는 경로가 없어서 시작 씬을 바꿔야 들어감 |
+| `ServerClock.cpp` | 네트워크 항목 내용만 그림 (창은 `DebugPanel`) | `\` 키 |
+
+- 한글 글꼴을 로드하지 않아 ImGui 글자는 영어로 쓴다(한글은 물음표로 보임).
+- `Tool_Scene::scene_process`는 `spawn_want_mesh`의 `ImGui::Begin`을 마지막에 `ImGui::End()`로 닫는 구조라, 중간 함수가 창을 따로 열지 않는다.
 
 ---
 

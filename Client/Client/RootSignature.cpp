@@ -811,8 +811,9 @@ ComPtr<ID3D12RootSignature> ComputeParticleRootSignatureGenerator::create(ID3D12
 
     CD3DX12_ROOT_PARAMETER params[3];
 
-    // [0] b0: 상수 버퍼 20개 (행렬 16개 + 위치 3개 + 진행도 1개 + 사라지는 연출 진행도 1개)
-    params[0].InitAsConstants(21, 0);
+    // [0] b0: 루트 상수 24개 (행렬 16 + 위치 3 + 진행도 1 + 사라짐 진행도 1 + 확산 반경 1 + 파티클 수 1 + 패딩 1)
+    // GatherParticleComponent::dispatch_compute의 ComputeConstants, Particle_CS.hlsl의 cbUpdateInfo와 맞춤
+    params[0].InitAsConstants(24, 0);
     // [1] t0: 타겟 버퍼 (SRV)
     params[1].InitAsShaderResourceView(0);
 
@@ -928,4 +929,63 @@ ComPtr<ID3D12RootSignature> BillboardUIRootSignatureGenerator::create(ID3D12Devi
     ComPtr<ID3D12RootSignature> rootSignature;
     device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
     return rootSignature;
+}
+
+const std::string& ParticleComputeRootSignatureGenerator::name() const
+{
+    static const std::string sigName = "particle_compute";
+    return sigName;
+}
+
+ComPtr<ID3D12RootSignature> ParticleComputeRootSignatureGenerator::create(ID3D12Device* device)
+{
+    CD3DX12_ROOT_PARAMETER params[3];
+    params[0].InitAsConstantBufferView(0);   // b0: 방출기 상수 (프레임 업로드 버퍼)
+    params[1].InitAsShaderResourceView(0);   // t0: 방출 요청 (프레임 업로드 버퍼)
+    params[2].InitAsUnorderedAccessView(0);  // u0: 파티클 풀
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error)))
+    {
+        if (error) CERROR((char*)error->GetBufferPointer());
+        return nullptr;
+    }
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
+}
+
+const std::string& ParticleBillboardRootSignatureGenerator::name() const
+{
+    static const std::string sigName = "particle_billboard";
+    return sigName;
+}
+
+ComPtr<ID3D12RootSignature> ParticleBillboardRootSignatureGenerator::create(ID3D12Device* device)
+{
+    CD3DX12_ROOT_PARAMETER params[4];
+    params[0].InitAsConstantBufferView(0);   // b0: 오브젝트 정보 (RenderComponent가 묶음, 엔진 호환용)
+    params[1].InitAsConstantBufferView(1);   // b1: 카메라
+    params[2].InitAsConstantBufferView(2);   // b2: 방출기 상수
+    params[3].InitAsShaderResourceView(0);   // t0: 파티클 풀
+
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
+    desc.NumParameters = _countof(params);
+    desc.pParameters = params;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    ComPtr<ID3D12RootSignature> rootSig;
+    ComPtr<ID3DBlob> blob, error;
+    if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &error)))
+    {
+        if (error) CERROR((char*)error->GetBufferPointer());
+        return nullptr;
+    }
+    device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+    return rootSig;
 }

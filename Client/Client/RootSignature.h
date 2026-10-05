@@ -134,3 +134,19 @@ public:
     virtual const std::string& name() const override;
     virtual ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
 };
+
+// 범용 파티클 방출·갱신 컴퓨트: b0 방출기 상수, t0 방출 요청, u0 파티클 풀
+class ParticleComputeRootSignatureGenerator : public IRootSignatureGenerator
+{
+public:
+    virtual const std::string& name() const override;
+    virtual ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
+};
+
+// 범용 파티클 빌보드: b0 오브젝트(엔진 호환), b1 카메라, b2 방출기 상수, t0 파티클 풀
+class ParticleBillboardRootSignatureGenerator : public IRootSignatureGenerator
+{
+public:
+    virtual const std::string& name() const override;
+    virtual ComPtr<ID3D12RootSignature> create(ID3D12Device* device) override;
+};
