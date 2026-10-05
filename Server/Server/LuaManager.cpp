@@ -89,7 +89,7 @@ namespace PIP
 	void LuaManager::LoadNPCData()
 	{
         lua_register(L, "API_LoadNPCData", Lua_LoadNPCData);
-        int ret = luaL_dofile(L, PathManager::Resolve(PathRoot::Lua, "NPC_Data.lua").string().c_str());
+        int ret = luaL_dofile(L, PathManager::ResolveApp("Lua:NPC_Data.lua").string().c_str());
         if (ret != LUA_OK)
         {
             const char* err = lua_tostring(L, -1);
@@ -124,7 +124,7 @@ namespace PIP
 	void LuaManager::LoadQuestData()
 	{
 		lua_register(L, "API_LoadQuestData", Lua_LoadQuestData);
-		int ret = luaL_dofile(L, PathManager::Resolve(PathRoot::Lua, "QuestData.lua").string().c_str());
+		int ret = luaL_dofile(L, PathManager::ResolveApp("Lua:QuestData.lua").string().c_str());
 		if (ret != LUA_OK)
 		{
 			const char* err = lua_tostring(L, -1);
@@ -157,7 +157,7 @@ namespace PIP
 	void LuaManager::LoadLeverData()
 	{
 		lua_register(L, "API_LoadLeverData", Lua_LoadLeverData);
-		int ret = luaL_dofile(L, PathManager::Resolve(PathRoot::Lua, "LeverData.lua").string().c_str());
+		int ret = luaL_dofile(L, PathManager::ResolveApp("Lua:LeverData.lua").string().c_str());
 		if (ret != LUA_OK)
 		{
 			const char* err = lua_tostring(L, -1);
@@ -379,7 +379,7 @@ namespace PIP
 
 	void LuaManager::LoadPlayerData()
 	{
-		int ret = luaL_dofile(L, PathManager::Resolve(PathRoot::Lua, "PlayerData.lua").string().c_str());
+		int ret = luaL_dofile(L, PathManager::ResolveApp("Lua:PlayerData.lua").string().c_str());
 		if (ret != LUA_OK)
 		{
 			const char* err = lua_tostring(L, -1);

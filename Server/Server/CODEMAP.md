@@ -15,8 +15,8 @@ IOCP 기반 권위 서버. 방(Room)마다 Jolt 물리 시스템을 따로 돌�
 | 컴파일 스위치 (`pch.h`) | `DEBUG_VIEWER`(Jolt 물리 기록 `physics_dump.bin`), `ENABLE_DEBUG_LOG`(MYLOG 출력, Release에서는 빠짐), `_DEBUG_PHYSICS_VISUALIZATION` |
 | Jolt | `Jolt/lib/Debug`, `Jolt/lib/Release` |
 | 외부 | Lua 5.4(`lua-5.4.2_Win64_dll17_lib/`, `lua54.dll`), Recast/Detour(`Recast/`, `Detour/`, 내비메시), nlohmann json |
-| 경로 기준 | `common::PathManager`(`Common/PathManager.h`)가 exe 위치로 판단(작업 폴더 무관). 배포 폴더(exe 옆에 `Lua/`)면 exe 폴더, 아니면 저장소의 `Server/Server`가 App 루트. 루트: `Lua/`(Lua 데이터), `Resource/`(내비메시), `ClientResource`(배포 `Data/ClientResource`, 개발 `Client/Client/Resource`), `CommonData`(배포 `Data/Common`, 개발 `Common`), `Saved/`(`physics_dump.bin`) |
-| 배포 폴더 | `STL_Server.exe`, `lua54.dll`, `Lua/*.lua`, `Resource/NavMesh2.obj`, `Data/ClientResource/`(`MainLandscape/`, `MainLandscape_Meshes/Landscape_-1_-1_MapData`, `Landscape_-1_0_MapData`, `1-BossScene/`), `Data/Common/World_Batch_glTF/Tile_X-1_Y-1/`, `Saved/`(자동 생성). `.jbin` 캐시는 원본 메쉬 옆에 생긴다 |
+| 경로 기준 | `common::PathManager`(`Common/PathManager.h`). 기본은 개발 모드: 저장소 `PathManifest.json`의 별칭, App 루트 `Server/Server`. exe 옆에 `Deploy.json`이 있을 때만 배포 모드. 작업 폴더 무관. 서버 경로는 모두 별칭: `Lua:`, `NavMesh:`, 클라 리소스 `LandscapeMeshes:`, `BossMap:`, `MainLandscape:`, `WorldBatch:`(`server.cpp` 시작부, `LuaManager`). `MapDataManager::Load*`는 함수 안에서 `ResolveApp`. 물리 기록은 `Saved/` |
+| 배포 | `python Tools/deploy.py --app server`: `STL_Server.exe`, `lua54.dll`, `Lua/`, `Resource/NavMesh2.obj`, `External/`(BossMap, LandscapeMeshes 2개, MainLandscape `Landscape*`, WorldBatch `Tile_X-1_Y-1`), `Deploy.json`. 약 2.5GB. `.jbin` 캐시는 복사하지 않으므로 첫 실행 때 원본 메쉬 옆에 새로 만든다(쓰기 권한 필요) |
 | 시계 | `common::NetNowMs()`(steady_clock ms). 리와인드 기록·판정, NPC 시각 모두 이 시계 |
 
 ---

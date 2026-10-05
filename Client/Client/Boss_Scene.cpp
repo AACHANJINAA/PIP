@@ -21,7 +21,7 @@ void Boss_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 {
     ShadowManager::instance()->set_shadow_max_distance(600.0f);
 	SceneManager::instance()->build_skybox(device, commandList,
-		"Resource/SkyBox/",
+		"SkyBox:",
 		"farmland/farmland_skybox.dds",
 		"farmland/farmland_specular.dds",
 		"farmland/farmland_diffuse.txt",
@@ -86,7 +86,7 @@ void Boss_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
 		long long my_id = NetworkManager::instance()->get_my_session_id();
-		std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";
+		std::string resource_name = "UI:ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";
 		name_renderer->set_texture(resource_name);
 		UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
 	}

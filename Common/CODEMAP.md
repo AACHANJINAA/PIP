@@ -16,7 +16,7 @@
 | `Vector3.h` | `common::Vec3`(= `XMFLOAT3`), `Vec4`, `Quat`(= `XMFLOAT4`), 상수(`Vec3Zero` 등), `Dot/Length/Normalize/Distance`, NaN 검사, `common::VectorHelper` 연산자(+, -, *, /) |
 | `JoltHelper.h` | `PIP::Utils::ToJolt/FromJolt` (Vec3, Quat, 행렬 ↔ Jolt) |
 | `TerrainData.h` | 하이트맵 지형 데이터 로드(metadata.json + raw), 정보·높이 배열 |
-| `PathManager.h` | 서버·클라 공용 경로 관리(헤더 전용, Windows). `Init(AppKind)`가 exe 위치로 배포/개발을 판별(배포: 클라 `Resource/`+`Shaders/`, 서버 `Lua/`가 exe 옆에 있음. 개발: 위로 올라가며 `Common/Packet.h`가 있는 저장소 루트 탐색)하고 루트(`App`, `Shader`, `Lua`, `ClientResource`, `CommonData`, `Saved`)를 정한 뒤 cwd를 App으로 맞춤. `Resolve(root, rel)`, `ResolveApp("Resource/...")`, `ToUtf8`. 필수 폴더가 없으면 메시지 박스 |
+| `PathManager.h` | 서버·클라 공용 경로 관리(헤더 전용, Windows). `Init(AppKind)`: exe 옆에 `Deploy.json`이 있으면 배포 모드(별칭 → exe 기준 폴더), 없으면 개발 모드(위로 올라가 저장소 루트를 찾고 `PathManifest.json`의 `dev` 경로 사용). 루트 `App`, `Shader`, `Lua`, `Saved`. `Expand("UI:a.dds")` → `"Resource/UI/a.dds"`(App 밖 별칭은 절대 경로), `ResolveApp`(별칭·App 기준 경로 → 실제 경로), `Resolve(root, rel)`, `GetAlias`, `ToUtf8`. 개발 모드에서 연 파일을 `Saved/used_files.txt`에 누적 기록(종료 시). 매니페스트 오류·필수 폴더 없음은 메시지 박스 |
 | `json.hpp` | nlohmann json 3.12.0 |
 | `stb_image.h` | 이미지 로드 |
 

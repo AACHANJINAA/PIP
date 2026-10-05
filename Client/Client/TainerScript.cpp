@@ -43,7 +43,7 @@ void TainerScript::init_visual()
 
     if (animComp && renderComp)
     {
-        const std::string basePath = "Resource/Character/BoneGolem/";
+        const std::string basePath = "Character:BoneGolem/";
 
         // 1. 메인 메쉬 로드 (이 파일은 반드시 메쉬 데이터를 포함해야 함)
         auto mainMesh = ResourceManager::instance()->load_mesh(basePath + "BoneGolemRd.gltf", true);

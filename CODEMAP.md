@@ -20,7 +20,7 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 | `Jolt/JoltViewer` | 물리 기록 뷰어 소스(`-focus=x,y,z` 인자 추가), `JoltViewer.exe`, `RunViewer.py`(더블클릭 실행 도우미), `CMakeLists.txt`(빌드 방법은 `BoneCollider_Spec_KR.md` 7.5) |
 | `Jolt/TestFramework` | 뷰어가 쓰는 창·DX12 렌더러·UI 프레임워크 (upstream 그대로) |
 | `Jolt/Assets` | 뷰어 셰이더·폰트 |
-| `Tools` | `EnsureUtf8Bom.ps1` (C++ 소스를 UTF-8 BOM으로 맞추는 수동 실행 스크립트) |
+| `Tools` | `EnsureUtf8Bom.ps1` (C++ 소스를 UTF-8 BOM으로 맞추는 수동 실행 스크립트), `deploy.py` (`PathManifest.json` 기준 배포 폴더 생성·사용 파일 검사) |
 | `TextureTools` | 텍스처 변환 도구 (HDR/PNG/JPG → DDS, IBL 맵 생성, TextureCooker) |
 | `StressTest` | 서버 부하 테스트 봇 클라이언트 (`BotSession`) |
 | `기획 & 계획` | 설계·계획 문서 (아래) |
@@ -38,6 +38,6 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 ## 공통 규칙
 
 - 서버·클라 모두 `/utf-8` 컴파일. 소스는 UTF-8 BOM(`.editorconfig`).
-- 서버 작업 폴더는 `Server/Server`, 클라 작업 폴더는 `Client/Client` (리소스 상대 경로 기준).
+- 경로는 `Common/PathManager.h`가 exe 위치로 계산(작업 폴더 무관). 별칭·배포 범위는 저장소 루트 `PathManifest.json`, 배포는 `python Tools/deploy.py`.
 - `Common`을 바꾸면 서버와 클라를 둘 다 다시 빌드한다.
 - 코드 구조를 바꾸면 해당 폴더 `CODEMAP.md`도 같이 고친다.

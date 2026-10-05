@@ -502,7 +502,7 @@ void NetworkManager::HANDLE_S2C_SPAWN_PLAYER(common::packet::PacketStream& strea
 
 				auto slot = UIManager::instance()->get_party_slot(slotIdx);
 				if (slot && slot->id_icon) {
-					std::string res_name = "Resource/UI/ID/Player_" + std::to_string(spawn_data._id % 4 + 1) + ".dds";
+					std::string res_name = "UI:ID/Player_" + std::to_string(spawn_data._id % 4 + 1) + ".dds";
 					slot->id_icon->set_texture(res_name);
 				}
 			}

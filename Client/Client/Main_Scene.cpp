@@ -44,7 +44,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 	// 1. Skybox 로드 (모든 Scene 공통)
 	SceneManager::instance()->build_skybox(device, commandList,
-		"Resource/SkyBox/",
+		"SkyBox:",
 		"cloudy/cloudy_skybox.dds",
 		"cloudy/cloudy_specular.dds",
 		"diffuse.txt",
@@ -116,7 +116,7 @@ void Main_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* 
 	//load_from_file_with_light("Resource/LeverAndPosition/SelectedMeshes_ClientData.json", device, commandList);
 	ResourceManager::instance()->load_mesh("Resource/LeverAndPosition/Meshes/Cube_5E5A4B61.gltf", false);
 
-	std::string path = PathManager::Resolve(PathRoot::CommonData, "World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json").string();
+	std::string path = "WorldBatch:Tile_X-1_Y-1/Tile_X-1_Y-1 Server Export Data.json";
 	DebugDrawManager::instance()->LoadLocalDebugShape(path, "BP_house_03_Optimized15", "SM_House_Village_03_Merged");
 
 	// [사운드] 전역 BGM 재생
@@ -171,7 +171,7 @@ void Main_Scene::Spawn_UI(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	name_renderer->set_color(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	long long my_id = NetworkManager::instance()->get_my_session_id();
-	std::string resource_name = "Resource/UI/ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";  
+	std::string resource_name = "UI:ID/Player_" + std::to_string(my_id % 4 + 1) + ".dds";  
 	name_renderer->set_texture(resource_name);
 	UIManager::instance()->add_ui(UILayer::MIDDLE, "PlayerNameImage", name_img_obj);
 
@@ -656,7 +656,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto animation = T1->add_component<AnimationComponent>();
 
 
-		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
+		std::string animationpath = "Character:DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
 		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
@@ -712,7 +712,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
-		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
+		std::string animationpath = "Character:DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
 		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
@@ -768,7 +768,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
-		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
+		std::string animationpath = "Character:DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
 		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
@@ -824,7 +824,7 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto renderer = T1->add_component<RenderComponent>();
 		auto animation = T1->add_component<AnimationComponent>();
 
-		std::string animationpath = "Resource/Character/DarkKnight/DKF_animations/";
+		std::string animationpath = "Character:DarkKnight/DKF_animations/";
 		// 메시 설정 (애니메이션 포함)
 		auto T1_Mesh = ResourceManager::instance()->load_mesh("Resource/Character/DarkKnight/SKM_DKF_Full_With_Sword.gltf", true);
 		std::dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh)->load_animation_only(animationpath + "Anim_DKF_Idle_Alert.gltf", "idle");
