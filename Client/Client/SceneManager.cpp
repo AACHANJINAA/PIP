@@ -289,7 +289,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         return;
     }
 
-    std::filesystem::path landscapeBaseDir = PathManager::ResolveApp("Resource/MainLandscape");
+    std::filesystem::path landscapeBaseDir = PathManager::GetAlias("MainLandscape");
 
     if (!std::filesystem::exists(landscapeBaseDir))
     {

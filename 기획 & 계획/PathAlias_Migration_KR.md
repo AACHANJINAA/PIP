@@ -333,15 +333,15 @@ static std::string Expand(std::string_view path);
 
 4.2~4.4 표의 함수 입구에서 `const std::string path = PathManager::Expand(in);`로 바꾼 뒤 기존 로직을 그대로 쓴다.
 
-- [ ] `ResourceManager`: `load_mesh`, `load_texture`, `get_texture`, `load_materials_from_gltf`, `load_cubemap_from_dds`, `load_skybox`, `load_ibl_maps`, `load_heightmap_from_raw`, R8 텍스처, 텍스처 배열
-- [ ] `ResourceManager` IBL 조회 3개: 하드코딩한 키(`"Resource\SkyBox\IBL_*.dds"`)와 이름 검색 대체 로직을 지우고, `_ibl_*_path` 멤버(펼친 값)로만 찾는다
-- [ ] `ReadGLTFMesh::load_animation_only`
-- [ ] `Scene::load_scene_from_file`, `load_foliage_from_file`, `load_from_file_with_light` (`basePath` 계산 전에 펼치기)
-- [ ] `SceneManager::build_skybox`: 공용 폴더 인자가 별칭(`"SkyBox:"`)이어도 동작하게, 이어 붙인 뒤 `Expand`
-- [ ] `SceneManager::build_main_landscapes`: `GetAlias("MainLandscape")` 사용
-- [ ] `TerrainLoader` 생성자 2개, `load_textures_to_resource_manager`, weightmap 로드
-- [ ] `UIRenderComponent::set_texture`, `BillboardUIRenderComponent::set_texture`: 저장하는 경로 문자열 확인
-- [ ] 서버 `MapDataManager::LoadStaticMeshShapes`, `LoadServerExportData`, `LoadMainLandscapeData`, `LoadNavMesh`: 함수 안에서 `PathManager::ResolveApp(Expand(path))`
+- [x] `ResourceManager`: `load_mesh`, `load_texture`, `get_texture`, `load_materials_from_gltf`, `load_cubemap_from_dds`, `load_skybox`, `load_ibl_maps`, `load_heightmap_from_raw`, R8 텍스처, 텍스처 배열
+- [x] `ResourceManager` IBL 조회 3개: 하드코딩한 키(`"Resource\SkyBox\IBL_*.dds"`)와 이름 검색 대체 로직을 지우고, `_ibl_*_path` 멤버(펼친 값)로만 찾는다
+- [x] `ReadGLTFMesh::load_animation_only`
+- [x] `Scene::load_scene_from_file`, `load_foliage_from_file`, `load_from_file_with_light` (`basePath` 계산 전에 펼치기)
+- [x] `SceneManager::build_skybox`: 공용 폴더 인자가 별칭(`"SkyBox:"`)이어도 동작하게, 이어 붙인 뒤 `Expand`
+- [x] `SceneManager::build_main_landscapes`: `GetAlias("MainLandscape")` 사용
+- [x] `TerrainLoader` 생성자 2개, `load_textures_to_resource_manager`, weightmap 로드
+- [x] `UIRenderComponent::set_texture`, `BillboardUIRenderComponent::set_texture`: 저장하는 경로 문자열 확인
+- [x] 서버 `MapDataManager::LoadStaticMeshShapes`, `LoadServerExportData`, `LoadMainLandscapeData`, `LoadNavMesh`: 함수 안에서 `PathManager::ResolveApp(Expand(path))`
 - [ ] 확인: 아무 파일 하나를 별칭으로 바꿔 놓고, 같은 파일을 기존 표기로도 불러서 캐시가 한 번만 올라가는지 본다(로그). 끝나면 되돌린다.
 
 ### 6.4 3단계: 배포 프로그램 (`Tools/Deploy.ps1`)

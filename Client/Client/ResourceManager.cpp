@@ -10,6 +10,7 @@
 #include "DescriptorManager.h"
 #include "DDSTextureLoader12.h"
 #include "WICTextureLoader12.h"
+#include <unordered_set>
 
 
 void ResourceManager::create_default_textures(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -127,8 +128,9 @@ void ResourceManager::release()
     _textures.clear();
 }
 
-std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path, bool _isAnimated, std::string animation_name)
+std::shared_ptr<Mesh> ResourceManager::load_mesh(const std::string& file_path_in, bool _isAnimated, std::string animation_name)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     // 이미 로드된 메시인지 확인
     auto it = _meshes.find(file_path);
     if (it != _meshes.end()) {
@@ -271,8 +273,9 @@ void ResourceManager::unload_texture(const std::string& name)
 }
 
 // 내부 헬퍼 함수: 텍스처를 로드하고 GPU에 업로드합니다.
-ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path, bool is_srgb, D3D12_SRV_DIMENSION view_dimension)
+ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string & file_path_in, bool is_srgb, D3D12_SRV_DIMENSION view_dimension)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     if (file_path.empty()) {
         return nullptr;
     }
@@ -421,8 +424,9 @@ ResourceManager::TextureInfo * ResourceManager::load_texture(const std::string &
     return &_textures[file_path];
 }
 
-std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::string & file_path)
+std::vector<std::string> ResourceManager::load_materials_from_gltf(const std::string & file_path_in)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     using json = nlohmann::json;
     std::vector<std::string> loaded_material_names;
     
@@ -789,8 +793,9 @@ void ResourceManager::bind_material(const std::string& material_name, ID3D12Grap
 //////////////////////////////////////////////////////SkyBox//////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ResourceManager::load_skybox(const std::string& file_path)
+void ResourceManager::load_skybox(const std::string& file_path_in)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     _skybox_texture_path = file_path;
     auto* skybox_info = load_cubemap_from_dds(file_path);
 
@@ -840,8 +845,11 @@ D3D12_CPU_DESCRIPTOR_HANDLE ResourceManager::get_skybox_srv_cpu() const
     return _skybox_cpu_handle;
 }
 
-void ResourceManager::load_ibl_maps(const std::string specular_path, const std::string diffuse_path, const std::string brdf_path)
+void ResourceManager::load_ibl_maps(const std::string specular_path_in, const std::string diffuse_path_in, const std::string brdf_path_in)
 {
+    const std::string specular_path = PathManager::Expand(specular_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
+    const std::string diffuse_path = PathManager::Expand(diffuse_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
+    const std::string brdf_path = PathManager::Expand(brdf_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     // 1. Irradiance Map (인덱스 1)
     _ibl_irradiance_path = diffuse_path;
     std::ifstream sh_file(PathManager::ResolveApp(_ibl_irradiance_path));
@@ -903,80 +911,38 @@ void ResourceManager::load_ibl_maps(const std::string specular_path, const std::
     }
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_irradiance_srv()
+// IBL 텍스처는 load_ibl_maps가 저장한 경로(Expand 결과)로만 찾는다.
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::find_ibl_srv(const std::string& path, const char* what)
 {
-    // ========== 방법 1: _ibl_irradiance_path로 찾기 ==========
-    if (!_ibl_irradiance_path.empty()) {
-        auto it = _textures.find(_ibl_irradiance_path);
-        if (it != _textures.end()) {
-            return it->second.gpu_handle;
-        }
-    }
-
-    // ========== 방법 2: 직접 경로로 찾기 (fallback) ==========
-    auto it2 = _textures.find("Resource\\SkyBox\\IBL_diffuse.dds");
-    if (it2 != _textures.end()) {
-        CLOG("Found via direct path!");
-        return it2->second.gpu_handle;
-    }
-
-    // ========== 방법 3: 맵 전체 검색 ==========
-    for (const auto& [path, tex] : _textures) {
-        if (path.find("IBL_diffuse") != std::string::npos) {
-            CLOG("Found via search: " << path);
-            return tex.gpu_handle;
-        }
-    }
-
-    CERROR("IBL Irradiance not found anywhere!");
-    CLOG("_ibl_irradiance_path = '" << _ibl_irradiance_path << "'");
-    return {};
-}
-
-//동일하게** get_ibl_prefiltered_srv()** 와** get_ibl_brdf_lut_srv()** 도 수정 :
-
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_prefiltered_srv()
-{
-    if (!_ibl_prefiltered_path.empty()) {
-        auto it = _textures.find(_ibl_prefiltered_path);
+    if (!path.empty()) {
+        auto it = _textures.find(path);
         if (it != _textures.end()) return it->second.gpu_handle;
     }
 
-    auto it2 = _textures.find("Resource\\SkyBox\\IBL_specular.dds");
-    if (it2 != _textures.end()) return it2->second.gpu_handle;
-
-    for (const auto& [path, tex] : _textures) {
-        if (path.find("IBL_specular") != std::string::npos) {
-            return tex.gpu_handle;
-        }
-    }
-
-    CERROR("IBL Prefiltered not found!");
+    static std::unordered_set<std::string> reported;
+    if (reported.insert(what).second)
+        CERROR("IBL " << what << " not found: '" << path << "'");
     return {};
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_irradiance_srv()
+{
+    return find_ibl_srv(_ibl_irradiance_path, "Irradiance");
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_prefiltered_srv()
+{
+    return find_ibl_srv(_ibl_prefiltered_path, "Prefiltered");
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE ResourceManager::get_ibl_brdf_lut_srv()
 {
-    if (!_ibl_brdf_lut_path.empty()) {
-        auto it = _textures.find(_ibl_brdf_lut_path);
-        if (it != _textures.end()) return it->second.gpu_handle;
-    }
-
-    auto it2 = _textures.find("Resource\\SkyBox\\IBL_BRDF_LUT.dds");
-    if (it2 != _textures.end()) return it2->second.gpu_handle;
-
-    for (const auto& [path, tex] : _textures) {
-        if (path.find("IBL_BRDF_LUT") != std::string::npos) {
-            return tex.gpu_handle;
-        }
-    }
-
-    CERROR("IBL BRDF LUT not found!");
-    return {};
+    return find_ibl_srv(_ibl_brdf_lut_path, "BRDF LUT");
 }
 
-ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::string& file_path)
+ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::string& file_path_in)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     // 1. 캐시 확인
     auto it = _textures.find(file_path);
     if (it != _textures.end()) {
@@ -1073,8 +1039,9 @@ ResourceManager::TextureInfo* ResourceManager::load_cubemap_from_dds(const std::
 /////////////////////////////////////////////////////////////////////HeightMap///////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ResourceManager::TextureInfo* ResourceManager::get_texture(const std::string& file_path)
+ResourceManager::TextureInfo* ResourceManager::get_texture(const std::string& file_path_in)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     auto it = _textures.find(file_path);
     if (it != _textures.end())
         return &it->second;
@@ -1083,8 +1050,9 @@ ResourceManager::TextureInfo* ResourceManager::get_texture(const std::string& fi
     return nullptr;
 }
 
-ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std::string& file_path, int width, int height)
+ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std::string& file_path_in, int width, int height)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     auto it = _textures.find(file_path);
     if (it != _textures.end())
         return &it->second;
@@ -1182,8 +1150,9 @@ ResourceManager::TextureInfo* ResourceManager::load_heightmap_from_raw(const std
     return stored;
 }
 
-ResourceManager::TextureInfo* ResourceManager::load_texture_r8(const std::string& file_path, int width, int height)
+ResourceManager::TextureInfo* ResourceManager::load_texture_r8(const std::string& file_path_in, int width, int height)
 {
+    const std::string file_path = PathManager::Expand(file_path_in); // 별칭 표기를 논리 경로로 (캐시 키 통일)
     // 1. 캐시 확인
     auto it = _textures.find(file_path);
     if (it != _textures.end())

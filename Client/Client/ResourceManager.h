@@ -46,6 +46,9 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_irradiance_srv();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_prefiltered_srv();
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_brdf_lut_srv();
+private:
+    D3D12_GPU_DESCRIPTOR_HANDLE find_ibl_srv(const std::string& path, const char* what);
+public:
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_diffuse_gpu() const { return _ibl_diffuse_gpu_handle; }
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_specular_gpu() const { return _ibl_specular_gpu_handle; }
     D3D12_GPU_DESCRIPTOR_HANDLE get_ibl_brdf_lut_gpu() const { return _ibl_brdf_gpu_handle; }

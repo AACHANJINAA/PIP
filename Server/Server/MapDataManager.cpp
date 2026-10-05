@@ -98,8 +98,11 @@ namespace PIP
 		}
 	}
 
-	void MapDataManager::LoadMainLandscapeData(std::string_view landscapeDirPath)
+	void MapDataManager::LoadMainLandscapeData(std::string_view landscapeDirPath_in)
 	{
+		// 별칭("BossMap:...")이나 App 기준 상대 경로를 실제 경로로
+		const std::string landscapeDirPath_resolved = common::PathManager::ResolveApp(std::string(landscapeDirPath_in)).string();
+		const std::string_view landscapeDirPath = landscapeDirPath_resolved;
 		std::filesystem::path landscapeBaseDir(landscapeDirPath);
 		if (!std::filesystem::exists(landscapeBaseDir)) {
 			MYERROR("MainLandscape directory not found: " << landscapeDirPath);
@@ -156,8 +159,11 @@ namespace PIP
 		MYLOG("Total Landscapes & Shapes Loaded: " << _terrainTiles.size());
 	}
 
-	void MapDataManager::LoadStaticMeshShapes(const std::string& tileName, std::string_view jsonPath, bool enableBinSave)
+	void MapDataManager::LoadStaticMeshShapes(const std::string& tileName, std::string_view jsonPath_in, bool enableBinSave)
 	{
+		// 별칭("BossMap:...")이나 App 기준 상대 경로를 실제 경로로
+		const std::string jsonPath_resolved = common::PathManager::ResolveApp(std::string(jsonPath_in)).string();
+		const std::string_view jsonPath = jsonPath_resolved;
 		namespace fs = std::filesystem;
 
 		// 1. JSON 파일 경로 및 부모 폴더(basePath) 설정
@@ -359,8 +365,11 @@ namespace PIP
 		MYLOG("Loaded Exported Scene for [" << groupName << "] from " << jsonPath);
 	}
 
-	void MapDataManager::LoadServerExportData(const std::string& groupName, std::string_view jsonPath, bool enableBinSave)
+	void MapDataManager::LoadServerExportData(const std::string& groupName, std::string_view jsonPath_in, bool enableBinSave)
 	{
+		// 별칭("BossMap:...")이나 App 기준 상대 경로를 실제 경로로
+		const std::string jsonPath_resolved = common::PathManager::ResolveApp(std::string(jsonPath_in)).string();
+		const std::string_view jsonPath = jsonPath_resolved;
 		std::ifstream file(jsonPath.data());
 		if (!file.is_open()) {
 			MYERROR("[MapData] Failed to open Server Export Data: " << jsonPath);
@@ -665,8 +674,11 @@ namespace PIP
 		//MYLOG("[MapData] Instances with COM offset error: " << com_err_count);
 	}
 
-	bool MapDataManager::LoadNavMesh(const std::string& name, std::string_view obj_path)
+	bool MapDataManager::LoadNavMesh(const std::string& name, std::string_view obj_path_in)
 	{
+		// 별칭("BossMap:...")이나 App 기준 상대 경로를 실제 경로로
+		const std::string obj_path_resolved = common::PathManager::ResolveApp(std::string(obj_path_in)).string();
+		const std::string_view obj_path = obj_path_resolved;
 		MYLOG("Loading NavMesh: " << name << " from OBJ: " << obj_path);
 		RawMeshData rawData;
 		if (!ParseOBJ(obj_path, rawData)) {
