@@ -107,6 +107,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="VfxManager.h" />
+    <ClInclude Include="VfxPresetLibrary.h" />
     <ClInclude Include="DebugPanel.h" />
     <ClInclude Include="ParticleBillboardShader.h" />
     <ClInclude Include="ParticleSystemSettings.h" />
@@ -237,6 +239,8 @@
     <ClInclude Include="WICTextureLoader12.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="VfxManager.cpp" />
+    <ClCompile Include="VfxPresetLibrary.cpp" />
     <ClCompile Include="DebugPanel.cpp" />
     <ClCompile Include="ParticleBillboardShader.cpp" />
     <ClCompile Include="GatherParticleComponent.cpp" />
@@ -402,6 +406,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="packages.config" />
+    <None Include="Resource\Vfx\VfxPresets.lua" />
     <None Include="QuestData.lua" />
     <None Include="Shaders.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

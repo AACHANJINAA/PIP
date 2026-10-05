@@ -170,6 +170,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="VfxManager.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="VfxPresetLibrary.h">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClInclude>
     <ClInclude Include="DebugPanel.h">
       <Filter>0. Engine\9. ImGui</Filter>
     </ClInclude>
@@ -556,6 +562,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="VfxManager.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="VfxPresetLibrary.cpp">
+      <Filter>0. Engine\1. GameObject &amp; Components\3. Components\ParticleComponent</Filter>
+    </ClCompile>
     <ClCompile Include="DebugPanel.cpp">
       <Filter>0. Engine\9. ImGui</Filter>
     </ClCompile>
@@ -948,6 +960,9 @@
     </None>
     <None Include="IBL.hlsl">
       <Filter>2. Shaders</Filter>
+    </None>
+    <None Include="Resource\Vfx\VfxPresets.lua">
+      <Filter>3. Resources</Filter>
     </None>
     <None Include="QuestData.lua">
       <Filter>1. Game\4. Quest</Filter>

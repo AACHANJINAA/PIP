@@ -12,6 +12,7 @@
 #include "PhysicsDebugCapture.h"
 #include "ServerClock.h"
 #include "DebugPanel.h"
+#include "VfxManager.h"
 #include "DamageTextManager.h"
 
 #include "DescriptorManager.h"
@@ -343,6 +344,11 @@ void GameFramework::ProcessInput()
 	if (InputManager::instance()->IsKeyDown(VK_OEM_5))
 	{
 		DebugPanel::instance()->toggle();
+	}
+	// [디버그] 이펙트 프리셋(Resource/Vfx/VfxPresets.lua) 다시 읽기
+	if (InputManager::instance()->IsKeyDown(VK_F5))
+	{
+		VfxManager::instance()->reload();
 	}
 	if (InputManager::instance()->IsKeyDown('T'))
 	{

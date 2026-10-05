@@ -5,6 +5,7 @@
 #include "ObjectManager.h"
 #include "ParticleSystemComponent.h"
 #include "ServerClock.h"
+#include "VfxManager.h"
 #include "TransformComponent.h"
 
 namespace
@@ -35,6 +36,9 @@ void DebugPanel::draw()
 
     if (ImGui::CollapsingHeader("Particle Test"))
         draw_particle_test();
+
+    if (ImGui::CollapsingHeader("VFX Presets"))
+        draw_vfx_presets();
 
     ImGui::End();
 }
@@ -77,6 +81,36 @@ void DebugPanel::draw_particle_test()
     if (ImGui::Button("Burst")) ps->emit(_burstCount);
 
     ImGui::Text("max_particles %u (over-limit bursts log once)", ps->settings().max_particles);
+}
+
+void DebugPanel::draw_vfx_presets()
+{
+    auto vfx = VfxManager::instance();
+    const auto names = vfx->presets().names();
+
+    ImGui::Text("%s (%d presets)", VfxManager::kPresetPath, static_cast<int>(names.size()));
+    if (ImGui::Button("Reload (F5)")) vfx->reload();
+    if (names.empty()) return;
+
+    _vfxIndex = std::clamp(_vfxIndex, 0, static_cast<int>(names.size()) - 1);
+    if (ImGui::BeginCombo("Preset", names[_vfxIndex].c_str()))
+    {
+        for (int i = 0; i < static_cast<int>(names.size()); ++i)
+            if (ImGui::Selectable(names[i].c_str(), i == _vfxIndex)) _vfxIndex = i;
+        ImGui::EndCombo();
+    }
+
+    // 플레이어 앞 3m, 1m 위에서 위쪽으로
+    if (ImGui::Button("Play in front of player"))
+    {
+        auto player = ObjectManager::instance()->find_by_name("MainPlayer");
+        if (player)
+        {
+            XMFLOAT3 pos = player->transform()->get_world_position();
+            XMFLOAT3 fwd = player->transform()->forward();
+            vfx->play(names[_vfxIndex], { pos.x - fwd.x * 3.0f, pos.y + 1.0f, pos.z - fwd.z * 3.0f }, { 0.0f, 1.0f, 0.0f });
+        }
+    }
 }
 
 void DebugPanel::place_particle_test()

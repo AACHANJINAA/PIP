@@ -144,7 +144,7 @@ Object
 
 | 파일 | 역할 |
 |---|---|
-| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초, 칼 타격음 `SwordHit`, 맞은 NPC `on_predicted_hit` 피격음, 카메라 킥 `add_kick`), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
+| `MainPlayerScript.h/.cpp` | 내 플레이어. 입력, 클라 예측 이동(`_logicalPosition` + `_visualOffset` 보정, `sync_with_server`), 이동 패킷 0.02초마다(`send_network_sync`), 평타·대검 스킬 상태, 공격 패킷(평타 30%에 1회), **칼날 캡슐**(`ik_hand_r`, 중심 (0,0,-0.495), 반지름 0.1, `Role::Hitbox`), **평타 예측 판정**(5~80% 구간 `begin/end_hit_query`, `on_trigger_enter`에서 타격 스파크 `VfxManager::play`, 0.5초 쿨다운 흉내·로그·나와 맞은 NPC에 `GameObject::hit_stop` 0.05초, 칼 타격음 `SwordHit`, 맞은 NPC `on_predicted_hit` 피격음, 카메라 킥 `add_kick`), HP/MP/퀘스트 UI, 디버그 키 F7(판정 구간 매 프레임 물리 기록)/F8(물리 기록 + 서버 스냅샷 요청) |
 | `OtherPlayerScript.h/.cpp` | 다른 플레이어. `on_server_move`로 이동 패킷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 30ms)으로 위치·회전 보간**, 상태·액션(공격음)·잡기·HP·MP는 패킷 서버 시각에 적용(`apply_state`). 생성·부활은 `reset_transform`(버퍼 비우고 그 위치에서 시작). 잡기 시 보스 손 뼈에 부착, 파티 슬롯 UI, 대검 스킬 연출 |
 | `NPCScript.h/.cpp` | NPC 공통(필수 컴포넌트에 `HitReactionComponent`, 피격 시 피격 모션 대신 리액션). `INetSync` 구현. 스냅샷을 `SnapshotBuffer`에 쌓아 **렌더 시각(도착 기준 서버 시각 − 70ms)으로 위치·회전 보간**, 상태·액션·잡기·HP와 사운드는 스냅샷 서버 시각에 적용(`apply_state`). **넉백 모션**(`on_motion_start/end`, `apply_motion`): 렌더 시각이 모션 구간 안이면 수평 위치를 서버와 같은 곡선으로 계산(높이·회전은 스냅샷). `init_visual`에서 종류별 메쉬·애니메이션 로드(매직 컨스트럭트 1.5배, 드래곤 브루트 Hit 모션), 상태별 애니메이션 분기 |
 | `TainerScript.h/.cpp` | 보스(본 골렘, 5배 스케일). 액션 번호별 애니메이션·사운드, HP 바, 사망 엔딩 연출, BT 디버그 정보 |
@@ -193,6 +193,7 @@ Object
 | `GatherParticleComponent.h/.cpp` + `Particle_CS.hlsl` | 목표점으로 모이는 파티클(대검 스킬, 컷씬 플레이어, 분수). 위치를 진행도(`set_compute_data`)로부터 컴퓨트가 직접 계산. 루트 상수 24개(파티클 수 포함), 컴퓨트 PSO는 렌더러가 공유 |
 | `ParticleRenderComponent.h/.cpp` | 파티클을 렌더 목록에 올리는 렌더 컴포넌트. 같은 오브젝트의 파티클 컴포넌트 `draw`를 부름 |
 | `ParticleBillboardShader.h/.cpp` | 범용 파티클 PSO `particle_additive`(가산)·`particle_alpha`(알파). 깊이 테스트 O, 쓰기 X, 컬링 없음 |
+| `VfxManager.h/.cpp`, `VfxPresetLibrary.h/.cpp`, `Resource/Vfx/VfxPresets.lua` | **이펙트 한 줄 재생** `VfxManager::play(이름, 위치, 방향)` (유니티 프리팹 Instantiate에 해당). 프리셋은 Lua 파일의 전역 테이블 `vfx`(키는 `ParticleSystemSettings`와 같음, `extend`로 변형, 모르는 키·값 로그). 이름별 방출기 오브젝트 하나를 재사용(반복·연속 방출 끄고 0초 버스트만 방출), 씬 전환으로 지워지면 다시 만듦. F5 또는 `reload()`로 다시 읽기. 프리셋: `hit_spark`(평타), `skill_hit_spark`(대검) |
 | `UIManager`, `DamageTextManager`, `ImGuiManager`, `DebugPanel` | UI 레이어·파티 슬롯, 데미지 숫자(ImGui), ImGui 수명, 개발용 디버그 패널(`\`) — ImGui 사용처는 11.1 |
 | `DebugDrawManager.h/.cpp` | 디버그 도형(박스·구·캡슐·선), 서버가 보낸 디버그 도형. `_DEBUG_PHYSICS_VISUALIZATION`일 때 렌더 |
 
@@ -249,6 +250,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | `\` (한국어 자판 ₩) | 디버그 패널 토글 (Network, Particle Test). 마우스로 조작하려면 ESC로 커서 표시. 예전 F6 네트워크 창은 여기로 옮김 | `GameFramework::ProcessInput` → `DebugPanel` |
 | F7 | 평타 판정 구간 매 프레임 물리 기록 토글 | `MainPlayerScript::handle_input` |
 | F8 | 클라 물리 한 프레임 기록 + 서버 물리 스냅샷 요청 | `MainPlayerScript::handle_input` |
+| F5 | 이펙트 프리셋(`Resource/Vfx/VfxPresets.lua`) 다시 읽기 | `GameFramework::ProcessInput` → `VfxManager::reload` |
 | F11 | 전체 화면 | `GameFramework::ProcessInput` |
 | K | 300m 안 몬스터 즉사 (서버 디버그 명령) | `MainPlayerScript::handle_input` |
 | U | 대검 스킬 즉시 해금 (서버 디버그 명령 `UNLOCK_SKILL`) | `MainPlayerScript::handle_input` |
@@ -262,7 +264,7 @@ ImGui 1.92.7 WIP + ImGuizmo(`imgui/`). 모든 ImGui 창은 한 프레임 안에�
 | 위치 | 내용 | 여는 방법 |
 |---|---|---|
 | `ImGuiManager.h/.cpp` | 초기화·해제·프레임 시작·렌더. 폰트용 SRV 1개짜리 전용 디스크립터 힙, 키보드 내비게이션, 다크 테마. 창 배치는 `imgui.ini`(git 무시). 입력은 `main.cpp` WndProc가 `ImGui_ImplWin32_WndProcHandler`로 먼저 넘김 | 항상 |
-| `DebugPanel.h/.cpp` | 개발용 패널. **Network**(`ServerClock::draw_debug_contents`), **Particle Test**(범용 파티클 테스트 방출기: 모드 4가지(분수·연기·폭발·비), 플레이어 앞 재생/정지, 위치 이동, 지우기, 버스트 개수로 최대 개수 초과 확인) | `\` 키 |
+| `DebugPanel.h/.cpp` | 개발용 패널. **Network**(`ServerClock::draw_debug_contents`), **Particle Test**(범용 파티클 테스트 방출기: 모드 4가지(분수·연기·폭발·비), 플레이어 앞 재생/정지, 위치 이동, 지우기, 버스트 개수로 최대 개수 초과 확인), **VFX Presets**(프리셋 다시 읽기, 골라서 플레이어 앞 재생) | `\` 키 |
 | `DamageTextManager.h/.cpp` | 데미지 숫자. 화면 전체 크기의 투명·입력 없는 ImGui 창(`DamageTextOverlay`)에 월드 → 화면 투영 좌표로 글자를 그림(그림자 포함). 스킬은 다른 색. `add_damage_text`는 `NetworkManager` 피격 응답에서 호출 | 항상 (숫자가 있을 때) |
 | `Tool_Scene.h/.cpp` | 소켓(무기 부착) 편집 툴 "Socket Weapon Editor": 캐릭터 glTF 열기(파일 대화상자) → 뼈 목록·뼈 표시 → 무기 메쉬 열기 → 위치·회전·크기 드래그 편집(`SocketComponent::fix_connecting`). 화면에서 뼈를 마우스로 골라 선택(`draw_and_pick_bones`), ImGuizmo 기즈모로 직접 조작(Y 키로 이동/회전/크기 전환, LOCAL 기준) | `Chess_Scene`에서 T(다시 T로 돌아감). 일반 게임 흐름(타이틀 → 서버가 지정한 씬)에는 `Chess_Scene`으로 가는 경로가 없어서 시작 씬을 바꿔야 들어감 |
 | `ServerClock.cpp` | 네트워크 항목 내용만 그림 (창은 `DebugPanel`) | `\` 키 |

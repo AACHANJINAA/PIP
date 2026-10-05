@@ -23,6 +23,7 @@
 #include "PhysicsCharacterControllerComponent.h"
 #include "SocketComponenet.h"
 #include "GatherParticleComponent.h"
+#include "VfxManager.h"
 #include "ParticleRenderComponent.h"
 #include "GameFramework.h"
 #include "FreeCameraScript.h"
@@ -1469,6 +1470,9 @@ void MainPlayerScript::on_trigger_enter(std::shared_ptr<GameObject> other, const
 	// 맞은 부위 뼈를 칼이 지나가는 방향으로 꺾음 (히트스톱 동안 꺾인 채로 멈췄다가 스프링으로 돌아옴)
 	if (auto reaction = other->get_component<HitReactionComponent>())
 		reaction->react(hit, skill ? kSkillReactionStrength : 1.0f);
+
+	// 타격 스파크: 맞은 지점에서 칼이 지나가는 방향으로 (Resource/Vfx/VfxPresets.lua)
+	VfxManager::instance()->play(skill ? "skill_hit_spark" : "hit_spark", hit.point, hit.direction);
 
 	// 타격음(칼 + 맞은 쪽)과 카메라 킥(칼이 지나가는 방향)을 칼이 닿는 순간에 (서버 응답에서는 중복 재생하지 않음)
 	SoundManager::instance()->play_3d("SwordHit", hit.point);
