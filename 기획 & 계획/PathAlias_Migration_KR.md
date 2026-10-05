@@ -22,7 +22,7 @@
 | 배포 모드 판단 | 배포 프로그램이 exe 옆에 `Deploy.json`을 쓴다. 그 파일이 있을 때만 배포 모드. 루트 위치도 이 파일에서 읽는다(배포 폴더 구조를 C++에 하드코딩하지 않음) |
 | 경로 목록 | 저장소 루트의 `PathManifest.json`. 게임(PathManager)과 배포 프로그램이 같은 파일을 읽는다 |
 | 별칭 단위 | **상위 폴더 단위.** 별칭은 코드에서 부르는 이름(예: `Character` = `Resource/Character`)일 뿐이다. 배포할 때 무엇을 복사할지는 별칭마다 앱별 `include`/`exclude`로 따로 정한다 |
-| 배포 범위 | 앱별 `include`에 적은 하위 폴더·파일만 복사한다. 폴더는 통째로 복사하므로 데이터 파일이 참조하는 `.bin`, 텍스처, `Meshes/`도 같이 따라온다(3.5). 앱 키가 없으면 그 앱 배포본에는 별칭을 넣지 않는다 |
+| 배포 범위 | **클라는 `"*"` + `exclude`**(새 폴더는 자동 포함, 안 쓰는 것만 제외 목록에 적음), **서버는 `include` 목록**(필요한 하위 폴더만). 앱별 `include`에 적은 하위 폴더·파일만 복사한다. 폴더는 통째로 복사하므로 데이터 파일이 참조하는 `.bin`, 텍스처, `Meshes/`도 같이 따라온다(3.5). 앱 키가 없으면 그 앱 배포본에는 별칭을 넣지 않는다 |
 | 코드 표기 | `"별칭:별칭 폴더 안 경로"`. 예: `"UI:HP_Bar.dds"`, `"Character:DarkKnight/DKF_animations/Anim_DKF_Death.gltf"` |
 | 전환 방식 | **점진적.** 기존 `"Resource/..."` 표기와 별칭 표기를 둘 다 받는다. 새 코드는 별칭으로 쓰고, 기존 파일은 손댈 때 바꾼다 |
 | 사용 파일 기록 | 개발 모드에서 PathManager로 연 파일을 전부 기록해 `Saved/used_files.txt`로 남긴다. 배포 전에 "배포 범위(`include`)에 없는 파일을 읽었는지" 검사하는 데 쓴다. `include` 추가를 잊은 경우를 잡는 장치라 **필수 단계**다 |
@@ -39,7 +39,8 @@
     },
     "Character": {
       "dev": "Client/Client/Resource/Character",
-      "include": { "client": ["DarkKnight", "BoneGolem", "SK_MagicConstruct"] }
+      "include": { "client": ["*"] },
+      "exclude": ["BruteDance", "DDSMapData", "..."]
     },
     "LandscapeMeshes": {
       "dev": "Client/Client/Resource/MainLandscape_Meshes",
@@ -55,6 +56,7 @@
 ```
 
 - `dev`: 저장소 루트 기준 경로. PathManager는 이것만 쓴다(개발 모드의 별칭 → 폴더 표).
+- 실제 파일은 저장소 루트 `PathManifest.json`. 클라·서버가 같은 파일 하나를 쓴다.
 - `include`: 앱(`client`, `server`)별로 복사할 항목. 항목은 별칭 폴더 기준 하위 폴더·파일 경로이고 와일드카드를 쓸 수 있다. `"*"`는 전체다.
 - `exclude`(별칭별, 전체 공통): `include` 결과에서 뺄 항목.
 - 배포 위치는 개발 폴더의 상대 위치를 그대로 따른다(6.0의 1번). App 밖 별칭만 `<exe 폴더>/External/<별칭>/`이다. 배포 프로그램이 `Deploy.json`에 별칭 → 상대 경로를 기록한다.
@@ -93,8 +95,8 @@ static std::string Expand(std::string_view path);
 |---|---|---|---|---|---|
 | `UI` | `Client/Client/Resource/UI` | `*` | | `default_png`(21M), `*.py` | 91 + `ID/` 11 |
 | `Sound` | `Client/Client/Resource/Sound` | `*` | | | 27 |
-| `SkyBox` | `Client/Client/Resource/SkyBox` | `BRDF.dds`, `diffuse.txt`, `cloudy`, `farmland`, `night` | | | 8 + `build_skybox` 5곳 |
-| `Character` | `Client/Client/Resource/Character` | 3.2 표 | | | 3.2 표 |
+| `SkyBox` | `Client/Client/Resource/SkyBox` | `*` | | `star` | 8 + `build_skybox` 5곳 |
+| `Character` | `Client/Client/Resource/Character` | `*` | | 3.2 표의 "제외" | 3.2 표 |
 | `Weapons` | `Client/Client/Resource/Weapons` | `*` | | | 6 |
 | `Lever` | `Client/Client/Resource/Lever` | `*` | | | 6 |
 | `LeverAndPosition` | `Client/Client/Resource/LeverAndPosition` | `*` | | | 3 |
@@ -103,7 +105,7 @@ static std::string Expand(std::string_view path);
 | `BossMap` | `Client/Client/Resource/1-BossScene` | `*` | `*` | | 1 + 서버 1 |
 | `LandscapeMeshes` | `Client/Client/Resource/MainLandscape_Meshes` | `*` | `Landscape_-1_-1_MapData`, `Landscape_-1_0_MapData` | | 6 + 서버 2 |
 | `MainLandscape` | `Client/Client/Resource/MainLandscape` | `*` | `Landscape*` (`SharedTextures` 제외) | | 1 + 접두 변수 1 + 서버 1 |
-| `HeightMap` | `Client/Client/Resource/HeightMap` | `aerial_rocks`, `rocky_terrain` | | | 2 |
+| `HeightMap` | `Client/Client/Resource/HeightMap` | `*` | | `HeightMap.dds`, `HeightMap.png` | 2 |
 | `ChessMap` | `Client/Client/Resource/MD` | `*` | | | 1 |
 | `Shaders` | `Client/Client/Shaders` | `*` | | | 34 (지금은 `Resolve(PathRoot::Shader)`, 별칭 전환은 선택) |
 | `CommonMapData` | `Common/MapData` | `*` | | | 1 (App 밖 → `External/`) |
@@ -114,6 +116,8 @@ static std::string Expand(std::string_view path);
 `MainLandscape`의 서버 범위는 `MapDataManager::LoadMainLandscapeData`가 `Landscape*` 폴더의 `metadata.json`과 raw만 읽기 때문이다. `SharedTextures`(129M)는 클라 렌더링 전용이다.
 
 ### 3.2 `Character` 하위 폴더
+
+`include`는 `"*"`이고, "제외" 항목만 매니페스트 `exclude`에 적는다. 새 캐릭터 폴더는 자동으로 포함된다.
 
 | 하위 폴더 | 배포(client) | 코드 사용 | 비고 |
 |---|---|---|---|
@@ -306,24 +310,24 @@ static std::string Expand(std::string_view path);
 
 ### 6.2 1단계: PathManager 기능 (`Common/PathManager.h`)
 
-- [ ] `PathManifest.json`을 작성한다. 3.1 표의 별칭 19개와 앱별 `include`/`exclude`, 3.2의 `Character` 하위 폴더 목록을 넣는다. 3.4 폴더는 넣지 않는다.
-- [ ] PathManager는 `dev`만 읽는다. `include`/`exclude`는 배포 프로그램만 쓴다.
-- [ ] `Init` 흐름을 바꾼다.
+- [x] `PathManifest.json`을 작성한다. 3.1 표의 별칭 19개와 앱별 `include`/`exclude`, 3.2의 `Character` 하위 폴더 목록을 넣는다. 3.4 폴더는 넣지 않는다.
+- [x] PathManager는 `dev`만 읽는다. `include`/`exclude`는 배포 프로그램만 쓴다.
+- [x] `Init` 흐름을 바꾼다.
   1. exe 폴더를 구한다.
   2. `Deploy.json`이 있으면 배포 모드다. 별칭 표는 exe 기준으로 만든다.
   3. 없으면 저장소 루트를 찾고 `PathManifest.json`을 읽는다. 별칭 표는 저장소 기준으로 만든다.
   4. 둘 다 실패하면 에러 창을 띄운다.
-- [ ] 기존 폴더 존재 검사(`Resource/`+`Shaders/`, `Lua/`)를 삭제한다.
-- [ ] `Expand(std::string_view) -> std::string`를 추가한다. 6.0의 2·3·4번 규칙을 따른다.
-- [ ] `ResolveApp`이 `Expand`를 먼저 하게 바꾼다. 결과가 절대 경로면 그대로 쓴다.
-- [ ] `GetAlias(name)`를 추가한다. 별칭 폴더의 실제 경로를 돌려주며, `directory_iterator`를 쓰는 곳에서 사용한다.
-- [ ] 사용 파일 기록(개발 모드만)을 넣는다.
+- [x] 기존 폴더 존재 검사(`Resource/`+`Shaders/`, `Lua/`)를 삭제한다.
+- [x] `Expand(std::string_view) -> std::string`를 추가한다. 6.0의 2·3·4번 규칙을 따른다.
+- [x] `ResolveApp`이 `Expand`를 먼저 하게 바꾼다. 결과가 절대 경로면 그대로 쓴다.
+- [x] `GetAlias(name)`를 추가한다. 별칭 폴더의 실제 경로를 돌려주며, `directory_iterator`를 쓰는 곳에서 사용한다.
+- [x] 사용 파일 기록(개발 모드만)을 넣는다.
   - `Resolve`할 때 `std::mutex` + `std::set<std::wstring>`에 넣는다.
   - `Init`에서 `atexit`으로 등록한 함수가 `Saved/used_files.txt`(UTF-8, 저장소 기준 상대 경로, 정렬)를 쓴다.
   - `.bin`, `metadata.json`처럼 다른 파일에서 파생되는 파일은 기록하지 않는다. 같은 폴더라 폴더 단위 검사에는 영향이 없다.
 - [ ] 기존 루트(`Shader`, `Lua`, `Saved`, `ClientResource`, `CommonData`)는 이번 단계에서 유지한다(호환). `ClientResource`, `CommonData`는 서버 이동(6.5)이 끝나면 삭제한다.
-- [ ] 로그: 모드, 매니페스트 경로, 별칭 개수, 없는 별칭 폴더 목록.
-- [ ] 확인: 기존 표기만으로 클라·서버가 예전과 똑같이 동작하는지 본다(1차 작업 검증과 같음). `used_files.txt`가 생기는지도 본다.
+- [x] 로그: 모드, 매니페스트 경로, 별칭 개수, 없는 별칭 폴더 목록.
+- [ ] 확인: 기존 표기만으로 클라·서버가 예전과 똑같이 동작하는지 본다(1차 작업 검증과 같음). `used_files.txt`가 생기는지도 본다. — 서버 확인 완료(2026-10-06), 클라 실행 확인 남음
 
 ### 6.3 2단계: 입구 정리 (`Expand` 적용)
 
