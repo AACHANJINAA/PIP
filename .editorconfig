@@ -1,5 +1,9 @@
 root = true
 
-# C++ 관련 소스 파일에 대해 강제 적용
-[*.{cpp,h,fs,vs,glsl,hlsl}]
+# C++ 소스는 UTF-8 BOM
+[*.{cpp,h}]
 charset = utf-8-bom
+
+# 셰이더는 BOM 없는 UTF-8 (D3DCompileFromFile·fxc가 BOM을 읽지 못해 "Illegal character"로 컴파일 실패)
+[*.{hlsl,hlsli,fx,fxh,fs,vs,glsl}]
+charset = utf-8

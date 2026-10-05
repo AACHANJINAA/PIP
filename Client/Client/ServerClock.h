@@ -40,9 +40,11 @@ public:
 	}
 	bool show_server_ghost() const { return _showDebugWindow && _showServerGhost; }
 
-	// ImGui 디버그 창 (F6 토글): RTT, offset, 인공 지연 설정
-	void toggle_debug_window() { _showDebugWindow = !_showDebugWindow; }
-	void draw_debug_window();
+	// 디버그 패널(DebugPanel, \ 키)의 Network 항목: RTT, offset, 보간 집계, 유령, 인공 지연 설정
+	// ImGui 창 안에서 호출 (Begin/End는 패널이 함)
+	void draw_debug_contents();
+	// 패널이 열려 있는지 (닫혀 있으면 서버 위치 유령을 그리지 않음)
+	void set_debug_visible(bool visible) { _showDebugWindow = visible; }
 
 private:
 	ServerClock() = default;

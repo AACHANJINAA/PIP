@@ -23,7 +23,7 @@
 #include "LeverScript.h"
 #include "MainPlayerScript.h"
 #include "OtherPlayerScript.h"
-#include "ParticleSystemComponent.h"
+#include "GatherParticleComponent.h"
 #include "ParticleRenderComponent.h"
 #include "SocketComponenet.h"
 #include "ReadGLTFMesh.h"
@@ -902,14 +902,13 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto targets = gltfMesh->extract_particle_targets(50000);
 
 		auto particleEffectObject = ObjectManager::instance()->create_game_object("Cinematic_Particle_" + std::to_string(i));
-		auto psComp = particleEffectObject->add_component<ParticleSystemComponent>();
+		auto psComp = particleEffectObject->add_component<GatherParticleComponent>();
 		
 		DirectX::XMFLOAT4 color = { PlayerColors[colors_idx[i] % 4].x, PlayerColors[colors_idx[i] % 4].y, PlayerColors[colors_idx[i] % 4].z, 0.5f };
 		psComp->init_particles(targets, color, 0.05f); // burst_radius는 기본값(-1.0f) 유지
 
 		auto prComp = particleEffectObject->add_component<ParticleRenderComponent>();
 		prComp->set_pso_name("particle_draw");
-		prComp->set_particle_system(psComp);
 
 		particleEffectObject->transform()->set_local_position({ 0, 0, 0 });
 		particleEffectObject->transform()->set_parent(currentWeaponObject->transform());
@@ -958,11 +957,12 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 
 		auto fountainParticleMesh = dynamic_pointer_cast<ReadGLTFMesh>(T1_Mesh);
 
-		auto targets = fountainParticleMesh->extract_particle_targets(300000);
+		// 5만 개: 예전에는 30만 개를 만들었지만 Particle_CS.hlsl이 5만 개까지만 계산해서 실제로는 5만 개만 보였음 (상한 제거 후 같은 모습 유지)
+		auto targets = fountainParticleMesh->extract_particle_targets(50000);
 
 		_dummy_particle_fountain->set_enabled(false); // 처음에는 비활성화 상태로 시작
 
-		auto psComp = _dummy_particle_fountain->add_component<ParticleSystemComponent>();
+		auto psComp = _dummy_particle_fountain->add_component<GatherParticleComponent>();
 
 		DirectX::XMFLOAT4 color = { 1.f,1.f,1.f,1.f };
 
@@ -972,7 +972,6 @@ void Main_Scene::spawn_ui_and_object(ID3D12Device* device, ID3D12GraphicsCommand
 		auto prComp = _dummy_particle_fountain->add_component<ParticleRenderComponent>();
 		prComp->set_pso_name("particle_draw");
 
-		prComp->set_particle_system(psComp);
 
 		// 5. 위치 동기화
 		_dummy_particle_fountain->transform()->set_local_scale({ 1.5f, 1.5f, 1.5f });
@@ -993,7 +992,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 
 	// 컷씬에 필요한 변수들 준비
 	float bgm_time = SoundManager::instance()->get_playback_position("Cinematic_fountain_BGM");
-	auto psComp = _dummy_particle_fountain->get_component<ParticleSystemComponent>();
+	auto psComp = _dummy_particle_fountain->get_component<GatherParticleComponent>();
 
 	auto cameraObject = ObjectManager::instance()->find_by_name("Camera")->get_component<FreeCameraScript>();
 	// 카메라 없다면 스킵
@@ -1314,7 +1313,7 @@ void Main_Scene::cinematic_sequence(float deltaTime)
 		for (int i = 0; i < 4; ++i) {
 			if (_dummy_player_particles[i] && _dummy_player_weapons[i] && dummies_pos[i]) {
 				_dummy_player_particles[i]->set_enabled(true);
-				auto ps = _dummy_player_particles[i]->get_component<ParticleSystemComponent>();
+				auto ps = _dummy_player_particles[i]->get_component<GatherParticleComponent>();
 
 				DirectX::XMFLOAT4X4 weapon_world = _dummy_player_weapons[i]->transform()->world_matrix();
 
