@@ -1,11 +1,11 @@
-# 경로 별칭·매니페스트 전환 조사 (PathManager 2단계)
+# 경로 별칭·매니페스트 전환 조사와 구현 계획 (PathManager 2차 작업)
 
-작성: 2026-10-06. 기준 브랜치 `temp/path-manager` (`bf195ba23`, PathManager 1단계 포함).
+작성: 2026-10-06. 기준 브랜치 `temp/path-manager` (`bf195ba23`, PathManager 1차 작업 포함).
 목적: 경로 문자열을 별칭(`UI:HP_Bar.dds`)으로 바꾸고, 배포 프로그램이 매니페스트만 읽고 필요한 폴더를 복사하게 만든다. 이 문서는 **바꿔야 할 곳 전체 조사**와 **전환 방식**을 정리한다. 아직 코드는 바꾸지 않았다.
 
 ---
 
-## 1. 현재 상태 (1단계에서 된 것)
+## 1. 현재 상태 (1차 작업에서 된 것)
 
 - `Common/PathManager.h`
   - exe 위치를 보고 배포/개발 모드를 판별한다.
@@ -41,8 +41,8 @@
 ```
 
 - `dev`: 저장소 루트 기준 경로.
-- 배포 위치는 기본으로 `<exe 폴더>/<별칭>/`으로 정한다. 배포 프로그램이 이 규칙대로 복사하고, `Deploy.json`에 별칭 → 상대 경로를 기록한다.
-- `apps`: 그 별칭을 어느 배포본에 넣을지. 서버는 클라 리소스 중 `apps`에 `server`가 있는 것만 받는다(1단계의 `Data/ClientResource` 사본을 대신함).
+- 배포 위치는 개발 폴더의 상대 위치를 그대로 따른다(6.0의 1번). App 밖 별칭만 `<exe 폴더>/External/<별칭>/`이다. 배포 프로그램이 `Deploy.json`에 별칭 → 상대 경로를 기록한다.
+- `apps`: 그 별칭을 어느 배포본에 넣을지. 서버는 클라 리소스 중 `apps`에 `server`가 있는 것만 받는다(1차 작업의 `Data/ClientResource` 사본을 대신함).
 
 ### 2.2 기존 표기와 공존시키는 규칙 (중요)
 
@@ -159,9 +159,9 @@ static std::string Expand(std::string_view path);
 
 ### 4.2 경로를 받는 함수 (입구에서 `Expand` 적용)
 
-1단계에서 이미 여는 경로를 `Resolve`한다. 2단계에서는 입구에서 `Expand`를 해서 캐시 키와 파생 경로를 통일해야 한다.
+1차 작업에서 이미 여는 경로를 `Resolve`한다. 이번에는 입구에서 `Expand`를 해서 캐시 키와 파생 경로를 통일해야 한다.
 
-| 함수 | 1단계 상태 | 2단계 할 일 |
+| 함수 | 1차 작업 상태 | 이번에 할 일 |
 |---|---|---|
 | `ResourceManager::load_mesh` | 리더 안에서 Resolve | 입구에서 `Expand`. 키 `_meshes[expanded]` |
 | `ResourceManager::load_texture` | Resolve | 입구에서 `Expand`. 키·`TextureInfo::name` 통일 |
@@ -214,7 +214,7 @@ static std::string Expand(std::string_view path);
 
 ### 4.6 서버
 
-| 위치 | 현재 (1단계) | 별칭 표기 예 |
+| 위치 | 현재 (1차 작업) | 별칭 표기 예 |
 |---|---|---|
 | `server.cpp` `Server::Initialize` | `Resolve(PathRoot::ClientResource, "MainLandscape_Meshes/Landscape_-1_-1_MapData/...json")` | `"LandscapeMeshes:Landscape_-1_-1_MapData/...json"` |
 | 〃 | `Landscape_-1_0_MapData/...json` | `"LandscapeMeshes:Landscape_-1_0_MapData/...json"` |
@@ -237,11 +237,142 @@ static std::string Expand(std::string_view path);
 
 ## 5. 진행 순서
 
-1. **PathManager 기능 추가**: `PathManifest.json` 작성(3장 표), `Expand`, `Deploy.json` 판단, 사용 파일 기록. 이 단계까지는 기존 표기만으로 전부 동작해야 한다.
-2. **입구 정리**: 4.2, 4.3, 4.4의 함수에 `Expand`를 넣는다. 이후 별칭 표기와 기존 표기를 섞어 써도 캐시와 파생 경로가 맞는다.
-3. **배포 프로그램**: 매니페스트를 읽어 `apps`별로 별칭 폴더를 복사하고, exe·DLL·`Deploy.json`을 쓴다. 3.4 목록은 매니페스트에 넣지 않으면 자동으로 빠진다.
-4. **점진적 이동**: 새 코드는 별칭으로 쓴다. 기존 파일은 손댈 때 부록의 해당 줄을 바꾼다. 서버(4.6)와 조합 경로(4.5)처럼 적은 곳부터 먼저 하면 좋다.
-5. **검증**: 개발 모드에서 모든 씬을 한 번씩 돈 뒤 `Saved/used_files.txt`와 매니페스트를 비교해, 별칭 폴더 밖에서 읽은 파일이 있는지 확인한다.
+1단계 PathManager 기능 → 2단계 입구 정리 → 3단계 배포 프로그램 → 4단계 점진적 이동. 상세 내용과 체크리스트는 6장에 있다.
+
+---
+
+## 6. 구현 계획과 체크리스트
+
+### 6.0 핵심 규칙 (구현 전에 정한 것)
+
+1. **배포 폴더는 개발 폴더의 상대 위치를 그대로 유지한다.**
+   - App 루트(`Client/Client`, `Server/Server`) 안에 있는 별칭 폴더는 배포 때 같은 상대 위치로 복사한다. 예: `Client/Client/Resource/UI` → `<exe>/Resource/UI`.
+   - 그래서 기존 `"Resource/..."` 표기가 배포본에서도 그대로 동작한다. 점진적 전환의 전제 조건이다.
+   - App 밖에 있는 별칭(`Common/...`, 서버가 쓰는 클라 리소스)은 `<exe>/External/<별칭>/`으로 복사하고, 그 위치를 `Deploy.json`에 적는다.
+2. **`Expand` 결과(논리 경로)는 개발·배포에서 같다.**
+   - App 안 별칭은 `"Resource/UI/x.dds"`처럼 App 기준 상대 경로로 펼친다.
+   - App 밖 별칭은 절대 경로로 펼친다.
+   - 캐시 키는 한 번 실행하는 동안에만 일관되면 된다.
+3. **별칭 문법**: `이름:나머지`. 이름은 매니페스트에 등록된 2글자 이상이어야 한다. `C:\...` 같은 드라이브 문자와 구분하기 위해서다.
+4. **모르는 별칭은 에러 로그를 남기고 원문을 그대로 쓴다**(크래시 대신 파일 없음 에러로 드러나게).
+5. **PathManager는 헤더 전용을 유지한다.** JSON은 `Common/json.hpp`를 쓴다(`TerrainData.h`와 같음).
+
+### 6.1 파일 형식
+
+`PathManifest.json` (저장소 루트, git 관리):
+```json
+{
+  "binaries": {
+    "client": ["Client/x64/{Config}/STL_Client.exe", "Client/x64/{Config}/fmod.dll", "Client/x64/{Config}/assimp-vc142-mt.dll"],
+    "server": ["Server/x64/{Config}/STL_Server.exe", "Server/x64/{Config}/lua54.dll"]
+  },
+  "appRoots": { "client": "Client/Client", "server": "Server/Server" },
+  "aliases": {
+    "UI":       { "dev": "Client/Client/Resource/UI", "apps": ["client"] },
+    "BossMap":  { "dev": "Client/Client/Resource/1-BossScene", "apps": ["client", "server"] },
+    "Shaders":  { "dev": "Client/Client/Shaders", "apps": ["client"] },
+    "Lua":      { "dev": "Server/Server/Lua", "apps": ["server"] }
+  },
+  "exclude": ["*.psd", "*.blend", "*.jbin"]
+}
+```
+
+`Deploy.json` (배포 프로그램이 exe 옆에 생성):
+```json
+{
+  "app": "client",
+  "aliases": { "UI": "Resource/UI", "WorldBatch": "External/WorldBatch" }
+}
+```
+값은 exe 폴더 기준 상대 경로다.
+
+### 6.2 1단계: PathManager 기능 (`Common/PathManager.h`)
+
+- [ ] `PathManifest.json`을 작성한다. 3.1·3.2 표의 별칭을 전부 넣고, 3.4의 배포 제외 후보는 넣지 않는다.
+  - 결정 필요: `BruteAnim`을 묶을지 나눌지, `LandscapeMeshes` 하위 폴더별 별칭.
+- [ ] `Init` 흐름을 바꾼다.
+  1. exe 폴더를 구한다.
+  2. `Deploy.json`이 있으면 배포 모드다. 별칭 표는 exe 기준으로 만든다.
+  3. 없으면 저장소 루트를 찾고 `PathManifest.json`을 읽는다. 별칭 표는 저장소 기준으로 만든다.
+  4. 둘 다 실패하면 에러 창을 띄운다.
+- [ ] 기존 폴더 존재 검사(`Resource/`+`Shaders/`, `Lua/`)를 삭제한다.
+- [ ] `Expand(std::string_view) -> std::string`를 추가한다. 6.0의 2·3·4번 규칙을 따른다.
+- [ ] `ResolveApp`이 `Expand`를 먼저 하게 바꾼다. 결과가 절대 경로면 그대로 쓴다.
+- [ ] `GetAlias(name)`를 추가한다. 별칭 폴더의 실제 경로를 돌려주며, `directory_iterator`를 쓰는 곳에서 사용한다.
+- [ ] 사용 파일 기록(개발 모드만)을 넣는다.
+  - `Resolve`할 때 `std::mutex` + `std::set<std::wstring>`에 넣는다.
+  - `Init`에서 `atexit`으로 등록한 함수가 `Saved/used_files.txt`(UTF-8, 저장소 기준 상대 경로, 정렬)를 쓴다.
+  - `.bin`, `metadata.json`처럼 다른 파일에서 파생되는 파일은 기록하지 않는다. 같은 폴더라 폴더 단위 검사에는 영향이 없다.
+- [ ] 기존 루트(`Shader`, `Lua`, `Saved`, `ClientResource`, `CommonData`)는 이번 단계에서 유지한다(호환). `ClientResource`, `CommonData`는 서버 이동(6.5)이 끝나면 삭제한다.
+- [ ] 로그: 모드, 매니페스트 경로, 별칭 개수, 없는 별칭 폴더 목록.
+- [ ] 확인: 기존 표기만으로 클라·서버가 예전과 똑같이 동작하는지 본다(1차 작업 검증과 같음). `used_files.txt`가 생기는지도 본다.
+
+### 6.3 2단계: 입구 정리 (`Expand` 적용)
+
+4.2~4.4 표의 함수 입구에서 `const std::string path = PathManager::Expand(in);`로 바꾼 뒤 기존 로직을 그대로 쓴다.
+
+- [ ] `ResourceManager`: `load_mesh`, `load_texture`, `get_texture`, `load_materials_from_gltf`, `load_cubemap_from_dds`, `load_skybox`, `load_ibl_maps`, `load_heightmap_from_raw`, R8 텍스처, 텍스처 배열
+- [ ] `ResourceManager` IBL 조회 3개: 하드코딩한 키(`"Resource\SkyBox\IBL_*.dds"`)와 이름 검색 대체 로직을 지우고, `_ibl_*_path` 멤버(펼친 값)로만 찾는다
+- [ ] `ReadGLTFMesh::load_animation_only`
+- [ ] `Scene::load_scene_from_file`, `load_foliage_from_file`, `load_from_file_with_light` (`basePath` 계산 전에 펼치기)
+- [ ] `SceneManager::build_skybox`: 공용 폴더 인자가 별칭(`"SkyBox:"`)이어도 동작하게, 이어 붙인 뒤 `Expand`
+- [ ] `SceneManager::build_main_landscapes`: `GetAlias("MainLandscape")` 사용
+- [ ] `TerrainLoader` 생성자 2개, `load_textures_to_resource_manager`, weightmap 로드
+- [ ] `UIRenderComponent::set_texture`, `BillboardUIRenderComponent::set_texture`: 저장하는 경로 문자열 확인
+- [ ] 서버 `MapDataManager::LoadStaticMeshShapes`, `LoadServerExportData`, `LoadMainLandscapeData`, `LoadNavMesh`: 함수 안에서 `PathManager::ResolveApp(Expand(path))`
+- [ ] 확인: 아무 파일 하나를 별칭으로 바꿔 놓고, 같은 파일을 기존 표기로도 불러서 캐시가 한 번만 올라가는지 본다(로그). 끝나면 되돌린다.
+
+### 6.4 3단계: 배포 프로그램 (`Tools/Deploy.ps1`)
+
+- [ ] 인자: `-App client|server|all`, `-Config Release`, `-Out <폴더>`(기본 `Deploy/`), `-Build`(지정 시 MSBuild 먼저 실행), `-Check`
+- [ ] `PathManifest.json`을 읽고 `binaries`의 `{Config}`를 치환해 exe와 DLL을 복사한다
+- [ ] `apps`에 해당 앱이 있는 별칭만 복사한다(`robocopy /MIR`, `exclude` 적용). 위치는 6.0의 1번 규칙을 따른다
+- [ ] `Deploy.json`을 생성한다. `Saved/`는 만들지 않는다(실행 중 생성)
+- [ ] 끝나면 별칭별 크기와 합계를 출력한다
+- [ ] `-Check`: `Saved/used_files.txt`(클라·서버)를 읽어, 어느 별칭 폴더에도 속하지 않는 파일을 출력한다. 하나라도 있으면 종료 코드 1
+- [ ] `.gitignore`에 `/Deploy/` 추가
+- [ ] 확인: `Deploy/Client`, `Deploy/Server`를 저장소 밖으로 옮겨 실행했을 때 배포 모드 로그가 나오고 정상 동작해야 한다
+
+### 6.5 4단계: 점진적 이동
+
+한 번에 하지 않는다. 아래 순서는 권장 순서이고, 각 파일은 그 파일을 다른 일로 손댈 때 해도 된다. 파일 하나를 바꿀 때마다 부록 A의 해당 줄을 전부 별칭으로 바꾸고, 해당 씬을 실행해 확인한다.
+
+**우선 (구조 정리 효과가 큼)**
+- [ ] `Server/Server/server.cpp` (6) + `LuaManager.cpp` (4): 끝나면 `PathRoot::ClientResource`, `CommonData` 삭제
+- [ ] 접두 변수(4.5): `MainPlayerScript`, `Main_Scene` 4곳, `OtherPlayerScript`의 `animationpath`, `TainerScript`의 `basePath`, `TerrainLoader`의 `sharedTexpath`
+- [ ] `Player_N.dds` 조합 3곳: `Boss_Scene`, `Main_Scene`, `NetworkManager`
+- [ ] `build_skybox` 호출 5곳
+
+**클라 씬·스크립트 (사용처 수)**
+- [ ] `Main_Scene.cpp` (107)
+- [ ] `Boss_Scene.cpp` (62)
+- [ ] `Chess_Scene.cpp` (33). 4.7 스카이박스 버그를 같이 수정
+- [ ] `MainPlayerScript.cpp` (25)
+- [ ] `NPCScript.cpp` (21)
+- [ ] `OtherPlayerScript.cpp` (18)
+- [ ] `Title_Scene.cpp` (16)
+- [ ] `TainerScript.cpp` (12)
+- [ ] `SceneManager.cpp`, `TerrainLoader.cpp/.h`, `QuestNPCScript.cpp`, `Tool_Scene.cpp`, `LeverScript.cpp`, `NetworkManager.cpp`, `BoardCubeScript.cpp`(4.7 버그)
+
+**셰이더 (선택)**
+- [ ] 셰이더 클래스 18개 파일 + `ParticleSystemComponent`: 지금 `Resolve(PathRoot::Shader)`로 동작하므로 바꾸지 않아도 된다. 바꾸면 `"Shaders:Gltf_Shader.hlsl"`
+
+### 6.6 검증 체크리스트 (단계마다)
+
+- [ ] 클라·서버 Debug, Release 빌드
+- [ ] 개발 모드: VS 실행 + `x64/Release` exe 더블클릭 둘 다
+- [ ] 씬 5개 진입: 타이틀, 메인, 보스, 체스, 툴. 콘솔에 텍스처·메쉬·사운드·셰이더 로드 에러가 없어야 한다
+- [ ] 서버 로그: 지형 5개, 정적 메쉬 3개, NavMesh, Lua 4개 로드 성공
+- [ ] `Deploy.ps1 -Check`로 `used_files.txt` 검사 통과
+- [ ] 배포 모드: `Deploy.ps1 -App all -Config Release`로 만든 결과를 저장소 밖에 두고 서버 실행 → 클라 접속 → 메인·보스 씬
+- [ ] F8 물리 덤프와 `imgui.ini`가 각 배포본의 `Saved/`에 생기는지
+
+### 6.7 문서
+
+- [ ] `Common/CODEMAP.md`: PathManager 설명(매니페스트, `Expand`, 모드 판단)
+- [ ] `Client/Client/CODEMAP.md`, `Server/Server/CODEMAP.md`: 1장 경로 기준, 배포 폴더
+- [ ] 루트 `CODEMAP.md`: 진행 중 설계 문서 표에 이 문서 추가(파티클 브랜치 병합 후), `Tools/Deploy.ps1` 추가
+- [ ] 이 문서의 3·4장과 부록 A는 이동이 끝난 항목을 표시하거나 지운다
 
 ---
 
