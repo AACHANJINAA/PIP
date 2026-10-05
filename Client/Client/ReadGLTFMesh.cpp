@@ -2033,7 +2033,8 @@ bool ReadGLTFMesh::load_gltf_file(const std::string& filename, json& outJson, st
 {
 	namespace fs = std::filesystem;
 
-	std::ifstream gltf_file(filename);
+	const fs::path resolved_path = PathManager::ResolveApp(filename);
+	std::ifstream gltf_file(resolved_path);
 	if (!gltf_file.is_open()) {
 		std::cerr << "Error: Failed to open " << filename << std::endl;
 		return false;
@@ -2049,8 +2050,7 @@ bool ReadGLTFMesh::load_gltf_file(const std::string& filename, json& outJson, st
 
 	if (outJson.contains("buffers") && !outJson["buffers"].empty() && outJson["buffers"][0].contains("uri")) {
 		std::string bin_uri = outJson["buffers"][0]["uri"];
-		fs::path gltf_path = filename;
-		fs::path bin_path = gltf_path.parent_path() / bin_uri;
+		fs::path bin_path = resolved_path.parent_path() / bin_uri;
 
 		std::ifstream bin_file(bin_path, std::ios::binary | std::ios::ate);
 		if (!bin_file.is_open()) {

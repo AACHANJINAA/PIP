@@ -56,6 +56,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 #endif
 
+	// 리소스·셰이더 경로 기준 (배포 폴더 / 저장소 자동 판별)
+	PathManager::Init(common::AppKind::Client);
+
 	// 이 부분 Title_Scene의 InterRoom()으로 이동
 	//if (DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc, 0) != IDOK)
     //{

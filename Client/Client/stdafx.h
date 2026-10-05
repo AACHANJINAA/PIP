@@ -201,6 +201,9 @@ ID3D12Resource* CreateTextureResourceFromDDSFile(ID3D12Device* pd3dDevice, ID3D1
 
 #include "Packet.h"
 #include "PacketStream.h"
+#include "PathManager.h"
+using common::PathManager;
+using common::PathRoot;
 
 using f2 = XMFLOAT2;
 using f3 = XMFLOAT3;

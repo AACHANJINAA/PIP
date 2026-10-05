@@ -149,7 +149,8 @@ void SoundManager::load_sound(const std::string& name, const std::string& filepa
 
 
     FMOD::Sound* sound = nullptr;
-    FMOD_RESULT result = _system->createSound(filepath.c_str(), mode, nullptr, &sound);
+    const std::string resolved_path = PathManager::ToUtf8(PathManager::ResolveApp(filepath));
+    FMOD_RESULT result = _system->createSound(resolved_path.c_str(), mode, nullptr, &sound);
 
     // Fmod 실패 시 에러 체크 하는 함수이다.
     if (check_fmod_error(result, "Load Sound: " + name))

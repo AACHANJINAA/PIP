@@ -10,7 +10,7 @@ std::vector<TerrainLoader*> TerrainLoader::_all_terrain_loaders;
 TerrainLoader::TerrainLoader(const std::string& heightmap_json_path)
 {
 	
-	if (!_terrainData.LoadFromJSON(heightmap_json_path, false))
+	if (!_terrainData.LoadFromJSON(PathManager::ResolveApp(heightmap_json_path).string(), false))
 	{
 		CERROR("Failed to load terrain data from: " << heightmap_json_path);
 	}
@@ -40,7 +40,7 @@ TerrainLoader::TerrainLoader(const std::string& metadata_json_path, bool is_land
 {
 
 	// 1. JSON 파싱 (TerrainData::LoadFromJSON이 이미 grid_info 지원함)
-	if (!_terrainData.LoadFromJSON(metadata_json_path, false))
+	if (!_terrainData.LoadFromJSON(PathManager::ResolveApp(metadata_json_path).string(), false))
 	{
 		CERROR("Failed to load landscape metadata from: " << metadata_json_path);
 		return;
@@ -588,7 +588,7 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 		std::string path = _layers[layer_idx].weightmap_file;
 
 		// R8 바이너리 파일 읽기
-		std::ifstream file(path, std::ios::binary);
+		std::ifstream file(PathManager::ResolveApp(path), std::ios::binary);
 		if (!file.is_open())
 		{
 			// 파일 없으면 모두 0.0f로 채움

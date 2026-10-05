@@ -60,6 +60,9 @@ using namespace DirectX;
 #include "Packet.h"
 #include "Vector3.h"
 #include "PacketStream.h"
+#include "PathManager.h"
+using common::PathManager;
+using common::PathRoot;
 
 
 // JSON 헤더

@@ -823,7 +823,7 @@
     <ClCompile Include="Boss_Scene.cpp">
       <Filter>1. Game\1. Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="UI_Frame_Shader.hlsl">
+    <ClCompile Include="Shaders\UI_Frame_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </ClCompile>
     <ClCompile Include="UIFrameShader.cpp">
@@ -895,31 +895,31 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="GLB_Shader.hlsl">
+    <None Include="Shaders\GLB_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
-    <None Include="Debug.hlsl">
+    <None Include="Shaders\Debug.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
-    <None Include="Shaders.hlsl">
+    <None Include="Shaders\Shaders.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
     <None Include="packages.config">
       <Filter>4. External</Filter>
     </None>
-    <None Include="Gltf_Shader.hlsl">
+    <None Include="Shaders\Gltf_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
-    <None Include="Monster_HP_Shader.hlsl">
+    <None Include="Shaders\Monster_HP_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
-    <None Include="BillboardUI_Shader.hlsl">
+    <None Include="Shaders\BillboardUI_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
-    <None Include="UI_Shader.hlsl">
+    <None Include="Shaders\UI_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
-    <None Include="IBL.hlsl">
+    <None Include="Shaders\IBL.hlsl">
       <Filter>2. Shaders</Filter>
     </None>
     <None Include="QuestData.lua">
@@ -927,37 +927,37 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Skybox_Shader.hlsl">
+    <FxCompile Include="Shaders\Skybox_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Gltf_Skinned_Shader.hlsl">
+    <FxCompile Include="Shaders\Gltf_Skinned_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Terrain_Shader.hlsl">
+    <FxCompile Include="Shaders\Terrain_Shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Light.hlsl">
+    <FxCompile Include="Shaders\Light.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shadow_Depth.hlsl">
+    <FxCompile Include="Shaders\Shadow_Depth.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shadow_Sample.hlsl">
+    <FxCompile Include="Shaders\Shadow_Sample.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shadow_Depth_Skinned.hlsl">
+    <FxCompile Include="Shaders\Shadow_Depth_Skinned.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Minimap_shader.hlsl">
+    <FxCompile Include="Shaders\Minimap_shader.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Particle_CS.hlsl">
+    <FxCompile Include="Shaders\Particle_CS.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Particle_Draw.hlsl">
+    <FxCompile Include="Shaders\Particle_Draw.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="OcclusionQuery.hlsl">
+    <FxCompile Include="Shaders\OcclusionQuery.hlsl">
       <Filter>2. Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -250,7 +250,7 @@ void SceneManager::build_terrain(ID3D12Device* device, ID3D12GraphicsCommandList
 
 	// 1. Terrain 생성 (Grid Mesh만 생성)
 	auto terrain = std::make_shared<TerrainLoader>(
-		"../../Common/MapData/Heightmap.json"
+		PathManager::Resolve(PathRoot::CommonData, "MapData/Heightmap.json").string()
 	);
 
 	//ResourceManager::instance()->set_current_command_list(cmdList);
@@ -289,7 +289,7 @@ void SceneManager::build_main_landscapes(ID3D12Device* device, ID3D12GraphicsCom
         return;
     }
 
-    std::filesystem::path landscapeBaseDir = "Resource/MainLandscape";
+    std::filesystem::path landscapeBaseDir = PathManager::ResolveApp("Resource/MainLandscape");
 
     if (!std::filesystem::exists(landscapeBaseDir))
     {

@@ -426,19 +426,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Monster.lua">
+    <None Include="Lua\Monster.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
-    <None Include="NPC_Data.lua">
+    <None Include="Lua\NPC_Data.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
-    <None Include="QuestData.lua">
+    <None Include="Lua\QuestData.lua">
       <Filter>소스 파일\Game\NPC\LuaScript\Quest</Filter>
     </None>
-    <None Include="LeverData.lua">
+    <None Include="Lua\LeverData.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
-    <None Include="PlayerData.lua">
+    <None Include="Lua\PlayerData.lua">
       <Filter>소스 파일\Game\NPC\LuaScript</Filter>
     </None>
   </ItemGroup>

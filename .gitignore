@@ -391,3 +391,7 @@ client_physics_dump*.bin
 
 # ImGui가 실행 중 저장하는 창 위치·크기 (개인 설정)
 imgui.ini
+
+# PathManager 실행 중 생성 폴더 (imgui.ini, 물리 덤프)
+Client/Client/Saved/
+Server/Server/Saved/

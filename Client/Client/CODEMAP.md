@@ -15,7 +15,9 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 | 컴파일 스위치 (`stdafx.h`) | `_ONDEBUGCONSOLE`(디버그 콘솔 + 로그), `_DEBUG_PHYSICS_VISUALIZATION`(DebugDrawManager 렌더) |
 | Jolt | Debug: `Jolt/lib/Debug`, Release: `Jolt/lib/ReleaseDebugRenderer`(디버그 렌더러 포함, MSVC 14.38·LTCG 없음). Release에도 `JPH_DEBUG_RENDERER` 정의 |
 | 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생) |
-| 작업 폴더 | `Client/Client`. 리소스·셰이더(`*.hlsl`) 경로가 이 폴더 기준 |
+| 경로 기준 | `common::PathManager`(`Common/PathManager.h`)가 exe 위치로 판단. 배포 폴더(exe 옆에 `Resource/`, `Shaders/`)면 exe 폴더, 아니면 저장소의 `Client/Client`가 App 루트. 작업 폴더(cwd)와 무관하며 Init 때 cwd도 App으로 맞춘다. 셰이더는 `Shaders/*.hlsl`, 실행 중 생성 파일(`imgui.ini`, `client_physics_dump.bin`)은 `Saved/`. `../../Common` 데이터는 `PathRoot::CommonData` |
+| 경로 처리 규칙 | 리소스 캐시 키는 논리 경로(`"Resource/..."`) 그대로. 파일을 실제로 여는 곳(메쉬 리더, `load_texture`, `load_cubemap_from_dds`, `Scene::load_*`, `SoundManager::load_sound`, `Shader::compile_shader_from_file`, `TerrainLoader`)에서만 `PathManager::ResolveApp`/`Resolve`. FMOD·Assimp·ImGui에는 `PathManager::ToUtf8` |
+| 배포 폴더 | `STL_Client.exe`, `fmod.dll`, `assimp-vc142-mt.dll`, `Resource/`(Test, Test_glTF, TESTMapData 제외), `Shaders/`, `Common/`(MapData, `World_Batch_glTF/Tile_X-1_Y-1`), `Saved/`(자동 생성) |
 | 인코딩 | `.editorconfig` 규칙 UTF-8 BOM. `/utf-8`이라 BOM이 없어도 빌드됨. 맞추려면 `Tools/EnsureUtf8Bom.ps1` |
 
 로그: `CLOG(expr)`는 `DebugLogStream` → VS 출력 창(UTF-16 변환) + 콘솔(UTF-8). `CERROR`는 `DebugBreak()`까지 한다.
@@ -227,7 +229,7 @@ NPC 피격 히트박스는 `NetworkManager.cpp`의 `attach_npc_hurtbox`가 NPC �
 | `InputManager` | 키 상태(Down/Up/Press), 마우스 델타·고정 |
 | `TimerManager` | 프레임 시간. `SetHitStop`·`_gameTimeScale`은 사용처 없음(정리 대상) |
 | `SoundManager` | FMOD, 2D/3D 재생, 구간 재생(`play_3d_section`), 그룹 볼륨 |
-| `main.cpp` | `wWinMain`, 디버그 콘솔 할당(UTF-8 코드페이지), 창 생성, `GameFramework::OnCreate`, 서버 주소 설정 |
+| `main.cpp` | `wWinMain`, 디버그 콘솔 할당(UTF-8 코드페이지), `PathManager::Init(Client)`, 창 생성, `GameFramework::OnCreate`, 서버 주소 설정 |
 | `d3dx12.h`, `DDSTextureLoader12`, `WICTextureLoader12` | 외부 헬퍼 |
 | `BehaviorTree.h` | 클라이언트 쪽 BT 사본. 사용처 없음 |
 | `generate_*.py` | UI 이미지 생성 스크립트 |

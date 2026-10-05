@@ -9,7 +9,7 @@ ReadGlbMesh::ReadGlbMesh(const std::string& file_path)
     set_name(file_path);
 
     // --- 1단계: 파일 읽기 및 JSON/BIN 분리 ---
-    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+    std::ifstream file(PathManager::ResolveApp(file_path), std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         CERROR("GLB 파일 열기 실패: " << file_path);
         return;

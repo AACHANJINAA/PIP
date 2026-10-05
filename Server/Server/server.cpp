@@ -239,29 +239,29 @@ namespace PIP::SERVER
 			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json");*/
 		mdm->LoadStaticMeshShapes(
 			"Tile-1-1",
-			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json",
+			PathManager::Resolve(PathRoot::ClientResource, "MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json").string(),
 			true);
 
 		mdm->LoadStaticMeshShapes(
 			"Tile-10",
-			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json",
+			PathManager::Resolve(PathRoot::ClientResource, "MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json").string(),
 			true);
 
 		mdm->LoadServerExportData("VillageCollisions",
-			"../../Common/World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.json",
+			PathManager::Resolve(PathRoot::CommonData, "World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.json").string(),
 			true);
 
 		// [수정] BossStage 전용 데이터 경로 로드 (바이너리 캐싱 활성: true)
-		std::string mapPath = "../../Client/Client/Resource/1-BossScene/Boss_Landscape_ExportedClientData.json";
+		std::string mapPath = PathManager::Resolve(PathRoot::ClientResource, "1-BossScene/Boss_Landscape_ExportedClientData.json").string();
 		mdm->LoadStaticMeshShapes("BossStageCollisions", mapPath, true);
 
-		mdm->LoadMainLandscapeData("../../Client/Client/Resource/MainLandscape");
+		mdm->LoadMainLandscapeData(PathManager::Resolve(PathRoot::ClientResource, "MainLandscape").string());
 		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-1-1", "VillageCollisions"});
 		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" ,"Tile-1-1","VillageCollisions" });
 		mdm->AddTerrainGroup("VillageStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "VillageCollisions" });
 		mdm->AddTerrainGroup("BossStage", { "BossStageCollisions" });
 
-		mdm->LoadNavMesh("MainStage_NavMesh", "Resource/NavMesh2.obj");
+		mdm->LoadNavMesh("MainStage_NavMesh", PathManager::ResolveApp("Resource/NavMesh2.obj").string());
 		mdm->TestNavMesh();
 
 		MYLOG("lua manager initializing...");

@@ -20,6 +20,9 @@ bool ImGuiManager::initialize(HWND hWnd, ID3D12Device* device, ID3D12CommandQueu
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    // ImGui는 이 포인터를 계속 들고 있으므로 static에 보관 (UTF-8 경로)
+    static const std::string ini_path = PathManager::ToUtf8(PathManager::Resolve(PathRoot::Saved, "imgui.ini"));
+    io.IniFilename = ini_path.c_str();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // 키보드 컨트롤 허용
 
     // 테마 설정 (다크 모드)

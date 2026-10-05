@@ -115,7 +115,8 @@ D3D12_SHADER_BYTECODE Shader::compile_shader_from_file(const std::wstring& file_
 #endif
 	ComPtr<ID3DBlob> pd3dErrorBlob;
 
-	HRESULT hResult = ::D3DCompileFromFile(file_name.c_str(), NULL,
+	const std::wstring shader_path = PathManager::Resolve(PathRoot::Shader, file_name).wstring();
+	HRESULT hResult = ::D3DCompileFromFile(shader_path.c_str(), NULL,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE, shader_name, shader_profile, 
 		nCompileFlags, 0, &shader_blob, &pd3dErrorBlob);
 
