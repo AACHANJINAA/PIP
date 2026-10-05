@@ -3,7 +3,7 @@
 //
 // 모드
 //  - 개발(기본): exe에서 위로 올라가 저장소 루트를 찾고, 저장소의 PathManifest.json에서 별칭 → 폴더를 읽는다.
-//  - 배포: exe 옆에 Deploy.json(배포 스크립트 Tools/Deploy.ps1이 생성)이 있을 때만. 별칭 → exe 기준 폴더를 읽는다.
+//  - 배포: exe 옆에 Deploy.json(배포 스크립트 Tools/deploy.py이 생성)이 있을 때만. 별칭 → exe 기준 폴더를 읽는다.
 //
 // 경로 표기
 //  - 기존: "Resource/UI/HP_Bar.dds" (App 루트 기준)
@@ -31,8 +31,6 @@ namespace common
         App,            // 배포: exe 폴더 / 개발: Client/Client 또는 Server/Server
         Shader,         // 클라 셰이더(.hlsl)
         Lua,            // 서버 Lua 데이터
-        ClientResource, // (이전 방식) 서버가 읽는 클라 리소스. 별칭으로 옮긴 뒤 삭제 예정
-        CommonData,     // (이전 방식) Common/MapData, Common/World_Batch_glTF. 별칭으로 옮긴 뒤 삭제 예정
         Saved,          // 실행 중 생성 파일(imgui.ini, 물리 덤프, used_files.txt)
         Count
     };
@@ -97,10 +95,6 @@ namespace common
             Root(PathRoot::Shader) = app / "Shaders";
             Root(PathRoot::Lua) = app / "Lua";
             Root(PathRoot::Saved) = app / "Saved";
-            // 이전 방식 루트 (개발 모드 전용, 별칭으로 옮긴 뒤 삭제)
-            const fs::path base = _repo.empty() ? app / "../.." : _repo;
-            Root(PathRoot::ClientResource) = base / "Client/Client/Resource";
-            Root(PathRoot::CommonData) = base / "Common";
 
             for (auto& r : _roots) r = r.lexically_normal();
 
@@ -185,7 +179,7 @@ namespace common
         }
 
         // 개발 모드에서 이번 실행에 연 파일을 Saved/used_files.txt에 합쳐 쓴다(기존 내용 유지). 종료 시 자동 호출.
-        // 배포 범위 검사: Tools/Deploy.ps1 -Check
+        // 배포 범위 검사: Tools/deploy.py -Check
         static void FlushUsedFiles()
         {
             if (_deployed || _repo.empty()) return;

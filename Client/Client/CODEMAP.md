@@ -15,9 +15,9 @@ DirectX 12 자체 엔진 클라이언트. 이 문서는 실제 소스(2026-10-04
 | 컴파일 스위치 (`stdafx.h`) | `_ONDEBUGCONSOLE`(디버그 콘솔 + 로그), `_DEBUG_PHYSICS_VISUALIZATION`(DebugDrawManager 렌더) |
 | Jolt | Debug: `Jolt/lib/Debug`, Release: `Jolt/lib/ReleaseDebugRenderer`(디버그 렌더러 포함, MSVC 14.38·LTCG 없음). Release에도 `JPH_DEBUG_RENDERER` 정의 |
 | 외부 | FMOD(`Fmod/`), ImGui(`imgui/`), Assimp NuGet(FBX 로더용), DDS/WIC 텍스처 로더(DirectXTK 파생) |
-| 경로 기준 | `common::PathManager`(`Common/PathManager.h`)가 exe 위치로 판단. 배포 폴더(exe 옆에 `Resource/`, `Shaders/`)면 exe 폴더, 아니면 저장소의 `Client/Client`가 App 루트. 작업 폴더(cwd)와 무관하며 Init 때 cwd도 App으로 맞춘다. 셰이더는 `Shaders/*.hlsl`, 실행 중 생성 파일(`imgui.ini`, `client_physics_dump.bin`)은 `Saved/`. `../../Common` 데이터는 `PathRoot::CommonData` |
-| 경로 처리 규칙 | 리소스 캐시 키는 논리 경로(`"Resource/..."`) 그대로. 파일을 실제로 여는 곳(메쉬 리더, `load_texture`, `load_cubemap_from_dds`, `Scene::load_*`, `SoundManager::load_sound`, `Shader::compile_shader_from_file`, `TerrainLoader`)에서만 `PathManager::ResolveApp`/`Resolve`. FMOD·Assimp·ImGui에는 `PathManager::ToUtf8` |
-| 배포 폴더 | `STL_Client.exe`, `fmod.dll`, `assimp-vc142-mt.dll`, `Resource/`(Test, Test_glTF, TESTMapData 제외), `Shaders/`, `Common/`(MapData, `World_Batch_glTF/Tile_X-1_Y-1`), `Saved/`(자동 생성) |
+| 경로 기준 | `common::PathManager`(`Common/PathManager.h`). 기본은 개발 모드: 저장소 `PathManifest.json`의 별칭을 쓰고 App 루트는 `Client/Client`. exe 옆에 `Deploy.json`이 있을 때만 배포 모드(App = exe 폴더). 작업 폴더(cwd)와 무관하며 Init 때 cwd도 App으로 맞춘다. 셰이더는 `Shaders/*.hlsl`, 실행 중 생성 파일(`imgui.ini`, `client_physics_dump.bin`, `used_files.txt`)은 `Saved/` |
+| 경로 처리 규칙 | 경로 표기는 기존 `"Resource/UI/a.dds"`와 별칭 `"UI:a.dds"` 둘 다 받는다(점진적 전환, 남은 사용처는 `기획 & 계획/PathAlias_Migration_KR.md` 부록 A). 로더 입구(`ResourceManager::load_*`, `get_texture`, `load_animation_only`, `Scene::load_*`)에서 `PathManager::Expand`해 캐시 키와 `parent_path` 계산을 통일하고, 파일을 실제로 여는 곳에서 `ResolveApp`. FMOD·Assimp·ImGui에는 `PathManager::ToUtf8` |
+| 배포 | `python Tools/deploy.py --app client`가 `Deploy/client/`에 exe·DLL과 별칭 폴더(같은 상대 위치, App 밖은 `External/`)를 복사하고 `Deploy.json`을 쓴다. 배포 범위는 `PathManifest.json`(클라는 `"*"` + `exclude`). `--check`로 `Saved/used_files.txt`가 배포 범위 안인지 검사 |
 | 인코딩 | `.editorconfig` 규칙 UTF-8 BOM. `/utf-8`이라 BOM이 없어도 빌드됨. 맞추려면 `Tools/EnsureUtf8Bom.ps1` |
 
 로그: `CLOG(expr)`는 `DebugLogStream` → VS 출력 창(UTF-16 변환) + 콘솔(UTF-8). `CERROR`는 `DebugBreak()`까지 한다.

@@ -14,7 +14,7 @@
 void Tool_Scene::build_objects(ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
 {
     SceneManager::instance()->build_skybox(device, commandList,
-        "Resource/SkyBox/",
+        "SkyBox:",
         "farmland/farmland_skybox.dds",
         "farmland/farmland_specular.dds",
         "farmland/farmland_diffuse.txt",

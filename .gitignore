@@ -395,3 +395,6 @@ imgui.ini
 # PathManager 실행 중 생성 폴더 (imgui.ini, 물리 덤프)
 Client/Client/Saved/
 Server/Server/Saved/
+
+# 배포 스크립트 출력 (Tools/Deploy.ps1)
+/Deploy/

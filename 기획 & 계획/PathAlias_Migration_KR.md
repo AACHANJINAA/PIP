@@ -325,7 +325,7 @@ static std::string Expand(std::string_view path);
   - `Resolve`할 때 `std::mutex` + `std::set<std::wstring>`에 넣는다.
   - `Init`에서 `atexit`으로 등록한 함수가 `Saved/used_files.txt`(UTF-8, 저장소 기준 상대 경로, 정렬)를 쓴다.
   - `.bin`, `metadata.json`처럼 다른 파일에서 파생되는 파일은 기록하지 않는다. 같은 폴더라 폴더 단위 검사에는 영향이 없다.
-- [ ] 기존 루트(`Shader`, `Lua`, `Saved`, `ClientResource`, `CommonData`)는 이번 단계에서 유지한다(호환). `ClientResource`, `CommonData`는 서버 이동(6.5)이 끝나면 삭제한다.
+- [x] 기존 루트(`Shader`, `Lua`, `Saved`, `ClientResource`, `CommonData`)는 이번 단계에서 유지한다(호환). `ClientResource`, `CommonData`는 서버 이동(6.5)이 끝나면 삭제한다.
 - [x] 로그: 모드, 매니페스트 경로, 별칭 개수, 없는 별칭 폴더 목록.
 - [ ] 확인: 기존 표기만으로 클라·서버가 예전과 똑같이 동작하는지 본다(1차 작업 검증과 같음). `used_files.txt`가 생기는지도 본다. — 서버 확인 완료(2026-10-06), 클라 실행 확인 남음
 
@@ -344,16 +344,16 @@ static std::string Expand(std::string_view path);
 - [x] 서버 `MapDataManager::LoadStaticMeshShapes`, `LoadServerExportData`, `LoadMainLandscapeData`, `LoadNavMesh`: 함수 안에서 `PathManager::ResolveApp(Expand(path))`
 - [ ] 확인: 아무 파일 하나를 별칭으로 바꿔 놓고, 같은 파일을 기존 표기로도 불러서 캐시가 한 번만 올라가는지 본다(로그). 끝나면 되돌린다.
 
-### 6.4 3단계: 배포 프로그램 (`Tools/Deploy.ps1`)
+### 6.4 3단계: 배포 프로그램 (`Tools/deploy.py`)
 
-- [ ] 인자: `-App client|server|all`, `-Config Release`, `-Out <폴더>`(기본 `Deploy/`), `-Build`(지정 시 MSBuild 먼저 실행), `-Check`
-- [ ] `PathManifest.json`을 읽고 `binaries`의 `{Config}`를 치환해 exe와 DLL을 복사한다
-- [ ] 별칭마다 `include[앱]`의 항목만 복사한다. `"*"`는 폴더 전체이고, 별칭 `exclude`와 전체 `exclude`를 뺀다. 폴더는 `robocopy /MIR`, 파일은 `Copy-Item`. 위치는 6.0의 1번 규칙을 따른다
-- [ ] `include`에 적었는데 없는 경로는 경고를 출력한다(오타 방지)
-- [ ] `Deploy.json`을 생성한다. `Saved/`는 만들지 않는다(실행 중 생성)
-- [ ] 끝나면 별칭별 크기와 합계를 출력한다
-- [ ] `-Check`: `Saved/used_files.txt`(클라·서버)를 읽어, 그 앱의 배포 범위(별칭 + `include` - `exclude`)에 들지 않는 파일을 출력한다. 하나라도 있으면 종료 코드 1. 새 하위 폴더를 쓰기 시작하고 `include`에 추가하지 않은 경우가 여기서 잡힌다
-- [ ] `.gitignore`에 `/Deploy/` 추가
+- [x] 인자: `--app client|server|all`, `--config Release`, `--out <폴더>`(기본 `Deploy/`), `--build`(지정 시 MSBuild 먼저 실행), `--check`. Python 3, 표준 라이브러리만 사용
+- [x] `PathManifest.json`을 읽고 `binaries`의 `{Config}`를 치환해 exe와 DLL을 복사한다
+- [x] 별칭마다 `include[앱]`의 항목만 복사한다. `"*"`는 폴더 전체이고, 별칭 `exclude`와 전체 `exclude`를 뺀다. 폴더는 `robocopy /MIR`, 파일은 `shutil.copy2`. 위치는 6.0의 1번 규칙을 따른다
+- [x] `include`에 적었는데 없는 경로는 경고를 출력한다(오타 방지)
+- [x] `Deploy.json`을 생성한다. `Saved/`는 만들지 않는다(실행 중 생성)
+- [x] 끝나면 별칭별 크기와 합계를 출력한다
+- [x] `--check`: `Saved/used_files.txt`(클라·서버)를 읽어, 그 앱의 배포 범위(별칭 + `include` - `exclude`)에 들지 않는 파일을 출력한다. 하나라도 있으면 종료 코드 1. 새 하위 폴더를 쓰기 시작하고 `include`에 추가하지 않은 경우가 여기서 잡힌다
+- [x] `.gitignore`에 `/Deploy/` 추가
 - [ ] 확인: `Deploy/Client`, `Deploy/Server`를 저장소 밖으로 옮겨 실행했을 때 배포 모드 로그가 나오고 정상 동작해야 한다
 
 ### 6.5 4단계: 점진적 이동
@@ -361,10 +361,10 @@ static std::string Expand(std::string_view path);
 한 번에 하지 않는다. 아래 순서는 권장 순서이고, 각 파일은 그 파일을 다른 일로 손댈 때 해도 된다. 파일 하나를 바꿀 때마다 부록 A의 해당 줄을 전부 별칭으로 바꾸고, 해당 씬을 실행해 확인한다.
 
 **우선 (구조 정리 효과가 큼)**
-- [ ] `Server/Server/server.cpp` (6) + `LuaManager.cpp` (4): 끝나면 `PathRoot::ClientResource`, `CommonData` 삭제
-- [ ] 접두 변수(4.5): `MainPlayerScript`, `Main_Scene` 4곳, `OtherPlayerScript`의 `animationpath`, `TainerScript`의 `basePath`, `TerrainLoader`의 `sharedTexpath`
-- [ ] `Player_N.dds` 조합 3곳: `Boss_Scene`, `Main_Scene`, `NetworkManager`
-- [ ] `build_skybox` 호출 5곳
+- [x] `Server/Server/server.cpp` (6) + `LuaManager.cpp` (4): 끝나면 `PathRoot::ClientResource`, `CommonData` 삭제
+- [x] 접두 변수(4.5): `MainPlayerScript`, `Main_Scene` 4곳, `OtherPlayerScript`의 `animationpath`, `TainerScript`의 `basePath`, `TerrainLoader`의 `sharedTexpath`
+- [x] `Player_N.dds` 조합 3곳: `Boss_Scene`, `Main_Scene`, `NetworkManager`
+- [x] `build_skybox` 호출 5곳
 
 **클라 씬·스크립트 (사용처 수)**
 - [ ] `Main_Scene.cpp` (107)
@@ -386,15 +386,15 @@ static std::string Expand(std::string_view path);
 - [ ] 개발 모드: VS 실행 + `x64/Release` exe 더블클릭 둘 다
 - [ ] 씬 5개 진입: 타이틀, 메인, 보스, 체스, 툴. 콘솔에 텍스처·메쉬·사운드·셰이더 로드 에러가 없어야 한다
 - [ ] 서버 로그: 지형 5개, 정적 메쉬 3개, NavMesh, Lua 4개 로드 성공
-- [ ] `Deploy.ps1 -Check`로 `used_files.txt` 검사 통과
-- [ ] 배포 모드: `Deploy.ps1 -App all -Config Release`로 만든 결과를 저장소 밖에 두고 서버 실행 → 클라 접속 → 메인·보스 씬
+- [ ] `deploy.py --check`로 `used_files.txt` 검사 통과
+- [ ] 배포 모드: `python Tools/deploy.py --config Release`로 만든 결과를 저장소 밖에 두고 서버 실행 → 클라 접속 → 메인·보스 씬
 - [ ] F8 물리 덤프와 `imgui.ini`가 각 배포본의 `Saved/`에 생기는지
 
 ### 6.7 문서
 
 - [ ] `Common/CODEMAP.md`: PathManager 설명(매니페스트, `Expand`, 모드 판단)
 - [ ] `Client/Client/CODEMAP.md`, `Server/Server/CODEMAP.md`: 1장 경로 기준, 배포 폴더
-- [ ] 루트 `CODEMAP.md`: 진행 중 설계 문서 표에 이 문서 추가(파티클 브랜치 병합 후), `Tools/Deploy.ps1` 추가
+- [ ] 루트 `CODEMAP.md`: 진행 중 설계 문서 표에 이 문서 추가(파티클 브랜치 병합 후), `Tools/deploy.py` 추가
 - [ ] 이 문서의 3·4장과 부록 A는 이동이 끝난 항목을 표시하거나 지운다
 
 ---

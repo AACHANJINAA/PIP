@@ -239,29 +239,29 @@ namespace PIP::SERVER
 			"../../Client/Client/Resource/MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json");*/
 		mdm->LoadStaticMeshShapes(
 			"Tile-1-1",
-			PathManager::Resolve(PathRoot::ClientResource, "MainLandscape_Meshes/Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json").string(),
+			"LandscapeMeshes:Landscape_-1_-1_MapData/Landscape_-1_-1_ExportedClientData.json",
 			true);
 
 		mdm->LoadStaticMeshShapes(
 			"Tile-10",
-			PathManager::Resolve(PathRoot::ClientResource, "MainLandscape_Meshes/Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json").string(),
+			"LandscapeMeshes:Landscape_-1_0_MapData/Landscape_-1_0_ExportedClientData.json",
 			true);
 
 		mdm->LoadServerExportData("VillageCollisions",
-			PathManager::Resolve(PathRoot::CommonData, "World_Batch_glTF/Tile_X-1_Y-1/Tile_X-1_Y-1.json").string(),
+			"WorldBatch:Tile_X-1_Y-1/Tile_X-1_Y-1.json",
 			true);
 
 		// [수정] BossStage 전용 데이터 경로 로드 (바이너리 캐싱 활성: true)
-		std::string mapPath = PathManager::Resolve(PathRoot::ClientResource, "1-BossScene/Boss_Landscape_ExportedClientData.json").string();
+		std::string mapPath = "BossMap:Boss_Landscape_ExportedClientData.json";
 		mdm->LoadStaticMeshShapes("BossStageCollisions", mapPath, true);
 
-		mdm->LoadMainLandscapeData(PathManager::Resolve(PathRoot::ClientResource, "MainLandscape").string());
+		mdm->LoadMainLandscapeData("MainLandscape:");
 		mdm->AddTerrainGroup("MainStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-1-1", "VillageCollisions"});
 		mdm->AddTerrainGroup("CastleStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "Tile-10" ,"Tile-1-1","VillageCollisions" });
 		mdm->AddTerrainGroup("VillageStage", { "Landscape01", "Landscape02", "Landscape03", "Landscape04", "VillageCollisions" });
 		mdm->AddTerrainGroup("BossStage", { "BossStageCollisions" });
 
-		mdm->LoadNavMesh("MainStage_NavMesh", PathManager::ResolveApp("Resource/NavMesh2.obj").string());
+		mdm->LoadNavMesh("MainStage_NavMesh", "NavMesh:NavMesh2.obj");
 		mdm->TestNavMesh();
 
 		MYLOG("lua manager initializing...");

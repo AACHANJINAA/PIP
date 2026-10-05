@@ -69,7 +69,7 @@ namespace PIP::GAME
 			lua_pushlightuserdata(_L, GetOwner());
 			lua_setglobal(_L, "__gameObject");
 
-			if (luaL_dofile(_L, PathManager::Resolve(PathRoot::Lua, path).string().c_str()) != LUA_OK)
+			if (luaL_dofile(_L, PathManager::ResolveApp("Lua:" + path).string().c_str()) != LUA_OK)
 			{
 				const char* err = lua_tostring(_L, -1);
 				MYERROR("Lua Load Error (" << path << "): " << err);

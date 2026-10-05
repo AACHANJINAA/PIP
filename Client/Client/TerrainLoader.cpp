@@ -467,7 +467,7 @@ void TerrainLoader::load_landscape_weightmaps(const std::vector<std::string>& we
 	_layers.clear();
 	_layers.reserve(weightmap_paths.size());
 
-	std::string sharedTexpath = "Resource/MainLandscape/SharedTextures/";
+	std::string sharedTexpath = "MainLandscape:SharedTextures/";
 
 	for (const auto& weightmap_path : weightmap_paths)
 	{

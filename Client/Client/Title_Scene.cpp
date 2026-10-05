@@ -175,7 +175,7 @@ void Title_Scene::spawn_resource(ID3D12Device* device, ID3D12GraphicsCommandList
 {
     // 1. Skybox 로드 (모든 Scene 공통)
     SceneManager::instance()->build_skybox(device, commandList,
-        "Resource/SkyBox/",
+        "SkyBox:",
         "cloudy/cloudy_skybox.dds",
         "cloudy/cloudy_specular.dds",
         "diffuse.txt",
