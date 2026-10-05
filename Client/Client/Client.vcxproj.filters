@@ -170,6 +170,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DebugPanel.h">
+      <Filter>0. Engine\9. ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="ParticleBillboardShader.h">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClInclude>
@@ -553,6 +556,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DebugPanel.cpp">
+      <Filter>0. Engine\9. ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="ParticleBillboardShader.cpp">
       <Filter>0. Engine\3. Renderer\1. Shaders</Filter>
     </ClCompile>
