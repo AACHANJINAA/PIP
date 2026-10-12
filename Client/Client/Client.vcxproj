@@ -107,6 +107,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\ECS\Entity.h" />
+    <ClInclude Include="..\..\Common\ECS\Pool.h" />
+    <ClInclude Include="..\..\Common\ECS\Registry.h" />
     <ClInclude Include="VfxManager.h" />
     <ClInclude Include="VfxPresetLibrary.h" />
     <ClInclude Include="DebugPanel.h" />

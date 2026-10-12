@@ -168,6 +168,9 @@
     <Filter Include="1. Game\2. Scripts\MainLogics\LeverScript">
       <UniqueIdentifier>{3300addb-0ccf-4e03-87d7-b9ffeec983be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="0. Engine\0. Core\3. ECS">
+      <UniqueIdentifier>{af3611ca-01a2-4ec4-a63c-040e6b7b862b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VfxManager.h">
@@ -559,6 +562,18 @@
     </ClInclude>
     <ClInclude Include="LeverScript.h">
       <Filter>1. Game\2. Scripts\MainLogics\LeverScript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\PathManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\ECS\Entity.h">
+      <Filter>0. Engine\0. Core\3. ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\ECS\Registry.h">
+      <Filter>0. Engine\0. Core\3. ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\ECS\Pool.h">
+      <Filter>0. Engine\0. Core\3. ECS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
