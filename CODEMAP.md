@@ -33,7 +33,7 @@ DirectX 12 자체 엔진 클라이언트 + IOCP 권위 서버(방마다 Jolt 물
 | `BoneCollider_Spec_KR.md` | 1단계: 뼈 부착 칼날 캡슐, 물리 기록, 뷰어 | 완료 |
 | `MeleeHitPrediction_Spec_KR.md` | 2단계: 평타 예측 판정 (스윕, 피격 히트박스, `on_trigger_enter`) | 동작 확인 |
 | `NetMotionSync_Design_KR.md` | 시계 동기화, 보간 버퍼, 넉백 모션 이벤트 | S1~S4 완료 |
-| `ECS_Migration_KR.md` | 클라·서버 ECS 점진 전환, 레지스트리 직접 구현 (E0 레지스트리·다리 → E1 오브젝트 시간 → E2 보간 → E3 판정 이벤트 …, 서버 S0~S3) | E0 진행 중: `Common/ECS` 레지스트리 M1 완료(Entity, Pool, 엔티티 발급), 다음 M2 |
+| `ECS_Migration_KR.md` | 클라·서버 ECS 점진 전환, 레지스트리 직접 구현 (E0 레지스트리·다리 → E1 오브젝트 시간 → E2 보간 → E3 판정 이벤트 …, 서버 S0~S3) | E0 진행 중: `Common/ECS` 레지스트리 M1 완료(Entity, Pool, 엔티티 발급), M2 진행 중(type_id 완료, 다음 저장소 목록·컴포넌트 함수) |
 | `ParticleSystem_Plan_KR.md` | 범용 GPU 파티클·VfxManager, 충격파 왜곡 | P0~P3 완료(클라 Lua, 기존 분리, 범용 GPU 파티클, Lua 프리셋·VfxManager·타격 스파크). 남은 것: PathManager 합칠 때 셰이더 경로, 이후 칼 잔상·충격파(4장 P4) |
 
 ## 공통 규칙
