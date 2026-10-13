@@ -98,7 +98,7 @@ struct Pool : IPool {
 | 삭제 | 마지막 원소를 지울 자리로 옮기고(swap and pop) 옮긴 원소의 `sparse` 갱신 | O(1) |
 | 순회 | `data`를 처음부터 끝까지 | 연속 메모리 |
 
-`IPool`은 타입을 모르는 공통 인터페이스(`remove(Entity)`, `contains(Entity)`, `size()`). 엔티티 삭제 때 모든 저장소에 `remove`를 부르기 위해 필요하다. 저장소 목록은 타입별 번호(정적 카운터로 타입마다 한 번 발급)를 인덱스로 하는 `vector<unique_ptr<IPool>>`.
+`IPool`은 타입을 모르는 공통 인터페이스(`remove(Entity)`, `contains(Entity)`, `size()`). 엔티티 삭제 때 모든 저장소에 `remove`를 부르기 위해 필요하다. 저장소 목록은 타입별 번호(`TypeId.h`의 `type_id<T>()`, 정적 카운터로 타입마다 한 번 발급)를 인덱스로 하는 `vector<unique_ptr<IPool>>`.
 
 **레지스트리 인터페이스**
 
@@ -127,7 +127,7 @@ struct Pool : IPool {
 | 항목 | 결정 | 이유 |
 |---|---|---|
 | 파일 위치 | `Common/ECS/` (폴더 이름은 namespace `ECS`와 같게) | 서버(S0)도 같은 코드를 쓴다 |
-| 파일 구성 | `Entity.h`, `Pool.h`, `Registry.h`. **헤더 전용**(.cpp 없음, 템플릿이 아닌 함수는 `inline`) | Common의 .cpp는 클라(`stdafx.h`)·서버(`pch.h`) 중 어느 pch를 첫 줄에 둘지 정할 수 없다. 기존 Common 파일도 모두 헤더 전용이다 |
+| 파일 구성 | `Entity.h`, `TypeId.h`, `Pool.h`, `Registry.h`. **헤더 전용**(.cpp 없음, 템플릿이 아닌 함수는 `inline`) | Common의 .cpp는 클라(`stdafx.h`)·서버(`pch.h`) 중 어느 pch를 첫 줄에 둘지 정할 수 없다. 기존 Common 파일도 모두 헤더 전용이다 |
 | 테스트 | 별도 솔루션 `Common/ECS/Test/ECSTest.sln` (콘솔, pch 없음, v143·x64·stdcpplatest·/utf-8로 클라·서버와 같은 설정). 검사는 Release에서도 동작하는 `CHECK` 매크로 | 게임을 띄우지 않고 빠르게 확인. pch가 없어서 헤더가 스스로 필요한 include를 갖는지도 드러난다. 클라·서버 프로젝트에는 테스트 파일을 넣지 않는다 |
 | 오류 처리 | assert (예외 안 씀) | 클라 `CERROR`·서버 `MYERROR`가 디버그 브레이크를 거는 방식과 같게 |
 | 스레드 | 단일 스레드 전제 | 클라는 메인 스레드, 서버는 방마다 로직 스레드 하나 |
@@ -135,7 +135,9 @@ struct Pool : IPool {
 
 헤더 전용에서 주의할 점:
 
-- `type_id<T>()`의 카운터 함수는 반드시 `inline`(또는 템플릿)으로 둔다. `static` 함수로 두면 .cpp마다 카운터가 따로 생겨 같은 타입이 파일마다 다른 번호를 받는다(다른 타입의 저장소를 꺼내게 됨). `inline` 함수 안의 static 변수는 프로그램 전체에서 하나다. 테스트는 .cpp를 두 개로 나눠 두 파일에서 같은 번호가 나오는지 확인한다.
+- `type_id<T>()`의 카운터 함수는 반드시 **이름 있는 namespace(`detail`) 안의 `inline`**으로 둔다. `static` 함수나 익명 namespace(`namespace { }`)는 내부 연결이라 .cpp마다 카운터가 따로 생기고, 서로 다른 타입이 같은 번호를 받아 다른 타입의 저장소를 꺼내게 된다. `inline` 함수 안의 static 변수는 프로그램 전체에서 하나다.
+- 이 버그는 테스트로 잡기 까다롭다. 두 .cpp가 같은 타입(예: `Health`)의 번호만 비교하면, 링커가 같은 이름의 `type_id<Health>`를 하나로 합쳐(COMDAT) 우연히 맞는다(2026-10-14 MSVC에서 확인, ODR 위반이라 결과는 링커에 따라 다름). 그래서 테스트는 **한 .cpp에서만 쓰는 타입**(그 파일의 익명 namespace 안 구조체)의 번호가 다른 .cpp에서 받은 번호와 겹치지 않는지로 확인한다(`SecondTU.cpp`의 `OnlyInSecondTu`).
+- `type_id<T>()`는 번호를 매기기 전에 `std::remove_cvref_t<T>`로 const·volatile·참조를 뗀다. `get<const Health>`처럼 불러도 `Health`와 같은 저장소를 쓰게 하기 위함. 포인터(`Health*`)는 다른 타입으로 남는다.
 - 템플릿 멤버 함수는 실제로 호출된 것만 컴파일된다. 테스트에서 모든 함수(const·비 const 오버로드 포함)를 한 번씩 부르고, 생성자 없는 struct·빈 태그 struct·이동만 되는 타입으로 각각 확인한다.
 - 붙일 때 마지막 확인: 클라 .cpp 하나와 서버 .cpp 하나에서 `#include "ECS/Registry.h"`를 하고 둘 다 빌드한다(windows.h·매크로 환경이 테스트 프로젝트와 다름. 클라·서버 둘 다 `NOMINMAX` 정의는 확인함).
 
@@ -146,7 +148,7 @@ struct Pool : IPool {
 | # | 부품 | 파일 | 하는 일 | 핵심 함수 |
 |---|---|---|---|---|
 | 1 | Entity | `Entity.h` | 64비트 ID = 인덱스 32비트 + 세대 32비트 | `make(index, version)`, `index(e)`, `version(e)`, `kNull` |
-| 2 | 타입 번호 | `Registry.h` | 컴포넌트 타입마다 0, 1, 2… 번호 발급 (저장소 배열의 인덱스) | `type_id<T>()` (정적 카운터) |
+| 2 | 타입 번호 | `TypeId.h` | 컴포넌트 타입마다 0, 1, 2… 번호 발급 (저장소 배열의 인덱스). const·참조는 떼고 번호를 매김 | `type_id<T>()` (`detail::next_type_id` 정적 카운터) |
 | 3 | IPool / Pool\<T\> | `Pool.h` | sparse set 본체 | `emplace`, `get`, `try_get`, `contains`, `remove`(swap and pop), `size`, 순회용 `entities()`·`data()` |
 | 4 | Registry: 엔티티 | `Registry.h` | 발급·반납·검사 | `create`, `destroy`(모든 저장소에서 제거 + 세대 증가), `valid` |
 | 5 | Registry: 컴포넌트 | `Registry.h` | 타입에 맞는 저장소를 찾아 위임 | `emplace<T>`, `get<T>`, `try_get<T>`, `has<T>`, `remove<T>` |
@@ -161,7 +163,7 @@ struct Pool : IPool {
 | 단계 | 만들 것 | 끝 기준 | 상태 |
 |---|---|---|---|
 | M1 | 1 Entity, 3 Pool\<T\> | 추가 후 조회 / 가운데 원소 삭제 뒤 옮겨진 원소를 조회로 찾음 / 없는 엔티티의 `try_get`이 nullptr | **완료** (2026-10-13) |
-| M2 | 2 타입 번호, 4·5 Registry | 지운 엔티티의 인덱스가 재사용될 때 옛 ID의 `valid`가 false / `destroy`하면 모든 저장소에서 빠짐 | 진행 중: 엔티티 발급·삭제·유효 검사 완료. 타입 번호, 컴포넌트 함수, `destroy`의 저장소 제거 남음 |
+| M2 | 2 타입 번호, 4·5 Registry | 지운 엔티티의 인덱스가 재사용될 때 옛 ID의 `valid`가 false / `destroy`하면 모든 저장소에서 빠짐 | 진행 중: 엔티티 발급·삭제·유효 검사, 타입 번호(2026-10-14) 완료. 저장소 목록·`pool<T>()`, 컴포넌트 함수, `destroy`의 저장소 제거 남음 |
 | M3 | 6 each | `each<A, B>`가 A만 또는 B만 가진 엔티티를 제외 / 빈 구조체(태그) 동작 | 예정 |
 | M4 | 7 ctx, 8 안전장치 | 순회 중 `emplace`·`destroy` 시 디버그 assert / `destroy_later` 후 `flush`하면 실제로 삭제 | 예정 |
 | M5 (선택) | 성능 비교 | 엔티티 1만 개 기준 `each` 순회와 기존 `get_component` 순회 시간 비교 (포트폴리오 수치) | 예정 |
@@ -176,7 +178,7 @@ M1~M4가 끝나면 E0(GameObject 다리)로 넘어간다.
 
 | 단계 | 내용 | 바뀌는 파일 | 상태 |
 |---|---|---|---|
-| **E0** | 레지스트리 직접 구현(4.1~4.3, M1~M4), `EcsWorld`, GameObject ↔ 엔티티 다리 | `Common/ECS/*`(새), `Common/ECS/Test`(새), `EcsWorld.h`(새), `GameObject`, `ObjectManager`, `Client.vcxproj(.filters)` | 진행 중 (레지스트리 M1 완료) |
+| **E0** | 레지스트리 직접 구현(4.1~4.3, M1~M4), `EcsWorld`, GameObject ↔ 엔티티 다리 | `Common/ECS/*`(새), `Common/ECS/Test`(새), `EcsWorld.h`(새), `GameObject`, `ObjectManager`, `Client.vcxproj(.filters)` | 진행 중 (레지스트리 M1 완료, M2 진행 중) |
 | **E1** | 오브젝트 시간(히트스톱·시간 배율)을 `ObjectTime` 컴포넌트 + `TimeSystem`으로 | `TimeComponents.h`, `TimeSystem.h/.cpp`, `GameObject`, `GameFramework::update_game_logic` | 예정 |
 | E2 | 네트워크 보간: `NetInterp`(버퍼, 보간 지연) + `PendingNetStates` + `NetInterpolationSystem`. `NPCScript`·`OtherPlayerScript`의 중복 제거. 액션 패킷의 되감기 시각을 이 시스템의 렌더 시각에서 가져옴 | `NPCScript`, `OtherPlayerScript`, `ReplicationSystem`, `NetworkManager` | 예정 |
 | E3 | 판정 이벤트: `run_hit_query`가 `HitEvent`를 만들고, `HitFeedbackSystem`이 스파크·사운드·히트스톱·카메라 킥을 한곳에서 처리 | `PhysicsColliderComponent`, `MainPlayerScript`, `GameObject::on_trigger_enter` | 예정 |
@@ -271,13 +273,22 @@ struct ObjectTime {
 | 테스트 | `Common/ECS/Test/ECSTest.sln`: `main.cpp`(테스트 11개 + 불변식 검사 `pool_consistent`), `SecondTU.cpp`(Pool.h를 맨 먼저 포함하는 두 번째 번역 단위). windows.h를 ECS 헤더보다 먼저 포함해 클라·서버와 같은 매크로 환경에서도 확인, 콘솔은 `SetConsoleOutputCP(CP_UTF8)`. Debug·Release 모두 `ALL PASSED` |
 | 테스트로 잡은 것 | `_sparse`를 한 칸씩만 늘림(순서 없는 인덱스에서 범위 밖), `get`이 복사본 반환, const `try_get`의 반환형, `emplace`의 `void` 반환, `Pool.h`의 include 누락(두 번째 번역 단위에서 발견), `size_t` → `uint32_t` 축소 경고 |
 
+### 2026-10-14
+
+| 항목 | 내용 |
+|---|---|
+| 구현 | `Common/ECS/TypeId.h`: `detail::next_type_id()`(`inline`, `cnt++`), `detail::type_id_impl<T>()`(T마다 static 번호), `type_id<T>()`(`std::remove_cvref_t`로 const·참조 제거). Registry 밖의 독립 함수(번호는 레지스트리가 아니라 프로그램 전체 기준) |
+| 처음 버전의 문제 (고침) | 카운터가 증가하지 않음(`return cnt;`), 익명 namespace 사용(.cpp마다 카운터가 따로 생김), 파일을 테스트 폴더(`Test/TypeId.h`)에 만듦 → `Common/ECS/TypeId.h`로 이동 |
+| 테스트 | `test_type_id`(검사 17개, `main()`에서 맨 처음 실행): 같은 타입 같은 번호, 다른 타입 다른 번호, cvref 제거, 포인터는 다른 타입, `SecondTU.cpp`에서 다른 순서로 받은 번호 일치, SecondTU 전용 타입 번호가 겹치지 않음, 번호가 0부터 촘촘함. `static_assert` 4개로 `remove_cvref_t` 확인. 테스트용 컴포넌트는 `Test/TestComponents.h`로 분리(두 .cpp가 같은 타입을 써야 해서). Debug·Release `ALL PASSED` |
+| 테스트 검증 (뮤테이션) | 임시 복사본에 버그를 하나씩 넣어 테스트가 실패하는지 확인: `cnt++` → `cnt` 13개 실패, `detail` → 익명 namespace 1개 실패, `inline` → `static` 1개 실패. 처음 테스트(공용 타입 번호 비교만)는 익명 namespace 버그를 놓쳤음 → 전용 타입 검사 추가로 해결 |
+| 남은 한계 | 확인은 MSVC에서만. "번호 9 미만" 검사는 `test_type_id`가 맨 처음 실행된다는 전제에 의존 |
+
 ### 다음 할 일
 
 1. **M2 나머지**
-    1. 타입 번호 `type_id<T>()`: 카운터 함수는 `inline`(4.2 주의점). `SecondTU.cpp`와 `main.cpp`에서 같은 타입이 같은 번호인지 테스트.
-    2. 저장소 목록 `std::vector<std::unique_ptr<IPool>>`과 `pool<T>()`(없으면 만들어 반환).
-    3. 컴포넌트 함수 `emplace<T>`, `get<T>`, `try_get<T>`(무효 엔티티면 nullptr), `has<T>`, `remove<T>`. 모두 `valid` 확인 후 저장소에 위임.
-    4. `destroy`의 TODO: 모든 저장소에서 `contains`면 `remove`. 테스트: 컴포넌트 두 종류를 붙인 엔티티를 지우면 두 저장소에서 다 빠지는지.
+    1. 저장소 목록 `std::vector<std::unique_ptr<IPool>>`과 `pool<T>()`(`type_id<T>()` 칸이 없으면 늘리고, 비어 있으면 만들어 반환). 다른 레지스트리가 안 쓰는 번호는 `nullptr` 칸으로 남는다.
+    2. 컴포넌트 함수 `emplace<T>`, `get<T>`, `try_get<T>`(무효 엔티티면 nullptr), `has<T>`, `remove<T>`. 모두 `valid` 확인 후 저장소에 위임.
+    3. `destroy`의 TODO: 모든 저장소에서(`nullptr` 칸은 건너뜀) `contains`면 `remove`. 테스트: 컴포넌트 두 종류를 붙인 엔티티를 지우면 두 저장소에서 다 빠지는지.
 2. **M3** `each<A>`, `each<A, B>`(작은 저장소를 돌며 나머지 확인, `IterGuard`로 `_iterating` 관리). 가변 인자 일반화는 나중.
 3. **M4** `ctx<T>`·`ctx_emplace<T>`, `destroy_later`·`flush`, `emplace`·`remove`에도 `assert(_iterating == 0)`.
 4. (선택) **M5** 엔티티 1만 개 순회 성능 비교.

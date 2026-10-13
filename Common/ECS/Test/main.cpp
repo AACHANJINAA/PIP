@@ -14,6 +14,8 @@
 
 #include "ECS/Registry.h"
 #include "ECS/Pool.h"
+#include "ECS/TypeId.h"
+#include "TestComponents.h"
 
 static int g_failed = 0;
 
@@ -25,16 +27,12 @@ static int g_failed = 0;
 		}                                                                   \
 	} while (0)
 
-// SecondTU.cpp: Pool.h를 맨 처음 include하는 다른 번역 단위 (헤더 자립성, 이후 type_id 교차 확인용)
-int second_tu_smoke();
+// SecondTU.cpp: Pool.h를 맨 처음 include하는 다른 번역 단위 (헤더 자립성, type_id 교차 확인)
+// 선언은 TestComponents.h (second_tu_smoke, second_tu_type_ids)
 
 using namespace ECS;
 
-// ---- 테스트용 컴포넌트 ----
-struct Health { int cur; int max; };				// 생성자 없는 struct (C++20 괄호 집합체 초기화)
-struct Dead {};										// 빈 태그
-struct Name { std::string value; };					// 이동 시 내용이 옮겨지는 타입
-struct Owned { std::unique_ptr<int> ptr; };			// 이동만 되는 타입 (복사 불가)
+// 테스트용 컴포넌트(Health, Dead, Name, Owned, Position)는 TestComponents.h
 
 // Pool 불변식: dense[i]의 컴포넌트가 data[i]이고, contains·get이 그 칸을 가리킨다
 template<class T>
@@ -299,15 +297,68 @@ static void test_registry_many_generations()
 	CHECK(!r.valid(first));
 }
 
+// ---------------------------------------------------------------- type_id
+// remove_cvref_t 동작은 컴파일 시간에 확인 (틀리면 빌드 실패)
+static_assert(std::is_same_v<std::remove_cvref_t<const Health&>, Health>);
+static_assert(std::is_same_v<std::remove_cvref_t<Health&&>, Health>);
+static_assert(std::is_same_v<std::remove_cvref_t<const volatile Health>, Health>);
+static_assert(std::is_same_v<std::remove_cvref_t<const Health*>, const Health*>);	// 포인터가 가리키는 쪽의 const는 그대로
+
+// main()에서 다른 테스트보다 먼저, SecondTU보다 먼저 불러야 한다 (번호를 받는 순서를 이 파일이 먼저 정하도록)
+static void test_type_id()
+{
+	std::printf("[TypeId]\n");
+
+	// 이 파일에서 먼저 받는 순서: Health → Name → Owned → Dead (SecondTU는 Position → Dead → Health)
+	const uint32_t health = type_id<Health>();
+	const uint32_t name = type_id<Name>();
+	const uint32_t owned = type_id<Owned>();
+	const uint32_t dead = type_id<Dead>();
+
+	// 같은 타입은 몇 번을 불러도 같은 번호
+	CHECK(type_id<Health>() == health);
+	CHECK(type_id<Health>() == type_id<Health>());
+
+	// 다른 타입은 다른 번호 (카운터가 증가하지 않으면 전부 같아서 실패)
+	CHECK(health != name && health != owned && health != dead);
+	CHECK(name != owned && name != dead && owned != dead);
+	CHECK(type_id<int>() != type_id<float>());
+	CHECK(type_id<Health*>() != health);				// 포인터는 다른 타입
+
+	// const·volatile·참조를 떼고 같은 번호
+	CHECK(type_id<const Health>() == health);
+	CHECK(type_id<Health&>() == health);
+	CHECK(type_id<const Health&>() == health);
+	CHECK(type_id<Health&&>() == health);
+	CHECK(type_id<volatile Health>() == health);
+
+	// 다른 번역 단위에서도 같은 번호 (카운터가 파일마다 따로면 SecondTU는 Position=0, Dead=1, Health=2부터 세서 어긋남)
+	const SecondTuIds other = second_tu_type_ids();
+	CHECK(other.health == health);
+	CHECK(other.dead == dead);
+	CHECK(other.position == type_id<Position>());
+	CHECK(other.position != health && other.position != dead);
+
+	// SecondTU에서만 쓰는 타입의 번호가 이 파일에서 받은 어떤 번호와도 겹치지 않는지 (카운터가 하나뿐인지 확인하는 핵심 검사)
+	const uint32_t mine[] = { health, name, owned, dead, type_id<int>(), type_id<float>(), type_id<Health*>(), type_id<Position>() };
+	for (uint32_t id : mine)
+		CHECK(other.onlyHere != id);
+
+	// 번호는 0부터 촘촘한 작은 정수 (저장소 배열 인덱스로 쓰기 때문). 지금까지 받은 타입은 Health, Name, Owned, Dead,
+	// int, float, Health*, Position, OnlyInSecondTu의 9개라 모두 9 미만
+	CHECK(health < 9 && name < 9 && owned < 9 && dead < 9 && other.position < 9 && other.onlyHere < 9);
+}
+
 // M2 이후 추가할 테스트 (구현되면 주석을 풀고 채운다)
 // - Registry 컴포넌트: emplace/get/try_get/has/remove, destroy하면 모든 저장소에서 빠지는지
-// - type_id: SecondTU.cpp와 main.cpp에서 같은 타입이 같은 번호인지
 // - each<A, B>: A만 또는 B만 가진 엔티티 제외, 빈 태그 포함
 // - ctx, destroy_later/flush
 
 int main()
 {
 	SetConsoleOutputCP(CP_UTF8);
+
+	test_type_id();		// 번호를 받는 순서가 중요해서 맨 먼저
 
 	test_entity();
 

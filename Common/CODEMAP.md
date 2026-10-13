@@ -27,9 +27,10 @@
 | 파일 | 역할 |
 |---|---|
 | `ECS/Entity.h` | `Entity`(= `uint64_t`, 하위 32비트 인덱스 + 상위 32비트 세대), `make`, `index`, `version`, `kNull` |
+| `ECS/TypeId.h` | `type_id<T>()`: 컴포넌트 타입마다 0부터 번호(저장소 배열 인덱스용, 처음 불린 순서라 실행마다 다를 수 있음 → 저장·전송 금지). `std::remove_cvref_t`로 const·참조를 떼고 번호를 매김. 카운터 `detail::next_type_id()`는 이름 있는 namespace의 `inline`(익명 namespace·`static` 금지: .cpp마다 카운터가 따로 생김) |
 | `ECS/Pool.h` | `IPool`(타입을 모르는 공통 인터페이스: `contains`, `remove`, `size`), `Pool<T>`: 컴포넌트 타입 하나의 저장소(sparse set: `_sparse` 인덱스 → 위치, `_dense` 위치 → 엔티티, `_data` 위치 → 컴포넌트). `emplace(e, 재료...)`는 가변 인자를 완전 전달해 자리에서 생성하고 `T&` 반환, 삭제는 swap and pop, `get`·`try_get`은 const·비 const 두 벌 |
 | `ECS/Registry.h` | `Registry`: 엔티티 발급(`create`, 반납 목록 `std::deque` 큐)·삭제(세대 +1)·유효 검사(`valid`), 순회 깊이 `_iterating`·`IterGuard`. 컴포넌트 함수·저장소 목록·`each`·`ctx`는 아직 |
-| `ECS/Test/ECSTest.sln` | 단독 테스트 콘솔 프로젝트(pch 없음, v143·x64·stdcpplatest·/utf-8). 게임 프로젝트와 별개. `main.cpp`: `CHECK` 매크로(Release에서도 동작), Entity·Pool·Registry 테스트와 불변식 검사 `pool_consistent`, windows.h를 ECS 헤더보다 먼저 포함, 콘솔 UTF-8. `SecondTU.cpp`: Pool.h를 맨 먼저 포함하는 두 번째 번역 단위(헤더 자립성, 이후 `type_id` 교차 확인) |
+| `ECS/Test/ECSTest.sln` | 단독 테스트 콘솔 프로젝트(pch 없음, v143·x64·stdcpplatest·/utf-8). 게임 프로젝트와 별개. `main.cpp`: `CHECK` 매크로(Release에서도 동작), Entity·Pool·Registry 테스트와 불변식 검사 `pool_consistent`, windows.h를 ECS 헤더보다 먼저 포함, 콘솔 UTF-8. `SecondTU.cpp`: Pool.h를 맨 먼저 포함하는 두 번째 번역 단위(헤더 자립성, `type_id` 교차 확인: 다른 순서로 번호 받기 + 이 파일 전용 타입 `OnlyInSecondTu`). `TestComponents.h`: 두 .cpp가 같이 쓰는 테스트용 컴포넌트 |
 
 알려진 문제: `Vector3.h`의 한글 주석이 CP949로 저장되어 있다(UTF-8로 읽으면 깨짐). 주석뿐이라 빌드에는 영향이 없다. 고치려면 UTF-8 BOM으로 다시 저장한다.
 
