@@ -26,5 +26,11 @@
     <ClInclude Include="..\Registry.h">
       <Filter>ECS</Filter>
     </ClInclude>
+    <ClInclude Include="..\TypeId.h">
+      <Filter>ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="TestComponents.h">
+      <Filter>Test</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -575,6 +575,9 @@
     <ClInclude Include="..\..\Common\ECS\Pool.h">
       <Filter>0. Engine\0. Core\3. ECS</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\ECS\TypeId.h">
+      <Filter>0. Engine\0. Core\3. ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VfxManager.cpp">
