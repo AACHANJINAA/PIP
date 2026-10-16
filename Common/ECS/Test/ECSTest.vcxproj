@@ -84,6 +84,8 @@
     <ClInclude Include="..\Entity.h" />
     <ClInclude Include="..\Pool.h" />
     <ClInclude Include="..\Registry.h" />
+    <ClInclude Include="..\TypeId.h" />
+    <ClInclude Include="TestComponents.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
