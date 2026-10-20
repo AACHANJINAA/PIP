@@ -53,13 +53,13 @@ namespace ECS
 		//for (auto& p : _pools)
 		//	if (p && p->contains(e)) p->remove(e);
 
-		++_versions[index(e)];            // 옛 ID 전부 무효
-		_free.push_back(index(e));        // 빈칸으로 반납
+		++_versions[slot(e)];            // 옛 ID 전부 무효
+		_free.push_back(slot(e));        // 빈칸으로 반납
 	}
 	inline bool Registry::valid(Entity e) const
 	{
-		return index(e) < _versions.size() && _versions[index(e)] == version(e);
-		//index(e)가 _versions 범위 안이고
-		//	&& _versions[index(e)] == version(e)
+		return slot(e) < _versions.size() && _versions[slot(e)] == version(e);
+		//slot(e)가 _versions 범위 안이고
+		//	&& _versions[slot(e)] == version(e)
 	}
 }
