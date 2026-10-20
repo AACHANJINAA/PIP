@@ -55,20 +55,20 @@ static void test_entity()
 	std::printf("[Entity]\n");
 
 	const Entity e = make(7, 3);
-	CHECK(index(e) == 7);
+	CHECK(slot(e) == 7);
 	CHECK(version(e) == 3);
 
 	// 비트 경계: 32비트 끝값이 서로 섞이지 않는지
 	const Entity big = make(UINT32_MAX - 1, UINT32_MAX - 1);
-	CHECK(index(big) == UINT32_MAX - 1);
+	CHECK(slot(big) == UINT32_MAX - 1);
 	CHECK(version(big) == UINT32_MAX - 1);
 
 	CHECK(make(0, 0) != make(0, 1));					// 같은 칸, 다른 세대는 다른 ID
-	CHECK(index(kNull) == UINT32_MAX);
+	CHECK(slot(kNull) == UINT32_MAX);
 	CHECK(version(kNull) == UINT32_MAX);
 
 	static_assert(sizeof(Entity) == 8, "Entity는 64비트");
-	static_assert(index(make(5, 9)) == 5, "constexpr로 쓸 수 있어야 함");
+	static_assert(slot(make(5, 9)) == 5, "constexpr로 쓸 수 있어야 함");
 }
 
 // ---------------------------------------------------------------- Pool
@@ -100,7 +100,7 @@ static void test_pool_basic()
 
 static void test_pool_sparse_growth()
 {
-	std::printf("[Pool] 순서 없는 인덱스\n");
+	std::printf("[Pool] 순서 없는 슬롯\n");
 	Pool<int> p;
 	const Entity e7 = make(7, 0), e2 = make(2, 0), e100 = make(100, 0);
 
@@ -244,7 +244,7 @@ static void test_registry_entity()
 	const Entity a = r.create();
 	const Entity b = r.create();
 	const Entity c = r.create();
-	CHECK(index(a) == 0 && index(b) == 1 && index(c) == 2);
+	CHECK(slot(a) == 0 && slot(b) == 1 && slot(c) == 2);
 	CHECK(version(a) == 0 && version(b) == 0 && version(c) == 0);
 	CHECK(r.valid(a) && r.valid(b) && r.valid(c));
 	CHECK(!r.valid(kNull));
@@ -255,7 +255,7 @@ static void test_registry_entity()
 	CHECK(r.valid(a) && r.valid(c));
 
 	const Entity d = r.create();						// 1번 칸 재사용, 세대 1
-	CHECK(index(d) == index(b));
+	CHECK(slot(d) == slot(b));
 	CHECK(version(d) == version(b) + 1);
 	CHECK(r.valid(d));
 	CHECK(!r.valid(b));									// 옛 ID는 계속 무효
@@ -274,10 +274,10 @@ static void test_registry_free_queue()
 
 	const Entity first = r.create();
 	const Entity second = r.create();
-	CHECK(index(first) == index(c));					// 먼저 비워진 2번부터
-	CHECK(index(second) == index(a));
+	CHECK(slot(first) == slot(c));					// 먼저 비워진 2번부터
+	CHECK(slot(second) == slot(a));
 	const Entity fresh = r.create();					// 반납 목록이 비면 새 칸
-	CHECK(index(fresh) == 3);
+	CHECK(slot(fresh) == 3);
 	CHECK(r.valid(b));
 }
 
@@ -291,7 +291,7 @@ static void test_registry_many_generations()
 	{
 		r.destroy(e);
 		e = r.create();
-		if (index(e) != index(first) || version(e) != i) { CHECK(false); break; }
+		if (slot(e) != slot(first) || version(e) != i) { CHECK(false); break; }
 	}
 	CHECK(r.valid(e));
 	CHECK(!r.valid(first));
