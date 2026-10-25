@@ -58,21 +58,33 @@
 
 엔티티와 컴포넌트를 저장하고 찾는 창고. 인터페이스 이름은 EnTT와 비슷하게 맞춘다.
 
-**엔티티 ID**
+**용어 (2026-10-14 정리)**: "인덱스"라는 말이 여러 뜻으로 쓰여 헷갈려서 아래 이름으로 통일한다. 코드 함수도 `index(e)` → `slot(e)`로 바꿈.
+
+| 이름 | 뜻 | 범위 |
+|---|---|---|
+| 핸들 (`Entity`) | 슬롯 + 세대를 합친 64비트 전체. 밖에서 들고 다니는 값 | — |
+| 슬롯 (`slot(e)`) | 핸들의 하위 32비트. `Registry::_versions`와 모든 `Pool::_sparse`의 칸 번호 | 레지스트리 공용 |
+| 세대 (`version(e)`) | 핸들의 상위 32비트. 그 슬롯이 몇 번 지워졌는지 | — |
+| 위치 (`pos`) | 저장소 하나 안에서 몇 번째 칸인지 (`dense`·`data`의 칸 번호) | 저장소마다 따로 |
+| 타입 번호 (`type_id<T>()`) | 컴포넌트 타입 번호, `_pools`의 칸 번호 | 프로그램 전체 |
+
+`sparse[슬롯] = 위치`, `dense[위치] = 핸들`, `data[위치] = 컴포넌트`.
+
+**엔티티 핸들**
 
 | 항목 | 내용 |
 |---|---|
-| 형식 | `using Entity = uint64_t;`. 하위 32비트 인덱스, 상위 32비트 세대(version). 비트 나누기는 `Entity.h`의 상수 하나로만 정의해 나중에 바꾸기 쉽게 한다 |
-| 생성 | 반납된 인덱스가 있으면 재사용하고 그 인덱스의 현재 세대를 붙임(`_versions`는 읽기만 함). 없으면 새 인덱스(`_versions`에 0 추가, 세대 0) |
-| 반납 목록 | `_free`는 `std::deque<uint32_t>` 큐: 삭제한 인덱스를 뒤에 넣고(`push_back`) 생성할 때 앞에서 꺼냄(`pop_front`). 가장 먼저 비워진 칸부터 재사용해서 세대 증가가 여러 칸에 고르게 퍼진다 |
-| 삭제 | 그 인덱스의 세대를 1 올리고 반납 목록에 넣음. 모든 저장소에서 컴포넌트 제거 |
-| 유효 검사 | `valid(e)`: 인덱스 범위 안이고 ID의 세대가 현재 세대와 같은지. 지워진 뒤 재사용된 인덱스를 옛 ID로 접근하는 것을 막는다 |
+| 형식 | `using Entity = uint64_t;`. 하위 32비트 슬롯, 상위 32비트 세대(version). 비트 나누기는 `Entity.h`의 상수 하나로만 정의해 나중에 바꾸기 쉽게 한다 |
+| 생성 | 반납된 슬롯이 있으면 재사용하고 그 슬롯의 현재 세대를 붙임(`_versions`는 읽기만 함). 없으면 새 슬롯(`_versions`에 0 추가, 세대 0) |
+| 반납 목록 | `_free`는 `std::deque<uint32_t>` 큐: 삭제한 슬롯을 뒤에 넣고(`push_back`) 생성할 때 앞에서 꺼냄(`pop_front`). 가장 먼저 비워진 칸부터 재사용해서 세대 증가가 여러 칸에 고르게 퍼진다 |
+| 삭제 | 그 슬롯의 세대를 1 올리고 반납 목록에 넣음. 모든 저장소에서 컴포넌트 제거 |
+| 유효 검사 | `valid(e)`: 슬롯이 범위 안이고 핸들의 세대가 현재 세대와 같은지. 지워진 뒤 재사용된 슬롯을 옛 핸들로 접근하는 것을 막는다 |
 | 없음 값 | `kNull` = 모든 비트 1 |
 | 네트워크 ID와 구분 | 엔티티 ID는 레지스트리 안에서만 의미가 있다. 클라와 서버의 레지스트리는 따로라 같은 몬스터라도 엔티티 번호가 다르다. 패킷에는 엔티티 ID를 보내지 않고, 지금의 NPC id(`int64_t`)·플레이어 id를 `NetId{int64_t}` 컴포넌트로 들고 있는다. GameObject `unique_id`와도 다른 값이다 |
 
 **왜 64비트인가 (2026-10-13 결정)**
 
-| 항목 | 32비트 (인덱스 20 + 세대 12, EnTT 기본값) | 64비트 (인덱스 32 + 세대 32, Bevy·Flecs) |
+| 항목 | 32비트 (슬롯 20 + 세대 12, EnTT 기본값) | 64비트 (슬롯 32 + 세대 32, Bevy·Flecs) |
 |---|---|---|
 | 동시 엔티티 수 | 약 104만 | 약 43억 |
 | 같은 칸 재사용 후 세대가 한 바퀴 도는 횟수 | 4096번 | 약 43억 번 (사실상 안 돎) |
@@ -85,7 +97,7 @@
 ```cpp
 template<class T>
 struct Pool : IPool {
-    std::vector<uint32_t> sparse;  // 엔티티 인덱스 → dense 위치 (없으면 kInvalid). 위치는 32비트로 충분
+    std::vector<uint32_t> sparse;  // 슬롯 → 위치 (없으면 kInvalid). 위치는 32비트로 충분
     std::vector<Entity>   dense;   // 위치 → 엔티티
     std::vector<T>        data;    // 위치 → 컴포넌트 (연속 메모리)
 };
@@ -93,12 +105,12 @@ struct Pool : IPool {
 
 | 연산 | 방법 | 비용 |
 |---|---|---|
-| 추가 | `dense`·`data` 끝에 넣고 `sparse[인덱스]`에 위치 기록 | O(1) |
-| 조회 | `sparse[인덱스]`로 위치 → `dense[위치]`의 세대까지 같은지 확인 | O(1) |
+| 추가 | `dense`·`data` 끝에 넣고 `sparse[슬롯]`에 위치 기록 | O(1) |
+| 조회 | `sparse[슬롯]`로 위치 → `dense[위치]`의 핸들이 세대까지 같은지 확인 | O(1) |
 | 삭제 | 마지막 원소를 지울 자리로 옮기고(swap and pop) 옮긴 원소의 `sparse` 갱신 | O(1) |
 | 순회 | `data`를 처음부터 끝까지 | 연속 메모리 |
 
-`IPool`은 타입을 모르는 공통 인터페이스(`remove(Entity)`, `contains(Entity)`, `size()`). 엔티티 삭제 때 모든 저장소에 `remove`를 부르기 위해 필요하다. 저장소 목록은 타입별 번호(`TypeId.h`의 `type_id<T>()`, 정적 카운터로 타입마다 한 번 발급)를 인덱스로 하는 `vector<unique_ptr<IPool>>`.
+`IPool`은 타입을 모르는 공통 인터페이스(`remove(Entity)`, `contains(Entity)`, `size()`). 엔티티 삭제 때 모든 저장소에 `remove`를 부르기 위해 필요하다. 저장소 목록은 타입별 번호(`TypeId.h`의 `type_id<T>()`, 정적 카운터로 타입마다 한 번 발급)를 칸 번호로 하는 `vector<unique_ptr<IPool>>`.
 
 **레지스트리 인터페이스**
 
@@ -118,7 +130,7 @@ struct Pool : IPool {
 
 **확인할 것 (단위 테스트 또는 디버그 검사)**
 
-- 삭제 후 같은 인덱스를 재사용했을 때 옛 ID의 `valid`가 false인지.
+- 삭제 후 같은 슬롯을 재사용했을 때 옛 핸들의 `valid`가 false인지.
 - 중간 원소 삭제 뒤 옮겨진 원소를 `get`으로 찾을 수 있는지.
 - `each<A, B>`가 A만 있거나 B만 있는 엔티티를 빼는지.
 
@@ -147,8 +159,8 @@ struct Pool : IPool {
 
 | # | 부품 | 파일 | 하는 일 | 핵심 함수 |
 |---|---|---|---|---|
-| 1 | Entity | `Entity.h` | 64비트 ID = 인덱스 32비트 + 세대 32비트 | `make(index, version)`, `index(e)`, `version(e)`, `kNull` |
-| 2 | 타입 번호 | `TypeId.h` | 컴포넌트 타입마다 0, 1, 2… 번호 발급 (저장소 배열의 인덱스). const·참조는 떼고 번호를 매김 | `type_id<T>()` (`detail::next_type_id` 정적 카운터) |
+| 1 | Entity | `Entity.h` | 64비트 핸들 = 슬롯 32비트 + 세대 32비트 | `make(slot, version)`, `slot(e)`, `version(e)`, `kNull` |
+| 2 | 타입 번호 | `TypeId.h` | 컴포넌트 타입마다 0, 1, 2… 번호 발급 (저장소 목록 `_pools`의 칸 번호). const·참조는 떼고 번호를 매김 | `type_id<T>()` (`detail::next_type_id` 정적 카운터) |
 | 3 | IPool / Pool\<T\> | `Pool.h` | sparse set 본체 | `emplace`, `get`, `try_get`, `contains`, `remove`(swap and pop), `size`, 순회용 `entities()`·`data()` |
 | 4 | Registry: 엔티티 | `Registry.h` | 발급·반납·검사 | `create`, `destroy`(모든 저장소에서 제거 + 세대 증가), `valid` |
 | 5 | Registry: 컴포넌트 | `Registry.h` | 타입에 맞는 저장소를 찾아 위임 | `emplace<T>`, `get<T>`, `try_get<T>`, `has<T>`, `remove<T>` |
@@ -163,7 +175,7 @@ struct Pool : IPool {
 | 단계 | 만들 것 | 끝 기준 | 상태 |
 |---|---|---|---|
 | M1 | 1 Entity, 3 Pool\<T\> | 추가 후 조회 / 가운데 원소 삭제 뒤 옮겨진 원소를 조회로 찾음 / 없는 엔티티의 `try_get`이 nullptr | **완료** (2026-10-13) |
-| M2 | 2 타입 번호, 4·5 Registry | 지운 엔티티의 인덱스가 재사용될 때 옛 ID의 `valid`가 false / `destroy`하면 모든 저장소에서 빠짐 | 진행 중: 엔티티 발급·삭제·유효 검사, 타입 번호(2026-10-14) 완료. 저장소 목록·`pool<T>()`, 컴포넌트 함수, `destroy`의 저장소 제거 남음 |
+| M2 | 2 타입 번호, 4·5 Registry | 지운 엔티티의 슬롯이 재사용될 때 옛 핸들의 `valid`가 false / `destroy`하면 모든 저장소에서 빠짐 | 진행 중: 엔티티 발급·삭제·유효 검사, 타입 번호(2026-10-14) 완료. 저장소 목록·`pool<T>()`, 컴포넌트 함수, `destroy`의 저장소 제거 남음 |
 | M3 | 6 each | `each<A, B>`가 A만 또는 B만 가진 엔티티를 제외 / 빈 구조체(태그) 동작 | 예정 |
 | M4 | 7 ctx, 8 안전장치 | 순회 중 `emplace`·`destroy` 시 디버그 assert / `destroy_later` 후 `flush`하면 실제로 삭제 | 예정 |
 | M5 (선택) | 성능 비교 | 엔티티 1만 개 기준 `each` 순회와 기존 `get_component` 순회 시간 비교 (포트폴리오 수치) | 예정 |
@@ -267,11 +279,11 @@ struct ObjectTime {
 
 | 항목 | 내용 |
 |---|---|
-| 방향 결정 | EnTT 대신 레지스트리 직접 구현(4.1). 엔티티 ID 64비트(인덱스 32 + 세대 32). 반납 목록은 `std::deque` 큐. 위치 `Common/ECS/`, 헤더 전용, 네임스페이스 `ECS`(4.2) |
+| 방향 결정 | EnTT 대신 레지스트리 직접 구현(4.1). 엔티티 핸들 64비트(슬롯 32 + 세대 32). 반납 목록은 `std::deque` 큐. 위치 `Common/ECS/`, 헤더 전용, 네임스페이스 `ECS`(4.2) |
 | 구현 | `Common/ECS/Entity.h`(ID 만들기·나누기, `kNull`), `Pool.h`(`IPool`, `Pool<T>` sparse set: `contains`, `emplace`(가변 인자 완전 전달, `T&` 반환), `remove`(swap and pop), `get`·`try_get` const·비 const, `size`, `entities`, `data`), `Registry.h`(`create`, `destroy`, `valid`, `_iterating`·`IterGuard`) |
 | 정리 | 클라에 있던 파일을 `Common/ECS`로 옮기고 `Registry.cpp`를 헤더로 합침. `Client.vcxproj(.filters)`는 `..\..\Common\ECS\*.h`를 필터 `0. Engine\0. Core\3. ECS`에 보기용으로 등록 |
 | 테스트 | `Common/ECS/Test/ECSTest.sln`: `main.cpp`(테스트 11개 + 불변식 검사 `pool_consistent`), `SecondTU.cpp`(Pool.h를 맨 먼저 포함하는 두 번째 번역 단위). windows.h를 ECS 헤더보다 먼저 포함해 클라·서버와 같은 매크로 환경에서도 확인, 콘솔은 `SetConsoleOutputCP(CP_UTF8)`. Debug·Release 모두 `ALL PASSED` |
-| 테스트로 잡은 것 | `_sparse`를 한 칸씩만 늘림(순서 없는 인덱스에서 범위 밖), `get`이 복사본 반환, const `try_get`의 반환형, `emplace`의 `void` 반환, `Pool.h`의 include 누락(두 번째 번역 단위에서 발견), `size_t` → `uint32_t` 축소 경고 |
+| 테스트로 잡은 것 | `_sparse`를 한 칸씩만 늘림(순서 없는 슬롯에서 범위 밖), `get`이 복사본 반환, const `try_get`의 반환형, `emplace`의 `void` 반환, `Pool.h`의 include 누락(두 번째 번역 단위에서 발견), `size_t` → `uint32_t` 축소 경고 |
 
 ### 2026-10-14
 
